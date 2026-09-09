@@ -226,6 +226,30 @@ def parse_call(text: str) -> Optional[Tuple[str, Dict[str, Any]]]:
     return None
 
 
+def parse_calls(text: str) -> List[Tuple[str, Dict[str, Any]]]:
+    """Every tool call in the reply, not just the first.
+
+    SCAR: sealed-3.14 routinely batches its whole plan into ONE reply --
+    measured, three <tool_call> blocks in a single completion
+    (.hcli/selfdev/evidence/cycle-0008.txt). parse_call (singular) returns only
+    the first match, so the other two were silently dropped: a body that names
+    three reads in one turn got credit for one, spent its remaining turn
+    budget re-emitting reads it believed had already run, and never reached an
+    edit. Extends only the XML dialect, where the regex finds every
+    non-overlapping call unambiguously; the JSON dialect falls back to
+    parse_call unchanged (a body speaking that dialect has never been observed
+    batching, and disambiguating several bare JSON objects in one blob is not
+    the same well-defined problem).
+    """
+    matches = list(_XML_FUNCTION.finditer(text or ""))
+    if matches:
+        return [(m.group(1).strip(),
+                 {k.strip(): v.strip() for k, v in _XML_PARAM.findall(m.group(2))})
+                for m in matches]
+    single = parse_call(text)
+    return [single] if single is not None else []
+
+
 def _render(result: Any, name: str, registry: Any = None,
             cache: Any = None) -> str:
     ok = bool(getattr(result, "ok", False))
@@ -380,63 +404,71 @@ def run_with_tools(
     results: Dict[str, str] = {}
     for _ in range(max(0, max_calls)):
         text = complete(conversation)
-        call = parse_call(text)
-        if call is None:
+        calls = parse_calls(text)
+        if not calls:
             return text, trace
-        name, arguments = call
-        if name not in offered:
-            # Naming what IS available turns a dead end into a retry that can
-            # work -- the same rule the engine's test-command refusal follows.
-            conversation.append({"role": "assistant", "content": text})
-            conversation.append({"role": "user", "content":
-                                 f"{name} is not available here. Available: "
-                                 f"{', '.join(sorted(offered))}. Use one of "
-                                 f"those or answer directly."})
-            trace.append({"tool": name, "ok": False, "error": "not offered to chat"})
-            continue
-        arguments = coerce_arguments(registry, name, arguments)
-        sig = f"{name}:{json.dumps(arguments, sort_keys=True, default=str)}"
-        if sig in seen:
-            seen[sig] += 1
-            conversation.append({"role": "assistant", "content": text})
-            conversation.append({"role": "user", "content":
-                f"You already called {name} with those exact arguments; the result "
-                f"was:\n{results.get(sig, '(no output)')[:400]}\nDo NOT call it again. "
-                f"Use that result, call a DIFFERENT tool, or answer now."})
-            trace.append({"tool": name, "ok": False,
-                          "error": "repeated call (loop guard)"})
-            if seen[sig] >= 2:  # third emission of the same call -- stop the churn
-                break
-            continue
-        seen[sig] = 1
-        if name in BUILDER_TOOLS:
-            result = run_builder_tool(name, arguments, engine=engine)
-        elif name in LOCAL_TOOLS:
-            result = run_local_tool(name, arguments, cache=cache,
-                                    knowledge=knowledge)
-        else:
-            result = registry.invoke(name, arguments)
-        escalated = None
-        if name == "fs.search" and _search_needs_escalation(result):
-            escalated = escalate_search(registry, arguments)
-            if escalated is not None and getattr(escalated, "ok", False):
-                result = escalated
-        entry = {
-            "tool": name,
-            "arguments": arguments,
-            "ok": bool(getattr(result, "ok", False)),
-            "error": getattr(result, "error", None),
-            "provenance": provenance_of(result),
-        }
-        if escalated is not None:
-            entry["escalated"] = {"glob": SOURCE_GLOB,
-                                  "reason": "first search truncated before reaching source"}
-        trace.append(entry)
+        # ONE reply named however many actions the body batched into it (see
+        # parse_calls). The assistant turn happened once; append it once, then
+        # settle every call it named before spending another turn on a new
+        # completion. Bounded by the turn budget itself -- generous enough for
+        # the batching actually observed, never unbounded.
         conversation.append({"role": "assistant", "content": text})
-        observation = _render(result, name, registry, cache)
-        results[sig] = observation
-        conversation.append(tool_response(name, observation) if native
-                            else {"role": "user", "content": observation})
+        stop_early = False
+        for name, arguments in calls[:max(1, max_calls)]:
+            if name not in offered:
+                # Naming what IS available turns a dead end into a retry that
+                # can work -- the same rule the engine's test-command refusal
+                # follows.
+                conversation.append({"role": "user", "content":
+                                     f"{name} is not available here. Available: "
+                                     f"{', '.join(sorted(offered))}. Use one of "
+                                     f"those or answer directly."})
+                trace.append({"tool": name, "ok": False, "error": "not offered to chat"})
+                continue
+            arguments = coerce_arguments(registry, name, arguments)
+            sig = f"{name}:{json.dumps(arguments, sort_keys=True, default=str)}"
+            if sig in seen:
+                seen[sig] += 1
+                conversation.append({"role": "user", "content":
+                    f"You already called {name} with those exact arguments; the result "
+                    f"was:\n{results.get(sig, '(no output)')[:400]}\nDo NOT call it again. "
+                    f"Use that result, call a DIFFERENT tool, or answer now."})
+                trace.append({"tool": name, "ok": False,
+                              "error": "repeated call (loop guard)"})
+                if seen[sig] >= 2:  # third emission of the same call -- stop the churn
+                    stop_early = True
+                    break
+                continue
+            seen[sig] = 1
+            if name in BUILDER_TOOLS:
+                result = run_builder_tool(name, arguments, engine=engine)
+            elif name in LOCAL_TOOLS:
+                result = run_local_tool(name, arguments, cache=cache,
+                                        knowledge=knowledge)
+            else:
+                result = registry.invoke(name, arguments)
+            escalated = None
+            if name == "fs.search" and _search_needs_escalation(result):
+                escalated = escalate_search(registry, arguments)
+                if escalated is not None and getattr(escalated, "ok", False):
+                    result = escalated
+            entry = {
+                "tool": name,
+                "arguments": arguments,
+                "ok": bool(getattr(result, "ok", False)),
+                "error": getattr(result, "error", None),
+                "provenance": provenance_of(result),
+            }
+            if escalated is not None:
+                entry["escalated"] = {"glob": SOURCE_GLOB,
+                                      "reason": "first search truncated before reaching source"}
+            trace.append(entry)
+            observation = _render(result, name, registry, cache)
+            results[sig] = observation
+            conversation.append(tool_response(name, observation) if native
+                                else {"role": "user", "content": observation})
+        if stop_early:
+            break
     # Budget spent. Ask for the answer itself rather than returning the last
     # tool call as though it were one.
     conversation.append({"role": "user", "content":

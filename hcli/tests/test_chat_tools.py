@@ -176,6 +176,30 @@ class TestTheLoop(unittest.TestCase):
                             for t in trace), "the repeat was not caught")
         self.assertLess(len(trace), 12, "the loop churned to the budget")
 
+    def test_a_batch_of_calls_in_one_reply_all_execute(self):
+        # SCAR: sealed-3.14 routinely batches 2-3 reads in ONE reply (measured,
+        # .hcli/selfdev/evidence/cycle-0008.txt: three <tool_call> blocks in a
+        # single completion). The loop parsed only the FIRST and silently
+        # dropped the rest, so a body that batches its whole plan into one
+        # turn burned its turn budget re-emitting reads it thought had already
+        # run, and never reached a repair. All calls in one reply must execute
+        # -- and it must cost only the ONE completion that named them, not one
+        # completion per call.
+        registry = _Registry({"fs.read": _Result(value={"text": "ok"})})
+        batch = ("<tool_call>\n<function=fs.read>\n<parameter=path>\na.py\n"
+                "</parameter>\n</function>\n</tool_call>\n"
+                "<tool_call>\n<function=fs.read>\n<parameter=path>\nb.py\n"
+                "</parameter>\n</function>\n</tool_call>\n"
+                "<tool_call>\n<function=fs.read>\n<parameter=path>\nc.py\n"
+                "</parameter>\n</function>\n</tool_call>")
+        text, trace = run_with_tools(
+            _scripted([batch, "Read all three."]), [], registry, max_calls=3)
+        self.assertEqual(text, "Read all three.")
+        self.assertEqual(sorted(a["path"] for _, a in registry.calls),
+                         ["a.py", "b.py", "c.py"],
+                         "the batch was not fully executed")
+        self.assertEqual(len(trace), 3)
+
     def test_a_failing_tool_is_reported_not_invented(self):
         registry = _Registry({"fs.read": _Result(ok=False, error="no such file")})
         _, trace = run_with_tools(
