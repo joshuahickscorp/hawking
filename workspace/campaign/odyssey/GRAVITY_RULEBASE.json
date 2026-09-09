@@ -12,7 +12,8 @@
    "id": "R-sparse-active-expert-gather",
    "conditions": [
     "kind == moe",
-    "experts_per_tok << experts",
+    "expert_mass / total_params is HIGH (>= ~0.9) -- this is the binding condition",
+    "experts_per_tok << experts (necessary, NOT sufficient)",
     "sparse_active_path"
    ],
    "then": "candidate native expert-gather (move only active experts, not the full inventory)",
@@ -20,11 +21,13 @@
     "O003",
     "O005"
    ],
-   "negative_patients": [],
+   "negative_patients": [
+    "Qwen3.8-Flash-Next"
+   ],
    "confidence": "INFERRED",
    "reopen_if": "active-byte reduction fails to move TPS because decode is kernel-bound not bandwidth-bound (A3B tps_caveat; Qwen3.8 same pattern)",
    "physical_rationale": "O005: 8/128 experts/token, 3.353B active of 30.5B (11%). mlx specimen 29.3 TPS is ~dense \u2014 gather is the lever, not a smaller codec.",
-   "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005) | O003 (Kimi-VL, DeepSeek-V3-style router, 64 experts/6-top-k+2-shared) CONFIRMED via primitive_design_attempt: ratio_selected_over_full=0.1212 (12.12%% of full expert body moved per token), mlx SwitchGLU/SwitchLinear gather_mm confirmed. See receipts/odyssey-i/O003_NX_gather.json."
+   "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005) | O003 (Kimi-VL, DeepSeek-V3-style router, 64 experts/6-top-k+2-shared) CONFIRMED via primitive_design_attempt: ratio_selected_over_full=0.1212 (12.12%% of full expert body moved per token), mlx SwitchGLU/SwitchLinear gather_mm confirmed. See receipts/odyssey-i/O003_NX_gather.json. POPULATION TRANSFER TEST (12 measured MoE bodies, see receipts/odyssey-i/O00X_GATHER_RULE_TRANSFER_TEST.json): transferred on 10 of 12 (4.6-13.5% active) and FAILED on Qwen3.8-Flash-Next at 32.8% active -- which has the SPARSEST top-k ratio in the population (10/512). Cause: the rule assumed the expert organ is most of the model. Refined law, validated to 0.04pp against independent tensor arithmetic: active_fraction = non_expert_fraction + expert_fraction*(k/E). Gather's ceiling is 1 - non_expert_fraction, so the binding condition is EXPERT MASS FRACTION (Kimi-K3 96.2%, GLM-4.5-Air 92.2%, Qwen3.8-Flash-Next only 68.5%), not k << E."
   },
   {
    "id": "R-uniform-routing-no-cold-compress",
