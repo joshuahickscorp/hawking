@@ -1,0 +1,739 @@
+{
+ "schema": "hawking.odyssey.gravity_attack.v2",
+ "_label": "G021 / S009. A real Gravity attack on Qwen3-0.6B: 28 configurations across four materially different representation classes, complete EBPW accounting, mandatory destructive negative control, and an HONEST NEGATIVE VERDICT. Failures preserved, not filtered.",
+ "_evidence": "MEASURED on CPU in fp32 math. Zero GPU, so the HCLI resident was never interrupted -- this entire attack ran alongside the live selfdev campaign.",
+ "patient": "Qwen/Qwen3-0.6B (0.596B logical params; embedding 26.1%, attention 29.6%, mlp 44.3% of linear-weight mass)",
+ "VERIFIER_ADEQUACY_ESTABLISHED_FIRST": {
+  "why": "a prior campaign here built its adequacy gate on cosine similarity, which is scale-invariant, so a 0.01xW destroyed body scored 1.000000 on every axis and every number that campaign produced was void. The control is therefore run BEFORE any codec result is believed.",
+  "fp32_baseline": {
+   "perplexity": 59.6218,
+   "top1_agreement_vs_fp32": 1.0,
+   "kl_from_fp32": 0.0
+  },
+  "negative_control_0.01xW": {
+   "perplexity": 152006.3869,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 4753.57959
+  },
+  "verdict": "REJECTED DECISIVELY -- perplexity 59.62 -> 152006.39 (2550x), top-1 agreement 1.000 -> 0.000, KL 0 -> 4753.58. Every metric used is magnitude-sensitive by construction.",
+  "restore_check": "restoring the baseline returns perplexity to 59.6218 and top-1 to exactly 1.0, so the harness itself introduces no drift between attempts."
+ },
+ "CEILING_CHECK_the_harness_is_not_the_defect": {
+  "why": "a rejection is only earned if a GENEROUS codec is near-lossless. Otherwise the fault is the bench, not the body, and the verdict would be unearned.",
+  "result": "grouped affine at 8 bits reaches top-1 0.9804 and perplexity 0.995x fp32. The codecs work; the collapse at low bit-width is the body.",
+  "attempts": [
+   {
+    "attempt": "g64-8bit-all",
+    "complete_ebpw": 8.5,
+    "perplexity": 59.34,
+    "ppl_ratio_vs_fp32": 0.995,
+    "top1_agreement_vs_fp32": 0.9804,
+    "kl_from_fp32": 0.52345
+   },
+   {
+    "attempt": "g32-8bit-all",
+    "complete_ebpw": 9.0,
+    "perplexity": 59.37,
+    "ppl_ratio_vs_fp32": 0.996,
+    "top1_agreement_vs_fp32": 0.9824,
+    "kl_from_fp32": 0.41689
+   },
+   {
+    "attempt": "g64-6bit-all",
+    "complete_ebpw": 6.5,
+    "perplexity": 59.91,
+    "ppl_ratio_vs_fp32": 1.005,
+    "top1_agreement_vs_fp32": 0.9393,
+    "kl_from_fp32": 11.33554
+   },
+   {
+    "attempt": "g64-5bit-all",
+    "complete_ebpw": 5.5,
+    "perplexity": 64.59,
+    "ppl_ratio_vs_fp32": 1.083,
+    "top1_agreement_vs_fp32": 0.8885,
+    "kl_from_fp32": 31.33626
+   },
+   {
+    "attempt": "emb4-attn5-mlp5",
+    "complete_ebpw": 5.239,
+    "perplexity": 65.69,
+    "ppl_ratio_vs_fp32": 1.102,
+    "top1_agreement_vs_fp32": 0.863,
+    "kl_from_fp32": 42.78084
+   }
+  ]
+ },
+ "REPRESENTATION_CLASSES_SEARCHED": [
+  "per-tensor symmetric uniform (the naive baseline every codec must beat)",
+  "per-group affine with scale+zero, at group sizes 16 / 32 / 64 / 128 (spends metadata to track local range -- materially different from uniform, and the difference is decisive)",
+  "grouped affine PLUS a low-rank SVD correction of its own residual (spends bytes on STRUCTURE rather than resolution)",
+  "heterogeneous per-organ allocation (embedding / attention / mlp given different budgets -- an allocation lever, not a resolution lever)"
+ ],
+ "FINDINGS": {
+  "grouping_is_the_single_largest_lever": "per-tensor uniform at 4 bits is CATASTROPHIC (perplexity 6.3 MILLION times fp32, top-1 0.000) while per-group affine at the same 4 bits costs only 1.19x perplexity at top-1 0.748. Same bit budget, ~5 million-fold difference in damage. Outlier range is what kills this body, and metadata that tracks local range is what buys it back.",
+  "organ_sensitivity_is_NOT_proportional_to_mass": "crushing the MLP organ (44.3% of mass, the DOMINANT one) to 2 bits costs 2218x perplexity. Crushing the embedding organ (26.1%) to 2 bits costs 2.33x. Same budget, ~1000x difference. A naive 'attack the dominant organ' heuristic points at exactly the wrong organ here.",
+  "but_the_tolerant_organ_still_imposes_a_FLOOR": "this corrects the sweep-1 reading. Embeddings at 2 bits cap achievable quality at ~1.95-2.27x perplexity and top-1 ~0.55-0.60 NO MATTER how many bits go elsewhere -- emb2 with attention AND mlp at 8 bits still lands at 1.95x / 0.593. 'Tolerant' means relatively, not cheaply. Reading sweep 1 alone would have overclaimed.",
+  "low_rank_residual_did_not_pay": "adding a rank-16 SVD correction on top of grouped affine cost real metadata and did not rescue low-bit configurations (lowrank-r16-2-all: 2.837 EBPW, perplexity 1.26 MILLION x). Preserved as a FAILED hypothesis: at this scale the residual is not low-rank enough for 16 components to matter.",
+  "finer_groups_help_but_cost_their_own_metadata": "g16 at 4 bits reaches top-1 0.820 but its complete EBPW is 6.0 because two fp16 scalars per 16 weights is 2 bits/weight of metadata alone -- 33% of the budget. Coarser g128 at 4 bits lands at 4.25 EBPW / top-1 0.714. The metadata share is a first-order term in the complete accounting, not a footnote."
+ },
+ "LADDER_VERDICT_HONEST_NEGATIVE": {
+  "ladder": "<2.5 entry -> <=2.0 -> <=1.5 GRAVITY QUALIFIED -> <=1.0 PREFERRED, with capability surviving",
+  "best_at_top1_>=_0.90": "grouped affine 6 bits, complete EBPW 6.500, top-1 0.9393, perplexity 1.005x",
+  "best_at_top1_>=_0.70": "grouped affine 4 bits at g128, complete EBPW 4.250, top-1 0.714, perplexity 1.42x",
+  "lowest_EBPW_reached_at_ANY_usable_capability": 4.25,
+  "verdict": "THE LADDER IS NOT MET. Not one configuration reached even the <2.5 ENTRY rung with capability intact; everything at or below 2.5 EBPW collapsed by 5-8 orders of magnitude in perplexity with top-1 agreement at or near 0.000. Against the body's SHIPPED bf16 (16 bits) the honest win is 16 -> 6.5 EBPW (2.5x) at near-full capability, or 16 -> 4.25 (3.8x) at visibly degraded capability. Neither is a Gravity-qualified result.",
+  "no_hidden_dense_fallback": "every configuration was evaluated with the dequantised weights ACTUALLY loaded into the model; there is no path where an fp32 parent supplies the answer. The restore check confirms the harness swaps real weights."
+ },
+ "WHY_THIS_IS_A_REAL_RESULT_AND_NOT_A_FAILURE": "the ladder targets were earned on large MoE bodies whose expert organs carry enormous redundancy -- 128 experts of which 8 fire, 94.95% of the mass in one organ. A 0.596B DENSE body has no such redundancy to spend: every weight is load-bearing, which is exactly why it is 0.6B. Learning where the ladder does NOT apply is what stops the next campaign spending GPU weeks on the wrong patient class.",
+ "sweep_1_attempts": [
+  {
+   "attempt": "uniform-8-all",
+   "plan": {
+    "embedding": [
+     "uniform",
+     8
+    ],
+    "attention": [
+     "uniform",
+     8
+    ],
+    "mlp": [
+     "uniform",
+     8
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 4767875072,
+   "metadata_bits": 3152,
+   "complete_ebpw": 8.0,
+   "payload_only_ebpw": 8.0,
+   "metadata_share_pct": 0.0,
+   "perplexity": 62.4988,
+   "top1_agreement_vs_fp32": 0.8689,
+   "kl_from_fp32": 22.324091,
+   "ppl_ratio_vs_fp32": 1.0483,
+   "seconds": 0.9
+  },
+  {
+   "attempt": "uniform-4-all",
+   "plan": {
+    "embedding": [
+     "uniform",
+     4
+    ],
+    "attention": [
+     "uniform",
+     4
+    ],
+    "mlp": [
+     "uniform",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2383937536,
+   "metadata_bits": 3152,
+   "complete_ebpw": 4.0,
+   "payload_only_ebpw": 4.0,
+   "metadata_share_pct": 0.0,
+   "perplexity": 377165160.4452,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 8569.625,
+   "ppl_ratio_vs_fp32": 6325960.646,
+   "seconds": 0.8
+  },
+  {
+   "attempt": "groupaffine-4-all",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     4
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2383937536,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 4.5,
+   "payload_only_ebpw": 4.0,
+   "metadata_share_pct": 11.111,
+   "perplexity": 71.051,
+   "top1_agreement_vs_fp32": 0.7476,
+   "kl_from_fp32": 133.911163,
+   "ppl_ratio_vs_fp32": 1.1917,
+   "seconds": 0.9
+  },
+  {
+   "attempt": "groupaffine-3-all",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     3
+    ],
+    "attention": [
+     "group_affine_g64",
+     3
+    ],
+    "mlp": [
+     "group_affine_g64",
+     3
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1787953152,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 3.5,
+   "payload_only_ebpw": 3.0,
+   "metadata_share_pct": 14.286,
+   "perplexity": 454.4809,
+   "top1_agreement_vs_fp32": 0.3503,
+   "kl_from_fp32": 1105.587402,
+   "ppl_ratio_vs_fp32": 7.6227,
+   "seconds": 0.9
+  },
+  {
+   "attempt": "groupaffine-2-all",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     2
+    ],
+    "mlp": [
+     "group_affine_g64",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1191968768,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 2.5,
+   "payload_only_ebpw": 2.0,
+   "metadata_share_pct": 20.0,
+   "perplexity": 485165195.4098,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 9665.930664,
+   "ppl_ratio_vs_fp32": 8137379.2037,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "g32-2-all",
+   "plan": {
+    "embedding": [
+     "group_affine_g32",
+     2
+    ],
+    "attention": [
+     "group_affine_g32",
+     2
+    ],
+    "mlp": [
+     "group_affine_g32",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1191968768,
+   "metadata_bits": 595984384,
+   "complete_ebpw": 3.0,
+   "payload_only_ebpw": 2.0,
+   "metadata_share_pct": 33.333,
+   "perplexity": 11775529.8525,
+   "top1_agreement_vs_fp32": 0.002,
+   "kl_from_fp32": 6700.022461,
+   "ppl_ratio_vs_fp32": 197503.7629,
+   "seconds": 1.1
+  },
+  {
+   "attempt": "het-emb4-attn4-mlp2",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     4
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1855455232,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 3.6133,
+   "payload_only_ebpw": 3.1133,
+   "metadata_share_pct": 13.838,
+   "perplexity": 132251.0885,
+   "top1_agreement_vs_fp32": 0.0391,
+   "kl_from_fp32": 4304.437012,
+   "ppl_ratio_vs_fp32": 2218.1667,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "het-emb8-attn4-mlp2",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     8
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2477785088,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 4.6575,
+   "payload_only_ebpw": 4.1575,
+   "metadata_share_pct": 10.735,
+   "perplexity": 168037.9673,
+   "top1_agreement_vs_fp32": 0.0294,
+   "kl_from_fp32": 4354.308594,
+   "ppl_ratio_vs_fp32": 2818.3981,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "het-emb4-attn2-mlp2",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     4
+    ],
+    "attention": [
+     "group_affine_g64",
+     2
+    ],
+    "mlp": [
+     "group_affine_g64",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1503133696,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 3.0221,
+   "payload_only_ebpw": 2.5221,
+   "metadata_share_pct": 16.545,
+   "perplexity": 8094276.05,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 6441.285645,
+   "ppl_ratio_vs_fp32": 135760.3435,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "het-emb2-attn4-mlp4",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2072772608,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 3.9779,
+   "payload_only_ebpw": 3.4779,
+   "metadata_share_pct": 12.569,
+   "perplexity": 138.634,
+   "top1_agreement_vs_fp32": 0.5166,
+   "kl_from_fp32": 468.043182,
+   "ppl_ratio_vs_fp32": 2.3252,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "lowrank-r16-2-mlp",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     4
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "lowrank_r16_g64",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1855455232,
+   "metadata_bits": 386072576,
+   "complete_ebpw": 3.7611,
+   "payload_only_ebpw": 3.1133,
+   "metadata_share_pct": 17.224,
+   "perplexity": 233666.3479,
+   "top1_agreement_vs_fp32": 0.0254,
+   "kl_from_fp32": 4517.939941,
+   "ppl_ratio_vs_fp32": 3919.1428,
+   "seconds": 17.7
+  },
+  {
+   "attempt": "lowrank-r16-2-all",
+   "plan": {
+    "embedding": [
+     "lowrank_r16_g64",
+     2
+    ],
+    "attention": [
+     "lowrank_r16_g64",
+     2
+    ],
+    "mlp": [
+     "lowrank_r16_g64",
+     2
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1191968768,
+   "metadata_bits": 498630656,
+   "complete_ebpw": 2.8367,
+   "payload_only_ebpw": 2.0,
+   "metadata_share_pct": 29.494,
+   "perplexity": 75255837.8116,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 7721.053223,
+   "ppl_ratio_vs_fp32": 1262220.1579,
+   "seconds": 36.1
+  }
+ ],
+ "sweep_2_attempts": [
+  {
+   "attempt": "emb2-attn8-mlp8",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     8
+    ],
+    "mlp": [
+     "group_affine_g64",
+     8
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 3834380288,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 6.9337,
+   "payload_only_ebpw": 6.4337,
+   "metadata_share_pct": 7.211,
+   "perplexity": 116.4574,
+   "top1_agreement_vs_fp32": 0.593,
+   "kl_from_fp32": 340.799438,
+   "ppl_ratio_vs_fp32": 1.9533,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "emb2-attn6-mlp6",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     6
+    ],
+    "mlp": [
+     "group_affine_g64",
+     6
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2953576448,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 5.4558,
+   "payload_only_ebpw": 4.9558,
+   "metadata_share_pct": 9.165,
+   "perplexity": 119.7136,
+   "top1_agreement_vs_fp32": 0.6067,
+   "kl_from_fp32": 355.659058,
+   "ppl_ratio_vs_fp32": 2.0079,
+   "seconds": 0.9
+  },
+  {
+   "attempt": "emb2-attn4-mlp6",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     6
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2601254912,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 4.8646,
+   "payload_only_ebpw": 4.3646,
+   "metadata_share_pct": 10.278,
+   "perplexity": 117.6982,
+   "top1_agreement_vs_fp32": 0.5734,
+   "kl_from_fp32": 394.020325,
+   "ppl_ratio_vs_fp32": 1.9741,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "emb3-attn4-mlp5",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     3
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     5
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2492596224,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 4.6823,
+   "payload_only_ebpw": 4.1823,
+   "metadata_share_pct": 10.678,
+   "perplexity": 71.7109,
+   "top1_agreement_vs_fp32": 0.7319,
+   "kl_from_fp32": 138.347015,
+   "ppl_ratio_vs_fp32": 1.2028,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "emb2-attn4-mlp5",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g64",
+     5
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2337013760,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 4.4213,
+   "payload_only_ebpw": 3.9213,
+   "metadata_share_pct": 11.309,
+   "perplexity": 123.014,
+   "top1_agreement_vs_fp32": 0.5577,
+   "kl_from_fp32": 410.826324,
+   "ppl_ratio_vs_fp32": 2.0632,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "emb2-attn3-mlp4",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g64",
+     3
+    ],
+    "mlp": [
+     "group_affine_g64",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 1896611840,
+   "metadata_bits": 297992192,
+   "complete_ebpw": 3.6823,
+   "payload_only_ebpw": 3.1823,
+   "metadata_share_pct": 13.578,
+   "perplexity": 244.3872,
+   "top1_agreement_vs_fp32": 0.454,
+   "kl_from_fp32": 767.975037,
+   "ppl_ratio_vs_fp32": 4.099,
+   "seconds": 0.9
+  },
+  {
+   "attempt": "mlp3-g16",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     4
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g16",
+     3
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2119696384,
+   "metadata_bits": 694353920,
+   "complete_ebpw": 4.7217,
+   "payload_only_ebpw": 3.5566,
+   "metadata_share_pct": 24.675,
+   "perplexity": 97.3166,
+   "top1_agreement_vs_fp32": 0.6869,
+   "kl_from_fp32": 264.829346,
+   "ppl_ratio_vs_fp32": 1.6322,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "mlp4-g16",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     4
+    ],
+    "attention": [
+     "group_affine_g64",
+     4
+    ],
+    "mlp": [
+     "group_affine_g16",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2383937536,
+   "metadata_bits": 694353920,
+   "complete_ebpw": 5.1651,
+   "payload_only_ebpw": 4.0,
+   "metadata_share_pct": 22.556,
+   "perplexity": 66.616,
+   "top1_agreement_vs_fp32": 0.7945,
+   "kl_from_fp32": 92.268272,
+   "ppl_ratio_vs_fp32": 1.1173,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "all4-g16",
+   "plan": {
+    "embedding": [
+     "group_affine_g16",
+     4
+    ],
+    "attention": [
+     "group_affine_g16",
+     4
+    ],
+    "mlp": [
+     "group_affine_g16",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2383937536,
+   "metadata_bits": 1191968768,
+   "complete_ebpw": 6.0,
+   "payload_only_ebpw": 4.0,
+   "metadata_share_pct": 33.333,
+   "perplexity": 68.937,
+   "top1_agreement_vs_fp32": 0.82,
+   "kl_from_fp32": 76.210213,
+   "ppl_ratio_vs_fp32": 1.1562,
+   "seconds": 1.0
+  },
+  {
+   "attempt": "emb2g64-rest4g16",
+   "plan": {
+    "embedding": [
+     "group_affine_g64",
+     2
+    ],
+    "attention": [
+     "group_affine_g16",
+     4
+    ],
+    "mlp": [
+     "group_affine_g16",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2072772608,
+   "metadata_bits": 958595072,
+   "complete_ebpw": 5.0863,
+   "payload_only_ebpw": 3.4779,
+   "metadata_share_pct": 31.623,
+   "perplexity": 135.2886,
+   "top1_agreement_vs_fp32": 0.5519,
+   "kl_from_fp32": 423.481934,
+   "ppl_ratio_vs_fp32": 2.2691,
+   "seconds": 1.1
+  },
+  {
+   "attempt": "all4-g128",
+   "plan": {
+    "embedding": [
+     "group_affine_g128",
+     4
+    ],
+    "attention": [
+     "group_affine_g128",
+     4
+    ],
+    "mlp": [
+     "group_affine_g128",
+     4
+    ]
+   },
+   "total_params": 595984384,
+   "payload_bits": 2383937536,
+   "metadata_bits": 148996096,
+   "complete_ebpw": 4.25,
+   "payload_only_ebpw": 4.0,
+   "metadata_share_pct": 5.882,
+   "perplexity": 84.7806,
+   "top1_agreement_vs_fp32": 0.7143,
+   "kl_from_fp32": 200.876007,
+   "ppl_ratio_vs_fp32": 1.422,
+   "seconds": 1.0
+  }
+ ],
+ "commit": "33ed1646d",
+ "emitted_at": "2026-09-09T15:44:06Z"
+}

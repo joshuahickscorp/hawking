@@ -229,6 +229,57 @@
    "reopen_if": "a specialist body is found whose parameters are NOT backbone-concentrated -- musicgen-large is the live candidate (three sub-models incl. a full audio codec) and could not be measured because it ships legacy pickle rather than safetensors. Also reopen if a bf16 cast is shown to cost capability on any of these, since the 'F32 is convention' half rests on zero capability measurement.",
    "physical_rationale": "specialist heads are tiny by construction: a depth head is 0.1% of the body, a JEPA predictor 2.2%. Compressing them cannot move the total however aggressive the codec, so any budget spent there is wasted regardless of result.",
    "_evidence": "MEASURED per-component parameter shares from safetensors headers, 5 bodies, no GPU. DISCOVERY-PHASE ONLY: no O0XX patient support, so no TRANSFER_MATRIX row."
+  },
+  {
+   "id": "R-gravity-headroom-needs-redundancy",
+   "conditions": [
+    "body is DENSE (no expert organ)",
+    "total params below ~1B",
+    "the EBPW ladder (<2.5) is the target"
+   ],
+   "then": "do NOT spend a Gravity search expecting the ladder. Measure the ceiling first with a generous codec; if 8-bit grouped affine is already only ~0.98 top-1, the body has no redundancy to give and the achievable win is ~2-4x off bf16, not a ladder rung.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B across 28 configurations, four representation classes, with a verified-adequate magnitude-sensitive verifier (0.01xW rejected at 2550x perplexity, top-1 0.000). Best complete EBPW at top-1 >= 0.90 was 6.500; best at top-1 >= 0.70 was 4.250; NOTHING at or below 2.5 EBPW survived -- all collapsed 5-8 orders of magnitude in perplexity. See receipts/odyssey-i/O00X_GRAVITY_Qwen3-0.6B.json."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a sub-1B DENSE body reaches <=2.5 complete EBPW at usable capability under any representation class, or a class not searched here (learned codebooks, structured sparsity, cross-layer bases, procedural generation) rescues one. Only four classes were searched and only one body was tested.",
+   "physical_rationale": "the ladder targets were earned on large MoE bodies where one organ holds ~95% of the mass and only a few percent of it fires per token -- enormous redundancy to spend. A 0.6B dense body is small precisely because its weights are load-bearing; there is nothing to give back.",
+   "_evidence": "MEASURED, single dense patient, CPU. DISCOVERY-PHASE: no O0XX admission, so no TRANSFER_MATRIX row."
+  },
+  {
+   "id": "R-grouping-beats-bit-width-on-outlier-bodies",
+   "conditions": [
+    "weight distribution has significant per-tensor outlier range",
+    "a quantisation budget is being chosen"
+   ],
+   "then": "spend the first metadata on GROUPING before spending it on bit-width. Track local range with per-group scale+zero; per-tensor scaling on an outlier-heavy body is catastrophic at low bits.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B: per-tensor uniform at 4 bits gives perplexity 6,325,960x fp32 and top-1 0.000; per-GROUP affine at the SAME 4 bits gives 1.19x and top-1 0.748. Identical payload budget, roughly five-million-fold difference in damage."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a body is found where per-tensor and per-group scaling perform comparably at low bits -- that would indicate a benign weight distribution and make the grouping metadata pure waste.",
+   "physical_rationale": "a single scale must span the tensor's extreme values, so a few outliers consume the entire code space and the bulk of the distribution collapses into one or two levels. Grouping bounds the range each scale must cover.",
+   "_evidence": "MEASURED. Metadata cost is counted in the complete EBPW throughout, so the comparison is like-for-like: g16 buys top-1 0.820 but carries 2 bits/weight of metadata (33% of budget)."
+  },
+  {
+   "id": "R-organ-sensitivity-is-not-mass",
+   "conditions": [
+    "heterogeneous per-organ precision is being allocated"
+   ],
+   "then": "rank organs by MEASURED sensitivity, never by mass. Also check for a FLOOR: a tolerant organ crushed too far can cap achievable quality no matter how many bits the others get.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B: MLP is the DOMINANT organ (44.3% of linear mass) and at 2 bits costs 2218x perplexity; the embedding organ (26.1%) at 2 bits costs 2.33x -- ~1000x apart at the same budget, with the dominant organ being the sensitive one. AND the floor: embeddings at 2 bits cap quality at ~1.95x perplexity / top-1 0.593 even with attention and MLP left at 8 bits."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "an organ ranking derived from mass matches one derived from measured sensitivity on any body -- so far they were inverted.",
+   "physical_rationale": "mass says how many bytes an organ holds, not how much the output depends on each of them. Those are independent quantities and this body shows them anti-correlated.",
+   "_evidence": "MEASURED across 28 configurations with a verified-adequate verifier."
   }
  ]
 }
