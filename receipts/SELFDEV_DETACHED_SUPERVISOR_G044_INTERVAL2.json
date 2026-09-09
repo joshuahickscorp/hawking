@@ -22,5 +22,16 @@
   "SUCCESS": "an accepted, landed HCLI-authored change with no Claude intervention in the interval",
   "INFORMATIVE_FAILURE": "a NEW defect named that nobody had found",
   "NEGATIVE": "orientation still fails with the manifesto readable and no new defect surfaces -- which would point at the body, and is the answer that matters most"
+ },
+ "cycle_78": {
+  "significance": "THE FIRST GENUINE ORIENTATION IN 78 CYCLES, on the first cycle after the manifesto became readable",
+  "transition": "ORIENT -> DISCRIMINATOR_REQUIRED, at worktree HEAD 0f0fc7039 (the manifesto commit)",
+  "it_read_the_manifesto": "fs.read H-MANIFESTO.md with max_bytes 16000, ok=True. The first successful read of its own objective's named authority in the campaign. The four web.search calls of cycle 77 do not recur.",
+  "the_hypothesis": "hcli/tool_registry.py's _shell_readonly still admits `sed` into its read-only allowlist -- or, if that set was pruned, its two guards (the forbidden-option set and the path-containment check) both miss a `sed` script whose `w` flag writes a file from INSIDE the script argument, so a registry holding only READ_ONLY can write through shell.readonly.",
+  "why_this_is_a_good_hypothesis": "it is falsifiable, it names a file and a function, it names its own discriminator (hcli/tests/test_readonly_shell_cannot_write.py), it is disjunctive in a way that survives either state of the allowlist, and it is a real privilege-escalation SHAPE rather than a cosmetic defect -- a read-only guard that can be talked into writing is exactly the class the campaign's own governance lesson is about (protect every path that can WEAKEN a check, not just the one that performs it).",
+  "it_reported_what_it_had_not_checked": "'I did not read the actual contents of either frozenset, nor the two guard functions, nor run the test to see whether it is red or green.' It confirmed line numbers it had actually seen (tool_registry.py:76 and :978, delegate.py:107 and :1171) and refused to assert the parts it had not.",
+  "trace": "9 calls: 2 whole-file reads, the manifesto, 2 targeted line-range reads, 3 searches (SAFE_SHELL, READ_ONLY_VERBS, sed), and one malformed call whose tool name parsed as 'path'.",
+  "supervisor_action": "NONE. The interval rule holds. The body is in DISCRIMINATOR_REQUIRED with a named test it can now actually run, because tests.run's 30-second cap was lifted this morning.",
+  "what_this_does_NOT_yet_establish": "orientation is not a repair. The hypothesis may be refuted when the test runs -- which would be a real result and is explicitly the right outcome if the guard is sound. G004 needs the full arc through a landing, and nothing has landed."
  }
 }
