@@ -1,0 +1,291 @@
+{
+ "schema": "hawking.odyssey.mechanism.v1",
+ "_label": "G029 / S010 \u00a74. WHY the MLP resists compression -- the mechanism, not a bit count. Two hypotheses tested and REFUTED, and the surviving explanation turned into a cheap pre-flight diagnostic.",
+ "_evidence": "MEASURED on CPU: weight statistics, singular-value spectra against a matched RANDOM GAUSSIAN control, and falsifiable representation experiments at matched complete EBPW.",
+ "REJECTED_HYPOTHESIS_1_outlier_channels": {
+  "claim": "MLP damage is dominated by a small set of outlier output channels; preserving them at fp16 while crushing the bulk should beat uniform allocation.",
+  "test": "hot/cold decomposition, hottest 1/2/5% of output channels kept fp16 (indices and values fully counted), bulk at 2-3 bits, at matched or lower complete EBPW than the uniform control.",
+  "result": "REFUTED. Uniform g64 4b gives EBPW 4.500 / top-1 0.7476. Hot 5% + cold 3b gives a LOWER EBPW of 4.334 and a much WORSE top-1 of 0.5734. At 2-bit bulk every variant collapses (2058-11278x perplexity) regardless of how many channels are protected.",
+  "why": "there are no outliers to preserve. MLP kurtosis is 3.3-4.0 against a Gaussian's exactly 3.0."
+ },
+ "REJECTED_HYPOTHESIS_2_low_rank": {
+  "claim": "a low-rank component carries the MLP's important information; factor it out and quantise the residual harder.",
+  "test": "rank-64/128 SVD factors kept fp16 and fully counted, residual at 3 bits.",
+  "result": "REFUTED. MLP low-rank r64 gives EBPW 4.648 / top-1 0.5695 against the control's 4.500 / 0.7476 -- worse on BOTH axes. Also tested on the embedding organ, where it is merely NEUTRAL (4.502 / 0.7339 against 4.500 / 0.7476), not a win.",
+  "why": "the organ is not low-rank. See the random-matrix control below."
+ },
+ "THE_MECHANISM": {
+  "measurement": "top-64 singular-value energy of each real weight matrix, divided by the same statistic for an i.i.d. Gaussian matrix of IDENTICAL SHAPE and standard deviation. A ratio near 1.0 means the organ is spectrally indistinguishable from random.",
+  "data": [
+   {
+    "tensor": "model.layers.0.mlp.gate_proj",
+    "shape": [
+     3072,
+     1024
+    ],
+    "sv64_real": 0.2349,
+    "sv64_random": 0.1388,
+    "ratio": 1.692,
+    "kurtosis": 4.0
+   },
+   {
+    "tensor": "model.layers.6.mlp.down_proj",
+    "shape": [
+     1024,
+     3072
+    ],
+    "sv64_real": 0.1893,
+    "sv64_random": 0.1383,
+    "ratio": 1.368,
+    "kurtosis": 3.85
+   },
+   {
+    "tensor": "model.layers.13.mlp.up_proj",
+    "shape": [
+     3072,
+     1024
+    ],
+    "sv64_real": 0.1825,
+    "sv64_random": 0.1385,
+    "ratio": 1.317,
+    "kurtosis": 3.7
+   },
+   {
+    "tensor": "model.layers.0.self_attn.q_proj",
+    "shape": [
+     2048,
+     1024
+    ],
+    "sv64_real": 0.2775,
+    "sv64_random": 0.1589,
+    "ratio": 1.746,
+    "kurtosis": 6.76
+   },
+   {
+    "tensor": "model.layers.13.self_attn.v_proj",
+    "shape": [
+     1024,
+     1024
+    ],
+    "sv64_real": 0.3057,
+    "sv64_random": 0.2104,
+    "ratio": 1.453,
+    "kurtosis": 3.43
+   },
+   {
+    "tensor": "lm_head",
+    "shape": [
+     151936,
+     1024
+    ],
+    "sv64_real": 0.226,
+    "sv64_random": 0.0717,
+    "ratio": 3.153,
+    "kurtosis": 3.2
+   }
+  ],
+  "reading": "MLP tensors sit at 1.32-1.69x random with kurtosis 3.70-4.00. They are very nearly STRUCTURELESS: almost no low-rank component, almost no heavy tail. Every weight carries close to independent information, so there is nothing for a structural representation class to exploit and bit-width is the only lever that moves. The embedding organ sits at 3.15x random -- genuinely more structured -- which is WHY it tolerated 2-bit quantisation ~1000x better than the MLP did. Attention q_proj has the heaviest tail (kurtosis 6.76), consistent with the known attention-outlier picture, and is a better hot/cold target than the MLP ever was.",
+  "explains_every_prior_failure": "the low-rank residual failed because the organ is not low-rank; the hot/cold scheme failed because it is not outlier-concentrated; only bit-width helped because the information is spread uniformly. Three independent failures, one cause."
+ },
+ "TRANSFERABLE_LAW_strong_form": "Under grouped-affine, low-rank-residual and hot/cold representation classes, Qwen3-0.6B MLP damage is NOT dominated by outlier channels and NOT concentrated in a low-rank subspace: the organ's top-64 singular-value energy is within 1.32-1.69x of an i.i.d. Gaussian of the same shape and its kurtosis is 3.70-4.00 against 3.00. An organ that is spectrally indistinguishable from random has nothing for a structural class to exploit, and responds only to bit-width. DIAGNOSE THIS BEFORE CHOOSING A CLASS: compute top-k SV energy against a matched random control. Ratio <~2 predicts structural classes will fail; the higher the ratio, the more a structural class can be expected to pay. On this body the ratio correctly RANKED organ tolerance (embedding 3.15 neutral, MLP 1.3-1.7 catastrophic) even though 3.15x was still not enough to make rank-64 factors profitable.",
+ "structure_by_organ": {
+  "attention": [
+   {
+    "tensor": "model.layers.0.self_attn.q_proj",
+    "outlier_ratio_median": 5.463414669036865,
+    "outlier_ratio_p99": 11.99493408203125,
+    "kurtosis": 6.757565498352051,
+    "sv_energy_top64": 0.27745407819747925,
+    "shape": [
+     2048,
+     1024
+    ]
+   },
+   {
+    "tensor": "model.layers.0.self_attn.k_proj",
+    "outlier_ratio_median": 5.312977313995361,
+    "outlier_ratio_p99": 7.777344703674316,
+    "kurtosis": 5.829432487487793,
+    "sv_energy_top64": 0.35774457454681396,
+    "shape": [
+     1024,
+     1024
+    ]
+   },
+   {
+    "tensor": "model.layers.0.self_attn.v_proj",
+    "outlier_ratio_median": 5.486486434936523,
+    "outlier_ratio_p99": 8.92452621459961,
+    "kurtosis": 3.3370683193206787,
+    "sv_energy_top64": 0.1960955411195755,
+    "shape": [
+     1024,
+     1024
+    ]
+   }
+  ],
+  "mlp": [
+   {
+    "tensor": "model.layers.0.mlp.gate_proj",
+    "outlier_ratio_median": 5.346153736114502,
+    "outlier_ratio_p99": 9.823904991149902,
+    "kurtosis": 4.000748157501221,
+    "sv_energy_top64": 0.23494194447994232,
+    "shape": [
+     3072,
+     1024
+    ]
+   },
+   {
+    "tensor": "model.layers.0.mlp.up_proj",
+    "outlier_ratio_median": 5.438848972320557,
+    "outlier_ratio_p99": 9.104576110839844,
+    "kurtosis": 3.3271594047546387,
+    "sv_energy_top64": 0.14473272860050201,
+    "shape": [
+     3072,
+     1024
+    ]
+   },
+   {
+    "tensor": "model.layers.0.mlp.down_proj",
+    "outlier_ratio_median": 5.916666507720947,
+    "outlier_ratio_p99": 16.47979164123535,
+    "kurtosis": 3.5609638690948486,
+    "sv_energy_top64": 0.16357332468032837,
+    "shape": [
+     1024,
+     3072
+    ]
+   }
+  ],
+  "embedding": [
+   {
+    "tensor": "lm_head",
+    "outlier_ratio_median": 5.135483741760254,
+    "outlier_ratio_p99": 16.17021369934082,
+    "kurtosis": 3.2038140296936035,
+    "sv_energy_top64": 0.22595033049583435,
+    "shape": [
+     151936,
+     1024
+    ]
+   }
+  ]
+ },
+ "experiments": {
+  "hot_cold_and_uniform": [
+   {
+    "label": "uniform g64 3b",
+    "complete_ebpw": 3.5,
+    "perplexity": 454.4809,
+    "top1_agreement_vs_fp32": 0.3503,
+    "kl_from_fp32": 1105.587402,
+    "ppl_ratio": 7.6227
+   },
+   {
+    "label": "uniform g64 4b",
+    "complete_ebpw": 4.5,
+    "perplexity": 71.051,
+    "top1_agreement_vs_fp32": 0.7476,
+    "kl_from_fp32": 133.911163,
+    "ppl_ratio": 1.1917
+   },
+   {
+    "label": "mlp hot1% cold2b, rest 4b",
+    "complete_ebpw": 3.6731,
+    "perplexity": 672438.466,
+    "top1_agreement_vs_fp32": 0.0176,
+    "kl_from_fp32": 5198.937012,
+    "ppl_ratio": 11278.3993
+   },
+   {
+    "label": "mlp hot2% cold2b, rest 4b",
+    "complete_ebpw": 3.7316,
+    "perplexity": 221739.4806,
+    "top1_agreement_vs_fp32": 0.0294,
+    "kl_from_fp32": 4563.45459,
+    "ppl_ratio": 3719.1007
+   },
+   {
+    "label": "mlp hot5% cold2b, rest 4b",
+    "complete_ebpw": 3.9129,
+    "perplexity": 122696.9815,
+    "top1_agreement_vs_fp32": 0.0391,
+    "kl_from_fp32": 4301.038086,
+    "ppl_ratio": 2057.9215
+   },
+   {
+    "label": "mlp hot1% cold3b, rest 4b",
+    "complete_ebpw": 4.112,
+    "perplexity": 135.5475,
+    "top1_agreement_vs_fp32": 0.546,
+    "kl_from_fp32": 468.09079,
+    "ppl_ratio": 2.2735
+   },
+   {
+    "label": "mlp hot2% cold3b, rest 4b",
+    "complete_ebpw": 4.1662,
+    "perplexity": 128.1353,
+    "top1_agreement_vs_fp32": 0.5675,
+    "kl_from_fp32": 436.18866,
+    "ppl_ratio": 2.1491
+   },
+   {
+    "label": "mlp hot5% cold3b, rest 4b",
+    "complete_ebpw": 4.3341,
+    "perplexity": 120.6067,
+    "top1_agreement_vs_fp32": 0.5734,
+    "kl_from_fp32": 413.531738,
+    "ppl_ratio": 2.0229
+   }
+  ],
+  "low_rank_prediction": [
+   {
+    "label": "control: all g64 4b",
+    "complete_ebpw": 4.5,
+    "perplexity": 71.051,
+    "top1_agreement_vs_fp32": 0.7476,
+    "kl_from_fp32": 133.911163
+   },
+   {
+    "label": "embedding lowrank r64+3b, rest 4b",
+    "complete_ebpw": 4.5018,
+    "perplexity": 77.8806,
+    "top1_agreement_vs_fp32": 0.7339,
+    "kl_from_fp32": 172.367569
+   },
+   {
+    "label": "embedding lowrank r128+3b, rest 4b",
+    "complete_ebpw": 4.7646,
+    "perplexity": 78.9885,
+    "top1_agreement_vs_fp32": 0.7202,
+    "kl_from_fp32": 169.163528
+   },
+   {
+    "label": "embedding lowrank r256+3b, rest 4b",
+    "complete_ebpw": 5.2902,
+    "perplexity": 74.0763,
+    "top1_agreement_vs_fp32": 0.7299,
+    "kl_from_fp32": 162.441452
+   },
+   {
+    "label": "mlp lowrank r64+3b, rest 4b",
+    "complete_ebpw": 4.6478,
+    "perplexity": 106.2623,
+    "top1_agreement_vs_fp32": 0.5695,
+    "kl_from_fp32": 403.758575
+   },
+   {
+    "label": "mlp lowrank r128+3b, rest 4b",
+    "complete_ebpw": 5.2389,
+    "perplexity": 94.0991,
+    "top1_agreement_vs_fp32": 0.591,
+    "kl_from_fp32": 337.260895
+   }
+  ]
+ },
+ "cost_of_this_diagnostic": "one SVD per sampled tensor plus one on a random matrix of the same shape -- seconds on CPU, and it would have predicted the failure of BOTH rejected classes before either was implemented.",
+ "commit": "74f90f202",
+ "emitted_at": "2026-09-09T16:09:11Z"
+}

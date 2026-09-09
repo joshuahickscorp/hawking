@@ -1,0 +1,60 @@
+{
+ "schema": "hawking.odyssey.nx_clean_proof.v1",
+ "_label": "G026 / S010 \u00a71. The NX re-proven in a CLEAN PROCESS, and the finding that reframes the whole result: the file is 3.10x smaller and the RUNNING WORKING SET IS NOT SMALLER AT ALL.",
+ "_evidence": "MEASURED in a fresh interpreter with the parent checkpoint RENAMED AWAY for the entire run and the reference logits loaded from a file captured by a SEPARATE earlier process.",
+ "why_this_was_needed": "the first NX run measured the artifact inside the process that BUILT it, with the parent model still resident in memory to supply reference logits. Nothing was reaching for the parent, but the parent was right there. S010 \u00a71 asks for the artifact to be proven, not assumed.",
+ "clean_process_result": {
+  "clean_process": true,
+  "parent_absent_during_entire_run": true,
+  "artifact_bytes": 484411191,
+  "complete_ebpw": 6.501,
+  "logical_params": 596049920
+ },
+ "capability_identical_to_the_in_process_run": {
+  "clean": {
+   "perplexity": 59.8706,
+   "top1_agreement_vs_fp32": 0.9393
+  },
+  "earlier_in_process": {
+   "perplexity": 59.8706,
+   "top1_agreement_vs_fp32": 0.9393
+  },
+  "verdict": "IDENTICAL to four decimal places, so the earlier measurement was not contaminated by the parent's presence. The claim survives the stronger test."
+ },
+ "THE_FINDING_persistent_vs_temporary": {
+  "persistent_artifact_bytes": 484368384,
+  "resident_dense_fp32_bytes_after_reconstruction": 2384199680,
+  "reconstruction_blowup_x": 4.92,
+  "note": "THE ARTIFACT IS 3.10x SMALLER THAN THE PARENT ON DISK AND THE RUNNING WORKING SET IS NOT SMALLER AT ALL -- weights are reconstructed to dense fp32 before any compute. This is exactly the gap S010 6 names: a representation proof, not the final physical form.",
+  "parent_bf16_on_disk_bytes": 1503300328,
+  "artifact_vs_parent_on_disk": "3.10x SMALLER",
+  "running_working_set_vs_parent_bf16": "~1.59x LARGER (2384 MB dense fp32 resident against a 1433 MiB bf16 parent)",
+  "verdict": "THE COMPRESSION IS CURRENTLY A FILE-SIZE WIN ONLY. Every weight is reconstructed to dense fp32 before any compute, so the artifact's 6.501 EBPW describes the BYTES AT REST and says nothing about the bytes the machine actually moves. S010 \u00a76 predicted exactly this and it is now measured: a representation proof, not the final physical form."
+ },
+ "memory_mib": {
+  "at_start": 467.3,
+  "after_init": 4303.2,
+  "after_nx_load": 7167.9,
+  "peak": 7243.4
+ },
+ "physical": {
+  "init_s": 9.78,
+  "nx_load_s": 7.89,
+  "prefill_512tok_s": 0.496,
+  "decode_32tok_s": 2.347,
+  "decode_tps": 13.63,
+  "kv_bytes_after_544_tokens": 0,
+  "kv_tensors_counted": 0,
+  "kv_bytes_per_token": 0,
+  "dense_weight_bytes_read_per_decode_step": 2384199680,
+  "note": "bytes moved per token is dominated by streaming the DENSE fp32 weights, not by the artifact size -- see PERSISTENT_vs_TEMPORARY"
+ },
+ "MEASUREMENT_GAP_declared": {
+  "kv_bytes": "NOT MEASURED -- reported as 0 by the walker, which found 0 tensors. This transformers version's cache object did not expose its tensors to the traversal used. Recording it as unmeasured rather than as a zero, because 0 would be a false fact. KV growth remains an open measurement for this body.",
+  "gpu": "NOT MEASURED -- this entire chain is CPU, deliberately, so the HCLI resident keeps the GPU (S010 \u00a77, \u00a712). GPU wall belongs to a bounded window later.",
+  "dispatch_count_and_command_buffer": "NOT APPLICABLE on the CPU path; belongs to the GPU window."
+ },
+ "what_this_licenses": "the artifact is now a proven baseline, so deeper assault may proceed (G027-G031). It also REORDERS the priorities: reducing EBPW further improves only the at-rest number unless the reconstruction blow-up is addressed, which makes direct-from-compressed execution (G031) a first-class objective rather than a follow-up.",
+ "commit": "74f90f202",
+ "emitted_at": "2026-09-09T16:04:56Z"
+}

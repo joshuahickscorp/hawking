@@ -280,6 +280,23 @@
    "reopen_if": "an organ ranking derived from mass matches one derived from measured sensitivity on any body -- so far they were inverted.",
    "physical_rationale": "mass says how many bytes an organ holds, not how much the output depends on each of them. Those are independent quantities and this body shows them anti-correlated.",
    "_evidence": "MEASURED across 28 configurations with a verified-adequate verifier."
+  },
+  {
+   "id": "R-spectral-randomness-predicts-structural-failure",
+   "conditions": [
+    "a STRUCTURAL representation class is being considered (low-rank, shared basis, codebook, hot/cold, sparse residual)",
+    "the target organ's top-k singular-value energy is within ~2x of a matched random Gaussian"
+   ],
+   "then": "do NOT implement the structural class on that organ. It has no exploitable structure and will cost metadata for nothing. Spend the budget on bit-width, or on an organ with a higher ratio.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B. MLP tensors: top-64 SV energy 1.32-1.69x a matched random Gaussian, kurtosis 3.70-4.00 (Gaussian is exactly 3.0). Embedding/lm_head: 3.15x. TWO structural classes were then tested and BOTH failed on the MLP exactly as the ratio predicts -- hot/cold with 1/2/5% outlier channels preserved was WORSE than uniform at LOWER EBPW (top-1 0.5734 vs 0.7476 at 4.334 vs 4.500), and low-rank r64+3b was worse on both axes (4.648 / 0.5695). The same low-rank class on the higher-ratio embedding organ was merely NEUTRAL rather than harmful (4.502 / 0.7339), so the ratio ranks tolerance correctly. See receipts/odyssey-i/O00X_MLP_SENSITIVITY_MECHANISM.json."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a structural class pays on an organ whose spectral ratio is below ~2, or a ratio above ~3 produces a genuine WIN rather than the neutral result seen here -- the threshold is calibrated on ONE body and the embedding result shows 3.15x is still not sufficient.",
+   "physical_rationale": "structural compression classes all assume the information is concentrated -- in a few directions, a few channels, or a reusable dictionary. An organ whose spectrum matches random has its information spread uniformly across every weight, so any structural factorisation pays metadata to capture something that is not there.",
+   "_evidence": "MEASURED with a matched random-matrix control, which is what makes the ratio meaningful rather than an absolute SV number that varies with shape."
   }
  ]
 }
