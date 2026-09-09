@@ -132,16 +132,38 @@ genuinely EXPLORES: different files, different tools each cycle (`fs.read` at
 varying line ranges, `web.search`, `observation.expand`, `context.recall`) --
 not mechanical churn.
 
-**As of this handoff: zero `repo.edit` calls across 9+ clean, fully-fixed
-cycles.** This is no longer a technical block -- it is a genuine, well-evidenced
-finding about the body's own behavior at this scope. **Do NOT treat this as
-license for a fifth intervention.** Per the explicit joystick rule, Claude
-must not choose HCLI's defect or method; per the No-Loop Law, "more clean
-cycles with no repo.edit" is now signal about the BODY, not the substrate, and
-forcing a repair would defeat the entire point of this campaign. Let it keep
-running. If a genuinely NEW substrate-level defect appears (a fifth erosion
-variant, a new error class), diagnose and fix it the same way -- but do not
-manufacture more scaffolding around WHAT it should try.
+**As of this handoff: zero `repo.edit` calls across 34 clean, fully-fixed
+cycles (12-14, 17-48, spanning ~5 hours).** The substrate investigation is now
+EXHAUSTIVE and COMPLETE -- beyond the four fixed defects, this session also
+independently verified: `repo.edit`'s full capability chain is sound
+(`test_apply_typed_mutation.py` + `test_builder_authority.py`, 25/25 pass,
+exercising the exact `engine.apply_typed_mutation` path `run_builder_tool`
+calls -- a model-emitted call would execute correctly if one were ever
+emitted); `working_set()`'s injected prompt content is genuinely small (471
+chars, not a bloat source); three REASONING/session-bookkeeping-level
+candidate deficiencies were found and deliberately left unfixed (see
+`.hcli/selfdev/supervisor_metrics.json`'s `candidate_deficiencies_for_hcli_self_repair`
++ `state.json`'s `_caveat`): `context.recall` cannot reach `session.plans`
+(only the separate workspace `knowledge.json`) so a recall-by-plan-id always
+comes back empty even when the plan is real; the harness's own recurring
+prompt deterministically satisfies `chat_state.asked_for_a_plan()` every
+cycle (confirmed by direct call), spawning 35 plans across 38 turns, none
+ever reaching `status:executing`; cross-cycle repetition (the same
+`[PASTE id]` referenced 3 cycles running) that the within-request loop-guard
+structurally cannot see.
+
+**There is no remaining hidden technical block.** What's left is purely
+whether the body chooses to act -- and per the explicit joystick rule, Claude
+must not choose for it. **Do NOT treat renewed non-convergence as license for
+a fifth intervention** unless a genuinely NEW class of defect appears (a
+fifth opener-erosion variant, a new error class, a fresh 502/timeout that
+capability-testing doesn't already explain). The three reasoning-level
+findings above are real and checkable, but fixing HOW the model perceives its
+own planning state edges into shaping METHOD -- that boundary is deliberately
+left to HCLI, since `.hcli/selfdev/harness.py` and the deficiencies named
+above are all real, `fs.read`-able, `repo.edit`-able repo content it could
+discover and fix itself, exactly matching the objective's own loop. Let the
+daemon keep running; time is now the only remaining lever.
 
 **Watch for a fifth opener-erosion recurrence.** The pattern across fixes 1
 and 4 (progressively MORE of the same template eroding under long
