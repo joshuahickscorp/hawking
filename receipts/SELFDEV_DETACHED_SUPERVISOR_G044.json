@@ -1,6 +1,6 @@
 {
  "obligation": "G044 \u2014 DETACHED-SUPERVISOR TEST",
- "status": "INTERVAL OPEN",
+ "status": "CLOSED -- INFORMATIVE_FAILURE, which is the close condition it was designed to reach",
  "opened_at": "2026-09-09T13:26:32",
  "opened_at_cycle": 76,
  "rule_for_the_interval": "Claude does NOT steer ordinary HCLI engineering: no substrate repair, no prompt edits, no state edits, no phase corrections, no choosing or hinting at a defect. Claude continues Odyssey science on CPU, which is a different front and does not touch the body. Reading the campaign log and evidence is observation, not intervention.",
@@ -51,5 +51,20 @@
   "the Odyssey job's 38.7 GiB starved the resident -- withdrawn, the memory reading was a 4x page-size undercount",
   "the new substrate made cycles exceed 1200s -- withdrawn, timeouts are chronic across cycles 9, 34 and 77"
  ],
- "standing": "Two intervention-shaped impulses examined and neither acted on. The interval remains OPEN and clean: no Claude change to HCLI engineering since it was declared."
+ "standing": "Two intervention-shaped impulses examined and neither acted on. The interval remains OPEN and clean: no Claude change to HCLI engineering since it was declared.",
+ "closed_at": "2026-09-09T14:10:16",
+ "closed_at_cycle": 77,
+ "outcome": {
+  "which_close_condition": "INFORMATIVE_FAILURE: 'the body is refused for a NEW reason, naming a defect nobody had found'. It did, and the defect had been live for the whole of experiment 2.",
+  "the_finding": "H-MANIFESTO.md is 45,226 bytes, has NEVER been committed, and is therefore absent from the worktree where HCLI works. The harness objective names it TWICE -- as the thing HCLI develops toward, and as the worked example of a path to fs.read. Cycle 77's trace: the body's first call is fs.read H-MANIFESTO.md -> FileNotFoundError, then two real file reads, then FOUR web.search calls for 'H-MANIFESTO', '\"H-MANIFESTO\"' and 'H-MANIFESTO file' -- searching the public internet for a private uncommitted document.",
+  "what_the_body_said_about_it": "'HYPOTHESIS: I cannot name one yet -- I am still orienting; the first reads returned only 4 KB of 308 KB'. It was telling the truth twice over: it cannot orient toward a manifesto it has never been able to open, and tool results are truncated at RESULT_CHARS=3000.",
+  "why_it_took_this_long_to_see": "the reply text alone never showed it. It was visible only in the TOOL TRACE, which cycles only began persisting this morning -- added after a supervisor false positive proved reply text insufficient to tell what a cycle had done. The instrument built to close one defect immediately exposed a larger one.",
+  "answer_to_the_interval_question": "The interval asked whether what remains is substrate or the body. The answer for this cycle is SUBSTRATE, and not marginally: the body was told to orient on an unreadable file and reported that accurately. That is now seven substrate defects in a row that the body identified correctly and was blamed for."
+ },
+ "fix_applied_to_close": {
+  "primary": "1a483c185 -- H-MANIFESTO.md committed at last",
+  "worktree": "0f0fc7039 -- taken from main as a SINGLE PATH so no Odyssey work enters the tree HCLI develops in",
+  "integrity_note": "the worktree HEAD moved 234f5f75f -> 0f0fc7039, and the commit carries no Landed-By trailer, so hcli_landed() correctly does not count it as an HCLI land. The false-positive HEAD-movement class stays closed.",
+  "NOT_fixed_yet": "RESULT_CHARS is still 3000, sized when the conversation budget was 3097 tokens. The budget is now 4505 and this was never raised with it. Left alone deliberately: one fix per interval, and the manifesto is the one the body named first."
+ }
 }
