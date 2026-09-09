@@ -1,0 +1,302 @@
+{
+ "schema": "hawking.odyssey.specimen_dispositions.v1",
+ "_label": "S011 Part III: an explicit disposition for EVERY ModelLake specimen. The registry is the authority for identity; no specimen is invisible.",
+ "_evidence": "Grounded in this campaign's measurements -- census, 45 discovery passes, the final sweep, the working-LM tier, the small-body and specialist cohorts. Specimens with weaker evidence say so and carry a provisional disposition rather than a fabricated one.",
+ "n_specimens": 56,
+ "tally": {
+  "RESEARCH SPECIMEN": 25,
+  "PARETO CANDIDATE": 4,
+  "PULSAR CANDIDATE": 4,
+  "HCLI RESIDENT CANDIDATE": 2,
+  "HARDWARE / REPRESENTATION RESEARCH SPECIMEN": 2,
+  "CEPHEID CANDIDATE": 1,
+  "DATA-ONLY": 5,
+  "DEEP ODYSSEY REQUIRED": 11,
+  "MAGNETAR CANDIDATE": 2
+ },
+ "provisional_only_classified": [],
+ "dispositions": {
+  "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Masked diffusion confirmed from bundled source. The steps-vs-quality tradeoff is the open efficiency question for this family.",
+   "dir_gib": 14.19
+  },
+  "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Second diffusion LM; generation loop NOT bundled (honest gap). Origin of the tied-embedding duplication finding.",
+   "dir_gib": 15.379
+  },
+  "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Vision-language, 95.5% in one backbone; supports the single-organ rule.",
+   "dir_gib": 8.375
+  },
+  "LiquidAI--LFM2-24B-A2B@a3bbacd91a67": {
+   "disposition": "PARETO CANDIDATE",
+   "basis": "Triple hybrid conv+attention+MoE, 9.76% active. Richest architecture surveyed; corrected the LFM2 family rule.",
+   "dir_gib": 44.418
+  },
+  "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76": {
+   "disposition": "PULSAR CANDIDATE",
+   "basis": "1.17B conv/attention hybrid at 128k context -- 15x the incumbent's ceiling.",
+   "dir_gib": 2.184
+  },
+  "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1": {
+   "disposition": "HCLI RESIDENT CANDIDATE",
+   "basis": "Cheapest long context measured anywhere: 60 KiB/token, 8 of 30 layers attention. A5's hybrid-ratio rule paying off directly.",
+   "dir_gib": 5.041
+  },
+  "Qwen--Qwen2.5-72B-Instruct@495f39366efe": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "72.71B dense, the largest dense body; a scale reference for the density/redundancy law.",
+   "dir_gib": 135.437
+  },
+  "Qwen--Qwen3-0.6B@c1899de289a0": {
+   "disposition": "HARDWARE / REPRESENTATION RESEARCH SPECIMEN",
+   "basis": "The full Odyssey chain ran here: 28+7 Gravity configs, NX built and proven parentless, Odyssey III 4/4, ladder PROVEN_UNABLE with a measured mechanism. Not a Resident (degrades worst on code).",
+   "dir_gib": 1.415
+  },
+  "Qwen--Qwen3-14B@40c069824f42": {
+   "disposition": "PARETO CANDIDATE",
+   "basis": "14.77B dense, 40k context; the dense mid-tier reference.",
+   "dir_gib": 27.523
+  },
+  "Qwen--Qwen3-30B-A3B@ad44e777bcd1": {
+   "disposition": "PARETO CANDIDATE",
+   "basis": "O005. 30.53B/3.35B active, 11%. Expert-organ rules apply directly; the reference MoE for this campaign.",
+   "dir_gib": null
+  },
+  "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0": {
+   "disposition": "PULSAR CANDIDATE",
+   "basis": "Cheapest credible challenger: 4.02B, 262k context, 7.5GiB. Resources-first candidate.",
+   "dir_gib": 7.507
+  },
+  "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b": {
+   "disposition": "HCLI RESIDENT CANDIDATE",
+   "basis": "Ranked #1 on anatomy for HCLI's job: MoE 3.35B active, code-specialised, 262k context. Gravity search design already written. Gated on G004/G005.",
+   "dir_gib": 56.885
+  },
+  "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d": {
+   "disposition": "CEPHEID CANDIDATE",
+   "basis": "An embedding model: scores text, cannot generate or call tools, so it CANNOT be a Resident. Retained only as a possible independent calibrator.",
+   "dir_gib": 1.125
+  },
+  "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba": {
+   "disposition": "PARETO CANDIDATE",
+   "basis": "O006. Same MoE topology plus vision; origin of the NX-gather accounting.",
+   "dir_gib": null
+  },
+  "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": {
+   "disposition": "DATA-ONLY",
+   "basis": "Config read only; not used in a receipt. Dominated by the 30B-A3B VL body already sealed as O006.",
+   "dir_gib": 16.341
+  },
+  "Qwen--Qwen3.8-Flash-Next@34567a4712bc": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "180B/59.1B active -- 32.8%, the NEGATIVE PATIENT that refuted the gather rule's top-k form and forced the expert-mass refinement.",
+   "dir_gib": 335.298
+  },
+  "RWKV--RWKV7-13.3B-20260805@64ffe5934178": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Matrix-valued state linear recurrence, a genuinely distinct family; exact-byte anatomy done.",
+   "dir_gib": 24.72
+  },
+  "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Text-to-video, 28.58B at F32 across high/low noise models; the largest F32 body measured.",
+   "dir_gib": 117.534
+  },
+  "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f": {
+   "disposition": "DATA-ONLY",
+   "basis": "Config-only read for the A5 transfer test; hybrid SSM family confirmation.",
+   "dir_gib": null
+  },
+  "allenai--Olmo-3-1025-7B@a81bae42db39": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "NO GQA at all (32/32 KV heads) -- 512 KiB/token, the most expensive body to serve in the tier.",
+   "dir_gib": 13.603
+  },
+  "answerdotai--ModernBERT-large@45bb4654a4d5": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Encoder-only; local/global attention heterogeneity that costs ZERO bytes -- the methodological correction.",
+   "dir_gib": 1.477
+  },
+  "arcinstitute--evo2_40b@d529aa57c307": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "Split .pt parts; UNMEASURABLE statically. Needs a metadata-only reader before any judgement.",
+   "dir_gib": 76.605
+  },
+  "arcinstitute--evo2_7b@bda0089f9258": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Genomic/DNA, non-language. Light pass only (.pt format); 1M-token training context is the architectural point.",
+   "dir_gib": 12.821
+  },
+  "bigcode--starcoder2-7b@bb9afde76d79": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Code-specialised but only 16k context; dominated by Qwen3-Coder on the axis that matters for HCLI.",
+   "dir_gib": 13.366
+  },
+  "boltz-community--boltz-2@6fdef46d763f": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "Protein structure; non-standard config, skipped by the census glob. Needs a dedicated reader.",
+   "dir_gib": null
+  },
+  "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "158.07B / 11.01B active at 1.01 bytes/param (F8_E8M0 scales + I8 payload). Already sub-bf16 at rest.",
+   "dir_gib": 148.667
+  },
+  "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Monocular depth; 90.8% backbone / 0.1% head -- the most extreme head/backbone split measured.",
+   "dir_gib": 1.249
+  },
+  "facebook--musicgen-large@15ccdc920998": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "Generative audio, three sub-models incl. a full codec. Ships legacy pickle; the live candidate to BREAK the single-organ rule.",
+   "dir_gib": 12.999
+  },
+  "facebook--sam2.1-hiera-large@665f8e2ad61c": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Vision/video segmentation; 94.8% of params in one backbone. Origin of R-specialist-body-single-organ.",
+   "dir_gib": 0.836
+  },
+  "facebook--vjepa2-vitg-fpc64-256@875c192b7b70": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Self-supervised video, 97.8% encoder. Predictive rather than generative.",
+   "dir_gib": 3.855
+  },
+  "google--flan-t5-large@0613663d0d48": {
+   "disposition": "DATA-ONLY",
+   "basis": "0.78B at 4.00 bytes/param F32 -- an older encoder-decoder, dominated on every axis by Whisper for enc-dec science.",
+   "dir_gib": 2.921
+  },
+  "google--timesfm-2.0-500m-pytorch@dc2443792ce5": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Numeric time-series forecasting -- the most domain-distant specimen in the lake.",
+   "dir_gib": 1.858
+  },
+  "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f": {
+   "disposition": "DATA-ONLY",
+   "basis": "Config-only read for the A5 SSM-crossover transfer test; rule TRANSFERRED UNCHANGED.",
+   "dir_gib": null
+  },
+  "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Granite hybrid MoE, 6.94B; hybrid-family data point.",
+   "dir_gib": 12.935
+  },
+  "kyutai--moshika-pytorch-bf16@a49141e28b3d": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "Streaming audio; non-standard layout with a small consolidated file alongside shards.",
+   "dir_gib": null
+  },
+  "lerobot--pi0_base@25c379b52ba2": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "VLA robot control via flow matching; dual Gemma towers. Out of domain for HCLI, high architecture diversity.",
+   "dir_gib": 13.044
+  },
+  "microsoft--Phi-4-mini-instruct@cfbefacb9925": {
+   "disposition": "PULSAR CANDIDATE",
+   "basis": "3.84B, 131k context, smallest fast executor in the tier.",
+   "dir_gib": 7.166
+  },
+  "microsoft--Phi-4-multimodal-instruct@93f923e1a772": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "5.57B multimodal; modest scale, standard structure.",
+   "dir_gib": 11.994
+  },
+  "microsoft--Phi-4-reasoning-plus@69baf8528e1b": {
+   "disposition": "MAGNETAR CANDIDATE",
+   "basis": "14.66B reasoning-oriented; untested.",
+   "dir_gib": 27.314
+  },
+  "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656": {
+   "disposition": "DATA-ONLY",
+   "basis": "bf16 expansion of the ternary body; its value is as the comparison arm that made the 4-per-byte packing provable.",
+   "dir_gib": 4.503
+  },
+  "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361": {
+   "disposition": "HARDWARE / REPRESENTATION RESEARCH SPECIMEN",
+   "basis": "Natively ternary; complete-system EBPW 3.91 against a '1.58-bit' name. The external benchmark for the byte-accounting law.",
+   "dir_gib": 1.106
+  },
+  "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618": {
+   "disposition": "MAGNETAR CANDIDATE",
+   "basis": "24.01B after correcting a duplicate-export double count that read 48B. 44.72 GiB of the specimen is redundant.",
+   "dir_gib": 89.479
+  },
+  "moonshotai--Kimi-K3@9f62e4e9fffb": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "1503.65B / 83.02B active at 1.04 bytes/param, 96.2% expert mass. The strongest gather candidate in the lake; needs GPU.",
+   "dir_gib": 1453.794
+  },
+  "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Linear-attention hybrid; A5 rule TRANSFERRED WITH RETUNING (=O007).",
+   "dir_gib": null
+  },
+  "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "O003 SEALED, 16.0 BPW / 51.6 TPS measured. Origin of the routing-skew and gather rule tests.",
+   "dir_gib": null
+  },
+  "nvidia--audio-flamingo-3@ee26c5842398": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Audio-language, 8.43B across llm/ + sound_tower/ subdirectories -- the specimen that exposed the recursive-glob trap.",
+   "dir_gib": 16.728
+  },
+  "openai--whisper-large-v3-turbo@41f01f3fe87f": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "First encoder-decoder; 32:4 layer asymmetry means the small organ dominates latency.",
+   "dir_gib": 1.511
+  },
+  "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "MIMO sibling to siso, ships legacy .bin so static measurement is blocked; needs a torch metadata reader.",
+   "dir_gib": 2.789
+  },
+  "state-spaces--mamba3-siso-1.5b@5cfc721542ec": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Pure SSM, zero attention. Conv-free state accounting; corrected an unverified d_conv assumption.",
+   "dir_gib": null
+  },
+  "tencent--HunyuanVideo@6204ad6aea1a": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "Video generation; config.json unparseable (non-JSON). Needs a dedicated reader.",
+   "dir_gib": null
+  },
+  "thinkingmachines--Inkling-Small@8cc5877b44d3": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "263.73B / 12.07B active, 4.6% -- the sparsest active fraction measured. Ships a consolidated copy alongside shards.",
+   "dir_gib": 495.412
+  },
+  "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "O001 SEALED. Origin of R-ssm-state-vs-kv-crossover; hybrid Mamba2+attention.",
+   "dir_gib": null
+  },
+  "tiiuae--Falcon3-1B-Instruct@28ba2251970a": {
+   "disposition": "PULSAR CANDIDATE",
+   "basis": "1.67B, untied embeddings, 8k context. Cheap; context-limited.",
+   "dir_gib": 3.119
+  },
+  "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b": {
+   "disposition": "RESEARCH SPECIMEN",
+   "basis": "Abliterated twin, identical anatomy. Value is as a matched pair for behavioural comparison, not for Gravity.",
+   "dir_gib": 335.298
+  },
+  "zai-org--GLM-4.5-Air@a24ceef6ce4f": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "110.47B / 14.96B active, 92.2% expert mass -- gather is nearly the whole battle.",
+   "dir_gib": 205.787
+  },
+  "zai-org--GLM-5.3-Flash@04c4e9e95c5d": {
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "basis": "321.34B / 18.33B active at 1.02 bytes/param, natively FP8. EBPW baseline must be set from its real dtype mix.",
+   "dir_gib": 305.815
+  }
+ },
+ "commit": "ce4c817df",
+ "emitted_at": "2026-09-09T16:29:43Z"
+}
