@@ -69,13 +69,16 @@ _TOOL_CALL_TAG = re.compile(r"<tool_call>(.*?)</tool_call>", re.S)
 #:   <function=shell><parameter=command>ls -a</parameter></function>
 #: Parsing it is not endorsement -- it is how the refusal gets to say WHICH tool
 #: the body reached for instead of "did not emit a parseable action".
-#: SCAR: under greedy-argmax the body reliably drops the opener's leading `<`,
-#: emitting `=function=fs.read>` (od -c confirmed, 3x in one reply) while every
-#: other tag -- <tool_call>, <parameter=...>, and all closers -- stays intact.
-#: A one-byte gap made EVERY tool call unparseable, so the self-development loop
-#: churned re-reading the same file with zero executed actions. Meet the body
-#: where it is: the `<` is optional.
-_XML_FUNCTION = re.compile(r"<?function=([\w.\-]+)\s*>(.*?)</function>", re.S)
+#: SCAR: under greedy-argmax the opener keeps eroding, not just the leading
+#: `<`. First observed: `=function=fs.read>` (od -c confirmed, 3x in one
+#: reply). Three cycles after THAT fix deployed, every call in every one of
+#: those cycles had dropped `function` entirely too -- bare `=fs.read>`, then
+#: `==fs.read>` (doubled `=`) -- while <tool_call>, <parameter=...>, and every
+#: closer stayed intact throughout. One cycle's ENTIRE reply was exactly one
+#: such call, so parse_calls returning [] wasted the whole turn: zero tool
+#: executions, same failure class as the original drop. Meet the body where
+#: it is: `<` and `function` are each optional, one or more `=` is not.
+_XML_FUNCTION = re.compile(r"<?(?:function)?=+([\w.\-]+)\s*>(.*?)</function>", re.S)
 _XML_PARAM = re.compile(r"<parameter=([\w.\-]+)\s*>(.*?)</parameter>", re.S)
 
 

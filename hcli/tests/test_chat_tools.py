@@ -482,6 +482,34 @@ class TestTheXmlDialect(unittest.TestCase):
             ("fs.read", {"path": "H-MANIFESTO.md",
                          "start_line": "1", "end_line": "200"}))
 
+    def test_the_opener_missing_the_whole_function_token_still_parses(self):
+        # SCAR: the drift did not stop at the leading `<` -- three cycles
+        # after that fix deployed (.hcli/selfdev/evidence/cycle-0012.txt,
+        # cycle-0013.txt), EVERY opener in EVERY call had dropped `function`
+        # entirely too, down to bare `=fs.read>`. <tool_call> and
+        # <parameter=...> stayed intact throughout; only the opener kept
+        # eroding. Cycle 13's entire reply was exactly this one call, so
+        # parse_calls returning [] wasted the whole turn -- zero tool
+        # executions, same as the original leading-bracket drop.
+        observed = ("<tool_call>\n=fs.read>\n<parameter=path>\n"
+                    "hcli/engine.py\n</parameter>\n<parameter=start_line>\n7560\n"
+                    "</parameter>\n<parameter=end_line>\n7620\n</parameter>\n"
+                    "</function>\n</tool_call>")
+        self.assertEqual(
+            parse_call(observed),
+            ("fs.read", {"path": "hcli/engine.py",
+                         "start_line": "7560", "end_line": "7620"}))
+
+    def test_a_doubled_equals_opener_still_parses(self):
+        # SCAR: cycle-0014.txt's third batched call drifted one step further
+        # still: `==fs.read>` (two `=`, no `function`).
+        observed = ("<tool_call>\n==fs.read>\n<parameter=path>\n"
+                    "hcli/tests/test_splicing_ops_are_not_falsely_rejected.py\n"
+                    "</parameter>\n</function>\n</tool_call>")
+        self.assertEqual(
+            parse_call(observed),
+            ("fs.read", {"path": "hcli/tests/test_splicing_ops_are_not_falsely_rejected.py"}))
+
     def test_an_unoffered_tool_from_it_is_still_refused(self):
         got = qualify(_scripted([self.OBSERVED]))
         self.assertFalse(got["qualified"])
