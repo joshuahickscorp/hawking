@@ -145,8 +145,94 @@ def _text_of(result: Any) -> str:
     return ""
 
 
-def chat_payload(result: Any, identity: str, *, request_id: str) -> Dict[str, Any]:
+def trim_repetition_collapse(text: Any, *, min_cycles: int = 6,
+                             max_period_tokens: int = 8):
+    """Detect a greedy repetition collapse and trim it to the coherent prefix.
+
+    Returns ``(clean_text, collapsed)``. Model-general: any body decoded
+    greedily without a tuned anti-repetition kernel can fall into a short-cycle
+    attractor and run to the token cap (measured on ascension-qwen38, 2026-09-08:
+    a coherent answer then " (S) (S) (S) ..." for ~2000 tokens). A collapse is a
+    short unit repeated many times consecutively at the TAIL; thresholds are
+    conservative so ordinary prose -- even with a repeated word or phrase --
+    never trips it.
+    """
+    if not isinstance(text, str) or len(text) < 80:
+        return text, False
+    toks = text.split(" ")
+    n = len(toks)
+    onset = None
+    for period in range(1, max_period_tokens + 1):
+        if n < period * min_cycles:
+            continue
+        cycle = toks[n - period:]
+        index = n - period
+        reps = 1
+        while index - period >= 0 and toks[index - period:index] == cycle:
+            reps += 1
+            index -= period
+        if reps >= min_cycles and (onset is None or index < onset):
+            onset = index
+    if onset is not None:
+        kept = " ".join(toks[:onset]).rstrip()
+        return (kept if kept else text), bool(kept and kept != text)
+    # char-level fallback: a short substring repeated for a long trailing run --
+    # a single-token loop with no spaces, e.g. "aaaa..." or "abababab...".
+    for period in range(1, 9):
+        if len(text) < period * 40:
+            continue
+        unit = text[-period:]
+        cut = len(text)
+        reps = 0
+        while cut - period >= 0 and text[cut - period:cut] == unit:
+            reps += 1
+            cut -= period
+        if reps >= 40:
+            kept = text[:cut].rstrip()
+            return (kept if kept else text), bool(kept and kept != text)
+    return text, False
+
+
+def _content_and_flags(result: Any):
+    """Content, finish_reason and degraded flags for one completion, with the
+    repetition-collapse guard applied. ONE place, so the stream and non-stream
+    paths cannot disagree about what the model actually produced."""
     text = _text_of(result)
+    finish = getattr(result, "finish_reason", None) or "stop"
+    degraded = list(getattr(result, "degraded", None) or [])
+    trimmed, collapsed = trim_repetition_collapse(text)
+    if collapsed:
+        text = trimmed
+        if "repetition_collapse" not in degraded:
+            degraded.append("repetition_collapse")
+    return text, finish, degraded
+
+
+def _coalesce_system(messages: Any) -> list:
+    """Exactly one system message, at position 0.
+
+    Two independent seams each PREPEND a system message: the durable session
+    working-set and repo-context injection. So a returning conversation arrives
+    as [repo_system, durable_system, user, ...] -- and the sealed artifact
+    template rejects any system message that is not at the beginning ("System
+    message must be at the beginning"), which surfaced as an error completion
+    (no usable response) on every second+ turn. Merge every system-role message
+    into one block at the front, order preserved. Model-general: a single
+    leading system block is what chat templates expect.
+    """
+    rows = [dict(m) for m in (messages or [])]
+    systems = [m for m in rows if m.get("role") == "system"]
+    if len(systems) <= 1:
+        return rows
+    blocks = [str(m.get("content") or "") for m in systems]
+    merged = {"role": "system",
+              "content": "\n\n".join(b for b in blocks if b.strip())}
+    rest = [m for m in rows if m.get("role") != "system"]
+    return [merged, *rest]
+
+
+def chat_payload(result: Any, identity: str, *, request_id: str) -> Dict[str, Any]:
+    text, finish, degraded = _content_and_flags(result)
     usage = {
         "prompt_tokens": getattr(result, "prompt_tokens", None) or 0,
         "completion_tokens": getattr(result, "completion_tokens", None) or 0,
@@ -160,14 +246,14 @@ def chat_payload(result: Any, identity: str, *, request_id: str) -> Dict[str, An
         "choices": [{
             "index": 0,
             "message": {"role": "assistant", "content": text},
-            "finish_reason": getattr(result, "finish_reason", None) or "stop",
+            "finish_reason": finish,
         }],
         "usage": usage,
         # Named so a reader of this response cannot mistake the SSE shape on the
         # other path for evidence of incremental decode.
         "hawking": {
             "streaming": "single-chunk",
-            "degraded": list(getattr(result, "degraded", None) or []),
+            "degraded": degraded,
         },
     }
 
@@ -187,10 +273,10 @@ def stream_frames(result: Any, identity: str, *, request_id: str):
         return b"data: " + json.dumps(chunk).encode() + b"\n\n"
 
     yield frame({"role": "assistant"}, None)
-    text = _text_of(result)
+    text, finish, _degraded = _content_and_flags(result)
     if text:
         yield frame({"content": text}, None)
-    yield frame({}, getattr(result, "finish_reason", None) or "stop")
+    yield frame({}, finish)
     yield b"data: [DONE]\n\n"
 
 
@@ -528,6 +614,11 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                         f"({compaction.before_tokens}->{compaction.after_tokens} tok)")
                     from .chat_state import checkpoint as _ckpt
                     _ckpt(session, resident=session.resident, note=checkpoint_note)
+            # ONE leading system message. Repo context and the session
+            # working-set each prepend one; the sealed template rejects a
+            # second system message that is not at position 0.
+            messages = _coalesce_system(messages)
+            body = {**body, "messages": messages}
             payload = {k: v for k, v in body.items() if k != "stream"}
             payload.setdefault("model", identity)
             request_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
@@ -774,6 +865,16 @@ def main(argv: Optional[list] = None) -> int:
     a.model = a.model or a.model_flag
 
     model = a.model or str(Path(__file__).resolve().parent / "hawking-native.sealed-3.14.json")
+    # `ps` should describe the daemon, not the interpreter. The name is
+    # deliberately model-neutral -- hawkingd may hold any body over its life --
+    # with the current body in brackets for identification. Best-effort: absent
+    # setproctitle, the process simply keeps its default name.
+    try:
+        import setproctitle as _spt
+        _label = Path(model).stem if ("/" in model or model.endswith(".json")) else model
+        _spt.setproctitle(f"hawkingd serve :{a.port} [{_label}]")
+    except Exception:
+        pass
     repo = None
     if not a.no_repo:
         from .repo_context import RepoContext

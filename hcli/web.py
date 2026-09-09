@@ -282,7 +282,8 @@ def stop_main(argv: Optional[list] = None) -> int:
     a = ap.parse_args(list(argv or []))
 
     stopped = []
-    for label, pattern in (("endpoint", f"hcli serve .*--port {a.port}"),
+    for label, pattern in (("endpoint", f"hawkingd serve :{a.port}"),
+                           ("endpoint", f"hcli serve .*--port {a.port}"),
                            ("endpoint", "hcli serve"),
                            ("web interface", f"open-webui serve --port {a.webui_port}")):
         found = _subprocess.run(["pgrep", "-f", pattern],
