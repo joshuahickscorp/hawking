@@ -1,0 +1,56 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-whisper-large-v3-turbo",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + one safetensors header; encoder/decoder layer counts and the conv-frontend/mel-bin match verified directly from tensor names and shapes, not trusted from config prose fields alone). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY. FIRST audio specimen this session (every prior specimen has been text, DNA, vision, or robot-action) and the FIRST classic encoder-decoder architecture (every LLM specimen surveyed has been decoder-only).",
+ "identity": {
+  "name": "openai/whisper-large-v3-turbo",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f",
+  "architectures": [
+   "WhisperForConditionalGeneration"
+  ],
+  "model_type": "whisper"
+ },
+ "domain": {
+  "modality": "speech-to-text (automatic speech recognition + translation) -- log-mel spectrogram audio in, text tokens out. First audio specimen and first encoder-decoder (seq2seq) architecture this session; every prior specimen has been decoder-only (or, for pi0_base/sam2.1, has no autoregressive text component at all)."
+ },
+ "architecture_ASYMMETRIC_ENCODER_DECODER_VERIFIED": {
+  "encoder_layers": 32,
+  "decoder_layers": 4,
+  "layer_ratio": 8.0,
+  "encoder_params_M": 636.97,
+  "decoder_params_M": 171.91,
+  "encoder_frac_pct": 78.75,
+  "finding": "an 8:1 layer-count asymmetry (32 encoder vs 4 decoder), inherited from the public 'turbo' variant's own design (a known distillation of large-v3's original 32-layer decoder down to 4) -- confirmed here directly from the checkpoint's own tensors, not assumed from the model name. This produces a STRUCTURAL INVERSION of every prior specimen's cost profile this session: the encoder (78.7% of params) runs exactly ONCE per input (non-autoregressive, full audio clip in one pass), while the decoder (only 21.3% of params) is the part that actually runs autoregressively, token-by-token, at inference time -- the SMALL organ dominates inference LATENCY, the LARGE organ dominates one-shot compute and storage. No MoE/sparse specimen this session has raised this particular kind of role asymmetry (all were about which fraction of one pass activates, not about which of two differently-sized passes repeats).",
+  "conv_frontend": "model.encoder.conv1/conv2 -- a small 2-layer conv stack projecting 128 mel-spectrogram channels into the encoder's hidden dimension, confirmed by shape match, not assumed."
+ },
+ "byte_accounting_EXACT": {
+  "n_tensors": 587,
+  "total_bytes": 1617756160,
+  "total_mib": 1542.81,
+  "total_params": 808878080,
+  "total_params_M": 808.878,
+  "fully_bucketed_zero_unaccounted_bytes": true,
+  "dtype": "F16 throughout",
+  "tied_embedding_UNVERIFIED": "no tensor exists outside the encoder/decoder prefixes, consistent with a tied decoder input/output embedding (Whisper's documented design) -- but UNLIKE iLLaDA-8B earlier this session, this was NOT independently confirmed with a full byte-exact tensor comparison, only inferred from the absence of a separate head tensor. Flagged as an honest gap, not claimed verified."
+ },
+ "obvious_representation_opportunities": [
+  "The encoder/decoder SIZE asymmetry suggests a LATENCY/size asymmetry too: since the decoder runs autoregressively while the encoder runs once, per-token DECODE cost is likely far more sensitive to decoder organ size than encoder organ size -- meaning the encoder (78.7% of params) may tolerate more aggressive compression for inference-latency purposes than the decoder (21.3%) would, the OPPOSITE prioritization from a pure byte-count view. Untested this pass -- a genuinely new lever, distinct from every MoE-organ or tied-embedding finding so far."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No capability battery (would need a WER/transcription-accuracy benchmark, entirely outside Hawking's existing text-generation Doctor batteries).",
+  "Tied-embedding claim is inferred, not byte-verified (see byte_accounting_EXACT above).",
+  "No verification of the actual cross-attention mechanism connecting decoder to encoder output."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN, OUT-OF-DOMAIN FOR HCLI. First audio + first encoder-decoder specimen this session -- genuinely completes a fifth distinct modality class (text-generation, diffusion, robot-action, vision-segmentation, now audio) and raises a new latency-vs-size prioritization question no other specimen surfaced.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "NOT APPLICABLE -- speech-to-text has no direct HCLI relevance (same reasoning as evo2/pi0_base/sam2.1).",
+  "pulsar_candidate": "NOT APPLICABLE",
+  "magnetar_candidate": "NOT APPLICABLE",
+  "cepheid_candidate": "NOT EVALUATED",
+  "verdict": "OUT OF SCOPE for the Resident/Pulsar/Magnetar/Cepheid framework, recorded for architecture-diversity completeness -- the FOURTH specimen this session in this out-of-domain-but-diversity-valuable category (evo2, pi0_base, sam2.1, now this one)."
+ },
+ "commit": "6ff2f7453",
+ "emitted_at": "2026-09-09T14:15:14Z"
+}
