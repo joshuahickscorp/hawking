@@ -1,0 +1,50 @@
+{
+ "schema": "odyssey.patient.nx.v1",
+ "oxx": "O006",
+ "mode": "gather",
+ "runtime": "config-arithmetic",
+ "label": "SPECIMEN",
+ "_evidence": "DERIVED from real config.json byte/param accounting (memory-safe, not allocated); anchored on the 30B-A3B nameplate. NOT an mlx runtime measurement.",
+ "_label": "DERIVED (config) -- selected-expert gather accounting.",
+ "note": "Replaces the failed gpu subprocess (odyssey_patient_runner --nx-gather 'exited-no-receipt'). The gather quantity is an architecture formula; loading the 30B in mlx was unnecessary and would have contended with the sealed-3.14 resident (one-27B law).",
+ "lever": "selected-expert gather (K of E experts/token) dominates per-token weight cost",
+ "model": "Qwen3-VL-30B-A3B-Instruct (text MoE)",
+ "config": {
+  "layers": 48,
+  "hidden": 2048,
+  "experts": 128,
+  "experts_per_tok": 8,
+  "moe_intermediate": 768,
+  "n_heads": 32,
+  "n_kv_heads": 4,
+  "head_dim": 128,
+  "vocab": 151936,
+  "all_layers_moe": true,
+  "shared_experts": 0
+ },
+ "accounting": {
+  "total_params": 30532110336,
+  "active_params_per_token": 3353020416,
+  "selected_expert_params_per_token": 1811939328,
+  "always_on_non_expert_params": 1541081088,
+  "expert_params_total": 28991029248,
+  "active_frac_of_total": 0.1098,
+  "expert_frac_of_total": 0.9495,
+  "gather_frac_of_active": 0.5404,
+  "gathered_experts_frac": 0.0625,
+  "per_token_bf16_bytes": {
+   "selected_experts": 3623878656,
+   "active_total": 6706040832
+  }
+ },
+ "measured_cross_ref": {
+  "source": "receipts/odyssey-i/O006_GRAVITY_q4-g64-experts.json",
+  "measured_active_params_per_token_bytes_derived": 3891664112,
+  "clean_weight_active_params": 3353020416,
+  "overhead_ratio_measured_over_clean": 1.161,
+  "interpretation": "the measured number is derived from measured active BYTES / active_bpw and so carries quant scales+zeros, KV, and activation buffers; it is ~1.16x the clean weight-param count. They are DIFFERENT quantities -- not forced equal (CP3)."
+ },
+ "finding": "Only 11.0% of the 30B is active/token. 95.0% of the model is expert weight, but only 8/128 experts are gathered per token, so the gather is 54.0% of per-token active compute. Resident memory must hold all 128 experts; per-token bandwidth touches only 8. This quantifies R-sparse-active-expert-gather.",
+ "commit": "c2b04cf5d",
+ "emitted_at": "2026-09-09T03:33:34Z"
+}

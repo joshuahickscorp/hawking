@@ -1,0 +1,115 @@
+{
+ "schema": "hawking.odyssey.a5_ssm_state_vs_kv.v1",
+ "oxx": "O001",
+ "work_unit": "A5",
+ "title": "SSM organ bucket + state-vs-KV",
+ "status": "RESOLVED",
+ "kind": "architecture-first",
+ "gpu_cost": 0,
+ "_evidence": "DERIVED from real config.json byte-accounting on read-only ModelLake; O001 row cross-checked against MEASURED O001_NX_state.json (discriminator assert).",
+ "_label": "SPECIMEN accounting (bf16 activation cache, elem=2), independent of weight quant.",
+ "discriminator": {
+  "claim": "the state/KV byte formula reproduces O001's measured numbers",
+  "expected": {
+   "state_bytes_constant": 70152192,
+   "kv_bytes_per_token": 45056,
+   "crossover_ctx_tokens": 1557.0
+  },
+  "got": {
+   "state_bytes_constant": 70152192,
+   "kv_bytes_per_token": 45056,
+   "crossover_ctx_tokens": 1557.0
+  },
+  "passed": true
+ },
+ "rule": {
+  "id": "R-ssm-state-vs-kv-crossover",
+  "claim": "Recurrent-state organs (Mamba/SSM, linear/delta attention) hold a CONSTANT cache independent of context length; full-attention organs hold a KV cache that grows linearly. Resident-memory crossover = state_bytes_constant / kv_bytes_per_token. Below it the SSM state floor dominates; above it KV dominates. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
+  "formula": {
+   "ssm_state_per_layer_bytes": "n_heads * d_head * d_state * elem  +  (d_inner + 2*n_groups*d_state)*(d_conv-1)*elem",
+   "kv_bytes_per_token_per_layer": "2 * n_kv_heads * head_dim * elem  (GQA);  RETUNED per attn flavor (MLA = (kv_lora_rank+qk_rope)*elem)",
+   "crossover_ctx": "sum_ssm(state_per_layer) / sum_attn(kv_per_token_per_layer)",
+   "elem": 2
+  },
+  "gravity_decision_changed": "SSM/recurrent state is an ACTIVATION cache, not a weight -- the compiler's weight-quant / expert rules do NOT reduce it. It is a FIXED resident floor paid once. For long-context serving the GROWING KV in the attention layers is the Gravity/eviction/quant target, and the hybrid ratio predicts the ctx at which KV overtakes the SSM floor. A pure-SSM body has no KV growth at all (crossover infinite) -> KV-cache levers are inapplicable; the only lever is SSM-state precision. This is the first NON-MoE architecture rule in the compiler.",
+  "family": "hybrid/SSM (recurrent-state organ present)"
+ },
+ "accounting": [
+  {
+   "model": "Falcon-H1-7B-Instruct",
+   "oxx": "O001",
+   "topology": "parallel-hybrid Mamba2+attn (every layer both)",
+   "n_ssm_layers": 44,
+   "n_attn_layers": 44,
+   "state_bytes_constant": 70152192,
+   "kv_bytes_per_token": 45056,
+   "crossover_ctx_tokens": 1557.0,
+   "crossover_infinite": false,
+   "transfer": "ORIGIN",
+   "notes": "Measured in O001_NX_state.json; formula reproduces it exactly."
+  },
+  {
+   "model": "granite-4.0-h-micro",
+   "oxx": "(family)",
+   "topology": "interleaved-hybrid Mamba2 (4 attn / 40)",
+   "n_ssm_layers": 36,
+   "n_attn_layers": 4,
+   "state_bytes_constant": 38688768,
+   "kv_bytes_per_token": 8192,
+   "crossover_ctx_tokens": 4722.8,
+   "crossover_infinite": false,
+   "transfer": "TRANSFERRED_UNCHANGED",
+   "notes": "Same Mamba2 state formula; only the layer partition differs. Sparse attn -> later crossover."
+  },
+  {
+   "model": "mamba3-siso-1.5b",
+   "oxx": "(family)",
+   "topology": "pure-SSM (0 attention)",
+   "n_ssm_layers": 24,
+   "n_attn_layers": 0,
+   "state_bytes_constant": 25792512,
+   "kv_bytes_per_token": 0,
+   "crossover_ctx_tokens": null,
+   "crossover_infinite": true,
+   "transfer": "LIMIT",
+   "notes": "KV term = 0 -> crossover infinite; SSM state is the whole fixed cache floor. Rule holds degenerately."
+  },
+  {
+   "model": "Kimi-Linear-48B-A3B",
+   "oxx": "O007",
+   "topology": "linear(KDA)+MLA hybrid",
+   "n_ssm_layers": 20,
+   "n_attn_layers": 7,
+   "state_bytes_constant": 21463040,
+   "kv_bytes_per_token": 8064,
+   "crossover_ctx_tokens": 2661.6,
+   "crossover_infinite": false,
+   "transfer": "TRANSFERRED_RETUNED",
+   "notes": "Dichotomy holds; BOTH size laws change: KDA delta-memory (heads x d^2) for state, MLA latent (kv_lora_rank+rope) for KV."
+  }
+ ],
+ "transfer_summary": {
+  "TRANSFERRED_UNCHANGED": [
+   "granite-4.0-h-micro (interleaved Mamba2)"
+  ],
+  "TRANSFERRED_RETUNED": [
+   "Kimi-Linear-48B-A3B / O007 (KDA + MLA)"
+  ],
+  "LIMIT": [
+   "mamba3-siso-1.5b (pure SSM, crossover infinite)"
+  ],
+  "does_not_apply": "dense and pure-MoE-transformer patients have no recurrent-state organ -> ARCHITECTURE_SPECIFIC"
+ },
+ "sources": {
+  "measured_ref": "receipts/odyssey-i/O001_NX_state.json",
+  "configs_read": [
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471"
+  ],
+  "lake": "/Volumes/corpdrive/hawking-modellake/specimens (read-only)"
+ },
+ "commit": "c2b04cf5d",
+ "emitted_at": "2026-09-09T03:22:40Z"
+}
