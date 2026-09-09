@@ -27,5 +27,23 @@
   "SUCCESS": "an accepted, landed HCLI-authored change (G004) with no Claude intervention in the interval",
   "INFORMATIVE_FAILURE": "the body reaches ACT_REQUIRED and is refused for a NEW reason, naming a defect nobody had found",
   "NEGATIVE": "the interval passes with no phase progress and no new failure mode -- which would point at the body rather than the substrate, and is the answer that matters most"
- }
+ },
+ "interval_events": [
+  {
+   "at": "13:33:17",
+   "event": "cycle 77 soft-terminal (TimeoutError) at the 1200s REQ_TIMEOUT",
+   "significance": "the FIRST cycle to run entirely on the new substrate. Not acted on: one timeout is a data point, two consecutive is a pattern, and raising REQ_TIMEOUT on one sample would be fixing a guess.",
+   "resident_state_when_checked": "1.2-1.7% CPU, idle -- so not still generating",
+   "cause": "UNDETERMINED. Recorded as unexplained rather than attributed."
+  },
+  {
+   "at": "~13:32",
+   "event": "an Odyssey job allocated 38.7 GiB alongside the resident",
+   "defect": "organ_gate_transfer allocated a d x d float64 Hessian PER ORGAN per layer. gate and up read the same activations and need the same H; keying by (layer, input_dim) makes sharing structural.",
+   "was_it_the_cause_of_the_timeout": "NO, and the first answer was wrong. The initial reading said free memory had fallen to 16.9 GiB, which looked like a resource collision with the resident. It was a measurement bug: the guard multiplied page counts by 4096 on a machine whose page size is 16384, a 4x undercount. Actual availability was ~68-72 GiB throughout. The collision hypothesis is withdrawn.",
+   "the_worse_bug_that_bug_would_have_caused": "the same undercount would have made the resource guard refuse EVERY future job while claiming to protect the resident -- a ceiling compared against a number that can never reach it, which is a latch. Same shape as the swap high-water defect that once held the resident at cycles=0 with 42.6 GB free. The page size is now read from vm_stat's own header rather than assumed.",
+   "kept_fix": "the per-organ Hessian was still a real bug and is fixed regardless"
+  }
+ ],
+ "interval_status": "OPEN. Neither event is a Claude intervention in HCLI engineering: one is an unexplained timeout left unacted-on, the other is a defect in an Odyssey tool. The next cycle decides whether the timeout is a pattern."
 }
