@@ -363,6 +363,15 @@ def run_with_tools(
     # The menu for THIS session. Authority decides the door set once, outside
     # the loop, so no turn can widen it.
     offered = builder_menu(engine is not None)
+    # LOOP GUARD. A greedy body can emit the SAME tool call every round -- a
+    # small model on an open-ended objective degenerates into re-calling
+    # observation.expand (or any tool) on the same arguments forever, churning
+    # the whole budget without changing evidence. Re-executing a call it already
+    # made teaches it nothing; it just burns rounds. Track each (name, args)
+    # signature: hand back the prior result and redirect, and after the same
+    # call is emitted a third time, stop the churn and ask for the answer.
+    seen: Dict[str, int] = {}
+    results: Dict[str, str] = {}
     for _ in range(max(0, max_calls)):
         text = complete(conversation)
         call = parse_call(text)
@@ -380,6 +389,20 @@ def run_with_tools(
             trace.append({"tool": name, "ok": False, "error": "not offered to chat"})
             continue
         arguments = coerce_arguments(registry, name, arguments)
+        sig = f"{name}:{json.dumps(arguments, sort_keys=True, default=str)}"
+        if sig in seen:
+            seen[sig] += 1
+            conversation.append({"role": "assistant", "content": text})
+            conversation.append({"role": "user", "content":
+                f"You already called {name} with those exact arguments; the result "
+                f"was:\n{results.get(sig, '(no output)')[:400]}\nDo NOT call it again. "
+                f"Use that result, call a DIFFERENT tool, or answer now."})
+            trace.append({"tool": name, "ok": False,
+                          "error": "repeated call (loop guard)"})
+            if seen[sig] >= 2:  # third emission of the same call -- stop the churn
+                break
+            continue
+        seen[sig] = 1
         if name in BUILDER_TOOLS:
             result = run_builder_tool(name, arguments, engine=engine)
         elif name in LOCAL_TOOLS:
@@ -405,6 +428,7 @@ def run_with_tools(
         trace.append(entry)
         conversation.append({"role": "assistant", "content": text})
         observation = _render(result, name, registry, cache)
+        results[sig] = observation
         conversation.append(tool_response(name, observation) if native
                             else {"role": "user", "content": observation})
     # Budget spent. Ask for the answer itself rather than returning the last

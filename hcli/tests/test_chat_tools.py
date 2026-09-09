@@ -152,12 +152,29 @@ class TestTheLoop(unittest.TestCase):
 
     def test_the_budget_is_bounded_and_ends_with_an_answer(self):
         registry = _Registry({"fs.list": _Result(value={})})
-        call = '{"tool": "fs.list", "arguments": {"path": "."}}'
+        # DISTINCT calls, so budget exhaustion (not the repeat guard) is what ends it.
+        calls = ['{"tool": "fs.list", "arguments": {"path": "%s"}}' % p
+                 for p in ("a", "b", "c")]
         text, trace = run_with_tools(
-            _scripted([call, call, call, "I ran out of budget."]), [], registry,
-            max_calls=3)
+            _scripted(calls + ["I ran out of budget."]), [], registry, max_calls=3)
         self.assertEqual(len(trace), 3)
         self.assertEqual(text, "I ran out of budget.")
+
+    def test_a_repeated_tool_call_breaks_the_loop_instead_of_churning(self):
+        # A greedy body degenerates into re-calling the SAME tool on the same
+        # args forever (measured: sealed-3.14 looped observation.expand on a
+        # hallucinated id through the whole budget). The loop guard must stop it
+        # well before max_calls and never re-execute the identical call.
+        registry = _Registry({"fs.read": _Result(ok=False, error="no such file")})
+        call = '{"tool": "fs.read", "arguments": {"path": "ghost.py"}}'
+        text, trace = run_with_tools(
+            _scripted([call] * 12 + ["Answering with what I have."]), [], registry,
+            max_calls=12)
+        self.assertLessEqual(len(registry.calls), 1,
+                             "the identical failing call was re-executed")
+        self.assertTrue(any(t.get("error") == "repeated call (loop guard)"
+                            for t in trace), "the repeat was not caught")
+        self.assertLess(len(trace), 12, "the loop churned to the budget")
 
     def test_a_failing_tool_is_reported_not_invented(self):
         registry = _Registry({"fs.read": _Result(ok=False, error="no such file")})
