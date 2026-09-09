@@ -1,0 +1,21 @@
+{
+ "obligations": "G035 (bounded orientation) + G038 (mutation reachability)",
+ "date": "2026-09-09",
+ "G035": {
+  "verdict": "EARNED, with the one weak spot named",
+  "measurement": "longest consecutive ORIENT run WITHOUT a phase transition in experiment 2: ZERO. Orientation has never consumed even one full cycle before producing a hypothesis, let alone the 3-cycle ORIENT_BUDGET.",
+  "observed_exits": {
+   "cycle 67": "ORIENT -> DISCRIMINATOR_REQUIRED in one cycle, genuine",
+   "cycle 76": "ORIENT -> DISCRIMINATOR_REQUIRED in one cycle, but the hypothesis was 'I cannot name one yet' and the supervisor's syntactic marker check wrongly accepted it. Counted as a false exit, not a real one, and cleared."
+  },
+  "comparison": "experiment 1 ran 66 cycles with ZERO transitions of any kind. That is the behaviour this gate exists to prevent and it is gone.",
+  "honest_weak_spot": "of two observed exits one was a supervisor false positive, so the demonstration rests on cycle 67 plus the enforced mechanism (ORIENT_BUDGET escalation, covered by the harness selfcheck) rather than on a large sample. The budget has never actually been reached, so the escalation path itself is proven by selfcheck, not by the campaign."
+ },
+ "G038": {
+  "verdict": "NOT DEMONSTRATED. Recorded as open with the exact reason.",
+  "measurement": "repo.edit appears in the reply text of cycles 69, 70, 71, 72 and 73 and in NO others. Those are precisely the cycles spent in ACT_REQUIRED, whose phase demand names repo.edit twice.",
+  "why_that_is_not_reachability": "the gate asks whether HCLI can reach mutation authority FROM ITS OWN REASONING. Every observed reach happened in a phase that had just told it the tool's name and shape. That demonstrates the door is open and the body can drive it, which is worth something, but it is not the claim.",
+  "what_would_earn_it": "a repo.edit call from ORIENT, HYPOTHESIS_REQUIRED or DISCRIMINATOR_REQUIRED -- phases whose prompts never mention it -- or a cycle where the body proposes the edit before the phase demands one. The evidence for it is already being collected: every cycle now persists its tool trace, so a call outside ACT_REQUIRED would be visible mechanically rather than by grepping reply prose.",
+  "note": "this is exactly the distinction the campaign keeps having to make. A capability that is exercised only when named is the prompted form of the same thing the ULTRAGOAL warns about elsewhere: registration is not existence, and being told is not choosing."
+ }
+}
