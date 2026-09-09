@@ -289,9 +289,12 @@
    ],
    "then": "do NOT implement the structural class on that organ. It has no exploitable structure and will cost metadata for nothing. Spend the budget on bit-width, or on an organ with a higher ratio.",
    "supporting_patients": [],
-   "negative_patients": [],
+   "negative_patients": [
+    "Qwen3-0.6B attention (kurtosis 6.76, hot/cold still failed)"
+   ],
    "discovery_phase_evidence": [
-    "MEASURED on Qwen3-0.6B. MLP tensors: top-64 SV energy 1.32-1.69x a matched random Gaussian, kurtosis 3.70-4.00 (Gaussian is exactly 3.0). Embedding/lm_head: 3.15x. TWO structural classes were then tested and BOTH failed on the MLP exactly as the ratio predicts -- hot/cold with 1/2/5% outlier channels preserved was WORSE than uniform at LOWER EBPW (top-1 0.5734 vs 0.7476 at 4.334 vs 4.500), and low-rank r64+3b was worse on both axes (4.648 / 0.5695). The same low-rank class on the higher-ratio embedding organ was merely NEUTRAL rather than harmful (4.502 / 0.7339), so the ratio ranks tolerance correctly. See receipts/odyssey-i/O00X_MLP_SENSITIVITY_MECHANISM.json."
+    "MEASURED on Qwen3-0.6B. MLP tensors: top-64 SV energy 1.32-1.69x a matched random Gaussian, kurtosis 3.70-4.00 (Gaussian is exactly 3.0). Embedding/lm_head: 3.15x. TWO structural classes were then tested and BOTH failed on the MLP exactly as the ratio predicts -- hot/cold with 1/2/5% outlier channels preserved was WORSE than uniform at LOWER EBPW (top-1 0.5734 vs 0.7476 at 4.334 vs 4.500), and low-rank r64+3b was worse on both axes (4.648 / 0.5695). The same low-rank class on the higher-ratio embedding organ was merely NEUTRAL rather than harmful (4.502 / 0.7339), so the ratio ranks tolerance correctly. See receipts/odyssey-i/O00X_MLP_SENSITIVITY_MECHANISM.json.",
+    "STRENGTHENED by G028: hot/cold was then tested on ATTENTION, the organ with the heaviest tail in the body (q_proj kurtosis 6.76 against the MLP's 3.7-4.0), on the explicit expectation that it would pay. It did NOT -- hot 10% + cold 3b gives top-1 0.6419 at EBPW 4.573 against the control's 0.7476 at 4.500. Product/vector codebooks (dim 2 and 4, 256-entry, codebook counted) also failed: top-1 0.3992 and 0.0059. SEVEN classes now tested on this body and not one beats plain grouped affine at matched EBPW. The threshold is therefore not merely 'ratio <~2 fails' -- kurtosis 6.76 was also insufficient, so heavy-tailedness alone does not license an outlier-preserving class."
    ],
    "confidence": "MEASURED",
    "reopen_if": "a structural class pays on an organ whose spectral ratio is below ~2, or a ratio above ~3 produces a genuine WIN rather than the neutral result seen here -- the threshold is calibrated on ONE body and the embedding result shows 3.15x is still not sufficient.",

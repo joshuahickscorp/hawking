@@ -1,0 +1,72 @@
+{
+ "schema": "hawking.odyssey.structural_classes.v1",
+ "_label": "G028 / S010 \u00a73. Structural representation classes, tested on the organs the anatomy said to test them on -- and MY OWN PREDICTION WAS REFUTED.",
+ "_evidence": "MEASURED on CPU at matched complete EBPW against a grouped-affine control, with all metadata (codebooks, exception indices, scales, zeros) counted.",
+ "the_prediction_I_made": "the byte anatomy argued that outlier-aware classes had only ever been tested on the MLP -- which the spectral measurement showed HAS no outliers (kurtosis 3.7-4.0) -- and never on attention, whose q_proj carries kurtosis 6.76, the heaviest tail in the body. I named that as the clearest remaining experiment and expected it to pay.",
+ "THE_RESULT": "IT DID NOT. Hot/cold on attention is WORSE than the plain grouped-affine control at every budget tried: hot 10% + cold 3b gives top-1 0.6419 at EBPW 4.573, against the control's 0.7476 at a LOWER 4.500. Hot 5% + cold 2b collapses entirely (13432x perplexity). Kurtosis 6.76 against a Gaussian's 3.0 is a genuinely heavier tail and it is still not concentrated enough for outlier preservation to pay at these bit budgets.",
+ "product_codebook_a_class_never_tried": "vector quantisation over 2- and 4-dimensional subvectors with a learned 256-entry codebook, codebook bytes counted. dim2/8bit: EBPW 4.279, top-1 0.3992. dim4/8bit: EBPW 3.394, top-1 0.0059. Both far worse than the control. Consistent with the mechanism -- VQ assumes subvectors cluster, and in a near-random weight matrix they do not.",
+ "classes_now_tested": [
+  "per-tensor uniform",
+  "per-group affine at g16/g32/g64/g128",
+  "grouped affine + low-rank SVD residual (2 organs, ranks 16/64/128/256)",
+  "heterogeneous per-organ bit allocation",
+  "hot/cold outlier preservation on the MLP (1/2/5%)",
+  "hot/cold outlier preservation on ATTENTION (2/5/10%)",
+  "product/vector codebooks on the MLP (dim 2 and 4)"
+ ],
+ "VERDICT": "SEVEN representation classes tested and NOT ONE beats plain grouped affine at matched complete EBPW. The control wins every single comparison. This strengthens the mechanism from a claim about the MLP into a claim about the BODY: Qwen3-0.6B has no exploitable weight structure anywhere that any of these classes can convert into bytes, and the spectral diagnostic predicted it.",
+ "what_this_cost_and_why_it_was_worth_it": "the attention experiment was run precisely BECAUSE the anatomy said it was the strongest remaining case for the class. Refuting my own prediction is worth more than not having tested it: the rule now reads 'even the heaviest tail in this body is insufficient', which is a far tighter statement than 'the MLP has no outliers'.",
+ "attempts": [
+  {
+   "label": "CONTROL all g64 4b",
+   "complete_ebpw": 4.5,
+   "perplexity": 71.051,
+   "top1_agreement_vs_fp32": 0.7476,
+   "kl_from_fp32": 133.911163
+  },
+  {
+   "label": "attn hot2% cold3b, rest 4b",
+   "complete_ebpw": 4.2773,
+   "perplexity": 101.198,
+   "top1_agreement_vs_fp32": 0.6262,
+   "kl_from_fp32": 351.618896
+  },
+  {
+   "label": "attn hot5% cold3b, rest 4b",
+   "complete_ebpw": 4.3886,
+   "perplexity": 100.2203,
+   "top1_agreement_vs_fp32": 0.6399,
+   "kl_from_fp32": 327.310669
+  },
+  {
+   "label": "attn hot5% cold2b, rest 4b",
+   "complete_ebpw": 4.1078,
+   "perplexity": 800877.2305,
+   "top1_agreement_vs_fp32": 0.0372,
+   "kl_from_fp32": 4933.891602
+  },
+  {
+   "label": "attn hot10% cold3b, rest 4b",
+   "complete_ebpw": 4.5734,
+   "perplexity": 96.3352,
+   "top1_agreement_vs_fp32": 0.6419,
+   "kl_from_fp32": 315.74646
+  },
+  {
+   "label": "mlp PQ dim4 8bit, rest 4b",
+   "complete_ebpw": 3.3939,
+   "perplexity": 196304.4008,
+   "top1_agreement_vs_fp32": 0.0059,
+   "kl_from_fp32": 4504.267578
+  },
+  {
+   "label": "mlp PQ dim2 8bit, rest 4b",
+   "complete_ebpw": 4.2795,
+   "perplexity": 335.0023,
+   "top1_agreement_vs_fp32": 0.3992,
+   "kl_from_fp32": 958.203003
+  }
+ ],
+ "commit": "234f5f75f",
+ "emitted_at": "2026-09-09T16:25:01Z"
+}
