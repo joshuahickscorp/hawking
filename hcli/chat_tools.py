@@ -509,6 +509,18 @@ def run_with_tools(
                     entry["verdict"] = value.get("status")
                     entry["applied"] = bool(value.get("applied"))
                     entry["paths"] = value.get("paths")
+            # WHETHER THE TESTS PASSED, not merely that the runner ran. Same
+            # defect one tool over: `ok` is True for a suite that FAILED, because
+            # a failing suite is a result the body must report rather than an
+            # error. Campaign cycle 79 labelled "5 passed, returncode 0" as RED
+            # and the phase machine advanced on it, demanding an edit to fix a
+            # defect its own discriminator had just disproved. `_tests_run`
+            # already returns both of these and the trace was discarding them.
+            if name == "tests.run":
+                value = getattr(result, "value", None)
+                if isinstance(value, dict):
+                    entry["returncode"] = value.get("returncode")
+                    entry["verified"] = bool(value.get("verified"))
             if escalated is not None:
                 entry["escalated"] = {"glob": SOURCE_GLOB,
                                       "reason": "first search truncated before reaching source"}
