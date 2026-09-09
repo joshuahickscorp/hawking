@@ -1,0 +1,25 @@
+{
+ "obligation": "G040 (process-death continuation) + G041 (context-boundary continuation)",
+ "date": "2026-09-09",
+ "G040": {
+  "verdict": "EARNED. Twice, at two different depths.",
+  "shallow_boundary_12_48_40": {
+   "what_died": "the supervisor harness process (SIGTERM), resident untouched",
+   "what_survived": "cycle number, phase, and the FULL hypothesis about hcli/engine.py's _validate, verbatim -- the body continued the same arc at cycle 74 and settled it at cycle 75 by running its discriminator",
+   "log": "[12:48:40] campaign resumed at cycle 74, HEAD 234f5f75f, reachable 11/11"
+  },
+  "deep_boundary_13_11": {
+   "what_died": "the RESIDENT. hawkingd was SIGTERMed, the 27B was unloaded, the installed snapshot was rebuilt, and a new resident process was started (pid 53412 -> 68072). The chat session state held in the server's memory went with it.",
+   "what_survived": "objective, worktree, cycle number and phase, read back from state.json by a harness that had also been restarted",
+   "log": "[13:12:37] campaign resumed at cycle 76, HEAD 234f5f75f, reachable 11/11",
+   "human_reconstruction": "none. The supervisor did not restate the objective, re-derive the frontier, or hand the body a summary. The restart script stops processes and starts them; the continuation is state.json's."
+  },
+  "honest_limits": "The hypothesis field read None across the DEEP boundary, but not because it was lost: cycle 75 had legitimately closed that arc, and cycle 76's successor was a supervisor false positive I cleared deliberately. Hypothesis carry-across is demonstrated by the 12:48:40 boundary, where it survived verbatim across four cycles and a process death."
+ },
+ "G041": {
+  "verdict": "PARTIALLY EARNED -- recorded as in progress, with what is missing named",
+  "what_was_demonstrated": "The 13:11 restart destroyed the server-side chat session (session_id hcli-selfdev) along with the process holding it, which is a real context boundary for the body, and the objective and frontier were recovered.",
+  "what_was_NOT_demonstrated": "A COMPACTION boundary -- a conversation growing past the window and having its middle evicted -- was not forced or observed. And the recovery mechanism is the supervisor's checkpoint, not memory inside the body: the harness sends one fresh message per cycle, so HCLI has no accumulated context of its own to lose. Calling that 'HCLI recovered from a context boundary' would be reading the harness's durability as the body's.",
+  "what_would_earn_it": "Run a cycle long enough that run_with_tools' own compaction fires (it now has a 4505-token conversation budget rather than 3097), then show the hypothesis and evidence handles surviving the eviction. That is reachable now that tests.run can run a 154-second suite inside one cycle, which is the first thing likely to grow a conversation that far."
+ }
+}
