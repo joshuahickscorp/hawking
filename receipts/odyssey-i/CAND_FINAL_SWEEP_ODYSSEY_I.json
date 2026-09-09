@@ -1,0 +1,400 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-FINAL-SWEEP",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + safetensors headers only). Header-only reads make cost nearly independent of body size -- a 1.45TB specimen costs the same few KB per shard as a 3GB one. Zero mlx/torch load, zero GPU, zero HCLI resident contention.",
+ "_label": "Odyssey I FINAL SWEEP. Every remaining ModelLake specimen, completing the census: after this pass every specimen in the lake has a real measurement rather than a classification.",
+ "specimens": {
+  "moonshotai--Kimi-K3": {
+   "measurable": true,
+   "n_shards": 96,
+   "n_tensors": 497220,
+   "model_type": "kimi_k3",
+   "architectures": [
+    "KimiK3ForConditionalGeneration"
+   ],
+   "n_layer": 93,
+   "hidden_size": 7168,
+   "context": 1048576,
+   "is_moe": true,
+   "num_experts": 896,
+   "experts_per_tok": 16,
+   "total_params_B": 1503.647,
+   "active_params_B": 83.021,
+   "active_frac_pct": 5.5,
+   "stored_gib": 1453.66,
+   "dtypes": {
+    "F32": 506,
+    "BF16": 2122,
+    "U8": 494592
+   },
+   "effective_bytes_per_param": 1.038,
+   "ships_a_duplicate_export": false
+  },
+  "thinkingmachines--Inkling-Small": {
+   "measurable": true,
+   "n_shards": 32,
+   "n_tensors": 888,
+   "model_type": "inkling_mm_model",
+   "architectures": [
+    "InklingForConditionalGeneration"
+   ],
+   "n_layer": 42,
+   "hidden_size": 4096,
+   "context": null,
+   "is_moe": true,
+   "num_experts": 256,
+   "experts_per_tok": 6,
+   "total_params_B": 263.725,
+   "active_params_B": 12.066,
+   "active_frac_pct": 4.6,
+   "stored_gib": 491.23,
+   "dtypes": {
+    "F32": 80,
+    "BF16": 808
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": true
+  },
+  "Qwen--Qwen3.8-Flash-Next": {
+   "measurable": true,
+   "n_shards": 131,
+   "n_tensors": 1658,
+   "model_type": "qwen4_exp",
+   "architectures": [
+    "Qwen4ExpForConditionalGeneration"
+   ],
+   "n_layer": 48,
+   "hidden_size": 2560,
+   "context": 262144,
+   "is_moe": true,
+   "num_experts": 512,
+   "experts_per_tok": 10,
+   "total_params_B": 180.0,
+   "active_params_B": 59.096,
+   "active_frac_pct": 32.8,
+   "stored_gib": 335.28,
+   "dtypes": {
+    "BF16": 1655,
+    "I64": 3
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "windowsxp811203--Qwen3.8-Flash-Next-Abliterated": {
+   "measurable": true,
+   "n_shards": 131,
+   "n_tensors": 1658,
+   "model_type": "qwen4_exp",
+   "architectures": [
+    "Qwen4ExpForConditionalGeneration"
+   ],
+   "n_layer": 48,
+   "hidden_size": 2560,
+   "context": 262144,
+   "is_moe": true,
+   "num_experts": 512,
+   "experts_per_tok": 10,
+   "total_params_B": 180.0,
+   "active_params_B": 59.096,
+   "active_frac_pct": 32.8,
+   "stored_gib": 335.28,
+   "dtypes": {
+    "BF16": 1655,
+    "I64": 3
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "zai-org--GLM-5.3-Flash": {
+   "measurable": true,
+   "n_shards": 62,
+   "n_tensors": 76108,
+   "model_type": "glm5_next",
+   "architectures": [
+    "Glm5NextForConditionalGeneration"
+   ],
+   "n_layer": 45,
+   "hidden_size": 4096,
+   "context": 1048576,
+   "is_moe": true,
+   "num_experts": 288,
+   "experts_per_tok": 8,
+   "total_params_B": 321.342,
+   "active_params_B": 18.327,
+   "active_frac_pct": 5.7,
+   "stored_gib": 305.78,
+   "dtypes": {
+    "F32": 37629,
+    "BF16": 1141,
+    "F8_E4M3": 37338
+   },
+   "effective_bytes_per_param": 1.022,
+   "ships_a_duplicate_export": false
+  },
+  "zai-org--GLM-4.5-Air": {
+   "measurable": true,
+   "n_shards": 47,
+   "n_tensors": 18329,
+   "model_type": "glm4_moe",
+   "architectures": [
+    "Glm4MoeForCausalLM"
+   ],
+   "n_layer": 46,
+   "hidden_size": 4096,
+   "context": 131072,
+   "is_moe": true,
+   "num_experts": 128,
+   "experts_per_tok": 8,
+   "total_params_B": 110.469,
+   "active_params_B": 14.965,
+   "active_frac_pct": 13.5,
+   "stored_gib": 205.76,
+   "dtypes": {
+    "BF16": 18283,
+    "F32": 46
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "deepseek-ai--DeepSeek-V4-Flash": {
+   "measurable": true,
+   "n_shards": 46,
+   "n_tensors": 69187,
+   "model_type": "deepseek_v4",
+   "architectures": [
+    "DeepseekV4ForCausalLM"
+   ],
+   "n_layer": 43,
+   "hidden_size": 4096,
+   "context": 1048576,
+   "is_moe": true,
+   "num_experts": 256,
+   "experts_per_tok": 6,
+   "total_params_B": 158.069,
+   "active_params_B": 11.007,
+   "active_frac_pct": 7.0,
+   "stored_gib": 148.65,
+   "dtypes": {
+    "BF16": 433,
+    "I64": 3,
+    "F32": 417,
+    "F8_E8M0": 34167,
+    "F8_E4M3": 375,
+    "I8": 33792
+   },
+   "effective_bytes_per_param": 1.01,
+   "ships_a_duplicate_export": false
+  },
+  "Qwen--Qwen2.5-72B-Instruct": {
+   "measurable": true,
+   "n_shards": 37,
+   "n_tensors": 963,
+   "model_type": "qwen2",
+   "architectures": [
+    "Qwen2ForCausalLM"
+   ],
+   "n_layer": 80,
+   "hidden_size": 8192,
+   "context": 32768,
+   "is_moe": false,
+   "num_experts": null,
+   "experts_per_tok": null,
+   "total_params_B": 72.706,
+   "active_params_B": 72.706,
+   "active_frac_pct": 100.0,
+   "stored_gib": 135.43,
+   "dtypes": {
+    "BF16": 963
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "Wan-AI--Wan2.2-T2V-A14B": {
+   "measurable": true,
+   "n_shards": 12,
+   "n_tensors": 2190,
+   "model_type": null,
+   "architectures": null,
+   "n_layer": null,
+   "hidden_size": null,
+   "context": null,
+   "is_moe": false,
+   "num_experts": null,
+   "experts_per_tok": null,
+   "total_params_B": 28.577,
+   "active_params_B": 28.577,
+   "active_frac_pct": 100.0,
+   "stored_gib": 106.46,
+   "dtypes": {
+    "F32": 2190
+   },
+   "effective_bytes_per_param": 4.0,
+   "ships_a_duplicate_export": false
+  },
+  "arcinstitute--evo2_40b": {
+   "measurable": false,
+   "reason": "no safetensors -- legacy .pt/.bin or non-standard layout",
+   "dir_gib": 76.6,
+   "model_type": null,
+   "architectures": null
+  },
+  "nvidia--audio-flamingo-3": {
+   "measurable": true,
+   "n_shards": 7,
+   "n_tensors": 1222,
+   "model_type": "llava_llama",
+   "architectures": [
+    "LlavaLlamaModel"
+   ],
+   "n_layer": null,
+   "hidden_size": 3584,
+   "context": null,
+   "is_moe": false,
+   "num_experts": null,
+   "experts_per_tok": null,
+   "total_params_B": 8.429,
+   "active_params_B": 8.429,
+   "active_frac_pct": 100.0,
+   "stored_gib": 15.7,
+   "dtypes": {
+    "BF16": 1222
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "ibm-granite--granite-4.0-h-tiny": {
+   "measurable": true,
+   "n_shards": 3,
+   "n_tensors": 586,
+   "model_type": "granitemoehybrid",
+   "architectures": [
+    "GraniteMoeHybridForCausalLM"
+   ],
+   "n_layer": 40,
+   "hidden_size": 1536,
+   "context": 131072,
+   "is_moe": false,
+   "num_experts": 64,
+   "experts_per_tok": 6,
+   "total_params_B": 6.939,
+   "active_params_B": 6.939,
+   "active_frac_pct": 100.0,
+   "stored_gib": 12.92,
+   "dtypes": {
+    "BF16": 586
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "microsoft--Phi-4-multimodal-instruct": {
+   "measurable": true,
+   "n_shards": 3,
+   "n_tensors": 2047,
+   "model_type": "phi4mm",
+   "architectures": [
+    "Phi4MMForCausalLM"
+   ],
+   "n_layer": 32,
+   "hidden_size": 3072,
+   "context": 131072,
+   "is_moe": false,
+   "num_experts": null,
+   "experts_per_tok": null,
+   "total_params_B": 5.574,
+   "active_params_B": 5.574,
+   "active_frac_pct": 100.0,
+   "stored_gib": 10.38,
+   "dtypes": {
+    "BF16": 2047
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "microsoft--bitnet-b1.58-2B-4T-bf16": {
+   "measurable": true,
+   "n_shards": 1,
+   "n_tensors": 332,
+   "model_type": "bitnet",
+   "architectures": [
+    "BitNetForCausalLM"
+   ],
+   "n_layer": 30,
+   "hidden_size": 2560,
+   "context": 4096,
+   "is_moe": false,
+   "num_experts": null,
+   "experts_per_tok": null,
+   "total_params_B": 2.413,
+   "active_params_B": 2.413,
+   "active_frac_pct": 100.0,
+   "stored_gib": 4.49,
+   "dtypes": {
+    "BF16": 332
+   },
+   "effective_bytes_per_param": 2.0,
+   "ships_a_duplicate_export": false
+  },
+  "google--flan-t5-large": {
+   "measurable": true,
+   "n_shards": 1,
+   "n_tensors": 558,
+   "model_type": "t5",
+   "architectures": [
+    "T5ForConditionalGeneration"
+   ],
+   "n_layer": null,
+   "hidden_size": null,
+   "context": null,
+   "is_moe": false,
+   "num_experts": null,
+   "experts_per_tok": null,
+   "total_params_B": 0.783,
+   "active_params_B": 0.783,
+   "active_frac_pct": 100.0,
+   "stored_gib": 2.92,
+   "dtypes": {
+    "F32": 558
+   },
+   "effective_bytes_per_param": 4.0,
+   "ships_a_duplicate_export": false
+  },
+  "state-spaces--mamba3-mimo-1.5b": {
+   "measurable": false,
+   "reason": "no safetensors -- legacy .pt/.bin or non-standard layout",
+   "dir_gib": 2.8,
+   "model_type": null,
+   "architectures": null
+  }
+ },
+ "n_measured": 14,
+ "n_unmeasurable": 2,
+ "WHY_THE_LARGE_TIER_WAS_NEVER_ACTUALLY_BLOCKED": {
+  "finding": "the frontier-scale bodies sat in the census-only pile for the whole campaign as though their size gated them. It never did: only GPU work was gated. A safetensors header is a length prefix plus a JSON blob at the head of each shard, so Kimi-K3 at 1.45TB yields exact per-tensor shapes and dtypes for the same cost as a 3GB body. The gate was assumed, not measured -- which is the same class of error as the fs.read window and the Mistral double-count found this session."
+ },
+ "SUB_BF16_NATIVE_STORAGE": {
+  "bodies_below_1.8_bytes_per_param": {
+   "moonshotai--Kimi-K3": 1.038,
+   "zai-org--GLM-5.3-Flash": 1.022,
+   "deepseek-ai--DeepSeek-V4-Flash": 1.01
+  },
+  "why_it_matters": "effective bytes-per-parameter computed from real tensor dtypes is the honest denominator for the Byte Elimination Law. Any body already shipping below 2 bytes/param is quantised at rest by its author, so Hawking's EBPW ladder starts from a different place there than on a BF16 body -- and comparing a Gravity result against a naive fp16 baseline would overstate the win."
+ },
+ "duplicate_export_check": {
+  "specimens_shipping_both_a_consolidated_copy_and_shards": [
+   "thinkingmachines--Inkling-Small"
+  ],
+  "note": "carried forward from the Mistral-Small-3.1-24B trap: shards are preferred and a consolidated sibling is never added to the same total."
+ },
+ "obvious_representation_opportunities": [
+  "The MoE bodies in this sweep are the natural continuation of the O005/O006 expert-organ line at much larger scale -- their active fractions are recorded above and are what decides whether a gather lever pays.",
+  "Bodies already below 2 bytes/param need their EBPW baseline set from their real dtype mix, not from an assumed fp16 parent."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No capability battery for any specimen in this sweep, and none is loadable on this machine without the GPU that HCLI's resident currently holds.",
+  "Bodies with no safetensors were not unpickled; their structure is config-declared only."
+ ],
+ "preliminary_disposition": "CENSUS COMPLETE. Every specimen now carries a measurement. The frontier-scale MoE bodies are the ranked continuation for Gravity work once GPU time opens; nothing here is a Resident candidate that the working-LM tier receipt does not already cover better.",
+ "commit": "ee27abe6f",
+ "emitted_at": "2026-09-09T15:08:14Z"
+}

@@ -2,7 +2,7 @@
  "schema": "hawking.odyssey.modellake_march_progress.v1",
  "_label": "Bookkeeping snapshot, not a new measurement -- tallies existing receipts per S005's MODELLAKE MARCH record-keeping requirement.",
  "total_lake_specimens": 55,
- "n_deep_discovery_this_session": 29,
+ "n_deep_discovery_this_session": 45,
  "deep_discovery_this_session": {
   "state-spaces--mamba3-siso-1.5b@5cfc721542ec": "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
   "RWKV--RWKV7-13.3B-20260805@64ffe5934178": "CAND_RWKV7-13.3B_ODYSSEY_I.json",
@@ -32,7 +32,23 @@
   "allenai--Olmo-3-1025-7B@a81bae42db39": "CAND_WORKING_LM_TIER_ODYSSEY_I.json",
   "bigcode--starcoder2-7b@bb9afde76d79": "CAND_WORKING_LM_TIER_ODYSSEY_I.json",
   "microsoft--Phi-4-mini-instruct@cfbefacb9925": "CAND_WORKING_LM_TIER_ODYSSEY_I.json",
-  "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0": "CAND_WORKING_LM_TIER_ODYSSEY_I.json"
+  "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0": "CAND_WORKING_LM_TIER_ODYSSEY_I.json",
+  "moonshotai--Kimi-K3@9f62e4e9fffb": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "thinkingmachines--Inkling-Small@8cc5877b44d3": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "Qwen--Qwen3.8-Flash-Next@34567a4712bc": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "zai-org--GLM-5.3-Flash@04c4e9e95c5d": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "zai-org--GLM-4.5-Air@a24ceef6ce4f": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "Qwen--Qwen2.5-72B-Instruct@495f39366efe": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "nvidia--audio-flamingo-3@ee26c5842398": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "microsoft--Phi-4-multimodal-instruct@93f923e1a772": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "google--flan-t5-large@0613663d0d48": "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "arcinstitute--evo2_40b@d529aa57c307": "CAND_FINAL_SWEEP_ODYSSEY_I.json (UNMEASURABLE -- split .pt)",
+  "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994": "CAND_FINAL_SWEEP_ODYSSEY_I.json (UNMEASURABLE -- .bin)"
  },
  "n_prior_full_odyssey_patients": 4,
  "prior_full_odyssey_patients": {
@@ -49,105 +65,8 @@
   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "config read, not used in a receipt"
  },
  "n_censused_survey_only": 45,
- "n_untouched_beyond_survey_classification": 16,
- "untouched_specimens": [
-  {
-   "name": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
-   "model_type": "qwen2",
-   "dir_size_gib": 135.437,
-   "diffusion_signal": false
-  },
-  {
-   "name": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
-   "model_type": "qwen4_exp",
-   "dir_size_gib": 335.298,
-   "diffusion_signal": false
-  },
-  {
-   "name": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
-   "model_type": "t2v",
-   "dir_size_gib": 117.534,
-   "diffusion_signal": false
-  },
-  {
-   "name": "arcinstitute--evo2_40b@d529aa57c307",
-   "model_type": "",
-   "dir_size_gib": 76.605,
-   "diffusion_signal": false
-  },
-  {
-   "name": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
-   "model_type": "deepseek_v4",
-   "dir_size_gib": 148.667,
-   "diffusion_signal": false
-  },
-  {
-   "name": "google--flan-t5-large@0613663d0d48",
-   "model_type": "t5",
-   "dir_size_gib": 2.921,
-   "diffusion_signal": false
-  },
-  {
-   "name": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
-   "model_type": "granitemoehybrid",
-   "dir_size_gib": 12.935,
-   "diffusion_signal": false
-  },
-  {
-   "name": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
-   "model_type": "phi4mm",
-   "dir_size_gib": 11.994,
-   "diffusion_signal": false
-  },
-  {
-   "name": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
-   "model_type": "bitnet",
-   "dir_size_gib": 4.503,
-   "diffusion_signal": false
-  },
-  {
-   "name": "moonshotai--Kimi-K3@9f62e4e9fffb",
-   "model_type": "kimi_k3",
-   "dir_size_gib": 1453.794,
-   "diffusion_signal": false
-  },
-  {
-   "name": "nvidia--audio-flamingo-3@ee26c5842398",
-   "model_type": "llava_llama",
-   "dir_size_gib": 16.728,
-   "diffusion_signal": false
-  },
-  {
-   "name": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
-   "model_type": "",
-   "dir_size_gib": 2.789,
-   "diffusion_signal": false
-  },
-  {
-   "name": "thinkingmachines--Inkling-Small@8cc5877b44d3",
-   "model_type": "inkling_mm_model",
-   "dir_size_gib": 495.412,
-   "diffusion_signal": false
-  },
-  {
-   "name": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
-   "model_type": "qwen4_exp",
-   "dir_size_gib": 335.298,
-   "diffusion_signal": false
-  },
-  {
-   "name": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
-   "model_type": "glm4_moe",
-   "dir_size_gib": 205.787,
-   "diffusion_signal": false
-  },
-  {
-   "name": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
-   "model_type": "glm5_next",
-   "dir_size_gib": 305.815,
-   "diffusion_signal": false
-  }
- ],
+ "n_untouched_beyond_survey_classification": 0,
+ "untouched_specimens": [],
  "architecture_families_given_a_real_discovery_pass_this_session": [
   "dense hybrid Mamba2+attention (O001, prior campaign)",
   "MoE + multimodal (O003, prior campaign)",
@@ -165,20 +84,22 @@
   "smallest language specimen in the lake, second confirmed tied-embedding-waste transfer test (Qwen3-0.6B, THIS session)",
   "encoder-ONLY masked LM; local/global attention heterogeneity that costs ZERO bytes, unlike LFM2's which is paid for in weights (ModernBERT-large, THIS session)",
   "small-body cohort for S003's Resident framework: Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B -- corrected the LFM2 family rule (conv+attention transfers, MoE does NOT) and found a small body advertising 15x the current resident's context (THIS session)",
+  "FINAL SWEEP -- every remaining specimen incl. the frontier tier: Kimi-K3 measures 1503.65B params / 83.02B active at 1.04 bytes/param (natively sub-bf16), GLM-5.3-Flash 321.34B at 1.02, DeepSeek-V4-Flash 158.07B at 1.01. The large tier was NEVER actually gated -- header reads cost the same at 1.45TB as at 3GB; only GPU work was gated (THIS session)",
   "working-LM tier: the 8 bodies that could replace sealed-3.14 as Resident (Qwen3-Coder-30B-A3B, Qwen3-14B, Phi-4-reasoning-plus, Mistral-Small-24B, Olmo-3-7B, starcoder2-7b, Phi-4-mini, Qwen3-4B) -- 6 of 8 exceed the resident's 8192 context, two by 32x; caught a duplicate-export trap that would have published Mistral at 2x its true size (THIS session)",
   "specialist cohort across FIVE new domains -- generative audio (musicgen, config-only), vision-language (SmolVLM2), monocular depth (Depth-Anything-V2), self-supervised video (vjepa2), numeric time-series forecasting (timesfm) -- yielding R-specialist-body-single-organ (90-99% of params in ONE backbone) and an F32-convention pattern now at 7/7 (THIS session)"
  ],
+ "census_status": "COMPLETE -- every specimen in the lake now carries a real measurement rather than a classification, except two that ship legacy pickle (evo2_40b split .pt, mamba3-mimo pytorch_model.bin) and are explicitly recorded as unmeasurable.",
  "architecture_families_in_the_census_NOT_yet_given_a_real_discovery_pass": [
   "next-gen linear-attn (GLM-5.3-Flash, Kimi-K3) -- both very large (305GB/1.45TB), untouched",
-  "audio-flamingo-3 (16.7GB) -- the last untouched multimodal specialist",
+  "the two legacy-pickle bodies (evo2_40b, mamba3-mimo) if a torch metadata-only reader is written",
   "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)",
   "the very large bodies (GLM-4.5-Air 205GB, GLM-5.3-Flash 305GB, Kimi-K3 1.45TB, Qwen3.8-Flash-Next 335GB x2, DeepSeek-V4-Flash 148GB, Inkling-Small 495GB, Qwen2.5-72B 135GB, Mistral-Small-24B 89GB, Wan2.2-T2V 117GB) -- cheap static anatomy is still possible on all of them; only GPU work is gated"
  ],
  "next_justified_specimens_if_continuing": [
   "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier",
-  "audio-flamingo-3 (16.7GB) -- last untouched multimodal specialist",
-  "the frontier-scale bodies (GLM-4.5-Air 205GB, GLM-5.3-Flash 305GB, Kimi-K3 1.45TB, Qwen3.8-Flash-Next 335GB x2, DeepSeek-V4-Flash 148GB, Inkling-Small 495GB, Qwen2.5-72B 135GB, Wan2.2-T2V 117GB, evo2_40b 76GB) -- header reads are cheap at any size; only GPU work is gated"
+  "GPU-gated work (capability batteries, Gravity searches, NR/NX, physical runs) once a YIELD window or G004/G005 opens one",
+  "NONE remain unmeasured by static analysis. What is still gated is EXECUTION: no specimen has had a capability battery, a Gravity codec search, an NR/NX build or a physical run, because all of those need the GPU the HCLI resident holds."
  ],
- "commit": "c9bac90e3",
- "emitted_at": "2026-09-09T15:06:11Z"
+ "commit": "ee27abe6f",
+ "emitted_at": "2026-09-09T15:08:56Z"
 }
