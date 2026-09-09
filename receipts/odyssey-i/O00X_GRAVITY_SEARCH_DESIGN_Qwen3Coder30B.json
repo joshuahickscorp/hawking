@@ -1,0 +1,141 @@
+{
+ "schema": "hawking.odyssey.gravity_search_design.v1",
+ "_label": "GRAVITY SEARCH DESIGN for the ranked next patient, Qwen3-Coder-30B-A3B. Design only -- no GPU was used and none was taken from the HCLI resident. This is what to run when a window opens.",
+ "_evidence": "MEASURED organ masses from safetensors headers; the EBPW ladder below is arithmetic over those measured masses, not an estimate.",
+ "why_this_patient": "the only body in the lake that is simultaneously MoE with a small active fraction, code-specialised (HCLI's actual domain), and long-context. Its expert organ is 94.95% of the model, so R-sparse-active-expert-gather's binding condition (expert mass >= ~0.9) is satisfied decisively -- unlike Qwen3.8-Flash-Next, which failed that rule at 68.5% expert mass.",
+ "measured_organ_masses": {
+  "expert_gate_up_down_total_B": 28.992,
+  "expert_pct": 94.96,
+  "attention_qkvo_pct": 3.0,
+  "embed_plus_lm_head_pct": 2.0,
+  "router_gate_pct": 0.04,
+  "note": "embed_tokens and lm_head are BOTH present and tie_word_embeddings is false -- genuinely untied here, so the tied-embedding dedup lever does NOT apply to this body."
+ },
+ "EBPW_LADDER_complete_system": [
+  {
+   "expert_bits": 4,
+   "non_expert_bits": 16,
+   "complete_ebpw": 4.605,
+   "stored_gib": 16.4
+  },
+  {
+   "expert_bits": 4,
+   "non_expert_bits": 8,
+   "complete_ebpw": 4.202,
+   "stored_gib": 14.9
+  },
+  {
+   "expert_bits": 4,
+   "non_expert_bits": 4,
+   "complete_ebpw": 4.0,
+   "stored_gib": 14.2
+  },
+  {
+   "expert_bits": 3,
+   "non_expert_bits": 16,
+   "complete_ebpw": 3.656,
+   "stored_gib": 13.0
+  },
+  {
+   "expert_bits": 3,
+   "non_expert_bits": 8,
+   "complete_ebpw": 3.252,
+   "stored_gib": 11.6
+  },
+  {
+   "expert_bits": 3,
+   "non_expert_bits": 4,
+   "complete_ebpw": 3.05,
+   "stored_gib": 10.8
+  },
+  {
+   "expert_bits": 2.5,
+   "non_expert_bits": 16,
+   "complete_ebpw": 3.181,
+   "stored_gib": 11.3
+  },
+  {
+   "expert_bits": 2.5,
+   "non_expert_bits": 8,
+   "complete_ebpw": 2.777,
+   "stored_gib": 9.9
+  },
+  {
+   "expert_bits": 2.5,
+   "non_expert_bits": 4,
+   "complete_ebpw": 2.576,
+   "stored_gib": 9.2
+  },
+  {
+   "expert_bits": 2,
+   "non_expert_bits": 16,
+   "complete_ebpw": 2.706,
+   "stored_gib": 9.6
+  },
+  {
+   "expert_bits": 2,
+   "non_expert_bits": 8,
+   "complete_ebpw": 2.303,
+   "stored_gib": 8.2
+  },
+  {
+   "expert_bits": 2,
+   "non_expert_bits": 4,
+   "complete_ebpw": 2.101,
+   "stored_gib": 7.5
+  },
+  {
+   "expert_bits": 1.5,
+   "non_expert_bits": 16,
+   "complete_ebpw": 2.231,
+   "stored_gib": 7.9
+  },
+  {
+   "expert_bits": 1.5,
+   "non_expert_bits": 8,
+   "complete_ebpw": 1.828,
+   "stored_gib": 6.5
+  },
+  {
+   "expert_bits": 1.5,
+   "non_expert_bits": 4,
+   "complete_ebpw": 1.626,
+   "stored_gib": 5.8
+  },
+  {
+   "expert_bits": 1.0,
+   "non_expert_bits": 16,
+   "complete_ebpw": 1.757,
+   "stored_gib": 6.2
+  },
+  {
+   "expert_bits": 1.0,
+   "non_expert_bits": 8,
+   "complete_ebpw": 1.353,
+   "stored_gib": 4.8
+  },
+  {
+   "expert_bits": 1.0,
+   "non_expert_bits": 4,
+   "complete_ebpw": 1.151,
+   "stored_gib": 4.1
+  }
+ ],
+ "what_the_arithmetic_says": {
+  "current": "BF16 throughout = 16.0 EBPW, 56.9 GiB stored.",
+  "the_trap": "pushing ONLY the experts is not enough. Experts at 2 bits with everything else left at BF16 still lands at 2.71 EBPW -- above the <2.5 entry rung -- because the 5.05% non-expert remainder costs ~0.8 EBPW on its own at BF16. This is exactly the BitNet lesson measured earlier this session: BitNet's linear weights are 2.0 bits and its COMPLETE system is still 3.91, because embeddings and norms stayed BF16. Always keep the complete system in the denominator.",
+  "entry_rung_<2.5": "experts 2 bits + non-expert 8 bits = 2.3 EBPW (8.2 GiB).",
+  "qualified_rung_<=1.5": "experts 1.5 bits + non-expert 4 bits = 1.63 EBPW; experts 1.0 + non-expert 4 = 1.15 EBPW reaches the PREFERRED <=1.0 rung, but only if capability survives at 1-bit experts, which nothing here has tested."
+ },
+ "search_order_cheapest_discriminator_first": [
+  "1. NEGATIVE CONTROL FIRST, before any codec: 0.01xW on the expert organ. If the verifier accepts a magnitude-destroyed organism the verifier is inadequate and every later number is void. This is mandatory per the Byte Elimination Law and costs one run.",
+  "2. Organ ablation to rank sensitivity: the router gate is 0.04% of mass but gates everything -- R-protect-router-if-sensitive says measure its sensitivity before touching it, and at 0.04% protecting it entirely is nearly free regardless of the answer.",
+  "3. Expert-only quantisation sweep (4/3/2.5/2 bits) with the non-expert organ pinned at BF16, to isolate the expert organ's own capability curve without confounds.",
+  "4. Only then the non-expert organ, because the ladder above shows it becomes the binding term once experts drop below ~2.5 bits. Attention qkvo is 3% and embeddings 2%.",
+  "5. Shared-basis / expert-delta structure LAST: 128 experts x 48 layers is the largest repeated structure in the lake at this scale, and it is where a representation win beyond quantisation would come from -- but it is also the most expensive search, so it should follow the cheap sweeps that bound what is achievable without it."
+ ],
+ "gather_prediction": "active fraction 11.0% measured; gather ceiling is 1 - non_expert_fraction = 94.95%, so a native expert-gather should move nearly the whole per-token byte traffic. Per O005's tps_caveat the win may not show in TPS if decode is kernel-bound rather than bandwidth-bound -- that caveat is the reopen condition, not an excuse to skip the measurement.",
+ "gated_on": "GPU. The HCLI resident holds it and S007 forbids interrupting an active cycle for Odyssey work. This design is the deliverable that makes the window cheap when one opens.",
+ "commit": "1065c8cce",
+ "emitted_at": "2026-09-09T15:31:49Z"
+}
