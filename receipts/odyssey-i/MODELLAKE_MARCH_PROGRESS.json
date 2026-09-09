@@ -2,7 +2,7 @@
  "schema": "hawking.odyssey.modellake_march_progress.v1",
  "_label": "Bookkeeping snapshot, not a new measurement -- tallies existing receipts per S005's MODELLAKE MARCH record-keeping requirement.",
  "total_lake_specimens": 55,
- "n_deep_discovery_this_session": 11,
+ "n_deep_discovery_this_session": 12,
  "deep_discovery_this_session": {
   "state-spaces--mamba3-siso-1.5b@5cfc721542ec": "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
   "RWKV--RWKV7-13.3B-20260805@64ffe5934178": "CAND_RWKV7-13.3B_ODYSSEY_I.json",
@@ -14,7 +14,8 @@
   "lerobot--pi0_base@25c379b52ba2": "CAND_pi0_base_ODYSSEY_I.json",
   "facebook--sam2.1-hiera-large@665f8e2ad61c": "CAND_sam2.1-hiera-large_ODYSSEY_I.json",
   "openai--whisper-large-v3-turbo@41f01f3fe87f": "CAND_whisper-large-v3-turbo_ODYSSEY_I.json",
-  "Qwen--Qwen3-0.6B@c1899de289a0": "CAND_Qwen3-0.6B_ODYSSEY_I.json"
+  "Qwen--Qwen3-0.6B@c1899de289a0": "CAND_Qwen3-0.6B_ODYSSEY_I.json",
+  "answerdotai--ModernBERT-large@45bb4654a4d5": "CAND_ModernBERT-large_ODYSSEY_I.json"
  },
  "n_prior_full_odyssey_patients": 4,
  "prior_full_odyssey_patients": {
@@ -31,7 +32,7 @@
   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "config read, not used in a receipt"
  },
  "n_censused_survey_only": 45,
- "n_untouched_beyond_survey_classification": 34,
+ "n_untouched_beyond_survey_classification": 33,
  "untouched_specimens": [
   {
    "name": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
@@ -97,12 +98,6 @@
    "name": "allenai--Olmo-3-1025-7B@a81bae42db39",
    "model_type": "olmo3",
    "dir_size_gib": 13.603,
-   "diffusion_signal": false
-  },
-  {
-   "name": "answerdotai--ModernBERT-large@45bb4654a4d5",
-   "model_type": "modernbert",
-   "dir_size_gib": 1.477,
    "diffusion_signal": false
   },
   {
@@ -252,18 +247,20 @@
   "vision-language-action robot control, flow matching, first non-generation specimen (pi0_base, THIS session)",
   "pure vision/video segmentation, backbone-dominated budget (sam2.1-hiera-large, THIS session)",
   "audio (speech-to-text), first encoder-decoder architecture, 8:1 layer asymmetry (whisper-large-v3-turbo, THIS session)",
-  "smallest language specimen in the lake, second confirmed tied-embedding-waste transfer test (Qwen3-0.6B, THIS session)"
+  "smallest language specimen in the lake, second confirmed tied-embedding-waste transfer test (Qwen3-0.6B, THIS session)",
+  "encoder-ONLY masked LM; local/global attention heterogeneity that costs ZERO bytes, unlike LFM2's which is paid for in weights (ModernBERT-large, THIS session)"
  ],
  "architecture_families_in_the_census_NOT_yet_given_a_real_discovery_pass": [
   "next-gen linear-attn (GLM-5.3-Flash, Kimi-K3) -- both very large (305GB/1.45TB), untouched",
   "vision/audio/multimodal specialists beyond SAM2/Whisper (SmolVLM2, audio-flamingo-3, musicgen, depth-anything, vjepa2) -- musicgen would be a second, generative (not transcriptive) audio point",
   "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)",
-  "remaining small Resident/Pulsar candidates per S003's evaluation framework (Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B, ModernBERT-large) -- discovery-only anatomy in-scope now, qualification battery still gated until G004/G005 land"
+  "remaining small Resident/Pulsar candidates per S003's evaluation framework (Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B) -- discovery-only anatomy in-scope now, qualification battery still gated until G004/G005 land"
  ],
  "next_justified_specimens_if_continuing": [
   "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier",
-  "ModernBERT-large (1.48GB) -- an encoder-ONLY (non-generative) specimen, a genuinely different structural category from every specimen surveyed so far (all decoder-only or enc-dec)"
+  "musicgen-large (13GB) -- a second audio point, GENERATIVE rather than transcriptive, which whisper cannot answer for",
+  "Falcon3-1B / LFM2.5-1.2B -- remaining cheap small-body anatomy for S003's Resident framework"
  ],
- "commit": "c4be79be1",
- "emitted_at": "2026-09-09T14:18:23Z"
+ "commit": "a00ea4048",
+ "emitted_at": "2026-09-09T14:49:12Z"
 }
