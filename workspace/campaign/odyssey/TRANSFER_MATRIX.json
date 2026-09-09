@@ -95,13 +95,13 @@
   },
   {
    "rule": "R-protect-router-if-sensitive",
-   "note": "MoE-only. Untested on every Odyssey patient.",
-   "_evidence": "HYPOTHESIS",
+   "note": "MoE-only. Untested on every Odyssey patient. | O003: condition ('router sensitivity high') measured FALSE via round8 ablation (receipts/odyssey-i/O003_ROUTER_SENSITIVITY_TEST.json) -- rule does not fire for this patient, not a universal confirmation/refutation.",
+   "_evidence": "MEASURED (O003 round8 ablation) + HYPOTHESIS",
    "cells": {
     "O000": "ARCHITECTURE_SPECIFIC",
     "O001": "ARCHITECTURE_SPECIFIC",
     "O002": "ARCHITECTURE_SPECIFIC",
-    "O003": "NOT_TESTED",
+    "O003": "PATIENT_SPECIFIC",
     "O004": "ARCHITECTURE_SPECIFIC",
     "O005": "NOT_TESTED",
     "O006": "NOT_TESTED",

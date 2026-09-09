@@ -1,0 +1,72 @@
+{
+ "schema": "hawking.odyssey.rule_test.v1",
+ "oxx": "O003",
+ "rule_tested": "R-protect-router-if-sensitive",
+ "title": "Router sensitivity under realistic requantization -- O003 (Kimi-VL, DeepSeek-V3-style sigmoid/noaux_tc router, 6/64+2 shared)",
+ "status": "RESOLVED",
+ "kind": "transfer-rule-verification",
+ "gpu_cost": 0,
+ "_evidence": "SYNTHESIZED from receipts/odyssey-i/O003_SENSITIVITY.json's per_organ_sensitivity (already MEASURED, in-place mlx ablation, canonical HF snapshot untouched; baseline 12/12). No new measurement -- this is disk-only rule-testing of existing evidence, per S003's 'transfer-rule extraction' / 'receipt analysis' guidance.",
+ "_label": "MEASURED (source receipt) -> DERIVED (rule-test synthesis)",
+ "discriminator": {
+  "claim": "R-protect-router-if-sensitive's condition ('router sensitivity high') is testable by comparing round8 (realistic quantization-grade perturbation, near-identity round-trip on an already-4bit organ) delta_hits across organs -- zero (destructive full-ablation) is NOT the test, since it breaks every organ equally and says nothing about ROUTER specifically.",
+  "table": {
+   "embed": {
+    "n_modules": 1,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": -1
+   },
+   "attn": {
+    "n_modules": 162,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": -1
+   },
+   "router": {
+    "n_modules": 26,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": 0
+   },
+   "expert": {
+    "n_modules": 78,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": -1
+   },
+   "shared_expert": {
+    "n_modules": 78,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": -1
+   },
+   "mlp_dense": {
+    "n_modules": 3,
+    "zero_delta_hits": -11,
+    "round8_delta_hits": 0
+   },
+   "norm": {
+    "n_modules": 55,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": 0
+   },
+   "lm_head": {
+    "n_modules": 1,
+    "zero_delta_hits": -12,
+    "round8_delta_hits": 0
+   },
+   "other": {
+    "n_modules": 0,
+    "zero_delta_hits": 0,
+    "round8_delta_hits": 0
+   }
+  },
+  "finding": "Under round8, router loses 0/12 battery hits (robust); embed/attn/expert/shared_expert each lose 1/12 (measurably sensitive); mlp_dense/norm/lm_head also 0 (robust). The rule's own precondition ('router sensitivity high') is EMPIRICALLY FALSE for O003 -- its DeepSeek-V3-style router (sigmoid/noaux_tc gating, 6/64 experts + 2 shared, 26 router modules) tolerates a realistic 8-bit round-trip with zero measured degradation on a 12-item capability battery."
+ },
+ "rule_update": {
+  "id": "R-protect-router-if-sensitive",
+  "verdict_for_O003": "CONDITION NOT MET -- not a confirmation or refutation of the THEN clause, but the first real measurement of the rule's own IF clause. Moves the rule from pure HYPOTHESIS (0 supporting_patients, never checked against a real router) to MEASURED-AND-CONDITIONAL: router sensitivity is NOT universal -- it must be measured per architecture/routing-mechanism, not assumed. The rule's physical_rationale ('cheap to keep precise, expensive if it is wrong') is now known to be FALSE for at least one real sigmoid/noaux_tc router: wrong costs nothing measurable here.",
+  "gravity_decision_changed": "For O003-family (DeepSeek-V3-style sigmoid MoE routers), do NOT spend extra bit-budget protecting router precision -- the measured-sensitive organs (embed/attn/expert/shared_expert) are the actual quantization-error-preserving budget targets. This is the OPPOSITE allocation from what the rule's untested HYPOTHESIS would have recommended."
+ },
+ "sources": {
+  "measured_ref": "receipts/odyssey-i/O003_SENSITIVITY.json"
+ },
+ "commit": "d85267091",
+ "emitted_at": "2026-09-09T13:07:34Z"
+}

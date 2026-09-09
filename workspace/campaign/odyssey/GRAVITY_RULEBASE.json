@@ -50,10 +50,16 @@
    "then": "protect router precision",
    "supporting_patients": [],
    "negative_patients": [],
-   "confidence": "HYPOTHESIS",
+   "confidence": "MEASURED-CONDITIONAL",
    "reopen_if": "router ablation stays Doctor-stable after aggressive quant",
    "physical_rationale": "bible \u00a764 example. O005 router is 0.03 GB and gates all expert selection \u2014 cheap to keep precise, expensive if it is wrong.",
-   "_evidence": "HYPOTHESIS (bible \u00a764; O005 router bytes MEASURED, sensitivity UNKNOWN \u2014 A3)"
+   "_evidence": "HYPOTHESIS (bible \u00a764) + O003 MEASURED test of the condition itself (condition FALSE for this patient -- router robust to realistic requantization; condition remains untested for any patient where it might be TRUE)",
+   "tested_patients": [
+    "O003"
+   ],
+   "condition_measured": {
+    "O003": "FALSE (router round8 delta_hits=0/12; sensitive organs were embed/attn/expert/shared_expert at -1/12 each, not router) -- see receipts/odyssey-i/O003_ROUTER_SENSITIVITY_TEST.json"
+   }
   },
   {
    "id": "R-heterogeneous-expert-allocate",
