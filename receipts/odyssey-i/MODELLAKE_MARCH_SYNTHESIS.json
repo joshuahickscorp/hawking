@@ -1,0 +1,88 @@
+{
+ "schema": "hawking.odyssey.march_synthesis.v1",
+ "_label": "The distillation of the completed ModelLake march. Read this before specimen 46.",
+ "_evidence": "Every claim traces to a committed receipt under receipts/odyssey-i/. Nothing here is new measurement; it is what the measurements collectively mean.",
+ "census_status": "COMPLETE -- 53 distinct specimens carry a real measurement; 0 remain classification-only; 2 resist static measurement entirely (evo2_40b split .pt, mamba3-mimo .bin) and are recorded as such rather than skipped.",
+ "discovery_receipts": [
+  "CAND_Dream-v0-7B_ODYSSEY_I.json",
+  "CAND_FINAL_SWEEP_ODYSSEY_I.json",
+  "CAND_LFM2-24B-A2B_ODYSSEY_I.json",
+  "CAND_ModernBERT-large_ODYSSEY_I.json",
+  "CAND_Qwen3-0.6B_ODYSSEY_I.json",
+  "CAND_RWKV7-13.3B_ODYSSEY_I.json",
+  "CAND_SMALL_BODY_COHORT_ODYSSEY_I.json",
+  "CAND_SPECIALIST_COHORT_ODYSSEY_I.json",
+  "CAND_WORKING_LM_TIER_ODYSSEY_I.json",
+  "CAND_bitnet-b1.58-2B_ODYSSEY_I.json",
+  "CAND_evo2-7b_ODYSSEY_I.json",
+  "CAND_iLLaDA-8B_ODYSSEY_I.json",
+  "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
+  "CAND_pi0_base_ODYSSEY_I.json",
+  "CAND_sam2.1-hiera-large_ODYSSEY_I.json",
+  "CAND_whisper-large-v3-turbo_ODYSSEY_I.json"
+ ],
+ "LAWS_THAT_MAKE_THE_NEXT_MODEL_CHEAPER": [
+  {
+   "law": "MEASURE THE BODY, NEVER THE NAME.",
+   "earned_from": "five independent name-vs-measurement gaps: BitNet ships 2.0 bits/weight against its own '1.58' name; pi0's action expert measures 575M against a 'gemma_300m' label; iLLaDA's raw params are 8.28% over its README until a duplicated tied tensor is removed; Qwen3-0.6B is 25.27% over its name for the same reason; Mistral-Small-24B measures 48B until you notice it ships the same model twice.",
+   "use": "never quote a nameplate as a measurement, and when a measurement disagrees with a name, find the mechanism before publishing either."
+  },
+  {
+   "law": "AN EXACT FACTOR OF TWO IS A COUNTING BUG UNTIL PROVEN OTHERWISE.",
+   "earned_from": "Mistral-Small-3.1-24B measured 48.02B against a 24B name. Four genuine name-vs-measurement findings already existed, so a fifth looked plausible. It was a glob counting consolidated.safetensors AND its 10-shard twin: 585 tensors each, zero name overlap, identical shape/dtype multisets.",
+   "use": "prefer shards, never sum a consolidated copy alongside them, and treat suspiciously round ratios as arithmetic before treating them as discoveries."
+  },
+  {
+   "law": "A CONFIG FLAG PREDICTS NOTHING; ONLY BYTES SETTLE IT.",
+   "earned_from": "R-tied-embedding-dedup-verify across 8 specimens: 2 wasteful, 4 clean, 2 untied. Settled by a within-vendor counter-example -- Qwen3-0.6B duplicates its tied matrix while Qwen3-Embedding-0.6B does not, same lab, same 0.6B class, same model_type -- which forecloses family, format and scale as explanations. Also Dream-v0's use_cache=true, which its own generation loop ignores.",
+   "use": "verify declared properties at the byte level. The rule's entire value is its verify step."
+  },
+  {
+   "law": "HETEROGENEITY IN A CONFIG IS NOT NECESSARILY HETEROGENEITY IN THE WEIGHTS.",
+   "earned_from": "ModernBERT-large alternates local and global attention every 3rd layer, and those layers are BYTE-IDENTICALLY structured -- the alternation is a runtime mask policy costing zero stored bytes. LFM2-24B's conv-vs-attention heterogeneity IS paid for in weights.",
+   "use": "before keying an allocation rule on 'layer type', check whether the types differ in tensors."
+  },
+  {
+   "law": "SPECIALIST BODIES HAVE EXACTLY ONE ORGAN WORTH ATTACKING.",
+   "earned_from": "Depth-Anything backbone 90.8%, SmolVLM2 model 95.5%, sam2.1 vision_encoder 94.8%, vjepa2 encoder 97.8%, timesfm decoder 99.0%.",
+   "use": "on a non-language-decoder body, every MoE-derived allocation lever has no surface. The search is 'compress the backbone or achieve nothing' -- narrower and harder, and worth planning as such rather than discovering by trying rules that cannot apply."
+  },
+  {
+   "law": "THE GATHER LEVER IS BOUNDED BY SHARED MASS, NOT BY THE TOP-K RATIO.",
+   "earned_from": "R-sparse-active-expert-gather transferred on 10 of 12 MoE bodies and failed on Qwen3.8-Flash-Next -- which has the SPARSEST routing in the population (10 of 512) and still runs 32.8% active, because 31.5% of it is non-expert mass. Refined law active = non_expert + expert*(k/E) reproduces the measurement to 0.04pp.",
+   "use": "measure expert_mass/total before funding a gather implementation. Its ceiling is 1 - non_expert_fraction."
+  },
+  {
+   "law": "ADVERTISED CONTEXT IS A MEMORY LIABILITY, NOT ONLY A CAPABILITY.",
+   "earned_from": "KV at full advertised context exceeds model weights for several Resident candidates (Qwen3-4B: 36.0 GiB KV against 7.5 GiB of weights). Olmo-3-7B has no GQA at all -- 512 KiB/token, 8x the cheapest candidate -- and nothing in its parameter count reveals it.",
+   "use": "the memory denominator is weights + KV at the context actually used. Compute it from layers x kv_heads x head_dim, never from parameter count."
+  },
+  {
+   "law": "SIZE DOES NOT GATE STATIC ANALYSIS. ONLY EXECUTION IS GATED.",
+   "earned_from": "the frontier tier sat unexamined for the whole campaign as though 1.45TB were prohibitive. A safetensors header is a length prefix plus JSON at the head of each shard: Kimi-K3 yielded 1503.65B params / 83.02B active / 1.04 bytes-per-param for the same cost as a 3GB body.",
+   "use": "never defer a header read for size. Defer only what needs the GPU."
+  },
+  {
+   "law": "SET THE EBPW BASELINE FROM THE REAL DTYPE MIX.",
+   "earned_from": "Kimi-K3 1.04, GLM-5.3-Flash 1.02 and DeepSeek-V4-Flash 1.01 bytes/param -- already sub-bf16 at rest (F8_E4M3, F8_E8M0 scales, I8 payloads). BitNet's complete-system EBPW is 3.91 despite 86% of its params being 2-bit ternary, because embeddings and norms stay BF16.",
+   "use": "comparing a Gravity result against an assumed fp16 parent overstates the win on any of these. Always keep the complete system in the denominator."
+  }
+ ],
+ "METHOD_TRAPS_CAUGHT_THIS_MARCH": [
+  "A dtype missing from the table silently defaults and inflates a total -- F8_E8M0 cost DeepSeek-V4 8GiB of phantom size until the table was completed.",
+  "'Unmeasurable' often means 'the glob did not look' -- audio-flamingo-3 keeps tensors under llm/ + sound_tower/, Wan2.2-T2V under high_noise_model/. Recursive lookup measured both.",
+  "Checking a sample and generalising: LFM2-24B looked like 'conv layers dense, attention layers MoE' from layers 0 and 2. All 40 checked: only layers 0-1 are dense, by absolute position.",
+  "A hand-eyeballed count is not a count -- RWKV7's layer 0 carries 2 extra tensors the other 60 do not.",
+  "A family name is not a structure -- LFM2.5 keeps the conv+attention split and drops the MoE entirely, so a rule keyed on 'LFM2' would find no expert organ and silently do nothing.",
+  "A rulebase entry authored in a different schema breaks every consumer that iterates it -- the A5 rule used title/claim where twelve others use conditions/then, and was found by exactly that crash."
+ ],
+ "WHAT_REMAINS_GATED": "EXECUTION, and only execution. No capability battery, Gravity codec search, NR/Noetic/NX build or physical run has happened for any specimen, because all of those need the GPU the HCLI resident holds. Every static question the march could answer has been answered.",
+ "RANKED_CONTINUATION_WHEN_GPU_OPENS": [
+  "Qwen3-Coder-30B-A3B -- the only Resident candidate that is MoE, code-specialised and long-context at once, and the natural next Gravity patient after O005/O006 since the expert-organ rules apply directly.",
+  "Kimi-K3 / GLM-5.3-Flash / DeepSeek-V4-Flash -- frontier MoE with expert mass above 90% and already sub-bf16, so the gather lever is nearly the whole battle and the EBPW baseline is unusual.",
+  "Dream-v0 and iLLaDA -- the steps-vs-quality tradeoff is the efficiency question for masked-diffusion LMs and has no analogue in any other family surveyed.",
+  "LFM2.5-2.6B -- cheapest long context measured (60 KiB/token, 8 of 30 layers attention), the clearest test of whether A5's hybrid-ratio rule predicts real served memory."
+ ],
+ "commit": "b68fa26b6",
+ "emitted_at": "2026-09-09T15:27:53Z"
+}
