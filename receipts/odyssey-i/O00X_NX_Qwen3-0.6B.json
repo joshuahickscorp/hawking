@@ -1,0 +1,58 @@
+{
+ "schema": "hawking.odyssey.nx.v1",
+ "_label": "G022+G023 / S009. NR -> Noetic -> NX for Qwen3-0.6B, physically executed with the parent checkpoint RENAMED AWAY, then optimised. Includes an optimisation claim I had to retract.",
+ "_evidence": "MEASURED on CPU. Zero GPU, so the HCLI resident was never interrupted.",
+ "NR_the_representation": "per-organ grouped-affine codes: 6-bit unsigned codes over groups of 64, with an fp16 scale and fp16 zero per group. Norms are carried RAW fp16 (65,536 params, 0.011% of the logical model) because they are tiny and disproportionately sensitive -- quantising them buys nothing and risks everything. They are still COUNTED in the complete EBPW.",
+ "NOETIC_the_program": "pack()/unpack() plus a manifest naming every tensor, its codec, its shape and its exact byte extents in the payload. The manifest also records the TIE (model.embed_tokens.weight is lm_head.weight), so the 155.58M-parameter embedding is stored ONCE, not twice.",
+ "NX_the_artifact": {
+  "file": "qwen3_06b.nx",
+  "format": "NX01 magic + u64 manifest length + JSON manifest + packed payload",
+  "bytes": 484411191,
+  "mib": 461.97,
+  "parent_bf16_mib": 1433.7,
+  "shrink_vs_shipped_bf16": 3.1,
+  "real_bit_packing": "6-bit codes are written into a contiguous bitstream, verified by an exact pack/unpack roundtrip at four sizes including a chunk boundary. The file is genuinely 6 bits per weight on disk -- otherwise the EBPW would be a fiction."
+ },
+ "COMPLETE_EBPW": {
+  "logical_params": 596049920,
+  "payload_bits": 3575906304,
+  "metadata_bits": 299040768,
+  "complete_ebpw": 6.501,
+  "nx_file_bytes": 484411191,
+  "note": "6.501 measured from the artifact itself, against 6.500 predicted by the Gravity sweep -- the packed file reproduces the accounting."
+ },
+ "NO_DENSE_PARENT_PROVEN_MECHANICALLY": {
+  "method": "the parent model.safetensors was RENAMED AWAY for the entire run (init, NX load, prefill and decode) and restored afterwards. Any code path that reached for the parent's weights would have raised rather than silently succeeding. The model was built with AutoModelForCausalLM.from_config -- random init -- and every weight then came from the NX.",
+  "what_the_NX_legitimately_still_needs": "config.json (architecture definition) and the tokenizer (vocabulary). An NX needs to know what it IS and how to read text; what it must not need is the parent's WEIGHTS, and it does not.",
+  "result": "PASSED -- inference ran to completion with the parent absent."
+ },
+ "QUALITY_PRESERVED": {
+  "fp32_reference": {
+   "perplexity": 59.6218,
+   "top1_agreement_vs_fp32": 1.0,
+   "kl_from_fp32": 0.0
+  },
+  "nx": {
+   "perplexity": 59.8706,
+   "top1_agreement_vs_fp32": 0.9393,
+   "kl_from_fp32": 11.321611
+  },
+  "verdict": "perplexity 59.87 against 59.62 fp32 (1.004x), top-1 agreement 0.9393, matching the sweep prediction exactly. The artifact behaves as the search said it would."
+ },
+ "PHYSICAL_EXECUTION": {
+  "init_s": 9.46,
+  "nx_load_s": 8.01,
+  "prefill_512tok_s": 0.497,
+  "decode_32tok_s": 2.39,
+  "decode_tps": 13.39
+ },
+ "OPTIMISATION_AND_A_RETRACTED_CLAIM": {
+  "attacked": "NX load time, whose cost is dominated by bit-unpacking 596M codes.",
+  "change": "chunked the unpack to whole-byte boundaries instead of materialising every bit of a tensor at once.",
+  "FIRST_READING_WAS_WRONG": "the whole-run load time went 9.59s -> 8.01s and decode 11.64 -> 13.39 TPS, which looks like a 16.5% win. It is not. Measuring the unpack function DIRECTLY over 5 reps on the largest real tensor (155.58M codes): naive min 2.075s / median 2.091s, chunked min 2.042s / median 2.046s -- about 1.6%, inside the noise of the whole-run number. The decode change cannot be caused by an unpack fix at all, since unpacking does not run during decode. Both apparent gains were run-to-run variance and the claim is RETRACTED.",
+  "WHAT_IT_ACTUALLY_BUYS": "memory. Peak allocation for that one tensor: naive 8605.8 MiB, chunked 647.5 MiB -- a 13.3x reduction, and only 54 MiB above the 593.5 MiB the output array itself requires. On a loaded machine an 8.6 GB spike per tensor is the difference between loading and not loading.",
+  "lesson": "a whole-run timing delta is not attribution. The paired direct measurement is what separated a real 13.3x memory win from an imaginary 16.5% speed win."
+ },
+ "commit": "f89b4ec8c",
+ "emitted_at": "2026-09-09T15:50:17Z"
+}
