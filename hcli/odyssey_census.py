@@ -68,6 +68,32 @@ about any one specimen:
     embeddings. A headline precision is not a system rate.
 """
 
+#: CLOSED SETS. The open-vocabulary version asked "what architecture family is
+#: this?" and two agents answered with the config's own class name -- DreamModel,
+#: ILLaDA -- which is not a family. Injecting general rules to fix that made a
+#: small body worse, because it applied the most salient rule to everything.
+#:
+#: So the question is narrowed instead of the model enlarged. Choosing from a
+#: list is a different task from naming a category: the wrong answers are
+#: visible, the vocabulary is fixed, and a body that knows Dream is masked can
+#: pick DIFFUSION_LM without having to produce the phrase unprompted.
+FAMILIES = (
+    "DENSE_DECODER", "MOE_DECODER", "DIFFUSION_LM", "BIDIRECTIONAL_ENCODER",
+    "STATE_SPACE", "RWKV_RECURRENT", "HYBRID_CONV_ATTENTION", "LINEAR_ATTENTION",
+    "NATIVE_LOW_BIT", "ENCODER_DECODER", "VISION", "AUDIO", "MULTIMODAL",
+    "ROBOTICS", "GENOMIC", "DIFFUSION_IMAGE_OR_VIDEO", "EMBEDDING", "OTHER",
+)
+EXECUTION_CLASSES = (
+    "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "ITERATIVE_DENOISING",
+    "BIDIRECTIONAL_ENCODER_PASS",
+    "RECURRENT_STATE_SCAN",
+    "ENCODER_DECODER_PASS",
+    "STREAMING_FULL_DUPLEX",
+    "SINGLE_FORWARD_EMBEDDING",
+    "OTHER",
+)
+
 DISPOSITIONS = {
     "REJECTED", "DOMINATED", "DATA-ONLY", "RESEARCH SPECIMEN", "PARETO CANDIDATE",
     "HCLI RESIDENT CANDIDATE", "PULSAR CANDIDATE", "MAGNETAR CANDIDATE",
@@ -114,13 +140,12 @@ def build_prompt(u: Unit) -> str:
         "Reply with ONLY a JSON object, no prose before or after, with exactly "
         "these keys:\n"
         + "".join(f"  {k}\n" for k in REQUIRED)
-        + f"\n`disposition` must be one of: {sorted(DISPOSITIONS)}\n"
-        "`execution_class` describes HOW COMPUTE FLOWS, not what the model is "
-        "for. Valid answers look like: autoregressive decode with KV cache; "
-        "iterative diffusion denoising; bidirectional encoder pass; recurrent "
-        "state scan; streaming full-duplex; encoder-decoder. 'instruct', 'chat' "
-        "and 'high-throughput inference' are NOT execution classes and fail.\n"
-        "`architecture_family` must be consistent with config model_type above.\n"
+        + f"\n`architecture_family` MUST be exactly one of:\n    "
+        + "\n    ".join(FAMILIES) + "\n"
+        + f"`execution_class` MUST be exactly one of:\n    "
+        + "\n    ".join(EXECUTION_CLASSES) + "\n"
+        + f"`disposition` must be one of: {sorted(DISPOSITIONS)}\n"
+        "Pick from the lists. A value not on them fails the unit.\n"
         "`matrix_params_b` and `tensor_gib` may be echoed; if you echo them they "
         "must match the facts above.\n"
         "`relevant_laws` is a list naming prior Hawking rules that apply to a "
@@ -152,6 +177,14 @@ def verify(u: Unit, verdict: Dict[str, Any]) -> Tuple[bool, str]:
     missing = [k for k in REQUIRED if not verdict.get(k)]
     if missing:
         return False, f"missing required keys: {missing}"
+    fam = str(verdict["architecture_family"]).upper().strip()
+    if fam not in FAMILIES:
+        return False, (f"architecture_family {verdict['architecture_family']!r} "
+                       f"is not one of the {len(FAMILIES)} allowed values")
+    ex = str(verdict["execution_class"]).upper().strip()
+    if ex not in EXECUTION_CLASSES:
+        return False, (f"execution_class {verdict['execution_class']!r} is not "
+                       f"one of the {len(EXECUTION_CLASSES)} allowed values")
     disp = str(verdict["disposition"]).upper().strip()
     if not any(d in disp for d in DISPOSITIONS):
         return False, (f"disposition {verdict['disposition']!r} is not one of the "
@@ -408,20 +441,20 @@ def main(argv: Optional[List[str]] = None) -> int:
 #: wording is free and the claim is not.
 CALIBRATION: Dict[str, Dict[str, Any]] = {
     "Dream-org--Dream-v0-Instruct-7B": {
-        "architecture_family": {"diffusion"},
-        "execution_class": {"diffusion", "denois", "iterative"},
+        "architecture_family": {"diffusion_lm"},
+        "execution_class": {"iterative_denoising"},
     },
     "GSAI-ML--iLLaDA-8B-Base": {
-        "architecture_family": {"diffusion"},
-        "execution_class": {"diffusion", "denois", "iterative"},
+        "architecture_family": {"diffusion_lm"},
+        "execution_class": {"iterative_denoising"},
     },
     "microsoft--bitnet-b1.58-2B-4T": {
-        "architecture_family": {"ternary", "bitnet", "low-bit", "low bit"},
-        "execution_class": {"autoregressive", "decode"},
+        "architecture_family": {"native_low_bit", "dense_decoder"},
+        "execution_class": {"autoregressive_decode_with_kv"},
     },
     "answerdotai--ModernBERT-large": {
-        "architecture_family": {"encoder", "bert"},
-        "execution_class": {"encoder", "bidirectional"},
+        "architecture_family": {"bidirectional_encoder"},
+        "execution_class": {"bidirectional_encoder_pass"},
     },
 }
 

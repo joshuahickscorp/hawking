@@ -19,8 +19,8 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from hcli.odyssey_census import (REQUIRED, Unit, parse_verdict, run_unit,
-                                 verify, write_receipt)
+from hcli.odyssey_census import (EXECUTION_CLASSES, FAMILIES, REQUIRED, Unit,
+                                 parse_verdict, run_unit, verify, write_receipt)
 
 FACTS = {"n_tensors": 311, "tensor_gib": 1.4, "on_disk_gib": 1.4,
          "matrix_params_b": 0.5959, "dtype_bytes": {"BF16": 1}, "distinct_roles": 9,
@@ -29,8 +29,8 @@ FACTS = {"n_tensors": 311, "tensor_gib": 1.4, "on_disk_gib": 1.4,
 
 
 def _good(**over):
-    v = {"architecture_family": "dense causal decoder",
-         "execution_class": "autoregressive decode with KV cache",
+    v = {"architecture_family": "DENSE_DECODER",
+         "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
          "dominant_organs": "mlp gate/up/down across 28 layers",
          "state_or_kv": "standard attention KV, grows with context",
          "likely_bottleneck": "memory bandwidth at decode",
@@ -93,6 +93,33 @@ class TestInventedNumbersCannotPass(unittest.TestCase):
             ok, why = verify(Unit(specimen="x", facts=FACTS), v)
             self.assertFalse(ok, f"a verdict missing {key} was accepted")
             self.assertIn(key, why)
+
+    def test_an_off_list_architecture_family_fails(self):
+        # The whole reason the vocabulary was closed. Two agents answered with
+        # the config's own class name -- "DreamModel", "ILLaDA" -- which is not
+        # a family, and the open-vocabulary gate had no way to say so.
+        ok, why = verify(Unit(specimen="x", facts=FACTS),
+                         _good(architecture_family="DreamModel"))
+        self.assertFalse(ok, "'DreamModel' was accepted as an architecture family")
+        self.assertIn("not one of the", why)
+
+    def test_an_off_list_execution_class_fails(self):
+        ok, why = verify(Unit(specimen="x", facts=FACTS),
+                         _good(execution_class="instruct"))
+        self.assertFalse(ok, "'instruct' was accepted as an execution class")
+        self.assertIn("not one of the", why)
+
+    def test_every_listed_value_is_actually_accepted(self):
+        # Negative control: a closed set that rejects its own members would be
+        # a gate that never opens.
+        for fam in FAMILIES:
+            ok, why = verify(Unit(specimen="x", facts=FACTS),
+                             _good(architecture_family=fam))
+            self.assertTrue(ok, f"{fam} is on the list and was rejected: {why}")
+        for ex in EXECUTION_CLASSES:
+            ok, why = verify(Unit(specimen="x", facts=FACTS),
+                             _good(execution_class=ex))
+            self.assertTrue(ok, f"{ex} is on the list and was rejected: {why}")
 
     def test_an_invented_disposition_fails(self):
         ok, why = verify(Unit(specimen="x", facts=FACTS),

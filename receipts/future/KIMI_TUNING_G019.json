@@ -1,0 +1,40 @@
+{
+ "obligation": "G019 \u2014 Kimi-VL-A3B tuning",
+ "date": "2026-09-09",
+ "stage": "serving path",
+ "anatomy_measured": {
+  "tensor_gib": 30.56,
+  "on_disk_gib": 30.57,
+  "matrix_params_b": 16.4071,
+  "dtype": "BF16 throughout",
+  "layers": 27,
+  "hidden": 2048,
+  "experts": "64 routed + 2 shared, 6 routed active per token",
+  "moe_intermediate": 1408,
+  "ACTIVE_per_token_B": 1.799,
+  "stored_moe_B": 14.845,
+  "stored_to_active_ratio": "8.2x",
+  "active_share_of_total": "~11% of 16.41B",
+  "why_this_matters": "this is the workhorse property. Eight of sixty-six experts run per token, so the compute is ~1.8B while the residency is 30.6 GiB. On a 96 GiB box beside an 11.5 GiB resident that fits with room to spare, and it is the reason an A3B body can be fast without being small."
+ },
+ "serving_path": {
+  "mlx_lm": "REFUSED. `ValueError: Received 27 parameters not in model` on `kv_b_proj` -- Kimi-VL's language model is DeepSeek-V2-style MLA + MoE and mlx_lm has no kimi_vl entry, only deepseek_v2/v3.",
+  "mlx_vlm": "installed (uv tool install mlx-vlm). First server start failed with `[METAL] Command buffer execution failed: GPU Timeout Error` during load.",
+  "status": "load being retried uncontended"
+ },
+ "BANDWIDTH_MEASURED_AND_A_WITHDRAWN_CLAIM": {
+  "first_reading": "15.9 MB/s on the external volume",
+  "what_that_implied": "30.6 GiB would take ~32 minutes and would explain the GPU timeout, the Falcon 2-hour ETA, and every slow load today",
+  "WITHDRAWN": "that dd was competing with the in-flight 30 GiB Kimi load on the same device. Re-measured with nothing else reading: 822 MB/s.",
+  "external_uncontended_MB_s": 822,
+  "internal_cold_write_MB_s": 2789,
+  "internal_cached_read_MB_s": 18164,
+  "conclusion": "the external volume is NOT the bottleneck -- 30.6 GiB at 822 MB/s is about 38 seconds of reads. Moving the workhorse to internal storage is still worth ~3.4x on cold reads, but it is an optimisation, not the fix. The GPU timeout has another cause.",
+  "lesson": "a bandwidth number taken while a multi-gigabyte load is in flight measures the contention, not the device. Third hypothesis withdrawn today by re-measuring rather than reasoning."
+ },
+ "disk": {
+  "external_free_gib": 85,
+  "external_capacity_pct": 99,
+  "internal_free_gib": 248
+ }
+}
