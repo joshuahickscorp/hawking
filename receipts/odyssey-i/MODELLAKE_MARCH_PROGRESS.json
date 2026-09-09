@@ -2,14 +2,17 @@
  "schema": "hawking.odyssey.modellake_march_progress.v1",
  "_label": "Bookkeeping snapshot, not a new measurement -- tallies existing receipts per S005's MODELLAKE MARCH record-keeping requirement.",
  "total_lake_specimens": 55,
- "n_deep_discovery_this_session": 6,
+ "n_deep_discovery_this_session": 9,
  "deep_discovery_this_session": {
   "state-spaces--mamba3-siso-1.5b@5cfc721542ec": "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
   "RWKV--RWKV7-13.3B-20260805@64ffe5934178": "CAND_RWKV7-13.3B_ODYSSEY_I.json",
   "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf": "CAND_Dream-v0-7B_ODYSSEY_I.json",
   "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361": "CAND_bitnet-b1.58-2B_ODYSSEY_I.json",
   "LiquidAI--LFM2-24B-A2B@a3bbacd91a67": "CAND_LFM2-24B-A2B_ODYSSEY_I.json",
-  "arcinstitute--evo2_7b@bda0089f9258": "CAND_evo2-7b_ODYSSEY_I.json (light pass -- .pt format)"
+  "arcinstitute--evo2_7b@bda0089f9258": "CAND_evo2-7b_ODYSSEY_I.json (light pass -- .pt format)",
+  "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a": "CAND_iLLaDA-8B_ODYSSEY_I.json",
+  "lerobot--pi0_base@25c379b52ba2": "CAND_pi0_base_ODYSSEY_I.json",
+  "facebook--sam2.1-hiera-large@665f8e2ad61c": "CAND_sam2.1-hiera-large_ODYSSEY_I.json"
  },
  "n_prior_full_odyssey_patients": 4,
  "prior_full_odyssey_patients": {
@@ -26,14 +29,8 @@
   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "config read, not used in a receipt"
  },
  "n_censused_survey_only": 45,
- "n_untouched_beyond_survey_classification": 39,
+ "n_untouched_beyond_survey_classification": 36,
  "untouched_specimens": [
-  {
-   "name": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
-   "model_type": "illada",
-   "dir_size_gib": 15.379,
-   "diffusion_signal": true
-  },
   {
    "name": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
    "model_type": "smolvlm",
@@ -143,12 +140,6 @@
    "diffusion_signal": false
   },
   {
-   "name": "facebook--sam2.1-hiera-large@665f8e2ad61c",
-   "model_type": "sam2_video",
-   "dir_size_gib": 0.836,
-   "diffusion_signal": false
-  },
-  {
    "name": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
    "model_type": "vjepa2",
    "dir_size_gib": 3.855,
@@ -170,12 +161,6 @@
    "name": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
    "model_type": "granitemoehybrid",
    "dir_size_gib": 12.935,
-   "diffusion_signal": false
-  },
-  {
-   "name": "lerobot--pi0_base@25c379b52ba2",
-   "model_type": "",
-   "dir_size_gib": 13.044,
    "diffusion_signal": false
   },
   {
@@ -272,19 +257,22 @@
   "masked diffusion, non-autoregressive (Dream-v0, THIS session)",
   "natively ternary/extreme-low-precision (BitNet, THIS session)",
   "triple-hybrid conv+sparse-attention+MoE (LFM2, THIS session)",
-  "genomic/DNA, non-language domain (evo2, THIS session, light pass)"
+  "genomic/DNA, non-language domain (evo2, THIS session, light pass)",
+  "second masked-diffusion LM, byte-exact tied-embedding waste found (iLLaDA-8B, THIS session)",
+  "vision-language-action robot control, flow matching, first non-generation specimen (pi0_base, THIS session)",
+  "pure vision/video segmentation, backbone-dominated budget (sam2.1-hiera-large, THIS session)"
  ],
  "architecture_families_in_the_census_NOT_yet_given_a_real_discovery_pass": [
-  "second diffusion-LM variant (iLLaDA-8B) -- comparison point to Dream-v0, untouched",
   "next-gen linear-attn (GLM-5.3-Flash, Kimi-K3) -- both very large (305GB/1.45TB), untouched",
-  "vision/audio/multimodal specialists (SmolVLM2, audio-flamingo-3, whisper, musicgen, sam2.1, depth-anything, vjepa2) -- a genuinely different Odyssey question (non-text-generation capability)",
-  "robotics (lerobot/pi0_base) -- untouched, another non-LLM domain",
-  "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)"
+  "vision/audio/multimodal specialists beyond SAM2 (SmolVLM2, audio-flamingo-3, whisper, musicgen, depth-anything, vjepa2) -- audio is still completely untouched (whisper, musicgen, audio-flamingo-3)",
+  "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)",
+  "small Resident/Pulsar candidates per S003's evaluation framework (Qwen3-0.6B, Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B, ModernBERT-large) -- discovery-only anatomy is in-scope now even though the full qualification battery is gated until G004/G005 land"
  ],
  "next_justified_specimens_if_continuing": [
-  "iLLaDA-8B -- cheapest next step, directly comparable to Dream-v0's already-done diffusion discovery (same paradigm, different lab/scale -- a real transfer-rule opportunity for the generation-mechanism findings Dream-v0 surfaced)",
+  "whisper-large-v3-turbo (1.51GB) -- cheapest audio specimen, completely untouched modality (text/vision/robotics/video all have at least one specimen now; audio has zero)",
+  "Qwen3-0.6B (1.42GB) -- smallest language specimen in the lake, a genuine first data point for S003's Resident/Pulsar-candidate anatomy comparison against sealed-3.14's 27B",
   "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier"
  ],
- "commit": "f1b2326ea",
- "emitted_at": "2026-09-09T13:53:20Z"
+ "commit": "08b545330",
+ "emitted_at": "2026-09-09T14:12:47Z"
 }
