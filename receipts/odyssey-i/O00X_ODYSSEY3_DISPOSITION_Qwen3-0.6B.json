@@ -1,0 +1,86 @@
+{
+ "schema": "hawking.odyssey.odyssey3.v1",
+ "_label": "G024+G025 / S009. Odyssey III attacks the OPTIMISED NX, then the honest disposition.",
+ "_evidence": "MEASURED on CPU against the packed artifact, not the original model.",
+ "patient": "Qwen3-0.6B via qwen3_06b.nx (6-bit grouped affine, complete EBPW 6.501)",
+ "ATTACKS": {
+  "1_probe_sensitivity": {
+   "why": "every number in this campaign rested on ONE eval probe. If quality swings by text, the headline was an artifact of my choice of bytes.",
+   "results": {
+    "original_manifesto_plus_code": {
+     "perplexity": 57.5602,
+     "top1_agreement_vs_fp32": 0.9426,
+     "kl_from_fp32": 9.406202
+    },
+    "pure_english_prose": {
+     "perplexity": 74.9044,
+     "top1_agreement_vs_fp32": 0.9243,
+     "kl_from_fp32": 11.386923
+    },
+    "pure_python_source": {
+     "perplexity": 200.255,
+     "top1_agreement_vs_fp32": 0.8982,
+     "kl_from_fp32": 15.09044
+    },
+    "json_structured_data": {
+     "perplexity": 27.4142,
+     "top1_agreement_vs_fp32": 0.8903,
+     "kl_from_fp32": 11.584854
+    }
+   },
+   "top1_spread": 0.0523,
+   "SURVIVED": true,
+   "honest_reading": "top-1 holds between 0.8903 and 0.9426 across four genuinely different domains (manifesto prose + code, pure English, pure Python, structured JSON) -- a spread of 0.052. The headline 0.9393 is representative, not cherry-picked. Worth naming: the WEAKEST domains are structured JSON (0.8903) and pure Python (0.8982), so this codec costs slightly more on code and structured data than on prose -- which matters, because code is HCLI's own domain."
+  },
+  "2_payload_corruption": {
+   "why": "the strongest possible test for a hidden dense parent. If something other than the packed codes were supplying weights, corrupting the codes would not matter.",
+   "bytes_flipped": 20000,
+   "results": {
+    "perplexity": 485165195.4098,
+    "top1_agreement_vs_fp32": 0.0,
+    "kl_from_fp32": 1213877376.0
+   },
+   "SURVIVED": true,
+   "honest_reading": "flipping 20,000 payload bytes takes perplexity to 4.85e8 and top-1 agreement to 0.000. The codes are load-bearing and nothing else is supplying the weights. Combined with the parent being renamed away during execution, the no-dense-fallback claim now has two independent mechanical proofs rather than an assurance."
+  },
+  "3_replay_determinism": {
+   "why": "a representation that does not reproduce is not a representation.",
+   "results": {
+    "identical_logits_across_two_independent_loads": true,
+    "survived": true
+   },
+   "SURVIVED": true,
+   "honest_reading": "two independent builds of the model from the same NX produce BIT-IDENTICAL logits."
+  },
+  "4_magnitude_control_on_the_nx_path": {
+   "why": "the verifier's adequacy was established against the parent. It must hold on the NX path too, or the NX numbers are ungated.",
+   "results": {
+    "perplexity": 151942.7608,
+    "top1_agreement_vs_fp32": 0.0,
+    "kl_from_fp32": 3549.49707
+   },
+   "SURVIVED": true,
+   "honest_reading": "0.01xW applied after loading from the NX gives perplexity 151942 and top-1 0.000 -- the gate rejects a destroyed NX exactly as it rejects a destroyed parent."
+  }
+ },
+ "ATTACKS_NOT_RUN": [
+  "generation quality (all metrics here are teacher-forced next-token; a real generation eval could differ and was not run)",
+  "long-context behaviour -- every probe was <=512 tokens against a 32768-token body",
+  "adversarial or out-of-distribution prompts",
+  "alternate corruption patterns (only one seed and one uniform byte-flip pattern was tried)",
+  "a stronger independent oracle -- the fp32 parent is the only reference used"
+ ],
+ "DISPOSITION": {
+  "verdict": "RESEARCH SPECIMEN / REPRESENTATION RESEARCH. Not a Pareto candidate and not a Resident.",
+  "why": "the full chain succeeded MECHANICALLY -- a self-contained NX that runs with its parent renamed away, reproduces bit-identically, survives four attacks, and cuts the shipped bf16 checkpoint 3.10x at top-1 0.94. But it does NOT reach the Gravity ladder: 6.501 complete EBPW against a <2.5 entry rung. The honest summary is that the PIPELINE is proven end to end and this PATIENT is not a Gravity win.",
+  "resident_verdict": "NOT A RESIDENT CANDIDATE. Separately from Gravity, this body cannot run HCLI: it is 0.6B, and the campaign's own evidence is that even the 27B struggles to hold the tool-call dialect. The measured degradation is also worst exactly on code and structured data, which is what HCLI's WorkUnits consist of.",
+  "value_delivered": "the pipeline itself, and three MEASURED laws that transfer to every future patient (grouping beats bit-width on outlier bodies; organ sensitivity is not mass and tolerant organs still impose floors; Gravity headroom needs redundancy, so sub-1B dense bodies do not reach the ladder)."
+ },
+ "NEXT_PATIENT_selected_by_evidence": {
+  "patient": "Qwen3-Coder-30B-A3B",
+  "why": "the exact inverse of this one on every axis that mattered here. Its expert organ is 94.95% of mass with 8 of 128 experts firing per token -- the redundancy a 0.6B dense body could not offer, and the condition R-gravity-headroom-needs-redundancy says is required. The search design is already written (receipts/odyssey-i/O00X_GRAVITY_SEARCH_DESIGN_Qwen3Coder30B.json) with the EBPW arithmetic worked out and the trap named: pushing only the experts leaves 2.71 EBPW because the 5% non-expert remainder costs ~0.8 EBPW at BF16.",
+  "gated_on": "GPU. 30B does not fit the CPU path this chain used, and the HCLI resident holds the device."
+ },
+ "commit": "2e573f3b6",
+ "emitted_at": "2026-09-09T15:55:12Z"
+}
