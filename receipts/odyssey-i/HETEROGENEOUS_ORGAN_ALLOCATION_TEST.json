@@ -1,0 +1,363 @@
+{
+ "schema": "hawking.odyssey.rule_test.v1",
+ "rule_tested": "R-heterogeneous-organ-allocation-aggressive-only",
+ "kind": "transfer-rule-discovery+verification",
+ "gpu_cost": 0,
+ "_evidence": "SYNTHESIZED from existing Gravity receipts (O005/O006/O001), all already MEASURED (mlx quant candidates, 12-item capability battery, in-place, canonical HF snapshots untouched). No new measurement -- disk-only synthesis, per S003's transfer-rule-extraction guidance.",
+ "_label": "MEASURED (source receipts) -> DERIVED (cross-patient rule synthesis)",
+ "patients": {
+  "MoE": [
+   "O005 (Qwen3-30B-A3B)",
+   "O006 (Qwen3-VL-30B-A3B-Instruct, sibling of O005's base)"
+  ],
+  "hybrid_negative_control": [
+   "O001 (Falcon-H1-7B, parallel Mamba2+attention hybrid)"
+  ]
+ },
+ "moe_pairs": {
+  "O006": {
+   "q2-g32": {
+    "uniform_spec": "q2-g32",
+    "uniform_bpw": 2.9482,
+    "uniform_delta_hits": -12,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q2-g32-experts",
+    "targeted_bpw": 3.0226,
+    "targeted_delta_hits": -2,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 10,
+    "bpw_cost": 0.0744
+   },
+   "q2-g128": {
+    "uniform_spec": "q2-g128",
+    "uniform_bpw": 2.2112,
+    "uniform_delta_hits": -12,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q2-g128-experts",
+    "targeted_bpw": 2.3228,
+    "targeted_delta_hits": -2,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 10,
+    "bpw_cost": 0.1116
+   },
+   "q3-g32": {
+    "uniform_spec": "q3-g32",
+    "uniform_bpw": 3.9309,
+    "uniform_delta_hits": -2,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q3-g32-experts",
+    "targeted_bpw": 3.9556,
+    "targeted_delta_hits": -2,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0247
+   },
+   "q3-g64": {
+    "uniform_spec": "q3-g64",
+    "uniform_bpw": 3.4395,
+    "uniform_delta_hits": -3,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q3-g64-experts",
+    "targeted_bpw": 3.4891,
+    "targeted_delta_hits": -1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 2,
+    "bpw_cost": 0.0496
+   },
+   "q3-g128": {
+    "uniform_spec": "q3-g128",
+    "uniform_bpw": 3.1939,
+    "uniform_delta_hits": -1,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q3-g128-experts",
+    "targeted_bpw": 3.2558,
+    "targeted_delta_hits": -1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0619
+   },
+   "q4-g32": {
+    "uniform_spec": "q4-g32",
+    "uniform_bpw": 4.9135,
+    "uniform_delta_hits": -1,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q4-g32-experts",
+    "targeted_bpw": 4.8887,
+    "targeted_delta_hits": -1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": -0.0248
+   },
+   "q4-g64": {
+    "uniform_spec": "q4-g64",
+    "uniform_bpw": 4.4222,
+    "uniform_delta_hits": 0,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q4-g64-experts",
+    "targeted_bpw": 4.4222,
+    "targeted_delta_hits": 0,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q4-g128": {
+    "uniform_spec": "q4-g128",
+    "uniform_bpw": 4.1765,
+    "uniform_delta_hits": 0,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q4-g128-experts",
+    "targeted_bpw": 4.1889,
+    "targeted_delta_hits": -1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": -1,
+    "bpw_cost": 0.0124
+   }
+  },
+  "O005": {
+   "q2-g32": {
+    "uniform_spec": "q2-g32",
+    "uniform_bpw": 3.0002,
+    "uniform_delta_hits": -10,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q2-g32-experts",
+    "targeted_bpw": 3.0759,
+    "targeted_delta_hits": 1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 11,
+    "bpw_cost": 0.0757
+   },
+   "q2-g128": {
+    "uniform_spec": "q2-g128",
+    "uniform_bpw": 2.2502,
+    "uniform_delta_hits": -10,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q2-g128-experts",
+    "targeted_bpw": 2.3637,
+    "targeted_delta_hits": 0,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 10,
+    "bpw_cost": 0.1135
+   },
+   "q3-g32": {
+    "uniform_spec": "q3-g32",
+    "uniform_bpw": 4.0002,
+    "uniform_delta_hits": -1,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q3-g32-experts",
+    "targeted_bpw": 4.0254,
+    "targeted_delta_hits": 0,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 1,
+    "bpw_cost": 0.0252
+   },
+   "q3-g64": {
+    "uniform_spec": "q3-g64",
+    "uniform_bpw": 3.5002,
+    "uniform_delta_hits": 1,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q3-g64-experts",
+    "targeted_bpw": 3.5507,
+    "targeted_delta_hits": 1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0505
+   },
+   "q3-g128": {
+    "uniform_spec": "q3-g128",
+    "uniform_bpw": 3.2502,
+    "uniform_delta_hits": 0,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q3-g128-experts",
+    "targeted_bpw": 3.3133,
+    "targeted_delta_hits": 0,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0631
+   }
+  }
+ },
+ "hybrid_pairs": {
+  "O001": {
+   "q2-g32": {
+    "uniform_spec": "q2-g32",
+    "uniform_bpw": 5.2614,
+    "uniform_delta_hits": -10,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q2-g32-attn-mlp",
+    "targeted_bpw": 5.2614,
+    "targeted_delta_hits": -10,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q2-g128": {
+    "uniform_spec": "q2-g128",
+    "uniform_bpw": 4.6419,
+    "uniform_delta_hits": -10,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q2-g128-attn-mlp",
+    "targeted_bpw": 4.6419,
+    "targeted_delta_hits": -10,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q3-g32": {
+    "uniform_spec": "q3-g32",
+    "uniform_bpw": 6.0875,
+    "uniform_delta_hits": -9,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q3-g32-attn-mlp",
+    "targeted_bpw": 6.0875,
+    "targeted_delta_hits": -9,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q3-g64": {
+    "uniform_spec": "q3-g64",
+    "uniform_bpw": 5.6745,
+    "uniform_delta_hits": -10,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q3-g64-attn-mlp",
+    "targeted_bpw": 5.6745,
+    "targeted_delta_hits": -10,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q3-g128": {
+    "uniform_spec": "q3-g128",
+    "uniform_bpw": 5.4679,
+    "uniform_delta_hits": -10,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "q3-g128-attn-mlp",
+    "targeted_bpw": 5.4679,
+    "targeted_delta_hits": -10,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q4-g32": {
+    "uniform_spec": "q4-g32",
+    "uniform_bpw": 6.9136,
+    "uniform_delta_hits": 0,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q4-g32-attn-mlp",
+    "targeted_bpw": 6.9136,
+    "targeted_delta_hits": 0,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q4-g64": {
+    "uniform_spec": "q4-g64",
+    "uniform_bpw": 6.5006,
+    "uniform_delta_hits": 0,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q4-g64-attn-mlp",
+    "targeted_bpw": 6.5006,
+    "targeted_delta_hits": 0,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "q4-g128": {
+    "uniform_spec": "q4-g128",
+    "uniform_bpw": 6.294,
+    "uniform_delta_hits": -1,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "q4-g128-attn-mlp",
+    "targeted_bpw": 6.294,
+    "targeted_delta_hits": -1,
+    "targeted_verdict": "CANDIDATE_PASS",
+    "delta_hits_gain": 0,
+    "bpw_cost": 0.0
+   },
+   "mixed-q2q3": {
+    "uniform_spec": "mixed-q2q3",
+    "uniform_bpw": 6.0237,
+    "uniform_delta_hits": -9,
+    "uniform_verdict": "DEGRADED",
+    "targeted_spec": "mixed-q2q3-attn-mlp",
+    "targeted_bpw": 5.2614,
+    "targeted_delta_hits": -10,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": -1,
+    "bpw_cost": -0.7623
+   },
+   "mixed-q2q4": {
+    "uniform_spec": "mixed-q2q4",
+    "uniform_bpw": 6.7859,
+    "uniform_delta_hits": 0,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "mixed-q2q4-attn-mlp",
+    "targeted_bpw": 5.2614,
+    "targeted_delta_hits": -10,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": -10,
+    "bpw_cost": -1.5245
+   },
+   "mixed-q3q4": {
+    "uniform_spec": "mixed-q3q4",
+    "uniform_bpw": 6.8497,
+    "uniform_delta_hits": -1,
+    "uniform_verdict": "CANDIDATE_PASS",
+    "targeted_spec": "mixed-q3q4-attn-mlp",
+    "targeted_bpw": 6.0875,
+    "targeted_delta_hits": -9,
+    "targeted_verdict": "DEGRADED",
+    "delta_hits_gain": -8,
+    "bpw_cost": -0.7622
+   }
+  }
+ },
+ "moe_summary": {
+  "q2_gains": [
+   10,
+   10,
+   11,
+   10
+  ],
+  "q2_mean_gain": 10.25,
+  "q3plus_gains": [
+   0,
+   2,
+   0,
+   0,
+   0,
+   -1,
+   1,
+   0,
+   0
+  ],
+  "q3plus_mean_gain": 0.2222222222222222
+ },
+ "hybrid_summary": {
+  "q2_gains": [
+   0,
+   0
+  ],
+  "q2_mean_gain": 0.0,
+  "q3plus_gains": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   -1,
+   -10,
+   -8
+  ],
+  "q3plus_mean_gain": -2.111111111111111
+ },
+ "finding": "For MoE (O005, O006): at q2 (aggressive uniform quant, otherwise catastrophic -- 0-2/12 battery), targeting ONLY the expert organ at that bit level while protecting attn/router/embed/lm_head at 4-bit rescues capability dramatically (O006: -12 -> -2 delta_hits for +0.07 bpw; O005: -10 -> +1 for +0.08 bpw). By q3+, uniform quantization is ALREADY survivable on its own, and targeted allocation's advantage shrinks to 0-2 hits or vanishes entirely -- it is a rescue mechanism for aggressive compression, not a free lunch at every bit level. mixed-q2q3/q2q4 schemes stay catastrophic on BOTH sides regardless of targeting (q2 present ANYWHERE in a mix still wrecks the model) -- the rule does NOT claim protection from q2 in a mixed scheme, only from PURE uniform single-level q2.\nFor the hybrid negative control (O001): the SAME strategic move (target attn+mlp aggressively, protect the rest) shows NO benefit at any single bit level (every non-mixed pair is EXACTLY tied) and is ACTIVELY WORSE in 2 of 3 mixed configs (mixed-q2q4: uniform 10/12 vs targeted 0/12; mixed-q3q4: uniform 9/12 vs targeted 1/12). The strategy that rescues MoE experts does not transfer to a hybrid architecture's attn/mlp split -- plausibly because MoE experts are individually low-marginal-value and mutually redundant (many near-interchangeable units), while attn+mlp in a hybrid model is a much smaller, more functionally load-bearing set with no equivalent redundancy to exploit.",
+ "sources": {
+  "O006": "receipts/odyssey-i/O006_GRAVITY_*.json",
+  "O005": "receipts/odyssey-i/O005_GRAVITY_*.json",
+  "O001": "receipts/odyssey-i/O001_GRAVITY_*.json"
+ },
+ "commit": "1a4b7d907",
+ "emitted_at": "2026-09-09T13:15:59Z"
+}

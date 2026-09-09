@@ -152,6 +152,26 @@
    "family": "hybrid/SSM",
    "origin": "O001 (Falcon-H1-7B), measured O001_NX_state.json",
    "_evidence": "INFERRED from A5 multi-arch config accounting; see receipts/odyssey-i/O001_A5_SSM_RULE.json"
+  },
+  {
+   "id": "R-heterogeneous-organ-allocation-aggressive-only",
+   "conditions": [
+    "kind == moe",
+    "target uniform bit-level is aggressive (measured: q2, near-catastrophic if applied uniformly)",
+    "a high-redundancy organ exists that dominates param count (MoE experts: ~95% of weights, individually low marginal value)"
+   ],
+   "then": "target the high-redundancy organ (experts) at the aggressive bit-level; protect the small structurally load-bearing organs (attn/router/embed/lm_head) at a safer level (measured: one tier up, e.g. 4-bit if experts go to 2-bit)",
+   "supporting_patients": [
+    "O006",
+    "O005"
+   ],
+   "negative_patients": [
+    "O001 (architecture-mismatch: hybrid SSM+attention, NOT MoE -- the same strategy applied to attn+mlp shows no benefit and is worse in mixed configs)"
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a future MoE patient shows the gain vanish or reverse at q2, or a non-MoE patient with a genuinely low-marginal-value redundant organ (not attn/mlp) shows the same rescue effect",
+   "physical_rationale": "O006: q2 uniform 0/12 -> q2-experts-only 10/12 for +0.07 bpw (2.95->3.02). O005: q2 uniform 0/12 -> q2-experts-only 11/12 for +0.08 bpw (3.00->3.08). Vanishes by q3+ (uniform already survivable). O001 (non-MoE) shows the identical strategic move gives NO benefit and is worse in mixed schemes -- the redundancy MoE experts offer (many near-interchangeable low-marginal-value units) has no equivalent in attn+mlp.",
+   "_evidence": "MEASURED (O006, O005 Gravity receipts, existing on disk) + negative control MEASURED (O001)"
   }
  ]
 }

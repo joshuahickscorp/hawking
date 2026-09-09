@@ -267,6 +267,27 @@
     "O012": "NOT_TESTED",
     "O013": "NOT_TESTED"
    }
+  },
+  {
+   "rule": "R-heterogeneous-organ-allocation-aggressive-only",
+   "note": "NEW rule this pass. MoE-confirmed across 2 sibling patients (O005/O006): expert-only aggressive targeting rescues catastrophic uniform q2, vanishes by q3+. Negative control O001 (hybrid, non-MoE): identical strategy applied to attn+mlp gives no benefit, worse in mixed configs -- architecture-specific to MoE's expert redundancy structure.",
+   "_evidence": "MEASURED (O005/O006/O001 existing Gravity receipts; disk-only synthesis)",
+   "cells": {
+    "O000": "ARCHITECTURE_SPECIFIC",
+    "O001": "ARCHITECTURE_SPECIFIC",
+    "O002": "ARCHITECTURE_SPECIFIC",
+    "O003": "NOT_TESTED",
+    "O004": "ARCHITECTURE_SPECIFIC",
+    "O005": "TRANSFERRED_UNCHANGED",
+    "O006": "TRANSFERRED_UNCHANGED",
+    "O007": "NOT_TESTED",
+    "O008": "NOT_TESTED",
+    "O009": "ARCHITECTURE_SPECIFIC",
+    "O010": "NOT_TESTED",
+    "O011": "NOT_TESTED",
+    "O012": "NOT_TESTED",
+    "O013": "NOT_TESTED"
+   }
   }
  ]
 }
