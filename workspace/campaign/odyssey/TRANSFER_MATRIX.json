@@ -51,13 +51,13 @@
  "rows": [
   {
    "rule": "R-sparse-active-expert-gather",
-   "note": "A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL. Origin measurement is O005; other MoEs NOT_TESTED; dense/hybrid do not have a sparse expert path.",
+   "note": "A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL. Origin measurement is O005; other MoEs NOT_TESTED; dense/hybrid do not have a sparse expert path. | O003 CONFIRMED: ratio_selected_over_full=0.1212, mlx gather confirmed.",
    "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path)",
    "cells": {
     "O000": "ARCHITECTURE_SPECIFIC",
     "O001": "ARCHITECTURE_SPECIFIC",
     "O002": "ARCHITECTURE_SPECIFIC",
-    "O003": "NOT_TESTED",
+    "O003": "TRANSFERRED_UNCHANGED",
     "O004": "ARCHITECTURE_SPECIFIC",
     "O005": "TRANSFERRED_UNCHANGED",
     "O006": "TRANSFERRED_UNCHANGED",

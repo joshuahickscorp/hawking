@@ -17,13 +17,14 @@
    ],
    "then": "candidate native expert-gather (move only active experts, not the full inventory)",
    "supporting_patients": [
+    "O003",
     "O005"
    ],
    "negative_patients": [],
    "confidence": "INFERRED",
    "reopen_if": "active-byte reduction fails to move TPS because decode is kernel-bound not bandwidth-bound (A3B tps_caveat; Qwen3.8 same pattern)",
    "physical_rationale": "O005: 8/128 experts/token, 3.353B active of 30.5B (11%). mlx specimen 29.3 TPS is ~dense \u2014 gather is the lever, not a smaller codec.",
-   "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005)"
+   "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005) | O003 (Kimi-VL, DeepSeek-V3-style router, 64 experts/6-top-k+2-shared) CONFIRMED via primitive_design_attempt: ratio_selected_over_full=0.1212 (12.12%% of full expert body moved per token), mlx SwitchGLU/SwitchLinear gather_mm confirmed. See receipts/odyssey-i/O003_NX_gather.json."
   },
   {
    "id": "R-uniform-routing-no-cold-compress",
