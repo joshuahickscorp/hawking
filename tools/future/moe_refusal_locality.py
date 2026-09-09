@@ -136,6 +136,16 @@ def capture(model, tok, prompts, device, router_scores, hidden_at):
             out = model(**ids, output_hidden_states=True, use_cache=False)
         for li, h in enumerate(out.hidden_states):
             hidden_at.setdefault(li, []).append(h[0, -1].float().cpu())
+        # MEASURED: without this, free fell 25.1 -> 19.6 -> 9.9 GiB over four
+        # forwards and the fourth took 100s instead of 4s because the machine
+        # had walked into swap. The activations are megabytes; what grows is the
+        # allocator's pool around the per-layer expert matmuls.
+        del out
+        if device.startswith("mps"):
+            try:
+                torch.mps.empty_cache()
+            except Exception:
+                pass
         yield dict(router_scores)
 
 
@@ -164,11 +174,15 @@ def writer_alignment(model, direction, layer):
     ranking of matrix size, not of refusal locality.
     """
     import torch
-    d = _unit(direction).to(torch.float32)
+    # The direction is built from CPU-side hidden states; the weights live
+    # wherever the model was loaded. Align to the WEIGHT's device rather than
+    # assuming both are on one -- assuming cost a full probe run once.
+    dev = next(model.parameters()).device
+    d = _unit(direction).to(dev, torch.float32)
     out = {}
 
     def score(tag, W):
-        W = W.to(torch.float32)
+        W = W.to(dev, torch.float32)
         if W.shape[0] != d.shape[0]:
             return
         e = float((d @ W).norm())
@@ -184,7 +198,7 @@ def writer_alignment(model, direction, layer):
         dn = mlp.experts.down_proj                      # [E, hidden, inter]
         per = []
         for e in range(dn.shape[0]):
-            W = dn[e].to(torch.float32)
+            W = dn[e].to(dev, torch.float32)
             f = float(W.norm())
             per.append((float((d @ W).norm()) / f * math.sqrt(W.shape[1])) if f else 0.0)
         out["routed_experts_down"] = {
@@ -229,6 +243,9 @@ def main() -> int:
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--out", type=Path,
                     default=ROOT / "receipts" / "future" / "MOE_REFUSAL_LOCALITY.json")
+    ap.add_argument("--limit", type=int, default=0,
+                    help="use only the first N of each prompt set (0 = all)")
+    ap.add_argument("--min-free-gib", type=float, default=12.0)
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
     if a.selftest:
@@ -242,7 +259,8 @@ def main() -> int:
 
     t0 = time.time()
     tok = AutoTokenizer.from_pretrained(str(a.spec), trust_remote_code=True)
-    model, cfg = loader.load(a.spec, device=a.device, dtype=a.dtype)
+    model, cfg = loader.load(a.spec, device=a.device, dtype=a.dtype,
+                             min_free_gib=a.min_free_gib)
     t_load = time.time() - t0
     print(f"loaded in {t_load:.1f}s on {a.device}", flush=True)
 
@@ -258,13 +276,19 @@ def main() -> int:
     handles = install_router_hooks(model, sink)
     print(f"router hooks: {len(handles)}", flush=True)
 
+    harmful = HARMFUL[:a.limit] if a.limit else HARMFUL
+    harmless = HARMLESS[:a.limit] if a.limit else HARMLESS
     hid_h, hid_l = {}, {}
     route_h, route_l = [], []
     t0 = time.time()
-    for r in capture(model, tok, HARMFUL, a.device, sink, hid_h):
+    for i, r in enumerate(capture(model, tok, harmful, a.device, sink, hid_h)):
         route_h.append(r)
-    for r in capture(model, tok, HARMLESS, a.device, sink, hid_l):
+        print(f"  harmful {i+1}/{len(harmful)}  {time.time()-t0:.1f}s  "
+              f"free {loader.free_gib():.1f} GiB", flush=True)
+    for i, r in enumerate(capture(model, tok, harmless, a.device, sink, hid_l)):
         route_l.append(r)
+        print(f"  harmless {i+1}/{len(harmless)}  {time.time()-t0:.1f}s  "
+              f"free {loader.free_gib():.1f} GiB", flush=True)
     t_probe = time.time() - t0
     for h in handles:
         h.remove()

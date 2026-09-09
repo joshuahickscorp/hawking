@@ -38,9 +38,40 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 
 PREFIX = "language_model."
+
+
+def free_gib() -> float:
+    """Free + inactive + speculative, using the page size vm_stat REPORTS.
+
+    Hardcoding 4096 here undercounts by 4x on this machine, which reports 16384 --
+    a past guard read 16.9 GiB where 72.7 were available and latched itself off
+    forever. The header is the authority, never a constant."""
+    out = subprocess.run(["vm_stat"], capture_output=True, text=True).stdout
+    ps = 4096
+    vals = {}
+    for line in out.splitlines():
+        if "page size of" in line:
+            ps = int(line.split("page size of")[1].split()[0])
+        if ":" in line:
+            k, v = line.split(":", 1)
+            v = v.strip().rstrip(".")
+            if v.isdigit():
+                vals[k.strip()] = int(v)
+    got = sum(vals.get(k, 0) for k in
+              ("Pages free", "Pages inactive", "Pages speculative"))
+    return got * ps / 2 ** 30
+
+
+def swapouts() -> int:
+    out = subprocess.run(["vm_stat"], capture_output=True, text=True).stdout
+    for line in out.splitlines():
+        if line.startswith("Swapouts"):
+            return int(line.split(":")[1].strip().rstrip("."))
+    return 0
 # Tensors the checkpoint carries that the native model does not want. inv_freq is
 # a derived rotary buffer that the native rotary embedding recomputes; carrying a
 # stale one across a version step is a silent correctness bug.
@@ -95,7 +126,8 @@ def plan(spec: Path):
                        if ".mlp.experts." not in k}}
 
 
-def load(spec: Path, *, device: str = "cpu", dtype: str = "bfloat16", verbose: bool = True):
+def load(spec: Path, *, device: str = "cpu", dtype: str = "bfloat16", verbose: bool = True,
+         min_free_gib: float = 12.0):
     """Materialise the tower. Streams shard by shard so peak memory is the model
     plus one shard, not the model plus a whole second copy of itself."""
     import torch
@@ -147,9 +179,15 @@ def load(spec: Path, *, device: str = "cpu", dtype: str = "bfloat16", verbose: b
         if verbose:
             print("  MoE on MPS: grouped_mm -> batched_mm (MPS has no integer histc kernel)")
 
-    model = build_skeleton(cfg)
+    # ORDER MATTERS AND COSTS 33 GB. The skeleton is built in torch's default
+    # dtype (fp32), so `to_empty(device)` then `.to(bfloat16)` allocates the fp32
+    # storage FIRST -- 66 GB for this body -- and only then the 33 GB it wanted.
+    # Measured: free RAM fell 57.8 -> 13.3 GiB on a machine also holding a
+    # resident, which is how a load starts swapping against another process.
+    # Meta tensors have no storage, so converting the dtype while still on meta
+    # is free and to_empty then allocates bf16 directly.
+    model = build_skeleton(cfg).to(torch_dtype)
     model.to_empty(device=device)
-    model = model.to(torch_dtype)
 
     # to_empty() allocates UNINITIALISED storage for buffers as well as
     # parameters, and rotary inv_freq is derived rather than stored -- no
@@ -187,6 +225,9 @@ def load(spec: Path, *, device: str = "cpu", dtype: str = "bfloat16", verbose: b
         filled.add(f"model.layers.{layer}.mlp.experts.gate_up_proj")
         filled.add(f"model.layers.{layer}.mlp.experts.down_proj")
 
+    sw0 = swapouts()
+    if verbose:
+        print(f"  before load: free {free_gib():.1f} GiB", flush=True)
     shards = sorted({v for k, v in wm.items() if k.startswith(PREFIX)})
     for si, fname in enumerate(shards):
         with safe_open(str(spec / fname), framework="pt") as h:
@@ -204,8 +245,33 @@ def load(spec: Path, *, device: str = "cpu", dtype: str = "bfloat16", verbose: b
                 elif name in params:
                     params[name].data.copy_(h.get_tensor(full).to(torch_dtype))
                     filled.add(name)
+        # Per-shard memory, because a 30 GiB load on a 96 GiB machine drove this
+        # host into swap thrash once -- 339,647 pages out in 20s, forwards
+        # ~10,000x slower than the 0.14s they should cost, and the OTHER
+        # resident evicted. A load that cannot say where its memory went cannot
+        # be debugged, so it says.
+        import gc
+        gc.collect()
+        if device.startswith("mps"):
+            try:
+                torch.mps.empty_cache()
+            except Exception:
+                pass
+        fg = free_gib()
         if verbose:
-            print(f"  shard {si+1}/{len(shards)}  {fname}", flush=True)
+            print(f"  shard {si+1}/{len(shards)}  {fname}   free {fg:.1f} GiB"
+                  f"   swapouts +{swapouts()-sw0}", flush=True)
+        # A load must not be allowed to evict another resident. It did once:
+        # forwards went ~10,000x slower than the 0.14s they should cost and the
+        # other front's weights were paged out. Aborting here loses a load; not
+        # aborting loses the machine, and someone else's campaign with it.
+        if fg < min_free_gib:
+            raise MemoryError(
+                f"free memory {fg:.1f} GiB fell below the {min_free_gib:.1f} GiB "
+                f"floor after shard {si+1}/{len(shards)}. Refusing to continue: "
+                "this is the condition that drove the host into swap thrash. "
+                "Quiesce other residents, lower the floor deliberately, or load "
+                "a smaller representation.")
 
     missing = set(params) - filled
     if missing:
