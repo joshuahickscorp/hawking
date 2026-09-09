@@ -1,0 +1,290 @@
+{
+ "schema": "hawking.odyssey.modellake_march_progress.v1",
+ "_label": "Bookkeeping snapshot, not a new measurement -- tallies existing receipts per S005's MODELLAKE MARCH record-keeping requirement.",
+ "total_lake_specimens": 55,
+ "n_deep_discovery_this_session": 6,
+ "deep_discovery_this_session": {
+  "state-spaces--mamba3-siso-1.5b@5cfc721542ec": "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
+  "RWKV--RWKV7-13.3B-20260805@64ffe5934178": "CAND_RWKV7-13.3B_ODYSSEY_I.json",
+  "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf": "CAND_Dream-v0-7B_ODYSSEY_I.json",
+  "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361": "CAND_bitnet-b1.58-2B_ODYSSEY_I.json",
+  "LiquidAI--LFM2-24B-A2B@a3bbacd91a67": "CAND_LFM2-24B-A2B_ODYSSEY_I.json",
+  "arcinstitute--evo2_7b@bda0089f9258": "CAND_evo2-7b_ODYSSEY_I.json (light pass -- .pt format)"
+ },
+ "n_prior_full_odyssey_patients": 4,
+ "prior_full_odyssey_patients": {
+  "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb": "O001, SEALED, prior campaign + this session's A5 rule",
+  "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c": "O003, SEALED, prior campaign + this session's rule-tests",
+  "Qwen--Qwen3-30B-A3B@ad44e777bcd1": "O005, prior campaign + this session's rule-tests",
+  "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba": "O006, prior campaign + this session's rule-tests"
+ },
+ "n_config_only_transfer_checks": 4,
+ "config_only_transfer_checks": {
+  "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f": "config read for A5 SSM-crossover transfer test only",
+  "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f": "config read for A5 SSM-crossover transfer test only",
+  "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471": "config read for A5 transfer test (=O007) only",
+  "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "config read, not used in a receipt"
+ },
+ "n_censused_survey_only": 45,
+ "n_untouched_beyond_survey_classification": 39,
+ "untouched_specimens": [
+  {
+   "name": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "model_type": "illada",
+   "dir_size_gib": 15.379,
+   "diffusion_signal": true
+  },
+  {
+   "name": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "model_type": "smolvlm",
+   "dir_size_gib": 8.375,
+   "diffusion_signal": false
+  },
+  {
+   "name": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "model_type": "lfm2",
+   "dir_size_gib": 2.184,
+   "diffusion_signal": false
+  },
+  {
+   "name": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "model_type": "lfm2",
+   "dir_size_gib": 5.041,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "model_type": "qwen2",
+   "dir_size_gib": 135.437,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "model_type": "qwen3",
+   "dir_size_gib": 1.415,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen3-14B@40c069824f42",
+   "model_type": "qwen3",
+   "dir_size_gib": 27.523,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "model_type": "qwen3",
+   "dir_size_gib": 7.507,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "model_type": "qwen3_moe",
+   "dir_size_gib": 56.885,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "model_type": "qwen3",
+   "dir_size_gib": 1.125,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "model_type": "qwen4_exp",
+   "dir_size_gib": 335.298,
+   "diffusion_signal": false
+  },
+  {
+   "name": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "model_type": "t2v",
+   "dir_size_gib": 117.534,
+   "diffusion_signal": false
+  },
+  {
+   "name": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "model_type": "olmo3",
+   "dir_size_gib": 13.603,
+   "diffusion_signal": false
+  },
+  {
+   "name": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "model_type": "modernbert",
+   "dir_size_gib": 1.477,
+   "diffusion_signal": false
+  },
+  {
+   "name": "arcinstitute--evo2_40b@d529aa57c307",
+   "model_type": "",
+   "dir_size_gib": 76.605,
+   "diffusion_signal": false
+  },
+  {
+   "name": "bigcode--starcoder2-7b@bb9afde76d79",
+   "model_type": "starcoder2",
+   "dir_size_gib": 13.366,
+   "diffusion_signal": false
+  },
+  {
+   "name": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "model_type": "deepseek_v4",
+   "dir_size_gib": 148.667,
+   "diffusion_signal": false
+  },
+  {
+   "name": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "model_type": "depth_anything",
+   "dir_size_gib": 1.249,
+   "diffusion_signal": false
+  },
+  {
+   "name": "facebook--musicgen-large@15ccdc920998",
+   "model_type": "musicgen",
+   "dir_size_gib": 12.999,
+   "diffusion_signal": false
+  },
+  {
+   "name": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "model_type": "sam2_video",
+   "dir_size_gib": 0.836,
+   "diffusion_signal": false
+  },
+  {
+   "name": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "model_type": "vjepa2",
+   "dir_size_gib": 3.855,
+   "diffusion_signal": false
+  },
+  {
+   "name": "google--flan-t5-large@0613663d0d48",
+   "model_type": "t5",
+   "dir_size_gib": 2.921,
+   "diffusion_signal": false
+  },
+  {
+   "name": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "model_type": "timesfm",
+   "dir_size_gib": 1.858,
+   "diffusion_signal": false
+  },
+  {
+   "name": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "model_type": "granitemoehybrid",
+   "dir_size_gib": 12.935,
+   "diffusion_signal": false
+  },
+  {
+   "name": "lerobot--pi0_base@25c379b52ba2",
+   "model_type": "",
+   "dir_size_gib": 13.044,
+   "diffusion_signal": false
+  },
+  {
+   "name": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "model_type": "phi3",
+   "dir_size_gib": 7.166,
+   "diffusion_signal": false
+  },
+  {
+   "name": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "model_type": "phi4mm",
+   "dir_size_gib": 11.994,
+   "diffusion_signal": false
+  },
+  {
+   "name": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "model_type": "phi3",
+   "dir_size_gib": 27.314,
+   "diffusion_signal": false
+  },
+  {
+   "name": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "model_type": "bitnet",
+   "dir_size_gib": 4.503,
+   "diffusion_signal": false
+  },
+  {
+   "name": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "model_type": "mistral3",
+   "dir_size_gib": 89.479,
+   "diffusion_signal": false
+  },
+  {
+   "name": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "model_type": "kimi_k3",
+   "dir_size_gib": 1453.794,
+   "diffusion_signal": false
+  },
+  {
+   "name": "nvidia--audio-flamingo-3@ee26c5842398",
+   "model_type": "llava_llama",
+   "dir_size_gib": 16.728,
+   "diffusion_signal": false
+  },
+  {
+   "name": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "model_type": "whisper",
+   "dir_size_gib": 1.511,
+   "diffusion_signal": false
+  },
+  {
+   "name": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "model_type": "",
+   "dir_size_gib": 2.789,
+   "diffusion_signal": false
+  },
+  {
+   "name": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "model_type": "inkling_mm_model",
+   "dir_size_gib": 495.412,
+   "diffusion_signal": false
+  },
+  {
+   "name": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "model_type": "llama",
+   "dir_size_gib": 3.119,
+   "diffusion_signal": false
+  },
+  {
+   "name": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "model_type": "qwen4_exp",
+   "dir_size_gib": 335.298,
+   "diffusion_signal": false
+  },
+  {
+   "name": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "model_type": "glm4_moe",
+   "dir_size_gib": 205.787,
+   "diffusion_signal": false
+  },
+  {
+   "name": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "model_type": "glm5_next",
+   "dir_size_gib": 305.815,
+   "diffusion_signal": false
+  }
+ ],
+ "architecture_families_given_a_real_discovery_pass_this_session": [
+  "dense hybrid Mamba2+attention (O001, prior campaign)",
+  "MoE + multimodal (O003, prior campaign)",
+  "MoE (O005/O006, prior campaign)",
+  "pure SSM, zero attention (mamba3-siso, THIS session)",
+  "pure linear recurrence, matrix-valued state, non-SSM (RWKV7, THIS session)",
+  "masked diffusion, non-autoregressive (Dream-v0, THIS session)",
+  "natively ternary/extreme-low-precision (BitNet, THIS session)",
+  "triple-hybrid conv+sparse-attention+MoE (LFM2, THIS session)",
+  "genomic/DNA, non-language domain (evo2, THIS session, light pass)"
+ ],
+ "architecture_families_in_the_census_NOT_yet_given_a_real_discovery_pass": [
+  "second diffusion-LM variant (iLLaDA-8B) -- comparison point to Dream-v0, untouched",
+  "next-gen linear-attn (GLM-5.3-Flash, Kimi-K3) -- both very large (305GB/1.45TB), untouched",
+  "vision/audio/multimodal specialists (SmolVLM2, audio-flamingo-3, whisper, musicgen, sam2.1, depth-anything, vjepa2) -- a genuinely different Odyssey question (non-text-generation capability)",
+  "robotics (lerobot/pi0_base) -- untouched, another non-LLM domain",
+  "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)"
+ ],
+ "next_justified_specimens_if_continuing": [
+  "iLLaDA-8B -- cheapest next step, directly comparable to Dream-v0's already-done diffusion discovery (same paradigm, different lab/scale -- a real transfer-rule opportunity for the generation-mechanism findings Dream-v0 surfaced)",
+  "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier"
+ ],
+ "commit": "f1b2326ea",
+ "emitted_at": "2026-09-09T13:53:20Z"
+}
