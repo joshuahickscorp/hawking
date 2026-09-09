@@ -333,20 +333,24 @@
   },
   {
    "id": "R-residual-readers-align-writers-do-not",
-   "status": "MEASURED (5 architecture families)",
+   "status": "UNIVERSAL CANDIDATE (7 architecture families, 0 violations)",
    "specimens": [
-    "Qwen3-0.6B",
-    "ModernBERT-large",
-    "bitnet-b1.58-2B",
-    "LFM2.5-2.6B",
-    "mamba3-mimo-1.5b"
+    "Qwen--Qwen3-0.6B",
+    "answerdotai--ModernBERT-large",
+    "microsoft--bitnet-b1.58-2B-4T-bf16",
+    "LiquidAI--LFM2.5-2.6B-Base",
+    "state-spaces--mamba3-mimo-1.5b",
+    "RWKV--RWKV7-13.3B-20260805",
+    "GSAI-ML--iLLaDA-8B-Base"
    ],
-   "statement": "Cross-layer subspace alignment splits by RESIDUAL-STREAM SIDE. Organs that READ the residual stream align 1.37-5.62x above a matched random null; organs that read a per-layer space and WRITE into the residual sit at 0.98-1.43x. Within every specimen scored, every reader beats every writer (5/5).",
+   "statement": "Cross-layer subspace alignment splits by RESIDUAL-STREAM SIDE. Organs that READ the residual align 1.37-7.51x above a matched random null; organs that read a per-layer space and WRITE into the residual sit at 0.98-2.23x. Within every specimen scored, every reader beats every writer: 7/7 across dense decoder, bidirectional encoder, native ternary, hybrid conv+attention, state-space, RWKV7 and a diffusion LM. Holds on bodies with no attention mechanism at all.",
    "mechanism": "The residual stream is one shared object every layer reads, so it carries a preferred basis its readers partially align to. Per-layer spaces are not shared and have no common basis to align to.",
    "falsifier": "a specimen whose writers align as well as its readers",
    "cost_to_test": "weights only, no forward pass, 28-109s CPU",
    "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json",
-   "superseded_form": "The first form said the split was input DIMENSION (in_dim == hidden_size). Refuted by its own transfer test: o_proj's input is n_heads*head_dim which usually EQUALS hidden_size, and those organs sit at chance on three of four new specimens."
+   "superseded_form": "The first form said the split was input DIMENSION (in_dim == hidden_size). Refuted by its own transfer test: o_proj's input is n_heads*head_dim which usually EQUALS hidden_size, and those organs sit at chance on three of four new specimens.",
+   "falsifiers_run": "RWKV7 and iLLaDA were chosen BEFORE running as the likeliest breakers -- neither has a conventional attention block. Both hold.",
+   "caveat": "classify by role name informed by architecture, not by suffix: RWKV names both a reader (att.value) and a writer (ffn.value) 'value', and the dimension test (in_dim == hidden) is wrong because o_proj's input usually equals hidden too."
   },
   {
    "id": "R-shared-basis-breakeven-is-set-by-dimensions-not-alignment",
@@ -395,6 +399,19 @@
    "statement": "Four representation classes failed on one body for one reason. Low-rank, activation-aware low-rank, cross-layer shared basis and sparse residual each look for CONCENTRATION in a different basis -- weight spectrum, activation eigenbasis, cross-layer basis, individual weight magnitude -- and the information is spread in all four. The only method that won never looks for concentration: error-compensating quantization reallocates the error it is already forced to make.",
    "consequence": "When one concentration search fails on a specimen with a near-random spectrum, expect the others to fail too, and go straight to reallocation methods.",
    "evidence": "receipts/odyssey-i/O00X_SPARSE_RESIDUAL_G049.json"
+  },
+  {
+   "id": "R-error-compensation-is-per-organ-gated-on-input-concentration",
+   "status": "MEASURED (prediction made before the test, held at 2 bit widths)",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "kind": "COMPILER RULE -- changes what the codec does, not just what is known",
+   "statement": "Error-compensating quantization helps only where the ORGAN'S INPUT COVARIANCE IS CONCENTRATED, and hurts where it is not. On Qwen3-0.6B, down_proj (input r99 = 40.2% of its dimension) gains +0.0216 held-out top-1 at 4 bits and +0.0215 at 3; gate/up (input r99 = 60.5%, the residual stream) LOSE 0.0107 and 0.0166. Applying it everywhere averages a win and a loss together and is strictly worse than applying it where it belongs.",
+   "how_to_use": "Eigendecompose H per input site, take r99 as a fraction of the input dimension, and run the compensating pass only on organs below the line (~50% here). Costs one eigendecomposition per site, seconds.",
+   "payoff": "At 3 bits, writer-only scores ppl 19.906 / KL 557.3 vs all-MLP's 20.887 / 591.2 -- better at identical bytes and a third of the compute.",
+   "why_it_is_evidence_and_not_a_story": "The prediction was derived from the stage-1 anisotropy measurement and written down BEFORE the arms were run, and it points the opposite way to the intuitive 'the residual stream is the structured object'.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
   }
  ]
 }

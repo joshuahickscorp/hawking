@@ -1,7 +1,7 @@
 {
  "obligation": "G054 (transfer matrix coverage) + G055 (first universal rule) + G057 (search policy)",
  "date": "2026-09-09",
- "status": "IN PROGRESS -- 5 families scored, 2 specimens still running",
+ "status": "COMPLETE -- 7 architecture families, both designated falsifiers survived",
  "claim": "CROSS-LAYER SUBSPACE ALIGNMENT SPLITS BY RESIDUAL-STREAM SIDE. Organs that READ the residual stream align above a matched random null; organs that read a per-layer space and WRITE into the residual sit at chance. Within every specimen scored, every reader beats every writer.",
  "first_form_was_wrong": "The hypothesis born on Qwen3-0.6B said the split was input DIMENSION -- organs whose in_dim equals hidden_size align, others do not. Three of the next four specimens refute that classifier: o_proj's input is n_heads*head_dim which usually EQUALS hidden_size, so ModernBERT attn.Wo (1.14x), BitNet o_proj (1.00x) and LFM2 out_proj (0.98x) are all 'in_dim == hidden' and all at chance. The surviving form is about WHICH OBJECT the input is, not how big it is.",
  "method": "Weights only, no forward pass, no tokenizer. Top-64 right singular subspaces per layer; overlap_r(i,j) = ||V_i^T V_j||_F^2 / r over all layer pairs; null MEASURED from random orthonormal r-frames of identical shape, not assumed to be r/d. Randomized SVD. 28-109s per specimen on CPU.",
@@ -102,29 +102,76 @@
    "model_type": null,
    "n_readers": 2,
    "n_writers": 2,
-   "reader_min": 5.26,
-   "reader_max": 5.383,
-   "writer_min": 1.009,
+   "reader_min": 5.229,
+   "reader_max": 5.387,
+   "writer_min": 1.007,
    "writer_max": 1.011,
    "separates_within_model": true,
    "readers": {
-    "backbone.layers.<L>.mixer.in_proj.weight": 5.383,
-    "backbone.layers.<L>.mlp.fc1.weight": 5.26
+    "backbone.layers.<L>.mixer.in_proj.weight": 5.387,
+    "backbone.layers.<L>.mlp.fc1.weight": 5.229
    },
    "writers": {
-    "backbone.layers.<L>.mixer.out_proj.weight": 1.009,
+    "backbone.layers.<L>.mixer.out_proj.weight": 1.007,
     "backbone.layers.<L>.mlp.fc2.weight": 1.011
+   },
+   "unclassified": {}
+  },
+  {
+   "specimen": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "model_type": "rwkv7",
+   "n_readers": 4,
+   "n_writers": 2,
+   "reader_min": 5.003,
+   "reader_max": 7.512,
+   "writer_min": 1.053,
+   "writer_max": 2.232,
+   "separates_within_model": true,
+   "readers": {
+    "rwkv7.blocks.<L>.att.key.weight": 7.455,
+    "rwkv7.blocks.<L>.att.receptance.weight": 6.905,
+    "rwkv7.blocks.<L>.att.value.weight": 5.003,
+    "rwkv7.blocks.<L>.ffn.key.weight": 7.512
+   },
+   "writers": {
+    "rwkv7.blocks.<L>.att.output.weight": 1.053,
+    "rwkv7.blocks.<L>.ffn.value.weight": 2.232
+   },
+   "unclassified": {}
+  },
+  {
+   "specimen": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "model_type": "illada",
+   "n_readers": 5,
+   "n_writers": 2,
+   "reader_min": 2.76,
+   "reader_max": 7.231,
+   "writer_min": 1.003,
+   "writer_max": 1.077,
+   "separates_within_model": true,
+   "readers": {
+    "model.layers.<L>.mlp.gate_proj.weight": 7.231,
+    "model.layers.<L>.mlp.up_proj.weight": 3.872,
+    "model.layers.<L>.self_attn.k_proj.weight": 5.664,
+    "model.layers.<L>.self_attn.q_proj.weight": 6.842,
+    "model.layers.<L>.self_attn.v_proj.weight": 2.76
+   },
+   "writers": {
+    "model.layers.<L>.mlp.down_proj.weight": 1.003,
+    "model.layers.<L>.self_attn.o_proj.weight": 1.077
    },
    "unclassified": {}
   }
  ],
- "within_model_separation": "5/5",
+ "within_model_separation": "7/7",
  "families": [
-  "dense causal decoder (Qwen3)",
-  "bidirectional encoder, no causal mask (ModernBERT)",
-  "natively ternary (BitNet b1.58)",
-  "hybrid conv + attention (LFM2)",
-  "state-space, NO attention at all (mamba3)"
+  "dense causal decoder (Qwen3-0.6B)",
+  "bidirectional encoder, no causal mask (ModernBERT-large)",
+  "natively ternary, never trained in a continuous weight space (BitNet b1.58-2B)",
+  "hybrid conv + attention (LFM2.5-2.6B)",
+  "state-space, NO attention (mamba3-mimo-1.5b)",
+  "RWKV7 -- no attention, time-mixing/channel-mixing, 61 layers (RWKV7-13.3B)",
+  "diffusion language model (iLLaDA-8B)"
  ],
  "mechanism": "The residual stream is ONE OBJECT every layer reads, so it carries a preferred basis and its readers partially align to it. A writer's input -- the MLP intermediate, the head concatenation, the conv output -- is constructed fresh inside each layer and shared with nothing, so there is no common basis for it to align to. This predicts the split on any architecture with a residual stream, including ones with no attention.",
  "THE ARITHMETIC THAT MAKES IT UNPAYABLE": {
@@ -144,9 +191,15 @@
  "what_the_alignment_might_still_buy": "Only forms whose cost is NOT governed by n*m/(d + n*m): a shared codebook or dictionary (cost independent of layer count), cross-layer weight PREDICTION (no basis stored at all), or as a prior that narrows an activation-aware search. Those are separate obligations, not this one.",
  "notable": "BitNet -- natively ternary, never trained in a continuous weight space -- shows among the STRONGEST reader alignment measured (4.45-5.62x), and mamba3, with no attention mechanism at all, is comparable (5.26-5.38x). Neither the training representation nor the mixing mechanism weakens the effect, which is what a residual-stream explanation predicts.",
  "unmeasured_not_negative": {
-  "state-spaces--mamba3-mimo-1.5b": "first pass reported ZERO roles, which reads exactly like 'this family has no cross-layer structure' and was actually 'the prober only opens safetensors and this ships a .bin'. Format gap closed and the specimen re-run rather than recorded as a negative.",
-  "RWKV7-13.3B and iLLaDA-8B": "still running at the time of writing"
+  "state-spaces--mamba3-mimo-1.5b": "first pass reported ZERO roles -- which reads exactly like 'this family has no cross-layer structure' and was actually 'the prober only opens safetensors and this ships a .bin'. Closed the format gap and re-ran; it then gave among the strongest reader alignments measured."
  },
  "falsifier": "a specimen whose writers align as well as its readers",
- "artifacts": "cross_layer_transfer.py / cross_layer_transfer.json / xl_analyze.py / xl_analysis.json"
+ "artifacts": "cross_layer_transfer.py / cross_layer_transfer.json / xl_analyze.py / xl_analysis.json",
+ "designated_falsifiers": {
+  "chosen_before_running": "RWKV7 and a diffusion LM, because neither has a conventional attention block and RWKV replaces the whole mixing mechanism. If the law were an artefact of attention it would break here.",
+  "RWKV7": "HOLDS with the widest margin measured: readers 5.00-7.51x, writers 1.05-2.23x. Its ffn.value at 2.23x is the only writer materially above chance in the whole population and is still less than half the smallest reader.",
+  "iLLaDA-8B": "HOLDS: readers 2.76-7.23x, writers 1.00-1.08x."
+ },
+ "classification_caveat": "Roles are classified by NAME informed by architecture, not by a mechanical suffix rule, and RWKV is why: it names BOTH a reader and a writer 'value'. att.value takes the residual (d=4096) and ffn.value is the FFN's down-projection (d=16384). A bare-suffix classifier gets one of them wrong. The earlier dimension-based classifier (in_dim == hidden_size) is wrong for a different reason and was refuted by this same transfer test.",
+ "cost": "28-544s CPU per specimen, weights only, no forward pass, no tokenizer, no GPU"
 }

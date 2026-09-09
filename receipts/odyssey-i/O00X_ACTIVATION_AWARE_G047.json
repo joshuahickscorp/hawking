@@ -135,5 +135,92 @@
  "artifacts": {
   "stage1": "act_aware.py / act_aware_stage1.json",
   "stage2": "act_gptq.py / act_gptq.json (in-sample) / act_gptq_heldout.json (held-out)"
+ },
+ "AMENDMENT_the_win_is_one_organ_not_the_MLP": {
+  "why_this_amendment_exists": "The receipt said activation-aware placement gains +0.0196 held-out top-1 on the MLP at 4 bits. That number is correct as measured and it is an AVERAGE OVER TWO OPPOSITE EFFECTS, which is a worse way to say it.",
+  "test": "The G047 explanation -- H is full-rank but strongly ANISOTROPIC, so error compensation has somewhere cheap to put rounding error -- makes a prediction that can embarrass it. Stage 1 measured both MLP input sites and the WRITER's input is the more concentrated one (r99 1234/3072 = 40.2% for down_proj's input, against 620/1024 = 60.5% for the residual that gate/up read). So the mechanism predicts down_proj gains MORE, which is the opposite of what 'the residual stream is the structured object' would suggest.",
+  "result": {
+   "4b": {
+    "gain_readers_only": -0.0107,
+    "gain_writer_only": 0.0216,
+    "mechanism_predicts": "writer_only > readers_only",
+    "holds": true
+   },
+   "3b": {
+    "gain_readers_only": -0.0166,
+    "gain_writer_only": 0.0215,
+    "mechanism_predicts": "writer_only > readers_only",
+    "holds": true
+   }
+  },
+  "measured": [
+   {
+    "bits": 4,
+    "arm": "rtn",
+    "mlp_ebpw": 4.5,
+    "perplexity": 14.9639,
+    "top1_agreement_vs_fp32": 0.8543,
+    "kl_from_fp32": 117.472397
+   },
+   {
+    "bits": 4,
+    "arm": "gptq_rw",
+    "mlp_ebpw": 4.5,
+    "perplexity": 14.7518,
+    "top1_agreement_vs_fp32": 0.8436,
+    "kl_from_fp32": 113.472168
+   },
+   {
+    "bits": 4,
+    "arm": "gptq_w",
+    "mlp_ebpw": 4.5,
+    "perplexity": 14.4525,
+    "top1_agreement_vs_fp32": 0.8759,
+    "kl_from_fp32": 94.412483
+   },
+   {
+    "bits": 4,
+    "arm": "gptq_all",
+    "mlp_ebpw": 4.5,
+    "perplexity": 14.0859,
+    "top1_agreement_vs_fp32": 0.8739,
+    "kl_from_fp32": 83.431541
+   },
+   {
+    "bits": 3,
+    "arm": "rtn",
+    "mlp_ebpw": 3.5,
+    "perplexity": 26.0538,
+    "top1_agreement_vs_fp32": 0.6794,
+    "kl_from_fp32": 791.97998
+   },
+   {
+    "bits": 3,
+    "arm": "gptq_rw",
+    "mlp_ebpw": 3.5,
+    "perplexity": 27.3813,
+    "top1_agreement_vs_fp32": 0.6628,
+    "kl_from_fp32": 793.586304
+   },
+   {
+    "bits": 3,
+    "arm": "gptq_w",
+    "mlp_ebpw": 3.5,
+    "perplexity": 19.9063,
+    "top1_agreement_vs_fp32": 0.7009,
+    "kl_from_fp32": 557.296387
+   },
+   {
+    "bits": 3,
+    "arm": "gptq_all",
+    "mlp_ebpw": 3.5,
+    "perplexity": 20.8875,
+    "top1_agreement_vs_fp32": 0.7048,
+    "kl_from_fp32": 591.205688
+   }
+  ],
+  "verdict": "MECHANISM HOLDS AT BOTH BIT WIDTHS. Held out on a disjoint corpus: activation-aware on down_proj alone gains +0.0216 top-1 at 4 bits and +0.0215 at 3; on gate/up alone it LOSES 0.0107 and 0.0166. The whole MLP number was a blend of a real win on one organ and a real loss on two.",
+  "and_it_is_the_better_configuration": "At 3 bits, writer-only scores ppl 19.906 / KL 557.3 against all-MLP's 20.887 / 591.2 -- better on both, at identical bytes and a third of the compute, because two thirds of the GPTQ passes were making things worse.",
+  "compiler_rule": "Apply error-compensating quantization per ORGAN, gated on the concentration of that organ's input covariance. Measure r99 of H first; on this body the useful side of the line is below ~50% of the input dimension and the harmful side is above ~60%. The measurement is one eigendecomposition per input site and costs seconds."
  }
 }
