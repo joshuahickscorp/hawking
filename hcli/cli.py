@@ -392,6 +392,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .delegate import exec_main
 
         return exec_main(raw[1:])
+    if raw and raw[0] == "census":
+        from .odyssey_census import main as census_main
+
+        return census_main(raw[1:])
     if raw and raw[0] == "campaign":
         from .campaign_report import main as campaign_main
 

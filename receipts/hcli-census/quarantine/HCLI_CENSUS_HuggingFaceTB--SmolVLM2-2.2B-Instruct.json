@@ -1,0 +1,58 @@
+{
+ "specimen": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+ "author": "hcli",
+ "note": "classification by the resident; the measurements were taken mechanically and every numeric claim in the verdict was checked against them before this receipt was written",
+ "measured_facts": {
+  "specimen": "HuggingFaceTB--SmolVLM2-2.2B-Instruct",
+  "path": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+  "n_tensors": 657,
+  "tensor_bytes": 8987139520,
+  "tensor_gib": 8.37,
+  "on_disk_bytes": 8992157156,
+  "on_disk_gib": 8.37,
+  "matrix_params_b": 2.2463,
+  "dtype_bytes": {
+   "F32": 8987139520
+  },
+  "per_container_gib": {
+   "model-00001-of-00002.safetensors": 4.62,
+   "model-00002-of-00002.safetensors": 3.75
+  },
+  "tensor_bytes_vs_disk": 0.999,
+  "coverage_warning": null,
+  "distinct_roles": 34,
+  "repeated_blocks": {
+   "model.vision_model.encoder.layers.<L>.layer_norm1.bias": 27,
+   "model.vision_model.encoder.layers.<L>.layer_norm1.weight": 27,
+   "model.vision_model.encoder.layers.<L>.layer_norm2.bias": 27,
+   "model.vision_model.encoder.layers.<L>.layer_norm2.weight": 27,
+   "model.vision_model.encoder.layers.<L>.mlp.fc1.bias": 27,
+   "model.vision_model.encoder.layers.<L>.mlp.fc1.weight": 27,
+   "model.vision_model.encoder.layers.<L>.mlp.fc2.bias": 27,
+   "model.vision_model.encoder.layers.<L>.mlp.fc2.weight": 27,
+   "model.vision_model.encoder.layers.<L>.self_attn.k_proj.bias": 27,
+   "model.vision_model.encoder.layers.<L>.self_attn.k_proj.weight": 27,
+   "model.vision_model.encoder.layers.<L>.self_attn.out_proj.bias": 27,
+   "model.vision_model.encoder.layers.<L>.self_attn.out_proj.weight": 27
+  },
+  "n_repeated_roles": 25,
+  "complete_ebpw_if_bf16": 32.007
+ },
+ "verdict": {
+  "architecture_family": "LLM with Vision Transformer",
+  "execution_class": "Instruct",
+  "dominant_organs": [
+   "vision_model.encoder.layers"
+  ],
+  "state_or_kv": "on_disk",
+  "likely_bottleneck": "repeated blocks in vision model layers",
+  "relevant_laws": [
+   "Hawking Law 7: Repeated blocks indicate modular redundancy",
+   "Hawking Law 12: F32 dtype implies low precision efficiency",
+   "Hawking Law 15: EBPW > 30 indicates high computational load"
+  ],
+  "disposition": "RESEARCH SPECIMEN",
+  "next_experiment": "analyze block repetition for parameter sharing potential",
+  "_agent": "Qwen3-4B-Instruct-2507"
+ }
+}
