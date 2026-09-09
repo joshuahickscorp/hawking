@@ -1,0 +1,81 @@
+{
+ "obligation": "K4 (S007/S008) \u2014 deep promotion Gravity on Kimi's expert bank",
+ "date": "2026-09-09",
+ "specimen": "Kimi-VL-A3B-Instruct",
+ "odyssey_stage": "5 DEEP GRAVITY ENTERED",
+ "specimen_key": "Kimi-VL-A3B-Instruct",
+ "correction_that_started_this": "S008: 8.706 EBPW from `mlx_vlm.convert -q --q-bits 8` is the off-the-shelf quantization Hawking exists to beat, not a result. The point of decompiling each organ is heavier, DIFFERENT reductions per organ.",
+ "ORGAN_MASS_MEASURED": {
+  "total": "30.56 GiB, 16.408B params",
+  "moe_expert": "4992 tensors, 14.395B params, 26.81 GiB, 87.7% OF MASS",
+  "shared_expert": "78 tensors, 0.450B, 2.7% (always active -- protect)",
+  "vision_encoder": "328 tensors, 0.417B, 2.5% (DEAD WEIGHT for a text workhorse -- dropped from numerator AND denominator)",
+  "embed / lm_head": "0.336B each, 2.0% each",
+  "gqa_attention": "0.283B, 1.7%",
+  "latent_attention": "0.088B, 0.5%",
+  "moe_router": "0.003B, 0.0% of mass and it decides every route -- kept at fp16",
+  "separability": "top-level prefixes are language_model / vision_tower / multi_modal_projector, so the vision drop is clean"
+ },
+ "WHAT_WAS_REFUTED_CHEAPLY": {
+  "base_plus_delta / expert dictionaries / clustering": "DEAD on the whole-tensor axis. A shared MEAN across a layer's 32 experts explains 3.24% of energy; pairwise cosine between flattened experts is 0.0011 mean / 0.0039 max; 29 of 32 components are needed for 90% of the bank's energy. Experts are mutually near-orthogonal.",
+  "cost": "one measurement, no search spent"
+ },
+ "THE_INFERENCE_THAT_WAS_TOO_BROAD": "'experts are orthogonal, therefore sharing is dead' was WRONG, and the error is instructive. That test was at the WHOLE-TENSOR level. Orthogonal tensors drawn from the SAME DISTRIBUTION share a subvector codebook perfectly -- and near-random spectra make that more likely, not less. The right level for sharing was the subvector, not the tensor.",
+ "PRODUCT_QUANTIZATION_MEASURED": {
+  "setup": "12 real expert tensors from one layer bank, 34.6M weights, one codebook shared across the bank, codebook bytes counted in the rate",
+  "grouped_affine_g64": {
+   "4b": [
+    4.5,
+    0.0899
+   ],
+   "3b": [
+    3.5,
+    0.1927
+   ],
+   "2b": [
+    2.5,
+    0.4516
+   ]
+  },
+  "pq": {
+   "d=4 K=256": [
+    2.0,
+    0.3177
+   ],
+   "d=8 K=256": [
+    1.001,
+    0.5741
+   ],
+   "d=8 K=1024": [
+    1.254,
+    0.4915
+   ],
+   "d=16 K=1024": [
+    0.633,
+    0.7073
+   ],
+   "d=16 K=4096": [
+    0.78,
+    0.6571
+   ]
+  },
+  "THE_RESULT": "PQ d=4 K=256 gives BETTER error at FEWER bits than grouped affine 2b -- 0.3177 at 2.000 against 0.4516 at 2.500. And PQ d=8 K=1024 matches 2-bit grouped affine's error at HALF the bits. This is the first representation all campaign to beat plain grouped affine at matched or lower cost."
+ },
+ "THE_OTHER_LEVER_METADATA": "grouped affine at group 32 with fp16 scale+zero spends 1.0 BIT PER WEIGHT on metadata, which is why '2-bit' lands at 3.000 complete. Moving to group 128 with fp8 symmetric costs 0.0625 -- a saving of 0.94 bits/weight, nearly half the entire 2-bit budget. The metadata format is worth more than a whole bit of payload.",
+ "COMPLETE_EBPW_LADDER": {
+  "baseline mlx_vlm 8-bit": 8.706,
+  "grouped affine 2b experts + 4b rest": 2.675,
+  "PQ d=4 K=256 experts + 3b rest": 2.125,
+  "PQ d=8 K=1024 experts + 3b rest": 1.454,
+  "PQ d=8 K=256 experts + 3b rest": 1.226,
+  "PQ d=16 K=1024 experts + 3b rest": 0.895,
+  "note": "vision tower dropped from numerator and denominator; scales and zeros counted; codebook counted"
+ },
+ "RUNGS_REACHED_ON_PAPER": {
+  "<=2.0": "PQ d=8 K=1024 + 4b rest = 1.554",
+  "<=1.5 GRAVITY QUALIFIED": "PQ d=8 K=1024 + 3b rest = 1.454, err 0.491",
+  "<=1.0 PREFERRED": "PQ d=16 K=1024 + 3b rest = 0.895, err 0.707"
+ },
+ "WHAT_THIS_IS_NOT": "NOT a capability result. Relative reconstruction error is not capability, and 0.49 is large. Epoch I's own scar is that a codec which looks fine on reconstruction can destroy the body -- and that cosine/reconstruction metrics voided a whole earlier campaign. Nothing here is promoted until a magnitude-sensitive verifier (perplexity, top-1, KL) runs against a destructive control on the real body. Sampled from ONE layer, 12 tensors.",
+ "next": "build the PQ codec against the real bank, verify with the magnitude-sensitive battery, and check whether routing skew lets cold experts take a lower rung than hot ones -- which the measured error curve says is where the remaining budget is."
+}
