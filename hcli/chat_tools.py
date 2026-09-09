@@ -496,6 +496,19 @@ def run_with_tools(
                 "error": getattr(result, "error", None),
                 "provenance": provenance_of(result),
             }
+            # WHAT THE MUTATION DID, not merely that it ran. `ok` is True for a
+            # REJECTED mutation by design -- a refused edit is a result the body
+            # must report, not an error to paper over -- so `ok` has never meant
+            # the repository changed. Without the verdict here, every consumer of
+            # this trace is structurally unable to tell a landing from a
+            # refusal. Campaign cycle 74: the supervisor logged "repo.edit
+            # CALLED and accepted" with a clean worktree and an unmoved HEAD.
+            if name in MUTATION_TOOLS:
+                value = getattr(result, "value", None)
+                if isinstance(value, dict):
+                    entry["verdict"] = value.get("status")
+                    entry["applied"] = bool(value.get("applied"))
+                    entry["paths"] = value.get("paths")
             if escalated is not None:
                 entry["escalated"] = {"glob": SOURCE_GLOB,
                                       "reason": "first search truncated before reaching source"}
@@ -843,10 +856,24 @@ BUILDER_TOOLS: Dict[str, str] = {
 #: mutation.
 MUTATION_TOOLS = ("repo.edit",)
 
+#: Name every op the applier implements, and name the CHEAPEST one first.
+#: Measured, campaign cycles 69-74: five consecutive `repo.edit` calls died the
+#: same way -- `operations` truncated mid-JSON, because the body had chosen
+#: `create` and was emitting a whole file inline. It had ~2534 tokens of
+#: generation budget and a whole file does not fit. `append` needs no anchor and
+#: no file body, `_apply_operations` has always implemented it, and this string
+#: never said so; the contract was steering a budget-limited body straight at
+#: the most expensive op in the set. `insert_before` and `replace_file` were
+#: missing too. test_the_builder_menu_names_every_op pins the agreement.
 BUILDER_SHAPES = {
     "repo.edit": (
-        '{"operations": [{"op": "create|replace|insert_after", '
-        '"path": <string>, "new_lines": [<string>], "old_lines": [<string>]}]}'
+        '{"operations": [{"op": "append|create|replace|replace_file'
+        '|insert_before|insert_after", "path": <string>, '
+        '"new_lines": [<string>], "old_lines": [<string>]}]}'
+        '   append and create take no old_lines. append is the smallest call '
+        'that changes a file -- prefer it when a payload is at risk of running '
+        'past the reply: {"operations":[{"op":"append","path":"p.py",'
+        '"new_lines":["x = 1"]}]}'
         '   optional: tests (list of paths to prove the change)'),
 }
 
