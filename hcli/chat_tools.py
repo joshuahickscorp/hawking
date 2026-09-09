@@ -382,14 +382,46 @@ def run_with_tools(
     cache: Any = None,
     knowledge: Any = None,
     engine: Any = None,
+    max_prompt_chars: Optional[int] = None,
 ) -> Tuple[str, List[Dict[str, Any]]]:
     """Answer, consulting tools when the model asks. Returns (text, trace).
 
     `complete` takes messages and returns the model's text, so this is testable
     without a resident and the caller keeps ownership of the backend.
+
+    `max_prompt_chars`, when given, is a PROMPT ADMISSION GUARD: never call
+    `complete` again with a conversation bigger than this. SCAR: the caller
+    compacts the INCOMING messages exactly once, before this loop starts --
+    every completion INSIDE the loop was unchecked. Measured live: once
+    batched tool calls started executing (see parse_calls), a real cycle grew
+    the conversation to 10203 tokens against the resident's native
+    max_seq_len=8192, and the backend raised -- surfaced to the caller as a
+    bare 502 with nothing HCLI could act on. A body that never gets a
+    response back cannot repair anything, including this. `None` (the
+    default) keeps every existing caller's behavior exactly as it was.
     """
     conversation = [dict(m) for m in messages]
     trace: List[Dict[str, Any]] = []
+    # (start, end) of each FULLY COMPLETED turn this loop has appended --
+    # never the caller's original messages, which stay outside this list and
+    # so are never evicted.
+    turn_bounds: List[Tuple[int, int]] = []
+
+    def _admit() -> None:
+        if max_prompt_chars is None:
+            return
+        size = sum(len(str(m.get("content") or "")) for m in conversation)
+        # Evict the OLDEST completed turn first -- always leave the most
+        # recent one intact, so the model has some grounding to continue
+        # from. Runs before every completion, including the first (where
+        # there is nothing yet to evict).
+        while size > max_prompt_chars and len(turn_bounds) > 1:
+            start, end = turn_bounds.pop(0)
+            evicted = sum(len(str(m.get("content") or "")) for m in conversation[start:end])
+            del conversation[start:end]
+            shift = end - start
+            turn_bounds[:] = [(s - shift, e - shift) for s, e in turn_bounds]
+            size -= evicted
     # The menu for THIS session. Authority decides the door set once, outside
     # the loop, so no turn can widen it.
     offered = builder_menu(engine is not None)
@@ -403,6 +435,7 @@ def run_with_tools(
     seen: Dict[str, int] = {}
     results: Dict[str, str] = {}
     for _ in range(max(0, max_calls)):
+        _admit()
         text = complete(conversation)
         calls = parse_calls(text)
         if not calls:
@@ -412,6 +445,7 @@ def run_with_tools(
         # settle every call it named before spending another turn on a new
         # completion. Bounded by the turn budget itself -- generous enough for
         # the batching actually observed, never unbounded.
+        turn_start = len(conversation)
         conversation.append({"role": "assistant", "content": text})
         stop_early = False
         for name, arguments in calls[:max(1, max_calls)]:
@@ -467,8 +501,10 @@ def run_with_tools(
             results[sig] = observation
             conversation.append(tool_response(name, observation) if native
                                 else {"role": "user", "content": observation})
+        turn_bounds.append((turn_start, len(conversation)))
         if stop_early:
             break
+    _admit()
     # Budget spent. Ask for the answer itself rather than returning the last
     # tool call as though it were one.
     conversation.append({"role": "user", "content":

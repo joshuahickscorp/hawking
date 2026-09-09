@@ -650,11 +650,24 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     with_contract = (messages if native else prepend_system(
                         messages, system_block(registry=registry,
                                                write=writing)))
+                    # ADMISSION GUARD for every completion INSIDE the tool
+                    # loop, not just the one before it. `compact()` above only
+                    # ever runs once, on the INCOMING messages -- measured
+                    # live, once batched tool calls started executing (see
+                    # chat_tools.parse_calls), a cycle grew the conversation
+                    # to 10203 tokens against the resident's native
+                    # max_seq_len=8192 with no check in between, and the
+                    # backend raised a bare 502. Same window, same headroom
+                    # share compact() already uses -- not a new policy.
+                    from .chat_state import CHARS_PER_TOKEN, CONTEXT_SHARE
+                    window_tokens = int(health.get("context_window") or 8192)
                     answer, trace = run_with_tools(
                         _complete, with_contract, registry, native=native,
                         cache=stores.get("cache"),
                         knowledge=stores.get("knowledge"),
-                        engine=stores.get("engine"))
+                        engine=stores.get("engine"),
+                        max_prompt_chars=int(
+                            window_tokens * CONTEXT_SHARE * CHARS_PER_TOKEN))
                     result = type("R", (), {
                         "text": answer, "finish_reason": "stop", "degraded": [],
                         "prompt_tokens": None, "completion_tokens": None,

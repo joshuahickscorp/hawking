@@ -176,6 +176,53 @@ class TestTheLoop(unittest.TestCase):
                             for t in trace), "the repeat was not caught")
         self.assertLess(len(trace), 12, "the loop churned to the budget")
 
+    def test_the_conversation_never_exceeds_a_given_prompt_budget(self):
+        # SCAR: serve.py compacts the INCOMING messages once, before the tool
+        # loop starts -- but every completion INSIDE the loop is unchecked.
+        # Measured live: after the batching fix started executing several
+        # reads per turn, a real cycle grew the conversation to 10203 tokens
+        # against the resident's native max_seq_len=8192, and the backend
+        # raised (HawkingNativeError, surfaced to the caller as a bare 502
+        # with no information HCLI could act on). A body that never gets a
+        # response back cannot repair anything, including this.
+        registry = _Registry({"fs.read": _Result(value={"text": "x" * 4000})})
+        calls = ['{"tool": "fs.read", "arguments": {"path": "%s"}}' % p
+                 for p in ("a", "b", "c", "d", "e")]
+        seen_sizes = []
+
+        def complete(convo):
+            seen_sizes.append(sum(len(str(m.get("content") or "")) for m in convo))
+            i = len(seen_sizes) - 1
+            return calls[i] if i < len(calls) else "Answering with what fits."
+
+        # Room for about two turns (~3.1KB each, measured below) -- enough to
+        # prove eviction caps growth without asking for less than one turn's
+        # worth of grounding, which no admission guard can honor.
+        text, trace = run_with_tools(
+            complete, [{"role": "system", "content": "objective"}], registry,
+            max_calls=6, max_prompt_chars=7000)
+        self.assertEqual(text, "Answering with what fits.")
+        self.assertEqual(len(trace), 5, "a budget must not silently drop calls")
+        # The budget is admission control on what's SENT, not a cap on work
+        # done -- assert what the backend actually saw each turn, not what
+        # accumulated afterward.
+        self.assertTrue(all(s <= 7000 for s in seen_sizes),
+                        f"a turn was sent over budget: {seen_sizes}")
+        # The real bug was UNBOUNDED growth turn over turn -- prove it
+        # plateaus rather than merely staying under one arbitrary ceiling.
+        self.assertEqual(seen_sizes[-1], seen_sizes[-2],
+                         f"size kept growing instead of reaching steady state: {seen_sizes}")
+
+    def test_with_no_budget_given_behaviour_is_unchanged(self):
+        # The default (no budget) must stay exactly what every other test in
+        # this file already assumes -- opt-in, not a silent behavior change.
+        registry = _Registry({"fs.read": _Result(value={"text": "x" * 4000})})
+        text, trace = run_with_tools(
+            _scripted(['{"tool": "fs.read", "arguments": {"path": "a"}}',
+                       "Done."]), [], registry)
+        self.assertEqual(text, "Done.")
+        self.assertEqual(len(trace), 1)
+
     def test_a_batch_of_calls_in_one_reply_all_execute(self):
         # SCAR: sealed-3.14 routinely batches 2-3 reads in ONE reply (measured,
         # .hcli/selfdev/evidence/cycle-0008.txt: three <tool_call> blocks in a
