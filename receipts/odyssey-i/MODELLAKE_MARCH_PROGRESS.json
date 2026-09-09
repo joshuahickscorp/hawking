@@ -2,7 +2,7 @@
  "schema": "hawking.odyssey.modellake_march_progress.v1",
  "_label": "Bookkeeping snapshot, not a new measurement -- tallies existing receipts per S005's MODELLAKE MARCH record-keeping requirement.",
  "total_lake_specimens": 55,
- "n_deep_discovery_this_session": 10,
+ "n_deep_discovery_this_session": 11,
  "deep_discovery_this_session": {
   "state-spaces--mamba3-siso-1.5b@5cfc721542ec": "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
   "RWKV--RWKV7-13.3B-20260805@64ffe5934178": "CAND_RWKV7-13.3B_ODYSSEY_I.json",
@@ -13,7 +13,8 @@
   "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a": "CAND_iLLaDA-8B_ODYSSEY_I.json",
   "lerobot--pi0_base@25c379b52ba2": "CAND_pi0_base_ODYSSEY_I.json",
   "facebook--sam2.1-hiera-large@665f8e2ad61c": "CAND_sam2.1-hiera-large_ODYSSEY_I.json",
-  "openai--whisper-large-v3-turbo@41f01f3fe87f": "CAND_whisper-large-v3-turbo_ODYSSEY_I.json"
+  "openai--whisper-large-v3-turbo@41f01f3fe87f": "CAND_whisper-large-v3-turbo_ODYSSEY_I.json",
+  "Qwen--Qwen3-0.6B@c1899de289a0": "CAND_Qwen3-0.6B_ODYSSEY_I.json"
  },
  "n_prior_full_odyssey_patients": 4,
  "prior_full_odyssey_patients": {
@@ -30,7 +31,7 @@
   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "config read, not used in a receipt"
  },
  "n_censused_survey_only": 45,
- "n_untouched_beyond_survey_classification": 35,
+ "n_untouched_beyond_survey_classification": 34,
  "untouched_specimens": [
   {
    "name": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
@@ -54,12 +55,6 @@
    "name": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
    "model_type": "qwen2",
    "dir_size_gib": 135.437,
-   "diffusion_signal": false
-  },
-  {
-   "name": "Qwen--Qwen3-0.6B@c1899de289a0",
-   "model_type": "qwen3",
-   "dir_size_gib": 1.415,
    "diffusion_signal": false
   },
   {
@@ -256,18 +251,19 @@
   "second masked-diffusion LM, byte-exact tied-embedding waste found (iLLaDA-8B, THIS session)",
   "vision-language-action robot control, flow matching, first non-generation specimen (pi0_base, THIS session)",
   "pure vision/video segmentation, backbone-dominated budget (sam2.1-hiera-large, THIS session)",
-  "audio (speech-to-text), first encoder-decoder architecture, 8:1 layer asymmetry (whisper-large-v3-turbo, THIS session)"
+  "audio (speech-to-text), first encoder-decoder architecture, 8:1 layer asymmetry (whisper-large-v3-turbo, THIS session)",
+  "smallest language specimen in the lake, second confirmed tied-embedding-waste transfer test (Qwen3-0.6B, THIS session)"
  ],
  "architecture_families_in_the_census_NOT_yet_given_a_real_discovery_pass": [
   "next-gen linear-attn (GLM-5.3-Flash, Kimi-K3) -- both very large (305GB/1.45TB), untouched",
   "vision/audio/multimodal specialists beyond SAM2/Whisper (SmolVLM2, audio-flamingo-3, musicgen, depth-anything, vjepa2) -- musicgen would be a second, generative (not transcriptive) audio point",
   "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)",
-  "small Resident/Pulsar candidates per S003's evaluation framework (Qwen3-0.6B, Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B, ModernBERT-large) -- discovery-only anatomy is in-scope now even though the full qualification battery is gated until G004/G005 land"
+  "remaining small Resident/Pulsar candidates per S003's evaluation framework (Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B, ModernBERT-large) -- discovery-only anatomy in-scope now, qualification battery still gated until G004/G005 land"
  ],
  "next_justified_specimens_if_continuing": [
-  "Qwen3-0.6B (1.42GB) -- smallest language specimen in the lake, a genuine first data point for S003's Resident/Pulsar-candidate anatomy comparison against sealed-3.14's 27B",
-  "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier"
+  "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier",
+  "ModernBERT-large (1.48GB) -- an encoder-ONLY (non-generative) specimen, a genuinely different structural category from every specimen surveyed so far (all decoder-only or enc-dec)"
  ],
- "commit": "6ff2f7453",
- "emitted_at": "2026-09-09T14:15:30Z"
+ "commit": "c4be79be1",
+ "emitted_at": "2026-09-09T14:18:23Z"
 }

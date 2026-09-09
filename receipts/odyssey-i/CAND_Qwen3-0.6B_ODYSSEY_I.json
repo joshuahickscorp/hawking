@@ -1,0 +1,63 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-Qwen3-0.6B",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + one safetensors header + a full byte-exact SHA256 comparison of the embed_tokens/lm_head tensor pair, not a shape-only guess). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY. Smallest language specimen in the ModelLake -- a first anatomy data point for S003's Resident/Pulsar-candidate evaluation framework (discovery-only; full qualification battery remains gated on G004/G005). Also a second, independent transfer test of this session's R-tied-embedding-dedup-verify rule.",
+ "identity": {
+  "name": "Qwen/Qwen3-0.6B",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "architectures": [
+   "Qwen3ForCausalLM"
+  ],
+  "model_type": "qwen3"
+ },
+ "architecture_CONFIRMED_FROM_TENSORS": {
+  "n_layer": 28,
+  "hidden_size": 1024,
+  "n_attn_heads": 16,
+  "n_kv_heads": 8,
+  "head_dim": 128,
+  "head_dim_EXPANDED_beyond_hidden_size": true,
+  "finding": "q_proj output dim is 2048 (16 heads x 128 head_dim), 2.0x the hidden_size (1024) -- a real Qwen3-small-model design choice (preserving per-head capacity at small hidden_size rather than the naive hidden_size/n_heads split), confirmed from actual tensor shapes, not the config field alone.",
+  "max_position_embeddings": 40960,
+  "vocab_size": 151936
+ },
+ "TIED_EMBEDDING_SECOND_TRANSFER_TEST": {
+  "config_claims": true,
+  "verified_byte_identical": true,
+  "duplicated_bytes": 311164928,
+  "duplicated_mib": 296.8,
+  "finding": "CONFIRMS R-tied-embedding-dedup-verify (originally single-specimen, from CAND-iLLaDA-8B) on a SECOND, completely unrelated model family: 296.8 MiB (20.7% of total checkpoint bytes) is a verified, exact duplicate of embed_tokens.weight stored as lm_head.weight. Contrast with pi0_base (also tied, earlier this session), which stored its equivalent tied weight ONLY ONCE -- so this is a real per-checkpoint packaging choice, not a universal HF convention either way, but now 2-of-3 tied-embedding specimens surveyed this session waste the duplicate."
+ },
+ "byte_accounting_EXACT": {
+  "n_tensors": 311,
+  "total_bytes_stored": 1503264768,
+  "total_gib_stored": 1.4,
+  "total_params_stored": 751632384,
+  "total_params_stored_B": 0.7516,
+  "logical_params_dedup": 596049920,
+  "logical_params_dedup_B": 0.596,
+  "name_implied_B": 0.6,
+  "stored_vs_name_gap_pct": 25.272,
+  "logical_vs_name_gap_pct": 0.658,
+  "finding": "raw stored params are 25.3% over the '0.6B' name; deduplicating the tied lm_head brings it to 0.66% -- the SAME reconciliation mechanism as iLLaDA-8B's 8.28%->0.065% finding earlier this session, now a pattern with two independent confirmations rather than one."
+ },
+ "obvious_representation_opportunities": [
+  "Same as iLLaDA: the duplicate lm_head.weight is exact, zero-capability-cost reclaimable space -- 20.7% of this checkpoint's stored bytes.",
+  "At 0.6B params this is the smallest specimen surveyed this session by a wide margin -- genuinely cheap to fully qualify as a Resident/Pulsar candidate once G004/G005 unlock that framework; this pass only established anatomy, not capability."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery, no HCLI WorkUnit qualification run (both explicitly gated on G004/G005 per the standing resource law, not attempted here)."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN / FUTURE QUALIFICATION CANDIDATE. Anatomy-only pass, correctly stopping short of the gated qualification battery. Strengthens R-tied-embedding-dedup-verify to a 2-specimen-confirmed general finding.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "ANATOMY-ONLY, UNQUALIFIED: 0.6B params (1.4GiB) makes it by far the cheapest candidate surveyed for S003's framework, but NO capability battery has run -- size alone says nothing about whether it can do verified HCLI WorkUnit work at all. Explicitly not claiming viability, only recording the anatomy S003 asked for.",
+  "pulsar_candidate": "SAME CAVEAT -- anatomy suggests low latency/memory cost IF capability holds, entirely untested.",
+  "magnetar_candidate": "UNLIKELY BY SIZE (too small for deep-reasoning claims).",
+  "cepheid_candidate": "NOT EVALUATED.",
+  "verdict": "Anatomy recorded per S003's mandate; qualification remains correctly gated on G004/G005 per the standing resource law -- no premature capability claim made."
+ },
+ "commit": "c4be79be1",
+ "emitted_at": "2026-09-09T14:17:55Z"
+}
