@@ -1,5 +1,5 @@
 {
- "obligation": "G019 \u2014 Kimi-VL-A3B tuning",
+ "obligation": "K1 (S007) \u2014 make Kimi execute reliably",
  "date": "2026-09-09",
  "stage": "serving path",
  "anatomy_measured": {
@@ -20,7 +20,14 @@
  "serving_path": {
   "mlx_lm": "REFUSED. `ValueError: Received 27 parameters not in model` on `kv_b_proj` -- Kimi-VL's language model is DeepSeek-V2-style MLA + MoE and mlx_lm has no kimi_vl entry, only deepseek_v2/v3.",
   "mlx_vlm": "installed (uv tool install mlx-vlm). First server start failed with `[METAL] Command buffer execution failed: GPU Timeout Error` during load.",
-  "status": "load being retried uncontended"
+  "status": "load being retried uncontended",
+  "blockers_resolved_in_order": [
+   "mlx_lm: no kimi_vl entry, refuses kv_b_proj -> switched to mlx-vlm",
+   "trust_remote_code required (custom config/modeling/processor/tokeniser) -- inspected first: no subprocess, os.system, eval, exec or network calls; standard HF model code",
+   "torch + torchvision missing from the mlx-vlm venv (Kimi's image processor imports torchvision)",
+   "tiktoken missing (Kimi ships a tiktoken-based tokeniser)",
+   "remaining: the Metal GPU timeout at load, to be ISOLATED rather than retried"
+  ]
  },
  "BANDWIDTH_MEASURED_AND_A_WITHDRAWN_CLAIM": {
   "first_reading": "15.9 MB/s on the external volume",
@@ -36,5 +43,19 @@
   "external_free_gib": 85,
   "external_capacity_pct": 99,
   "internal_free_gib": 248
+ },
+ "SEARCH_HAWKING_FIRST_RESULT": {
+  "instruction": "S007 order 5: search Hawking for existing Kimi/DeepSeek/MLA support before building",
+  "FOUND \u2014 architecture recognition is ALREADY OWNED": {
+   "where": "tools/odyssey/arch_recognizer.py",
+   "evidence": "run against Kimi's 5679 real tensor names it classifies 99.1% of them: 4992 moe_expert, 328 vision_encoder, 135 latent_attention, 78 shared_expert, 26 moe_router, 53 unrecognised.",
+   "MLA is a first-class concept there": "FINGERPRINTS carries ('latent_attention', r'(kv_a_proj|kv_b_proj|q_a_proj|q_b_proj|kv_a_layernorm)', '*') and it performed the MLA FOLD on Kimi -- recognising that the residual q/o projections belong to the latent-attention organ rather than a second independent GQA organ, and recording why.",
+   "CONSEQUENCE": "do NOT build an MLA projection primitive. S007 warned against a one-model hack when the missing concept is MLA topology; the measurement says the missing thing is not the concept at all. Hawking understands this architecture. What it lacks is an EXECUTION path for it."
+  },
+  "the_organs_are_DECLARED_UNMEASURED": "every Kimi organ comes back DECLARED_UNMEASURED -- declared in Hawking's organ registry and never actually measured. That is a real gap this campaign closes, and it is why Kimi is worth the budget.",
+  "sealed-3.14 provenance recovered (S007 order 7)": {
+   "finding": "hcli/runtime_iface.py names `Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf` under models/qwen3.8-27b-abliterated/, and ~/models/serve-abliterated.sh exists.",
+   "conclusion": "sealed-3.14 is a THIRD-PARTY abliterated checkpoint (Huihui). Hawking did not abliterate it and owns no abliteration implementation -- no refusal-direction, orthogonalisation or harmful/harmless contrast code anywhere in hcli/, tools/ or crates/. So K3 has no in-house procedure to recover, and the external references in S007 are the honest starting point, with the GPL caution observed."
+  }
  }
 }
