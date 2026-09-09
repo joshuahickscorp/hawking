@@ -1,0 +1,31 @@
+{
+ "obligation": "G044 \u2014 DETACHED-SUPERVISOR TEST",
+ "status": "INTERVAL OPEN",
+ "opened_at": "2026-09-09T13:26:32",
+ "opened_at_cycle": 76,
+ "rule_for_the_interval": "Claude does NOT steer ordinary HCLI engineering: no substrate repair, no prompt edits, no state edits, no phase corrections, no choosing or hinting at a defect. Claude continues Odyssey science on CPU, which is a different front and does not touch the body. Reading the campaign log and evidence is observation, not intervention.",
+ "what_breaks_the_interval_legitimately": [
+  "the resident dies or wedges (a mechanic call, recorded as such and the interval restarted)",
+  "a NEW supervisor false positive is found (the measurement instrument is wrong, and a wrong instrument makes the whole interval void)",
+  "the harness crashes"
+ ],
+ "what_does_NOT_break_it": [
+  "the body failing a phase repeatedly -- that is the measurement",
+  "the body picking a defect Claude thinks is uninteresting",
+  "cycles producing nothing"
+ ],
+ "start_conditions": {
+  "cycle": 76,
+  "phase": "ORIENT",
+  "hypothesis": null,
+  "accepted_changes": 0,
+  "worktree_HEAD": "234f5f75f",
+  "substrate_state": "intervention 10/11 deployed at 13:11-13:13: repo.edit advertises append (the cheapest op, no anchor and no file body), the tool trace carries verdict/applied/paths so an acceptance cannot be faked, the conversation budget rose 3097 -> 4505 tokens by stopping a double reserve, tests.run can run a 154-second suite instead of timing out at 30s, and the supervisor no longer reads a refusal as a commitment."
+ },
+ "the_question_this_answers": "Every substrate defect found so far was found because the body walked into it and said so. The open question is whether what remains is another substrate defect or the body itself. Only an interval with no repairs underneath it can tell those apart.",
+ "close_conditions": {
+  "SUCCESS": "an accepted, landed HCLI-authored change (G004) with no Claude intervention in the interval",
+  "INFORMATIVE_FAILURE": "the body reaches ACT_REQUIRED and is refused for a NEW reason, naming a defect nobody had found",
+  "NEGATIVE": "the interval passes with no phase progress and no new failure mode -- which would point at the body rather than the substrate, and is the answer that matters most"
+ }
+}

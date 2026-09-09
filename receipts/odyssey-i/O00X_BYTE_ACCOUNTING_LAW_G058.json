@@ -38,6 +38,20 @@
    "case": "activation-aware placement (G047, this session)",
    "applied": "both arms write the SAME per-group affine format, so payload, scale and zero bytes are identical by construction",
    "consequence": "the comparison cannot be explained away by byte accounting at all -- which is what makes a +0.02 top-1 difference meaningful"
+  },
+  {
+   "case": "boltz-2 -- logical tensor bytes are not storage bytes",
+   "defect": "summing every tensor's logical size double-counted 48% of a Lightning checkpoint. Its `callbacks` entry holds an EMA copy whose tensors ALIAS the state_dict tensors -- same storage, different names.",
+   "measured": "4.07 GiB logical, 2.13 GiB of unique storage, 2.13 GiB on disk. The unique figure matches the file to the digit.",
+   "fix": "dedup by untyped_storage().data_ptr() before counting, in the producer. And the check that catches the next one: unique storage should equal the container's size on disk, so a gap is a bug rather than a curiosity.",
+   "how_it_surfaced": "the first run reported MORE tensor than disk, which is impossible and therefore diagnostic. A tool that had reported slightly less would have looked fine and been just as wrong."
+  },
+  {
+   "case": "HunyuanVideo -- a silent zero from a twelve-gigabyte file",
+   "defect": "the reader did obj.get('state_dict', obj); this is a DeepSpeed mp_rank checkpoint whose tensors live under `module`, so the lookup returned the outer dict, none of whose top-level values are tensors, and the walker reported ZERO tensors from a 12.28 GiB file without raising.",
+   "measured_before": "0.92 GiB (the VAE only) against 13.2 GiB on disk -- a 14x undercount",
+   "measured_after": "13.2 GiB of tensor against 13.2 GiB on disk",
+   "fix": "recurse for tensors anywhere in the container, and RAISE when a container that exists yields none. A silent zero is the same defect as a format gap recorded as a negative result; it just hides better."
   }
  ],
  "operational_rules": [
@@ -47,7 +61,11 @@
   "report file size and resident working set as separate numbers, never one as the other",
   "any index, offset or side table a decoder needs is payload",
   "prefer arms whose byte counts are identical BY CONSTRUCTION, so accounting cannot be the explanation",
-  "fix the producer, not the receipt -- a corrected number leaves the thing that wrote it still wrong"
+  "fix the producer, not the receipt -- a corrected number leaves the thing that wrote it still wrong",
+  "dedup by STORAGE, not by name: aliased tensors are one set of bytes",
+  "unique storage must equal the container's size on disk -- a gap is a bug, not a curiosity",
+  "more tensor than disk is impossible and therefore useful; slightly less is equally wrong and looks fine",
+  "a container that exists and yields no tensors RAISES; it never reports zero"
  ],
  "enforcement_in_this_campaign": "gravity_lib.apply_codec returns complete accounting (payload + every scrap of metadata) rather than a payload rate; mlp_bytes in the G047 harness computes the figure once and both arms assert against it; anatomy_from_bytes raises on an unknown dtype and reports tensor bytes and on-disk bytes side by side."
 }
