@@ -1,0 +1,77 @@
+{
+  "schema": "hawking.odyssey.search.v1",
+  "obligation": ["K3", "K10"],
+  "steer": "S010",
+  "question": "Does Hawking already own an abliteration mechanism? S010: extend the owner, never build a second implementation.",
+  "answer": "PARTIALLY, AND THE OWNER IS NAMED. tools/future/tabula.py (2077 lines, SIDECAR_STATUS=BUILT_NOT_PROMOTED) is the owner. It already implements the write half of abliteration and the entire acceptance apparatus. What it has NEVER had is the read half: a direction measured from a real body's activations. It has only ever run on synthetic tensors.",
+
+  "search_performed": {
+    "terms": ["abliterat", "ablate", "refusal", "refusal_direction", "harmless", "harmful", "orthogonal", "orthogonaliz", "biproject", "representation engineering"],
+    "scope": "all *.py *.rs *.md *.json outside vendor/node_modules/target/.git/.worktrees",
+    "counts": {
+      "refusal_direction": 0,
+      "biproject": 0,
+      "representation engineering": 0,
+      "orthogonaliz_code": 1,
+      "abliterat_code_files": 56,
+      "refusal_code_files": 224
+    },
+    "note": "56 files naming 'abliterat' is misleading: nearly all are the MODEL NAME (PocketAiHub/Qwen3.8-27B-Abliterated-MLX). Grepping for the MECHANISM rather than the word is what found the real owner."
+  },
+
+  "owned": {
+    "tools/future/tabula.py::project": "W' = (I - v v^T) W with optional Frobenius norm restore and an optional InvertRecipe. That is conventional abliteration, plus NORM PRESERVATION and plus REVERSIBILITY -- the latter is more than either reference repository offers. A `scale` argument already gives projected (partial) treatment.",
+    "tools/future/tabula.py::recover_left_null": "smallest left singular direction of W",
+    "tools/future/tabula.py::ScoreVector / evaluate / rank / RankRefusal / IncompleteScoreVector": "the acceptance apparatus S010 asks for, already written and already refusing the wrong objective: 'Zero refusal is never the only score.' rank() RAISES RankRefusal rather than ranking on refusal rate; evaluate() RAISES IncompleteScoreVector rather than scoring a partial vector.",
+    "tools/future/tabula.py::AuthorityLattice / may_external_action / FORBIDDEN_AUTHORITY": "authorization boundaries as a TYPE, not as a model behaviour -- which is exactly S010's 'security policy is the authority lattice, not whether a language model says no'.",
+    "tools/tabula_drift.py::recover_direction": "recovers the removed direction from an ALREADY-abliterated artifact via the left null space, with TWO negative controls (per-layer agreement, and a random unit direction scored identically). G123.",
+    "tools/gravity_tabula_probe.py": "same geometry applied to sealed-3.14's 80 projected tensors; agreement across tensors is the check that separates a real direction from sampling noise."
+  },
+
+  "missing": {
+    "direction_measurement": "No code anywhere computes a refusal direction from ACTIVATIONS. Hawking can only recover a direction from a body somebody else already abliterated. It cannot measure one on a pristine body.",
+    "harmless_harmful_contrast": "no contrastive prompt-set instrument",
+    "real_specimen_path": "run_contract() is documented 'Execute one contract on synthetic tensors. Deterministic. No specimen.' TABULA has never touched a real weight.",
+    "sharded_and_memory_efficient_application": "project() takes a dense numpy matrix. A 30 GiB MoE body needs shard-at-a-time application.",
+    "moe_expert_granular_handling": "nothing distinguishes a shared expert from a routed expert"
+  },
+
+  "stale_blocker_found": {
+    "where": "tools/future/tabula.py PHYSICAL_BLOCKERS",
+    "claims": ["MetalContext reports NO Metal-capable GPU on this host", "xcrun cannot locate the Metal compiler under CommandLineTools"],
+    "reality": "K1 is VERIFIED: Kimi-VL-A3B executes on this machine's Metal GPU at 86-88 decode TPS. sealed-3.14 has been resident on the GPU for the entire campaign.",
+    "consequence": "TABULA is a SLEEPING WorkUnit whose wake condition is gated on a blocker list that reality has already falsified. This is the monotone-latch shape again: a recorded historical condition read as a current measurement.",
+    "action": "the blocker list must be RE-MEASURED, not edited to taste. Fix the producer."
+  },
+
+  "license_position": {
+    "jim-plus/llm-abliteration": "GPL-3.0 -- study only, no copying. Not needed: project() already covers what would have been copied.",
+    "TrevorS/gemma-4-abliteration": "reference for the EGA QUESTION only. Kimi is not Gemma; its claim that refusal survives in routed experts after the shared path is treated is a HYPOTHESIS about Kimi, to be measured under K10.",
+    "conclusion": "no external source needs to be incorporated. The gap is one measurement function, and transformers 5.5.4 + torch 2.6.0 are already installed on this host."
+  },
+
+  "prior_moe_result_that_constrains_the_routing_plan": {
+    "receipt": "receipts/ascent-2026-08-18/A3B_RECON.json",
+    "specimen": "Qwen3-30B-A3B (abliterated checkpoint), 48 MoE layers, 128 experts, top-8",
+    "measured": {
+      "avg_layer_route_entropy_bits": 6.09,
+      "max_entropy_bits": 7.0,
+      "never_routed_experts": 0,
+      "most_popular_expert_share_pct": 1.42,
+      "pct_mass_top16_experts": 18
+    },
+    "classification_on_record": "cold-expert compression does NOT apply to this body -- routing was near-uniform",
+    "why_it_matters_now": "S010 proposes spending representation budget by hot/cold expert. On the last MoE Hawking measured, there were NO cold experts in aggregate. PER-TOKEN sparsity (58 of 64 idle for one token) is NOT aggregate skew, and conflating them is the error this receipt already refutes once. Kimi's own routing distribution must be measured before any budget is allocated by it.",
+    "correction": "an earlier note in this campaign framed '58 of 64 experts are cold for any given token' as headroom for routing-skew allocation. A3B_RECON shows that framing does not survive aggregation on at least one MoE. Treat it as an open question, not as headroom."
+  },
+
+  "plan": [
+    "EXTEND TABULA, do not create a sibling. Add the read half: measure a direction from a real body's residual stream on a harmless/harmful contrast.",
+    "K10 first: LOCALISE the direction across shared residual path, MLA output writers, shared experts, routed experts, layer bands -- before any weight moves.",
+    "One instrument answers two questions: the same hooked forward pass yields the residual stream AND the router's top-k selections, so refusal localisation and routing distribution come out of one run.",
+    "Only then K3: apply via tabula.project(), score via tabula.evaluate(), keep BASE_KIMI pristine, name the output KIMI_OPERATOR_CANDIDATE_*.",
+    "K4's PQ artifacts stay as representation research until the operator body exists (S010 ordering)."
+  ],
+  "recorded_by": "claude, Front O supervisor",
+  "date": "2026-09-09"
+}

@@ -1,0 +1,47 @@
+{
+ "schema": "hawking.odyssey.sweep.v1",
+ "obligation": "K4",
+ "steer": "S010",
+ "question": "does gravity_potency's space_filling_gain prior transfer from gpt-oss-120b to Kimi's expert bank?",
+ "design": "rate held FIXED at 0.500 payload bits/weight; only VQ dimension varies. The earlier grid did not do this and therefore could not test the claim.",
+ "specimen": "Kimi-VL-A3B layer 11 expert bank, 92274688 weights",
+ "prior_transfers": true,
+ "rows": [
+  {
+   "d": 8,
+   "K": 16,
+   "payload": 0.5,
+   "codebook_bits_per_weight": 4.6e-06,
+   "complete_expert_bits_per_weight": 0.5,
+   "rel_error": 0.8037,
+   "gptoss_prior": 0.782,
+   "fit_sample": 200000,
+   "iters": 15,
+   "seconds": 0.5
+  },
+  {
+   "d": 16,
+   "K": 256,
+   "payload": 0.5,
+   "codebook_bits_per_weight": 0.0001457,
+   "complete_expert_bits_per_weight": 0.50015,
+   "rel_error": 0.78597,
+   "gptoss_prior": 0.757,
+   "fit_sample": 300000,
+   "iters": 12,
+   "seconds": 0.4
+  },
+  {
+   "d": 32,
+   "K": 65536,
+   "payload": 0.5,
+   "codebook_bits_per_weight": 0.0745921,
+   "complete_expert_bits_per_weight": 0.57459,
+   "rel_error": 0.73614,
+   "gptoss_prior": 0.668,
+   "fit_sample": 2883584,
+   "iters": 6,
+   "seconds": 32.1
+  }
+ ]
+}

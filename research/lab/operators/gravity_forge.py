@@ -86,10 +86,31 @@ class PackedArtifact:
         return max(0.0, self.whole_artifact_bpw - self.base_bpw - self.doctor_bpw)
 _DISTANCE_BUDGET_BYTES = int(os.environ.get('GRAVITY_KMEANS_DISTANCE_BUDGET_BYTES', 1 << 30))
 
-def _chunk_rows(n: int, k: int) -> int:
-    return max(1, min(n, _DISTANCE_BUDGET_BYTES // max(1, k * 4)))
+def _chunk_rows(n: int, k: int, score_bytes: int=4) -> int:
+    """Rows per distance block. ``score_bytes`` is the width of ONE score, so a
+    half-precision block may hold twice the rows for the same budget."""
+    return max(1, min(n, _DISTANCE_BUDGET_BYTES // max(1, k * int(score_bytes))))
 FIT_KERNEL = os.environ.get('GLM52_FIT_KERNEL', 'v1_full_distance')
-FIT_KERNELS = ('v1_full_distance', 'v2_lean_argmin')
+FIT_KERNELS = ('v1_full_distance', 'v2_lean_argmin', 'v3_lean_argmin_fp16')
+# Row-norm max/min above which the fp16 score block stops being free. Measured: safe
+# through 5.4e3, +0.095% SSE at 4.3e5, +38% at 2.6e9. 1e4 sits inside the measured
+# safe region rather than on the near side of the cliff.
+FP16_ROW_NORM_RANGE_LIMIT = float(os.environ.get('GRAVITY_FP16_ROW_NORM_RANGE_LIMIT', 1e4))
+
+
+def _argmin_chunked_v2(v, cb, step: int):
+    """The exact lean minimiser, also the fp16 kernel's fallback."""
+    torch = _torch()
+    n = v.shape[0]
+    half_cb_sq = (cb * cb).sum(1) * 0.5
+    cb_t = cb.t()
+    if step >= n:
+        return (half_cb_sq - v @ cb_t).argmin(1)
+    out = torch.empty(n, device=v.device, dtype=torch.int64)
+    for start in range(0, n, step):
+        stop = min(start + step, n)
+        out[start:stop] = (half_cb_sq - v[start:stop] @ cb_t).argmin(1)
+    return out
 
 def _argmin_chunked(v, v2, cb, step: int):
     """Nearest centroid per row, holding the distance block to ``step`` rows.
@@ -112,19 +133,70 @@ def _argmin_chunked(v, v2, cb, step: int):
     v1 materializes three [step, k] float32 blocks (the v2_i subtract, the 2.0 scale, the
     c_j add) where v2 materializes one. On CPU torch fuses none of them, and at D=32 against
     k=256 the matmul is thin enough that this traffic, not the arithmetic, is the cost.
+
+        v3: v2 with the score block in float16.
+
+    v3 follows from the same reading of where the cost is. If the [step, k] block is the
+    expense, halving its width halves the expense -- and it does: measured on Kimi's expert
+    bank on MPS, 11.5M subvectors against k=1024, fp32 1.33s and fp16 0.98s, a further 1.36x
+    on top of the 2.24x that moving off the CPU already bought.
+
+    It is LOSSY, and the loss is bounded rather than assumed. fp16 carries ~11 bits of
+    mantissa, so two centroids whose scores differ by less than that are a coin flip -- but
+    a coin flip between two centroids that are nearly equidistant costs almost no
+    reconstruction error, which is the only thing the codebook is judged on. Measured on the
+    same specimen: 99.715% of indices identical to fp32 and total SSE worse by 0.0004%.
+    bf16 was measured beside it and REJECTED -- 97.748% agreement, SSE +0.025%, and SLOWER
+    at 1.45s, because its 8-bit mantissa loses more ties without shrinking the block further.
+
+    v3 is therefore correct for FITTING, where the codebook is judged by the error it
+    leaves. It is not offered as byte-compatible with anything, for the same ULP reason v2
+    is not byte-compatible with v1.
+
+    v3 GUARDS ITSELF, because its safety depends on the data and not on the kernel. Scores
+    scale with |v||c|, so a block holding both a 1e-5 row and a 0.9 row cannot represent
+    both well in 11 bits of mantissa. Measured, varying only the row-norm dynamic range:
+
+        max/min      4.9   agreement 99.84%   SSE +0.00007%
+        max/min     5453   agreement 99.90%   SSE +0.00002%
+        max/min   425549   agreement 99.89%   SSE +0.09538%
+        max/min    2.6e9   agreement 91.73%   SSE +38.3%
+
+    That is a cliff, not a slope, and the third row is the reason the guard reads norms
+    rather than agreement: agreement went UP while the error got 1400x worse, because the
+    few rows it lost were the high-norm ones that dominate the sum. An agreement rate is
+    magnitude-blind in exactly the way a cosine score was, and gating on one would have
+    shipped the 0.095% case as a win. The gate is SSE; the guard is the dynamic range that
+    predicts it.
+
+    This is not hypothetical for this repository: gravity_potency records gate/up row norms
+    spanning 1e-5..0.91, which lands on the cliff. Those organs fall back, and
+    pack_transform_pq's Hadamard rotation is the principled fix, since it homogenizes row
+    norms before the block is ever built.
     """
     torch = _torch()
     n = v.shape[0]
     cb_t = cb.t()
-    if FIT_KERNEL == 'v2_lean_argmin':
-        half_cb_sq = (cb * cb).sum(1) * 0.5
-        if step >= n:
-            return (half_cb_sq - v @ cb_t).argmin(1)
+    if FIT_KERNEL == 'v3_lean_argmin_fp16':
+        rn = v.norm(dim=1)
+        lo = float(rn.min())
+        if lo <= 0.0 or float(rn.max()) / lo > FP16_ROW_NORM_RANGE_LIMIT:
+            # Falling back is the point of the guard. Silently proceeding here is how a
+            # 38% SSE regression reaches an artifact wearing a 91.7% agreement badge.
+            return _argmin_chunked_v2(v, cb, step)
+        cb_h = cb.to(torch.float16)
+        # The centroid norms are accumulated in fp32 and only then narrowed: computing
+        # |c|^2 in fp16 would square small components to zero and move the minimiser for
+        # real, which is a different defect from breaking a tie.
+        half_cb_sq = ((cb.float() * cb.float()).sum(1) * 0.5).to(torch.float16)
+        step = max(1, step * 2)
         out = torch.empty(n, device=v.device, dtype=torch.int64)
         for start in range(0, n, step):
             stop = min(start + step, n)
-            out[start:stop] = (half_cb_sq - v[start:stop] @ cb_t).argmin(1)
+            out[start:stop] = (half_cb_sq - v[start:stop].to(torch.float16) @ cb_h.t()).argmin(1)
         return out
+    if FIT_KERNEL == 'v2_lean_argmin':
+        return _argmin_chunked_v2(v, cb, step)
     cb_sq = (cb * cb).sum(1)
     if step >= n:
         return (v2 - 2.0 * (v @ cb_t) + cb_sq).argmin(1)

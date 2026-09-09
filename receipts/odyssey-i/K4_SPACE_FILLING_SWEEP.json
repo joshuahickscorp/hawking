@@ -1,0 +1,92 @@
+{
+ "schema": "hawking.odyssey.sweep.v1",
+ "obligation": "K4",
+ "steer": "S010",
+ "specimen": "Kimi-VL-A3B expert bank, layer 11, 92274688 weights",
+ "prior_under_test": {
+  "source": "research/lab/operators/gravity_potency.py space_filling_gain",
+  "claim": "rel_error falls monotonically with VQ dimension at fixed rate",
+  "measured_on": "gpt-oss-120b",
+  "values": {
+   "d8k16": 0.782,
+   "d16k256": 0.757,
+   "d32k65536": 0.668
+  }
+ },
+ "accounting": {
+  "expert_weights": 14394851328,
+  "codebooks": 32,
+  "note": "codebook bits are CHARGED, not omitted"
+ },
+ "destructive_control_rel_error": 0.99031,
+ "device": "mps",
+ "assign_dtype": "float16",
+ "rows": [
+  {
+   "d": 8,
+   "K": 1024,
+   "payload_bits_per_weight": 1.25,
+   "codebook_bits_per_weight": 0.00029,
+   "complete_expert_bits_per_weight": 1.25029,
+   "rel_error": 0.50638,
+   "fit_seconds": 1.1,
+   "fit_sample": 200000,
+   "iters": 12
+  },
+  {
+   "d": 16,
+   "K": 1024,
+   "payload_bits_per_weight": 0.625,
+   "codebook_bits_per_weight": 0.00058,
+   "complete_expert_bits_per_weight": 0.62558,
+   "rel_error": 0.72684,
+   "fit_seconds": 0.6,
+   "fit_sample": 200000,
+   "iters": 12
+  },
+  {
+   "d": 16,
+   "K": 4096,
+   "payload_bits_per_weight": 0.75,
+   "codebook_bits_per_weight": 0.00233,
+   "complete_expert_bits_per_weight": 0.75233,
+   "rel_error": 0.67111,
+   "fit_seconds": 1.5,
+   "fit_sample": 400000,
+   "iters": 10
+  },
+  {
+   "d": 32,
+   "K": 65536,
+   "payload_bits_per_weight": 0.5,
+   "codebook_bits_per_weight": 0.07459,
+   "complete_expert_bits_per_weight": 0.57459,
+   "rel_error": 0.74178,
+   "fit_seconds": 23.7,
+   "fit_sample": 2000000,
+   "iters": 6
+  },
+  {
+   "d": 32,
+   "K": 16384,
+   "payload_bits_per_weight": 0.4375,
+   "codebook_bits_per_weight": 0.01865,
+   "complete_expert_bits_per_weight": 0.45615,
+   "rel_error": 0.79278,
+   "fit_seconds": 5.1,
+   "fit_sample": 1000000,
+   "iters": 8
+  },
+  {
+   "d": 64,
+   "K": 65536,
+   "payload_bits_per_weight": 0.25,
+   "codebook_bits_per_weight": 0.14918,
+   "complete_expert_bits_per_weight": 0.39918,
+   "rel_error": 0.84662,
+   "fit_seconds": 18.5,
+   "fit_sample": 1441792,
+   "iters": 6
+  }
+ ]
+}
