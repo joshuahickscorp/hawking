@@ -175,6 +175,23 @@
    "reopen_if": "a future MoE patient shows the gain vanish or reverse at q2, or a non-MoE patient with a genuinely low-marginal-value redundant organ (not attn/mlp) shows the same rescue effect",
    "physical_rationale": "O006: q2 uniform 0/12 -> q2-experts-only 10/12 for +0.07 bpw (2.95->3.02). O005: q2 uniform 0/12 -> q2-experts-only 11/12 for +0.08 bpw (3.00->3.08). Vanishes by q3+ (uniform already survivable). O001 (non-MoE) shows the identical strategic move gives NO benefit and is worse in mixed schemes -- the redundancy MoE experts offer (many near-interchangeable low-marginal-value units) has no equivalent in attn+mlp.",
    "_evidence": "MEASURED (O006, O005 Gravity receipts, existing on disk) + negative control MEASURED (O001)"
+  },
+  {
+   "id": "R-tied-embedding-dedup-verify",
+   "conditions": [
+    "config.tie_word_embeddings == true",
+    "a separate on-disk lm_head.weight tensor exists despite the tie flag"
+   ],
+   "then": "verify the tie is genuine with a full byte-exact tensor comparison (not shape-only), then reclaim the duplicate lm_head.weight from stored bytes -- alias/reference it to embed_tokens.weight at load/pack time instead of storing a second physical copy. Zero capability cost: this is exact redundancy elimination, not a quantization tradeoff, so it does not compete for the same error budget as any Gravity codec search.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "CAND-iLLaDA-8B (GSAI-ML/iLLaDA-8B-Base): tie_word_embeddings=true, lm_head.weight present as a separate on-disk tensor in shard 4, full-tensor SHA256 verified IDENTICAL to embed_tokens.weight in shard 1 (not just matching shape) -- 1212.0 MiB (0.635B params) duplicated for one logical weight, 7.55%% of the checkpoint stored bytes. See receipts/odyssey-i/CAND_iLLaDA-8B_ODYSSEY_I.json."
+   ],
+   "confidence": "INFERRED",
+   "reopen_if": "a specimen with tie_word_embeddings=true is found where the on-disk tensors are NOT byte-identical (the flag would be vestigial there, the way Dream-v0s use_cache=true turned out to be vestigial this same session -- ALWAYS VERIFY, never trust the config flag alone) -- OR a loader/runtime is found that already dedups tied weights transparently, making this a known-solved problem rather than a live opportunity.",
+   "physical_rationale": "tie_word_embeddings is a common HF transformers setting (NOT specific to diffusion LMs -- Dream-v0 in the same census has the flag FALSE, so this is a general checkpoint-packaging question, not an architecture-family one). A checkpoint author may still ship a materialized lm_head.weight for loader compatibility with code that expects it as a distinct tensor, even though the two are logically one weight -- pure storage waste recoverable with zero risk to capability.",
+   "_evidence": "DISCOVERY-PHASE ONLY (single candidate, not yet an admitted O0XX Odyssey patient) -- full byte-exact SHA256 verification, not a shape-only inference. Not yet added to TRANSFER_MATRIX.json (that instrument tracks the 14 formal O000-O013 curriculum patients; this finding has no O0XX support yet, so a matrix row would be unearned). Re-evaluate once a second tied-embedding specimen is discovered or one of O000-O013 is found to have the flag."
   }
  ]
 }
