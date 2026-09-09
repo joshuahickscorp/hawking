@@ -70,6 +70,51 @@ class TestReadWindow(unittest.TestCase):
         ))
         self.assertEqual(w.get("content"), "")
 
+    def test_an_out_of_range_window_SAYS_it_is_out_of_range(self):
+        """Empty-because-it-does-not-exist must not read as empty-because-it-is-empty.
+
+        A 66-cycle autonomous run died on this. The body believed a function lived
+        past the end of hcli/mutation.py and walked the window forward looking for
+        it -- cycle 47 asked for lines 1620-1720 of a 247-line file. Every one of
+        those reads came back ok=True, content="", truncated=False: a SUCCESSFUL
+        read that returned nothing, with an explicit claim that nothing was cut.
+        Nothing in the payload said "that window does not exist", so the belief
+        was never corrected by evidence and the body kept walking.
+
+        `truncated` cannot carry this: it answers "was content cut?", and the
+        honest answer here is no -- there was no content. The window itself is the
+        thing that is wrong, so it needs its own signal.
+        """
+        w = _value(_reg().invoke(
+            "fs.read", {"path": "hcli/mutation.py", "start_line": 1620, "end_line": 1720}
+        ))
+        total = w.get("total_lines") or 0
+        self.assertGreater(total, 0)
+        self.assertEqual(w.get("content"), "")          # unchanged: still not an error
+        self.assertTrue(w.get("out_of_range"),
+                        "an empty window past EOF must be flagged, not reported as a clean read")
+        note = w.get("window_note") or ""
+        self.assertIn(str(total), note, "the note must state the file's real length")
+        self.assertIn("1620", note, "the note must name the window that does not exist")
+
+    def test_the_reported_window_is_never_inverted(self):
+        """start_line=1620,end_line=247 is not a coordinate pair, it is a contradiction."""
+        w = _value(_reg().invoke(
+            "fs.read", {"path": "hcli/mutation.py", "start_line": 1620, "end_line": 1720}
+        ))
+        self.assertLessEqual(
+            w.get("start_line"), w.get("end_line"),
+            "reported end_line must never precede start_line")
+
+    def test_a_window_inside_the_file_is_not_flagged(self):
+        """Negative control: the flag must not fire on an ordinary read."""
+        w = _value(_reg().invoke(
+            "fs.read", {"path": "hcli/mutation.py", "start_line": 70, "end_line": 80}
+        ))
+        self.assertFalse(w.get("out_of_range"))
+        self.assertIsNone(w.get("window_note"))
+        self.assertIn("_apply_replace", w.get("content") or "")
+
     def test_the_catalog_advertises_the_window(self):
         """A capability the model cannot see is a capability it does not have."""
         from hcli.engine import Engine

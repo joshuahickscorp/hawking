@@ -692,20 +692,38 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         lines = text.splitlines(keepends=True)
         first = max(1, int(start or 1))
         last = min(len(lines), int(end) if end is not None else len(lines))
+        # AN EMPTY WINDOW IS NOT A CLEAN READ. Past EOF there is no content to
+        # cut, so `truncated` is honestly False -- which left an out-of-range
+        # read indistinguishable from a real one: ok=True, content="",
+        # truncated=False, and a reported end_line BEFORE its start_line. A body
+        # that believed a symbol lived past the end of a file walked the window
+        # forward for cycles (asking for lines 1620-1720 of a 247-line file) with
+        # nothing in the payload to contradict it. `truncated` cannot carry this
+        # -- it answers "was content cut?" -- so the window reports itself.
+        out_of_range = first > len(lines)
         selected = "".join(lines[first - 1:last]) if first <= last else ""
         body = selected.encode(encoding, errors="replace")
         clipped = body[:limit]
-        return {
+        window = {
             "path": str(path),
             "bytes": len(raw),
             "start_line": first,
-            "end_line": last,
+            "end_line": first if out_of_range else last,
             "total_lines": len(lines),
             **_truncation_fields(len(clipped), len(body)),
             "sha256": _sha256_bytes(raw),
             "content": clipped.decode(encoding, errors="replace"),
             "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
         }
+        if out_of_range:
+            window["out_of_range"] = True
+            window["window_note"] = (
+                f"EMPTY WINDOW: this file has {len(lines)} lines, so the window you "
+                f"asked for (starting at line {first}) does not exist. The empty "
+                f"content below is NOT the file's content -- there is nothing there. "
+                f"Read within 1..{len(lines)}."
+            )
+        return window
 
     clipped = raw[:limit]
     return {
