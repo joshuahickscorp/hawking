@@ -40,7 +40,7 @@
    "confidence": "MEASURED",
    "reopen_if": "a patient shows cold experts, popularity skew, or entropy << max (then routing-frequency allocation may apply)",
    "physical_rationale": "A3B entropy 6.09/7.00 bits, 0 never-routed, top expert 1.42% share, top-16 mass 18%. No skew to exploit.",
-   "_evidence": "MEASURED (A3B_RECON route_map specimen, short prompt set; A1 still required for a full corpus)"
+   "_evidence": "MEASURED (A3B_RECON route_map specimen, short prompt set; A1 still required for a full corpus) | O003 comparison point (NOT a test -- 91 tokens << 1000 threshold): entropy 4.8318/6.0 (81% of max, vs O005's 87%), top16_mass 34% (vs O005's 18%) -- MEASURABLY MORE SKEWED than the origin patient even at this thin sample, though global cold_experts=0 matches. Per-layer cold experts range 12-24/64 despite 0 globally-cold -- local sparsity exists even where global does not. Worth a >=1000-token O003 route corpus before assuming near-uniform transfers."
   },
   {
    "id": "R-protect-router-if-sensitive",
@@ -70,9 +70,9 @@
    "supporting_patients": [],
    "negative_patients": [],
    "confidence": "HYPOTHESIS",
-   "reopen_if": "per-expert Doctor sensitivity is flat across the inventory",
+   "reopen_if": "per-expert Doctor sensitivity is flat across the inventory | O003 N=1v1 is suggestive but inconclusive under round8 -- needs a real per-expert sweep, not treated as a test yet",
    "physical_rationale": "bible \u00a764. Distinct from organ_inversion (gate vs down): this is expert-index heterogeneity inside the same organ.",
-   "_evidence": "HYPOTHESIS (bible \u00a764; O005 per-expert sensitivity UNKNOWN \u2014 A3)"
+   "_evidence": "HYPOTHESIS (bible \u00a764; O005 per-expert sensitivity UNKNOWN \u2014 A3) | O003 first thin data point (N=1 hot vs N=1 random expert, packet.routing.hot_set): zero-ablation shows a small gap (hot -1/12, random 0/12) but the REALISTIC round8 requantize shows ZERO difference (both 0/12) -- NOT sufficient sample to move confidence off HYPOTHESIS; a full per-expert-index sweep is needed. See receipts/odyssey-i/O003_SENSITIVITY.json per_expert_sensitivity."
   },
   {
    "id": "R-predictable-route-prefetch",
@@ -116,7 +116,7 @@
    "confidence": "HYPOTHESIS",
    "reopen_if": "near-uniform routing (then this rule is N/A \u2014 see R-uniform-routing-no-cold-compress). Never reopen the 88-token calibration.",
    "physical_rationale": "Foundry prior is alive, but 88-token calibration is dead (median split 63.6% stable, 26.1% of cells never route). O005 specimen is near-uniform so this rule is currently negative on O005.",
-   "_evidence": "HYPOTHESIS (registry alive; atlas killed 88-token calibration; O005 specimen argues N/A)"
+   "_evidence": "HYPOTHESIS (registry alive; atlas killed 88-token calibration; O005 specimen argues N/A) | O003's 91-token route sample shows real skew (top16_mass 34% vs O005's 18%, per-layer cold experts 12-24/64) that would argue for this rule's applicability IF the sample met its own >=1000 token precondition -- it does not (91 tokens), so this remains NOT_TESTED, not confirmed. A real O003 route corpus is the next concrete acquisition step for this rule."
   },
   {
    "id": "R-layer0-different-source",
