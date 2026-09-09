@@ -1,0 +1,139 @@
+{
+ "obligation": "G047",
+ "specimen": "Qwen3-0.6B",
+ "date": "2026-09-09",
+ "question": "Weight-only near-randomness bounds WEIGHT space only. Does the ACTIVATION distribution reveal a low-information subspace the weight spectrum cannot see, and does activation-aware placement beat plain grouped affine at matched complete EBPW?",
+ "verifier_adequacy_first": {
+  "control": "0.01xW on every Linear",
+  "in_sample_run": {
+   "perplexity": 151721.2195,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 9684.742188
+  },
+  "held_out_run": {
+   "perplexity": 152639.3117,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 10558.916992
+  },
+  "note": "top-1 0.0000 in both. The verifier rejects a destroyed body before any codec number is believed."
+ },
+ "stage_1_activation_aware_low_rank": {
+  "verdict": "REFUTED, with mechanism",
+  "method": "H = E[x x^T] over 2048 real tokens at both MLP input sites. An input direction is discardable when it carries little activation energy AND the organ puts little gain on it, so directions are ranked by lambda_j * ||W v_j||^2 -- the exact term in E||W(I-P_r)x||^2. Control: a matched random Gaussian W of identical shape ranked against the SAME H.",
+  "per_organ": {
+   "gate_proj": {
+    "in_dim": 1024,
+    "r99_activation_energy_only": 620.0,
+    "r999_activation_energy_only": 902.0,
+    "r99_activation_aware": 515.0,
+    "r999_activation_aware": 863.0,
+    "r99_matched_random_W": 620.0,
+    "r999_matched_random_W": 902.0,
+    "corr_log_gain_log_lambda": 0.288
+   },
+   "up_proj": {
+    "in_dim": 1024,
+    "r99_activation_energy_only": 620.0,
+    "r999_activation_energy_only": 902.0,
+    "r99_activation_aware": 694.0,
+    "r999_activation_aware": 935.5,
+    "r99_matched_random_W": 620.5,
+    "r999_matched_random_W": 901.5,
+    "corr_log_gain_log_lambda": 0.223
+   },
+   "down_proj": {
+    "in_dim": 3072,
+    "r99_activation_energy_only": 1234.0,
+    "r999_activation_energy_only": 1716.0,
+    "r99_activation_aware": 1255.5,
+    "r999_activation_aware": 1734.0,
+    "r99_matched_random_W": 1232.0,
+    "r999_matched_random_W": 1715.0,
+    "corr_log_gain_log_lambda": -0.571
+   }
+  },
+  "mechanism": "The ACTIVATION COVARIANCE IS ITSELF NEAR-FULL-RANK. 99.9% of activation energy needs 902 of 1024 hidden dims (88%) and 1716 of 3072 intermediate dims (56%). There is no low-information input subspace to project onto, whatever the weight looks like.",
+  "control_result": "Real W is indistinguishable from matched random W under the same H: gate 863 vs 902 at 99.9%, up 936 vs 902, down 1734 vs 1715. No consistent advantage, so the ranking learns nothing about this body.",
+  "break_even": "gate+up share one input basis, so a shared-V_r factorisation costs r*(1024+6144) vs 6291456 -- break-even r=877 of 1024, and the measured r999 is 863-936. down_proj break-even r=768 of 3072, measured r999=1734. Both dead by construction, not by a tuning failure."
+ },
+ "stage_2_activation_aware_quantization": {
+  "verdict": "REAL BUT SMALL. Survives held-out. Does NOT buy a bit.",
+  "method": "GPTQ/OBQ column sweep writing the SAME per-group affine format as the control (group 64 along the input dim, one fp16 scale + one fp16 zero per group). Payload bytes, metadata bytes and complete EBPW are IDENTICAL BY CONSTRUCTION -- the arms differ only in which integer each weight receives, so no byte-accounting argument can explain the gap. Control arm is gravity_lib.q_group_affine itself, not a reimplementation. MLP only; every other tensor left at fp32, isolating the organ the impossibility result was about.",
+  "held_out": {
+   "4b": {
+    "mlp_ebpw": 4.5,
+    "rtn": {
+     "perplexity": 14.9639,
+     "top1_agreement_vs_fp32": 0.8543,
+     "kl_from_fp32": 117.472397
+    },
+    "gptq": {
+     "perplexity": 14.0859,
+     "top1_agreement_vs_fp32": 0.8739,
+     "kl_from_fp32": 83.431541
+    }
+   },
+   "3b": {
+    "mlp_ebpw": 3.5,
+    "rtn": {
+     "perplexity": 26.0538,
+     "top1_agreement_vs_fp32": 0.6794,
+     "kl_from_fp32": 791.97998
+    },
+    "gptq": {
+     "perplexity": 20.8875,
+     "top1_agreement_vs_fp32": 0.7048,
+     "kl_from_fp32": 591.205627
+    }
+   },
+   "2b": {
+    "mlp_ebpw": 2.5,
+    "rtn": {
+     "perplexity": 76594.2899,
+     "top1_agreement_vs_fp32": 0.0459,
+     "kl_from_fp32": 9152.651367
+    },
+    "gptq": {
+     "perplexity": 5054257.041,
+     "top1_agreement_vs_fp32": 0.0029,
+     "kl_from_fp32": 13875.150391
+    }
+   }
+  },
+  "in_sample": {
+   "4b": {
+    "rtn_top1": 0.8231,
+    "gptq_top1": 0.9355,
+    "rtn_kl": 136.641235,
+    "gptq_kl": 15.49461
+   },
+   "3b": {
+    "rtn_top1": 0.5904,
+    "gptq_top1": 0.8514,
+    "rtn_kl": 847.668335,
+    "gptq_kl": 81.296043
+   },
+   "2b": {
+    "rtn_top1": 0.0235,
+    "gptq_top1": 0.002,
+    "rtn_kl": 8687.201172,
+    "gptq_kl": 12409.487305
+   }
+  },
+  "honest_size_of_the_win": "Held-out: +0.0196 top-1 at 4 bits (0.8543 -> 0.8739) and +0.0254 at 3 bits (0.6794 -> 0.7048); KL down 29% and 25%. At byte-identical cost, so it is free. It is not a bit.",
+  "mechanism_of_the_win": "H is full-rank but strongly ANISOTROPIC -- the top 60% of directions hold 99% of the energy. Error-compensating quantization does not need a low-rank H; it needs somewhere cheap to put rounding error, and the bottom 40% of directions is that place. This is why stage 1 fails and stage 2 works: they ask different questions of the same matrix.",
+  "two_bit_reversal": "At 2 bits activation-aware placement is ACTIVELY HARMFUL: top-1 0.0029 vs RTN's 0.0459, ppl 5.05e6 vs 7.66e4. Error propagation assumes a small perturbation and a locally quadratic loss; at 2 bits the residual is comparable to the weight itself, so compensation injects error into later columns instead of absorbing it. Both arms are already dead at 2 bits, so this changes no disposition -- it bounds where the method applies."
+ },
+ "RETRACTION": {
+  "claimed_in_session": "3-bit GPTQ beats 4-bit RTN -- a full bit saved at better quality (top-1 0.8514 vs 0.8231).",
+  "status": "REFUTED by its own held-out control, before it left this session.",
+  "why": "That measurement calibrated H on the same 1024 tokens it was then scored on. On a disjoint corpus 3-bit GPTQ scores 0.7048 against 4-bit RTN's 0.8543 -- not close. The in-sample run overstated the 4-bit top-1 gain by 5.7x (0.112 vs 0.0196) and the KL reduction by 3.1x (89% vs 29%).",
+  "kept_because": "The size of the gap between the two runs is the transferable result, not an embarrassment to bury. It is now a rule."
+ },
+ "effect_on_the_standing_conclusion": "The prior finding -- 35+ configs across 7 representation classes, none beating plain grouped affine at matched EBPW -- was WEIGHT-ONLY, and its scope is now measured rather than assumed. Activation-aware placement does beat the control at identical bytes, so the class was not empty. The magnitude (+0.02 top-1) does not move the EBPW ladder or reopen any PROVEN_UNABLE rung.",
+ "reopen_condition": "Activation-aware search reopens the ladder if a method lands >= +0.10 held-out top-1 at matched EBPW, or if 2-bit compensation is made stable (the failure above is a small-perturbation assumption, not a byte budget).",
+ "artifacts": {
+  "stage1": "act_aware.py / act_aware_stage1.json",
+  "stage2": "act_gptq.py / act_gptq.json (in-sample) / act_gptq_heldout.json (held-out)"
+ }
+}

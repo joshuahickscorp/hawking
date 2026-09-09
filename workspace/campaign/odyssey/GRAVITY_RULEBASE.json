@@ -300,6 +300,36 @@
    "reopen_if": "a structural class pays on an organ whose spectral ratio is below ~2, or a ratio above ~3 produces a genuine WIN rather than the neutral result seen here -- the threshold is calibrated on ONE body and the embedding result shows 3.15x is still not sufficient.",
    "physical_rationale": "structural compression classes all assume the information is concentrated -- in a few directions, a few channels, or a reusable dictionary. An organ whose spectrum matches random has its information spread uniformly across every weight, so any structural factorisation pays metadata to capture something that is not there.",
    "_evidence": "MEASURED with a matched random-matrix control, which is what makes the ratio meaningful rather than an absolute SV number that varies with shape."
+  },
+  {
+   "id": "R-calibration-overfit-inflates-activation-aware-wins",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "An activation-aware codec scored on the SAME tokens its Hessian was calibrated on overstates its win by roughly 5x. Measured at 4 bits on Qwen3-0.6B MLP: +0.112 top-1 in-sample, +0.0196 on a disjoint corpus; KL reduction 89% in-sample, 29% held-out. Every activation-aware number must be reported held-out or it is not a number.",
+   "mechanism": "H = E[x x^T] is a property of the calibration corpus. Error compensation optimises the reconstruction against that corpus, so scoring on it measures fit to the calibration set, not preserved capability.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
+  },
+  {
+   "id": "R-activation-covariance-can-be-full-rank-while-anisotropic",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "Low-rank and error-compensating activation-aware methods ask different questions of H and can disagree. On Qwen3-0.6B MLP, H is near-full-rank (99.9% of energy needs 88% of hidden dims) so activation-aware LOW-RANK is dead, while H is strongly anisotropic (top 60% of directions hold 99%) so activation-aware PLACEMENT wins at identical bytes. Refuting one does not refute the other.",
+   "mechanism": "Rank asks how many directions may be DELETED; anisotropy asks where error may be PUT. A full-rank matrix with a steep spectrum answers 'none' and 'plenty' at the same time.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
+  },
+  {
+   "id": "R-error-compensation-inverts-below-three-bits",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "GPTQ-style error compensation helps at 4 and 3 bits and is actively harmful at 2 (held-out top-1 0.0029 vs RTN 0.0459). Do not carry an activation-aware win down the bit ladder on the assumption it holds.",
+   "mechanism": "Compensation assumes a small perturbation and a locally quadratic loss. At 2 bits the residual is comparable to the weight, so propagated error is injected rather than absorbed.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
   }
  ]
 }
