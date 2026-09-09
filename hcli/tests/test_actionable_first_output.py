@@ -21,6 +21,7 @@ import pytest
 
 from hcli.tool_registry import (
     COSTLY,
+    WORKSPACE_WRITE,
     DESTRUCTIVE,
     READ_ONLY,
     RESEARCH,
@@ -38,10 +39,11 @@ REPO = Path(__file__).resolve().parents[2]
 AUDITED_TOOLS = {
     "accelerator.benchmark": "compliant",
     "accelerator.inspect": "compliant",
-    "acquisition.propose": "fix",
-    "architecture.inspect": "compliant",
+    "audit": "compliant",
     "benchmark.run": "compliant",
+    "campaign.checkpoint": "compliant",
     "campaign.guard": "compliant",
+    "campaign.state": "compliant",
     "context.recall": "compliant",
     "doctor.inspect": "compliant",
     "doctor.query": "compliant",
@@ -49,70 +51,35 @@ AUDITED_TOOLS = {
     "forbidden_fruit.lab": "compliant",
     "frontier.decide": "compliant",
     "frontier.escalate": "compliant",
-    "fs.list": "compliant",
-    "fs.read": "compliant",
-    "fs.search": "compliant",
+    "fs": "compliant",
+    "git": "compliant",
     "git.checkout-safe": "compliant",
-    "git.diff": "compliant",
     "git.land.propose": "compliant",
-    "git.log": "fix",
-    "git.status": "compliant",
-    "github.fetch": "compliant",
-    "github.search": "compliant",
+    "github": "compliant",
     "gravity.experiment": "compliant",
     "gravity.inspect": "compliant",
     "grok.swarm.launch": "compliant",
     "grok.swarm.propose": "compliant",
+    "huggingface": "compliant",
     "huggingface.download": "compliant",
-    "huggingface.fetch_file": "compliant",
-    "huggingface.history": "compliant",
-    "huggingface.resolve": "compliant",
-    "lake.census": "fix",
-    "modellake.status": "compliant",
-    "odyssey.add_to_eligibility": "compliant",
-    "odyssey.anatomy": "fix",
-    "odyssey.completions": "compliant",
-    "odyssey.create_adversarial_probe": "compliant",
-    "odyssey.create_transfer_probe": "compliant",
-    "odyssey.cycle": "compliant",
-    "odyssey.economics": "compliant",
-    "odyssey.gravity_gauntlet": "compliant",
-    "odyssey.harvest": "compliant",
-    "odyssey.ingest": "compliant",
-    "odyssey.ledger": "compliant",
-    "odyssey.park_specimen": "compliant",
-    "odyssey.patient": "compliant",
-    # Audited 2026-09-07 when it shipped: total output 234 chars, `recorded` first via
-    # _lead_with, so the whole result survives BUDGET with room to spare. This entry
-    # exists because the audit test CAUGHT the tool shipping without one.
-    # Audited live 2026-09-07: organ_ordering leads via _lead_with, so the ranked organs
-    # and their deficits are what a 500-char head keeps. Measured on the real body in
-    # 16.7 s, k_proj 41.09% first.
-    "odyssey.dense_anatomy": "compliant",
+    "lake": "compliant",
+    "nr.complete_ebpw": "compliant",
+    "odyssey.drive": "compliant",
+    "odyssey.read": "compliant",
+    "odyssey.record": "compliant",
     "odyssey.record_measurement": "compliant",
-    "odyssey.queue": "compliant",
-    "odyssey.record_law": "compliant",
-    "odyssey.record_scar": "compliant",
-    "odyssey.retire": "compliant",
-    "odyssey.status": "compliant",
-    "odyssey.value": "compliant",
-    "odyssey.write_packet": "compliant",
-    "processes.list": "fix",
-    "processes.orphaned": "fix",
-    "processes.summary": "compliant",
-    "receipt.read": "compliant",
-    "roadmap.read": "compliant",
+    "physical": "compliant",
+    "physical.measure": "compliant",
+    "processes": "compliant",
+    "receipt": "compliant",
     "shell.exec": "compliant",
     "shell.readonly": "compliant",
-    "specimens.registry": "fix",
     "tests.list": "compliant",
     "tests.run": "fix",
     "tools.catalog": "fix",
-    "vmcp.capabilities": "compliant",
-    "vmcp.inspect": "compliant",
-    "vmcp.query": "compliant",
-    "web.fetch": "compliant",
-    "web.search": "compliant",
+    "vmcp": "compliant",
+    "wall.avoided": "compliant",
+    "web": "compliant",
 }
 
 
@@ -153,6 +120,97 @@ def test_every_discovered_tool_is_in_the_actionable_audit(tmp_path):
 # ---------------------------------------------------------------------------
 # Already-compliant: the 500-char head already holds the decision.
 # ---------------------------------------------------------------------------
+
+
+def test_physical_and_ebpw_doors_lead_with_the_decision(tmp_path):
+    """The NR->NX doors put the numbers first, not behind their claim boundary.
+
+    complete_ebpw's claim_boundary and physical_emitter's path/runtime prose are
+    both long enough to eat the whole 500-char budget on their own. If they came
+    first the resident would see a paragraph about what the tool does not claim
+    and never reach the bpw or the tok/s it asked for.
+    """
+    reg = _registry(tmp_path)
+
+    rounds = reg.invoke("physical.rounds", {"show": 3})
+    assert rounds.ok, rounds.error
+    head = _head(rounds.value)
+    assert '"round_id"' in head, "no round id survives; physical.emit is unreachable"
+
+    ids = [r["round_id"] for r in rounds.value["rounds"]]
+    if ids:
+        emitted = reg.invoke("physical.emit", {"round_id": ids[0]})
+        assert emitted.ok, emitted.error
+        head = _head(emitted.value)
+        for key in ('"specimen"', '"prefill_tps"', '"decode_tps"', '"concurrency"'):
+            assert key in head, f"{key} lost to the budget; the measurement is unusable"
+
+    priors = reg.invoke("odyssey.priors", {"show": 4})
+    assert priors.ok, priors.error
+    head = _head(priors.value)
+    assert '"priors"' in head
+    # A prior quoted without its domain is how a model-local result gets applied
+    # to an architecture nobody tested. The domain must survive the budget.
+    assert '"domain"' in head
+    assert priors.value["total"] >= 1
+
+    billed = reg.invoke("nr.complete_ebpw", {"incumbent": True})
+    assert billed.ok, billed.error
+    head = _head(billed.value)
+    assert '"complete_ebpw"' in head
+    assert '"id"' in head
+    # The boundary must be present in full, just not first.
+    assert '"claim_boundary"' in _dump(billed.value)
+
+
+def test_auditor_tools_lead_with_the_verdict(tmp_path):
+    """HCLI's adversarial-auditor doors put the JUDGEMENT first. [S002]
+
+    Each of these was run by hand this session and each caught a real defect the
+    first time. They are only useful to a resident if the verdict survives the
+    observation budget -- a confound report whose "confounded" flag arrives after
+    a per-arm table is a report nobody acts on.
+    """
+    reg = _registry(tmp_path)
+
+    gate = reg.invoke("capability.gate", {
+        "ppl": 5.2278, "r4": 0.7103, "dense_ppl": 4.7342, "dense_r4": 0.3619,
+        "recorded_capability_ok": True})
+    assert gate.ok, gate.error
+    head = _head(gate.value)
+    assert '"capability_ok"' in head
+    assert '"stale_verdict"' in head
+    # The pre-G020 bar was 3 x 0.3619 = 1.0857, above the metric's own range.
+    # Under the live capped bar this candidate fails diversity, so a receipt
+    # that recorded a pass is stale.
+    assert gate.value["capability_ok"] is False
+    assert gate.value["stale_verdict"] is True
+    assert gate.value["gate_r4_max"] < 1.0
+
+    reach = reg.invoke("tool.reachable", {"name": "physical.emit"})
+    assert reach.ok, reach.error
+    assert '"callable"' in _head(reach.value)
+    assert reach.value["callable"] is True
+    assert "physical.rounds" in reach.value["likely_producers"]["round_id"]
+
+    # OIII closes the loop from the side that writes laws.
+    oiii = reg.invoke("odyssey.attack_law", {"law_id": "LAW-COMPETENT-KERNEL-FIRST",
+                                             "show": 3})
+    assert oiii.ok, oiii.error
+    head = _head(oiii.value)
+    assert '"attacks"' in head or '"refused"' in head
+
+    attack = reg.invoke("claim.attack", {"claim": "expert"})
+    assert attack.ok, attack.error
+    assert '"recorded_falsifiers"' in _head(attack.value)
+
+    # Negative control: an unattributed skip is not evidence of compounding.
+    # Needs the write permission to reach the handler at all -- and refuses
+    # before touching disk, which is why running it here writes nothing.
+    writer = _registry(tmp_path, permissions={READ_ONLY, RESEARCH, WORKSPACE_WRITE})
+    refused = writer.invoke("wall.avoided", {"prior": "", "skipped": "something"})
+    assert refused.ok, refused.error
+    assert "refused" in refused.value
 
 
 def test_campaign_guard_actionable_state_survives_budget(tmp_path):

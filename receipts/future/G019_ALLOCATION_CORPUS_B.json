@@ -1,0 +1,1188 @@
+{
+ "applied": {
+  "ANTI_SENSITIVITY": 196,
+  "GLOBAL_ANATOMY": 196,
+  "SENSITIVITY": 196,
+  "UNIFORM": 196
+ },
+ "arms": {
+  "ANTI_SENSITIVITY": {
+   "capability": {
+    "distincts": [
+     0.11215,
+     0.11215,
+     0.119266,
+     0.212963,
+     0.305556,
+     0.366972,
+     0.376068,
+     0.566038
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.305556,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Describe what a lighthouse keeper does during a winter storm.",
+      "r4": 0.438095,
+      "text": "Describe what a lighthouse keeper does during a winter storm. A. A lighthouse keeper does not do anything during a winter storm. B. A lighthouse keeper does not do anything during a winter storm. C. A lighthouse keeper does not do anything "
+     },
+     {
+      "distinct": 0.366972,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Why did medieval towns build walls, and what ended the practice?",
+      "r4": 0.40566,
+      "text": "Why did medieval towns build walls, and what ended the practice? Also, what is the main function of a wall, and how do walls contribute to the environment?\n\n**A**\nB\nC\nD\n\n**A**\nB\nC\nD\n\nThe following are the answers to the questions:\n\n**A**\nB\n"
+     },
+     {
+      "distinct": 0.212963,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short recipe for lentil soup for four people.",
+      "r4": 0.609524,
+      "text": "Write a short recipe for lentil soup for four people. How to make it at home? How to store it? How to serve it? How to make it at a party? How to make it at a dinner? How to make it at a celebration? How to make it at a party? How to make i"
+     },
+     {
+      "distinct": 0.566038,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Explain how photosynthesis turns sunlight into sugar.",
+      "r4": 0.15534,
+      "text": "Explain how photosynthesis turns sunlight into sugar. __________\nAnswer:\n\nPhotosynthesis is the process by which plants and other organisms convert sunlight into chemical energy, resulting in the production of glucose (C\u2086H\u2081\u2082O\u2086) and oxygen ("
+     },
+     {
+      "distinct": 0.376068,
+      "n_new": 96,
+      "n_tokens": 117,
+      "prompt": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+      "r4": 0.377193,
+      "text": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total? To find the total number of loaves, we need to add the quantities from each day. The baker sold 40 loaves on Monday and half that on Tuesday. So, first, let's fi"
+     },
+     {
+      "distinct": 0.11215,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "What is the difference between a lease and a licence?",
+      "r4": 0.846154,
+      "text": "What is the difference between a lease and a licence? What is the difference between a lease and a loan? What is the difference between a lease and a loan? What is the difference between a lease and a loan? What is the difference between a "
+     },
+     {
+      "distinct": 0.11215,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "Name three reasons a bridge might be closed for repair.",
+      "r4": 0.855769,
+      "text": "Name three reasons a bridge might be closed for repair. A bridge might be closed for repair for repair. A bridge might be closed for repair. A bridge might be closed for repair. A bridge might be closed for repair. A bridge might be closed "
+     },
+     {
+      "distinct": 0.119266,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Translate to Spanish: The library opens at nine in the morning.",
+      "r4": 0.877358,
+      "text": "Translate to Spanish: The library opens at nine in the morning. The library opens at nine in the morning. The library opens at nine in the morning. The library opens at nine in the morning. The library opens at nine in the morning. The libr"
+     }
+    ],
+    "median_4gram_repeat": 0.6095,
+    "median_distinct_ratio": 0.3056,
+    "n_prompts": 8,
+    "nll": 1.66039,
+    "nll_tokens": 250,
+    "ppl": 5.2614,
+    "ppl_full": 5.261357460233821,
+    "r4_full": 0.6095238095238096,
+    "r4s": [
+     0.15534,
+     0.377193,
+     0.40566,
+     0.438095,
+     0.609524,
+     0.846154,
+     0.855769,
+     0.877358
+    ],
+    "worst_max_repeat_run": 1
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 870191712,
+   "complete_ebpw": 9.2619,
+   "complete_ebpw_full": 9.2618863212791,
+   "diversity_ok": true,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": true,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.2147,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.6683,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0096,
+    "ppl_ok": false,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 247730784,
+   "organ_target_ebpw": {
+    "down_proj": 4.5,
+    "gate_proj": 4.5,
+    "k_proj": 4.5,
+    "o_proj": 4.5,
+    "q_proj": 4.5,
+    "up_proj": 4.5,
+    "v_proj": 4.5
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 24772608,
+    "A_zeros": 24772608,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 198180864,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 3,
+     "complete_bytes": 44040864,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "k_proj": {
+     "bits": 4,
+     "complete_bytes": 18350752,
+     "complete_ebpw": 5.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "o_proj": {
+     "bits": 4,
+     "complete_bytes": 36700832,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "q_proj": {
+     "bits": 3,
+     "complete_bytes": 29360800,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "up_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "v_proj": {
+     "bits": 3,
+     "complete_bytes": 14680736,
+     "complete_ebpw": 4.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    }
+   },
+   "per_param_weights": null,
+   "policy": "ANTI_SENSITIVITY",
+   "ppl_ok": false,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
+  "GLOBAL_ANATOMY": {
+   "capability": {
+    "distincts": [
+     0.11215,
+     0.183486,
+     0.296296,
+     0.33945,
+     0.351852,
+     0.448598,
+     0.470085,
+     0.528302
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.351852,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Describe what a lighthouse keeper does during a winter storm.",
+      "r4": 0.4,
+      "text": "Describe what a lighthouse keeper does during a winter storm. The answer should be in a paragraph.\nAnswer:\nA lighthouse keeper is a person who keeps a lighthouse during the night. During a winter storm, they are more likely to be in a posit"
+     },
+     {
+      "distinct": 0.33945,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Why did medieval towns build walls, and what ended the practice?",
+      "r4": 0.462264,
+      "text": "Why did medieval towns build walls, and what ended the practice? The answer is that the practice was abandoned after the fall of the last great kingdom, but the question is why the walls were built. The answer is that the walls were built t"
+     },
+     {
+      "distinct": 0.296296,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short recipe for lentil soup for four people.",
+      "r4": 0.390476,
+      "text": "Write a short recipe for lentil soup for four people. Use the following instructions: 1. Start with the lentil powder, 2. Add the lentil powder, 3. Add the lentil powder, 4. Add the lentil powder, 5. Add the lentil powder, 6. Add the lentil"
+     },
+     {
+      "distinct": 0.528302,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Explain how photosynthesis turns sunlight into sugar.",
+      "r4": 0.058252,
+      "text": "Explain how photosynthesis turns sunlight into sugar. Include the role of chloroplasts, the importance of chloroplasts, and the role of chlorophyll in the process.\nAnswer:\nPhotosynthesis is the process by which plants convert sunlight into "
+     },
+     {
+      "distinct": 0.470085,
+      "n_new": 96,
+      "n_tokens": 117,
+      "prompt": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+      "r4": 0.140351,
+      "text": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total? To solve this problem, we need to find the total number of loaves sold by the baker on Monday and Tuesday. The problem states that the baker sells 40 loaves on M"
+     },
+     {
+      "distinct": 0.11215,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "What is the difference between a lease and a licence?",
+      "r4": 0.836538,
+      "text": "What is the difference between a lease and a licence? What is the difference between a lease and a lease agreement? What is the difference between a lease and a lease agreement? What is the difference between a lease and a lease agreement? "
+     },
+     {
+      "distinct": 0.448598,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "Name three reasons a bridge might be closed for repair.",
+      "r4": 0.240385,
+      "text": "Name three reasons a bridge might be closed for repair. \n\nAnswer:\nThe reasons for closing a bridge for repair could be due to the following:\n1. Structural damage to the bridge's foundation, which may cause it to be unsafe for use.\n2. A sudd"
+     },
+     {
+      "distinct": 0.183486,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Translate to Spanish: The library opens at nine in the morning.",
+      "r4": 0.783019,
+      "text": "Translate to Spanish: The library opens at nine in the morning. \n\nAnswer: The library opens at nine en el mediodo. \n\nAnswer: The library opens at nine en el mediodo. \n\nAnswer: The library opens at nine en el mediodo. \n\nAnswer: The library o"
+     }
+    ],
+    "median_4gram_repeat": 0.4,
+    "median_distinct_ratio": 0.3519,
+    "n_prompts": 8,
+    "nll": 1.59814,
+    "nll_tokens": 250,
+    "ppl": 4.9438,
+    "ppl_full": 4.943838371908487,
+    "r4_full": 0.4,
+    "r4s": [
+     0.058252,
+     0.140351,
+     0.240385,
+     0.390476,
+     0.4,
+     0.462264,
+     0.783019,
+     0.836538
+    ],
+    "worst_max_repeat_run": 1
+   },
+   "capability_ok": true,
+   "capability_status": "CANDIDATE_PASS",
+   "complete_bytes": 870191712,
+   "complete_ebpw": 9.2619,
+   "complete_ebpw_full": 9.2618863212791,
+   "diversity_ok": true,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": true,
+    "capability_status": "CANDIDATE_PASS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": true,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.2147,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.6683,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0096,
+    "ppl_ok": true,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 247730784,
+   "organ_target_ebpw": {
+    "down_proj": 4.5,
+    "gate_proj": 4.5,
+    "k_proj": 4.5,
+    "o_proj": 4.5,
+    "q_proj": 4.5,
+    "up_proj": 4.5,
+    "v_proj": 4.5
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 24772608,
+    "A_zeros": 24772608,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 198180864,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "gate_proj": {
+     "bits": 3,
+     "complete_bytes": 44040864,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "k_proj": {
+     "bits": 3,
+     "complete_bytes": 14680736,
+     "complete_ebpw": 4.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "o_proj": {
+     "bits": 4,
+     "complete_bytes": 36700832,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "q_proj": {
+     "bits": 3,
+     "complete_bytes": 29360800,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "up_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 18350752,
+     "complete_ebpw": 5.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    }
+   },
+   "per_param_weights": null,
+   "policy": "GLOBAL_ANATOMY",
+   "ppl_ok": true,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
+  "SENSITIVITY": {
+   "capability": {
+    "distincts": [
+     0.11215,
+     0.11215,
+     0.137615,
+     0.157407,
+     0.169811,
+     0.192661,
+     0.296296,
+     0.452991
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.157407,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Describe what a lighthouse keeper does during a winter storm.",
+      "r4": 0.819048,
+      "text": "Describe what a lighthouse keeper does during a winter storm. The answer should be in a paragraph. The answer should be in a paragraph. The answer should be in a paragraph. The answer should be in a paragraph. The answer should be in a para"
+     },
+     {
+      "distinct": 0.192661,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Why did medieval towns build walls, and what ended the practice?",
+      "r4": 0.801887,
+      "text": "Why did medieval towns build walls, and what ended the practice? The answer should be in a paragraph. The answer should be in a paragraph. The answer should be in a paragraph. The answer should be in a paragraph. The answer should be in a p"
+     },
+     {
+      "distinct": 0.296296,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short recipe for lentil soup for four people.",
+      "r4": 0.552381,
+      "text": "Write a short recipe for lentil soup for four people. The recipe should include the ingredients and preparation steps. The soup should be healthy and easy to prepare. The recipe should be written in a clear, concise, and easy-to-read format"
+     },
+     {
+      "distinct": 0.169811,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Explain how photosynthesis turns sunlight into sugar.",
+      "r4": 0.737864,
+      "text": "Explain how photosynthesis turns sunlight into sugar. Explain the process of photosynthesis in the plant. Explain the importance of photosynthesis in the ecosystem. Explain the importance of photosynthesis in the plant. Explain the importan"
+     },
+     {
+      "distinct": 0.452991,
+      "n_new": 96,
+      "n_tokens": 117,
+      "prompt": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+      "r4": 0.184211,
+      "text": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total? Let's solve it step by step.\n\nThe problem says that the baker sells 40 loaves on Monday and half that on Tuesday. So, half of 40 is 20. Therefore, the total numb"
+     },
+     {
+      "distinct": 0.11215,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "What is the difference between a lease and a licence?",
+      "r4": 0.836538,
+      "text": "What is the difference between a lease and a licence? What is the difference between a lease and a lease agreement? What is the difference between a lease and a lease agreement? What is the difference between a lease and a lease agreement? "
+     },
+     {
+      "distinct": 0.11215,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "Name three reasons a bridge might be closed for repair.",
+      "r4": 0.826923,
+      "text": "Name three reasons a bridge might be closed for repair. A bridge might be closed for repair for repair reasons. A bridge might be closed for repair for repair reasons. A bridge might be closed for repair for repair reasons. A bridge might b"
+     },
+     {
+      "distinct": 0.137615,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Translate to Spanish: The library opens at nine in the morning.",
+      "r4": 0.858491,
+      "text": "Translate to Spanish: The library opens at nine in the morning. \n\nThe library opens at nine in the morning. \n\nThe library opens at nine in the morning. \n\nThe library opens at nine in the morning. \n\nThe library opens at nine in the morning. "
+     }
+    ],
+    "median_4gram_repeat": 0.819,
+    "median_distinct_ratio": 0.1698,
+    "n_prompts": 8,
+    "nll": 1.75369,
+    "nll_tokens": 250,
+    "ppl": 5.7759,
+    "ppl_full": 5.7758653942543035,
+    "r4_full": 0.819047619047619,
+    "r4s": [
+     0.184211,
+     0.552381,
+     0.737864,
+     0.801887,
+     0.819048,
+     0.826923,
+     0.836538,
+     0.858491
+    ],
+    "worst_max_repeat_run": 1
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 870191712,
+   "complete_ebpw": 9.2619,
+   "complete_ebpw_full": 9.2618863212791,
+   "diversity_ok": false,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": false,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.2147,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.6683,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0096,
+    "ppl_ok": false,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 247730784,
+   "organ_target_ebpw": {
+    "down_proj": 4.5,
+    "gate_proj": 4.5,
+    "k_proj": 4.5,
+    "o_proj": 4.5,
+    "q_proj": 4.5,
+    "up_proj": 4.5,
+    "v_proj": 4.5
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 24772608,
+    "A_zeros": 24772608,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 198180864,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "gate_proj": {
+     "bits": 3,
+     "complete_bytes": 44040864,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "k_proj": {
+     "bits": 3,
+     "complete_bytes": 14680736,
+     "complete_ebpw": 4.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "o_proj": {
+     "bits": 3,
+     "complete_bytes": 29360800,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g32",
+     "target_ebpw": 4.5
+    },
+    "q_proj": {
+     "bits": 4,
+     "complete_bytes": 36700832,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "up_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 18350752,
+     "complete_ebpw": 5.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g32",
+     "target_ebpw": 4.5
+    }
+   },
+   "per_param_weights": null,
+   "policy": "SENSITIVITY",
+   "ppl_ok": false,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
+  "UNIFORM": {
+   "capability": {
+    "distincts": [
+     0.121495,
+     0.17757,
+     0.192661,
+     0.192661,
+     0.212963,
+     0.254717,
+     0.37037,
+     0.410256
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.212963,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Describe what a lighthouse keeper does during a winter storm.",
+      "r4": 0.628571,
+      "text": "Describe what a lighthouse keeper does during a winter storm. The lighthouse keeper is a young man, and he is a good keeper. The storm is coming, and he is preparing for the storm. The storm is coming, and he is preparing for the storm. The"
+     },
+     {
+      "distinct": 0.192661,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Why did medieval towns build walls, and what ended the practice?",
+      "r4": 0.801887,
+      "text": "Why did medieval towns build walls, and what ended the practice? The answer is a combination of both. The answer is a combination of both. The answer is a combination of both. The answer is a combination of both. The answer is a combination"
+     },
+     {
+      "distinct": 0.37037,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short recipe for lentil soup for four people.",
+      "r4": 0.419048,
+      "text": "Write a short recipe for lentil soup for four people. The recipe should include all the ingredients, and the cooking time. Also, make sure that the soup is healthy and easy to prepare. The recipe should be written in a simple and easy-to-re"
+     },
+     {
+      "distinct": 0.254717,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Explain how photosynthesis turns sunlight into sugar.",
+      "r4": 0.699029,
+      "text": "Explain how photosynthesis turns sunlight into sugar. Photosynthesis is the process by which plants, algae, and some other organisms convert light energy into chemical energy. Photosynthesis is the process by which plants, algae, and some o"
+     },
+     {
+      "distinct": 0.410256,
+      "n_new": 96,
+      "n_tokens": 117,
+      "prompt": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+      "r4": 0.149123,
+      "text": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total? To solve this problem, we need to find the total number of loaves sold by the baker on Monday and Tuesday. The problem states that he sells 40 loaves on Monday a"
+     },
+     {
+      "distinct": 0.121495,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "What is the difference between a lease and a licence?",
+      "r4": 0.826923,
+      "text": "What is the difference between a lease and a licence? What is the difference between a lease and a lease of land? What is the difference between a lease and a lease of land? What is the difference between a lease and a lease of land? What i"
+     },
+     {
+      "distinct": 0.17757,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "Name three reasons a bridge might be closed for repair.",
+      "r4": 0.730769,
+      "text": "Name three reasons a bridge might be closed for repair. A bridge is a complex structure, and repair is a complex process. The repair process is a complex process. The repair process is a complex process. The repair process is a complex proc"
+     },
+     {
+      "distinct": 0.192661,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Translate to Spanish: The library opens at nine in the morning.",
+      "r4": 0.745283,
+      "text": "Translate to Spanish: The library opens at nine in the morning. The library is open from 9 to 17:00. The library is open from 9 to 17:00. The library is open from 9 to 17:00. The library is open from 9 to 17:00. The library is open from 9 t"
+     }
+    ],
+    "median_4gram_repeat": 0.7308,
+    "median_distinct_ratio": 0.213,
+    "n_prompts": 8,
+    "nll": 1.57161,
+    "nll_tokens": 250,
+    "ppl": 4.8144,
+    "ppl_full": 4.814402187483123,
+    "r4_full": 0.7307692307692308,
+    "r4s": [
+     0.149123,
+     0.419048,
+     0.628571,
+     0.699029,
+     0.730769,
+     0.745283,
+     0.801887,
+     0.826923
+    ],
+    "worst_max_repeat_run": 2
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 870191712,
+   "complete_ebpw": 9.2619,
+   "complete_ebpw_full": 9.2618863212791,
+   "diversity_ok": false,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": false,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.2147,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.6683,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0096,
+    "ppl_ok": true,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 247730784,
+   "organ_target_ebpw": {
+    "down_proj": 4.5,
+    "gate_proj": 4.5,
+    "k_proj": 4.5,
+    "o_proj": 4.5,
+    "q_proj": 4.5,
+    "up_proj": 4.5,
+    "v_proj": 4.5
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 13762560,
+    "A_zeros": 13762560,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 220200960,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "k_proj": {
+     "bits": 4,
+     "complete_bytes": 16515744,
+     "complete_ebpw": 4.5002,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "o_proj": {
+     "bits": 4,
+     "complete_bytes": 33030816,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "q_proj": {
+     "bits": 4,
+     "complete_bytes": 33030816,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "up_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 16515744,
+     "complete_ebpw": 4.5002,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g64",
+     "target_ebpw": 4.5
+    }
+   },
+   "per_param_weights": {
+    "down_proj": 1.0,
+    "gate_proj": 1.0,
+    "k_proj": 1.0,
+    "o_proj": 1.0,
+    "q_proj": 1.0,
+    "up_proj": 1.0,
+    "v_proj": 1.0
+   },
+   "policy": "UNIFORM",
+   "ppl_ok": true,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  }
+ },
+ "assignments": {
+  "ANTI_SENSITIVITY": {
+   "down_proj": "q3-g32",
+   "gate_proj": "q4-g64",
+   "k_proj": "q4-g32",
+   "o_proj": "q4-g32",
+   "q_proj": "q3-g32",
+   "up_proj": "q4-g32",
+   "v_proj": "q3-g32"
+  },
+  "GLOBAL_ANATOMY": {
+   "down_proj": "q4-g32",
+   "gate_proj": "q3-g32",
+   "k_proj": "q3-g32",
+   "o_proj": "q4-g32",
+   "q_proj": "q3-g32",
+   "up_proj": "q4-g64",
+   "v_proj": "q4-g32"
+  },
+  "SENSITIVITY": {
+   "down_proj": "q4-g64",
+   "gate_proj": "q3-g32",
+   "k_proj": "q3-g32",
+   "o_proj": "q3-g32",
+   "q_proj": "q4-g32",
+   "up_proj": "q4-g32",
+   "v_proj": "q4-g32"
+  },
+  "UNIFORM": {
+   "down_proj": "q4-g64",
+   "gate_proj": "q4-g64",
+   "k_proj": "q4-g64",
+   "o_proj": "q4-g64",
+   "q_proj": "q4-g64",
+   "up_proj": "q4-g64",
+   "v_proj": "q4-g64"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-08T06:30:21Z",
+  "recorded_by": "tools/future/organ_allocation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "byte_exact_across_all_arms": true,
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "control_gap_ppl": -0.514508,
+ "control_holds": false,
+ "decided_by": "the capability conjunction, not perplexity alone",
+ "dense_parent_capability": {
+  "corpus": "B",
+  "corpus_note": "narrative/historical/biological/culinary/legal; no transformer vocabulary",
+  "distincts": [
+   0.242991,
+   0.256881,
+   0.351852,
+   0.410256,
+   0.429907,
+   0.477064,
+   0.592593,
+   0.59434
+  ],
+  "gen_tokens": 96,
+  "generations": [
+   {
+    "distinct": 0.351852,
+    "n_new": 96,
+    "n_tokens": 108,
+    "prompt": "Describe what a lighthouse keeper does during a winter storm.",
+    "r4": 0.342857,
+    "text": "Describe what a lighthouse keeper does during a winter storm. The lighthouse keeper is a person who is responsible for the lighthouse. The lighthouse is located on a cliff overlooking the sea. The lighthouse is a beacon that is used to guid"
+   },
+   {
+    "distinct": 0.477064,
+    "n_new": 96,
+    "n_tokens": 109,
+    "prompt": "Why did medieval towns build walls, and what ended the practice?",
+    "r4": 0.264151,
+    "text": "Why did medieval towns build walls, and what ended the practice? Also, what is the significance of the wall in the context of the medieval period? Additionally, what is the role of the wall in the context of the modern world?\n\nFurthermore, "
+   },
+   {
+    "distinct": 0.592593,
+    "n_new": 96,
+    "n_tokens": 108,
+    "prompt": "Write a short recipe for lentil soup for four people.",
+    "r4": 0.009524,
+    "text": "Write a short recipe for lentil soup for four people. Include all the ingredients and steps. Make sure to mention the type of lentils used, the type of vegetables, and the type of spices. Also, include a note about the preparation time and "
+   },
+   {
+    "distinct": 0.59434,
+    "n_new": 96,
+    "n_tokens": 106,
+    "prompt": "Explain how photosynthesis turns sunlight into sugar.",
+    "r4": 0.029126,
+    "text": "Explain how photosynthesis turns sunlight into sugar. Photosynthesis is the process by which plants, algae, and some bacteria convert light energy into chemical energy. It is the process by which plants make their own food. Photosynthesis o"
+   },
+   {
+    "distinct": 0.410256,
+    "n_new": 96,
+    "n_tokens": 117,
+    "prompt": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+    "r4": 0.140351,
+    "text": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total? To solve this problem, we need to find the total number of loaves sold by the baker on Monday and Tuesday. \n\nFirst, we are told that the baker sells 40 loaves on"
+   },
+   {
+    "distinct": 0.242991,
+    "n_new": 96,
+    "n_tokens": 107,
+    "prompt": "What is the difference between a lease and a licence?",
+    "r4": 0.663462,
+    "text": "What is the difference between a lease and a licence? What are the key differences between a lease and a licence? What are the key differences between a lease and a rental agreement? What are the key differences between a lease and a rental"
+   },
+   {
+    "distinct": 0.429907,
+    "n_new": 96,
+    "n_tokens": 107,
+    "prompt": "Name three reasons a bridge might be closed for repair.",
+    "r4": 0.336538,
+    "text": "Name three reasons a bridge might be closed for repair. Also, what is the name of the bridge that is the most famous in the world? Additionally, what is the name of the bridge that is the most famous in the world in the UK? Lastly, what is "
+   },
+   {
+    "distinct": 0.256881,
+    "n_new": 96,
+    "n_tokens": 109,
+    "prompt": "Translate to Spanish: The library opens at nine in the morning.",
+    "r4": 0.54717,
+    "text": "Translate to Spanish: The library opens at nine in the morning. The library is open from 9 to 17:00. The library is closed on Sundays and Mondays. The library is open on weekdays. The library is closed on weekends. The library is open on we"
+   }
+  ],
+  "median_4gram_repeat": 0.3365,
+  "median_distinct_ratio": 0.4299,
+  "n_prompts": 8,
+  "nll": 1.42834,
+  "nll_tokens": 250,
+  "ppl": 4.1718,
+  "ppl_full": 4.1717601740655015,
+  "r4_full": 0.33653846153846156,
+  "r4s": [
+   0.009524,
+   0.029126,
+   0.140351,
+   0.264151,
+   0.336538,
+   0.342857,
+   0.54717,
+   0.663462
+  ],
+  "worst_max_repeat_run": 2
+ },
+ "depth_exact_across_tilted_arms": true,
+ "depth_multisets": {
+  "ANTI_SENSITIVITY": [
+   3,
+   3,
+   3,
+   4,
+   4,
+   4,
+   4
+  ],
+  "GLOBAL_ANATOMY": [
+   3,
+   3,
+   3,
+   4,
+   4,
+   4,
+   4
+  ],
+  "SENSITIVITY": [
+   3,
+   3,
+   3,
+   4,
+   4,
+   4,
+   4
+  ],
+  "UNIFORM": [
+   4,
+   4,
+   4,
+   4,
+   4,
+   4,
+   4
+  ]
+ },
+ "device": "cpu",
+ "guard_at_start": {
+  "compressor_gb": 0.37,
+  "expected_gb": 8.0,
+  "free_gb": 71.28,
+  "headroom_gb": 63.28,
+  "reasons": [],
+  "reclaimable_gb": 14.53,
+  "resident_rss_gb": 0.0,
+  "residents": 0,
+  "state": "OK",
+  "strictly_free_gb": 56.75,
+  "swap_gb": 5.0,
+  "swapfiles": 5,
+  "wired_gb": 10.67
+ },
+ "measured_sensitivity": {
+  "down_proj": 0.96328,
+  "gate_proj": -0.100967,
+  "k_proj": 0.378744,
+  "o_proj": -0.111519,
+  "q_proj": 0.238682,
+  "up_proj": 0.350168,
+  "v_proj": 0.746715
+ },
+ "nr_not_nx": true,
+ "obligation": "G012",
+ "organ_bytes": [
+  247730784
+ ],
+ "outcome": "MAP_HAS_NO_PREDICTIVE_POWER",
+ "passing_gate": [
+  "GLOBAL_ANATOMY"
+ ],
+ "question": "does allocating by MEASURED behavioural sensitivity beat allocating by structural anatomy, at identical bytes and identical bit depths?",
+ "resource": {
+  "compressor_gb_peak": 0.41,
+  "compressor_gb_start": 0.37,
+  "free_gb_end": 64.1,
+  "free_gb_low": 22.76,
+  "free_gb_start": 71.89,
+  "label": "G012_ALLOC",
+  "peak_unknown_reason": null,
+  "resident_rss_gb_peak": 0.0,
+  "samples": 194,
+  "swapfiles_delta": 0,
+  "swapfiles_end": 5,
+  "swapfiles_start": 5,
+  "wall_s": 415.27
+ },
+ "schema": "hawking.future.g012_sensitivity_allocation.v1",
+ "seal_sha256": "cb033e058d581a4f8eccaa98f37a38c6061da9fd78109eb4a875816b975a1ce3",
+ "sensitivity_source": "receipts/future/G011_ORGAN_SENSITIVITY.json",
+ "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+ "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+ "specs": {
+  "cheap": "q3-g32",
+  "mid": "q4-g32",
+  "rich": "q4-g64"
+ },
+ "status": "MEASURED",
+ "uniform_depth_differs_by_design": true,
+ "verdict_sentence": "G012 MAP_HAS_NO_PREDICTIVE_POWER on Qwen--Qwen3-0.6B@c1899de289a0 at complete EBPW 9.2619, all arms byte-exact: SENSITIVITY ppl 5.7759, ANTI_SENSITIVITY (control) 5.2614, GLOBAL_ANATOMY 4.9438, UNIFORM 4.8144; gate PASS = ['GLOBAL_ANATOMY']. the anti-sensitivity control matched or beat the sensitivity arm at identical bytes and identical bit depths; the measured map does not predict allocation tolerance and must not be used as one. GLOBAL_ANATOMY is the only allocation to survive the conjunction at identical bytes; likelihood alone would have ranked it differently.",
+ "weaker_than_it_looks": [
+  "The sensitivity map was measured at ONE perturbation size on THIS body; allocating by it is an out-of-sample use of an in-sample measurement.",
+  "UNIFORM is byte-matched but NOT depth-matched -- it cannot be, since uniform means one spec everywhere. Only the three tilted arms are a clean ordering comparison.",
+  "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU fp32 -- the existing gate's budget, not a large eval."
+ ],
+ "winners": [
+  "GLOBAL_ANATOMY"
+ ]
+}

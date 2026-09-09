@@ -1,0 +1,28 @@
+{
+ "obligation": "G006",
+ "round": "21b",
+ "verdict": "INVALID TRIAL -- NO VERDICT. Second launch defect in a row, both mine.",
+ "what_happened": "the round selected its own target, reached odyssey.dense_anatomy, and reported 'Record the named refusal (numpy missing) for the 5 axes owed on the cheapest specimen'. It then wrote a receipt and the evidence validator rejected it as receipt_malformed_json.",
+ "the_round_was_RIGHT": "odyssey.dense_anatomy really did raise ModuleNotFoundError: numpy. Verified directly by invoking the tool. The round diagnosed its environment correctly.",
+ "but_the_environment_was_mine": {
+  "campaign_interpreter": "/usr/local/bin/python3.12 -- numpy 2.2.6. What rounds through 16 used.",
+  "what_i_launched": "plain `python3.12`, which resolves to /Users/scammermike/.local/bin/python3.12 -- a uv-managed interpreter whose entire site-packages is README.txt, pip and pip's dist-info. Three entries. No numpy.",
+  "blast_radius": "rounds 20, 21 and 21b all ran on it",
+  "round_20_still_stands": "round 20 never reached a numpy-dependent tool; its class C verdict -- reading a value off the census and calling it owed -- was genuine and the census repair it forced is genuine too."
+ },
+ "two_launch_defects_in_a_row": [
+  {
+   "round": 21,
+   "defect": "HCLI_MAX_TOOL_OBSERVATIONS unset, so a one-observation budget for a four-step plan"
+  },
+  {
+   "round": "21b",
+   "defect": "wrong interpreter, so the campaign's own dense-anatomy tool could not import"
+  }
+ ],
+ "minimum_general_mechanism": "workspace/campaign/odyssey/launch_round.sh is now the ONE launch path. It pins /usr/local/bin/python3.12, defaults HCLI_MAX_TOOL_OBSERVATIONS to 8, and REFUSES to launch at all if the interpreter cannot import numpy -- rather than letting the round spend itself discovering that. Proven: pointed at the uv interpreter it refuses with the reason.",
+ "the_second_finding": "the round REACHED THE WRITE DOOR for the first time in the streak and wrote G035_ODYSSEY_ANOMY_REFUSAL.json. The validator classified it receipt_malformed_json -- 'Expecting value: line 1 column 1' -- and the file is no longer on disk. The filename is also a typo of ANATOMY. Worth watching on the rerun: the failure has moved from 'cannot reach the door' to 'wrote something invalid through it', which is a different and later defect.",
+ "streak": 0,
+ "streak_effect": "UNCHANGED. An invalid trial neither advances nor resets it.",
+ "scar": "PIN THE INTERPRETER AND THE ENVIRONMENT IN A FILE. A bare name on PATH is not a launch."
+}

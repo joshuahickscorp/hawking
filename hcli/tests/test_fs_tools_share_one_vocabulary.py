@@ -39,7 +39,11 @@ class TestOneVocabulary(unittest.TestCase):
     def test_aliases_are_callable_but_not_separate_capabilities(self):
         registry = _registry()
         canonical = {entry["name"]: entry for entry in registry.discover()}
-        self.assertEqual(canonical["fs.read"]["aliases"], ["filesystem.read"])
+        # After consolidation the canonical fs door carries BOTH vocabularies,
+        # so the one-vocabulary contract is stronger than it was: one name,
+        # every alias advertised on it.
+        self.assertIn("filesystem.read", canonical["fs"]["aliases"])
+        self.assertIn("fs.read", canonical["fs"]["aliases"])
         self.assertNotIn("filesystem.read", canonical)
         self.assertEqual(registry.get("filesystem.read").alias_of, "fs.read")
         self.assertTrue(

@@ -36,7 +36,10 @@ def _engine(max_observations=8, rounds=6):
     e._tools_closed_for_round = False
     e._last_model_text = ""
     e._prompt_with_observations = lambda *a, **k: "PROMPT"
-    e._observations_block = lambda obs, final=False: "OBS"
+    # **kw because this stubs an INTERNAL method and pinning its exact signature
+    # makes any new keyword a TypeError inside the loop -- which aborts the round
+    # after one call and reads as "the loop stopped after the first failed call".
+    e._observations_block = lambda obs, final=False, **kw: "OBS"
     e._compact_closed_observations = lambda obs: obs
     e._sanitize_result = lambda v: v
     e._emit = lambda *a, **k: None

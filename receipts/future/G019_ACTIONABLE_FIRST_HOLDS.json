@@ -1,0 +1,43 @@
+{
+ "obligation": "G019",
+ "artifact": "tools/future/test_actionable_first.py",
+ "sweep": "receipts/future/G019_ACTIONABLE_FIRST_SWEEP.json",
+ "scope": "every ZERO-ARGUMENT READ-ONLY campaign tool -- 27 of the 71 registered. Mutating, costly and networked tools are out of scope for an automated sweep; this does not claim to cover them.",
+ "result": {
+  "OK": 8,
+  "NO_LIST_PAYLOAD": 18,
+  "REFUSED": 1
+ },
+ "verdict": "all 8 tools that return a row list let a caller determine completeness. 18 return no row list, so the row-truncation law does not apply to them the same way. 1 refuses without arguments.",
+ "the_predicate": "CAN THE CALLER TELL a complete answer from a cut one -- satisfied by an explicit truncation flag, OR by a count that equals the rows shown. Not 'does a named field exist'.",
+ "the_test_was_wrong_twice_before_it_was_right": [
+  {
+   "formulation": "hardcoded total-key list (n, total, n_owed, n_processes, n_orphaned, n_ranked)",
+   "false_positive": "specimens.registry, which returns n_specimens",
+   "lesson": "a fixed vocabulary is a parser, and parsers under-match"
+  },
+  {
+   "formulation": "demand an explicit `truncated` flag whenever a total is present",
+   "false_positives": [
+    "odyssey.ingest (specimen_count 14, specimens list of 14)",
+    "processes.summary (count 2, processes list of 2)"
+   ],
+   "lesson": "a count EQUAL to the rows shown tells a caller the answer is complete just as well as a flag. Demanding the flag flagged two correct tools."
+  },
+  {
+   "also": "fs.list was flagged in both, and it returns truncated: False -- which answers the question directly. Three tools accused, zero defective.",
+   "pattern": "this is the third audit in this session whose own parser made the campaign look worse than it was. Every one erred in the same direction, and every one would have shipped a false defect if the flagged output had not been read by hand."
+  }
+ ],
+ "mutation_test_as_the_verify_demands": {
+  "requirement": "the test must be red before the fix; a green sweep proves nothing on its own",
+  "mutation": "lake.census's disclosure block -- n, shown, truncated -- removed",
+  "result": "COMPLETENESS_UNDETERMINABLE on lake.census, OK count 8 -> 7, suite RED. Restored green; marker grep 0.",
+  "reading": "the sweep detects a tool that stops disclosing, so its green is evidence"
+ },
+ "what_this_does_and_does_not_close": {
+  "does": "the actionable-first law HOLDS across every zero-arg read-only tool that returns rows. The prior lane's work (69 tools audited, 9 fixed, landed 6146e399d) is still standing.",
+  "does_not": "G019's acceptance asks for a test PER TOOL that truncates output to a small budget. Only 2 of 27 accept a `limit` argument at all -- the rest declare additionalProperties: false -- so most cannot be budget-squeezed through their own interface. The sweep tests DISCLOSURE, which is the part that is reachable. Squeezing the other 25 needs a limit parameter they do not have, and adding one to 25 tools is a change with its own review."
+ },
+ "scar": "AN AUDIT THAT ACCUSES A CORRECT TOOL COSTS MORE THAN ONE THAT MISSES A BROKEN ONE. Read the flagged output before believing the flag."
+}

@@ -1,0 +1,172 @@
+"""Output gates for a batch TTS render.
+
+The 60%-of-expected-duration check misses the failure that motivated this:
+a unit that is the right LENGTH and contains no audio at all (rms 0.0), and a
+unit that is long because the model looped rather than because it read the text.
+Duration cannot see either. Energy catches the first, ASR catches the second.
+"""
+from __future__ import annotations
+import re
+import sys
+import numpy as np
+
+# The fixed-point detector lives in the hawking repo, which is where it is
+# tested. Import it rather than copying it, and fail LOUDLY if it is missing --
+# a gate that silently skips itself is how 18 of 24 bad units passed the ASR and
+# energy checks in the first place.
+_HAWKING = "/Users/scammermike/Downloads/hawking/tools/future"
+if _HAWKING not in sys.path:
+    sys.path.insert(0, _HAWKING)
+try:
+    from tts_gate import stuck_run
+except ImportError as _exc:  # pragma: no cover - environment, not logic
+    raise ImportError(
+        f"verify.check needs tts_gate.stuck_run from {_HAWKING} and cannot find it "
+        f"({_exc}). Without it the fixed-point failure is undetectable: it is four "
+        f"orders above the silence threshold and ASR transcribes no extra words, so "
+        f"every other gate here passes it. Refusing to score blind."
+    ) from _exc
+
+_WORD = re.compile(r"[^a-z0-9' ]+")
+
+
+def normalize(s: str) -> list[str]:
+    return _WORD.sub(" ", s.lower()).split()
+
+
+def wer(ref: list[str], hyp: list[str]) -> float:
+    """Word error rate. Insertions count, so looping scores > 1.0."""
+    prev = list(range(len(hyp) + 1))
+    for i, r in enumerate(ref, 1):
+        cur = [i] + [0] * len(hyp)
+        for j, h in enumerate(hyp, 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (r != h))
+        prev = cur
+    return prev[-1] / max(len(ref), 1)
+
+
+def energy(audio: np.ndarray, sr: int, frame_ms: int = 250) -> dict:
+    """Global and worst-window level. A long silent stretch inside otherwise
+    valid audio is a dropout, and the global rms hides it."""
+    a = np.asarray(audio, dtype=np.float64).reshape(-1)
+    n = max(1, int(sr * frame_ms / 1000))
+    trimmed = a[: len(a) - len(a) % n]
+    win = trimmed.reshape(-1, n) if len(trimmed) else a.reshape(1, -1)
+    win_rms = np.sqrt((win ** 2).mean(axis=1))
+    silent = win_rms < 1e-4
+    # longest run of silent windows
+    longest = best = 0
+    for s in silent:
+        longest = longest + 1 if s else 0
+        best = max(best, longest)
+    return {
+        "rms": float(np.sqrt((a ** 2).mean())),
+        "peak": float(np.abs(a).max()),
+        "silent_frac": float(silent.mean()),
+        "longest_silence_s": best * frame_ms / 1000,
+    }
+
+
+def check(audio, sr, ref_text, hyp_text=None, *,
+          min_rms=1e-3, max_silence_s=3.0, max_stuck_s=3.0,
+          wpm=159.0, wpm_lo=0.55, wpm_hi=1.8,
+          min_spoken=0.90, max_spoken=1.15, max_wer=0.35) -> dict:
+    """Returns {'ok': bool, 'fail': [reasons], ...metrics}.
+
+    The duration gate is per-CHUNK, and that is what makes it work. Across a
+    whole 1,100-word unit, duration says almost nothing - the model can spend
+    the time on anything. Across a 60-word chunk the expected length is tight
+    (159 wpm measured), so a 6 s result is a truncation and a 199 s result is a
+    loop, both without running ASR. That matters: transcribing all 86 h at
+    ~19x realtime would cost more than rendering it.
+
+    hyp_text=None therefore still catches truncation, looping and silence.
+    Pass a transcript to also catch right-duration-wrong-words, which is the
+    only failure the cheap gates cannot see - cheap enough to run on a sample
+    plus everything the cheap gates already flagged.
+    """
+    e = energy(audio, sr)
+    ref = normalize(ref_text)
+    a_arr = np.asarray(audio).reshape(-1)
+    out = {"duration_s": len(a_arr) / sr,
+           "ref_words": len(ref), **e}
+    fail = []
+    if e["rms"] < min_rms:
+        fail.append(f"silent(rms={e['rms']:.2g})")
+    if e["longest_silence_s"] > max_silence_s:
+        fail.append(f"dropout({e['longest_silence_s']:.1f}s)")
+
+    # The decoder fixed point. Measured on 24 Higgs units: 18 ended in a
+    # constant-rms buzz at 0.22-0.55, which no gate below can see -- it is not
+    # silent, and ASR transcribes no extra words from it so spoken_frac and wer
+    # both stay clean. Only `long` fired, and only because a stuck unit happens
+    # to run to the token cap. onset_s is where to trim if a caller wants to.
+    st = stuck_run(a_arr, sr)
+    out.update(stuck_s=st["stuck_s"], stuck_onset_s=st["onset_s"])
+    if st["stuck_s"] >= max_stuck_s:
+        fail.append(f"stuck({st['stuck_s']:.1f}s@{st['onset_s']:.1f}s)")
+
+    expect_s = len(ref) / wpm * 60.0
+    ratio = out["duration_s"] / expect_s if expect_s else 0.0
+    out["expect_s"] = round(expect_s, 1)
+    out["dur_ratio"] = round(ratio, 3)
+    if ratio < wpm_lo:
+        fail.append(f"short({ratio:.2f}x)")
+    elif ratio > wpm_hi:
+        fail.append(f"long({ratio:.2f}x)")
+
+    if hyp_text is not None:
+        hyp = normalize(hyp_text)
+        spoken = len(hyp) / max(len(ref), 1)
+        w = wer(ref, hyp)
+        out.update(hyp_words=len(hyp), spoken_frac=round(spoken, 3), wer=round(w, 4))
+        if spoken < min_spoken:
+            fail.append(f"truncated(spoken={spoken:.2f})")
+        elif spoken > max_spoken:
+            fail.append(f"looped(spoken={spoken:.2f})")
+        if w > max_wer:
+            fail.append(f"wer={w:.2f}")
+
+    out["fail"] = fail
+    out["ok"] = not fail
+    return out
+
+
+def _demo():
+    sr = 24000
+    # 4 words at 159 wpm = 1.51 s expected
+    t = np.arange(int(sr * 1.5)) / sr
+    speechish = (0.1 * np.sin(2 * np.pi * 180 * t)).astype(np.float32)
+    ref = "one two three four"
+
+    # silence is caught even though the duration is right
+    r = check(np.zeros(int(sr * 1.5), np.float32), sr, ref)
+    assert not r["ok"] and any(f.startswith("silent") for f in r["fail"]), r
+
+    # a 4s dropout is caught although global rms looks fine
+    holed = np.concatenate([speechish, np.zeros(sr * 4, np.float32), speechish])
+    r = check(holed, sr, ref)
+    assert any(f.startswith("dropout") for f in r["fail"]), r
+
+    # duration alone catches truncation and looping, with no transcript
+    r = check(speechish[: sr // 2], sr, ref)
+    assert any(f.startswith("short") for f in r["fail"]), r
+    r = check(np.tile(speechish, 4), sr, ref)
+    assert any(f.startswith("long") for f in r["fail"]), r
+    assert check(speechish, sr, ref)["ok"]
+
+    # transcript gates
+    assert check(speechish, sr, ref, "one two three four")["ok"]
+    r = check(speechish, sr, ref, "one two")
+    assert any(f.startswith("truncated") for f in r["fail"]), r
+    r = check(speechish, sr, ref, "one two three four one two three four one two")
+    assert any(f.startswith("looped") for f in r["fail"]), r
+    r = check(speechish, sr, ref, "alpha beta gamma delta")
+    assert any(f.startswith("wer") for f in r["fail"]), r
+
+    assert wer(["a", "b"], ["a", "b", "a", "b"]) == 1.0  # insertions count
+    print("verify.py self-check OK")
+
+
+if __name__ == "__main__":
+    _demo()

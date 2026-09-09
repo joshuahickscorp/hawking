@@ -1,0 +1,54 @@
+{
+  "obligation": "AUTONOMY-PROGRESSION",
+  "claim": "Every autonomy failure this session was a HARNESS defect, not a model one.",
+  "runs": [
+    {
+      "n": "1-2",
+      "reached": "no worker at all",
+      "blocker": "--model was advertised by the CLI and never reached the worker; controller read HCLI_MODEL_PATH which nothing set",
+      "fixed": "_spawn_worker sets it from config.model"
+    },
+    {
+      "n": "3-4",
+      "reached": "worker + model calls + a written test file",
+      "blocker": "insert/append fragments compiled STANDALONE and falsely rejected as 'unexpected indent at line 1' -- the same false rejection already fixed for op=replace, never extended to the splicing family. The model was holding a correct guard and was told it had made a syntax error it had not made.",
+      "fixed": "splicing ops rebuild the resulting file from their anchor and judge THAT"
+    },
+    {
+      "n": "5",
+      "reached": "9-10 mutations APPLIED and judged",
+      "blocker": "every test command came back as the bare string NOT_ADMITTED, which names no accepted form, so the model alternated between two rejected shapes forever",
+      "fixed": "the refusal now names the three accepted forms"
+    },
+    {
+      "n": "6",
+      "reached": "a test command ADMITTED and EXECUTED, rc=1 -- a genuine RED",
+      "blocker": "the RED was invisible to the worker. validation_failure_message kept a tail of STDERR and pytest writes the assertion to STDOUT, so the worker was handed TEST_FAILED exit_code 1 with nothing to diagnose; the same message put ~200 characters of sha256 ahead of the failing check; and _workunit_block dumped the failure context sort_keys=True cut at 400 chars, which put `description` and `failed_id` in front of `error`. Three cuts, one outcome: it re-ran the same command because it had never been shown a result.",
+      "fixed": "failed_run_detail() carries the FAILURES block or the tail; failing_checks leads the message; `error` renders first with a 1200-char budget"
+    },
+    {
+      "n": "6b",
+      "reached": "(same run) three attempts on a body whose newlines were literal backslash-n",
+      "blocker": "the rejection said 'unexpected character after line continuation character at line 1' and echoed the file with the escapes intact, which reads exactly like a normally rendered multi-line file. new_lines -- the form with nothing to escape -- was never named.",
+      "fixed": "the rejection now names new_lines when the body is one line of literal backslash-n"
+    },
+    {
+      "n": "6c",
+      "reached": "(same run) eight minutes oscillating between two rejected command shapes",
+      "blocker": "`python <path>` is admitted by _admit_test and NOT_ADMITTED never listed it. The model found the working form by trial, not by being told.",
+      "fixed": "the refusal names it, and a regression drives the admitter and the message together so the list cannot drift from what is accepted"
+    }
+  ],
+  "hcli_owned": "0 of 25, unchanged. The bar is an ACCEPTED unit and none has been reached.",
+  "what_the_model_actually_did_well": [
+    "took its goal from disk with no human typing one",
+    "decomposed a four-step instruction into its own obligations",
+    "wrote a correct, well-formed pytest with a fixture and pytest.raises",
+    "found an accepted test-command form once the refusal named one",
+    "had the RIGHT fix for a real path traversal, and lost it to a false rejection"
+  ],
+  "honest_reading": "The campaign's story was 'HCLI cannot carry a unit'. The measured story is that three harness defects stood between it and a terminal, each one making a correct action look like a model error. Two are fixed and demonstrated; the third moved the failure one stage later. That is not autonomy achieved, but it is a different diagnosis than the one this session started with.",
+  "model": "Qwen3-4B-Instruct-2507 (runs 4-6, from ModelLake). Earlier runs on this file ran hawking-native.sealed-3.14. The campaign narrative said 'the 27B Resident'; the events say otherwise, so the 4B is what wrote the correct pytest and held the correct guard.",
+  "law": "VALID INTENT -> INVALID OR OPAQUE AFFORDANCE -> MODEL APPEARS WRONG. Every autonomy failure measured in this campaign has had this shape. An action rejection must expose the contract, not the answer; a tool failure must carry evidence a reader can act on. Neither is charity to the model -- it is what a compiler does.",
+  "suite_at_this_commit": "58 failures before the fixes and the SAME 58 after, all pre-existing under full-suite serial order and all green in isolation. The fixes account for none of them."
+}

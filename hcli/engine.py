@@ -365,6 +365,15 @@ _CTX_ESTIMATE_MARGIN = 96
 #: Being over by one token costs the whole call. Reserving too much only
 #: shortens a reply.
 _CTX_ESTIMATE_ERROR = 0.30
+_NOT_ADMITTED_REASON = (
+    "NOT_ADMITTED: a test command must be a pytest invocation or a bare path. "
+    "Accepted: 'hcli/tests/test_x.py', 'pytest hcli/tests/test_x.py', "
+    "'python -m pytest hcli/tests/test_x.py', 'python hcli/tests/test_x.py'. "
+    "NOT accepted: a tool call such as "
+    "tests.run([...]), 'python -m unittest ...', a shell pipeline, or extra flags "
+    "beyond -q/-v/-x/-s/--tb=/--color=no."
+)
+
 _MAX_TOKENS_FLOOR = 512
 # A valid mutation reply is usually 800 to 1500 tokens, but a create operation
 # can legitimately carry a small new module and its verifier in one structured
@@ -610,6 +619,33 @@ def is_accepted_measurement(validation: Any) -> bool:
     return int(validation.get("observations_ok") or 0) >= 1
 
 
+_FAILURE_BANNER_RE = re.compile(r"^=+ (?:FAILURES|ERRORS) =+$", re.M)
+
+
+def failed_run_detail(stdout: Any, stderr: Any, limit: int = 420) -> str:
+    """The part of a failed command's output a reader can act on.
+
+    pytest writes the assertion and the traceback to STDOUT; only a tail of
+    STDERR was ever carried, so a genuinely failing test reached the worker as
+    `TEST_FAILED exit_code 1` with the one line that says what to fix dropped.
+    It re-ran the same command instead of diagnosing, which is what a scientist
+    shown no result would do.
+
+    Start at the FAILURES banner when pytest printed one -- the session header
+    above it is noise -- otherwise keep the TAIL, because the informative end of
+    a traceback is its last line.
+    """
+    text = "\n".join(
+        t for t in (str(stdout or ""), str(stderr or "")) if t.strip()
+    )
+    if not text.strip():
+        return ""
+    match = _FAILURE_BANNER_RE.search(text)
+    if match:
+        return text[match.end():].strip()[:limit]
+    return text.strip()[-limit:]
+
+
 def validation_failure_message(validation: Any) -> str:
     """Say WHY deterministic validation failed.
 
@@ -626,16 +662,14 @@ def validation_failure_message(validation: Any) -> str:
     if not isinstance(validation, dict):
         return f"{head}: validation={str(validation)[:300]}"
     bits = []
-    for key in ("reason", "failed", "failures", "returncode",
-                "command", "stderr", "tests", "files"):
-        value = validation.get(key)
-        if value in (None, "", [], {}):
-            continue
-        bits.append(f"{key}={str(value)[:300]}")
     # The per-test reasons live in `checks`, not at the top level. Omitting it
     # produced a message that named the file the model wrote and nothing about
     # why the run was rejected -- true, useless, and it cost a full diagnostic
     # cycle to notice.
+    #
+    # Actionable FIRST. `files=[{sha256_before..., sha256_after...}]` is ~200
+    # characters of hex nothing can act on, and it used to be emitted ahead of
+    # the failure, so the downstream cut kept the hashes and dropped the reason.
     checks = validation.get("checks")
     if isinstance(checks, list):
         bad = []
@@ -649,12 +683,18 @@ def validation_failure_message(validation: Any) -> str:
                 keep = {k: c[k] for k in ("kind", "path", "reason", "exit_code",
                                           "cmd", "requested")
                         if c.get(k) not in (None, "")}
-                stderr = str(c.get("stderr") or "")[-200:]
-                if stderr:
-                    keep["stderr_tail"] = stderr
+                detail = failed_run_detail(c.get("stdout"), c.get("stderr"))
+                if detail:
+                    keep["output_tail"] = detail
                 bad.append(keep)
         if bad:
-            bits.append(f"failing_checks={str(bad)[:600]}")
+            bits.append(f"failing_checks={str(bad)[:900]}")
+    for key in ("reason", "failed", "failures", "returncode",
+                "command", "stderr", "tests", "files"):
+        value = validation.get(key)
+        if value in (None, "", [], {}):
+            continue
+        bits.append(f"{key}={str(value)[:300]}")
     if not bits:
         return f"{head}: validation={str(validation)[:300]}"
     return f"{head}: " + "; ".join(bits)
@@ -1262,14 +1302,29 @@ def _rejected_excerpt(text: str) -> str:
     return f"{text[:half]}\n[... {dropped} characters elided ...]\n{text[-half:]}"
 
 
-def _python_syntax_violation(content: str) -> Optional[str]:
+def _python_syntax_violation(content: str,
+                             root: Optional[Path] = None) -> Optional[str]:
     """The reply's Python operations must compile, or say why they do not.
 
     Returns a retry instruction naming the file, line and error, or None when
     every Python operation parses. Non-Python paths are not checked here: the
     verifier owns them and this is only about giving the model back the one
     error it can act on.
+
+    `root` anchors relative operation paths. Without it these resolve against
+    the PROCESS working directory, which is the repository only by luck: the
+    engine happens to run there. Called from a server that serves a repo it is
+    not sitting in, every anchor read missed, the preflight found nothing to
+    complain about, and source that does not compile was written to disk --
+    "the preflight silently did nothing", which is the defect the paragraph
+    above was written for.
     """
+    base = Path(root) if root is not None else None
+
+    def _resolve(candidate: str) -> Path:
+        path = Path(candidate)
+        return path if path.is_absolute() or base is None else base / path
+
     # Parse the reply the way the ENGINE parses it. A bare json.loads returned
     # None for any reply the model wrapped in a markdown fence or prefaced with
     # a sentence -- both of which the engine's own extractor tolerates and then
@@ -1321,7 +1376,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         # that false rejection, having been told to fix code that was not
         # broken. A check that refuses correct work is worse than no check.
         candidate = body
-        if str(op.get("op") or "") == "create" and Path(path).exists():
+        if str(op.get("op") or "") == "create" and _resolve(path).exists():
             # CORRECTABLE, and it was terminal: _apply_operations runs after
             # the contract accepts, so a unit that offered to create a file
             # already on disk died holding whatever else it had proposed.
@@ -1336,7 +1391,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         if str(op.get("op") or "") == "replace":
             anchor = _operation_text(op, "old_text")
             try:
-                current = (Path(path)).read_text(encoding="utf-8", errors="replace")
+                current = _resolve(path).read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
             if not isinstance(anchor, str):
@@ -1354,6 +1409,39 @@ def _python_syntax_violation(content: str) -> Optional[str]:
                 # copy rather than something to guess.
                 return _anchor_violation(path, anchor, current, hits)
             candidate = current.replace(anchor, body, 1)
+
+        # SPLICING OPS CARRY FRAGMENTS BY DESIGN. insert_before, insert_after
+        # and append put `body` INTO an existing file, so an indented block is
+        # correct exactly as `replace`'s is -- but only `replace` reconstructed
+        # the resulting file above. Everything else fell through with
+        # candidate = body and was compiled standalone, which reports
+        # "unexpected indent at line 1" for a perfectly good patch.
+        #
+        # This is the same false rejection the comment above records for
+        # `replace`, never fixed for the insert/append family. Measured: two
+        # autonomy runs died here, the second holding a correct guard, retrying
+        # the same shape three times because the message accused it of a syntax
+        # error it had not made.
+        #
+        # Rebuild the real file where an anchor makes that possible; where it
+        # does not, DO NOT judge -- a check that cannot see the result has
+        # nothing to say about it.
+        op_kind = str(op.get("op") or "")
+        if op_kind in {"insert_before", "insert_after", "append"}:
+            try:
+                current = _resolve(path).read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            anchor = _operation_text(op, "old_text")
+            if op_kind == "append":
+                candidate = current + ("" if current.endswith("\n") else "\n") + body
+            elif isinstance(anchor, str) and current.count(anchor) == 1:
+                candidate = (current.replace(anchor, anchor + body, 1)
+                             if op_kind == "insert_after"
+                             else current.replace(anchor, body + anchor, 1))
+            else:
+                # No usable anchor: the resulting file is not knowable here.
+                continue
 
         try:
             compile(candidate, path or "<operation>", "exec")
@@ -1376,10 +1464,42 @@ def _python_syntax_violation(content: str) -> Optional[str]:
                         f"{lo + i + 1}: {line}" for i, line in enumerate(window)
                     )
                     quoted = f"\nthe resulting file reads there:\n{numbered}"
+            # Teach the correction, not just the diagnosis. An indent error at
+            # LINE 1 of a whole-file operation has exactly one cause: the model
+            # supplied the CHANGED LINES where the ENTIRE FILE was required.
+            # Measured on a real run -- the model had the right fix
+            # ("if '..' in digest") and lost the unit three times to this,
+            # because "fix that operation and keep it short" does not say which
+            # way it is wrong. A rejection that names the wrong operation and
+            # the right one converts a dead end into a retry that can succeed.
+            op_kind = str(op.get("op") or "")
+            hint = "\nfix that operation and keep it short"
+            # A body whose "newlines" are the two characters backslash-n is one
+            # physical line, and the quoted file above shows it with the escapes
+            # intact -- which reads exactly like a normally rendered multi-line
+            # file, so the diagnosis is invisible. Measured: three attempts died
+            # on it. Name the form that has nothing to escape.
+            if "\\n" in candidate and "\n" not in candidate.strip():
+                hint = (
+                    "\nyour body is ONE line whose newlines are the two characters "
+                    "backslash and n, so Python reads a line continuation. Send the "
+                    "body as new_lines (or old_lines): a JSON array of plain source "
+                    "lines with no newline characters in them and nothing to escape."
+                )
+            elif (op_kind in {"replace_file", "create"}
+                    and "indent" in (exc.msg or "").lower()
+                    and getattr(exc, "lineno", 0) == 1):
+                hint = (
+                    f"\nop={op_kind!r} replaces the ENTIRE file, and you supplied an "
+                    f"indented fragment -- so the file now BEGINS mid-block. To change "
+                    f"PART of a file use op='replace' with old_lines (the exact existing "
+                    f"lines, copied verbatim including their indentation) and new_lines. "
+                    f"Reserve replace_file for a whole file you are rewriting top to bottom."
+                )
             return (
                 f"applying your operation to {path} would not compile: "
                 f"{exc.msg} at {where} of the resulting file{quoted}"
-                f"\nfix that operation and keep it short"
+                f"{hint}"
             )
         except ValueError as exc:
             return f"operation on {path} could not be compiled: {exc}"
@@ -1438,6 +1558,28 @@ def check_rust_file(path: Path, root: Path) -> Dict[str, Any]:
     except subprocess.TimeoutExpired:
         return {"package": package, "exit_code": 124, "stdout": "",
                 "stderr": "cargo check timed out"}
+
+
+def _unified_diff(before: Dict[str, Optional[str]],
+                  after: Dict[str, Optional[str]],
+                  root: Path) -> str:
+    """What actually changed on disk, for a human to read in a chat reply."""
+    import difflib
+
+    chunks: List[str] = []
+    for key in sorted(set(before) | set(after)):
+        old = before.get(key) or ""
+        new = after.get(key) or ""
+        if old == new:
+            continue
+        try:
+            label = str(Path(key).relative_to(root))
+        except ValueError:
+            label = key
+        chunks.extend(difflib.unified_diff(
+            old.splitlines(True), new.splitlines(True),
+            fromfile=f"a/{label}", tofile=f"b/{label}", n=3))
+    return "".join(chunks)[:8000]
 
 
 class Engine:
@@ -1765,6 +1907,7 @@ class Engine:
         failed_rounds: int,
         max_observations: int,
         failure_tolerance: int,
+        repeat_rounds: int = 0,
     ):
         """Why the tool catalog should close now, or None to keep it open.
 
@@ -1787,8 +1930,21 @@ class Engine:
             if failed_rounds > failure_tolerance:
                 return "failed_call"
             return None
+        # ONE CONFIRMATORY REPEAT IS NOT A RUNAWAY LOOP. Closing on the first
+        # all-repeat round made a correct verification instinct fatal: rounds
+        # 22, 24 and 25 each measured real dense anatomy, re-read the ledger to
+        # confirm it, and that confirmation ended the loop before they could
+        # write. All three closed here with observations still in budget.
+        #
+        # Runaway protection survives, because the thing being prevented is a
+        # no-progress CYCLE, not a single check. `repeat_rounds` counts
+        # CONSECUTIVE all-repeat rounds -- it resets the moment any round makes
+        # a fresh call -- so one confirmation is allowed and a second in a row
+        # closes. The observation budget above still bounds everything.
         if all(item.get("repeat") for item in round_observations):
-            return "bounded_observation_round"
+            if repeat_rounds > 1:
+                return "bounded_observation_round"
+            return None
         return None
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
@@ -2436,6 +2592,8 @@ class Engine:
         observations: List[Dict[str, Any]],
         *,
         final: bool = False,
+        used: Optional[int] = None,
+        budget: Optional[int] = None,
     ) -> str:
         """The APPEND-ONLY tail. Nothing stable may follow it.
 
@@ -2448,16 +2606,51 @@ class Engine:
         """
         parts: List[str] = []
         if observations:
+            # `repeat` is set on the observation and USED TO CLOSE THE LOOP,
+            # and the round was never shown it. Rounds 22, 24 and 25 all ended
+            # on bounded_observation_round with observations still in budget --
+            # the loop closes when every call in a round repeats one already
+            # made. The round saw [ok], was told how much budget remained, and
+            # never learned the rule that actually ended it.
             rendered = "\n\n".join(
-                f"----- {o['tool']} [{'ok' if o['ok'] else 'FAILED'}] -----\n{o['text']}"
+                f"----- {o['tool']} "
+                f"[{'ok' if o.get('ok') else 'FAILED'}"
+                f"{', REPEAT of a call you already made' if o.get('repeat') else ''}] "
+                f"-----\n{o['text']}"
                 for o in observations
             )
             parts.append(f"OBSERVATIONS (tool results, this goal):\n{rendered}")
+        if observations and any(o.get("repeat") for o in observations):
+            parts.append(
+                "One or more calls above REPEAT a call you already made and returned what you "
+                "already have. A round in which EVERY call is a repeat ENDS THE LOOP IMMEDIATELY, "
+                "whatever budget is left. If you have a result, record it now; do not re-read to "
+                "confirm it."
+            )
         if final:
             parts.append(
                 "TOOL BUDGET EXHAUSTED. Answer from the observations above. "
                 "Do not request more tools."
             )
+        elif used is not None and budget is not None:
+            # THE HORIZON, ON EVERY TURN. The prompt says "you are asked again"
+            # and never said how often, so the budget was only ever mentioned
+            # once it was gone. Rounds 22 and 24 each measured real anatomy,
+            # reported it, and ended with "Next: record ..." -- deferring the
+            # write to an iteration that did not exist. That is correct
+            # reasoning about a horizon nobody described, not an ignored
+            # instruction, and the harness is the side that knows the number.
+            remaining = max(0, int(budget) - int(used))
+            if remaining <= 1:
+                parts.append(
+                    f"{remaining} tool observation remains of {budget}. THIS IS YOUR LAST "
+                    "CHANCE TO ACT. Anything you plan to do 'next' will not happen -- do it "
+                    "now or it is lost."
+                )
+            else:
+                parts.append(
+                    f"{used} of {budget} tool observations used; {remaining} remain."
+                )
         return "\n\n".join(parts)
 
     def _compact_closed_observations(
@@ -2594,6 +2787,7 @@ class Engine:
             observations: List[Dict[str, Any]] = []
             conversation_history: List[Dict[str, Any]] = []
             failed_rounds = 0
+            repeat_rounds = 0
             closure_reason = None
             tool_rounds = 0
             self._agentic_execution = True
@@ -2656,7 +2850,14 @@ class Engine:
                 conversation_history.append(
                     {
                         "role": "user",
-                        "content": self._observations_block(observations),
+                        # The numbers, not just the block. A horizon the harness
+                        # knows and does not say is a horizon the round cannot
+                        # plan against.
+                        "content": self._observations_block(
+                            observations,
+                            used=len(observations),
+                            budget=self.MAX_TOOL_OBSERVATIONS,
+                        ),
                     }
                 )
                 # A round containing a failed call has already identified a
@@ -2668,12 +2869,22 @@ class Engine:
                 # break does not discard its remaining chance to act.
                 if any(not item.get("ok") for item in round_observations):
                     failed_rounds += 1
+                # CONSECUTIVE all-repeat rounds. Reset by any round that makes a
+                # fresh call, so this counts a no-progress CYCLE and not the
+                # total number of confirmations a round happened to make.
+                if round_observations and all(
+                    item.get("repeat") for item in round_observations
+                ):
+                    repeat_rounds += 1
+                else:
+                    repeat_rounds = 0
                 closure = self._tool_loop_closure(
                     round_observations,
                     len(observations),
                     failed_rounds,
                     self.MAX_TOOL_OBSERVATIONS,
                     self.TOOL_FAILURE_TOLERANCE,
+                    repeat_rounds=repeat_rounds,
                 )
                 if closure is not None:
                     closure_reason = closure
@@ -5778,6 +5989,96 @@ class Engine:
 
         return paths
 
+    def apply_typed_mutation(
+        self,
+        operations: List[Dict[str, Any]],
+        tests: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Run ONE mutation transaction for operations somebody else chose.
+
+        THE SAME TRANSACTION `execute()` RUNS, WITHOUT ITS MODEL LOOP. General
+        HCLI (the browser surface) already has its own loop and its own tool
+        dialect; what it lacks is hands. This is the seam: snapshot -> apply ->
+        pre-mutation proving run -> validate -> accept or roll back, calling the
+        very same private helpers, so patch application, result-file validation,
+        red-before-green, and rollback keep exactly one implementation.
+
+        Returns the verdict rather than raising, because the caller is a chat
+        turn that must be able to say "mutation rejected" without the
+        conversation dying -- and the distinction between PROPOSED, APPLIED,
+        VALIDATED and ACCEPTED is the thing a builder must never blur.
+        """
+        operations = list(operations or [])
+        tests = list(tests or [])
+        if not operations:
+            return {"status": "rejected", "reason": "no operations proposed",
+                    "applied": False, "rolled_back": False}
+
+        # Refuse the same shapes the engine refuses, with the same message, so a
+        # fragment that would not compile in its resulting file is caught before
+        # anything is written.
+        violation = _python_syntax_violation(
+            json.dumps({"kind": "mutation", "operations": operations}),
+            root=self.root)
+        if violation:
+            return {"status": "rejected", "reason": violation,
+                    "applied": False, "rolled_back": False}
+
+        try:
+            paths = self._operation_paths(operations)
+        except Exception as exc:
+            return {"status": "rejected", "reason": f"{type(exc).__name__}: {exc}",
+                    "applied": False, "rolled_back": False}
+
+        snapshot = self._snapshot(paths)
+        before = {str(p): (p.read_text(encoding="utf-8", errors="replace")
+                           if p.is_file() else None) for p in paths}
+        applied = False
+        try:
+            apply_result = self._apply_operations(operations)
+            applied = True
+            pre_validation = None
+            if tests:
+                try:
+                    pre_validation = (
+                        self._run_proving_tests_against_pre_mutation_producers(
+                            snapshot, paths, tests))
+                except Exception as exc:
+                    pre_validation = {
+                        "ok": False,
+                        "reason": f"pre_mutation_exception:{type(exc).__name__}",
+                        "error": str(exc), "checks": []}
+            validation = self._validate(paths, tests, pre_mutation=pre_validation)
+            if apply_result and apply_result.get("files"):
+                validation["files"] = apply_result["files"]
+            ok = bool(validation.get("ok")) if isinstance(validation, dict) else False
+            reason = str((validation or {}).get("reason") or "")
+            # NO_EVIDENCE keeps the mutation, exactly as execute() does: an edit
+            # with no test to prove it is unproven, not wrong.
+            if ok or reason == "NO_EVIDENCE":
+                after = {str(p): (p.read_text(encoding="utf-8", errors="replace")
+                                  if p.is_file() else None) for p in paths}
+                return {
+                    "status": "accepted" if ok else "unproven",
+                    "applied": True, "rolled_back": False,
+                    "validation": validation,
+                    "reason": None if ok else reason,
+                    "diff": _unified_diff(before, after, self.root),
+                    "paths": [str(p) for p in paths],
+                }
+            self._restore(snapshot)
+            return {"status": "rejected", "applied": True, "rolled_back": True,
+                    "validation": validation,
+                    "reason": validation_failure_message(validation),
+                    "paths": [str(p) for p in paths]}
+        except BaseException as exc:
+            if applied:
+                self._restore(snapshot)
+            return {"status": "rejected", "applied": applied,
+                    "rolled_back": applied,
+                    "reason": f"{type(exc).__name__}: {exc}",
+                    "paths": [str(p) for p in paths]}
+
     def _snapshot(
         self,
         paths: Iterable[Path],
@@ -6167,6 +6468,18 @@ class Engine:
 
         container = str(Path(_hcli_pkg.__file__).resolve().parent.parent)
         env["PYTHONPATH"] = container + os.pathsep + str(self.root)
+        # A VALIDATION RUN MUST NOT LEAVE BYTECODE THAT A LATER RUN TRUSTS.
+        # Python invalidates a .pyc on (mtime, size) of its source. Red-before-
+        # green runs the proving test against the RESTORED original, then again
+        # against the mutation -- and a mutation that changes no bytes of length
+        # inside the same mtime second leaves both invariants intact, so the
+        # second run imports bytecode compiled from the FIRST run's source.
+        # Measured exactly: `VALUE = 1` -> `VALUE = 2` (same length, same
+        # second) made a correct mutation fail its own proving test with
+        # "assert 1 == 2", and the engine rolled back a change that was right.
+        # A harness that fabricates model failure is the defect this campaign
+        # keeps finding; here it would silently reject correct work.
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
         return env
 
     def _kill_process_group(self, proc: subprocess.Popen[Any]) -> None:
@@ -6261,7 +6574,7 @@ class Engine:
         if not raw:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6274,14 +6587,14 @@ class Engine:
             except Exception:
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
 
         if not tokens:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6309,7 +6622,7 @@ class Engine:
         else:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6336,7 +6649,7 @@ class Engine:
                     continue
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
             extras.append(tok)
@@ -6345,14 +6658,14 @@ class Engine:
             if len(extras) != 1:
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
             path_token = extras[0]
         elif extras:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6364,7 +6677,7 @@ class Engine:
         except EngineError:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6372,7 +6685,7 @@ class Engine:
             if not wants_pytest:
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
             if not self._pytest_importable():
@@ -6392,7 +6705,7 @@ class Engine:
         if path.suffix != ".py":
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 

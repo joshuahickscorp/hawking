@@ -254,7 +254,12 @@ class TestRootGoalCannotReachWorker(unittest.TestCase):
             phase="running",
             units=units,
             steering=["[knowledge] " + long_goal],
-            char_cap=400,
+            # 700, not 400. The irreducible packet here is ~592 chars, so 400
+            # can only REFUSE -- and a refusal proves nothing about whether the
+            # root goal leaks, which is what this test exists to check. Above
+            # the floor the compaction path actually runs and the assertions
+            # below get to mean something.
+            char_cap=700,
         )
         self.assertNotIn(long_goal, packet.prompt)
         self.assertNotIn("GOAL:", packet.prompt)
@@ -310,9 +315,17 @@ class TestVisibleTruncationOrRefuse(unittest.TestCase):
             phase="running",
             units=units,
             steering=[constraint],
-            char_cap=800,
+            # 1100, not 800. With every droppable section gone the irreducible
+            # packet -- workunit block, headers, the constraint itself -- is
+            # ~1018 chars, so an 800 cap can only ever REFUSE. Refusal is the
+            # contract and its own test
+            # (test_last_resort_slice_is_refused_not_silent) already pins it.
+            # THIS test is about the other property: when truncation does
+            # happen, it is visible rather than silent. That needs a cap above
+            # the floor or it tests the wrong branch.
+            char_cap=1100,
         )
-        self.assertLessEqual(len(packet.prompt), 800)
+        self.assertLessEqual(len(packet.prompt), 1100)
         self.assertIn("CONSTRAINT_MUST_SURVIVE", packet.prompt)
         self.assertNotIn("status=failed", packet.prompt)
         self.assertTrue(packet.truncated)
@@ -569,3 +582,43 @@ class TestPacketDeterminism(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFailureContextIsActionable(unittest.TestCase):
+    """A failed unit's next attempt has to be able to read why it failed.
+
+    Measured on the daemon: a real RED reached the worker as
+    `TEST_FAILED exit_code 1`. The assertion existed in the check record and
+    was cut away twice -- once by the message builder, once here, where a
+    sort_keys dump put `description` and `failed_id` ahead of `error` and then
+    truncated the whole blob at 400 characters.
+    """
+
+    def _prompt(self, ctx):
+        wu = _wu(description="rerun the proving test", failure_context=ctx)
+        return compile_worker_context(
+            wu, _compiled(goal="short task must pass"),
+            phase="running", units={wu.id: wu}, steering=[],
+        ).prompt
+
+    def test_the_error_survives_a_long_sibling_field(self):
+        prompt = self._prompt({
+            "description": "d" * 300,
+            "failed_id": "G003.work.repair.1",
+            "failure_signature": "e" * 64,
+            "status": "failed",
+            "error": ("Deterministic validation failed: failing_checks=["
+                      "{'kind': 'test', 'reason': 'TEST_FAILED', 'output_tail': "
+                      "'E   AssertionError: ValueError not raised'}]"),
+        })
+        self.assertIn("AssertionError: ValueError not raised", prompt)
+
+    def test_key_order_still_does_not_change_the_prompt(self):
+        a = self._prompt({"z": 1, "a": 2, "error": "boom"})
+        b = self._prompt({"error": "boom", "a": 2, "z": 1})
+        self.assertEqual(a, b)
+
+    def test_failure_context_stays_bounded(self):
+        prompt = self._prompt({"error": "x" * 20000, "other": "y" * 20000})
+        line = [l for l in prompt.splitlines() if l.startswith("FAILURE_CONTEXT")][0]
+        self.assertLess(len(line), 1400, "unbounded failure context reached the prompt")

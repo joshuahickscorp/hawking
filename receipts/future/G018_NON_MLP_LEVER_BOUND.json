@@ -1,0 +1,47 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-08T06:25:38Z",
+  "recorded_by": "tools/future/organ_allocation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "complete_ebpw": 3.1393,
+ "components": {
+  "attention_deltanet_q4": {
+   "bits_per_weight": 4.2575,
+   "byte_share_pct": 49.3,
+   "bytes": 5206533080,
+   "ebpw_share": 1.5486,
+   "params": 9783238144
+  },
+  "mlp_affine": {
+   "bits_per_weight": 2.5,
+   "byte_share_pct": 50.7,
+   "bytes": 5347795776,
+   "ebpw_share": 1.5907,
+   "params": 17112760320
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "obligation": "G018",
+ "question": "which non-MLP persistent component is the highest-value next Noetic target, and what does the arithmetic permit?",
+ "schema": "hawking.future.g018_lever_bound.v1",
+ "seal_sha256": "b45099120137be72d0514b2e24b91ac344c00df8cf319990a24698e3316bcff8",
+ "source": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+ "specimen": "qwen3.8-27b-sealed-3.14 (NOETIC_PARENT_A)",
+ "the_sharper_bound": "complete EBPW IS the parameter-weighted mean bits per weight. Reaching <=1.0 therefore requires an average of 1.0000 bits per weight across all 26,895,998,464 parameters. The best-compressed component today is the MLP at 2.5000. So the target is not a reallocation between halves -- it requires beating the campaign's current best rate by 2.5x, EVERYWHERE. G012's statement (zero the MLP and 1.545 remains) is the same fact seen from one side.",
+ "what_this_does_not_say": [
+  "It does not say attention TOLERATES 2.5 bits/weight. That is a capability question and this receipt contains no capability measurement.",
+  "It does not choose the lever. It is the arithmetic a choice must respect.",
+  "Parity is not the target; it is the cheapest large step, and it still leaves 2.5000 EBPW against a 1.0 goal."
+ ],
+ "why_attention_is_the_standing_opportunity": "attention+DeltaNet holds 36.4% of parameters but 49.3% of bytes, because it sits at 4.2575 bits/weight against the MLP's 2.5000 -- 1.70x less compressed. Bringing it to MLP parity needs no new representation class, only applying what already works, and saves 2.15 GB: complete EBPW 3.1393 -> 2.5000.",
+ "zero_cost_bounds": {
+  "zero_attention_and_deltanet_entirely": 1.5907,
+  "zero_the_mlp_entirely": 1.5486
+ }
+}

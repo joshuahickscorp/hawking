@@ -1,0 +1,314 @@
+{
+ "agreement_per_mb_vs_global": {
+  "concordant": 15,
+  "discordant": 6,
+  "kendall_tau": 0.4286
+ },
+ "agreement_per_mb_vs_local": {
+  "concordant": 13,
+  "discordant": 8,
+  "kendall_tau": 0.2381
+ },
+ "agreement_raw_vs_global": {
+  "concordant": 17,
+  "discordant": 4,
+  "kendall_tau": 0.619
+ },
+ "agreement_raw_vs_local": {
+  "concordant": 15,
+  "discordant": 6,
+  "kendall_tau": 0.4286
+ },
+ "applied": {
+  "BASE": 196,
+  "down_proj": 196,
+  "gate_proj": 196,
+  "k_proj": 196,
+  "o_proj": 196,
+  "q_proj": 196,
+  "up_proj": 196,
+  "v_proj": 196
+ },
+ "base_ppl": 4.814402,
+ "base_r4": 0.730769,
+ "base_spec": "q4-g64",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-08T06:32:50Z",
+  "recorded_by": "tools/future/organ_allocation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "cheap_spec": "q3-g64",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "control": "structure is never consulted in producing the measured ordering, so agreement with the deficit ordering is a finding and not an artefact of construction",
+ "dense_parent_capability": {
+  "corpus": "B",
+  "corpus_note": "narrative/historical/biological/culinary/legal; no transformer vocabulary",
+  "distincts": [
+   0.242991,
+   0.256881,
+   0.351852,
+   0.410256,
+   0.429907,
+   0.477064,
+   0.592593,
+   0.59434
+  ],
+  "gen_tokens": 96,
+  "generations": [
+   {
+    "distinct": 0.351852,
+    "n_new": 96,
+    "n_tokens": 108,
+    "prompt": "Describe what a lighthouse keeper does during a winter storm.",
+    "r4": 0.342857,
+    "text": "Describe what a lighthouse keeper does during a winter storm. The lighthouse keeper is a person who is responsible for the lighthouse. The lighthouse is located on a cliff overlooking the sea. The lighthouse is a beacon that is used to guid"
+   },
+   {
+    "distinct": 0.477064,
+    "n_new": 96,
+    "n_tokens": 109,
+    "prompt": "Why did medieval towns build walls, and what ended the practice?",
+    "r4": 0.264151,
+    "text": "Why did medieval towns build walls, and what ended the practice? Also, what is the significance of the wall in the context of the medieval period? Additionally, what is the role of the wall in the context of the modern world?\n\nFurthermore, "
+   },
+   {
+    "distinct": 0.592593,
+    "n_new": 96,
+    "n_tokens": 108,
+    "prompt": "Write a short recipe for lentil soup for four people.",
+    "r4": 0.009524,
+    "text": "Write a short recipe for lentil soup for four people. Include all the ingredients and steps. Make sure to mention the type of lentils used, the type of vegetables, and the type of spices. Also, include a note about the preparation time and "
+   },
+   {
+    "distinct": 0.59434,
+    "n_new": 96,
+    "n_tokens": 106,
+    "prompt": "Explain how photosynthesis turns sunlight into sugar.",
+    "r4": 0.029126,
+    "text": "Explain how photosynthesis turns sunlight into sugar. Photosynthesis is the process by which plants, algae, and some bacteria convert light energy into chemical energy. It is the process by which plants make their own food. Photosynthesis o"
+   },
+   {
+    "distinct": 0.410256,
+    "n_new": 96,
+    "n_tokens": 117,
+    "prompt": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+    "r4": 0.140351,
+    "text": "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total? To solve this problem, we need to find the total number of loaves sold by the baker on Monday and Tuesday. \n\nFirst, we are told that the baker sells 40 loaves on"
+   },
+   {
+    "distinct": 0.242991,
+    "n_new": 96,
+    "n_tokens": 107,
+    "prompt": "What is the difference between a lease and a licence?",
+    "r4": 0.663462,
+    "text": "What is the difference between a lease and a licence? What are the key differences between a lease and a licence? What are the key differences between a lease and a rental agreement? What are the key differences between a lease and a rental"
+   },
+   {
+    "distinct": 0.429907,
+    "n_new": 96,
+    "n_tokens": 107,
+    "prompt": "Name three reasons a bridge might be closed for repair.",
+    "r4": 0.336538,
+    "text": "Name three reasons a bridge might be closed for repair. Also, what is the name of the bridge that is the most famous in the world? Additionally, what is the name of the bridge that is the most famous in the world in the UK? Lastly, what is "
+   },
+   {
+    "distinct": 0.256881,
+    "n_new": 96,
+    "n_tokens": 109,
+    "prompt": "Translate to Spanish: The library opens at nine in the morning.",
+    "r4": 0.54717,
+    "text": "Translate to Spanish: The library opens at nine in the morning. The library is open from 9 to 17:00. The library is closed on Sundays and Mondays. The library is open on weekdays. The library is closed on weekends. The library is open on we"
+   }
+  ],
+  "median_4gram_repeat": 0.3365,
+  "median_distinct_ratio": 0.4299,
+  "n_prompts": 8,
+  "nll": 1.42834,
+  "nll_tokens": 250,
+  "ppl": 4.1718,
+  "ppl_full": 4.1717601740655015,
+  "r4_full": 0.33653846153846156,
+  "r4s": [
+   0.009524,
+   0.029126,
+   0.140351,
+   0.264151,
+   0.336538,
+   0.342857,
+   0.54717,
+   0.663462
+  ],
+  "worst_max_repeat_run": 2
+ },
+ "device": "cpu",
+ "guard_at_start": {
+  "compressor_gb": 0.37,
+  "expected_gb": 8.0,
+  "free_gb": 63.74,
+  "headroom_gb": 55.74,
+  "reasons": [],
+  "reclaimable_gb": 15.49,
+  "resident_rss_gb": 0.0,
+  "residents": 0,
+  "state": "OK",
+  "strictly_free_gb": 48.25,
+  "swap_gb": 5.0,
+  "swapfiles": 5,
+  "wired_gb": 16.27
+ },
+ "nr_not_nx": true,
+ "obligation": "G011",
+ "ordering_by_global_deficit_desc": [
+  "q_proj",
+  "k_proj",
+  "o_proj",
+  "v_proj",
+  "gate_proj",
+  "down_proj",
+  "up_proj"
+ ],
+ "ordering_by_local_deficit_desc": [
+  "k_proj",
+  "q_proj",
+  "o_proj",
+  "v_proj",
+  "down_proj",
+  "gate_proj",
+  "up_proj"
+ ],
+ "ordering_least_to_most_sensitive_per_mb": [
+  "q_proj",
+  "k_proj",
+  "up_proj",
+  "o_proj",
+  "gate_proj",
+  "down_proj",
+  "v_proj"
+ ],
+ "ordering_least_to_most_sensitive_raw": [
+  "q_proj",
+  "k_proj",
+  "o_proj",
+  "up_proj",
+  "gate_proj",
+  "v_proj",
+  "down_proj"
+ ],
+ "question": "which organs actually carry behaviour? one organ dropped to the cheap spec at a time, everything else held at base",
+ "resource": {
+  "compressor_gb_peak": 0.43,
+  "compressor_gb_start": 0.37,
+  "free_gb_end": 78.43,
+  "free_gb_low": 52.81,
+  "free_gb_start": 63.6,
+  "label": "G011_SENS",
+  "peak_unknown_reason": null,
+  "resident_rss_gb_peak": 0.0,
+  "samples": 261,
+  "swapfiles_delta": 0,
+  "swapfiles_end": 5,
+  "swapfiles_start": 5,
+  "wall_s": 559.2
+ },
+ "schema": "hawking.future.g011_organ_sensitivity.v1",
+ "seal_sha256": "5a63cf92de411ce483ba3db74c57f8a830d629f9c80c721505e0061933d8514c",
+ "sensitivity": [
+  {
+   "bytes_saved": 11010048,
+   "delta_ppl": 0.934176,
+   "delta_ppl_per_mb_saved": 0.084848,
+   "delta_r4": 0.055639,
+   "gate_ok": false,
+   "global_deficit": 12.3,
+   "local_deficit": 21.58,
+   "organ": "down_proj",
+   "ppl": 5.748579,
+   "r4": 0.786408
+  },
+  {
+   "bytes_saved": 3670016,
+   "delta_ppl": 0.796016,
+   "delta_ppl_per_mb_saved": 0.216897,
+   "delta_r4": 0.002564,
+   "gate_ok": false,
+   "global_deficit": 19.35,
+   "local_deficit": 22.24,
+   "organ": "v_proj",
+   "ppl": 5.610419,
+   "r4": 0.733333
+  },
+  {
+   "bytes_saved": 11010048,
+   "delta_ppl": 0.671029,
+   "delta_ppl_per_mb_saved": 0.060947,
+   "delta_r4": 0.007095,
+   "gate_ok": false,
+   "global_deficit": 18.37,
+   "local_deficit": 20.16,
+   "organ": "gate_proj",
+   "ppl": 5.485431,
+   "r4": 0.737864
+  },
+  {
+   "bytes_saved": 11010048,
+   "delta_ppl": 0.499783,
+   "delta_ppl_per_mb_saved": 0.045393,
+   "delta_r4": 0.002564,
+   "gate_ok": false,
+   "global_deficit": 9.46,
+   "local_deficit": 11.59,
+   "organ": "up_proj",
+   "ppl": 5.314186,
+   "r4": 0.733333
+  },
+  {
+   "bytes_saved": 7340032,
+   "delta_ppl": 0.383732,
+   "delta_ppl_per_mb_saved": 0.052279,
+   "delta_r4": 0.055639,
+   "gate_ok": false,
+   "global_deficit": 27.29,
+   "local_deficit": 23.66,
+   "organ": "o_proj",
+   "ppl": 5.198134,
+   "r4": 0.786408
+  },
+  {
+   "bytes_saved": 3670016,
+   "delta_ppl": 0.096213,
+   "delta_ppl_per_mb_saved": 0.026216,
+   "delta_r4": -0.140293,
+   "gate_ok": true,
+   "global_deficit": 39.22,
+   "local_deficit": 41.27,
+   "organ": "k_proj",
+   "ppl": 4.910615,
+   "r4": 0.590476
+  },
+  {
+   "bytes_saved": 7340032,
+   "delta_ppl": 0.026108,
+   "delta_ppl_per_mb_saved": 0.003557,
+   "delta_r4": -0.022031,
+   "gate_ok": false,
+   "global_deficit": 48.1,
+   "local_deficit": 38.82,
+   "organ": "q_proj",
+   "ppl": 4.84051,
+   "r4": 0.708738
+  }
+ ],
+ "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+ "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+ "status": "MEASURED",
+ "verdict_sentence": "G011 sensitivity on Qwen--Qwen3-0.6B@c1899de289a0: crushing one organ at a time from q4-g64 to q3-g64. Least to most sensitive by raw ppl delta: q_proj, k_proj, o_proj, up_proj, gate_proj, v_proj, down_proj. Global structural prior would predict q_proj, k_proj, o_proj, v_proj, gate_proj, down_proj, up_proj (tau 0.619); local anatomy would predict k_proj, q_proj, o_proj, v_proj, down_proj, gate_proj, up_proj (tau 0.4286).",
+ "weaker_than_it_looks": [
+  "One specimen, one perturbation size (base -> cheap), one direction.",
+  "Sensitivity measured at ONE point is a local slope, not a curve; an organ flat here may cliff at a deeper spec.",
+  "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU fp32 -- deterministic given the weights, but not robust to a different prompt set."
+ ]
+}

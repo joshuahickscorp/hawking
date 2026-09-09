@@ -1,0 +1,30 @@
+{
+  "obligation": "HCLI-ISOLATION",
+  "scope": "396 files, ~3270 import statements, AST-parsed",
+  "third_party": "small and almost entirely soft: numpy/tokenizers/transformers are all try-guarded, pytest is 100% confined to test files, and there is NO mlx or mlx_lm import anywhere -- MLX is driven by shelling out to a binary, not imported in process. prompt_toolkit is the only hard third-party import, and only for the REPL.",
+  "the_real_coupling": {
+    "mechanism_1": "18 distinct dotted tools.* imports",
+    "mechanism_2": "sys.path hacks: hcli inserts tools/future onto sys.path then does bare `import organ_allocation`. Same coupling, disguised as a local import. 3 production sites plus ~15 in tests.",
+    "widest": "tools.verify.status_causality, imported by all 8 agentos *_gate.py files"
+  },
+  "latent_bug_found": "All 8 gates do `sc.emit = emit` -- assigning over a SHARED module's global. That is not sharing a utility, it is whichever gate ran last winning. No test exercises two gates in one process, so it is latent rather than observed. Flagged, not fixed: out of scope here and it deserves a real seam (an injected callback) rather than a quick patch.",
+  "the_one_clean_subsystem": "backends.py. All four RuntimeBackend subclasses -- llama-server, mlx_lm.server, OpenAI-compatible HTTP, and the Rust native binary -- are wired through one classify_backend factory with live non-test callers. This is the only place in the pass where the campaign's usual registered-but-unreachable pattern did NOT appear, and all three required binaries are present on this host.",
+  "structural": "hcli/paths.py defines repo root by the presence of tools/headless or crates -- sibling directories hcli does not own. hcli's notion of its own root depends on things outside it, which is what would block dropping it into another tree.",
+  "verdicts": {
+    "ABSORB": [
+      "the 3 bare-name sys.path shims",
+      "tools.accelerator.* (5 modules, all CLI command bodies living outside the CLI)",
+      "6 single-use tools.* modules"
+    ],
+    "BOUND": [
+      "tools.verify.status_causality (needs a seam before the monkeypatching is safe to depend on)",
+      "tools.odyssey* ModelLake subsystem",
+      "paths.py repo-root detection"
+    ],
+    "KEEP": [
+      "the 4 runtime backends -- already correctly isolated behind an ABC",
+      "machine_genome.json -- a data contract, not a code import"
+    ]
+  },
+  "my_own_defect_this_pass_found": "The --model fix I landed an hour earlier had a residual gap. resolve_model() returns whatever _info_from_path gives, INCLUDING None, so a typo or a path relative to the caller's shell (the worker runs with cwd=workspace) silently yielded no model and deferred the failure into a backend. Worse, my regression test only grepped _spawn_worker's SOURCE for a string -- the same source-text testing I criticise elsewhere. Now validated at start_resident with a behavioural test and a negative control."
+}

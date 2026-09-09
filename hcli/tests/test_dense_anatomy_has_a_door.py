@@ -36,15 +36,23 @@ def _reg():
 
 
 def test_a_dense_anatomy_tool_is_reachable_at_all():
-    names = {t["name"] for t in _reg().discover()}
+    # A dense anatomy is reachable as odyssey.read op=dense_anatomy after the
+    # surface consolidation. The door still exists; it moved.
+    names = _reg().capability_names()
     assert "odyssey.dense_anatomy" in names, (
         "a round that correctly diagnoses 'this owes a DENSE anatomy' has no tool to make one")
 
 
 def test_it_refuses_a_MoE_body_by_pointing_at_the_other_tool():
     """The two tools must name each other, or a round bounces between them."""
-    spec = next(t for t in _reg().discover() if t["name"] == "odyssey.dense_anatomy")
-    assert "odyssey.anatomy" in spec["description"], spec["description"]
+    # The description that must point at the other tool now belongs to the
+    # merged door that carries the op.
+    reg = _reg()
+    spec = next(t for t in reg.discover()
+                if t["name"] == "odyssey.read"
+                or "odyssey.dense_anatomy" in (t.get("aliases") or []))
+    blob = spec["description"] + " " + " ".join(spec.get("aliases") or [])
+    assert "odyssey.anatomy" in blob, blob
 
 
 def test_the_guard_runs_BEFORE_the_body_is_touched():

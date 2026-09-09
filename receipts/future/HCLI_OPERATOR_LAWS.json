@@ -1,0 +1,62 @@
+{
+  "schema": "hcli.operator_laws.v1",
+  "purpose": "Compact durable identity for the expensive lessons of the HCLI operator campaign (S033-S036). Carry the Law, not the story that created it -- but keep the evidence ref so the Law can be re-checked, never blindly trusted.",
+  "laws": [
+    {
+      "id": "FALSE_AFFORDANCE",
+      "law": "An advertised capability with no reachable implementation is a bug, not a feature. A flag parsed and never read, a tool registered with no call site, a menu shape that disagrees with the schema, a template slot left empty -- each makes correct action look like model failure.",
+      "evidence": ["hcli/cli.py --max-cycles (zero readers)", "capability_reachability wrapper-dispatch blind spot", "chat_tools fs.search query-vs-pattern"]
+    },
+    {
+      "id": "READ_WHICH_CONTRACT",
+      "law": "Before blaming a body, confirm it was shown a fair contract: system message present, tools declared in the artifact's own slot, dialect it was trained on, schema its dialect can express. sealed-3.14 reached for `shell` because its tools slot was empty; it emitted \"200\" because XML cannot express an integer. Every apparent incapacity this campaign investigated was the lab.",
+      "evidence": ["hcli/hawking_native.py tools slot", "hcli/chat_tools.py coerce_arguments", "receipts/future/AUTONOMY_PROGRESSION.json"]
+    },
+    {
+      "id": "STALE_BYTECODE_ROLLBACK",
+      "law": "Python invalidates a .pyc on (mtime, size). A same-length source change inside one mtime second leaves both intact, so a validation re-run imports the OLD bytecode. Red-before-green rolled back a CORRECT mutation this way. Validation subprocesses must set PYTHONDONTWRITEBYTECODE.",
+      "evidence": ["hcli/engine.py _test_subprocess_env"]
+    },
+    {
+      "id": "CWD_IS_NOT_ROOT",
+      "law": "A preflight or tool that resolves relative paths against the process cwd checks the wrong tree from any surface not sitting in the repo -- and silently passes. Anchor to the engine root explicitly.",
+      "evidence": ["hcli/engine.py _python_syntax_violation root="]
+    },
+    {
+      "id": "SWALLOWED_EXCEPTION_HIDES_BEHIND_A_PLAUSIBLE_CONSTANT",
+      "law": "A bare `except` that returns a fallback hides a real break when the fallback happens to equal the right answer. context_budget.resolve is keyword-only; a positional call raised and returned a fallback that matched. Make fallbacks deliberately implausible so the next failure surfaces.",
+      "evidence": ["hcli/serve.py _context_window _WINDOW_UNKNOWN"]
+    },
+    {
+      "id": "CHILD_PROCESS_LEAK",
+      "law": "A server that reaps its child in a `finally` leaks it on SIGTERM, because the default handler skips finally. 11 orphaned model servers held ~7 GB of swap. Handle SIGTERM/SIGHUP/SIGINT explicitly.",
+      "evidence": ["hcli/serve.py signal handler", "swap 9.7GB -> 2.5GB on reap"]
+    },
+    {
+      "id": "UNTESTED_FUNCTION_IS_UNTESTED",
+      "law": "A load-bearing function with no caller in the suite is untested by definition. system_block referenced two undefined names and 60 tests passed because none called it. A green suite around an uncalled function proves nothing about it.",
+      "evidence": ["hcli/tests/test_builder_authority.py TestTheContractItselfIsExercised"]
+    },
+    {
+      "id": "A_CHECK_THAT_CANNOT_DISTINGUISH_PROVES_NEITHER",
+      "law": "When two mechanisms could each satisfy an assertion, a test that cannot tell them apart proves neither. The authority mutation-check passed on the engine gate while claiming to prove the menu gate. Separate the gates, assert the specific reason.",
+      "evidence": ["hcli/tests/test_builder_authority.py two-gate separation"]
+    },
+    {
+      "id": "PROCESS_COMPLETION_IS_NOT_OBJECTIVE_COMPLETION",
+      "law": "A valid envelope, a zero exit, a resolved schema -- none means the objective was met. Keep PROPOSED, APPLIED, VALIDATED, ACCEPTED distinct; a rejected mutation is 'rejected', an untested edit is 'unproven', never 'fixed'.",
+      "evidence": ["hcli/engine.py apply_typed_mutation verdicts", "S033 s6"]
+    },
+    {
+      "id": "STALL_IS_A_SIGNAL_NOT_A_TERMINAL",
+      "law": "No frontier movement means change method, not halt-and-wait-for-human. The stall detector and the frontier scheduler existed and never spoke; a stall demanded a person while another frontier sat READY. Consult the scheduler on stall.",
+      "evidence": ["hcli/mission.py _frontier_replan"]
+    }
+  ],
+  "capability_frontier": {
+    "owned": ["INSPECT", "RESEARCH", "BUILD", "TEST", "PROFILE", "PROCESS", "DEBUG", "RECOVER"],
+    "not_yet_owned": ["REVERSE (header-ID only, no disasm)", "FUZZ (missing)", "FORENSICS (primitives, uncomposed)", "REPORT (present, two paths)"],
+    "walled_off_from_the_model": ["JOBS (BackgroundJobStore, CLI-only)", "PROFILE live-trigger (prefill_profile/wall_profile run but no tool)"],
+    "biggest_daemon_gap_now": "the stall->replan loop is wired for the mission daemon but the browser/serve path does not run through the resident supervisor, so its long-run continuity is checkpoint/resume, not autonomous method-switching"
+  }
+}

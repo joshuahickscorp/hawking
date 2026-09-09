@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. Metal via mlx, with every timed region forced through mx.eval() -- mlx is lazy and an unevaluated forward would time graph construction, not execution. The first repeat is discarded as kernel-compile warm-up. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 67.0047,
+  "decode_tps_spread": {
+    "in_run_order": [
+      67.0047,
+      67.0344,
+      66.7657
+    ],
+    "max": 67.0344,
+    "median": 67.0047,
+    "min": 66.7657,
+    "monotone_drift": "NONE",
+    "spread_pct": 0.4
+  },
+  "device": "gpu (Metal via mlx)",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": true,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "mlx does not expose a per-op GPU/CPU split; the whole forward ran on Metal, which is what `device` records",
+  "measurement_contract": {
+    "backend_device": "gpu (Metal via mlx)",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 0.966,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+    "warmup_repeats_discarded": 1
+  },
+  "nr": "source body as stored on disk, unmodified; mlx native dtype on Metal",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 1706.4356,
+  "prefill_tps_spread": {
+    "drift_note": "the series only moves one way: this is drift, not scatter, and a single-order comparison against it is invalid -- reverse the order or pair the arms",
+    "in_run_order": [
+      1706.615,
+      1706.4356,
+      1699.7242
+    ],
+    "max": 1706.615,
+    "median": 1706.4356,
+    "min": 1699.7242,
+    "monotone_drift": "FALLING",
+    "spread_pct": 0.41
+  },
+  "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 2.8685,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 0.9013
+  }
+}

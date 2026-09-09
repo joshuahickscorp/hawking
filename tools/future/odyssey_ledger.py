@@ -58,15 +58,40 @@ def measured(rec: dict, axis: str, value: Any, receipt: str) -> None:
                          "receipt": receipt}
 
 
-def refused(rec: dict, axis: str, reason: str) -> None:
-    """Record why this axis cannot exist here. The reason must name a mechanism."""
+# A refusal that names no way back is permanent by accident. Measured across the
+# live ledger: 142 refusals, ZERO placeholders -- every one names a real
+# mechanism -- and 121 of them state nothing that would ever cause the cell to be
+# revisited. Nothing distinguishes those from a settled negative, so most of the
+# gap between 24.0% MEASURED and 60.2% RESOLVED is unrevisitable by any stated
+# condition.
+#
+# This does not become REQUIRED here. Making it required would reject the next
+# refusal an autonomous round writes, mid-streak, for a field the round has never
+# been asked for -- turning an accounting improvement into a round failure
+# attributable to me. It is accepted, stored and audited instead, so the gap can
+# close going forward and be measured while it does.
+def refused(rec: dict, axis: str, reason: str, reopen_when: str | None = None) -> None:
+    """Record why this axis cannot exist here, and what would make it exist.
+
+    `reason` must name a MECHANISM. `reopen_when` should name the condition that
+    would make this measurable -- re-acquiring a body in float, a runtime that
+    supports the architecture, a machine with the memory. It is optional today
+    and recorded when given.
+    """
     if axis not in AXES:
         raise LedgerError(f"{axis} is not an Odyssey axis; expected one of {AXES}")
     if not reason or len(reason) < 20:
         raise LedgerError(
             f"{rec['slug']}/{axis}: refusal needs a mechanism, not {reason!r}. "
             f"'unsupported' or 'n/a' is how an unmeasured axis disguises itself as a finding.")
-    rec["axes"][axis] = {"state": REFUSED, "value": None, "reason": reason, "receipt": None}
+    if reopen_when is not None and len(str(reopen_when).strip()) < 12:
+        raise LedgerError(
+            f"{rec['slug']}/{axis}: reopen_when {reopen_when!r} names no condition. "
+            f"Omit it rather than recording a word that cannot be checked.")
+    cell = {"state": REFUSED, "value": None, "reason": reason, "receipt": None}
+    if reopen_when:
+        cell["reopen_when"] = str(reopen_when).strip()
+    rec["axes"][axis] = cell
 
 
 def progress(ledger: dict) -> dict:

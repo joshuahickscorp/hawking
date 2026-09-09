@@ -1,0 +1,47 @@
+{
+ "obligation": "G006",
+ "round": 24,
+ "verdict": "NO CREDIT -- and it CORRECTS my round-22 attribution, in the direction against me.",
+ "what_it_did": {
+  "tools_used": [
+   "campaign.guard",
+   "fs.read",
+   "lake.census",
+   "odyssey.dense_anatomy",
+   "odyssey.ledger"
+  ],
+  "observations": "6 ok, 0 failed, 6 tool rounds, closure bounded_observation_round",
+  "budget": "last call 239 tokens of 3866 granted, finish=stop, 1 structured attempt -- no budget trouble",
+  "science": "dense anatomy on Qwen3-Embedding-0.6B: k_proj 41.09% deficit (0.0225 SE), q_proj 39.19% (0.0151), o_proj 23.53% (0.0111) -- the same numbers round 22 produced, independently reproduced",
+  "and_then": "ended with 'Next: record k_proj 41.09 with a receipt'. record_measurement was never called. MEASURED 94 before, 94 after."
+ },
+ "i_called_round_22_a_model_failure_and_that_was_wrong": {
+  "what_i_checked": "that the write door works -- verified on a scratch ledger copy, both the value and refusal paths. That check was sound and the door does work.",
+  "what_i_did_not_check": "whether the round KNOWS HOW MANY TURNS IT HAS. It does not. The tool-loop prompt says 'Results come back as OBSERVATIONS and you are asked again' and never says how often. The budget is stated exactly once -- in the final no-tools turn, as TOOL BUDGET EXHAUSTED, after it is gone.",
+  "so": "a round that measures, reports, and says 'Next: record ...' is reasoning correctly about an open horizon. It is not ignoring the rule that a measurement must be recorded; it is deferring to an iteration the harness let it believe existed. Two rounds did the identical thing, which I read as the model repeating an error and is better read as the harness repeating an omission.",
+  "revised_attribution": {
+   "round_22": "HARNESS (affordance)",
+   "round_24": "HARNESS (affordance)"
+  },
+  "why_this_matters": "I had written that round 22 was 'the first clean model failure' and that it made attribution HARNESS 17 | CLAUDE 3 | MODEL 3. That was the flattering direction for the harness and for my own analysis. Corrected: HARNESS 19 | CLAUDE 3 | MODEL 2 | INVALID 1 across 25 rounds."
+ },
+ "the_repair": {
+  "what": "_observations_block now carries the horizon on EVERY turn -- 'N of M tool observations used; K remain' -- and on the last usable turn says plainly: 'THIS IS YOUR LAST CHANCE TO ACT. Anything you plan to do next will not happen -- do it now or it is lost.'",
+  "where": "hcli/engine.py, both the block and the loop call site",
+  "why_general": "it applies to every round and every task, not to the recording step. The harness knows the number and was not saying it."
+ },
+ "verification": {
+  "unit": "hcli/test_round_knows_its_budget.py -- PASS",
+  "call_site_asserted": "the test greps engine.py for used=len(observations) and budget=self.MAX_TOOL_OBSERVATIONS. A block that CAN carry the horizon and is never given it is the same defect wearing a fix, and every helper-only test in this campaign passed while its feature stayed unreachable.",
+  "mutations": [
+   "call site stops passing the numbers -> FAILED",
+   "last-chance branch disabled -> FAILED (after the assertion was tightened)",
+   "last-chance fires on every turn -> FAILED, it must not cry wolf"
+  ],
+  "a_mutation_passed_first": "disabling the last-chance branch initially PASSED, because the ordinary countdown string '7 of 8 ... 1 remain.' contains both '1' and 'remain' -- the assertion matched the wrong sentence. Tightened to require the warning itself.",
+  "regression": "23 passed across test_engine_tool_loop and test_structured_output_retry; the doomed-retry guard still passes",
+  "markers": "grep 0"
+ },
+ "streak": 0,
+ "scar": "A HORIZON THE HARNESS KNOWS AND DOES NOT SAY IS A HORIZON THE ROUND CANNOT PLAN AGAINST."
+}

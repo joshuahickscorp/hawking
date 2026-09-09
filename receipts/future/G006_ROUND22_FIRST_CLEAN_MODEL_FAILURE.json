@@ -1,0 +1,48 @@
+{
+ "obligation": "G006",
+ "round": 22,
+ "verdict": "SUPERSEDED -- see SUPERSEDED. Originally recorded as the first clean model failure; that attribution was wrong.",
+ "why_this_round_is_different": "every previous round in this streak failed on the instrument or the launch. This one was given everything: the correct interpreter, an 8-observation budget, a working dense_anatomy (numpy present for the first time), a reachable write door, and a census that no longer confuses a value with an owed cell. It used 5 of 8 observations and stopped with 679 of 3866 tokens granted -- finish_reason 'stop', not truncation. Nothing was withheld from it.",
+ "what_it_actually_did": {
+  "tools_used": [
+   "campaign.guard",
+   "fs.read",
+   "odyssey.dense_anatomy",
+   "odyssey.ledger"
+  ],
+  "tool_rounds": 6,
+  "observations_ok": 5,
+  "observations_failed": 1,
+  "science": "odyssey.dense_anatomy RAN for the first time in this streak and returned real structure on Qwen3-Embedding-0.6B: k_proj deficit 41.09% (stderr 0.0225), q_proj 39.19% (0.0151), o_proj 23.53% (0.0151). It read the ordering correctly -- k > q > o, all above 20% -- and drew a hypothesis from it.",
+  "guard": "OK, free 60.94 GiB, headroom 59.84 against 1.1 expected -- 54x what it needed"
+ },
+ "the_two_failures": {
+  "1_did_not_record": "odyssey.record_measurement was never called. The measurement exists in the round's own report and nowhere else. MEASURED was 94 before this round and 94 after. The challenge states the rule in its own text: 'a measurement you do not RECORD does not exist.' The door was open and it walked past.",
+  "2_the_report_collapsed": "the closing summary degenerated: 'the 1.1 GiB Qwen3-Embedding-0.6B is the 1.1 GiB Qwen3-Embedding-0.6B', then the phrase repeats until the token budget ends. finish_reason 'stop' at 679 of 3866 tokens, so this is generation collapse, not a cut-off."
+ },
+ "classification": "F -- structured action. It had the evidence and did not take the recording action.",
+ "attribution": "MODEL",
+ "why_that_matters": "G029's terminal defines PROGRESS as a round whose failure is attributed to the MODEL, pass or fail, because that is the only outcome that moves the experiment. Before this round the attribution was HARNESS 17 | CLAUDE 3 | MODEL 2 | INVALID 1. This is the third MODEL data point in 24 rounds and the cleanest of them: the previous two came from rounds where the instrument was still under repair.",
+ "the_uncomfortable_symmetry": "the resident produced VISIBLY COLLAPSED TEXT in production -- a phrase repeating until the budget ran out. That is precisely the failure mode G020's diversity axis exists to detect, and G020 established today that the axis was VACUOUS on a specimen whose dense parent repeats. The gate is measuring a real phenomenon: the campaign has now observed it in its own resident, not only in compressed arms.",
+ "no_repair_is_indicated": "there is no instrument defect to fix here, and inventing one would be target engineering. The correct response under G029 is to RERUN THE SAME CHALLENGE UNCHANGED and see whether the failure repeats on an unchanged instrument -- which is what made round 11 the strongest model evidence in the campaign.",
+ "streak": 0,
+ "scar": "THE ROUND MEASURED, AND THEN TALKED INSTEAD OF WRITING. An open door is not a taken action.",
+ "the_attribution_was_checked_not_assumed": {
+  "why": "attributing round 22's failure to the MODEL only stands if odyssey.record_measurement actually works. If the door were broken, this would be another harness round and the attribution would be wrong in the direction that flatters the harness.",
+  "probe": "a scratch COPY of the ledger under receipts/future/, exercised through the registered tool, then deleted. The real ledger was never a target.",
+  "results": {
+   "refusal_path": "gpu OWED -> REFUSED with a mechanism, ok=True",
+   "value_path": "tps OWED -> MEASURED with value 12.34 and a receipt path, ok=True",
+   "real_ledger": "gpu still OWED -- untouched",
+   "guard": "a first attempt against a path in the session scratchpad was correctly REFUSED: 'path is outside the AgentOS write roots'. The write confinement is live."
+  },
+  "conclusion": "the door is open, functional on both the value and refusal paths, and confined to the write partition. Round 22 measured real structure and walked past it. The MODEL attribution stands."
+ },
+ "SUPERSEDED": {
+  "by": "receipts/future/G006_ROUND24_THE_ROUND_DID_NOT_KNOW_ITS_HORIZON.json",
+  "what_was_wrong": "this receipt attributes the failure to the MODEL. It verified that the write door works and did not check whether the round knows how many turns it has. It does not -- the budget is stated once, after it is gone.",
+  "revised_attribution": "HARNESS (affordance)",
+  "what_survives": "the write-door probe is still valid: both paths work and the real ledger was untouched. The science the round produced is still real. Only the attribution changes.",
+  "why_left_in_place": "a superseded receipt is not deleted. The campaign's rule is that a wrong conclusion is recorded as superseded with its reason, so the reasoning that produced it stays auditable."
+ }
+}

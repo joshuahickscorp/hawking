@@ -101,10 +101,19 @@ def test_a_failing_tool_is_an_observation_not_an_exception():
 
 
 def test_the_catalog_tells_the_model_the_arguments_not_just_the_names():
+    """The point is the ARGUMENTS, not which name carries them.
+
+    After the surface consolidation the filesystem reads live behind one `fs`
+    door, so the signature to check is that door's. This is the assertion that
+    caught the consolidation shipping `fs(op*:string)` with every argument
+    hidden -- keep it pointed at whatever name currently owns the capability.
+    """
     catalog = Engine._tool_catalog(_registry())
-    assert "fs.list(" in catalog
-    line = next(l for l in catalog.splitlines() if l.startswith("fs.search("))
-    assert "pattern*:string" in line, "required marker missing"
+    assert "fs(" in catalog
+    line = next(l for l in catalog.splitlines() if l.startswith("fs("))
+    assert "op*:string" in line, "required marker missing on the op selector"
+    assert "pattern:string" in line, "the search argument vanished from the signature"
+    assert "path:string" in line, "the read argument vanished from the signature"
     assert "root:string" in line and "root*" not in line, "optional marked required"
 
 
@@ -116,7 +125,9 @@ def test_observation_round_catalog_is_alias_aware_and_focused():
         focus="list the python files in the hcli directory",
     )
     assert len(focused) < len(full) // 2, (len(full), len(focused))
-    assert "fs.list|filesystem.list" in focused
+    # The merged door advertises every vocabulary it absorbed, so the alias
+    # join is now wider than the two names this once pinned.
+    assert "fs|" in focused and "filesystem.list" in focused and "fs.list" in focused
     assert "git.checkout-safe" not in focused  # destructive capability is opt-in
     assert "git.checkout/revert-safe" not in focused  # slash alias stays callable but not model-facing
     assert "odyssey:" not in focused
@@ -133,7 +144,10 @@ def test_compact_catalog_expands_the_domain_selected_by_the_goal():
     )
     assert "odyssey:" in catalog
     assert "gravity:" in catalog
-    assert "odyssey: " in catalog and "status()" in catalog
+    # odyssey.status is an op on the merged read door now; the domain must
+    # still surface, and the op must still be nameable from the catalog.
+    assert "odyssey: " in catalog
+    assert "status" in catalog
 
 
 def test_tools_catalog_reveals_a_focused_signature_without_running_it():
@@ -142,7 +156,8 @@ def test_tools_catalog_reveals_a_focused_signature_without_running_it():
 
     assert result.ok, result.error
     names = {item["name"] for item in result.value["matches"]}
-    assert "fs.list" in names
+    aliases = {a for item in result.value["matches"] for a in (item.get("aliases") or [])}
+    assert "fs" in names or "fs.list" in names | aliases
     assert result.value["provenance"] == "hcli.tool_registry.ToolRegistry.describe"
 
 

@@ -1,0 +1,486 @@
+{
+  "authority": "HCLI single writer; verifier decides target status",
+  "best_candidate_id": "O003-q3-g64-experts",
+  "budget": {
+    "max_evaluations": 8,
+    "used": 8
+  },
+  "candidate_space": {
+    "O003-outlier0.005-g128": {
+      "expected_effect": "test the outlier0.005-g128 representation frontier (no uniform precision)",
+      "id": "O003-outlier0.005-g128",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "outlier0.005-g128",
+      "specimen": "O003"
+    },
+    "O003-outlier0.005-g64": {
+      "expected_effect": "test the outlier0.005-g64 representation frontier (no uniform precision)",
+      "id": "O003-outlier0.005-g64",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "outlier0.005-g64",
+      "specimen": "O003"
+    },
+    "O003-outlier0.01-g128": {
+      "expected_effect": "test the outlier0.01-g128 representation frontier (no uniform precision)",
+      "id": "O003-outlier0.01-g128",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "outlier0.01-g128",
+      "specimen": "O003"
+    },
+    "O003-outlier0.02-g128": {
+      "expected_effect": "test the outlier0.02-g128 representation frontier (no uniform precision)",
+      "id": "O003-outlier0.02-g128",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "outlier0.02-g128",
+      "specimen": "O003"
+    },
+    "O003-q2-g128-experts": {
+      "expected_effect": "test q2 / group128 storage frontier",
+      "id": "O003-q2-g128-experts",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q2-g128-experts",
+      "specimen": "O003"
+    },
+    "O003-q2-g64-experts": {
+      "expected_effect": "test q2 / group64 storage frontier",
+      "id": "O003-q2-g64-experts",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q2-g64-experts",
+      "specimen": "O003"
+    },
+    "O003-q3-g64-experts": {
+      "expected_effect": "test q3 / group64 storage frontier",
+      "id": "O003-q3-g64-experts",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q3-g64-experts",
+      "specimen": "O003"
+    },
+    "O003-q4-g64-experts": {
+      "expected_effect": "test q4 / group64 storage frontier",
+      "id": "O003-q4-g64-experts",
+      "mutation": "initial_representation",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q4-g64-experts",
+      "specimen": "O003"
+    }
+  },
+  "cost": {
+    "candidate_evaluations": 8,
+    "resource_cost": {},
+    "verification_wall_s": 0.0,
+    "wall_s": 158.241
+  },
+  "created_at": 1788710766.339815,
+  "frontier": [
+    "O003-q4-g64-experts",
+    "O003-q3-g64-experts",
+    "O003-q2-g64-experts",
+    "O003-outlier0.005-g128",
+    "O003-outlier0.01-g128",
+    "O003-outlier0.02-g128",
+    "O003-outlier0.005-g64",
+    "O003-q2-g128-experts"
+  ],
+  "iterations": [
+    {
+      "candidate": {
+        "expected_effect": "test q4 / group64 storage frontier",
+        "id": "O003-q4-g64-experts",
+        "mutation": "initial_representation",
+        "parent_id": null,
+        "representation_class": "candidate",
+        "spec": "q4-g64-experts",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-q3-g64-experts",
+        "reason": "capability signal preserved; descend bits/group for information gain"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": true,
+        "capability_status": "CANDIDATE_PASS",
+        "complete_accounting": true,
+        "complete_ebpw": 4.379732983041223,
+        "complete_ebpw_measured": true,
+        "execution_complete": true,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9958598669008192,
+          "magnitude_ratio": 1.000857686262531,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 8982644992,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "67e6dfa7de81c31775dcbcf375307ae6ce3764d84310f2d854faf5990925ff0c",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 16.184
+      },
+      "wall_s": 0.000239
+    },
+    {
+      "candidate": {
+        "expected_effect": "test q3 / group64 storage frontier",
+        "id": "O003-q3-g64-experts",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-q4-g64-experts",
+        "representation_class": "candidate",
+        "spec": "q3-g64-experts",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-q2-g64-experts",
+        "reason": "capability signal preserved; descend bits/group for information gain"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": true,
+        "capability_status": "CANDIDATE_PASS",
+        "complete_accounting": true,
+        "complete_ebpw": 3.5024078020482476,
+        "complete_ebpw_measured": true,
+        "execution_complete": true,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9820308605925314,
+          "magnitude_ratio": 1.008020833881508,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 7183288576,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "83785698c9d8d515aab77f5f5d146da489f666e72a974772edb8cad2c5105089",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 12.907
+      },
+      "wall_s": 9.9e-05
+    },
+    {
+      "candidate": {
+        "expected_effect": "test q2 / group64 storage frontier",
+        "id": "O003-q2-g64-experts",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-q3-g64-experts",
+        "representation_class": "candidate",
+        "spec": "q2-g64-experts",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-q2-g128-experts",
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "CAPABILITY_LOSS",
+        "complete_accounting": true,
+        "complete_ebpw": 2.6250826210552725,
+        "complete_ebpw_measured": true,
+        "execution_complete": true,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9241765213368536,
+          "magnitude_ratio": 1.0234841571352207,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 5383932160,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "aa7621467480ea0709f464c0a7709fa39c8dd2c625e60fb44fb1b3a75dfa5f70",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 12.479
+      },
+      "wall_s": 0.0001
+    },
+    {
+      "candidate": {
+        "expected_effect": "test q2 / group128 storage frontier",
+        "id": "O003-q2-g128-experts",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-q2-g64-experts",
+        "representation_class": "candidate",
+        "spec": "q2-g128-experts",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-outlier0.005-g128",
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "CAPABILITY_LOSS",
+        "complete_accounting": true,
+        "complete_ebpw": 2.4057513258070284,
+        "complete_ebpw_measured": true,
+        "execution_complete": true,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9144634333444042,
+          "magnitude_ratio": 1.041783502313356,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 4934093056,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "9893894e8e2b4fa82d21d95e5bf1cf7920e3e62a14d0a29b8d4ad8f33aed0afc",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 12.423
+      },
+      "wall_s": 9.7e-05
+    },
+    {
+      "candidate": {
+        "expected_effect": "test the outlier0.005-g128 representation frontier (no uniform precision)",
+        "id": "O003-outlier0.005-g128",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-q2-g128-experts",
+        "representation_class": "candidate",
+        "spec": "outlier0.005-g128",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-outlier0.01-g128",
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "CAPABILITY_LOSS",
+        "complete_accounting": true,
+        "complete_ebpw": 2.541876483857741,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9270089101909877,
+          "magnitude_ratio": 1.0175871935653988,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 5213279932,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "803cbc292489cd03d6ef8974ea77fff2b45304a58557a73613918163c9669cda",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 25.704
+      },
+      "wall_s": 9.2e-05
+    },
+    {
+      "candidate": {
+        "expected_effect": "test the outlier0.01-g128 representation frontier (no uniform precision)",
+        "id": "O003-outlier0.01-g128",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-outlier0.005-g128",
+        "representation_class": "candidate",
+        "spec": "outlier0.01-g128",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-outlier0.02-g128",
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "CAPABILITY_LOSS",
+        "complete_accounting": true,
+        "complete_ebpw": 2.6815461526968893,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9329704316194259,
+          "magnitude_ratio": 1.006389691029325,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 5499736448,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "e3e4f0d490bdd45a97e67c14fc6b169a809cb966f3d93a6f608752a8aab6d3db",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 26.194
+      },
+      "wall_s": 9.1e-05
+    },
+    {
+      "candidate": {
+        "expected_effect": "test the outlier0.02-g128 representation frontier (no uniform precision)",
+        "id": "O003-outlier0.02-g128",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-outlier0.01-g128",
+        "representation_class": "candidate",
+        "spec": "outlier0.02-g128",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": "O003-outlier0.005-g64",
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "CAPABILITY_LOSS",
+        "complete_accounting": true,
+        "complete_ebpw": 2.9597417064021045,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9407214961236701,
+          "magnitude_ratio": 0.9939929060721291,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 6070303628,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "934413af1041405b8b42ae9602cb02a26b402cbbc9ffc11ff190bd3aa5ee6973",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 26.189
+      },
+      "wall_s": 9e-05
+    },
+    {
+      "candidate": {
+        "expected_effect": "test the outlier0.005-g64 representation frontier (no uniform precision)",
+        "id": "O003-outlier0.005-g64",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O003-outlier0.02-g128",
+        "representation_class": "candidate",
+        "spec": "outlier0.005-g64",
+        "specimen": "O003"
+      },
+      "decision": {
+        "next_candidate_id": null,
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "CAPABILITY_LOSS",
+        "complete_accounting": true,
+        "complete_ebpw": 2.761207779105985,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": true,
+          "direction_similarity": 0.9330543661429971,
+          "magnitude_ratio": 1.0073766769396493,
+          "reason": "measured magnitude ratio",
+          "verdict": "PASS"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 5663119036,
+        "receipt": null,
+        "reject_reasons": [],
+        "resource_measurements": null,
+        "source_sha256": "eae988543f552a24a45cc68b5a412a195495e540a0607314462b961e58b1f394",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 26.161
+      },
+      "wall_s": 8.6e-05
+    }
+  ],
+  "nr": {
+    "current_candidate_id": "O003-outlier0.005-g64",
+    "release_verified": false,
+    "released_candidate_ids": [
+      "O003-q4-g64-experts",
+      "O003-q3-g64-experts",
+      "O003-q2-g64-experts",
+      "O003-q2-g128-experts",
+      "O003-outlier0.005-g128",
+      "O003-outlier0.01-g128",
+      "O003-outlier0.02-g128"
+    ]
+  },
+  "schema": "hawking.hcli.odyssey.gravity_gauntlet.v1",
+  "specimen": "O003",
+  "target": {
+    "complete_ebpw_lte": 1.0,
+    "requires": [
+      "complete accounting",
+      "capability",
+      "execution",
+      "independent verifier",
+      "magnitude adequacy",
+      "validated utilization"
+    ]
+  },
+  "terminal": {
+    "best_candidate_id": "O003-q3-g64-experts",
+    "best_capability_status": "CANDIDATE_PASS",
+    "best_complete_ebpw": 3.5024078020482476,
+    "best_execution_complete": true,
+    "best_verifier_independent": false,
+    "disposition": "BUDGET_EXHAUSTED",
+    "reason": "allocated search ended before target hit",
+    "remaining_frontier": []
+  },
+  "updated_at": 1788710924.811858,
+  "writer": {
+    "mode": "single_writer",
+    "pid": 33243
+  }
+}

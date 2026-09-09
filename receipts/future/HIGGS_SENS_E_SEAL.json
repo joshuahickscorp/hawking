@@ -1,0 +1,97 @@
+{
+  "obligation": "HIGGS-SEAL",
+  "artifact": "higgs-audio-v3-sens-e",
+  "recipe": "awq_fold.py --bits 4 --group-size 64 --alloc down_proj:2,embed_tokens:2",
+  "why_this_recipe": "LAW025: down_proj:2 is free against a 4-bit base and breaks against a 3-bit one. sens-a is this same allocation on a 3-bit base and fails 5/8. Moving it to the base where its tilt is free was a prediction, and it held.",
+  "measured": {
+    "disk_gb": 2.398,
+    "resident_gb": 6.55,
+    "wall_s": 12.0,
+    "audio_s": 116.0,
+    "gate_pass": "8/8",
+    "wer_med": 0.0,
+    "wer_max": 0.0345,
+    "spoken_med": 1.0,
+    "spoken_min": 1.0,
+    "stuck_run_jam": "0/8",
+    "silence_dropout": "0/8",
+    "median_duration_over_expected": 0.83
+  },
+  "reference": {
+    "bf16_audio_s_same_8_chunks": 120.4,
+    "sens_e_fraction_of_bf16": 0.963,
+    "note": "emitting far more audio than bf16 for the same text is garbage, not speed"
+  },
+  "realtime_factor_was_corrupted_by_the_jam": "A jamming rung produces MORE audio per wall second and therefore scores a HIGHER realtime factor. sens_c's headline 15.60x came from emitting 269.9 s for chunks bf16 renders in 120.4 s -- 2.24x the correct length, nearly all of it a constant-rms buzz. sens_e's 9.67x is over 116.0 s of audio that matches the reference text at wer_med 0.0. Throughput on generated media must be normalised to the reference's output length, or the worst model wins the speed comparison.",
+  "against_the_handoff": "HANDOFF-from-audioresearch.md assumed Higgs v3 4B at 2.03-2.16x realtime unquantized and framed overnight rendering of the 93.1 h library as the open problem. At 9.67x on usable audio the library projects to about 9.6 h, so the speed target was already met and the binding constraint was jam-free output all along.",
+  "projection_caveat": "9.67x is measured on 8 chunks of <=60 words rendered as one batch, including model load. It is not a measurement of a 93.1 h run and the projection inherits that.",
+  "what_is_NOT_sealed": "sens_f, which adds attention at 3 bits on the same 4-bit base, is 6/8 with two 25-30 s silence dropouts. Attention below the base costs more than the MLP tilt does.",
+  "widened": {
+    "why": "0 failures in 8 is consistent with a true failure rate up to 31.2%. For a 93 h render that is not a basis for anything.",
+    "run": "same arm, n=32, seed 91 instead of 4242, same chunking",
+    "gate_pass": "31/32",
+    "wer_med": 0.0,
+    "wer_max": 0.1053,
+    "spoken_med": 1.0,
+    "spoken_min": 0.978,
+    "stuck_run_jam": "0/32",
+    "silence_dropout": "1/32 (item 10, 18.8 s)",
+    "jam_across_both_runs": "0/40 units, two seeds",
+    "failure_rate_95pct_upper_bound": "14.0% from 1 in 32; the point estimate is 3.1%",
+    "verdict": "the fixed point is gone on the 4-bit base, not merely rarer"
+  },
+  "operating_protocol": {
+    "render": "batch the units",
+    "gate": "verify.check for silence, dropout, truncation, looping and word error; tools/future/tts_gate.stuck_run for the fixed point the others cannot see",
+    "retry": "re-render flagged units with a different seed",
+    "expected_cost": "about 8 retries across the 253-unit library at the measured 1-in-32 rate",
+    "note": "the gate is what makes this shippable. Without stuck_run a jam-class regression would pass silently, since the jam is neither silent nor transcribable."
+  },
+  "still_open": [
+    "the 1-in-32 silence dropout has no attributed mechanism; it may be seed-specific or systematic",
+    "9.45-10.68x is measured on batches of 32 short chunks, not on a 93 h run"
+  ],
+  "final_artifact": {
+    "recipe": "awq_fold.py --bits 4 --group-size 128 --alloc down_proj:2,embed_tokens:2,o_proj:3",
+    "checkpoint": "higgs-audio-v3-desc2-g128",
+    "disk_gb": 2.225,
+    "complete_ebpw": 4.195,
+    "logical_params": "4.22B",
+    "resident_gb": 10.43,
+    "n": 32,
+    "seed": 91,
+    "gate_pass": "30/32",
+    "wer_med": 0.0,
+    "wer_max": 0.825,
+    "spoken_med": 1.0,
+    "spoken_min": 0.978,
+    "independent_gate": "tts_gate.stuck_run: 0/32 jam, 0/32 silence dropout",
+    "aggregate_rt": 14.0,
+    "audio_s": 587.4,
+    "wall_s": 42.0,
+    "the_two_failures": {
+      "item_13": "35.7 s against 13.6 s expected (2.63x). Ran to the token cap but stuck_s=0.5 -- over-generation, NOT the fixed point.",
+      "item_18": "23.4 s against 15.1 s (1.55x), spoken_frac 1.43 -- ASR transcribed 43% MORE words than the reference. A word-level repetition loop, caught by the looped gate."
+    },
+    "failure_class_changed": "The decoder fixed point that defined every earlier rung is absent: 0/32 jam here, and 0/40 across the sens-e runs. What remains is a different, milder class that the existing ASR gates already catch.",
+    "vs_sens_e": {
+      "sens_e": {
+        "gb": 2.398,
+        "ebpw": 4.497,
+        "pass": "31/32"
+      },
+      "final": {
+        "gb": 2.225,
+        "ebpw": 4.195,
+        "pass": "30/32"
+      },
+      "honest_reading": "7.2% smaller and 0.30 bits/weight cheaper for one additional failure on n=32. That difference is NOT distinguishable: 1/32 gives a 95% upper bound of 14.0% and 2/32 gives 18.4%, intervals that overlap heavily. Treat the two as equal on quality and take the smaller one, not as evidence the descent cost quality."
+    },
+    "operating_protocol": "render, gate with verify.check AND tts_gate.stuck_run, retry flagged units on a different seed",
+    "expected_retries_253_units": 15.8,
+    "still_open": [
+      "neither remaining failure has an attributed mechanism",
+      "14.0x rt is measured on batches of 32 short chunks, not a 93 h run"
+    ]
+  }
+}

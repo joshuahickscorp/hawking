@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. Metal via mlx, with every timed region forced through mx.eval() -- mlx is lazy and an unevaluated forward would time graph construction, not execution. The first repeat is discarded as kernel-compile warm-up. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 42.1811,
+  "decode_tps_spread": {
+    "first_cell_note": "the slowest repeat is the FIRST one: a cold cell, not a property of the body; the median excludes it but the spread does not",
+    "in_run_order": [
+      42.0394,
+      42.3728,
+      42.1811
+    ],
+    "max": 42.3728,
+    "median": 42.1811,
+    "min": 42.0394,
+    "monotone_drift": "NONE",
+    "spread_pct": 0.79
+  },
+  "device": "gpu (Metal via mlx)",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": true,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "mlx does not expose a per-op GPU/CPU split; the whole forward ran on Metal, which is what `device` records",
+  "measurement_contract": {
+    "backend_device": "gpu (Metal via mlx)",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 182.343,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/allenai--Olmo-3-1025-7B@a81bae42db39",
+    "warmup_repeats_discarded": 1
+  },
+  "nr": "source body as stored on disk, unmodified; mlx native dtype on Metal",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 1107.0591,
+  "prefill_tps_spread": {
+    "in_run_order": [
+      1107.0591,
+      1100.6794,
+      1109.5389
+    ],
+    "max": 1109.5389,
+    "median": 1107.0591,
+    "min": 1100.6794,
+    "monotone_drift": "NONE",
+    "spread_pct": 0.8
+  },
+  "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "allenai--Olmo-3-1025-7B@a81bae42db39",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 4.55,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 1.3891
+  }
+}

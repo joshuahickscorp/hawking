@@ -1,0 +1,47 @@
+{
+ "obligation": "G006",
+ "round": 23,
+ "verdict": "NO CREDIT -- class D, and the defect is a budget that shrinks when it must not.",
+ "what_happened": "the round ran 5 clean tool calls (completions 50-289 tokens against 3000+ budgets), then hit the structured-output contract and failed three attempts, all finish_reason 'length'. It closed with 'structured output rejected after 3 attempts'.",
+ "the_measurement": {
+  "attempt_1": {
+   "prompt": 5571,
+   "granted": 2474,
+   "completion": 2474,
+   "finish": "length"
+  },
+  "attempt_2": {
+   "prompt": 5876,
+   "granted": 990,
+   "completion": 990,
+   "finish": "length"
+  },
+  "attempt_3": {
+   "prompt": 5959,
+   "granted": 990,
+   "completion": 990,
+   "finish": "length"
+  },
+  "reading": "the budget SHRANK after a truncation. Each retry appends its own error note to the prompt, the completion budget is re-derived against the POSTED prompt and only ever shrinks, so the answer to 'you ran out of room' carried less room every time. Two of three attempts were spent on arithmetic that guaranteed their failure."
+ },
+ "it_shrinks_in_TWO_places": "the engine re-derives the budget against the posted prompt (only downward, deliberately -- the schema instruction used to overflow max_seq_len). And the contract shrinks it again on its own: apply() reserved 990 -> 985 for the instruction and the repair payload derived 945. A fixture that sets max_tokens from outside cannot even express 'the budget grew'.",
+ "why_this_is_class_D_not_a_model_failure": "the model produced 2474 coherent tokens on the first attempt and was then asked to do the same job in 990. Rounds 1-5 of the same round answered in 50-289 tokens. Reporting this as 'the model cannot follow a schema' would have been the third misattribution of the day, and the receipt's own numbers refute it.",
+ "the_fix": {
+  "where": "hcli/backends.py, StructuredOutputContract.enforce",
+  "what": "doomed_retry() -- a PURE predicate -- stops the retry loop when the previous attempt ended for length and the new budget is not larger, raising StructuredOutputExhausted with the two numbers and the reason instead of spending the remaining attempts.",
+  "why_pure": "the contract shrinks its own budget twice, so the policy cannot be exercised through a payload fixture. Same shape as _tool_loop_closure, which was made pure for the same reason.",
+  "what_it_does_not_do": "it does not make the round succeed. It converts three doomed attempts into one attempt and a precise diagnosis. Raising the budget or shortening the prompt is a separate change with its own measurement."
+ },
+ "verification": {
+  "unit": "hcli/test_doomed_retry_guard.py -- PASS",
+  "cases": "7 predicate cases including the round-23 shape, a FLAT budget (also doomed), a GROWN budget (legitimate), a schema violation (not length), the first attempt, and unknown budgets on either side",
+  "mutation_A": "predicate forced to never fire -> the two doomed cases FAIL",
+  "mutation_B": "the length condition removed so it fires on any failure -> a SCHEMA violation is refused and stops after 1 of 3 attempts, FAILED. Both directions guarded.",
+  "regression": "hcli/test_structured_output_retry.py 3 passed; test_engine_tool_loop and test_resident_ownership unchanged",
+  "markers": "grep 0"
+ },
+ "a_harness_bug_in_my_own_test": "the first fixture set each budget on entry to the call, so every attempt recorded its PREDECESSOR's budget and the guard appeared to fire on a growing sequence. That was the test, not the guard -- and it is why the policy ended up as a pure function.",
+ "attribution": "HARNESS",
+ "streak": 0,
+ "scar": "A RETRY THAT ANSWERS 'YOU RAN OUT OF ROOM' WITH LESS ROOM IS NOT A RETRY."
+}

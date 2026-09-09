@@ -13,7 +13,7 @@ Runnable two ways:
 """
 from __future__ import annotations
 
-from hcli.command_registry import COMMANDS, command_names, handler_name, help_text
+from hcli.commands import COMMANDS, command_names, handler_name, help_text
 from hcli.commands import REQUIRED_COMMANDS, CommandHandler
 
 
@@ -87,7 +87,7 @@ def test_authority_uses_the_tool_registry_vocabulary():
 
 def test_anatomy_is_registered_and_refuses_without_crashing(tmp_path):
     """G036: HCLI owns OI. A body with no weights is a named refusal, exit-path 2."""
-    from hcli.command_registry import handler_name
+    from hcli.commands import handler_name
 
     handler = CommandHandler(None)
     assert handler_name("/anatomy") == "_cmd_anatomy"

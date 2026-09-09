@@ -1,0 +1,90 @@
+{
+ "obligation": "G020",
+ "finding": "THE DIVERSITY GATE WAS VACUOUS BY CONSTRUCTION ON THE SPECIMEN G020 NAMED",
+ "mechanism": "the bar is `3.0 x THIS specimen's dense median 4-gram repeat`. median_4gram_repeat is a FRACTION of 4-grams that repeat, so its range is [0, 1]. Qwen3-0.6B's dense parent has a median r4 of 0.3619, so its bar is 3.0 x 0.3619 = 1.0857 -- ABOVE THE HIGHEST VALUE THE METRIC CAN TAKE. Nothing could fail that axis. The conjunction silently became perplexity alone, which is exactly the single-proxy failure the gate exists to prevent.",
+ "the_receipt_says_it_outright": {
+  "source": "receipts/future/G017_ORGAN_ALLOCATION.json",
+  "gate_r4_max": 1.0857,
+  "inverted_control": {
+   "median_4gram_repeat": 0.8224,
+   "diversity_ok": true,
+   "ppl": 12.84,
+   "ppl_ok": false,
+   "capability_ok": false
+  },
+  "reading": "the DELIBERATELY INVERTED negative control, repeating 82% of its 4-grams, was recorded diversity_ok: TRUE. It failed only because perplexity caught it. The diversity axis contributed nothing to that verdict, and the receipt states it in its own fields -- nobody had to infer it."
+ },
+ "the_defect_condition_is_exact": {
+  "rule": "the bar is unsatisfiable-to-fail whenever multiplier x dense_r4 >= 1.0",
+  "with_multiplier_3": "any specimen whose dense median r4 >= 0.3333",
+  "Qwen3_0.6B": {
+   "dense_r4": 0.3619,
+   "multiplier": 3.0,
+   "bar": 1.0857,
+   "metric_ceiling": 1.0,
+   "vacuous": true,
+   "why": "3.0 x 0.3619 = 1.0857 >= 1.0, the highest value median_4gram_repeat can take. Nothing can fail this axis."
+  },
+  "O003_Kimi_VL": {
+   "dense_r4": 0.0538,
+   "multiplier": 3.0,
+   "bar": 0.1614,
+   "metric_ceiling": 1.0,
+   "vacuous": false,
+   "why": "3.0 x 0.0538 = 0.1614, inside the metric's range"
+  },
+  "note": "this is not a tuning disagreement. A threshold outside its metric's range is not a loose threshold, it is an absent one."
+ },
+ "but_the_CLIFF_still_stands": {
+  "why_it_matters": "G012_CAPABILITY_CLIFF rests on the conjunction. If the gate were miscalibrated everywhere, the cliff's location would be an artifact.",
+  "O003_gate_is_sound": "3.0 x 0.0538 = 0.1614, well inside [0, 1]",
+  "sensitivity_over_the_campaign_points": {
+   "highest_passing_multiple_of_dense": 1.998,
+   "lowest_diversity_failing_multiple": 10.392,
+   "verdicts_unchanged_over": [
+    1.998,
+    10.392
+   ],
+   "band_width": 5.2
+  },
+  "reading": "the highest PASSING candidate sits at 1.998x dense r4 and the lowest diversity-FAILING one at 10.392x -- a 5.2x band with no candidate in it. The multiplier could be anywhere in that range and EVERY verdict in the campaign would be identical. The intuited 3.0 is not what decided the cliff."
+ },
+ "mutation_test_as_the_verify_demands": {
+  "requirement": "moving the threshold must change a verdict on a named candidate",
+  "diversity_axis": "moving the r4 multiplier anywhere within [1.998, 10.392] changes NOTHING. To flip the closest failing candidate (complete EBPW 2.3327, r4 0.5591) the multiplier must reach 10.39x, and to flip 2.4639 it must reach 13.59x.",
+  "likelihood_axis": "IS threshold-sensitive on a named candidate. complete EBPW 8.1989 has ppl 3.6711 against a bar of 3.6170 -- it fails by 1.5%. Raising the perplexity multiplier from 1.25 to 1.27 flips it to PASS. That number is load-bearing and the r4 number, on this evidence, is not.",
+  "collapsed_control_must_fail": "under O003's sound gate the G017 inverted control (r4 0.8224) fails at 15.29x dense. Under Qwen3-0.6B's vacuous gate it passed. Same generation, opposite verdict, and the difference is entirely the reference."
+ },
+ "each_axis_carries_information_the_other_does_not": {
+  "requirement": "G020's verify asks for exactly this",
+  "diversity_only": "complete EBPW 2.4059 (ppl 3.5128 PASSES the likelihood bar, r4 0.6667 fails) and 2.4639 (ppl 3.3454 PASSES, r4 0.7312 fails). Perplexity alone would have admitted both.",
+  "likelihood_only": "complete EBPW 8.1989 (r4 0.0278 PASSES easily at 0.52x dense, ppl 3.6711 fails). Diversity alone would have admitted it.",
+  "conclusion": "both directions demonstrated on named candidates. The conjunction is justified."
+ },
+ "what_is_NOT_done": "the threshold is not re-chosen here. Deriving a new multiplier needs healthy dense generations, known-acceptable compressed generations and repeated seeds per G020's acceptance, and the GPU is held by the authoritative round. What IS settled: the current rule produces an ABSENT gate above dense_r4 = 1/3, and the cliff does not depend on the multiplier.",
+ "minimum_repair_named": "cap the bar below the metric's ceiling -- min(multiplier x dense_r4, some absolute) -- so a repeating dense parent cannot buy an unfailable gate. Not applied here: it changes a capability verdict surface and belongs with the calibration G020 actually asks for.",
+ "scar": "A THRESHOLD OUTSIDE ITS METRIC'S RANGE IS NOT LOOSE, IT IS ABSENT. Check the bar against the metric's ceiling, not against intuition.",
+ "the_gate_is_now_capped": {
+  "applied_to": "tools/future/organ_allocation.py::gate_from_reference, the live per-specimen gate",
+  "rule": "r4_bar(dense) = min(R4_MULT * dense, midpoint(dense, 1.0))",
+  "where_the_rule_comes_from": "the two fixed points the problem already has -- the reference the specimen is judged against, and the ceiling median_4gram_repeat cannot exceed. A bar may not sit more than HALFWAY from a parent to total collapse. It is derived from the metric's own range, not chosen to produce a wanted verdict, and it is not a tightening: below dense_r4 = 1/3 it changes nothing.",
+  "effect": {
+   "O003 (dense 0.0538)": "bar 0.1614 -> 0.1614, UNCHANGED. Every verdict in the capability cliff stands, and the lowest passing candidate (r4 0.1075) still passes.",
+   "Qwen3-0.6B (dense 0.3619)": "bar 1.0857 -> 0.6809",
+   "G017 arms": {
+    "dense parent 0.3619": "PASSES",
+    "arm 0.6923": "now REJECTED",
+    "arm 0.7103": "now REJECTED",
+    "inverted control 0.8224": "now REJECTED -- it was recorded diversity_ok TRUE"
+   }
+  },
+  "the_gate_reports_its_own_capping": "gate_r4_uncapped, gate_r4_capped and gate_r4_cap_rule are emitted alongside gate_r4_max, so a receipt says whether the cap bound and by how much. A silent cap would be the same class of problem as the silent overflow.",
+  "verification": {
+   "red_before_green": "tools/future/test_diversity_gate_bar.py was RED against the live gate -- three arms passing at bar 1.0857 -- before the cap and green after.",
+   "mutation_A": "cap removed -> the inverted control passes again and the bar exceeds the ceiling, FAILED",
+   "mutation_B": "cap set to a flat 0.10 -> the DENSE PARENT is rejected and O003's bar moves off 0.1614, FAILED. Both directions guarded: the cap must bind where it should and nowhere else.",
+   "markers": "grep 0"
+  },
+  "what_is_still_not_done": "G020's acceptance also asks for repeated seeds where affordable. That needs live generation on the GPU the authoritative round holds, and is not done. The multiplier itself is also untouched -- 3.0 remains, and the sensitivity analysis showed every campaign verdict is identical for any multiplier in [2.00, 10.39], so it was never the deciding number."
+ }
+}

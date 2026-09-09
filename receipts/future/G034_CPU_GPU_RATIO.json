@@ -1,0 +1,42 @@
+{
+  "obligation": "G034-CPU-GPU-RATIO",
+  "question": "Does the CPU:GPU ratio separate architecture families into a usable prior?",
+  "n_bodies_on_both_axes": 6,
+  "tool_verdict": {
+    "decode": "SEPARATES: between 22% vs worst within 8%",
+    "prefill": "SEPARATES: between 633% vs worst within 34%"
+  },
+  "WHY I DO NOT REPORT THE TOOL VERDICT AS THE ANSWER": "Four of the five families have n=1. The entire within-family spread the rule compares against comes from qwen3's two bodies. A 2x between/within rule is too permissive at this shape, and my own tool is the thing over-claiming.",
+  "prefill": {
+    "with_granite": [
+      6.0,
+      6.7,
+      7.08,
+      7.49,
+      10.6,
+      50.85
+    ],
+    "without_granite": [
+      6.0,
+      6.7,
+      7.08,
+      7.49,
+      10.6
+    ],
+    "reading": "Not 'families separate'. ONE family is an outlier: granitemoehybrid at 50.85x against four families clustered in 6.0-10.6x. Drop it and the remaining spread is 65%, comparable to qwen3's 34% WITHIN-family spread. The honest claim is a hybrid-SSM outlier, not a family taxonomy."
+  },
+  "decode": {
+    "values": [
+      11.63,
+      12.5,
+      12.95,
+      13.82,
+      14.49,
+      14.94
+    ],
+    "reading": "11.63-14.94x, a 25% band across five families, with qwen3's own two bodies spanning 7.8% of it. Between-family 22% against within-family 8% barely clears the 2x rule and rests on one family's within-spread. Consistent with a host constant plus noise; not a usable prior."
+  },
+  "operational": "Do not use decode ratio as an architecture prior. The prefill outlier is worth one thing only: hybrid SSM prefill is disproportionately GPU-dependent, which is the SAME family whose larger bodies (Jamba2-3B, granite-4.0-h-tiny, Falcon-H1-7B) reproducibly exceed this host's Metal command-buffer watchdog on a 512-token prefill. Two independent measurements pointing at one mechanism.",
+  "reopen_when": "a second body lands in any family other than qwen3, which is what would make the within-family term real",
+  "caveat": "9 CPU rows exist but only 6 bodies have BOTH axes; the rest are refused or owed on gpu."
+}

@@ -1,0 +1,318 @@
+{
+  "adversarial_probes": [],
+  "eligible": [],
+  "laws": [
+    {
+      "counterexample_requirement": "a byte-exact and depth-exact comparison (equal-parameter organs exchanging the same two specs) that still separates the policies",
+      "evidence": "receipts/future/G017_ORGAN_ALLOCATION.json, receipts/future/G021_BUDGET_LADDER_4x32.json",
+      "hcli_owned": false,
+      "id": "LAW001",
+      "recorded_at": "2026-09-08T05:19:43.014915+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "On Qwen3-0.6B at matched complete EBPW, the monotone-ramp allocation arms do not share a bit-depth multiset, so a UNIFORM/GLOBAL/LOCAL difference is not attributable to organ ordering.",
+      "writer_pid": 94799
+    },
+    {
+      "counterexample_requirement": "a second body where local anatomy's margin on the disagreeing pair is LARGE (local lost here with a 1.42-point margin against global's 6.07, i.e. local was near-random exactly where it disagreed), or any equal-parameter pair where local wins against a large global margin. Also reopens on the two undecided pairs (o_proj|q_proj, down_proj|up_proj) separating at another cheap/rich spec.",
+      "evidence": "receipts/future/G021_MIRROR_SWAP.json",
+      "hcli_owned": false,
+      "id": "LAW002",
+      "recorded_at": "2026-09-08T05:22:18.324753+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "G021, byte-exact and depth-exact: on Qwen3-0.6B the GLOBAL organ-structure prior predicted which organ of an equal-parameter pair tolerates being crushed on 3 of 3 decided pairs; this body's own LOCAL anatomy got 2 of 3. On the single pair where they disagree (down_proj vs gate_proj) GLOBAL was right: crushing gate_proj costs ppl 5.0099 and PASSES the conjunction, crushing down_proj costs 5.9605 and fails on diversity r4 0.798. Local measurement did NOT earn authority over the global prior here.",
+      "writer_pid": 95435
+    },
+    {
+      "counterexample_requirement": "an architecture with no two organs of equal parameter count, where the mirror design cannot be built and some other equalisation is needed",
+      "evidence": "receipts/future/G021_MIRROR_SWAP.json, receipts/future/G021_BUDGET_LADDER_4x32.json",
+      "hcli_owned": false,
+      "id": "LAW003",
+      "recorded_at": "2026-09-08T05:22:18.326075+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "Comparing allocation POLICIES through a monotone bit/group search is confounded: each policy takes whatever bit-depth multiset hits the byte budget under its own monotonicity constraint, and on Qwen3-0.6B minimum bit depth separates perplexity almost completely (min=2 arms 6.76-12.84, min=3 arms 5.43-6.17, min=4 arms 5.23-5.45). Compare organs of IDENTICAL parameter count exchanging the same two specs instead: byte-exact, EBPW-exact, depth-exact, assignment the only variable.",
+      "writer_pid": 95435
+    },
+    {
+      "counterexample_requirement": "a MoE family whose per-expert spectrum is materially below its matched null, i.e. a negative deficit outside measurement scatter",
+      "evidence": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json, receipts/future/O003_EXPERT_SHARE.json",
+      "hcli_owned": false,
+      "id": "LAW004",
+      "recorded_at": "2026-09-08T05:43:11.917724+00:00",
+      "scope": "ARCHITECTURE_FAMILY",
+      "source_oxx": null,
+      "text": "Cross-expert LINEAR sharing is matched-null: per-expert spectra are indistinguishable from their same-shape null across six MoE families, 64 to 512 experts, in both storage layouts (kimi_vl +0.000%, lfm2_moe -0.007%, qwen3_moe +0.0%). SKIP RULE: do not build a cross-expert shared linear basis by default. Run the cheap null-calibrated expert-stack anatomy first and only build if a family sits materially BELOW its null.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a representation family where weight-space error predicts held-out capability better than random ranking AND better than static anatomy, measured with those two controls present",
+      "evidence": "receipts/future/O003_PQ_SCAR.json",
+      "hcli_owned": false,
+      "id": "LAW005",
+      "recorded_at": "2026-09-08T05:43:11.919350+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "Weight reconstruction error MISRANKS capability. On O003, PQ achieved 45% lower reconstruction error than affine at fewer bits and WORSE capability. Demote reconstruction error, weight cosine and norm statistics to cheap filters and diagnostics: they may prioritise candidates, they may never accept one. Only the capability conjunction accepts.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a body where a monotone organ-weighted ramp beats uniform at matched complete EBPW and passes the conjunction, with the arms sharing a bit-depth multiset so the comparison is not the confound in LAW003",
+      "evidence": "receipts/future/G017_ORGAN_ALLOCATION.json, receipts/future/G021_MIRROR_SWAP.json",
+      "hcli_owned": false,
+      "id": "LAW006",
+      "recorded_at": "2026-09-08T05:43:11.920037+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "The global organ-structure prior is NOT a universal allocation weighting. Spending a matched complete-EBPW budget unequally along the global deficit order did not beat spending it uniformly and did not pass the conjunction. Structural redundancy is not behavioural compressibility. Note the refinement from the mirror swap: the global ORDER still predicts pairwise organ tolerance 3/3, so what failed is the RAMP, not the ranking.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a body whose non-MLP persistent payload is small enough that zeroing the MLP crosses 1.0, or a representation that reduces the non-MLP payload itself",
+      "evidence": "receipts/future/G012_SELECTION_CANNOT_REACH.json",
+      "hcli_owned": false,
+      "id": "LAW007",
+      "recorded_at": "2026-09-08T05:43:11.920771+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "MLP-only Gravity cannot reach <=1.0 complete EBPW. Driving the ENTIRE MLP to zero persistent bytes still leaves approximately 1.545 complete EBPW. The <=1.0 target is outside the MLP-only search space as a matter of arithmetic, so attention, DeltaNet, state and cross-organ representation are not optional if that target is serious.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a diversity metric whose range makes 3 x dense a reachable bar, where the cap would then be doing nothing",
+      "evidence": "receipts/future/G020_DIVERSITY_GATE_WAS_VACUOUS.json, receipts/future/G017_ORGAN_ALLOCATION.json",
+      "hcli_owned": false,
+      "id": "LAW008",
+      "recorded_at": "2026-09-08T05:43:11.921464+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "The diversity half of the capability gate must be capped inside the metric's own range: min(3 x dense, midpoint(dense, 1.0)). The uncapped 3 x dense bar was 1.0857 for a median 4-gram repeat bounded at 1.0 -- nothing could fail it, so the conjunction was perplexity wearing a second name and visibly repetitive arms were recorded as passing. Any receipt whose stored verdict predates this is STALE and must be re-derived, not cited.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a body where the structural ordering predicts measured per-organ sensitivity with tau that survives per-byte normalisation, or a perturbation size at which the negative-sensitivity organs turn positive",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G021_MIRROR_SWAP.json",
+      "hcli_owned": false,
+      "id": "LAW009",
+      "recorded_at": "2026-09-08T05:50:21.321224+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "Organ structure -- global prior OR local anatomy -- is a WEAK predictor of behavioural tolerance. Two independent probes on Qwen3-0.6B agree on every pair they both decide, and together they put the global prior at 3/5 and local anatomy at 2/5 on which organ of a pair tolerates being crushed; chance is 2.5/5. Kendall tau between measured per-organ sensitivity and the structural ordering is 0.238 (global) and 0.048 (local), and once the delta is normalised per megabyte saved the signal INVERTS to -0.048 and -0.238 -- i.e. most of the apparent structural signal is organ SIZE. Two organs (o_proj, gate_proj) have NEGATIVE sensitivity: crushing them to q3-g64 lowered perplexity below the q4-g64 base. Use measured behavioural sensitivity, not anatomy, to allocate.",
+      "writer_pid": 8285
+    },
+    {
+      "counterexample_requirement": "a shipped body whose embedding and other non-linear payload are themselves compressed, or a tied/factored vocabulary that removes the embedding as the dominant term",
+      "evidence": "receipts/future/G034_ODYSSEY_LEDGER.json, receipts/future/G012_SELECTION_CANNOT_REACH.json",
+      "hcli_owned": false,
+      "id": "LAW010",
+      "recorded_at": "2026-09-08T05:54:20.824628+00:00",
+      "scope": "ARCHITECTURE_FAMILY",
+      "source_oxx": null,
+      "text": "A shipped purpose-built low-bit body independently confirms G012's shape. microsoft/bitnet-b1.58-2B-4T stores its linears at 2.000 bits per weight -- packed [640,6912] against a logical [2560,6912], four ternary values per byte plus a bf16 per-tensor scale; 1.58 is the information content of a ternary value, not the storage. Its complete EBPW is 3.908, and 55.7% of every persistent byte is ONE bf16 embedding tensor at 16 bpw, against 44.2% for all the ternary linears combined. Driving every linear to zero bytes still leaves ~2.18 complete EBPW; driving the embedding to zero still leaves ~1.73. A dedicated ternary design by a major lab does not reach <=1.0 complete EBPW, and the binding constraint is the same non-linear payload G012 identified.",
+      "writer_pid": 9213
+    },
+    {
+      "counterexample_requirement": "a second body where a gentle depth-controlled tilt along the global order fails the conjunction while uniform passes, or a budget on this body where uniform also passes and the tilt buys nothing",
+      "evidence": "receipts/future/G012_SENSITIVITY_ALLOCATION.json",
+      "hcli_owned": false,
+      "id": "LAW011",
+      "recorded_at": "2026-09-08T06:19:47.392012+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "The GLOBAL organ-structure order IS a usable allocation prior when the tilt is gentle and depth-controlled. Four arms at 247,730,784 organ bytes each, the three tilted ones sharing one bit-depth multiset: GLOBAL_ANATOMY is the ONLY arm to survive the capability conjunction (ppl 5.5520, r4 0.4135), beating UNIFORM on the gate (ppl 5.2278 but r4 0.7103, FAIL) despite losing to it on likelihood. The earlier G017/G021 failures were the RAMP'S DEPTH, not the ordering: those arms reached q2 and q3-g128, this tilt is q3-g32 on three organs and q4 on four. Diversity is where the tilt pays -- r4 0.7103 -> 0.4135 against a dense 0.3619.",
+      "writer_pid": 22056
+    },
+    {
+      "counterexample_requirement": "a body where the one-at-a-time ordering and the measured full-allocation ordering agree, or a joint/interaction-aware sensitivity probe that does compose",
+      "evidence": "receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G011_ORGAN_SENSITIVITY.json",
+      "hcli_owned": false,
+      "id": "LAW012",
+      "recorded_at": "2026-09-08T06:19:47.393864+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "One-organ-at-a-time behavioural sensitivity does NOT compose into a multi-organ allocation. The map is real -- allocating by it beats allocating AGAINST it by 0.6712 ppl at identical bytes and identical bit depths, so the negative control holds -- yet the anatomy-ordered arm still beat the sensitivity-ordered arm and was the only one to pass the gate. Measuring each organ alone misses interaction: o_proj measured LESS sensitive than q_proj in isolation (-0.112 vs +0.239) and crushing it cost more inside a full allocation. Use a one-at-a-time map to rank candidates, never to build an allocation additively.",
+      "writer_pid": 22056
+    },
+    {
+      "counterexample_requirement": "a negative delta that survives two corpora of different domain on the same organ, or a mechanism predicting WHICH corpus should show it",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW013",
+      "recorded_at": "2026-09-08T06:33:45.335981+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "NEGATIVE SENSITIVITY IS DEAD -- it was a corpus artifact. On the ML-domain corpus A, crushing o_proj (-0.1115) and gate_proj (-0.1010) from q4-g64 to q3-g64 IMPROVED perplexity. On corpus B (narrative/historical/biological, sharing only 8 function words with A) both flip firmly positive: o_proj +0.3837, gate_proj +0.6710, and NO organ has negative sensitivity. 'Beneficial Gravity' -- the hypothesis that stronger compression can improve the organism -- has no support from this evidence.",
+      "writer_pid": 26130
+    },
+    {
+      "counterexample_requirement": "a sensitivity probe measured across multiple corpora whose consensus ordering beats the global anatomy order in a byte-exact depth-exact allocation on a corpus none of them was measured on",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json, receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G019_ALLOCATION_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW014",
+      "recorded_at": "2026-09-08T06:33:45.337365+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "One-at-a-time behavioural sensitivity DOES NOT TRANSFER ACROSS CORPORA, and is therefore not an allocation authority. The map measured on corpus A predicts the corpus B ordering at tau 0.4286 -- while the STATIC global anatomy order predicts corpus B sensitivity at tau 0.619, i.e. BETTER than the measured map does. Worse, in a byte-exact depth-exact allocation the map's negative control REVERSES SIGN between corpora: ANTI minus SENS is +0.6712 on A (map predicts) and -0.5145 on B (map predicts BACKWARDS). The apparent predictive power on the corpus it was measured on is in-sample fit. Note the structure of the failure: the SENSITIVE end is stable across corpora (down_proj 0.963/0.934 and v_proj 0.747/0.796 are top-two on both) while the TOLERANT end is what moves -- and allocation decisions hinge on the tolerant end, on what to crush.",
+      "writer_pid": 26130
+    },
+    {
+      "counterexample_requirement": "a third corpus or a second body where a gentle depth-controlled tilt along the global order fails the conjunction while uniform passes; also owed is a per-group mirror at this budget, since GLOBAL and ANTI agree on {q,o} yet differ by 0.21 r4 on corpus B, so the mechanism is NOT isolated to one group",
+      "evidence": "receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G019_ALLOCATION_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW015",
+      "recorded_at": "2026-09-08T06:33:45.338087+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "The GLOBAL structural anatomy order TRANSFERS as an allocation policy. Across two corpora of different domain, at identical bytes (247,730,784) and an identical bit-depth multiset, GLOBAL_ANATOMY is the ONLY arm to pass the capability conjunction on BOTH: corpus A ppl 5.5520 r4 0.4135, corpus B ppl 4.9438 r4 0.4000. Its advantage is diversity and it is stable -- r4 ~0.40 on both corpora against UNIFORM's 0.7103 and 0.7308, a gap near 0.30 each time -- while UNIFORM holds the best likelihood on both and fails the gate on both. The tilt must be gentle and depth-controlled: arms whose ramp reached q2 landed at ppl 6.76-12.84.",
+      "writer_pid": 26130
+    },
+    {
+      "counterexample_requirement": "a body where protecting the top-sensitivity organ does NOT account for most of the allocation win, or a second corpus where the down_proj effect does not reproduce",
+      "evidence": "receipts/future/G022_GROUP_ISOLATION.json, receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW016",
+      "recorded_at": "2026-09-08T12:48:17.781826+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "ONE ORGAN CARRIES THE ENTIRE ALLOCATION WIN. Single-group swaps from the GLOBAL_ANATOMY arm, each changing exactly one equal-parameter group and byte-exact and depth-exact against the base, attribute the win completely: crushing down_proj instead of gate_proj costs d_r4 +0.2968 -- EXACTLY the 0.2968 gap between GLOBAL_ANATOMY (r4 0.4135) and UNIFORM (r4 0.7103), landing on 0.7103. The other two groups move r4 by 0.096 and -0.117. So the allocation policy that matters is not an ORDERING at all: it is the single decision to protect the most behaviourally sensitive organ. down_proj is the most sensitive organ on BOTH corpora (delta ppl 0.963 and 0.934), which is the one part of the sensitivity map LAW014 found stable. This reconciles LAW014 and LAW015: the map's SENSITIVE end is reliable and is what predicts the win; its TOLERANT end is corpus-bound, and allocating by the tolerant end is what failed.",
+      "writer_pid": 3662
+    },
+    {
+      "counterexample_requirement": "a matched-precision comparison (bf16 on both backends, or fp32 on both) that separates device from dtype; until then the ratio is an upper bound on the device effect, not a measurement of it",
+      "evidence": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__mlx.json, receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__torch.json",
+      "hcli_owned": false,
+      "id": "LAW017",
+      "recorded_at": "2026-09-08T15:07:46.757028+00:00",
+      "scope": "MACHINE_LOCAL",
+      "source_oxx": null,
+      "text": "The gpu axis was empty for a RUNTIME reason, not a machine reason. Every gpu cell was REFUSED as 'torch MPS unavailable', which names torch, not Metal. mlx 0.32.1 runs on Metal, is a campaign_suite dependency, and supports qwen3 -- so the refusal's own reopen condition was already met on this host. First GPU measurement in the campaign: Qwen3-0.6B, 10032.58 prefill tok/s (spread 1.22%) and 196.27 decode tok/s (spread 3.11%) at 512 context, concurrency 1. CAUTION: the CPU comparison is confounded -- mlx loads the checkpoint's native bfloat16 while the torch path forces float32, so the 10.6x prefill / 13.8x decode ratio mixes DEVICE with PRECISION and is not a clean device measurement. Also: mlx is LAZY, so every timed region must end in mx.eval() or the number is graph construction, not execution, and the first repeat must be discarded as kernel-compile warm-up.",
+      "writer_pid": 28098
+    },
+    {
+      "counterexample_requirement": "a scheduler that can prove isolation (pinned cores, exclusive GPU queue) under which a contended run reproduces the quiet number",
+      "evidence": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__torch.json, receipts/future/G034_ODYSSEY_LEDGER.json",
+      "hcli_owned": false,
+      "id": "LAW018",
+      "recorded_at": "2026-09-08T15:07:46.758391+00:00",
+      "scope": "MACHINE_LOCAL",
+      "source_oxx": null,
+      "text": "EXTERNAL CONTENTION SILENTLY UNDERSTATES A PHYSICAL MEASUREMENT, and the campaign has now measured by how much. The same body on the same backend measured 831.7 prefill / 10.65 decode tok/s while an unrelated job held the host, and 946.5 / 14.20 on a quiet machine -- 14% prefill and 33% decode, from contention alone. Spread also collapses: 47.4% prefill spread under load against 17.8% quiet on CPU, and 1.2% on Metal. A qualification measurement taken beside another workload is an operating measurement wearing a qualification label.",
+      "writer_pid": 28098
+    },
+    {
+      "counterexample_requirement": "a compensating quantizer where compensated-W scale matches or beats original-W scale",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW019",
+      "recorded_at": "2026-09-08T15:08:28.701460+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "QUANTIZER SCALE AUTHORITY MUST BE TESTED AGAINST THE ORIGINAL SIGNAL when compensation mutates the working tensor. In the tested GPTQ path, a group scale derived from the COMPENSATED W was worse than plain RTN (0.505 vs 0.470 relative error) while a scale derived from the ORIGINAL W was materially better (0.407). Mechanism offered: compensation pushes later columns outside a range derived from the mutated tensor, increasing clipping. REPORTED, not reproduced here.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a body where activation ordering does not beat fixed ordering at matched bytes",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW020",
+      "recorded_at": "2026-09-08T15:08:28.702794+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "ACTIVATION ORDERING improved the tested GPTQ reconstruction frontier from ~1.15x over RTN (fixed scale) to ~1.35x. Behavioural/use ordering can improve representation quality beyond static weight treatment -- an independent second line of evidence for function-aware Gravity alongside this campaign's own organ perturbation work. REPORTED, not reproduced here.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "an architecture where the permutation cannot be folded and must run per token",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW021",
+      "recorded_at": "2026-09-08T15:08:28.703656+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "FOLDABLE TRANSFORMS: the per-layer input permutation that activation ordering introduces can be folded through normalization/weight organization, giving the ordering benefit at ZERO runtime cost. Generic search target: representation transforms that improve quantization but can be absorbed into static model state once rather than executed every token -- permutations, sign flips, scalings, basis transforms. Free runtime does NOT mean capability-safe: semantic equivalence, complete accounting and capability validation are still required. REPORTED.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a representation class whose cost survives a serious blocked/GPU implementation",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW022",
+      "recorded_at": "2026-09-08T15:08:28.704394+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "NAIVE IMPLEMENTATION COST IS NOT ALGORITHMIC DESTINY. The one-off's GPTQ Hessian path fell from ~120 s per calibration chunk to ~1.8 s -- roughly two orders of magnitude -- by blocking the expensive operation and moving it GPU-side. Law candidate: PROFILE A SLOW SCIENTIFIC METHOD BEFORE DECLARING ITS REPRESENTATION CLASS PHYSICALLY DEAD. Separate algorithmic cost from implementation cost; look for serial column loops, repeated host/device transfers, Hessian construction, dequant/requant loops, matrix solves, gather/scatter. REPORTED.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a sensitivity map whose TOLERANT end reproduces across both a second corpus and a more compressed base; that would make allocate-by-map safe and would retire the protect-the-top rule",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json, receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G019_ALLOCATION_CORPUS_B.json, receipts/future/G022_GROUP_ISOLATION.json, plus the one-off's reported base-state failure",
+      "hcli_owned": false,
+      "id": "LAW023",
+      "recorded_at": "2026-09-08T15:08:28.705069+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "A SENSITIVITY MAP IS A FUNCTION OF (ORGAN, BASE REPRESENTATION, CORPUS), and it fails on TWO INDEPENDENT AXES -- both of which hit the end that allocation actually uses. AXIS 1, base state (one-off, reported): down_proj at 2 bits survived against a 4-bit base and broke against a 3-bit base, so tolerance measured around one base does not predict tolerance around a more compressed one. AXIS 2, corpus at FIXED base (this campaign, measured): the map built on corpus A predicts corpus B's ordering at tau 0.4286 while static global anatomy predicts it at 0.619, and in a byte-exact depth-exact allocation the map's negative control REVERSES sign, +0.6712 on A and -0.5145 on B. These are NOT the same failure -- one varies the base and holds the corpus, the other varies the corpus and holds the base. LAW016 supplies the shape common to both: the SENSITIVE end is stable (down_proj 0.963/0.934 and v_proj 0.747/0.796 are top two on both corpora) while the TOLERANT end moves. Allocation decisions consume the tolerant end -- they choose what to crush -- which is why allocating BY the map failed and why protecting the stable top carried 100% of the GLOBAL_ANATOMY win. OPERATIONAL CONSEQUENCE: allocate by PROTECTING the reliably sensitive organs; never by crushing the apparently tolerant ones. Refresh the map after material compression AND when the workload changes.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a stuck unit emits EOS near its expected duration, which would silence the duration gate and leave the fixed point undetected by every member of the set",
+      "evidence": "receipts/future/HIGGS_STUCK_GATE.json",
+      "hcli_owned": false,
+      "id": "LAW024",
+      "recorded_at": "2026-09-08T15:26:56.842300+00:00",
+      "scope": "output gates over generated media where a failure can be both non-silent and non-transcribable; established on Higgs audio v3 4B sensitivity rungs a/b/c, 24 rendered units",
+      "source_oxx": null,
+      "text": "A gate set's cheapest member can be the sole detector of the dominant failure. In the Higgs sensitivity rungs, 18 of 24 units end in a decoder fixed point -- a constant-rms buzz -- and the two gates built to catch bad output are blind to it by construction: it sits four orders above the 1e-4 silence threshold so energy never flags it (silent_frac 0.0 on 23 of 24 units), and it is not speech so ASR transcribes no extra words and word error stays low (sens_c holds spoken_med 1.0 and wer_med 0.1143 while 7 of its 8 units are stuck). Only duration fires, and only as a side effect of the unit running to the token cap. Before trusting a gate set, ask of each member what failure it is BLIND to, not what it catches.",
+      "writer_pid": 32394
+    },
+    {
+      "counterexample_requirement": "an organ is found whose 2-bit tolerance holds across a base change of a full bit, which would make tolerance a property of the organ after all and restore one-shot sensitivity maps as an allocation authority",
+      "evidence": "receipts/future/HIGGS_LADDER_TIME_TO_JAM.json",
+      "hcli_owned": false,
+      "id": "LAW025",
+      "recorded_at": "2026-09-08T15:34:26.686999+00:00",
+      "scope": "low-bit allocation where a per-organ tilt is applied on top of a uniform base. Measured on Qwen3-0.6B text (LAW023) and now Higgs audio v3 4B TTS via awq_fold, 8 units per arm",
+      "source_oxx": null,
+      "text": "CONFIRMS AND WIDENS LAW023 on the base-representation axis, in a second modality. On Higgs audio v3 4B, down_proj at 2 bits is free against a 4-bit base (0/8 units fail) and breaks against a 3-bit base (5/8 fail), with the tilt, group size, chunks and seed held identical. The paired control rules out composition: embed_tokens:2 on the same 3-bit base is clean 0/8, and down_proj:2 ALONE on that base is already broken, so combining them explains nothing. An organ's measured tolerance is a property of the base it was measured against, not of the organ.",
+      "writer_pid": 34220
+    }
+  ],
+  "parked": [],
+  "scars": [
+    {
+      "description": "G012 damaged this law's PRESCRIPTION while leaving its measurement intact. LAW009 concluded 'use measured behavioural sensitivity, not anatomy, to allocate'. At matched bytes and matched bit depths the anatomy-ordered arm beat the sensitivity-ordered arm and was the only one to pass the conjunction. What survives: structure is a weak PAIRWISE predictor (3/5) and the per-MB tau inverts. What is refuted: the recommendation to allocate by the one-at-a-time map.",
+      "hcli_owned": false,
+      "law_id": "LAW009",
+      "recorded_at": "2026-09-08T06:19:47.394607+00:00",
+      "reopen_when": "an interaction-aware sensitivity measurement that beats the global order in a byte-exact, depth-exact allocation",
+      "writer_pid": 22056
+    },
+    {
+      "description": "Corpus B refutes this law's premise as well as its prescription: the sensitivity map does not transfer, and on corpus B the static global order predicts measured sensitivity BETTER (tau 0.619) than the corpus-A map does (tau 0.4286). The 'structure barely predicts tolerance' reading was itself corpus-A-specific.",
+      "hcli_owned": false,
+      "law_id": "LAW009",
+      "recorded_at": "2026-09-08T06:33:45.338723+00:00",
+      "reopen_when": "a multi-corpus consensus sensitivity map that beats the global order out of sample",
+      "writer_pid": 26130
+    },
+    {
+      "description": "Corpus B strengthens and supersedes the scope of this law. The failure is not only that the one-at-a-time map does not COMPOSE -- it does not TRANSFER: its negative control reverses sign between corpora.",
+      "hcli_owned": false,
+      "law_id": "LAW012",
+      "recorded_at": "2026-09-08T06:33:45.339278+00:00",
+      "reopen_when": "a multi-corpus consensus sensitivity map that beats the global order out of sample",
+      "writer_pid": 26130
+    },
+    {
+      "description": "G022 attributes this law's own result to a single organ, not to the ordering it credits. The GLOBAL order wins because it happens to protect down_proj; its {q,o} choice is actively WRONG -- flipping it (SWAP_qo) improves diversity to r4 0.2963, better than the dense parent's 0.3619, and still passes. 'The global order transfers' overstates what transferred.",
+      "hcli_owned": false,
+      "law_id": "LAW015",
+      "recorded_at": "2026-09-08T12:48:17.783429+00:00",
+      "reopen_when": "a body where the global ORDER beats protect-the-sensitive-organ",
+      "writer_pid": 3662
+    }
+  ],
+  "schema": "hcli.odyssey.ledger.v1",
+  "transfer_probes": []
+}

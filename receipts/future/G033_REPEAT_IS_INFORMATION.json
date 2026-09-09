@@ -1,0 +1,32 @@
+{
+ "obligation": "G033",
+ "finding": "ONE CONFIRMATORY REPEAT IS NOT A RUNAWAY LOOP",
+ "the_defect": "_tool_loop_closure closed the moment EVERY call in a round repeated one already made. Rounds 22, 24 and 25 each measured real dense anatomy, re-read the ledger to CONFIRM it -- a correct verification instinct -- and that confirmation ended the loop before they could write. All three closed with observations still in budget.",
+ "the_contract_now": {
+  "one_all_repeat_round": "CONTINUE. The round may be confirming.",
+  "two_consecutive": "CLOSE. That is a no-progress cycle, and runaway protection is what the rule was for.",
+  "any_fresh_call": "RESETS the counter. It counts a CYCLE, not the total confirmations a round made.",
+  "above_it": "the observation budget and the failure tolerance are unchanged and still outrank it."
+ },
+ "why_not_simply_remove_it": "[S010 11] the bounded repeat mechanism existed for a reason and removing it would permit infinite repeated calls. The distinction that matters is ONE CONFIRMATORY REPEAT versus a REPEATED NO-PROGRESS LOOP, and consecutive-ness is the progress evidence.",
+ "verification": {
+  "red_before_green": "the test failed with TypeError -- repeat_rounds did not exist",
+  "call_site_and_reset_asserted": "the test greps engine.py for repeat_rounds=repeat_rounds AND for the reset. A counter that never resets turns the second confirmation of a long round into loop death even when fresh work happened in between -- the same defect, slower.",
+  "mutations": [
+   "closure never fires -> two-in-a-row case FAILS (runaway unbounded)",
+   "closure fires on the first repeat -> the confirmation case FAILS",
+   "counter never resets -> the reset assertion FAILS"
+  ],
+  "markers": "grep 0"
+ },
+ "a_test_encoded_the_OLD_contract": "hcli/test_tool_observation_budget.py::test_the_failure_closers_are_untouched asserted that a single all-repeat round closes the loop. That is precisely the semantics S010 10 changes, so the assertion was updated to the new contract -- one repeat continues, two consecutive close, and the budget still outranks both -- with the reason written beside it. Recorded as a deliberate steered change, not a test quietly bent to fit.",
+ "campaign_suite": {
+  "command": "BASELINE=1ad4e809d tools/future/campaign_suite.sh",
+  "head": "64 failing / 2022 passing",
+  "baseline": "64 failing",
+  "delta": 0,
+  "introduced_by_head": "EMPTY"
+ },
+ "the_baseline_is_not_a_stable_number": "two runs of the SAME baseline commit reported 65 and then 64. At least one failure is non-deterministic. That matters for every future delta claim and it weakens 'return to zero' as a target: the honest form is the INTRODUCED-BY-HEAD set, which is empty, rather than a count that moves on its own.",
+ "scar": "A LEGITIMATE VERIFICATION INSTINCT WAS EQUIVALENT TO LOOP DEATH."
+}

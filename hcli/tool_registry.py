@@ -17,6 +17,7 @@ import difflib
 import hashlib
 import html
 import ipaddress
+import base64
 import json
 import os
 import re
@@ -87,7 +88,16 @@ _SAFE_SHELL_COMMANDS = frozenset(
         "more",
         "realpath",
         "rg",
-        "sed",
+        # `sed` is DELIBERATELY absent. Its `w` flag writes a file from inside
+        # the script argument -- `sed 's/a/b/w out' in` -- so the option
+        # blocklist below never sees it and the path check skips the token
+        # (it is not absolute and does not start with "." or "/"). A registry
+        # holding only READ_ONLY wrote both a relative and an absolute path
+        # through this tool before it was removed. hcli/delegate.py's
+        # READ_ONLY_VERBS had already excluded it for exactly this reason,
+        # after its own negative control wrote a protected file; the two lists
+        # had drifted. Same reasoning excludes awk, sort -o, find -delete and
+        # any interpreter.
         "shasum",
         "sha256sum",
         "stat",
@@ -388,10 +398,26 @@ class ToolRegistry:
         are not independent model-facing capabilities. ``include_aliases``
         is available for diagnostics and migration audits.
         """
+        # Resolve alias CHAINS to their canonical root. Consolidation can make an
+        # alias point at a name that is itself now an alias -- filesystem.read ->
+        # fs.read -> fs -- and crediting only the direct target would leave the
+        # outer name callable but advertised by nothing. A capability nobody can
+        # find is the defect this campaign keeps paying for.
+        def _root(name: str) -> str:
+            seen = {name}
+            spec = self._tools.get(name)
+            while spec is not None and spec.alias_of:
+                if spec.alias_of in seen:  # a cycle is a bug, not a loop to ride
+                    break
+                seen.add(spec.alias_of)
+                name = spec.alias_of
+                spec = self._tools.get(name)
+            return name
+
         aliases: Dict[str, List[str]] = {}
         for item in self._tools.values():
             if item.alias_of:
-                aliases.setdefault(item.alias_of, []).append(item.name)
+                aliases.setdefault(_root(item.name), []).append(item.name)
         result = []
         for spec in sorted(self._tools.values(), key=lambda item: item.name):
             if spec.alias_of and not include_aliases:
@@ -403,6 +429,22 @@ class ToolRegistry:
                 item["aliases"] = sorted(aliases[spec.name])
             result.append(item)
         return result
+
+    def capability_names(self, *, role: Optional[str] = None) -> set:
+        """Every name a caller can REACH, canonical or absorbed. [S004]
+
+        discover() answers "what are the primary tools" -- the smaller surface a
+        model chooses from. This answers a different question: "can I get to X
+        at all", where X may now live as an op behind a merged tool. Both are
+        needed. A reachability check written against discover() alone will call
+        a capability missing the moment it is consolidated, which is how a
+        surface reduction gets mistaken for a capability loss.
+        """
+        names = set()
+        for item in self.discover(role=role):
+            names.add(item["name"])
+            names.update(item.get("aliases") or [])
+        return names
 
     def describe(self, focus: str = "", *, max_results: int = 12) -> Dict[str, Any]:
         """Return the smallest useful slice of the registry for one question.
@@ -574,6 +616,27 @@ def _lead_with(payload: Mapping[str, Any], *first: str) -> Dict[str, Any]:
         if key not in out:
             out[key] = value
     return out
+
+
+_SCOPE_KEYS = ("n", "total", "count", "shown", "truncated", "truncation_note",
+               "n_owed", "n_processes", "n_orphaned", "n_ranked", "n_specimens",
+               "specimen_count")
+
+
+def _scope_first(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Lead with the keys that say HOW MUCH, before the rows that say WHAT.
+
+    Engine._compact_closed_observations cuts every observation to 500 chars as
+    head 250 + marker + tail 208, eliding the middle. A result that leads with
+    its rows therefore delivers rows and loses its own scope: the round sees
+    some entries and cannot tell how many exist or whether it has them all --
+    which is exactly how round 20 read a partial census as complete.
+
+    `_lead_with` already existed for this and had 7 call sites. This is the same
+    move applied by rule instead of by remembering.
+    """
+    present = [k for k in _SCOPE_KEYS if k in payload]
+    return _lead_with(payload, *present) if present else dict(payload)
 
 
 def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -875,7 +938,7 @@ def _git_log(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         token = line.split(None, 1)
         if token:
             commits.append({"hash": token[0], "line": line[:160]})
-    return {
+    return _scope_first({
         "commits": commits,
         "n": len(commits),
         "shown": len(commits),
@@ -884,7 +947,7 @@ def _git_log(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         "stderr": raw.get("stderr"),
         "argv": raw.get("argv"),
         "cwd": raw.get("cwd"),
-    }
+    })
 
 
 def _shell_readonly(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1039,6 +1102,36 @@ class _SearchResultParser(HTMLParser):
             self._current[self._field] = (self._current.get(self._field) or "") + data
 
 
+def _bing_destination(url: str) -> str:
+    """The SOURCE a Bing result points at, not Bing's click wrapper.
+
+    Every result url came back as
+    `https://www.bing.com/ck/a?!&&p=...&u=a1<base64>` while the payload claimed
+    `confidence: "source-links-extracted"`. Nothing downstream could cite a
+    source or dedupe by domain, and web research provenance was a hostname
+    belonging to the search engine.
+
+    Falls back to the original wrapper when it cannot be decoded: an
+    undecodable redirect is still the honest answer, and inventing a
+    destination would be worse than an ugly one.
+    """
+    text = str(url or "")
+    if "bing.com/ck/" not in text:
+        return text
+    try:
+        raw = urllib.parse.parse_qs(urllib.parse.urlparse(text).query).get("u") or []
+        token = raw[0] if raw else ""
+        if token.startswith("a1"):
+            token = token[2:]
+        if not token:
+            return text
+        decoded = base64.urlsafe_b64decode(token + "=" * (-len(token) % 4))
+        candidate = decoded.decode("utf-8", "strict")
+    except Exception:
+        return text
+    return candidate if candidate.startswith(("http://", "https://")) else text
+
+
 class _BingSearchResultParser(HTMLParser):
     """Bounded parser for Bing's server-rendered ``b_algo`` result list."""
 
@@ -1070,6 +1163,7 @@ class _BingSearchResultParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag == "li" and self._in_result and self._current is not None:
             if self._current.get("url") and self._current.get("title"):
+                self._current["url"] = _bing_destination(self._current["url"])
                 self.rows.append(self._current)
             self._current = None
             self._field = None
@@ -1471,7 +1565,6 @@ def _context_recall(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
 
 _RECEIPT_TARGETS = {
     "roadmap.read": "civilization/ROADMAP_STATE.json",
-    "vmcp.capabilities": "receipts/headless/VMCP_CAPABILITY_SURFACE.json",
     "doctor.inspect": "receipts/headless/DOCTOR_TOURNAMENT.json",
     "gravity.inspect": "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
     "accelerator.inspect": "receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
@@ -1656,6 +1749,174 @@ def _vmcp_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     return inspect_vmcp(context.repo_root, profile=str(args.get("profile") or "core"))
 
 
+CONTINUATION = "workspace/campaign/odyssey/CONTINUATION.json"
+
+# What a restart cannot rebuild from receipts. Coverage, evidence and priors are
+# all derivable -- campaign.state already derives them. Intent is not: no
+# receipt records WHY this specimen was chosen over the others, what the live
+# hypothesis is, or what the operator meant to do next. Those are the fields.
+_CONT_FIELDS = ("objective", "active_specimen", "why_this_specimen", "active_workunit",
+                "hypothesis", "next_action", "evidence_refs", "open_jobs",
+                "resource_deps", "representations_ruled_out")
+_CONT_REQUIRED = ("objective", "hypothesis", "next_action")
+
+
+def _campaign_checkpoint(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Write the part of the campaign a restart cannot rebuild from disk. [S006 33-36]
+
+    A checkpoint that records what receipts already record is a second copy that
+    goes stale. This records only intent, and refuses a checkpoint missing the
+    three fields that make it worth reading: what is being pursued, what is
+    believed, and what to do next. A checkpoint with no next_action costs a
+    restart exactly as much as no checkpoint.
+    """
+    if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+        return {"refused": "campaign.checkpoint needs workspace_write"}
+    missing = [f for f in _CONT_REQUIRED if not str(args.get(f) or "").strip()]
+    if missing:
+        return {"refused": f"a checkpoint without {missing} does not shorten a restart",
+                "required": list(_CONT_REQUIRED)}
+    doc = {f: args.get(f) for f in _CONT_FIELDS if args.get(f) is not None}
+    doc["written_at"] = int(time.time())
+    path = context.repo_root / CONTINUATION
+    path.parent.mkdir(parents=True, exist_ok=True)
+    prior = None
+    if path.is_file():
+        try:
+            prior = json.loads(path.read_text()).get("written_at")
+        except Exception:
+            prior = None
+    path.write_text(json.dumps(doc, indent=2) + "\n")
+    return {"wrote": CONTINUATION, "fields": sorted(doc), "supersedes": prior,
+            "note": "campaign.state now leads with this on reattach"}
+
+
+def _read_continuation(root) -> Optional[Dict[str, Any]]:
+    path = root / CONTINUATION
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except Exception as exc:
+        return {"unreadable": f"{type(exc).__name__}: {exc}"}
+
+
+def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """The campaign in one read: what is being advanced, and what blocks it. [S003 3]
+
+    A campaign operator that must call eight tools to learn where it is will
+    spend its round learning where it is. This assembles the answer from disk --
+    axis coverage, the most recent evidence, the live priors -- and leads with
+    the two things that decide the next move: the dominant bottleneck and how
+    many priors would remove an experiment before it is run.
+
+    It ASSEMBLES; it does not judge. Choosing the next move is the operator's job.
+    """
+    root = context.repo_root
+    out: Dict[str, Any] = {}
+    led = root / "receipts" / "future" / "G034_ODYSSEY_LEDGER.json"
+    axes: Dict[str, Any] = {}
+    owed_depth: List[str] = []
+    if led.is_file():
+        try:
+            doc = json.loads(led.read_text())
+            counts: Dict[str, Dict[str, int]] = {}
+            for row in doc.get("specimens") or []:
+                for axis, cell in (row.get("axes") or {}).items():
+                    counts.setdefault(axis, {})
+                    st = str(cell.get("state"))
+                    counts[axis][st] = counts[axis].get(st, 0) + 1
+            axes = counts
+            # The depth axes are where the campaign is thin; name them first.
+            for axis in ("nr_candidate", "cpu", "gpu", "tps", "nx_disposition"):
+                c = counts.get(axis) or {}
+                if c.get("MEASURED", 0) == 0:
+                    owed_depth.append(axis)
+        except Exception as exc:
+            axes = {"unreadable": f"{type(exc).__name__}: {exc}"}
+    priors = _odyssey_priors(context, {"show": 1})
+    n_priors = priors.get("total")
+    recent: List[Dict[str, Any]] = []
+    rdir = root / "receipts" / "future"
+    if rdir.is_dir():
+        newest = sorted(rdir.glob("*.json"), key=lambda q: q.stat().st_mtime,
+                        reverse=True)[:6]
+        for q in newest:
+            recent.append({"receipt": q.name, "mtime": int(q.stat().st_mtime)})
+    cont = _read_continuation(root)
+    out = {
+        "continuation": cont or (
+            "no checkpoint on disk; this restart costs a re-planned campaign. "
+            "Write one with campaign.checkpoint at the next transition."),
+        "bottleneck": (
+            f"depth axes with ZERO measurements: {owed_depth}" if owed_depth else
+            "no depth axis is entirely unmeasured; the bottleneck is elsewhere"),
+        "depth_axes_never_measured": owed_depth,
+        "axis_coverage": axes,
+        "n_priors": n_priors,
+        "priors_note": ("read them with odyssey.read op=priors BEFORE proposing an "
+                        "experiment; a prior that already answers a question "
+                        "removes it"),
+        "recent_evidence": recent,
+        "ledger": str(led.relative_to(root)) if led.is_file() else None,
+        "this_tool_assembles_it_does_not_judge": (
+            "choosing the next move is the operator's decision, not this tool's"),
+    }
+    return out
+
+
+def _vmcp_capabilities(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """The LIVE perception surface, not a frozen receipt.
+
+    This verb used to read receipts/headless/VMCP_CAPABILITY_SURFACE.json, a
+    240 KB snapshot of the foreign package's tool surface produced by
+    capability_probe.py. That producer is gone with the sublation, so the
+    receipt could never be refreshed again -- a tool serving permanently stale
+    evidence, which is worse than one that does not exist. It now reports what
+    this host can actually do, computed at call time.
+    """
+    from .vmcp_adapter import inspect_vmcp
+
+    return inspect_vmcp(context.repo_root)
+
+
+def _vmcp_tools(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """WHICH VMCP tools can HCLI actually call, and what is refused, and why. [S004]
+
+    VisionMCP ships 303 tools; the HCLI bridge allowlists a read-only subset.
+    Without this, a resident holding `vmcp` has a door and no idea what is
+    behind it -- the same built-but-unreachable shape the campaign keeps
+    finding, one level down. Callable names lead; the refusal for everything
+    else names its mechanism rather than pretending the rest do not exist.
+    """
+    from .vmcp_adapter import VMCP_READ_ONLY_TOOLS, _candidate_source_roots, _source_tools
+
+    callable_names = sorted(VMCP_READ_ONLY_TOOLS)
+    total = None
+    for root in _candidate_source_roots(context.repo_root):
+        pkg = root / "visionmcp"
+        if pkg.exists():
+            try:
+                total = len(_source_tools(pkg))
+            except Exception:
+                total = None
+            break
+    return {
+        "callable": callable_names,
+        "n_callable": len(callable_names),
+        "n_in_visionmcp": total,
+        "how": "vmcp op=query tool=<name> arguments={...}",
+        "refused_mechanism": (
+            "everything outside this list raises PermissionError from "
+            "hcli/vmcp_adapter.py::call_vmcp -- HCLI does not expose the full "
+            "VisionMCP laboratory as an untyped escape hatch; mutations and "
+            "experimental tools stay behind VMCP's own governed interfaces"),
+        "reopen_when": (
+            "a specific VMCP tool earns a read-only case and is added to "
+            "VMCP_READ_ONLY_TOOLS; the allowlist is the mechanism, not a bug"),
+    }
+
+
 def _vmcp_query(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     from .vmcp_adapter import call_vmcp
 
@@ -1829,7 +2090,8 @@ def _odyssey_read(name: str):
     def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         from . import odyssey
 
-        return getattr(odyssey, name)()
+        out = getattr(odyssey, name)()
+        return _scope_first(out) if isinstance(out, dict) else out
 
     return handler
 
@@ -1927,6 +2189,19 @@ def _future(name: str):
         _sys.modules.pop(key, None)
         raise
     return mod
+
+
+def _selection_brief(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """G018's five inputs, assembled and deliberately unranked.
+
+    Only ONE of the five was reachable from the tool surface before this:
+    odyssey.ledger carries measurement debt. campaign_pareto.py computes a
+    210-candidate frontier and was imported by two sidecar modules and no tool.
+    A selection obligation whose inputs the selector cannot see is not a
+    selection obligation.
+    """
+    m = _future("selection_brief")
+    return m.brief(limit=_shown_limit(args.get("limit")))
 
 
 def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -2166,7 +2441,12 @@ def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> D
                 f"written to, not about the specimen. A tool-call error is not a finding. "
                 f"Record what the BODY refuses, with the mechanism the body gave you."
             )
-        m.refused(rec, axis, text)
+        # OPTIONAL, and recorded when given. 121 of 142 refusals on the live
+        # ledger name a mechanism and no way back, which makes them permanent by
+        # accident. Required would reject the next refusal a round writes for a
+        # field it has never been asked for; accepted lets the gap close and be
+        # measured while it does.
+        m.refused(rec, axis, text, reopen_when=args.get("reopen_when"))
     else:
         receipt = str(args.get("receipt") or "").strip()
         # SAME invariant as the refusal guard above, other field: a cell's evidence cannot
@@ -2287,7 +2567,10 @@ def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
         for row in rows
     ]
     top = _shown_limit(args.get("limit"))
-    return {
+    # SCOPE FIRST. The observation budget cuts this to 500 chars as head+tail,
+    # and with `specimens` leading, n_specimens / shown / truncated fell in the
+    # elided middle -- the round saw rows and could not tell how many existed.
+    return _lead_with({
         "specimens": compact[:top],
         "n_specimens": data.get("n_specimens"),
         "shown": min(top, len(compact)),
@@ -2298,7 +2581,7 @@ def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
         "schema": data.get("schema"),
         "reason": data.get("reason"),
         "sealed_does_not_mean_resident": data.get("sealed_does_not_mean_resident"),
-    }
+    }, "n_specimens", "shown", "truncated")
 
 
 def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -2326,7 +2609,10 @@ def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str
         if key not in leading
     }
     leading.update(rest)
-    return leading
+    # Its own leading block already puts the recommendation first, which is the
+    # right instinct -- but n_ranked / shown / truncated sat behind the ranked
+    # rows and did not survive the 500-char observation cut.
+    return _scope_first(leading)
 
 
 def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
@@ -2337,7 +2623,8 @@ def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
     def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         from . import odyssey
 
-        return getattr(odyssey, name)(*(str(args[key]) for key in required))
+        out = getattr(odyssey, name)(*(str(args[key]) for key in required))
+        return _scope_first(out) if isinstance(out, dict) else out
 
     return handler
 
@@ -2450,6 +2737,930 @@ def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     }
 
 
+
+# ---------------------------------------------------------------------------
+# NR->NX doors. [S010 22, 35, 37, 49, 51]
+#
+# complete_ebpw.py, physical_emitter.py and nx_promotion.py were all built and
+# then reachable from nothing but their own tests. A capability nothing calls
+# does not exist, and the campaign has now been bitten by that four times. The
+# three handlers below are DOORS, not new subsystems: each one calls the single
+# existing authority and refuses rather than substituting a guess. No second
+# biller and no second emitter is written here.
+#
+# A51 -- every required argument has a reachable source: physical.emit takes a
+# round id that physical.rounds enumerates; nr.complete_ebpw takes either the
+# sealed incumbent (no arguments) or a candidate the caller declares in full,
+# which is exactly the contract complete_ebpw already refuses to guess at.
+# ---------------------------------------------------------------------------
+
+_PRIOR_SOURCES = (
+    ("law_store", "receipts/future/ODYSSEY2_LAW_STORE.json", "laws"),
+    ("scars", "receipts/future/CAMPAIGN_SCARS.json", "scars"),
+    ("hcli_ledger", "workspace/campaign/odyssey/HCLI_LEDGER.json", "laws"),
+    ("hcli_scars", "workspace/campaign/odyssey/HCLI_LEDGER.json", "scars"),
+)
+
+
+def _prior_row(kind: str, source: str, rec: Mapping[str, Any]) -> Dict[str, Any]:
+    """One prior, actionable first: what it says, where it holds, what reopens it."""
+    statement = (rec.get("statement") or rec.get("text") or rec.get("description")
+                 or rec.get("scar") or "")
+    # DOMAIN first, then the claim. A 400-char statement in front of the domain
+    # means the domain is what the observation budget cuts -- and a law quoted
+    # without its domain is how a model-local result gets applied to an
+    # architecture nobody tested. Statements are clipped here on purpose; the
+    # full text is one receipt.read away and the id says which.
+    return {
+        "id": rec.get("law_id") or rec.get("id") or rec.get("scar_id") or "?",
+        "domain": rec.get("scope") or rec.get("architecture_family") or rec.get("organ_class"),
+        "kind": kind,
+        "says": str(statement)[:150],
+        # REOPEN. What would make this false again, or measurable again.
+        "reopen": str(rec.get("counterexample_requirement") or rec.get("reopen_when")
+                      or rec.get("cheapest_check") or "")[:150] or None,
+        "evidence": rec.get("evidence_refs") or rec.get("evidence") or rec.get("caught_by"),
+        "source": source,
+    }
+
+
+def _odyssey_priors(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """What the campaign already knows, so a round does not re-buy it. [S001 47, 119]
+
+    HCLI has had odyssey.record_law and odyssey.record_scar -- two WRITE doors --
+    and no way to read either back. A memory you can only write to is not a
+    memory, and its ledger (workspace/campaign/odyssey/HCLI_LEDGER.json) had never
+    been created, so nothing had ever been recorded through it either.
+
+    Every row leads with what the prior SAYS, then where it HOLDS (domain) and
+    what would REOPEN it. A law quoted without its domain is how a
+    model-local result gets applied to an architecture nobody tested.
+    """
+    focus = str(args.get("focus") or "").strip().lower()
+    shown = _shown_limit(args.get("show"), default=10, maximum=40)
+    rows: List[Dict[str, Any]] = []
+    missing: List[str] = []
+    for source, rel, key in _PRIOR_SOURCES:
+        path = context.repo_root / rel
+        if not path.is_file():
+            missing.append(rel)
+            continue
+        try:
+            doc = json.loads(path.read_text())
+        except Exception as exc:
+            missing.append(f"{rel} ({type(exc).__name__})")
+            continue
+        for rec in (doc.get(key) or []):
+            if isinstance(rec, Mapping):
+                rows.append(_prior_row(key.rstrip("s"), source, rec))
+    if focus:
+        rows = [r for r in rows
+                if focus in json.dumps(r, default=str).lower()]
+    no_domain = [r["id"] for r in rows if not r["domain"]]
+    # Deliberately NOT _truncation_fields: its note is 179 characters of prose
+    # about file bytes, which is both wrong here and enough on its own to push
+    # the first prior's domain past the observation budget.
+    return {
+        "n": len(rows[:shown]),
+        "total": len(rows),
+        "priors": rows[:shown],
+        "focus": focus or None,
+        "without_domain": no_domain[:8],
+        "sources_missing": missing,
+        "truncated": len(rows) > shown,
+        "how_to_use": ("a prior REMOVES search. Check domain before applying one "
+                       "to a different architecture; check reopen before treating "
+                       "it as permanent."),
+    }
+
+
+
+# ---------------------------------------------------------------------------
+# HCLI AS ADVERSARIAL AUDITOR. [S002]
+#
+# These are the checks the supervisor was running by hand this session, made
+# callable. Each one found a real defect the first time it was run manually:
+# an experiment whose arms never shared a bit-depth multiset, a receipt whose
+# verdict was written under a superseded gate, a capability authority with no
+# caller, and a law store with two write doors and no read door.
+# ---------------------------------------------------------------------------
+
+def _odyssey_attack_law(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """OIII: generate ranked executable attacks against one recorded law.
+
+    The adversary was reachable only from an acceptance runner, so the loop
+    LAW -> ATTACK -> RESULT -> SCOPE UPDATE had no entry point from the side
+    that writes the laws. It does now: HCLI records a law through
+    odyssey.record_law, reads it back through odyssey.priors, and attacks it
+    here. A law that emits no attack is refused rather than quietly published.
+
+    These are SPECS, not measurements -- static, bench UNKNOWN. Running one is
+    a separate act.
+    """
+    _future_tools_on_path(context)
+    law_id = str(args.get("law_id") or "").strip()
+    if not law_id:
+        return {"refused": "law_id is required; odyssey.priors lists them"}
+    rows = (_odyssey_priors(context, {"focus": law_id.lower(), "show": 20})
+            .get("priors") or [])
+    match = next((r for r in rows if str(r.get("id")) == law_id), None)
+    if match is None:
+        return {"refused": f"{law_id} is not a recorded law or scar",
+                "hint": "odyssey.priors lists what is recorded"}
+    if not match.get("domain"):
+        return {"refused": f"{law_id} has no domain; a law with no stated scope "
+                           "cannot be attacked on scope, and attacking it on "
+                           "anything else would be attacking a guess",
+                "fix": "re-record it with a domain"}
+    # The campaign runs TWO scope vocabularies: the law store writes
+    # ARCHITECTURE_FAMILY / GENERIC_CANDIDATE, and the adversary's ladder
+    # accepts neither. Map conservatively -- never UPGRADE a scope, because a
+    # law attacked at a broader scope than it was recorded at gets refuted for
+    # a claim nobody made -- and refuse anything with no conservative mapping.
+    ladder = {"GENERIC_VERIFIED", "FAMILY_VERIFIED", "MODEL_LOCAL",
+              "ORGAN_LOCAL", "DEVICE_LOCAL", "MACHINE_LOCAL"}
+    downgrade = {"ARCHITECTURE_FAMILY": "FAMILY_VERIFIED",
+                 "GENERIC_CANDIDATE": "MODEL_LOCAL"}
+    raw_domain = str(match["domain"])
+    scope = raw_domain if raw_domain in ladder else downgrade.get(raw_domain)
+    if scope is None:
+        return {"refused": f"{law_id} has domain {raw_domain!r}, which is on neither "
+                           "the law store's vocabulary nor the adversary's scope "
+                           "ladder; attacking it would mean inventing its scope",
+                "ladder": sorted(ladder), "known_mappings": downgrade}
+    law = {
+        "law_id": match["id"],
+        "statement": match["says"],
+        "scope": scope,
+        "evidence_refs": (match.get("evidence") if isinstance(match.get("evidence"), list)
+                          else [match.get("evidence")] if match.get("evidence") else []),
+        "counterexample_requirement": match.get("reopen") or "",
+        "source_model": args.get("source_model") or "UNKNOWN",
+        "source_device": "UNKNOWN",
+        "architecture_family": args.get("architecture_family") or "UNKNOWN",
+        "organ_class": args.get("organ_class") or "UNKNOWN",
+        "backend": "UNKNOWN",
+        "evidence_strength": "DIAGNOSTIC_RELATIVE",
+        "transfer_candidates": [],
+        # Neutral default, NOT a measurement: laws recorded through
+        # odyssey.record_law carry no confidence figure, and inventing a
+        # confident one would bias which attacks the ranker prefers.
+        "transfer_confidence": 0.5,
+    }
+    try:
+        from tools.future import odyssey3_adversary as o3  # type: ignore
+        ranked = o3.rank_attacks(o3.generate_attacks(law))
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True, "law_id": law_id}
+    if not ranked:
+        return {"refused": f"{law_id} emitted no attack; an unattackable law is "
+                           "not a published law"}
+    shown = _shown_limit(args.get("show"), default=5, maximum=20)
+    # Field names are the adversary's own ATTACK_SPEC_FIELDS. Guessing them
+    # produced a row of nulls that looked like a working tool.
+    lead = [{"attack_id": a.get("attack_id"), "family": a.get("family"),
+             "cost_units": a.get("cost_units"),
+             "p_refutation": a.get("p_refutation"),
+             "selection_score": a.get("selection_score"),
+             "falsifier": str(a.get("falsifier") or "")[:200],
+             "adversarial_target": str(a.get("adversarial_target") or "")[:160],
+             "scope_if_refuted": a.get("target_scope_if_refuted"),
+             "command": a.get("command")}
+            for a in ranked[:shown]]
+    return {
+        "law_id": law_id,
+        "domain": raw_domain,
+        "scope_used": scope,
+        "scope_note": (None if scope == raw_domain else
+                       f"recorded domain {raw_domain} mapped DOWN to {scope} for the "
+                       "adversary's ladder; attacks are judged at the narrower scope"),
+        "transfer_confidence_is_a_neutral_default": 0.5,
+        "n_attacks": len(ranked),
+        "attacks": lead,
+        "evidence_class": "STATIC_ONLY",
+        "note": "specs, not measurements; running one is a separate act",
+    }
+
+
+def _capability_gate(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """THE capability authority: perplexity AND n-gram diversity, G020 bars.
+
+    Also answers "is this receipt's stored verdict still true?" -- pass the
+    numbers a receipt recorded and compare. A receipt written under the
+    pre-G020 bar recorded a diversity bar of 3 x dense, which for a dense r4
+    of 0.3619 is 1.0857 -- ABOVE the metric's own [0,1] range, so nothing could
+    fail it and the conjunction was perplexity wearing a second name.
+    """
+    _future_tools_on_path(context)
+    try:
+        need = ("ppl", "r4", "dense_ppl", "dense_r4")
+        vals = {}
+        for k in need:
+            if args.get(k) is None:
+                return {"refused": f"{k} is required; the gate is measured against "
+                                   "the specimen's OWN dense parent, not a constant"}
+            vals[k] = float(args[k])
+        import organ_allocation as oa  # type: ignore
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True}
+    live = oa.gate_from_reference(
+        {"ppl_full": vals["ppl"], "r4_full": vals["r4"]},
+        {"ppl_full": vals["dense_ppl"], "r4_full": vals["dense_r4"]})
+    out = {
+        "capability_ok": live["capability_ok"],
+        "ppl_ok": live["ppl_ok"],
+        "diversity_ok": live["diversity_ok"],
+        "gate_ppl_max": live["gate_ppl_max"],
+        "gate_r4_max": live["gate_r4_max"],
+        "gate_r4_capped": live["gate_r4_capped"],
+        "rule": live["gate_r4_cap_rule"],
+        "authority": live["evaluator"],
+    }
+    claimed = args.get("recorded_capability_ok")
+    if claimed is not None:
+        stale = bool(claimed) != bool(live["capability_ok"])
+        out["stale_verdict"] = stale
+        out["recorded_capability_ok"] = bool(claimed)
+        out["why"] = ("the stored verdict disagrees with the live gate; the "
+                      "evidence was written under a superseded bar and must be "
+                      "re-derived, not cited" if stale else
+                      "the stored verdict still holds under the live gate")
+    return out
+
+
+def _experiment_confound(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Before believing an ORDERING result, check the arms were otherwise equal.
+
+    Reads a receipt's `arms` and reports, per arm, the total organ bytes, the
+    complete EBPW and the MULTISET of bit depths. If those differ between arms,
+    a difference in capability is not attributable to the ordering -- it is
+    attributable to whichever of them moved. This is the check that showed
+    G021's monotone arms never shared a depth multiset.
+    """
+    raw = args.get("receipt")
+    if not raw:
+        return {"refused": "receipt path is required"}
+    path = context.resolve_read_path(raw) if hasattr(context, "resolve_read_path") \
+        else Path(raw)
+    try:
+        doc = json.loads(Path(path).read_text())
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True}
+    arms = doc.get("arms") or {}
+    if not isinstance(arms, Mapping) or not arms:
+        return {"refused": f"{Path(path).name} has no `arms` object to compare"}
+    # A design may deliberately include an arm that is NOT depth-matched -- a
+    # uniform reference cannot be, since uniform means one spec everywhere.
+    # Let the caller scope the audit to the arms actually being compared rather
+    # than have the whole receipt reported confounded because of a reference arm.
+    only = args.get("arms")
+    if only:
+        want = [str(x) for x in only]
+        unknown = [x for x in want if x not in arms]
+        if unknown:
+            return {"refused": f"{Path(path).name} has no arms {unknown}",
+                    "available": sorted(arms)}
+        arms = {k: v for k, v in arms.items() if k in want}
+    rows = {}
+    for name, arm in arms.items():
+        if not isinstance(arm, Mapping):
+            continue
+        per = arm.get("per_organ") or {}
+        bits = sorted(int(v.get("bits")) for v in per.values()
+                      if isinstance(v, Mapping) and v.get("bits") is not None)
+        rows[name] = {
+            "organ_bytes": arm.get("organ_bytes"),
+            "complete_ebpw": arm.get("complete_ebpw"),
+            "bit_depths": bits,
+            "min_bits": min(bits) if bits else None,
+        }
+    # An experiment can declare its own comparison GROUPS. A mirror-swap
+    # receipt is not one big comparison: only the two arms sharing a `pair` are
+    # meant to be compared, and arms from different pairs legitimately differ in
+    # total bytes because their organs differ in size. Comparing everything to
+    # everything would report a correctly-designed experiment as confounded, and
+    # a checker that cries wolf on a sound design gets ignored.
+    groups: Dict[str, List[str]] = {}
+    for name, arm in arms.items():
+        if isinstance(arm, Mapping) and arm.get("pair"):
+            groups.setdefault("|".join(str(x) for x in arm["pair"]), []).append(name)
+    grouped = {g: names for g, names in groups.items() if len(names) > 1}
+
+    def _uniq(key, names=None):
+        pick = rows if names is None else {k: rows[k] for k in names if k in rows}
+        return {json.dumps(r[key], sort_keys=True) for r in pick.values()}
+
+    if grouped:
+        per_group = {}
+        for g, names in sorted(grouped.items()):
+            per_group[g] = {
+                "arms": sorted(names),
+                "bytes_matched": len(_uniq("organ_bytes", names)) <= 1,
+                "ebpw_matched": len(_uniq("complete_ebpw", names)) <= 1,
+                "depth_multiset_matched": len(_uniq("bit_depths", names)) <= 1,
+            }
+        bad = sorted(g for g, v in per_group.items() if not all(
+            (v["bytes_matched"], v["ebpw_matched"], v["depth_multiset_matched"])))
+        return {
+            "confounded": bool(bad),
+            "compared_within_groups": True,
+            "confounded_groups": bad,
+            "safe_to_claim": (
+                "each declared group is byte-exact, EBPW-exact and depth-exact, so a "
+                "difference inside a group is attributable to the assignment alone"
+                if not bad else
+                "these groups are not internally matched; equalise them first"),
+            "n_groups": len(per_group),
+            "groups": per_group,
+            "note": ("arms carry a `pair`, so only same-pair arms were compared; "
+                     "across groups the organs differ in size and unequal bytes are "
+                     "expected, not a defect"),
+            "receipt": str(raw),
+        }
+
+    bytes_matched = len(_uniq("organ_bytes")) <= 1
+    ebpw_matched = len(_uniq("complete_ebpw")) <= 1
+    depth_matched = len(_uniq("bit_depths")) <= 1
+    confounds = []
+    if not bytes_matched:
+        confounds.append("total organ bytes differ between arms")
+    if not ebpw_matched:
+        confounds.append("complete EBPW differs between arms")
+    if not depth_matched:
+        confounds.append(
+            "bit-depth multiset differs between arms: an arm's result mixes its "
+            "ORDERING with how deep its ramp went")
+    return {
+        "confounded": bool(confounds),
+        "confounds": confounds,
+        "safe_to_claim": ("a difference between these arms is attributable to the "
+                          "assignment alone" if not confounds else
+                          "NOT an ordering claim; equalise the listed dimensions first"),
+        "bytes_matched": bytes_matched,
+        "ebpw_matched": ebpw_matched,
+        "depth_multiset_matched": depth_matched,
+        "arms": rows,
+        "receipt": str(raw),
+    }
+
+
+def _tool_reachable(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Can this tool actually be CALLED, or does an argument have no source?
+
+    A required argument with no reachable producer is a door to nowhere, and the
+    campaign has burned whole autonomous rounds discovering one at the critical
+    path. For each required argument this reports whether another registered
+    tool plausibly produces it, so the gap is found before it costs a round.
+    """
+    name = str(args.get("name") or "").strip()
+    reg = _REACHABILITY_REGISTRY.get("registry")
+    if reg is None:
+        return {"refused": "no registry in scope"}
+    spec = reg.get(name)
+    if spec is None:
+        return {"refused": f"{name!r} is not registered",
+                "hint": "tools.catalog lists what is"}
+    required = list((spec.input_schema or {}).get("required") or [])
+    others = [s for n, s in _REACHABILITY_REGISTRY["specs"].items() if n != name]
+    sources: Dict[str, Any] = {}
+    for arg in required:
+        producers = []
+        for other in others:
+            blob = (other.description or "").lower() + " " + json.dumps(
+                other.output_schema or {}).lower()
+            if arg.lower() in blob or arg.replace("_", " ") in blob:
+                producers.append(other.name)
+        sources[arg] = producers[:4]
+    orphans = [a for a, p in sources.items() if not p]
+    return {
+        "name": name,
+        "callable": not orphans,
+        "arguments_without_a_source": orphans,
+        "required": required,
+        "likely_producers": sources,
+        "mutation": spec.mutation,
+        "note": ("every required argument has a plausible producer" if not orphans
+                 else "these arguments have no producing tool; either they are "
+                      "literal-derivable or this door cannot be opened"),
+    }
+
+
+def _claim_attack(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """What would make this claim FALSE? The cheapest refutation, not a defence.
+
+    Every recorded law already carries its own counterexample_requirement. This
+    surfaces it for one claim and, where the claim names a receipt, the
+    comparability fields whose absence would sink it.
+    """
+    focus = str(args.get("claim") or "").strip().lower()
+    if not focus:
+        return {"refused": "claim text or law id is required"}
+    priors = _odyssey_priors(context, {"focus": focus, "show": 6})
+    rows = priors.get("priors") or []
+    attacks = [
+        {"id": r["id"], "domain": r["domain"],
+         "falsifier": r["reopen"] or "NONE RECORDED -- a law with no counterexample "
+                                     "requirement cannot be attacked and should not "
+                                     "be trusted as permanent"}
+        for r in rows
+    ]
+    generic = [
+        "is the evidence about the SPECIMEN, or about a tool invocation?",
+        "were the compared arms equal in everything except the named variable?",
+        "was the verdict written under the gate that is live now?",
+        "is a missing measurement being read as a zero cost?",
+        "does the claim's domain cover the body it is being applied to?",
+    ]
+    return {
+        "claim": focus,
+        "recorded_falsifiers": attacks,
+        "n_recorded": len(attacks),
+        "generic_attacks": generic,
+        "note": "attack before adopting; a prior with no falsifier is not a prior",
+    }
+
+
+def _wall_avoided(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Record science NOT run because a prior already answered it.
+
+    Compounding is work avoided, and the campaign's earlier attempt to show it
+    (rho = -0.050, p = 0.78) measured the wrong thing. This is the right thing:
+    an append-only log of experiments a prior removed.
+    """
+    prior = str(args.get("prior") or "").strip()
+    skipped = str(args.get("skipped") or "").strip()
+    if not prior or not skipped:
+        return {"refused": "both `prior` and `skipped` are required; an unattributed "
+                           "skip is not evidence of compounding"}
+    entry = {
+        "prior": prior,
+        "skipped": skipped,
+        "saved_wall_estimate_s": args.get("saved_wall_estimate_s"),
+        "confirmation": args.get("confirmation"),
+        "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "estimate_not_measurement": True,
+    }
+    dest = context.repo_root / "receipts" / "future" / "WALL_AVOIDED.jsonl"
+    if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+        return {"refused": "recording a skip needs workspace_write permission",
+                "entry": entry}
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with dest.open("a") as fh:
+        fh.write(json.dumps(entry, sort_keys=True) + "\n")
+    return {"recorded": True, "entry": entry,
+            "log": str(dest.relative_to(context.repo_root))}
+
+
+_REACHABILITY_REGISTRY: Dict[str, Any] = {}
+
+
+def _future_tools_on_path(context: ToolContext) -> Path:
+    future = context.repo_root / "tools" / "future"
+    if str(future) not in sys.path:
+        sys.path.insert(0, str(future))
+    if str(context.repo_root) not in sys.path:
+        sys.path.insert(0, str(context.repo_root))
+    return future
+
+
+def _round_receipt_dir(context: ToolContext) -> Path:
+    return context.repo_root / ".hcli" / "receipts"
+
+
+def _physical_rounds(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Round receipts the canonical physical emitter can turn into a measurement.
+
+    A round with no model_calls had nothing physical happen in it; the emitter
+    refuses those, so they are reported as not emittable rather than hidden.
+    """
+    shown = _shown_limit(args.get("show"))
+    root = _round_receipt_dir(context)
+    if not root.is_dir():
+        return {
+            "n": 0, "total": 0, "shown": 0, "rounds": [],
+            "refused": f"no round receipts at {root}; nothing physical to emit",
+        }
+    paths = sorted(root.glob("*.json"), key=lambda q: q.stat().st_mtime, reverse=True)
+    rows: List[Dict[str, Any]] = []
+    for q in paths[: max(shown * 4, 40)]:
+        try:
+            d = json.loads(q.read_text())
+        except Exception as exc:
+            rows.append({"round_id": q.stem, "emittable": False,
+                         "why": f"unreadable: {type(exc).__name__}"})
+            continue
+        calls = d.get("model_calls") or []
+        prov = (d.get("runtime_provenance") or [{}])[0]
+        rows.append({
+            "round_id": q.stem,
+            "emittable": bool(calls),
+            "n_model_calls": len(calls),
+            "goal_id": d.get("goal_id"),
+            "resident": ((prov.get("identity") or {}).get("resident_identity")
+                         or (prov.get("identity") or {}).get("model")),
+            "mtime": int(q.stat().st_mtime),
+            "why": None if calls else "no model_calls -- nothing physical happened",
+        })
+    emittable = [r for r in rows if r.get("emittable")]
+    out = {
+        "rounds": emittable[:shown],
+        "n": len(emittable[:shown]),
+        "total": len(paths),
+        "shown": len(emittable[:shown]),
+        "n_emittable_scanned": len(emittable),
+        "n_scanned": len(rows),
+        "next": "physical.emit with one of these round_id values",
+    }
+    out.update(_truncation_fields(len(emittable[:shown]), len(paths)))
+    return _scope_first(out)
+
+
+def _physical_emit(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """THE canonical physical measurement path. tools/future/physical_emitter.py.
+
+    Not a benchmark and not an estimate: it reads the per-call prefill/decode
+    nanoseconds a real round already recorded against a real resident, and
+    attaches the six comparability fields (specimen, nr, runtime, context,
+    path, concurrency) whose absence made 78 of 79 historical physical
+    receipts incomparable. Writing a second emitter is what this forbids.
+    """
+    _future_tools_on_path(context)
+    raw = args.get("round_id") or args.get("round")
+    if not raw:
+        return {"refused": "round_id is required; physical.rounds enumerates them"}
+    name = str(raw).strip()
+    if "/" in name or name.startswith("."):
+        return {"refused": f"round_id must be a bare receipt id, got {name!r}"}
+    path = _round_receipt_dir(context) / (name if name.endswith(".json") else name + ".json")
+    if not path.is_file():
+        return {"refused": f"no round receipt {name}; physical.rounds lists what exists"}
+    try:
+        import physical_emitter  # type: ignore
+        measured = physical_emitter.emit(path)
+    except Exception as exc:
+        # A tool failure is not a specimen refusal. [S010 A20]
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True, "round_id": name}
+    lead = {k: measured.get(k) for k in (
+        "specimen", "nr", "runtime", "context", "path", "concurrency",
+        "prefill_tps", "decode_tps", "gpu_share_of_prefill_wall_mean",
+        "evidence_tier", "gpu_authority")}
+    written = None
+    if args.get("write_receipt"):
+        # Reading a measurement is read-only; only PERSISTING it is a write. The
+        # tool is declared read_only so a reader is not forced to hold write
+        # permission to see prefill/decode tok-s, and the write is refused here
+        # instead -- the permission check belongs to the byte that lands on disk.
+        if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+            lead_refusal = "write_receipt needs workspace_write permission; " \
+                           "returning the measurement without persisting it"
+        else:
+            lead_refusal = None
+        out_dir = context.repo_root / "receipts" / "future"
+        if lead_refusal is None:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            dest = out_dir / f"PHYSICAL_{name}.json"
+            dest.write_text(json.dumps(measured, indent=2, sort_keys=True) + "\n")
+            written = str(dest.relative_to(context.repo_root))
+        else:
+            lead["receipt_refused"] = lead_refusal
+    lead["receipt"] = written
+    lead["round_id"] = name
+    lead["totals"] = measured.get("totals")
+    lead["n_model_calls"] = len(measured.get("per_call") or [])
+    lead["claim_boundary"] = measured.get("claim_boundary")
+    return lead
+
+
+def _physical_measure(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Measure a body that has never been a resident, under the SAME contract.
+
+    physical.emit reads a round receipt, which only ever exists for the
+    resident. That is why 28 ModelLake bodies still owe gpu/cpu/tps. This runs
+    a controlled fixed-length sweep -- fresh prefill from an empty cache every
+    repeat, greedy decode, concurrency 1 -- and fills the same six contract
+    fields. Timings are reported as min/median/max with the spread, never as a
+    bare median.
+
+    COSTLY: it loads and runs a model. Do not launch it beside another timing
+    measurement; shared CPU invalidates both.
+    """
+    _future_tools_on_path(context)
+    snapshot = str(args.get("snapshot") or "").strip()
+    specimen = str(args.get("specimen") or "").strip()
+    if not snapshot or not specimen:
+        return {"refused": "snapshot and specimen are both required; a physical "
+                           "receipt that cannot say WHAT it measured is not comparable"}
+    root = Path(snapshot)
+    if not root.is_dir():
+        return {"refused": f"{snapshot} is not a directory on this host"}
+    try:
+        import physical_emitter  # type: ignore
+        measured = physical_emitter.emit_direct(
+            snapshot, specimen=specimen,
+            nr=str(args.get("nr") or "source body as stored on disk, unmodified"),
+            prompt_tokens=int(args.get("prompt_tokens") or 512),
+            decode_tokens=int(args.get("decode_tokens") or 64),
+            repeats=int(args.get("repeats") or 3),
+            backend=str(args.get("backend") or "torch"))
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True, "specimen": specimen}
+    lead = {k: measured.get(k) for k in (
+        "specimen", "nr", "runtime", "context", "path", "concurrency",
+        "prefill_tps", "decode_tps", "prefill_tps_spread", "decode_tps_spread",
+        "device", "evidence_tier", "gpu_authority")}
+    written = None
+    if args.get("write_receipt"):
+        if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+            lead["receipt_refused"] = "write_receipt needs workspace_write permission"
+        else:
+            safe = re.sub(r"[^A-Za-z0-9_.-]", "_", specimen)[:80]
+            # The BACKEND belongs in the filename. Without it the Metal receipt
+            # silently overwrote the CPU one for the same body -- two different
+            # machines' numbers competing for one path, and the first measurement
+            # simply vanished.
+            back = re.sub(r"[^A-Za-z0-9_.-]", "_", str(args.get("backend") or "torch"))
+            dest = (context.repo_root / "receipts" / "future"
+                    / f"PHYSICAL_DIRECT_{safe}__{back}.json")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(json.dumps(measured, indent=2, sort_keys=True) + "\n")
+            written = str(dest.relative_to(context.repo_root))
+    lead["receipt"] = written
+    lead["claim_boundary"] = measured.get("claim_boundary")
+    return lead
+
+
+def _nr_complete_ebpw(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Bill a representation through the ONE accounting authority.
+
+    tools/future/complete_ebpw.py counts every persistent part -- payload,
+    codebooks, generators, bases, coefficients, indices, metadata. It REFUSES
+    an unreconciled candidate rather than billing a flattering subtotal, and
+    it flags a candidate that stores small but rematerializes the dense parent
+    to execute. Passing a partial candidate here gets a refusal, which is the
+    correct answer, not a smaller number.
+    """
+    _future_tools_on_path(context)
+    try:
+        from tools.future import complete_ebpw as ce  # type: ignore
+    except Exception as exc:
+        return {"experiment_failed": f"cannot import complete_ebpw: {exc}",
+                "not_a_specimen_property": True}
+    cand = args.get("candidate")
+    if not cand:
+        if not args.get("incumbent"):
+            return {"refused": "pass a declared candidate, or incumbent=true to "
+                               "bill the sealed resident from MIX_REPORT"}
+        try:
+            cand = ce.incumbent_candidate()
+        except Exception as exc:
+            return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                    "not_a_specimen_property": True}
+    try:
+        billed = ce.cost(cand)
+    except ce.CompleteEbpwRefused as exc:
+        return {"refused": str(exc), "billed_by": ce.RECORDED_BY,
+                "mechanism": "declared parts did not reconcile, or a part-like "
+                             "key was undeclared; a guess is not a bill"}
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True}
+    lead = {
+        "id": billed.get("id"),
+        "complete_ebpw": billed.get("complete_ebpw"),
+        "stated_total_bytes": billed.get("stated_total_bytes"),
+        "parent_params": billed.get("parent_params"),
+        "billed_by": ce.RECORDED_BY,
+        "evidence_class": ce.EVIDENCE_CLASS,
+        "claim_boundary": ce.CLAIM_BOUNDARY,
+    }
+    for k in ("dense_parent_rematerialization", "flag", "flags", "parts",
+              "ms_total", "by_category"):
+        if k in billed:
+            lead[k] = billed[k]
+    return lead
+
+
+
+# ---------------------------------------------------------------------------
+# SURFACE CONSOLIDATION. [S004]
+#
+# 60 tools became 81 became 91. Tool COUNT was already a declared non-goal, and
+# a resident that must choose among 83 schemas every turn is paying a selection
+# tax for a capability it could reach through a dozen doors. So: merge the
+# families behind one dispatching tool each, keep EVERY old name callable as an
+# alias, and let discover() show the smaller surface.
+#
+# The one hard rule is permission. A tool has ONE mutation class, so folding a
+# destructive op into a read_only tool would silently widen what a "read" can
+# do. _merge_group therefore REFUSES to merge members that disagree on
+# mutation class, at registry-build time, where it cannot be missed. That is
+# why git keeps land.propose and checkout-safe outside git, and why odyssey
+# splits into read / record / drive rather than one god-tool.
+# ---------------------------------------------------------------------------
+
+CONSOLIDATION: Dict[str, Dict[str, Any]] = {
+    "odyssey.read": {
+        "summary": "Read Odyssey campaign state. One door, many views.",
+        "ops": {
+            "status": "odyssey.status", "ledger": "odyssey.ledger",
+            "queue": "odyssey.queue", "priors": "odyssey.priors",
+            "value": "odyssey.value", "economics": "odyssey.economics",
+            "harvest": "odyssey.harvest", "ingest": "odyssey.ingest",
+            "completions": "odyssey.completions",
+            "selection_brief": "odyssey.selection_brief",
+            "patient": "odyssey.patient", "anatomy": "odyssey.anatomy",
+            "dense_anatomy": "odyssey.dense_anatomy",
+            "attack_law": "odyssey.attack_law",
+        },
+    },
+    "odyssey.record": {
+        "summary": "Write one Odyssey result: a Law, a Scar, or a ledger axis.",
+        "ops": {"law": "odyssey.record_law", "scar": "odyssey.record_scar"},
+    },
+    "odyssey.drive": {
+        "summary": "Advance the Odyssey driver. Every op is COSTLY and needs confirm.",
+        "ops": {
+            "cycle": "odyssey.cycle", "retire": "odyssey.retire",
+            "park_specimen": "odyssey.park_specimen",
+            "add_to_eligibility": "odyssey.add_to_eligibility",
+            "write_packet": "odyssey.write_packet",
+            "gravity_gauntlet": "odyssey.gravity_gauntlet",
+            "transfer_probe": "odyssey.create_transfer_probe",
+            "adversarial_probe": "odyssey.create_adversarial_probe",
+        },
+    },
+    "audit": {
+        "summary": ("Adversarial audit. Is this verdict stale, is this experiment "
+                    "confounded, is this tool actually callable, what would falsify "
+                    "this claim?"),
+        "ops": {"gate": "capability.gate", "confound": "experiment.confound",
+                "reachable": "tool.reachable", "attack": "claim.attack"},
+    },
+    "fs": {
+        "summary": "Read the filesystem: one file, a listing, or a search.",
+        "ops": {"read": "fs.read", "list": "fs.list", "search": "fs.search"},
+    },
+    "git": {
+        "summary": ("Inspect the repository without mutating it. Landing and "
+                    "checkout stay OUTSIDE this tool because they are not reads."),
+        "ops": {"status": "git.status", "log": "git.log", "diff": "git.diff"},
+    },
+    "processes": {
+        "summary": "Live Hawking processes: a listing, a roll-up, or the orphans.",
+        "ops": {"list": "processes.list", "summary": "processes.summary",
+                "orphaned": "processes.orphaned"},
+    },
+    "physical": {
+        "summary": ("Physical measurement under the ONE contract. Measuring a body "
+                    "that was never a resident is physical.measure -- COSTLY, so it "
+                    "stays outside."),
+        "ops": {"rounds": "physical.rounds", "emit": "physical.emit"},
+    },
+    "lake": {
+        "summary": "The ModelLake: census, mount status, specimen registry, acquisition.",
+        "ops": {"census": "lake.census", "status": "modellake.status",
+                "specimens": "specimens.registry", "acquire": "acquisition.propose"},
+    },
+    "receipt": {
+        "summary": "Read a named receipt: campaign evidence, roadmap, or architecture.",
+        "ops": {"read": "receipt.read", "roadmap": "roadmap.read",
+                "architecture": "architecture.inspect"},
+    },
+    "vmcp": {
+        "summary": ("Vision MCP. `tools` says what is callable and what is refused, "
+                    "`query` calls one. VisionMCP ships 303 tools; the bridge "
+                    "allowlists a read-only subset and names the mechanism for the rest."),
+        "ops": {"tools": "vmcp.tools", "capabilities": "vmcp.capabilities",
+                "inspect": "vmcp.inspect", "query": "vmcp.query"},
+    },
+    "web": {
+        "summary": "The open web: search for pages, or fetch one.",
+        "ops": {"search": "web.search", "fetch": "web.fetch"},
+    },
+    "github": {
+        "summary": "GitHub: search, or fetch a specific object.",
+        "ops": {"search": "github.search", "fetch": "github.fetch"},
+    },
+    "huggingface": {
+        "summary": ("Hugging Face metadata. Downloading is COSTLY and stays outside "
+                    "as huggingface.download."),
+        "ops": {"resolve": "huggingface.resolve", "history": "huggingface.history",
+                "fetch_file": "huggingface.fetch_file"},
+    },
+}
+
+
+def _merge_group(registry: "ToolRegistry", name: str, spec: Mapping[str, Any]) -> Optional[ToolSpec]:
+    """Register one dispatching tool over an existing family, or refuse.
+
+    Refuses -- loudly, at build time -- if the members disagree on mutation
+    class. A merged tool has one class; a quiet merge across classes would let
+    a read-permissioned caller reach a write.
+    """
+    members = {op: registry.get(target) for op, target in spec["ops"].items()}
+    missing = sorted(op for op, sp in members.items() if sp is None)
+    if missing:
+        raise RuntimeError(f"consolidation {name}: no such tool for ops {missing}")
+    classes = {sp.mutation for sp in members.values()}
+    if len(classes) != 1:
+        raise RuntimeError(
+            f"consolidation {name}: members span mutation classes {sorted(classes)}; "
+            "merging them would widen what the weakest permission can reach")
+    mutation = classes.pop()
+    resources = tuple(sorted({r for sp in members.values() for r in sp.resources}))
+    deterministic = all(sp.deterministic for sp in members.values())
+    timeout = max(sp.timeout_s for sp in members.values())
+
+    def handler(context: ToolContext, args: Dict[str, Any]) -> Any:
+        op = str(args.get("op") or "").strip()
+        target = members.get(op)
+        if target is None:
+            return {"refused": f"unknown op {op!r} for {name}",
+                    "ops": sorted(members), "hint": "pass one of ops as `op`"}
+        sub = {k: v for k, v in args.items() if k != "op"}
+        # Keep the ORIGINAL tool's own validation. The merged schema has to be
+        # permissive because ops take different arguments; the per-op contract
+        # must not be lost with it.
+        problem = validate_input(sub, target.input_schema)
+        if problem is not None:
+            return {"refused": problem, "op": op, "resolves_to": target.name,
+                    "required": (target.input_schema or {}).get("required") or []}
+        return target.handler(context, sub)
+
+    lines = []
+    for op in sorted(members):
+        sp = members[op]
+        req = (sp.input_schema or {}).get("required") or []
+        lines.append(f"{op}" + (f"({','.join(req)})" if req else "") + f" -> {sp.name}")
+    description = spec["summary"] + " ops: " + "; ".join(lines)
+    # The merged schema carries the UNION of its members' properties, not just
+    # `op`. The catalog renders a signature from the SCHEMA, so a merged tool
+    # advertising only op:string would show the model a door and hide every
+    # argument behind it -- the same unreachable-argument defect this campaign
+    # keeps finding, reintroduced by the consolidation itself. Each property
+    # says which ops accept it, so the union does not read as a free-for-all.
+    props: Dict[str, Any] = {
+        "op": {"type": "string", "enum": sorted(members),
+               "description": "which operation; see per-op required args below"}}
+    used_by: Dict[str, List[str]] = {}
+    for op, sp in sorted(members.items()):
+        for field, schema in ((sp.input_schema or {}).get("properties") or {}).items():
+            used_by.setdefault(field, []).append(op)
+            if field not in props:
+                props[field] = dict(schema)
+    # Naming every accepting op costs more than it informs once a field is
+    # shared: 11 fields of odyssey.drive carried the SAME 107-char op list,
+    # ~44% of that tool's schema spent restating one string. The complement is
+    # lossless and short, so say what a field does NOT apply to once it applies
+    # to most. REQUIRED-for stays exact -- that is the load-bearing half.
+    all_ops = set(members)
+    for field, ops in used_by.items():
+        req_for = sorted(o for o in ops
+                         if field in ((members[o].input_schema or {}).get("required") or []))
+        taken = set(ops)
+        missing = sorted(all_ops - taken)
+        # Pick on CHARACTERS, not on op count: "all except cycle" is longer
+        # than "a,b" whenever the prefix costs more than the names it drops.
+        cands = ["ops: " + ",".join(sorted(ops))]
+        if not missing:
+            cands.append("ops: all")
+        else:
+            cands.append("ops: all except " + ",".join(missing))
+        note = min(cands, key=len)
+        if req_for:
+            note += "; REQUIRED for " + ",".join(req_for)
+        existing = props[field].get("description")
+        props[field]["description"] = f"{existing} ({note})" if existing else note
+    merged = registry.register(ToolSpec(
+        name, description,
+        {"type": "object", "required": ["op"], "additionalProperties": True,
+         "properties": props},
+        mutation=mutation, deterministic=deterministic, resources=resources,
+        timeout_s=timeout, handler=handler,
+    ))
+    # Absorbed names stay CALLABLE -- alias_of only hides them from discover().
+    # Nothing that worked before this consolidation stops working. ToolSpec is
+    # frozen, so the marker goes on a replacement carrying the same handler
+    # rather than by mutating a spec other code may already hold.
+    from dataclasses import replace as _replace
+    for target in members.values():
+        if target.name != name:
+            registry._tools[target.name] = _replace(target, alias_of=name)
+    return merged
+
+
+def _consolidate(registry: "ToolRegistry") -> Dict[str, Any]:
+    before = len(registry.discover())
+    for name, spec in CONSOLIDATION.items():
+        _merge_group(registry, name, spec)
+    return {"before": before, "after": len(registry.discover())}
+
+
 def default_tool_registry(
     workspace: str | os.PathLike[str],
     *,
@@ -2526,7 +3737,12 @@ def default_tool_registry(
     ))
     registry.register(ToolSpec(
         "odyssey.record_measurement",
-        "Record one specimen/axis result into the Odyssey ledger: a value WITH a receipt, or a refusal whose reason names a mechanism. This is how a measured round closes.",
+        "Record one specimen/axis result into the Odyssey ledger: a value WITH a receipt, or a "
+        "refusal whose reason names a mechanism. This is how a measured round closes. With a "
+        "refusal, also give reopen_when -- the condition that would make this measurable (a float "
+        "copy of the body, a runtime that supports the architecture, a machine with the memory). "
+        "121 of the ledger's 142 refusals name a mechanism and no way back, which makes them "
+        "permanent by accident.",
         {"type": "object", "required": ["path", "slug", "axis"],
          "additionalProperties": False,
          "properties": {"path": {"type": "string"},
@@ -2534,7 +3750,8 @@ def default_tool_registry(
                         "axis": {"type": "string"},
                         "value": {},
                         "receipt": {"type": ["string", "null"]},
-                        "reason": {"type": ["string", "null"]}}},
+                        "reason": {"type": ["string", "null"]},
+                        "reopen_when": {"type": ["string", "null"]}}},
         mutation=REVERSIBLE_REPO,
         resources=("filesystem",), deterministic=False,
         handler=_odyssey_record_measurement,
@@ -2769,7 +3986,6 @@ def default_tool_registry(
     registry.register(ToolSpec("receipt.inspect", "Inspect a JSON/text receipt under the repository or mission state roots.", path_schema, alias_of="receipt.read", handler=_receipt_read))
     for name, description in (
         ("roadmap.read", "Read the persisted civilization roadmap."),
-        ("vmcp.capabilities", "Read the latest VMCP capability census."),
         ("doctor.inspect", "Read the latest Doctor tournament receipt."),
         ("gravity.inspect", "Read the latest Gravity compiler/search receipt."),
         ("accelerator.inspect", "Read the latest accelerator machine receipt."),
@@ -2796,6 +4012,17 @@ def default_tool_registry(
             {"type": "object", "additionalProperties": False, "properties": {}},
             handler=_odyssey_read(name.split(".", 1)[1]),
         ))
+    registry.register(ToolSpec(
+        "odyssey.selection_brief",
+        "The five selection inputs G018 requires -- measurement debt, cost, architecture novelty, "
+        "capability state and Pareto state -- assembled per specimen and NOT RANKED. Rows come "
+        "back in slug order, which carries no opinion. field_discrimination says how much each "
+        "input actually separates these bodies; read_this_first names the inputs that do not. "
+        "The choice, and the reason, are yours.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"limit": {"type": "integer"}}},
+        handler=_selection_brief,
+    ))
     registry.register(ToolSpec(
         "odyssey.cycle",
         "Advance the LIVE Odyssey by one cycle. Mutating; requires confirm=True.",
@@ -2906,14 +4133,17 @@ def default_tool_registry(
     for verb, required in (
         ("add_to_eligibility", ("oxx",)),
         ("park_specimen", ("oxx",)),
-        ("record_law", ("text",)),
-        ("record_scar", ("law_id",)),
+        ("record_law", ("text", "domain", "reopen_when")),
+        ("record_scar", ("law_id", "reopen_when")),
         ("create_transfer_probe", ("law_id", "target_oxx")),
         ("create_adversarial_probe", ("law_id",)),
     ):
         props = {"confirm": {"type": "boolean"}}
         for field in ("oxx", "text", "law_id", "target_oxx", "note", "reason",
-                      "evidence", "source_oxx", "attack", "description"):
+                      "evidence", "source_oxx", "attack", "description",
+                      # A law without a domain is applied where nobody tested it;
+                      # one without a reopen condition is permanent by accident.
+                      "domain", "reopen_when"):
             props[field] = {"type": "string"}
         registry.register(ToolSpec(
             "odyssey." + verb,
@@ -3050,6 +4280,208 @@ def default_tool_registry(
         verifier_expectations=("each lane's grok status/report must be checked before its output counts as fact",),
         handler=_grok_swarm_launch,
     ))
+    # NR->NX doors: the single biller and the single physical emitter, made
+    # reachable. [S010 35, 37, 49]
+    registry.register(ToolSpec(
+        "odyssey.attack_law",
+        "OIII: generate ranked executable attacks against one recorded law -- "
+        "negative transfer, blind holdout, measurement trap, goodhart, scope. "
+        "Closes the loop LAW -> ATTACK -> RESULT -> SCOPE UPDATE from the side "
+        "that writes laws. A law with no domain, or one that emits no attack, "
+        "is refused rather than published.",
+        {"type": "object", "required": ["law_id"], "additionalProperties": False,
+         "properties": {"law_id": {"type": "string"}, "show": {"type": "integer"},
+                        "source_model": {"type": "string"},
+                        "architecture_family": {"type": "string"},
+                        "organ_class": {"type": "string"}}},
+        handler=_odyssey_attack_law,
+    ))
+    registry.register(ToolSpec(
+        "capability.gate",
+        "THE capability authority: does this candidate pass perplexity AND "
+        "n-gram diversity against its own dense parent, under the live G020 "
+        "bars? Pass recorded_capability_ok to ask whether a receipt's stored "
+        "verdict is STALE -- evidence written under a superseded bar is not "
+        "evidence.",
+        {"type": "object", "additionalProperties": False,
+         "required": ["ppl", "r4", "dense_ppl", "dense_r4"],
+         "properties": {"ppl": {"type": "number"}, "r4": {"type": "number"},
+                        "dense_ppl": {"type": "number"}, "dense_r4": {"type": "number"},
+                        "recorded_capability_ok": {"type": "boolean"}}},
+        handler=_capability_gate,
+    ))
+    registry.register(ToolSpec(
+        "experiment.confound",
+        "Before believing an ORDERING result, check the arms were equal in "
+        "everything else: total bytes, complete EBPW and the multiset of bit "
+        "depths. If any of those differ, the capability difference belongs to "
+        "whichever moved, not to the ordering.",
+        {"type": "object", "required": ["receipt"], "additionalProperties": False,
+         "properties": {"receipt": {"type": "string"},
+                        "arms": {"type": "array", "items": {"type": "string"}}}},
+        handler=_experiment_confound,
+    ))
+    registry.register(ToolSpec(
+        "tool.reachable",
+        "Can a named tool actually be called, or does one of its required "
+        "arguments have no producing tool? Run this BEFORE planning work around "
+        "a door, not after a round has burned turns discovering it is shut.",
+        {"type": "object", "required": ["name"], "additionalProperties": False,
+         "properties": {"name": {"type": "string"}}},
+        handler=_tool_reachable,
+    ))
+    registry.register(ToolSpec(
+        "claim.attack",
+        "What would make this claim FALSE? Returns each matching law's own "
+        "recorded counterexample requirement plus the standing attacks. A prior "
+        "with no falsifier is not a prior.",
+        {"type": "object", "required": ["claim"], "additionalProperties": False,
+         "properties": {"claim": {"type": "string"}}},
+        handler=_claim_attack,
+    ))
+    registry.register(ToolSpec(
+        "wall.avoided",
+        "Record an experiment NOT run because a prior already answered it. "
+        "Compounding is work avoided; this is the log that measures it.",
+        {"type": "object", "required": ["prior", "skipped"],
+         "additionalProperties": False,
+         "properties": {"prior": {"type": "string"}, "skipped": {"type": "string"},
+                        "saved_wall_estimate_s": {"type": "number"},
+                        "confirmation": {"type": "string"}}},
+        mutation=WORKSPACE_WRITE,
+        handler=_wall_avoided,
+    ))
+    registry.register(ToolSpec(
+        "campaign.state",
+        "The campaign in one read: which depth axes have ZERO measurements (the "
+        "bottleneck), axis coverage across every specimen, how many priors are "
+        "live, and the most recent evidence. Call this FIRST when deciding what "
+        "to do next. It assembles; it does not choose.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_campaign_state,
+    ))
+    registry.register(ToolSpec(
+        "campaign.checkpoint",
+        "Write the part of the campaign a restart cannot rebuild from receipts: "
+        "the objective, why this specimen, the live hypothesis, and the explicit "
+        "NEXT ACTION. Call it at transitions, not every turn. campaign.state "
+        "reads it back first on reattach.",
+        {"type": "object", "additionalProperties": False, "properties": {
+            "objective": {"type": "string"},
+            "active_specimen": {"type": "string"},
+            "why_this_specimen": {"type": "string"},
+            "active_workunit": {"type": "string"},
+            "hypothesis": {"type": "string"},
+            "next_action": {"type": "string"},
+            "evidence_refs": {"type": "array", "items": {"type": "string"}},
+            "open_jobs": {"type": "array", "items": {"type": "string"}},
+            "resource_deps": {"type": "array", "items": {"type": "string"}},
+            "representations_ruled_out": {"type": "array", "items": {"type": "string"}}},
+         "required": ["objective", "hypothesis", "next_action"]},
+        mutation=WORKSPACE_WRITE,
+        handler=_campaign_checkpoint,
+    ))
+    registry.register(ToolSpec(
+        "vmcp.capabilities",
+        "The live perception surface this host implements natively: tool names, "
+        "profiles, and which dependencies it deliberately does not need.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_vmcp_capabilities,
+    ))
+    registry.register(ToolSpec(
+        "vmcp.tools",
+        "Which VisionMCP tools HCLI can actually call, and the named mechanism "
+        "that refuses the rest. Read this before vmcp op=query.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_vmcp_tools,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.priors",
+        "What the campaign already knows: recorded Laws and Scars, each with the "
+        "DOMAIN it was measured on and the condition that would REOPEN it. Read "
+        "this before proposing an experiment -- a prior that already answers the "
+        "question removes the experiment. odyssey.record_law and "
+        "odyssey.record_scar write here; this is how they are read back.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"focus": {"type": "string"}, "show": {"type": "integer"}}},
+        handler=_odyssey_priors,
+    ))
+    registry.register(ToolSpec(
+        "physical.rounds",
+        "Round receipts that the canonical physical emitter can turn into a "
+        "measurement, newest first. Use this to get a round_id for "
+        "physical.emit; rounds with no model calls are excluded because "
+        "nothing physical happened in them.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"show": {"type": "integer"}}},
+        handler=_physical_rounds,
+    ))
+    registry.register(ToolSpec(
+        "physical.emit",
+        "THE canonical physical measurement for one round: fresh prefill "
+        "tok/s, decode tok/s, GPU share of prefill wall, plus the six "
+        "comparability fields (specimen, nr, runtime, context, path, "
+        "concurrency). Real production calls against the live resident, not a "
+        "synthetic benchmark and not an estimate. Set write_receipt to "
+        "persist it under receipts/future/.",
+        {"type": "object", "required": ["round_id"], "additionalProperties": False,
+         "properties": {"round_id": {"type": "string"},
+                        "write_receipt": {"type": "boolean"}}},
+        timeout_s=120.0,
+        handler=_physical_emit,
+    ))
+    registry.register(ToolSpec(
+        "physical.measure",
+        "Measure a ModelLake body that has never been a resident, under the "
+        "SAME physical contract as physical.emit: fresh prefill tok/s and decode "
+        "tok/s with min/median/max spread, plus specimen, nr, runtime, context, "
+        "path and concurrency. This is how gpu/cpu/tps stop being OWED on bodies "
+        "the resident never ran. COSTLY -- never run it beside another timing "
+        "measurement.",
+        {"type": "object", "required": ["snapshot", "specimen"],
+         "additionalProperties": False,
+         "properties": {"snapshot": {"type": "string"}, "specimen": {"type": "string"},
+                        "nr": {"type": "string"},
+                        "prompt_tokens": {"type": "integer"},
+                        "decode_tokens": {"type": "integer"},
+                        "repeats": {"type": "integer"},
+                        "backend": {"type": "string", "enum": ["torch", "mlx"],
+                                    "description": "torch = CPU float32 reference; "
+                                                   "mlx = METAL at the checkpoint's "
+                                                   "native dtype. Different device AND "
+                                                   "different precision, so receipts "
+                                                   "from the two are not comparable."},
+                        "write_receipt": {"type": "boolean"}}},
+        mutation=COSTLY, deterministic=False,
+        resources=("cpu", "gpu", "exclusive_benchmark_window"),
+        timeout_s=1800.0,
+        handler=_physical_measure,
+    ))
+    registry.register(ToolSpec(
+        "nr.complete_ebpw",
+        "Complete executable bits-per-weight of a representation, billing "
+        "EVERY persistent part: payload, codebooks, generators, bases, "
+        "coefficients, indices, residuals, metadata. Pass incumbent=true for "
+        "the sealed resident, or a fully declared candidate. An unreconciled "
+        "candidate is REFUSED rather than billed low -- that refusal is the "
+        "answer. This is the only accounting authority; do not compute a bpw "
+        "yourself.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"incumbent": {"type": "boolean"},
+                        "candidate": {"type": "object"}}},
+        timeout_s=60.0,
+        handler=_nr_complete_ebpw,
+    ))
+    # Snapshot AFTER every registration: taken earlier, tool.reachable would
+    # report a door unreachable purely because its producer had not been
+    # registered yet at snapshot time.
+    _REACHABILITY_REGISTRY["registry"] = registry
+    _REACHABILITY_REGISTRY["specs"] = {
+        n: sp for n, sp in
+        [(i["name"], registry.get(i["name"])) for i in registry.discover()]
+        if sp is not None
+    }
+    _consolidate(registry)
     return registry
 
 

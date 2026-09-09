@@ -219,6 +219,17 @@ def build_parser() -> argparse.ArgumentParser:
     qwen27_mlp_ab.add_argument("--resident-binary", default=None)
     qwen27_mlp_ab.add_argument("--timeout-s", type=float, default=180.0)
     qwen27_mlp_ab.add_argument("--emit", default=None)
+    # Its handler reads args.fusion_env and the parser never defined it, so
+    # EVERY invocation raised AttributeError and was reported as a FAILED
+    # status -- an advertised subcommand that could not run once.
+    qwen27_mlp_ab.add_argument(
+        "--fusion-env",
+        action="append",
+        default=[],
+        type=_parse_env_assignment,
+        metavar="KEY=VALUE",
+        help="child-only fusion environment override; repeat for multiple",
+    )
 
     fusion_audit = sub.add_parser(
         "qwen38-fusion-audit",

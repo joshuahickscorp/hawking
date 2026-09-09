@@ -1,0 +1,55 @@
+{
+ "obligation": "G012",
+ "question": "if a finalist NR appeared tomorrow, could this campaign qualify it?",
+ "answer": "THE GATE IS READY AND NOTHING CAN CALL IT.",
+ "the_gate": {
+  "module": "tools/future/nx_promotion.py",
+  "conditions": 10,
+  "mechanically_checked": [
+   "complete_persistent_accounting",
+   "no_hidden_dense_parent",
+   "immutable_artifact_identity"
+  ],
+  "by_receipt": [
+   "standalone_execution",
+   "capability_qualification",
+   "oiii_adversarial_qualification",
+   "physical_qualification",
+   "restart_recovery_qualification",
+   "machine_runtime_contract",
+   "independent_verification"
+  ],
+  "own_tests": "hcli/test_nx_promotion.py -- 8 passed"
+ },
+ "exercised_directly": [
+  {
+   "case": "RUBBER STAMP -- every condition asserted true, no evidence at all",
+   "result": "NR-derived candidate; promotion refused. ALL TEN conditions fail.",
+   "reading": "a bare boolean is not believed, which is the whole point of the module"
+  },
+  {
+   "case": "UNDERSTATED ACCOUNTING -- counted_bytes 1 against a 4096-byte artifact",
+   "result": "refused; complete_persistent_accounting fails",
+   "reading": "the accounting check is real and catches the exact lie NX exists to prevent"
+  },
+  {
+   "case": "HIDDEN PARENT -- external_references naming the resident's parent directory",
+   "result": "refused; no_hidden_dense_parent fails",
+   "reading": "the clause that makes NX standalone rather than a wrapper actually bites"
+  },
+  {
+   "case": "FULLY EVIDENCED -- correct bytes, matching sha256, empty external_references, a receipt per condition",
+   "result": "NX",
+   "reading": "the NEGATIVE CONTROL. A gate that refuses everything is not a gate. This one can say yes, so its refusals mean something."
+  }
+ ],
+ "the_field_absence_rule": "check_no_hidden_parent returns False when external_references is ABSENT, with the reason 'absence of a field is not absence of a parent'. That is the defaulted-field trap handled correctly, and this campaign has been bitten by the opposite three times.",
+ "so_what_blocks_G012": {
+  "not_the_gate": "it is built, tested, and refuses what it should while still able to pass",
+  "blocker_1": "NO CANDIDATE. G012_CAPABILITY_CLIFF: the lowest capability-passing point in the campaign is 3.2831 complete EBPW against a <=1.5 tolerance, and every candidate below 1.5 failed the conjunction. There is nothing to hand the gate.",
+  "blocker_2": "NO CALLER. G023_NX_PROMOTION_HAS_NO_CALLER: the module is imported by nothing but its own test and is not registered as a tool, so neither HCLI nor any pipeline can invoke it even when a candidate exists.",
+  "blocker_3": "SEARCH SPACE. G027_REACHABILITY_ARITHMETIC: no allocation of Q4-and-above rates between the two organs reaches either gate, so the class of representation has to change before a candidate can exist at all."
+ },
+ "what_this_adds": "G012's evidence was '(none yet)'. It now has one thing: the terminal step is NOT the risk. The ten-condition contract works today. The campaign is short a candidate and a call site, not a qualification mechanism.",
+ "scar": "CHECK THAT THE LAST STEP WORKS BEFORE BLAMING THE SEARCH. A ready gate changes what the blocker is."
+}

@@ -1,0 +1,145 @@
+{
+ "obligation": "G010",
+ "wave": "pre-superwave dispatches and wave-2 stragglers",
+ "finding": "EIGHT LANES ENDED UNOBSERVED, FIVE OF THEM STILL CLAIMING TO BE RUNNING",
+ "how_found": "tools/future/lane_ledger.py reads the disposition off DISK for every task dir under ~/.claude-grok/tasks created during this goal, instead of trusting that each one was remembered. 42 lanes; 20 had hand-recorded dispositions from superwave 1; 8 had none and no terminal record.",
+ "n_lanes_total": 42,
+ "n_previously_recorded": 20,
+ "n_newly_accounted": 10,
+ "the_stale_running_trap": "the status file is written at LAUNCH and rewritten at EXIT. A lane killed in between never reaches the rewrite, so it reads 'running' forever. Five lanes have claimed to be running since the host restart. Anything that polls this file to decide whether a lane is alive will wait for them permanently -- the same shape as the swap high-water mark and the monotone counter this campaign has already been bitten by twice.",
+ "no_work_was_lost": "all 8 produced 0 bytes of report and 0 bytes of diff. Nothing is being discarded by recording them as dead; there was never anything to keep.",
+ "lanes": [
+  {
+   "task": "anatomy-schemes-20260907-011827",
+   "lane": "anatomy-schemes",
+   "verdict": "NO_EXIT_RECORDED",
+   "status_file": null,
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "no exit_code and no status file. The lane directory was created and the wrapper never wrote a terminal record -- launch failed before the run began, or the process was killed between mkdir and the first write."
+  },
+  {
+   "task": "anatomy-schemes-20260907-011852",
+   "lane": "anatomy-schemes",
+   "verdict": "DEAD_ON_RESTART",
+   "status_file": "running",
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "status file still reads 'running' and no grok process exists. The host restarted during this goal (S008) and these lanes died with it. The status file is written at launch and rewritten at exit; a killed lane never reaches the rewrite, so 'running' is a STALE LAUNCH MARKER, not a live reading."
+  },
+  {
+   "task": "authprobe-20260907-011553",
+   "lane": "authprobe",
+   "verdict": "DEAD_ON_RESTART",
+   "status_file": "running",
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "status file still reads 'running' and no grok process exists. The host restarted during this goal (S008) and these lanes died with it. The status file is written at launch and rewritten at exit; a killed lane never reaches the rewrite, so 'running' is a STALE LAUNCH MARKER, not a live reading."
+  },
+  {
+   "task": "consult-20260907-011349",
+   "lane": "consult",
+   "verdict": "DEAD_ON_RESTART",
+   "status_file": "running",
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "status file still reads 'running' and no grok process exists. The host restarted during this goal (S008) and these lanes died with it. The status file is written at launch and rewritten at exit; a killed lane never reaches the rewrite, so 'running' is a STALE LAUNCH MARKER, not a live reading."
+  },
+  {
+   "task": "consult-20260907-053609",
+   "lane": "consult",
+   "verdict": "DEAD_ON_RESTART",
+   "status_file": "running",
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "status file still reads 'running' and no grok process exists. The host restarted during this goal (S008) and these lanes died with it. The status file is written at launch and rewritten at exit; a killed lane never reaches the rewrite, so 'running' is a STALE LAUNCH MARKER, not a live reading."
+  },
+  {
+   "task": "g002-dense-sweep-20260907-034940",
+   "lane": "g002-dense-sweep",
+   "verdict": "DEAD_ON_RESTART",
+   "status_file": "running",
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": true,
+   "work_lost": false,
+   "why": "status file still reads 'running' and no grok process exists. The host restarted during this goal (S008) and these lanes died with it. The status file is written at launch and rewritten at exit; a killed lane never reaches the rewrite, so 'running' is a STALE LAUNCH MARKER, not a live reading."
+  },
+  {
+   "task": "g016-role-suitability-20260907-061136",
+   "lane": "g016-role-suitability",
+   "verdict": "NO_EXIT_RECORDED",
+   "status_file": null,
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "no exit_code and no status file. The lane directory was created and the wrapper never wrote a terminal record -- launch failed before the run began, or the process was killed between mkdir and the first write."
+  },
+  {
+   "task": "g016-state-axis-20260907-052532",
+   "lane": "g016-state-axis",
+   "verdict": "NO_EXIT_RECORDED",
+   "status_file": null,
+   "exit_code": null,
+   "report_bytes": 0,
+   "diff_bytes": 0,
+   "worktree_still_registered": false,
+   "work_lost": false,
+   "why": "no exit_code and no status file. The lane directory was created and the wrapper never wrote a terminal record -- launch failed before the run began, or the process was killed between mkdir and the first write."
+  },
+  {
+   "task": "dynamic-governor-20260907-025209",
+   "lane": "dynamic-governor",
+   "verdict": "LANDED_OUTSIDE_THE_REPO",
+   "status_file": "done",
+   "exit_code": 0,
+   "report_bytes": 7254,
+   "diff_bytes": 18549,
+   "work_lost": false,
+   "why": "it rewrote the ULTRAGOAL stop hook's terminal condition: `blocks > maxBlocks` was a MONOTONE ACTIVITY COUNTER, so a long run making real verified progress would SAFETY_DISARM at 100 blocks purely for being long, while the real stall signal (noProgress, from ledger+evidence hashes) fed only the reason text and never the decision. The live hook at ~/.claude/hooks/ultragoal-stop.mjs now reads 'maxBlocks is the window size, not a lifetime cap' with an earned-extension window -- THE WORK IS LANDED. It had no repo branch and no repo commit because its target lives OUTSIDE the repository, which is why the lane ledger could not see it.",
+   "why_it_looked_unaccounted": "same shape as the external H-ROADMAP scar: a change whose target is outside the repo leaves no commit, so every repo-scoped audit reports it as never having happened.",
+   "note_for_the_record": "this campaign is at block 21 of that window. Had the counter stayed monotone, the goal would terminate on longevity rather than on evidence. Recorded because a change to the goal's OWN termination logic is governance-sensitive and should never be invisible."
+  },
+  {
+   "task": "consult-20260907-210357",
+   "lane": "consult",
+   "verdict": "402_DEAD",
+   "status_file": null,
+   "exit_code": 1,
+   "report_bytes": 171,
+   "diff_bytes": 0,
+   "work_lost": false,
+   "why": "the Grok capacity preflight run in this session. It was SUPPOSED to fail if capacity was gone, and it did: HTTP 402, balance exhausted. Its mechanism is recorded in receipts/future/G010_PREFLIGHT_CHECKED_AUTH_NOT_CAPACITY.json. A deliberate probe, not a lost lane."
+  }
+ ],
+ "worktrees_still_registered": {
+  "list": [
+   "g002-dense-sweep-20260907-034940",
+   "g005-wire-resident-adoption-20260907-035000",
+   "g011-pareto-frontier-20260907-035133"
+  ],
+  "disposition": "NOT REMOVED. g005-wire-resident-adoption is HELD BY S005 for HCLI to close and must survive. g011-pareto-frontier is landed at 93f255537. g002-dense-sweep belongs to a lane recorded dead above. Removing any of them is a separate act with its own check for uncommitted work, and this receipt is an audit."
+ },
+ "the_audit_was_wrong_twice_first": "first run reported 33 unaccounted lanes: exit_code and status are FILES the wrapper writes, not keys in metadata.json, so every completed lane read as NO_EXIT_RECORDED. Second run reported 0 hand-recorded dispositions: superwave 1's receipt keys lanes by SHORT name in `lane` and by full task id in `task`, and the parser read `lane`. Both fixed, and the disposition source is now every G010_*DISPOSITION*.json rather than one pinned filename.",
+ "scar": "A STATUS FILE WRITTEN AT LAUNCH IS A LAUNCH MARKER. Only a terminal record proves an end.",
+ "the_audit_was_wrong_three_times": "1) exit_code and status are FILES the wrapper writes, not metadata.json keys -- 33 completed lanes read as NO_EXIT_RECORDED. 2) superwave 1's receipt keys lanes by SHORT name in `lane` and full task id in `task`; the parser read `lane` and found 0 of 20 recorded. 3) the ledger's own lane TABLE is the largest disposition store -- twelve wave-2/3/4 lanes live there and nowhere else -- and reading only receipts reported all twelve as having no recorded cause. Every one of the three made the campaign look worse than it was, which is the safer direction to be wrong and still wrong.",
+ "two_bars_not_one": "UNOBSERVED (no terminal record on disk at all) and NO_RECORDED_DISPOSITION (no cause). The loose bar alone is misleading: removing superwave 1's twenty dispositions left UNOBSERVED at 0, because those lanes carry exit codes. G010 asks for 'landed, rejected, or reaped WITH CAUSE', and an exit code is a number, not a cause."
+}

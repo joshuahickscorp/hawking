@@ -1295,6 +1295,22 @@ def _goal_with_steers(objective: str, ws: Path) -> str:
     return objective + "\n\nOPERATOR STEERS (apply to remaining work):\n" + "\n".join(lines)
 
 
+def _goal_with_constraints(objective: str, constraints: Sequence[str]) -> str:
+    """Put the operator's constraints in front of the worker.
+
+    `--constraint` was parsed, written into the delegation spec, and read by
+    nobody: build_spec stored spec["constraints"] and execute_mission read
+    objective, endpoint and protected_paths only. So every constraint an
+    operator set was discarded between the command line and the model -- the
+    worst shape of this bug, because the operator believes a limit is in force.
+    """
+    rows = [str(c).strip() for c in (constraints or ()) if str(c).strip()]
+    if not rows:
+        return objective
+    return objective + "\n\nOPERATOR CONSTRAINTS (these bound the work):\n" + \
+        "\n".join(f"- {row}" for row in rows)
+
+
 def execute_mission(
     workspace: Union[str, Path],
     *,
@@ -1322,7 +1338,9 @@ def execute_mission(
         elif cancel_path(ws).is_file():
             blocker = "cancel requested before execution started"
         else:
-            goal = _goal_with_steers(str(spec.get("objective") or ""), ws)
+            goal = _goal_with_constraints(
+                str(spec.get("objective") or ""), spec.get("constraints") or [])
+            goal = _goal_with_steers(goal, ws)
             caller = caller or default_caller(
                 str(spec.get("endpoint") or DEFAULT_ENDPOINT)
             )

@@ -1,0 +1,35 @@
+{
+ "obligation": "G007 \u2014 attack the compressed GPU path; this is the DISCRIMINATOR for its open question",
+ "question_answered": "ORGAN_BANDWIDTH.json decomposed a token into mlp 15.541ms, deltanet 8.227, gqa 2.607, lm_head 1.358 and found NO HOT ORGAN -- the 9.67ms unexplained term is distributed in proportion. It also killed the obvious explanation: DeltaNet has the HIGHEST dispatch density (113.8/GB vs MLP's 35.9) and is the FASTEST of the three at 360 GB/s, so DISPATCH COUNT DOES NOT SET THE RATE. It listed three untested candidates: contiguity, dependency chain, per-launch working set. This tests the first two directly.",
+ "method": "pure streaming microbenchmark, no model loaded. 512 MiB moved per arm -- identical bytes, ~16x any cache level -- arms ALTERNATED across reps so the DVFS ramp cancels, min/median/max reported. Run under the campaign guard at 8.1 GB free.",
+ "measured_gb_s": {
+  "1 tensor (lm_head-like)": {
+   "min": 24.9,
+   "median": 517.3,
+   "max": 523.8
+  },
+  "16 tensors": {
+   "min": 277.9,
+   "median": 390.7,
+   "max": 419.4
+  },
+  "256 tensors (mlp-like)": {
+   "min": 44.5,
+   "median": 163.0,
+   "max": 199.7
+  },
+  "256 tensors CHAINED": {
+   "min": 50.3,
+   "median": 69.7,
+   "max": 69.8
+  }
+ },
+ "result": {
+  "contiguity_is_real_and_large": "one contiguous tensor reaches 517.3 GB/s; the SAME BYTES as 256 independent tensors reach 163.0. FRAGMENTATION COSTS 68% OF BANDWIDTH at fixed bytes and fixed independence. 16 tensors already lose 24%.",
+  "corroborates_the_existing_trace": "the receipt measured lm_head -- 675 MB in 2 dispatches on one contiguous tensor -- at 497.4 GB/s, 70.7% of the clean roof. This microbenchmark's contiguous arm lands at 517.3 GB/s independently. The organs that walk hundreds of per-layer tensors were measured at ~360; the 256-tensor arm here lands at 163.0. Same ordering, same magnitude, different instrument.",
+  "dependency_chain_looks_large_but_is_NOT_CLEANLY_SEPARATED": "the chained arm reaches 69.7 GB/s, 57% below the independent 256 arm. BUT that arm also carries extra scalar ops, so it conflates SERIAL DEPENDENCY with MORE ARITHMETIC. This number is NOT claimed as the dependency cost."
+ },
+ "owed_control": "a 256-tensor arm carrying the SAME extra scalar ops but with NO dependency between reads. That isolates dependency from arithmetic. It was attempted and the campaign guard refused at 2.79 GB free with four Grok lanes holding the host -- a resource wait, recorded rather than worked around.",
+ "what_it_means_for_gravity": "a representation that saves bytes but SCATTERS them across more, smaller tensors can lose more to fragmentation than it gains in bytes. At fixed bytes, going from 1 tensor to 256 costs 68% of bandwidth -- far more than any plausible byte saving. Directive 37's 'representation and physics must co-evolve' is not a slogan here: it is a 3.2x factor measured at matched bytes, and it says a Noetic representation should prefer FEWER, LARGER, CONTIGUOUS organs over many small generated ones unless the byte saving exceeds 3x.",
+ "caveat": "mx.sum is a reduction, not a GEMM. This measures pure streaming bandwidth, which is the right model for a bandwidth-bound decode and for bytes/token accounting, but it is not a measurement of MLP arithmetic."
+}

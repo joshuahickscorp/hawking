@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. CPU float32 -- this is NOT the body's best achievable speed and must not be read as one. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 7.4806,
+  "decode_tps_spread": {
+    "drift_note": "the series only moves one way: this is drift, not scatter, and a single-order comparison against it is invalid -- reverse the order or pair the arms",
+    "in_run_order": [
+      7.6314,
+      7.4806,
+      7.4474
+    ],
+    "max": 7.6314,
+    "median": 7.4806,
+    "min": 7.4474,
+    "monotone_drift": "FALLING",
+    "spread_pct": 2.47
+  },
+  "device": "cpu",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": false,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "executed on cpu; no GPU work was dispatched",
+  "measurement_contract": {
+    "backend_device": "cpu",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 132.753,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+    "warmup_repeats_discarded": 0
+  },
+  "nr": "source body as stored on disk, unmodified; torch float32 on CPU",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 103.5669,
+  "prefill_tps_spread": {
+    "first_cell_note": "the slowest repeat is the FIRST one: a cold cell, not a property of the body; the median excludes it but the spread does not",
+    "in_run_order": [
+      76.1729,
+      104.1507,
+      103.5669
+    ],
+    "max": 104.1507,
+    "median": 103.5669,
+    "min": 76.1729,
+    "monotone_drift": "NONE",
+    "spread_pct": 36.73
+  },
+  "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 25.5356,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 16.5812
+  }
+}

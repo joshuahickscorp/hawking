@@ -1,0 +1,1340 @@
+{
+ "accounting": {
+  "accountant": "tools/future/lowrank_nr.py::finalize_parts / encode_affine",
+  "definition": "complete_ebpw = stored_bytes * 8 / source_parameters",
+  "ebpw_residual_inverted_vs_uniform": 0.0,
+  "ebpw_residual_weighted_vs_uniform": 0.0,
+  "ebpw_residual_weighted_vs_uniform_4dp": 0.0,
+  "matched_organ_bytes": 275255904,
+  "numerator": "affine packed payload + fp16 scale + fp16 zero-point + 24-byte metadata per organ + dense bf16 remainder; scales live in the numerator",
+  "source_parameters": "every persistent parameter tensor in the parent safetensors (embed and lm_head both stored despite tie_word_embeddings; both billed)"
+ },
+ "applied": {
+  "INVERTED": 196,
+  "LOCAL": 196,
+  "ORGAN_WEIGHTED": 196,
+  "UNIFORM": 196,
+  "n_organ_tensors": 196,
+  "named_parameters_matched": 196
+ },
+ "arms": {
+  "INVERTED": {
+   "capability": {
+    "distincts": [
+     0.09434,
+     0.183486,
+     0.241379,
+     0.27027,
+     0.287037,
+     0.336364,
+     0.373832,
+     0.481818
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.481818,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+      "r4": 0.130841,
+      "text": "Explain how a mixture-of-experts layer routes tokens to experts. Also, explain how the layer is built, and what are the benefits of using this layer?\nAnswer:\n\nThe mixture-of-experts layer is a layer that combines the expertise of various ex"
+     },
+     {
+      "distinct": 0.27027,
+      "n_new": 96,
+      "n_tokens": 111,
+      "prompt": "What is the capital of France, and why did it become the capital?",
+      "r4": 0.388889,
+      "text": "What is the capital of France, and why did it become the capital? The question is a bit tricky. The capital of France is Paris, but why did it become the capital? The answer is that it became the capital because of the French Revolution. Th"
+     },
+     {
+      "distinct": 0.287037,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short Python function that reverses a linked list.",
+      "r4": 0.542857,
+      "text": "Write a short Python function that reverses a linked list. The function should take a head node of a linked list and return the head node of the reversed list. The function should not use any built-in functions for reversing the list. Also,"
+     },
+     {
+      "distinct": 0.183486,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+      "r4": 0.792453,
+      "text": "Summarize why bandwidth, not compute, limits transformer decoding. Why is it important to use a transformer? Why is it important to use a transformer? Why is it important to use a transformer? Why is it important to use a transformer? Why i"
+     },
+     {
+      "distinct": 0.241379,
+      "n_new": 96,
+      "n_tokens": 116,
+      "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+      "r4": 0.663717,
+      "text": "A farmer has 17 sheep and all but 9 run away. How many are left? The answer is 17 - 9 = 8. So, the answer is 8. So, the answer is 8. So, the answer is 8. So, the answer is 8. So, the answer is 8. So, the answer is 8. So, the answer is 8. So"
+     },
+     {
+      "distinct": 0.336364,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Describe the difference between a scale and a zero point in quantization.",
+      "r4": 0.383178,
+      "text": "Describe the difference between a scale and a zero point in quantization. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a single sent"
+     },
+     {
+      "distinct": 0.373832,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "List three reasons a neural network might fail to converge.",
+      "r4": 0.490385,
+      "text": "List three reasons a neural network might fail to converge. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a single sentence.\nAnswer: "
+     },
+     {
+      "distinct": 0.09434,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Translate to French: The weather is cold today.",
+      "r4": 0.902913,
+      "text": "Translate to French: The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The"
+     }
+    ],
+    "median_4gram_repeat": 0.5429,
+    "median_distinct_ratio": 0.287,
+    "n_prompts": 8,
+    "nll": 1.69263,
+    "nll_tokens": 211,
+    "ppl": 5.4338,
+    "ppl_full": 5.433767882823024,
+    "r4_full": 0.5428571428571429,
+    "r4s": [
+     0.130841,
+     0.383178,
+     0.388889,
+     0.490385,
+     0.542857,
+     0.663717,
+     0.792453,
+     0.902913
+    ],
+    "worst_max_repeat_run": 1
+   },
+   "capability_ok": true,
+   "capability_status": "CANDIDATE_PASS",
+   "complete_bytes": 897716832,
+   "complete_ebpw": 9.5548,
+   "complete_ebpw_full": 9.55484996239864,
+   "diversity_ok": true,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": true,
+    "capability_status": "CANDIDATE_PASS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": true,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.9178,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
+    "ppl_ok": true,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 275255904,
+   "organ_target_ebpw": {
+    "down_proj": 4.303291,
+    "gate_proj": 4.77832,
+    "k_proj": 6.203407,
+    "o_proj": 5.728378,
+    "q_proj": 6.678436,
+    "up_proj": 3.828262,
+    "v_proj": 5.253349
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 18350080,
+    "A_zeros": 18350080,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 238551040,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.303290780699856
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.778319793859046
+    },
+    "k_proj": {
+     "bits": 4,
+     "complete_bytes": 18350752,
+     "complete_ebpw": 5.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g32",
+     "target_ebpw": 6.203406833336612
+    },
+    "o_proj": {
+     "bits": 4,
+     "complete_bytes": 36700832,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g32",
+     "target_ebpw": 5.728377820177423
+    },
+    "q_proj": {
+     "bits": 8,
+     "complete_bytes": 60555936,
+     "complete_ebpw": 8.2501,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q8-g128",
+     "target_ebpw": 6.678435846495801
+    },
+    "up_proj": {
+     "bits": 3,
+     "complete_bytes": 44040864,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q3-g32",
+     "target_ebpw": 3.8282617675406674
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 16515744,
+     "complete_ebpw": 4.5002,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g64",
+     "target_ebpw": 5.253348807018234
+    }
+   },
+   "per_param_weights": {
+    "down_proj": 1.1240847784200385,
+    "gate_proj": 1.2481695568400772,
+    "k_proj": 1.620423892100193,
+    "o_proj": 1.4963391136801543,
+    "q_proj": 1.7445086705202315,
+    "up_proj": 1.0,
+    "v_proj": 1.3722543352601158
+   },
+   "policy": "INVERTED",
+   "ppl_ok": true,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
+  "LOCAL": {
+   "capability": {
+    "distincts": [
+     0.09434,
+     0.12844,
+     0.130841,
+     0.145455,
+     0.153153,
+     0.154545,
+     0.163793,
+     0.212963
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.154545,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+      "r4": 0.841121,
+      "text": "Explain how a mixture-of-experts layer routes tokens to experts. The use of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of of"
+     },
+     {
+      "distinct": 0.153153,
+      "n_new": 96,
+      "n_tokens": 111,
+      "prompt": "What is the capital of France, and why did it become the capital?",
+      "r4": 0.731481,
+      "text": "What is the capital of France, and why did it become the capital? What is the current of the French Republic, and why did it become the capital of the French Republic? What is the current of the French Republic, and why did it become the ca"
+     },
+     {
+      "distinct": 0.212963,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short Python function that reverses a linked list.",
+      "r4": 0.609524,
+      "text": "Write a short Python function that reverses a linked list. The function should take a list of integers and a list of integers, and return a new list of integers. The function should reverse the list of integers. The function should also ret"
+     },
+     {
+      "distinct": 0.12844,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+      "r4": 0.735849,
+      "text": "Summarize why bandwidth, not compute, limits transformer decoding. Also, explain why, not compute, limits, transformer decoding. Also, explain, not compute, limits, decoding, decoding, decoding, decoding, decoding, decoding, decoding, decod"
+     },
+     {
+      "distinct": 0.163793,
+      "n_new": 96,
+      "n_tokens": 116,
+      "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+      "r4": 0.823009,
+      "text": "A farmer has 17 sheep and all but 9 run away. How many are left? How many are left? How many are left? How many are left? How many are left? How many are left? How many are left? How many are left? How many are left? How many are left? How "
+     },
+     {
+      "distinct": 0.145455,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Describe the difference between a scale and a zero point in quantization.",
+      "r4": 0.803738,
+      "text": "Describe the difference between a scale and a zero point in quantization. Also, explain the difference between a scale and a zero point in a quantization. Also, explain the difference between a scale and a zero point in a quantization. Also"
+     },
+     {
+      "distinct": 0.130841,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "List three reasons a neural network might fail to converge.",
+      "r4": 0.817308,
+      "text": "List three reasons a neural network might fail to converge. A neural network might fail to converge to a certain value. A neural network might fail to converge to a certain value. A neural network might fail to converge to a certain value. "
+     },
+     {
+      "distinct": 0.09434,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Translate to French: The weather is cold today.",
+      "r4": 0.873786,
+      "text": "Translate to French: The weather is cold today. The weather is cold. The weather is cold. The weather is cold. The weather is cold. The weather is cold. The weather is cold. The weather is cold. The weather is cold. The weather is cold. The"
+     }
+    ],
+    "median_4gram_repeat": 0.8173,
+    "median_distinct_ratio": 0.1532,
+    "n_prompts": 8,
+    "nll": 1.91051,
+    "nll_tokens": 211,
+    "ppl": 6.7565,
+    "ppl_full": 6.756518070213092,
+    "r4_full": 0.8173076923076923,
+    "r4s": [
+     0.609524,
+     0.731481,
+     0.735849,
+     0.803738,
+     0.817308,
+     0.823009,
+     0.841121,
+     0.873786
+    ],
+    "worst_max_repeat_run": 94
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 897716832,
+   "complete_ebpw": 9.5548,
+   "complete_ebpw_full": 9.55484996239864,
+   "diversity_ok": false,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": false,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.9178,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
+    "ppl_ok": false,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 275255904,
+   "organ_target_ebpw": {
+    "down_proj": 5.12926,
+    "gate_proj": 5.452411,
+    "k_proj": 3.836656,
+    "o_proj": 4.482958,
+    "q_proj": 4.159807,
+    "up_proj": 5.775562,
+    "v_proj": 4.806109
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 16515072,
+    "A_zeros": 16515072,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 242221056,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 5.129260410950552
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 5.452411438326932
+    },
+    "k_proj": {
+     "bits": 2,
+     "complete_bytes": 11010720,
+     "complete_ebpw": 3.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q2-g32",
+     "target_ebpw": 3.8366563014450334
+    },
+    "o_proj": {
+     "bits": 3,
+     "complete_bytes": 29360800,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g32",
+     "target_ebpw": 4.482958356197792
+    },
+    "q_proj": {
+     "bits": 3,
+     "complete_bytes": 23855776,
+     "complete_ebpw": 3.2501,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g128",
+     "target_ebpw": 4.159807328821413
+    },
+    "up_proj": {
+     "bits": 8,
+     "complete_bytes": 90833568,
+     "complete_ebpw": 8.2501,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q8-g128",
+     "target_ebpw": 5.775562465703311
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 15598240,
+     "complete_ebpw": 4.2502,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g128",
+     "target_ebpw": 4.806109383574173
+    }
+   },
+   "per_param_weights": {
+    "down_proj": 1.3369090186730237,
+    "gate_proj": 1.4211362733412796,
+    "k_proj": 1.0,
+    "o_proj": 1.1684545093365117,
+    "q_proj": 1.0842272546682559,
+    "up_proj": 1.5053635280095354,
+    "v_proj": 1.2526817640047678
+   },
+   "policy": "LOCAL",
+   "ppl_ok": false,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
+  "ORGAN_WEIGHTED": {
+   "capability": {
+    "distincts": [
+     0.122642,
+     0.154545,
+     0.162162,
+     0.168224,
+     0.183486,
+     0.222222,
+     0.224138,
+     0.272727
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.272727,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+      "r4": 0.635514,
+      "text": "Explain how a mixture-of-experts layer routes tokens to experts. The explanation should be in a language that is more accessible for the user. The explanation should be in a more concise form. The explanation should be in a simpler language"
+     },
+     {
+      "distinct": 0.162162,
+      "n_new": 96,
+      "n_tokens": 111,
+      "prompt": "What is the capital of France, and why did it become the capital?",
+      "r4": 0.796296,
+      "text": "What is the capital of France, and why did it become the capital? What is the reason for its existence? What is the reason for its existence? What is the reason for its existence? What is the reason for its existence? What is the reason for"
+     },
+     {
+      "distinct": 0.222222,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short Python function that reverses a linked list.",
+      "r4": 0.647619,
+      "text": "Write a short Python function that reverses a linked list. The function should take the head of the linked list as input and return the head of the linked list after the function is called. The function should return the head of the linked "
+     },
+     {
+      "distinct": 0.183486,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+      "r4": 0.707547,
+      "text": "Summarize why bandwidth, not compute, limits transformer decoding. Explain the process of the transformer decoding, and the role of the decoder, and the role of the encoder, and the role of the encoder, and the role of the encoder, and the "
+     },
+     {
+      "distinct": 0.224138,
+      "n_new": 96,
+      "n_tokens": 116,
+      "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+      "r4": 0.699115,
+      "text": "A farmer has 17 sheep and all but 9 run away. How many are left? The answer is 17, and the farmer is the one who is the one who is the one who is the one who is the one who is the one who is the one who is the one who is the one who is the "
+     },
+     {
+      "distinct": 0.154545,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Describe the difference between a scale and a zero point in quantization.",
+      "r4": 0.691589,
+      "text": "Describe the difference between a scale and a zero point in quantization. The zero point of a scale is the point where the zero point of the scale is the zero point of the zero point of the zero point of the zero point of the zero point of "
+     },
+     {
+      "distinct": 0.168224,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "List three reasons a neural network might fail to converge.",
+      "r4": 0.826923,
+      "text": "List three reasons a neural network might fail to converge. One of the following options, one of the following options, one of the following options, one of the following options, one of the following options, one of the following options, "
+     },
+     {
+      "distinct": 0.122642,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Translate to French: The weather is cold today.",
+      "r4": 0.728155,
+      "text": "Translate to French: The weather is cold today. The weather is cold today. The weather is cold. The cold is the same as the same as the same as the same. The cold is the same as the same as the same. The same as the same. The same as the sa"
+     }
+    ],
+    "median_4gram_repeat": 0.7075,
+    "median_distinct_ratio": 0.1835,
+    "n_prompts": 8,
+    "nll": 2.01409,
+    "nll_tokens": 211,
+    "ppl": 7.4939,
+    "ppl_full": 7.493919576059169,
+    "r4_full": 0.7075471698113207,
+    "r4s": [
+     0.635514,
+     0.647619,
+     0.691589,
+     0.699115,
+     0.707547,
+     0.728155,
+     0.796296,
+     0.826923
+    ],
+    "worst_max_repeat_run": 1
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 897716832,
+   "complete_ebpw": 9.5548,
+   "complete_ebpw_full": 9.55484996239864,
+   "diversity_ok": false,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": false,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.9178,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
+    "ppl_ok": false,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 275255904,
+   "organ_target_ebpw": {
+    "down_proj": 5.632602,
+    "gate_proj": 5.201282,
+    "k_proj": 3.907324,
+    "o_proj": 4.338644,
+    "q_proj": 3.476005,
+    "up_proj": 6.063921,
+    "v_proj": 4.769963
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 18350080,
+    "A_zeros": 18350080,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 238551040,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 5.632601668125234
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 5.201282348948938
+    },
+    "k_proj": {
+     "bits": 3,
+     "complete_bytes": 12845728,
+     "complete_ebpw": 3.5002,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q3-g64",
+     "target_ebpw": 3.907324391420049
+    },
+    "o_proj": {
+     "bits": 3,
+     "complete_bytes": 29360800,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g32",
+     "target_ebpw": 4.338643710596346
+    },
+    "q_proj": {
+     "bits": 2,
+     "complete_bytes": 22020768,
+     "complete_ebpw": 3.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q2-g32",
+     "target_ebpw": 3.476005072243753
+    },
+    "up_proj": {
+     "bits": 8,
+     "complete_bytes": 90833568,
+     "complete_ebpw": 8.2501,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q8-g128",
+     "target_ebpw": 6.063920987301531
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 15598240,
+     "complete_ebpw": 4.2502,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g128",
+     "target_ebpw": 4.769963029772642
+    }
+   },
+   "per_param_weights": {
+    "down_proj": 1.620423892100193,
+    "gate_proj": 1.4963391136801543,
+    "k_proj": 1.1240847784200385,
+    "o_proj": 1.2481695568400772,
+    "q_proj": 1.0,
+    "up_proj": 1.7445086705202315,
+    "v_proj": 1.3722543352601158
+   },
+   "policy": "ORGAN_WEIGHTED",
+   "ppl_ok": false,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
+  "UNIFORM": {
+   "capability": {
+    "distincts": [
+     0.163636,
+     0.198198,
+     0.207547,
+     0.220183,
+     0.25,
+     0.293103,
+     0.588785,
+     0.618182
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.618182,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+      "r4": 0.065421,
+      "text": "Explain how a mixture-of-experts layer routes tokens to experts. This is a question that is being asked by the user, and I need to explain it in a way that is easy to understand. Also, explain why this approach is better than using a single"
+     },
+     {
+      "distinct": 0.198198,
+      "n_new": 96,
+      "n_tokens": 111,
+      "prompt": "What is the capital of France, and why did it become the capital?",
+      "r4": 0.722222,
+      "text": "What is the capital of France, and why did it become the capital? The answer is \"Paris\". But why is it called \"Paris\"? Why is it called \"Paris\"? Why is it called \"Paris\"? Why is it called \"Paris\"? Why is it called \"Paris\"? Why is it called "
+     },
+     {
+      "distinct": 0.25,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short Python function that reverses a linked list.",
+      "r4": 0.695238,
+      "text": "Write a short Python function that reverses a linked list. The function should be written in a way that it is efficient and readable. - LeetCode\n- LeetCode\n- LeetCode\n- LeetCode\n- LeetCode\n- LeetCode\n- LeetCode\n- LeetCode\n- LeetCode\n- LeetC"
+     },
+     {
+      "distinct": 0.220183,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+      "r4": 0.584906,
+      "text": "Summarize why bandwidth, not compute, limits transformer decoding. Explain the relationship between the transformer and the decoding process. What is the role of the transformer in the decoding process? What is the role of the decoding proc"
+     },
+     {
+      "distinct": 0.293103,
+      "n_new": 96,
+      "n_tokens": 116,
+      "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+      "r4": 0.60177,
+      "text": "A farmer has 17 sheep and all but 9 run away. How many are left? \n\nThe answer is 17 - 9 = 8. But why is this a trick question? Why is it a trick question? Why is it a trick question? Why is it a trick question? Why is it a trick question? W"
+     },
+     {
+      "distinct": 0.163636,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Describe the difference between a scale and a zero point in quantization.",
+      "r4": 0.775701,
+      "text": "Describe the difference between a scale and a zero point in quantization. The difference between a scale and a zero point in the context of a quantum system. The difference between a scale and a zero point in the context of a quantum system"
+     },
+     {
+      "distinct": 0.588785,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "List three reasons a neural network might fail to converge.",
+      "r4": 0.009615,
+      "text": "List three reasons a neural network might fail to converge. The answer should be in a sentence. \n\n**Question:** What is the difference between a neural network and a machine learning model? \n\n**Answer:** A neural network is a type of machin"
+     },
+     {
+      "distinct": 0.207547,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Translate to French: The weather is cold today.",
+      "r4": 0.708738,
+      "text": "Translate to French: The weather is cold today. \n\nAnswer: The temp\u00e9rature est froide aujourd\u2019hui.\n\nAnswer: The temperature is cold today.\n\nAnswer: The temperature is cold today.\n\nAnswer: The temperature is cold today.\n\nAnswer: The temperatu"
+     }
+    ],
+    "median_4gram_repeat": 0.6952,
+    "median_distinct_ratio": 0.25,
+    "n_prompts": 8,
+    "nll": 1.69505,
+    "nll_tokens": 211,
+    "ppl": 5.4469,
+    "ppl_full": 5.446927401086237,
+    "r4_full": 0.6952380952380952,
+    "r4s": [
+     0.009615,
+     0.065421,
+     0.584906,
+     0.60177,
+     0.695238,
+     0.708738,
+     0.722222,
+     0.775701
+    ],
+    "worst_max_repeat_run": 1
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 897716832,
+   "complete_ebpw": 9.5548,
+   "complete_ebpw_full": 9.55484996239864,
+   "diversity_ok": false,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": false,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.9178,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
+    "ppl_ok": true,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 275255904,
+   "organ_target_ebpw": {
+    "down_proj": 5.0,
+    "gate_proj": 5.0,
+    "k_proj": 5.0,
+    "o_proj": 5.0,
+    "q_proj": 5.0,
+    "up_proj": 5.0,
+    "v_proj": 5.0
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 27525120,
+    "A_zeros": 27525120,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 220200960,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    },
+    "k_proj": {
+     "bits": 4,
+     "complete_bytes": 18350752,
+     "complete_ebpw": 5.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    },
+    "o_proj": {
+     "bits": 4,
+     "complete_bytes": 36700832,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    },
+    "q_proj": {
+     "bits": 4,
+     "complete_bytes": 36700832,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    },
+    "up_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 18350752,
+     "complete_ebpw": 5.0002,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g32",
+     "target_ebpw": 5.0
+    }
+   },
+   "per_param_weights": {
+    "down_proj": 1.0,
+    "gate_proj": 1.0,
+    "k_proj": 1.0,
+    "o_proj": 1.0,
+    "q_proj": 1.0,
+    "up_proj": 1.0,
+    "v_proj": 1.0
+   },
+   "policy": "UNIFORM",
+   "ppl_ok": true,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-08T05:03:30Z",
+  "recorded_by": "tools/future/organ_allocation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "dense_parent_capability": {
+  "distincts": [
+   0.09434,
+   0.209091,
+   0.27027,
+   0.37037,
+   0.383178,
+   0.456897,
+   0.563636,
+   0.59633
+  ],
+  "gen_tokens": 96,
+  "generations": [
+   {
+    "distinct": 0.563636,
+    "n_new": 96,
+    "n_tokens": 110,
+    "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+    "r4": 0.084112,
+    "text": "Explain how a mixture-of-experts layer routes tokens to experts. What are the benefits of using a mixture-of-experts layer in the context of a neural network? What are the challenges in implementing such a layer? What are the potential appl"
+   },
+   {
+    "distinct": 0.27027,
+    "n_new": 96,
+    "n_tokens": 111,
+    "prompt": "What is the capital of France, and why did it become the capital?",
+    "r4": 0.407407,
+    "text": "What is the capital of France, and why did it become the capital? Also, what is the capital of the United States, and what is the capital of the United Kingdom? Additionally, what is the capital of the Netherlands, and what is the capital o"
+   },
+   {
+    "distinct": 0.37037,
+    "n_new": 96,
+    "n_tokens": 108,
+    "prompt": "Write a short Python function that reverses a linked list.",
+    "r4": 0.361905,
+    "text": "Write a short Python function that reverses a linked list. The function should take a head node of the linked list and return the new head node of the reversed list. The linked list is a singly linked list, and the nodes are not necessarily"
+   },
+   {
+    "distinct": 0.59633,
+    "n_new": 96,
+    "n_tokens": 109,
+    "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+    "r4": 0.009434,
+    "text": "Summarize why bandwidth, not compute, limits transformer decoding. \n\nTransformer decoding is a process that uses the transformer architecture to generate text from a source. It is a multi-step process that involves multiple layers of self-a"
+   },
+   {
+    "distinct": 0.456897,
+    "n_new": 96,
+    "n_tokens": 116,
+    "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+    "r4": 0.20354,
+    "text": "A farmer has 17 sheep and all but 9 run away. How many are left? Let's see, the farmer has 17 sheep, and all but 9 run away. So, the number of sheep that are left is 17 minus 9, which is 8. That seems straightforward. But wait, maybe there'"
+   },
+   {
+    "distinct": 0.209091,
+    "n_new": 96,
+    "n_tokens": 110,
+    "prompt": "Describe the difference between a scale and a zero point in quantization.",
+    "r4": 0.616822,
+    "text": "Describe the difference between a scale and a zero point in quantization. Also, explain the role of the zero point in the quantization process. Additionally, explain the role of the zero point in the quantization of a quantum system. Additi"
+   },
+   {
+    "distinct": 0.383178,
+    "n_new": 96,
+    "n_tokens": 107,
+    "prompt": "List three reasons a neural network might fail to converge.",
+    "r4": 0.355769,
+    "text": "List three reasons a neural network might fail to converge. Also, explain what a neural network is. What is the role of the input, hidden, and output layers? What is the difference between a perceptron and a multi-layer perceptron (MLP)? Wh"
+   },
+   {
+    "distinct": 0.09434,
+    "n_new": 96,
+    "n_tokens": 106,
+    "prompt": "Translate to French: The weather is cold today.",
+    "r4": 0.902913,
+    "text": "Translate to French: The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The"
+   }
+  ],
+  "median_4gram_repeat": 0.3619,
+  "median_distinct_ratio": 0.3832,
+  "n_prompts": 8,
+  "nll": 1.55482,
+  "nll_tokens": 211,
+  "ppl": 4.7342,
+  "ppl_full": 4.734215949798867,
+  "r4_full": 0.36190476190476195,
+  "r4s": [
+   0.009434,
+   0.084112,
+   0.20354,
+   0.355769,
+   0.361905,
+   0.407407,
+   0.616822,
+   0.902913
+  ],
+  "worst_max_repeat_run": 2
+ },
+ "device": "cpu",
+ "g021_verdict": {
+  "arms": {
+   "LOCAL": {
+    "capability_ok": false,
+    "complete_ebpw": 9.5548,
+    "ppl": 6.756518070213092,
+    "r4": 0.8173076923076923
+   },
+   "ORGAN_WEIGHTED": {
+    "capability_ok": false,
+    "complete_ebpw": 9.5548,
+    "ppl": 7.493919576059169,
+    "r4": 0.7075471698113207
+   },
+   "UNIFORM": {
+    "capability_ok": false,
+    "complete_ebpw": 9.5548,
+    "ppl": 5.446927401086237,
+    "r4": 0.6952380952380952
+   }
+  },
+  "inverted_control": {
+   "capability_ok": true,
+   "ppl": 5.433767882823024,
+   "r4": 0.5428571428571429
+  },
+  "orders": {
+   "global": [
+    "q_proj",
+    "k_proj",
+    "o_proj",
+    "v_proj",
+    "gate_proj",
+    "down_proj",
+    "up_proj"
+   ],
+   "local": [
+    "k_proj",
+    "q_proj",
+    "o_proj",
+    "v_proj",
+    "down_proj",
+    "gate_proj",
+    "up_proj"
+   ]
+  },
+  "outcome": "NONE_PASSES_GATE",
+  "pareto": {
+   "GLOBAL_vs_UNIFORM": "b",
+   "LOCAL_vs_GLOBAL": "mixed",
+   "LOCAL_vs_UNIFORM": "b"
+  },
+  "passing_gate": [],
+  "prior_update": "no arm survived the conjunction gate at this budget; the comparison is unresolved, not a UNIFORM win",
+  "question": "UNIFORM vs GLOBAL-PRIOR vs LOCAL-ANATOMY at matched complete EBPW",
+  "verdict_sentence": "G021 NONE_PASSES_GATE: at matched complete EBPW 9.5548, UNIFORM ppl 5.4469 r4 0.6952 gate FAIL; ORGAN_WEIGHTED ppl 7.4939 r4 0.7075 gate FAIL; LOCAL ppl 6.7565 r4 0.8173 gate FAIL. LOCAL order k_proj,q_proj,o_proj,v_proj,down_proj,gate_proj,up_proj vs GLOBAL q_proj,k_proj,o_proj,v_proj,gate_proj,down_proj,up_proj. no arm survived the conjunction gate at this budget; the comparison is unresolved, not a UNIFORM win.",
+  "winners": []
+ },
+ "guard_at_start": {
+  "compressor_gb": 1.35,
+  "expected_gb": 8.0,
+  "free_gb": 78.39,
+  "headroom_gb": 70.39,
+  "reasons": [],
+  "reclaimable_gb": 28.6,
+  "resident_rss_gb": 0.0,
+  "residents": 0,
+  "state": "OK",
+  "strictly_free_gb": 49.8,
+  "swap_gb": 2.0,
+  "swapfiles": 2,
+  "wired_gb": 4.99
+ },
+ "inverted_control": {
+  "capability_ok": true,
+  "complete_ebpw": 9.5548,
+  "diversity_ok": true,
+  "median_4gram_repeat": 0.5429,
+  "ppl": 5.4338,
+  "ppl_ok": true,
+  "ran": true,
+  "vs_organ_weighted": "b"
+ },
+ "local_deficit": {
+  "down_proj": 21.58,
+  "gate_proj": 20.16,
+  "k_proj": 41.27,
+  "o_proj": 23.66,
+  "q_proj": 38.82,
+  "up_proj": 11.59,
+  "v_proj": 22.24
+ },
+ "local_matches_100pct_laws": {
+  "gate_proj > up_proj": true,
+  "o_proj > up_proj": true,
+  "q_proj > up_proj": true
+ },
+ "local_order": [
+  "k_proj",
+  "q_proj",
+  "o_proj",
+  "v_proj",
+  "down_proj",
+  "gate_proj",
+  "up_proj"
+ ],
+ "local_vs_global": "local k>q (global q>k) and local down>gate (global gate>down); the three 100% laws hold. G021 runs BOTH orderings as arms: ORGAN_WEIGHTED is the global prior, LOCAL is this body's own measured deficits, at the same matched byte budget",
+ "matched_ebpw": {
+  "INVERTED": 9.5548,
+  "LOCAL": 9.5548,
+  "ORGAN_WEIGHTED": 9.5548,
+  "UNIFORM": 9.5548,
+  "residual_local_vs_uniform": 0.0,
+  "residual_weighted_vs_uniform": 0.0
+ },
+ "metal": "unused; mlx_lm refused Metal in this session, torch MPS unavailable",
+ "mutation_check": {
+  "anchor_line": "return tuple(sorted(src, key=lambda name: -src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
+  "mutated_probe_failed_as_required": true,
+  "mutated_probe_returncode": 1,
+  "mutated_probe_stderr": "Traceback (most recent call last):\n  File \"<string>\", line 10, in <module>\nAssertionError: (5.829823083403537, 10.17017691659646)\n",
+  "mutated_probe_stdout": "ORDER up_proj,down_proj,gate_proj,v_proj,o_proj,k_proj,q_proj\nQ 10.17017691659646 UP 5.829823083403537\n",
+  "mutation_applied": true,
+  "new": "key=lambda name: src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
+  "no_mutation_left_live": true,
+  "old": "key=lambda name: -src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
+  "restored_probe_returncode": 0,
+  "restored_probe_stdout": "ORDER q_proj,k_proj,o_proj,v_proj,gate_proj,down_proj,up_proj\nQ 5.829823083403537 UP 10.17017691659646\nPROBE_OK\n",
+  "sha256_before": "0061a48016ef3e7734e57e01ddf498e5179d00adc8fc4c1d060bb5cbccf697a0",
+  "sha256_mutated": "327d47d473891739e338f309d8ada9aaacefb85fc752b377669c9846cc97dfeb",
+  "sha256_restored": "0061a48016ef3e7734e57e01ddf498e5179d00adc8fc4c1d060bb5cbccf697a0"
+ },
+ "n_organ_tensors": 196,
+ "nr_not_nx": true,
+ "obligation": "G017",
+ "organ_params": {
+  "down_proj": 88080384,
+  "gate_proj": 88080384,
+  "k_proj": 29360128,
+  "o_proj": 58720256,
+  "q_proj": 58720256,
+  "up_proj": 88080384,
+  "v_proj": 29360128
+ },
+ "prior_deficit": {
+  "down_proj": 12.3,
+  "gate_proj": 18.37,
+  "k_proj": 39.22,
+  "o_proj": 27.29,
+  "q_proj": 48.1,
+  "up_proj": 9.46,
+  "v_proj": 19.35
+ },
+ "prior_order": [
+  "q_proj",
+  "k_proj",
+  "o_proj",
+  "v_proj",
+  "gate_proj",
+  "down_proj",
+  "up_proj"
+ ],
+ "prior_source": "receipts/future/G002_ORGAN_PRIOR.json",
+ "recorded_by": "tools/future/organ_allocation.py",
+ "remainder_bytes": 622460928,
+ "remainder_params": 311230464,
+ "resource": {
+  "compressor_gb_peak": 1.35,
+  "compressor_gb_start": 1.35,
+  "free_gb_end": 77.09,
+  "free_gb_low": 67.33,
+  "free_gb_start": 77.72,
+  "label": "G017",
+  "peak_unknown_reason": null,
+  "resident_rss_gb_peak": 0.0,
+  "samples": 77,
+  "swapfiles_delta": 0,
+  "swapfiles_end": 2,
+  "swapfiles_start": 2,
+  "wall_s": 167.78
+ },
+ "schema": "hawking.future.g017_organ_allocation.v1",
+ "seal_sha256": "e78afbaf227ce036126d5270c3d1069b59a721692a4e94398d534396b1a6f469",
+ "source_params": 751632384,
+ "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+ "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+ "status": "MEASURED",
+ "sweep_row": {
+  "family": "qwen3",
+  "gib": 1.4,
+  "n_layers": 28,
+  "organ_ordering": [
+   {
+    "deficit_pct": 41.27,
+    "organ": "k_proj",
+    "rank": 0,
+    "stderr_pct": 0.0224
+   },
+   {
+    "deficit_pct": 38.82,
+    "organ": "q_proj",
+    "rank": 1,
+    "stderr_pct": 0.0152
+   },
+   {
+    "deficit_pct": 23.66,
+    "organ": "o_proj",
+    "rank": 2,
+    "stderr_pct": 0.0202
+   },
+   {
+    "deficit_pct": 22.24,
+    "organ": "v_proj",
+    "rank": 3,
+    "stderr_pct": 0.0297
+   },
+   {
+    "deficit_pct": 21.58,
+    "organ": "down_proj",
+    "rank": 4,
+    "stderr_pct": 0.0117
+   },
+   {
+    "deficit_pct": 20.16,
+    "organ": "gate_proj",
+    "rank": 5,
+    "stderr_pct": 0.0048
+   },
+   {
+    "deficit_pct": 11.59,
+    "organ": "up_proj",
+    "rank": 6,
+    "stderr_pct": 0.0053
+   }
+  ],
+  "peak_rss_gib": 2.963,
+  "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "wall_s": 6.83
+ },
+ "target_mean_organ_ebpw": 5.0,
+ "uniform_spec": {
+  "bits": 4,
+  "group": 32,
+  "note": "UNIFORM defines the matched byte budget; every arm is held to its organ_bytes"
+ },
+ "verdict": {
+  "pareto_weighted_vs_inverted": "b",
+  "pareto_weighted_vs_uniform": "b",
+  "ppl_delta_uniform_minus_weighted": -2.046992,
+  "prior_transferred": false,
+  "r4_delta_uniform_minus_weighted": -0.012309,
+  "sentence": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 9.5548 \u2014 ppl 7.4939 vs 5.4469 (delta -2.0470, negative means weighted worse), median_4gram_repeat 0.7075 vs 0.6952 (delta -0.0123). INVERTED ppl 5.4338 r4 0.5429 (INVERTED won or tied ORGAN_WEIGHTED; the prior did not transfer).",
+  "transfer_note": "INVERTED won or tied ORGAN_WEIGHTED; the prior did not transfer",
+  "unequal_beats_uniform": false
+ },
+ "verdict_sentence": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 9.5548 \u2014 ppl 7.4939 vs 5.4469 (delta -2.0470, negative means weighted worse), median_4gram_repeat 0.7075 vs 0.6952 (delta -0.0123). INVERTED ppl 5.4338 r4 0.5429 (INVERTED won or tied ORGAN_WEIGHTED; the prior did not transfer).",
+ "wall_s_total": 168.143,
+ "weaker_than_it_looks": [
+  "Within-tensor low-rank was tried first and abandoned as a discriminator: square k/v break-even is 16 EBPW / 50% rank, and layer-0 attention at that rank already blows the ppl gate. Affine q4g64 is the cheapest NR that still has a live conjunction here.",
+  "ORGAN_WEIGHTED/INVERTED are the closest monotone affine assignments on the q2/q3/q4/q8 \u00d7 g32/64/128 grid, not a rate-distortion optimum.",
+  "LOCAL and GLOBAL differ by two adjacent transpositions (k/q, down/gate) and by tilt endpoint ratio (1.505 local vs 1.745 global). That is the whole size of the G021 effect: a small reordering of a monotone ramp, not a different representation.",
+  "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU fp32 \u2014 the existing gate's budget, not a large eval.",
+  "The parent is bf16 on disk; compute is fp32. Gate multipliers 3.0 / 1.25 are gravity_outlier_eval's, calibrated here against THIS specimen's dense parent, not O003's absolute R4_MAX/PPL_MAX.",
+  "NR rematerializes dense W_hat; execution_complete is False.",
+  "Integer rank plus 24-byte metadata leaves a residual EBPW gap; it is reported, not hidden.",
+  "Qwen3-0.6B is the cheapest dense LM, not a demonstration body; transfer to larger dense bodies is untested.",
+  "Embed, lm_head and RMSNorms are dense bf16 in every arm; only the seven linear organs are allocated."
+ ],
+ "why_this_specimen": "Cheapest DENSE causal LM in G002_DENSE_ANATOMY_SWEEP.json that still carries all seven standard organs and can run the conjunction gate (perplexity AND n-gram generation). Sweep row Qwen--Qwen3-0.6B@c1899de289a0: 1.40 GiB, family qwen3, 28 layers, 1 shard, anatomy wall 6.83s, peak RSS 2.963 GiB. Measured mid-depth deficits: k_proj 41.27, q_proj 38.82, o_proj 23.66, v_proj 22.24, down_proj 21.58, gate_proj 20.16, up_proj 11.59. The three 100% prior laws hold (o>up, q>up, gate>up). Local order is k>q not q>k, and down>gate not gate>down \u2014 not a counterexample of the 100% laws; the global prior is still the allocation, this body is the transfer test. Smaller rows were refused as non-LMs (sam2, depth-anything, modernbert, whisper, timesfm, lfm2) or as an embedding body that cannot generate (Qwen3-Embedding-0.6B, 1.10 GiB). No MoE body: the prior is dense."
+}

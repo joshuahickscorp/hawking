@@ -11,6 +11,7 @@
  },
  "applied": {
   "INVERTED": 196,
+  "LOCAL": 196,
   "ORGAN_WEIGHTED": 196,
   "UNIFORM": 196,
   "n_organ_tensors": 196,
@@ -121,20 +122,23 @@
    "complete_bytes": 870191712,
    "complete_ebpw": 9.2619,
    "complete_ebpw_full": 9.2618863212791,
-   "diversity_ok": true,
+   "diversity_ok": false,
    "execution_complete": false,
    "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
    "gate": {
     "capability_ok": false,
     "capability_status": "CAPABILITY_LOSS",
     "conjunction": "perplexity AND n-gram diversity",
-    "diversity_ok": true,
+    "diversity_ok": false,
     "evaluator": "tools/future/organ_allocation.py::measure_capability",
     "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
     "gate_ppl_max": 5.9178,
     "gate_ppl_mult": 1.25,
-    "gate_r4_max": 1.0857,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
     "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
     "ppl_ok": false,
     "reference": "specimen dense parent (bf16 values, fp32 compute)"
    },
@@ -249,6 +253,241 @@
    "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
    "source_params": 751632384
   },
+  "LOCAL": {
+   "capability": {
+    "distincts": [
+     0.09434,
+     0.111111,
+     0.172727,
+     0.189189,
+     0.211009,
+     0.214953,
+     0.263636,
+     0.465517
+    ],
+    "gen_tokens": 96,
+    "generations": [
+     {
+      "distinct": 0.263636,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+      "r4": 0.672897,
+      "text": "Explain how a mixture-of-experts layer routes tokens to experts. This is a question that needs to be answered. The answer should be in the same language as the question. The answer should be in the same language as the question. The answer "
+     },
+     {
+      "distinct": 0.189189,
+      "n_new": 96,
+      "n_tokens": 111,
+      "prompt": "What is the capital of France, and why did it become the capital?",
+      "r4": 0.657407,
+      "text": "What is the capital of France, and why did it become the capital? The answer is the capital of France, and it became the capital because of the French Revolution. The reason is the capital of France became the capital because of the French "
+     },
+     {
+      "distinct": 0.111111,
+      "n_new": 96,
+      "n_tokens": 108,
+      "prompt": "Write a short Python function that reverses a linked list.",
+      "r4": 0.87619,
+      "text": "Write a short Python function that reverses a linked list. - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+     },
+     {
+      "distinct": 0.211009,
+      "n_new": 96,
+      "n_tokens": 109,
+      "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+      "r4": 0.632075,
+      "text": "Summarize why bandwidth, not compute, limits transformer decoding. Explain the difference between compute and bandwidth. Also, explain the importance of bandwidth in the context of the transformer decoding. Also, explain the difference betw"
+     },
+     {
+      "distinct": 0.465517,
+      "n_new": 96,
+      "n_tokens": 116,
+      "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+      "r4": 0.221239,
+      "text": "A farmer has 17 sheep and all but 9 run away. How many are left? \n\nLet's see, the problem says that the farmer has 17 sheep, and all but 9 run away. Wait, let me parse that again. The problem says that the farmer has 17 sheep, and all but 9"
+     },
+     {
+      "distinct": 0.172727,
+      "n_new": 96,
+      "n_tokens": 110,
+      "prompt": "Describe the difference between a scale and a zero point in quantization.",
+      "r4": 0.794393,
+      "text": "Describe the difference between a scale and a zero point in quantization. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a single sent"
+     },
+     {
+      "distinct": 0.214953,
+      "n_new": 96,
+      "n_tokens": 107,
+      "prompt": "List three reasons a neural network might fail to converge.",
+      "r4": 0.682692,
+      "text": "List three reasons a neural network might fail to converge. One of the reasons should be a specific example of a neural network. The answer should be in a single sentence. The answer should be in a single sentence. The answer should be in a"
+     },
+     {
+      "distinct": 0.09434,
+      "n_new": 96,
+      "n_tokens": 106,
+      "prompt": "Translate to French: The weather is cold today.",
+      "r4": 0.902913,
+      "text": "Translate to French: The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The"
+     }
+    ],
+    "median_4gram_repeat": 0.6827,
+    "median_distinct_ratio": 0.211,
+    "n_prompts": 8,
+    "nll": 1.76915,
+    "nll_tokens": 211,
+    "ppl": 5.8658,
+    "ppl_full": 5.865849982091305,
+    "r4_full": 0.6826923076923077,
+    "r4s": [
+     0.221239,
+     0.632075,
+     0.657407,
+     0.672897,
+     0.682692,
+     0.794393,
+     0.87619,
+     0.902913
+    ],
+    "worst_max_repeat_run": 96
+   },
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
+   "complete_bytes": 870191712,
+   "complete_ebpw": 9.2619,
+   "complete_ebpw_full": 9.2618863212791,
+   "diversity_ok": false,
+   "execution_complete": false,
+   "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
+   "gate": {
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
+    "conjunction": "perplexity AND n-gram diversity",
+    "diversity_ok": false,
+    "evaluator": "tools/future/organ_allocation.py::measure_capability",
+    "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
+    "gate_ppl_max": 5.9178,
+    "gate_ppl_mult": 1.25,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
+    "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
+    "ppl_ok": true,
+    "reference": "specimen dense parent (bf16 values, fp32 compute)"
+   },
+   "organ_bytes": 247730784,
+   "organ_target_ebpw": {
+    "down_proj": 4.616334,
+    "gate_proj": 4.90717,
+    "k_proj": 3.452991,
+    "o_proj": 4.034663,
+    "q_proj": 3.743827,
+    "up_proj": 5.198006,
+    "v_proj": 4.325498
+   },
+   "parts": {
+    "A_payload": 0,
+    "A_scales": 19267584,
+    "A_zeros": 19267584,
+    "B_payload": 0,
+    "B_scales": 0,
+    "B_zeros": 0,
+    "codebook": 0,
+    "dense_payload": 209190912,
+    "metadata": 4704,
+    "pq_indices": 0,
+    "residual_indices": 0,
+    "residual_values": 0
+   },
+   "per_organ": {
+    "down_proj": {
+     "bits": 4,
+     "complete_bytes": 49545888,
+     "complete_ebpw": 4.5001,
+     "group": 64,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g64",
+     "target_ebpw": 4.616334369855497
+    },
+    "gate_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 4.907170294494239
+    },
+    "k_proj": {
+     "bits": 3,
+     "complete_bytes": 11928224,
+     "complete_ebpw": 3.2502,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q3-g128",
+     "target_ebpw": 3.45299067130053
+    },
+    "o_proj": {
+     "bits": 4,
+     "complete_bytes": 31195808,
+     "complete_ebpw": 4.2501,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q4-g128",
+     "target_ebpw": 4.0346625205780136
+    },
+    "q_proj": {
+     "bits": 3,
+     "complete_bytes": 29360800,
+     "complete_ebpw": 4.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 58720256,
+     "spec": "q3-g32",
+     "target_ebpw": 3.7438265959392716
+    },
+    "up_proj": {
+     "bits": 4,
+     "complete_bytes": 55050912,
+     "complete_ebpw": 5.0001,
+     "group": 32,
+     "n_tensors": 28,
+     "source_params": 88080384,
+     "spec": "q4-g32",
+     "target_ebpw": 5.19800621913298
+    },
+    "v_proj": {
+     "bits": 4,
+     "complete_bytes": 15598240,
+     "complete_ebpw": 4.2502,
+     "group": 128,
+     "n_tensors": 28,
+     "source_params": 29360128,
+     "spec": "q4-g128",
+     "target_ebpw": 4.3254984452167555
+    }
+   },
+   "per_param_weights": {
+    "down_proj": 1.3369090186730237,
+    "gate_proj": 1.4211362733412796,
+    "k_proj": 1.0,
+    "o_proj": 1.1684545093365117,
+    "q_proj": 1.0842272546682559,
+    "up_proj": 1.5053635280095354,
+    "v_proj": 1.2526817640047678
+   },
+   "policy": "LOCAL",
+   "ppl_ok": true,
+   "remainder_bytes": 622460928,
+   "representation": "affine NR via lowrank_nr.encode_affine; UNIFORM is q4g64; ORGAN_WEIGHTED/INVERTED are monotone bit/group assignments along the prior order at the same complete organ bytes",
+   "source_params": 751632384
+  },
   "ORGAN_WEIGHTED": {
    "capability": {
     "distincts": [
@@ -353,20 +592,23 @@
    "complete_bytes": 870191712,
    "complete_ebpw": 9.2619,
    "complete_ebpw_full": 9.2618863212791,
-   "diversity_ok": true,
+   "diversity_ok": false,
    "execution_complete": false,
    "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
    "gate": {
     "capability_ok": false,
     "capability_status": "CAPABILITY_LOSS",
     "conjunction": "perplexity AND n-gram diversity",
-    "diversity_ok": true,
+    "diversity_ok": false,
     "evaluator": "tools/future/organ_allocation.py::measure_capability",
     "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
     "gate_ppl_max": 5.9178,
     "gate_ppl_mult": 1.25,
-    "gate_r4_max": 1.0857,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
     "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
     "ppl_ok": false,
     "reference": "specimen dense parent (bf16 values, fp32 compute)"
    },
@@ -580,25 +822,28 @@
     ],
     "worst_max_repeat_run": 1
    },
-   "capability_ok": true,
-   "capability_status": "CANDIDATE_PASS",
+   "capability_ok": false,
+   "capability_status": "CAPABILITY_LOSS",
    "complete_bytes": 870191712,
    "complete_ebpw": 9.2619,
    "complete_ebpw_full": 9.2618863212791,
-   "diversity_ok": true,
+   "diversity_ok": false,
    "execution_complete": false,
    "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
    "gate": {
-    "capability_ok": true,
-    "capability_status": "CANDIDATE_PASS",
+    "capability_ok": false,
+    "capability_status": "CAPABILITY_LOSS",
     "conjunction": "perplexity AND n-gram diversity",
-    "diversity_ok": true,
+    "diversity_ok": false,
     "evaluator": "tools/future/organ_allocation.py::measure_capability",
     "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
     "gate_ppl_max": 5.9178,
     "gate_ppl_mult": 1.25,
-    "gate_r4_max": 1.0857,
+    "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
+    "gate_r4_capped": true,
+    "gate_r4_max": 0.681,
     "gate_r4_mult": 3.0,
+    "gate_r4_uncapped": 1.0857,
     "ppl_ok": true,
     "reference": "specimen dense parent (bf16 values, fp32 compute)"
    },
@@ -718,7 +963,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-07T10:11:09Z",
+  "recorded_at": "2026-09-08T04:52:23Z",
   "recorded_by": "tools/future/organ_allocation.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -823,29 +1068,97 @@
   "worst_max_repeat_run": 2
  },
  "device": "cpu",
+ "g021_verdict": {
+  "arms": {
+   "LOCAL": {
+    "capability_ok": false,
+    "complete_ebpw": 9.2619,
+    "ppl": 5.865849982091305,
+    "r4": 0.6826923076923077
+   },
+   "ORGAN_WEIGHTED": {
+    "capability_ok": false,
+    "complete_ebpw": 9.2619,
+    "ppl": 6.173841183290192,
+    "r4": 0.6923076923076923
+   },
+   "UNIFORM": {
+    "capability_ok": false,
+    "complete_ebpw": 9.2619,
+    "ppl": 5.22782413578883,
+    "r4": 0.7102803738317758
+   }
+  },
+  "inverted_control": {
+   "capability_ok": false,
+   "ppl": 12.840046406980525,
+   "r4": 0.822429906542056
+  },
+  "orders": {
+   "global": [
+    "q_proj",
+    "k_proj",
+    "o_proj",
+    "v_proj",
+    "gate_proj",
+    "down_proj",
+    "up_proj"
+   ],
+   "local": [
+    "k_proj",
+    "q_proj",
+    "o_proj",
+    "v_proj",
+    "down_proj",
+    "gate_proj",
+    "up_proj"
+   ]
+  },
+  "outcome": "NONE_PASSES_GATE",
+  "pareto": {
+   "GLOBAL_vs_UNIFORM": "mixed",
+   "LOCAL_vs_GLOBAL": "a",
+   "LOCAL_vs_UNIFORM": "mixed"
+  },
+  "passing_gate": [],
+  "prior_update": "no arm survived the conjunction gate at this budget; the comparison is unresolved, not a UNIFORM win",
+  "question": "UNIFORM vs GLOBAL-PRIOR vs LOCAL-ANATOMY at matched complete EBPW",
+  "verdict_sentence": "G021 NONE_PASSES_GATE: at matched complete EBPW 9.2619, UNIFORM ppl 5.2278 r4 0.7103 gate FAIL; ORGAN_WEIGHTED ppl 6.1738 r4 0.6923 gate FAIL; LOCAL ppl 5.8658 r4 0.6827 gate FAIL. LOCAL order k_proj,q_proj,o_proj,v_proj,down_proj,gate_proj,up_proj vs GLOBAL q_proj,k_proj,o_proj,v_proj,gate_proj,down_proj,up_proj. no arm survived the conjunction gate at this budget; the comparison is unresolved, not a UNIFORM win.",
+  "winners": []
+ },
  "guard_at_start": {
-  "compressor_gb": 0.48,
+  "compressor_gb": 1.5,
   "expected_gb": 8.0,
-  "free_gb": 63.11,
-  "headroom_gb": 55.11,
+  "free_gb": 65.8,
+  "headroom_gb": 57.8,
   "reasons": [],
-  "reclaimable_gb": 20.51,
-  "resident_rss_gb": 0.0,
-  "residents": 0,
+  "reclaimable_gb": 25.37,
+  "resident_rss_gb": 11.37,
+  "residents": 1,
   "state": "OK",
-  "strictly_free_gb": 42.6,
-  "swapfiles": 2,
-  "wired_gb": 16.86
+  "strictly_free_gb": 40.44,
+  "swap_gb": 3.0,
+  "swapfiles": 3,
+  "wired_gb": 18.06
  },
  "inverted_control": {
   "capability_ok": false,
   "complete_ebpw": 9.2619,
-  "diversity_ok": true,
+  "diversity_ok": false,
   "median_4gram_repeat": 0.8224,
   "ppl": 12.84,
   "ppl_ok": false,
   "ran": true,
   "vs_organ_weighted": "a"
+ },
+ "local_deficit": {
+  "down_proj": 21.58,
+  "gate_proj": 20.16,
+  "k_proj": 41.27,
+  "o_proj": 23.66,
+  "q_proj": 38.82,
+  "up_proj": 11.59,
+  "v_proj": 22.24
  },
  "local_matches_100pct_laws": {
   "gate_proj > up_proj": true,
@@ -861,29 +1174,31 @@
   "gate_proj",
   "up_proj"
  ],
- "local_vs_global": "local k>q (global q>k) and local down>gate (global gate>down); the three 100% laws hold; allocation uses the GLOBAL prior",
+ "local_vs_global": "local k>q (global q>k) and local down>gate (global gate>down); the three 100% laws hold. G021 runs BOTH orderings as arms: ORGAN_WEIGHTED is the global prior, LOCAL is this body's own measured deficits, at the same matched byte budget",
  "matched_ebpw": {
   "INVERTED": 9.2619,
+  "LOCAL": 9.2619,
   "ORGAN_WEIGHTED": 9.2619,
   "UNIFORM": 9.2619,
+  "residual_local_vs_uniform": 0.0,
   "residual_weighted_vs_uniform": 0.0
  },
  "metal": "unused; mlx_lm refused Metal in this session, torch MPS unavailable",
  "mutation_check": {
-  "anchor_line": "return tuple(sorted(PRIOR_DEFICIT, key=lambda name: -PRIOR_DEFICIT[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
+  "anchor_line": "return tuple(sorted(src, key=lambda name: -src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
   "mutated_probe_failed_as_required": true,
   "mutated_probe_returncode": 1,
   "mutated_probe_stderr": "Traceback (most recent call last):\n  File \"<string>\", line 10, in <module>\nAssertionError: (5.829823083403537, 10.17017691659646)\n",
   "mutated_probe_stdout": "ORDER up_proj,down_proj,gate_proj,v_proj,o_proj,k_proj,q_proj\nQ 10.17017691659646 UP 5.829823083403537\n",
   "mutation_applied": true,
-  "new": "key=lambda name: PRIOR_DEFICIT[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
+  "new": "key=lambda name: src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
   "no_mutation_left_live": true,
-  "old": "key=lambda name: -PRIOR_DEFICIT[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
+  "old": "key=lambda name: -src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT",
   "restored_probe_returncode": 0,
   "restored_probe_stdout": "ORDER q_proj,k_proj,o_proj,v_proj,gate_proj,down_proj,up_proj\nQ 5.829823083403537 UP 10.17017691659646\nPROBE_OK\n",
-  "sha256_before": "32e315b456a66ab93daeff17c59a9dcaa5effe6b0714e6326f1e84f7cc71282c",
-  "sha256_mutated": "1c106e58d408218de63dbc8b4fd8ec98a94e95f03e8a32acbe356865ea19e3f4",
-  "sha256_restored": "32e315b456a66ab93daeff17c59a9dcaa5effe6b0714e6326f1e84f7cc71282c"
+  "sha256_before": "19e357a872dba9d42c0e5126b248c02080166e6826a3c0f03217fb78282e5d51",
+  "sha256_mutated": "d07190e34c41b86ef2e38efe1a0386bda59a32e6f80fcc0daaf4fe10d7cafa79",
+  "sha256_restored": "19e357a872dba9d42c0e5126b248c02080166e6826a3c0f03217fb78282e5d51"
  },
  "n_organ_tensors": 196,
  "nr_not_nx": true,
@@ -920,22 +1235,22 @@
  "remainder_bytes": 622460928,
  "remainder_params": 311230464,
  "resource": {
-  "compressor_gb_peak": 0.48,
-  "compressor_gb_start": 0.48,
-  "free_gb_end": 59.04,
-  "free_gb_low": 53.27,
-  "free_gb_start": 63.08,
+  "compressor_gb_peak": 1.5,
+  "compressor_gb_start": 1.5,
+  "free_gb_end": 77.35,
+  "free_gb_low": 54.89,
+  "free_gb_start": 65.78,
   "label": "G017",
   "peak_unknown_reason": null,
-  "resident_rss_gb_peak": 0.0,
-  "samples": 78,
+  "resident_rss_gb_peak": 11.37,
+  "samples": 100,
   "swapfiles_delta": 0,
-  "swapfiles_end": 2,
-  "swapfiles_start": 2,
-  "wall_s": 166.45
+  "swapfiles_end": 3,
+  "swapfiles_start": 3,
+  "wall_s": 217.54
  },
  "schema": "hawking.future.g017_organ_allocation.v1",
- "seal_sha256": "bdd76503cd046d5b7eaf43ebae8323201405260aa8be9a7d07e70e30410c206a",
+ "seal_sha256": "ac0c272bf97a569cc18a45ef585eedfbcd7882fdfec92437992a90f70f4df72d",
  "source_params": 751632384,
  "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
  "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
@@ -1004,11 +1319,11 @@
   "unequal_beats_uniform": false
  },
  "verdict_sentence": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 9.2619 \u2014 ppl 6.1738 vs 5.2278 (delta -0.9460, negative means weighted worse), median_4gram_repeat 0.6923 vs 0.7103 (delta +0.0180). INVERTED ppl 12.8400 r4 0.8224 (ORGAN_WEIGHTED did not Pareto-beat UNIFORM at matched EBPW).",
- "wall_s_total": 166.752,
+ "wall_s_total": 217.938,
  "weaker_than_it_looks": [
   "Within-tensor low-rank was tried first and abandoned as a discriminator: square k/v break-even is 16 EBPW / 50% rank, and layer-0 attention at that rank already blows the ppl gate. Affine q4g64 is the cheapest NR that still has a live conjunction here.",
   "ORGAN_WEIGHTED/INVERTED are the closest monotone affine assignments on the q2/q3/q4/q8 \u00d7 g32/64/128 grid, not a rate-distortion optimum.",
-  "Allocation uses the GLOBAL prior, not this body's local order (local is k>q; global is q>k).",
+  "LOCAL and GLOBAL differ by two adjacent transpositions (k/q, down/gate) and by tilt endpoint ratio (1.505 local vs 1.745 global). That is the whole size of the G021 effect: a small reordering of a monotone ramp, not a different representation.",
   "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU fp32 \u2014 the existing gate's budget, not a large eval.",
   "The parent is bf16 on disk; compute is fp32. Gate multipliers 3.0 / 1.25 are gravity_outlier_eval's, calibrated here against THIS specimen's dense parent, not O003's absolute R4_MAX/PPL_MAX.",
   "NR rematerializes dense W_hat; execution_complete is False.",

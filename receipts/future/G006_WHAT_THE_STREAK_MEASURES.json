@@ -1,0 +1,25 @@
+{
+ "obligation": "G006",
+ "asked_by": "S009 28 -- G006 has no round ceiling, no fallback and no termination condition, and gates 4 of 14 open obligations. Give it a real epistemic terminal.",
+ "method": "attribution read from the ledger's OWN round-by-round verdicts, written at the time of each round. Not re-judged now, because re-judging 22 rounds after the fact with knowledge of the outcome is how a campaign talks itself into a conclusion.",
+ "n_rounds": 23,
+ "attribution": {
+  "HARNESS": 17,
+  "CLAUDE": 3,
+  "MODEL": 2,
+  "INVALID": 1
+ },
+ "what_G006_has_actually_been_measuring": "17 of 23 rounds failed on the INSTRUMENT, 3 on the LAUNCH, 1 on a host restart, and 2 on the model's own reasoning. G006 is written to measure whether HCLI can do autonomous science. On this evidence it has mostly been measuring whether the laboratory works.",
+ "the_two_model_failures_are_the_signal": "rounds 8 and 11 are the only ones attributed to the model, and round 11 is the stronger: the ledger records NO HARNESS CHANGE BETWEEN 10 AND 11, so the same failure recurring across an unchanged instrument is evidence about the model rather than about the bench. Two data points in twenty-two is not a verdict on HCLI's scientific capability. It is close to no evidence at all, and that is the honest state.",
+ "why_the_streak_is_0_and_what_that_does_not_mean": "the streak measures three CONSECUTIVE accepted units with no Claude target engineering between them. 16 accepted MEASUREMENTS exist across these rounds, so rounds do produce accepted work -- they have never produced three in a row without an instrument repair in between. Note also that validation.accepted_work is False in all 32 receipts BY DESIGN: is_accepted_work requires kind != read_only and a passing test check, and this challenge asks for measurement, which is read-only. That zero is not a finding.",
+ "proposed_terminal": {
+  "principle": "G006 cannot conclude ANYTHING about HCLI's autonomy while the defect source is the instrument. A terminal stated in rounds or hours would terminate on patience; a terminal stated in DEFECT SOURCE terminates on evidence.",
+  "progress": "a round whose failure is attributed to the MODEL. That is the only outcome that moves the experiment, whether it succeeds or fails.",
+  "dead_plan": "N consecutive rounds attributed to HARNESS with the defects NOT REPEATING -- each one novel. A non-repeating defect stream means the instrument surface is larger than the experiment, and the honest response is to stop running rounds and audit the surface instead. G025's reachability graph exists precisely to do that in one pass rather than one round at a time.",
+  "fallback": "if the defect stream does not converge, G006's claim weakens from 'HCLI can do autonomous science' to 'HCLI can do autonomous science on THIS laboratory', and the laboratory becomes the object of study. That is a real result, not a failure.",
+  "reopen": "any change that removes a whole defect class -- the reachability graph, the pinned launch, the write door -- reopens the experiment.",
+  "explicitly_not_proposed": "a round ceiling or a timeout. 22 rounds have cost ~13.5 minutes each and produced 13 harness fixes that outlive them. Terminating that on a count would discard the campaign's most productive defect-finding mechanism."
+ },
+ "the_uncomfortable_part": "3 of the last 4 rounds failed on MY launch or MY instrument affordance, not on the harness the earlier rounds exposed and not on the model. The defect source has moved toward the operator. That is worth stating plainly because it is the least flattering reading and it is the one the numbers support.",
+ "scar": "AN EXPERIMENT THAT KEEPS FAILING ON ITS APPARATUS IS MEASURING THE APPARATUS."
+}

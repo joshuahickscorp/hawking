@@ -58,7 +58,13 @@ PRIOR_DEFICIT: dict[str, float] = {
     "up_proj": 9.46,
 }
 STANDARD_ORGANS: tuple[str, ...] = tuple(PRIOR_DEFICIT)
-POLICIES: tuple[str, ...] = ("UNIFORM", "ORGAN_WEIGHTED", "INVERTED")
+# LOCAL orders by THIS specimen's own measured deficits instead of the aggregate.
+# [S010 17] asks for three policies -- UNIFORM, GLOBAL-PRIOR and LOCAL-ANATOMY --
+# because G017 already falsified the universal global rule, and both bodies whose
+# anatomy has been measured invert that prior on the same two pairs: local k>q
+# against global q>k, local down>gate against global gate>down. ORGAN_WEIGHTED is
+# the global arm; INVERTED remains its control.
+POLICIES: tuple[str, ...] = ("UNIFORM", "ORGAN_WEIGHTED", "INVERTED", "LOCAL")
 
 # UNIFORM affine spec. q4g64 on every linear organ is the cheapest NR that
 # still sits on this specimen's conjunction gate (dense ppl 4.73, q4g64 ppl
@@ -102,6 +108,39 @@ NLL_TEXT = (
     "while remaining dense in memory, which is why storage dominates the cost."
 ) * 3
 
+# CORPUS B. Every capability number this campaign has is from CORPUS A above,
+# which is ML-shop English: MoE routing, quantization scales, transformer
+# bandwidth, one arithmetic trick, one translation. Two results now rest on it --
+# GLOBAL_ANATOMY's r4 0.4135 win, and the NEGATIVE sensitivity of gate_proj and
+# o_proj -- and neither can be believed until it reproduces on prompts that do
+# not share that vocabulary. B is deliberately a different register and domain:
+# narrative, historical, biological, culinary, legal. No transformer words.
+PROMPTS_B = [
+    "Describe what a lighthouse keeper does during a winter storm.",
+    "Why did medieval towns build walls, and what ended the practice?",
+    "Write a short recipe for lentil soup for four people.",
+    "Explain how photosynthesis turns sunlight into sugar.",
+    "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+    "What is the difference between a lease and a licence?",
+    "Name three reasons a bridge might be closed for repair.",
+    "Translate to Spanish: The library opens at nine in the morning.",
+]
+NLL_TEXT_B = (
+    "The great auk was a flightless seabird of the North Atlantic that stood about "
+    "seventy centimetres tall and nested on remote rocky islands. It swam well and "
+    "walked poorly, which made the breeding colonies easy for sailors to raid for "
+    "meat, eggs and down. The last confirmed pair was killed in Iceland in 1844, and "
+    "the species is now the standard example of a bird hunted to extinction."
+) * 3
+
+CORPORA = {
+    "A": {"prompts": PROMPTS, "nll": NLL_TEXT,
+          "note": "ML-shop English: MoE routing, quantization, transformer decoding"},
+    "B": {"prompts": PROMPTS_B, "nll": NLL_TEXT_B,
+          "note": "narrative/historical/biological/culinary/legal; no transformer vocabulary"},
+}
+ACTIVE_CORPUS = "A"
+
 WHY_THIS_SPECIMEN = (
     "Cheapest DENSE causal LM in G002_DENSE_ANATOMY_SWEEP.json that still "
     "carries all seven standard organs and can run the conjunction gate "
@@ -120,15 +159,49 @@ WHY_THIS_SPECIMEN = (
 # The sort key that makes ORGAN_WEIGHTED put high-deficit organs first.
 # MUTATION_ANCHOR_ORDER_BY_DEFICIT — tests and the live mutation check both
 # hang on the leading minus. Reverting it must make a test FAIL.
-_ORDER_KEY_DESCENDING = "-PRIOR_DEFICIT[name]"
+_ORDER_KEY_DESCENDING = "-src[name]"
 
 
-def order_organs_by_deficit() -> tuple[str, ...]:
-    """Most structure first (q/k/o), least structure last (up_proj)."""
-    return tuple(sorted(PRIOR_DEFICIT, key=lambda name: -PRIOR_DEFICIT[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT
+def order_organs_by_deficit(deficits: dict[str, float] | None = None) -> tuple[str, ...]:
+    """Most structure first, least structure last.
+
+    `deficits` defaults to the GLOBAL prior. Pass a specimen's OWN measured
+    deficits for the LOCAL policy -- the two disagree, which is the whole point
+    of the comparison and the reason the experiment can discriminate at all.
+    """
+    src = PRIOR_DEFICIT if deficits is None else deficits
+    return tuple(sorted(src, key=lambda name: -src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT
 
 
-def per_param_weights(policy: str) -> dict[str, float]:
+def local_deficits(slug: str | None = None) -> dict[str, float]:
+    """THIS specimen's own measured organ deficits, from the anatomy sweep.
+
+    The evidence path is SWEEP_REL; there is no hardcoded copy and no fallback
+    to PRIOR_DEFICIT. A missing row is a refusal to run the LOCAL arm, not a
+    licence to run the global arm under a local label. [S010 11]
+    """
+    row = _local_ordering_from_sweep(slug)
+    ordering = (row or {}).get("organ_ordering") or []
+    out = {
+        str(r["organ"]): float(r["deficit_pct"])
+        for r in ordering
+        if r.get("organ") in PRIOR_DEFICIT and r.get("deficit_pct") is not None
+    }
+    missing = sorted(set(PRIOR_DEFICIT) - set(out))
+    if missing:
+        raise ValueError(
+            f"{SWEEP_REL} has no measured deficit for {missing} on "
+            f"{slug or SPECIMEN_SLUG}; the LOCAL arm cannot be run from the "
+            "global prior")
+    return out
+
+
+def deficits_for(policy: str, slug: str | None = None) -> dict[str, float] | None:
+    """None means 'use the GLOBAL prior'. LOCAL alone gets the specimen's own."""
+    return local_deficits(slug) if policy == "LOCAL" else None
+
+
+def per_param_weights(policy: str, deficits: dict[str, float] | None = None) -> dict[str, float]:
     """Bytes-per-parameter weights. Rank 0 (front of the order) is compressed most.
 
     Endpoint ratio is the prior's max/min deficit, so the tilt is measured
@@ -137,9 +210,17 @@ def per_param_weights(policy: str) -> dict[str, float]:
     """
     if policy not in POLICIES:
         raise ValueError(f"unknown policy {policy!r}")
+    # LOCAL must never fall back to the global prior. A silent fallback would run
+    # a global-prior arm and record it under a local label, which is the one
+    # outcome that makes the whole three-arm comparison meaningless.
+    if policy == "LOCAL" and not deficits:
+        raise ValueError(
+            "LOCAL allocation needs THIS specimen's own measured deficits; falling back to "
+            "the global prior would run a global arm under a local name")
+    src = PRIOR_DEFICIT if deficits is None else deficits
     if policy == "UNIFORM":
-        return {name: 1.0 for name in PRIOR_DEFICIT}
-    order = order_organs_by_deficit()
+        return {name: 1.0 for name in src}
+    order = order_organs_by_deficit(deficits)
     if policy == "INVERTED":
         order = tuple(reversed(order))
     n = len(order)
@@ -149,8 +230,8 @@ def per_param_weights(policy: str) -> dict[str, float]:
     # mean-8 budget and destroyed likelihood on every arm. Remaining-fraction
     # ratio is ~1.745 and still monotone in the prior order, so the mutation
     # of that order still reverses who gets crushed.
-    most = max(PRIOR_DEFICIT.values())
-    least = min(PRIOR_DEFICIT.values())
+    most = max(src.values())
+    least = min(src.values())
     rem_most = 1.0 - most / 100.0
     rem_least = 1.0 - least / 100.0
     if rem_most <= 0:
@@ -166,6 +247,7 @@ def allocate_organ_ebpw(
     policy: str,
     organ_params: dict[str, int],
     target_mean_ebpw: float = TARGET_ORGAN_EBPW,
+    deficits: dict[str, float] | None = None,
 ) -> dict[str, float]:
     """Per-organ complete EBPW whose param-weighted mean is target_mean_ebpw.
 
@@ -173,7 +255,7 @@ def allocate_organ_ebpw(
     in the prior, so it receives the bytes saved by compressing q/k/o first).
     INVERTED: the same unequal allocation backwards.
     """
-    weights = per_param_weights(policy)
+    weights = per_param_weights(policy, deficits)
     names = [n for n in organ_params if n in weights]
     if not names:
         raise ValueError("organ_params has no standard organs")
@@ -261,6 +343,7 @@ def search_affine_assignment(
     policy: str,
     inv: dict[str, Any],
     target_bytes: int,
+    deficits: dict[str, float] | None = None,
 ) -> dict[str, tuple[int, int]]:
     """Monotone affine specs along the prior order, closest to target_bytes.
 
@@ -272,11 +355,14 @@ def search_affine_assignment(
     """
     if policy == "UNIFORM":
         return {fam: UNIFORM_AFFINE for fam in PRIOR_DEFICIT if inv["organ_params"].get(fam)}
-    order = order_organs_by_deficit()
+    order = order_organs_by_deficit(deficits)
     names = [n for n in order if inv["organ_params"].get(n)]
     table = family_affine_table(inv)
-    targets = allocate_organ_ebpw(policy, inv["organ_params"], TARGET_ORGAN_EBPW)
-    monotone_up = policy == "ORGAN_WEIGHTED"
+    targets = allocate_organ_ebpw(
+        policy, inv["organ_params"], TARGET_ORGAN_EBPW, deficits)
+    # LOCAL is the same tilt as the global arm -- most structure compressed
+    # first -- read off a different ordering. Only INVERTED reverses it.
+    monotone_up = policy in ("ORGAN_WEIGHTED", "LOCAL")
     best: tuple[float, float, list[tuple[str, tuple[int, int]]]] | None = None
 
     def rec(i: int, last_e: float | None, chosen: list, tot: int) -> None:
@@ -366,13 +452,35 @@ def plan_arm(
     inv: dict[str, Any],
     policy: str,
     target_bytes: int | None = None,
+    deficits: dict[str, float] | None = None,
+    assignment: dict[str, tuple[int, int]] | None = None,
 ) -> dict[str, Any]:
-    organ_ebpw = allocate_organ_ebpw(policy, inv["organ_params"], TARGET_ORGAN_EBPW)
-    if target_bytes is None:
+    """One arm's plan. `assignment` overrides the policy search entirely.
+
+    The override exists because the monotone search is CONFOUNDED as a test of
+    ordering: each policy gets whatever bit-depth multiset best hits the byte
+    budget under its own monotonicity constraint, and those multisets differ
+    between arms. Measured on Qwen3-0.6B, minimum bit depth separates the
+    perplexities almost perfectly -- every arm that reached q2 landed at 6.76 to
+    12.84, every arm that stopped at q3 or above landed at 5.23 to 6.17 -- so a
+    difference between two policy arms is mostly a difference in how deep the
+    ramp went, not in which organ sat where. An explicit assignment lets a
+    caller hold the multiset fixed and vary only the organ it is attached to.
+    """
+    organ_ebpw = allocate_organ_ebpw(
+        policy if policy in POLICIES else "UNIFORM",
+        inv["organ_params"], TARGET_ORGAN_EBPW,
+        deficits if policy in POLICIES else None)
+    if assignment is not None:
+        assignment = {fam: tuple(cfg) for fam, cfg in assignment.items()}
+        missing = sorted(set(inv["organ_params"]) - set(assignment))
+        if missing:
+            raise ValueError(f"explicit assignment is missing {missing}")
+    elif target_bytes is None:
         # UNIFORM defines the budget.
         assignment = {fam: UNIFORM_AFFINE for fam in inv["organ_params"]}
     else:
-        assignment = search_affine_assignment(policy, inv, target_bytes)
+        assignment = search_affine_assignment(policy, inv, target_bytes, deficits)
     specs: dict[str, tuple[int, int]] = {}
     by_family: dict[str, dict[str, Any]] = {}
     parts_sum = None
@@ -413,26 +521,100 @@ def plan_arm(
         "parts": parts_sum,
         "specs": specs,
         "assignment": {fam: list(cfg) for fam, cfg in assignment.items()},
-        "per_param_weights": per_param_weights(policy),
+        # A mirror arm carries an explicit assignment and no policy weights;
+        # reporting the UNIFORM ramp for it would be a fabricated field.
+        "per_param_weights": (per_param_weights(policy, deficits)
+                              if policy in POLICIES else None),
     }
 
 
-def plan_three_arms(inv: dict[str, Any], target_mean_ebpw: float = TARGET_ORGAN_EBPW) -> dict[str, Any]:
+# Organs with IDENTICAL parameter counts. Exchanging two specs inside one of
+# these groups changes NO bytes and NO bit-depth multiset -- only which organ is
+# protected. That is the one comparison the monotone search cannot make.
+# Measured on Qwen--Qwen3-0.6B: {q,o} 58,720,256 each; {k,v} 29,360,128 each;
+# {down,gate,up} 88,080,384 each.
+def equal_size_groups(inv: dict[str, Any]) -> dict[int, list[str]]:
+    groups: dict[int, list[str]] = {}
+    for fam, n in inv["organ_params"].items():
+        groups.setdefault(int(n), []).append(fam)
+    return {n: sorted(v) for n, v in groups.items() if len(v) > 1}
+
+
+def mirror_pairs(inv: dict[str, Any]) -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for _n, fams in sorted(equal_size_groups(inv).items()):
+        for i in range(len(fams)):
+            for j in range(i + 1, len(fams)):
+                out.append((fams[i], fams[j]))
+    return out
+
+
+def plan_mirror_arms(
+    inv: dict[str, Any],
+    cheap: tuple[int, int] = (3, 64),
+    rich: tuple[int, int] = (8, 64),
+    base: tuple[int, int] | None = None,
+) -> dict[str, Any]:
+    """BASE plus, for each equal-size pair, the two mirrored assignments.
+
+    For pair (A, B): one arm gives A the cheap spec and B the rich spec, the
+    other gives A the rich spec and B the cheap one. Because A and B hold the
+    same number of parameters, the two arms are byte-identical and share a
+    bit-depth multiset. Any capability difference between them is attributable
+    to the organ, and to nothing else -- no budget difference, no depth
+    difference, no ordering heuristic in between.
+    """
+    base = base or UNIFORM_AFFINE
+    arms: dict[str, Any] = {}
+    base_assign = {fam: base for fam in inv["organ_params"]}
+    arms["BASE"] = plan_arm(inv, "UNIFORM", assignment=base_assign)
+    pairs = mirror_pairs(inv)
+    for a, b in pairs:
+        # Key by the PAIR, not the organ: down/gate/up each sit in two pairs, so
+        # keying by organ silently overwrote arms and dropped 3 of 10.
+        for first, second, tag in ((a, b, f"{a}|{b}:{a}_cheap"),
+                                   (b, a, f"{a}|{b}:{b}_cheap")):
+            assign = dict(base_assign)
+            assign[first] = cheap
+            assign[second] = rich
+            arms[tag] = plan_arm(inv, tag, assignment=assign)
+            arms[tag]["pair"] = [a, b]
+            arms[tag]["cheap_organ"] = first
+            arms[tag]["rich_organ"] = second
+    arms["_pairs"] = [list(p) for p in pairs]
+    arms["_cheap"] = list(cheap)
+    arms["_rich"] = list(rich)
+    return arms
+
+
+def plan_three_arms(
+    inv: dict[str, Any],
+    target_mean_ebpw: float = TARGET_ORGAN_EBPW,
+    slug: str | None = None,
+) -> dict[str, Any]:
+    """One plan per POLICIES entry, all at the byte budget UNIFORM defines.
+
+    G017 asked UNIFORM vs GLOBAL-PRIOR with INVERTED as the control. G021 adds
+    LOCAL -- the same tilt read off this specimen's own measured deficits --
+    because the global prior and both measured bodies disagree on q/k and
+    gate/down. Kept the name; the arm count is POLICIES, not the title.
+    """
     del target_mean_ebpw  # budget is UNIFORM_AFFINE, not a free mean
     uniform = plan_arm(inv, "UNIFORM")
     target = int(uniform["organ_bytes"])
-    weighted = plan_arm(inv, "ORGAN_WEIGHTED", target_bytes=target)
-    inverted = plan_arm(inv, "INVERTED", target_bytes=target)
-    residual = abs(weighted["complete_ebpw_full"] - uniform["complete_ebpw_full"])
-    residual_inv = abs(inverted["complete_ebpw_full"] - uniform["complete_ebpw_full"])
-    return {
-        "UNIFORM": uniform,
-        "ORGAN_WEIGHTED": weighted,
-        "INVERTED": inverted,
-        "matched_organ_bytes": target,
-        "ebpw_residual_weighted_vs_uniform": residual,
-        "ebpw_residual_inverted_vs_uniform": residual_inv,
-    }
+    out: dict[str, Any] = {"UNIFORM": uniform, "matched_organ_bytes": target}
+    for policy in POLICIES:
+        if policy == "UNIFORM":
+            continue
+        out[policy] = plan_arm(
+            inv, policy, target_bytes=target, deficits=deficits_for(policy, slug))
+    residual = abs(out["ORGAN_WEIGHTED"]["complete_ebpw_full"] - uniform["complete_ebpw_full"])
+    residual_inv = abs(out["INVERTED"]["complete_ebpw_full"] - uniform["complete_ebpw_full"])
+    out["ebpw_residual_weighted_vs_uniform"] = residual
+    out["ebpw_residual_inverted_vs_uniform"] = residual_inv
+    out["ebpw_residual_local_vs_uniform"] = abs(
+        out["LOCAL"]["complete_ebpw_full"] - uniform["complete_ebpw_full"])
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -470,8 +652,14 @@ def run_mutation_check() -> dict[str, Any]:
     text = original.decode("utf-8")
     # Assembled so this helper does not itself contain the unique live line.
     _tag = "MUTATION_ANCHOR_ORDER_BY_DEFICIT"
-    old = "key=lambda name: -" + "PRIOR_DEFICIT[name]))  # " + _tag
-    new = "key=lambda name: " + "PRIOR_DEFICIT[name]))  # " + _tag
+    # The anchor moved from PRIOR_DEFICIT to `src` when order_organs_by_deficit
+    # learned to take a specimen's OWN deficits for the LOCAL policy. Both this
+    # checker and the test pinned the old text, so the live negative control
+    # would have raised "anchor not unique: count=0" and the ordering would have
+    # had NO mutation test at all -- the guard drifting off its target, which
+    # this campaign has already been bitten by once.
+    old = "key=lambda name: -" + "src[name]))  # " + _tag
+    new = "key=lambda name: " + "src[name]))  # " + _tag
     if text.count(old) != 1:
         raise RuntimeError(
             f"mutation anchor not unique: count={text.count(old)} for {old!r}"
@@ -616,7 +804,8 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
     """Same axes as gravity_outlier_eval.evaluate: NLL ppl + greedy 4-gram r4."""
     import torch
     model.eval()
-    nll_ids = tokenizer.encode(NLL_TEXT)[:NLL_TOKENS]
+    corpus = CORPORA[ACTIVE_CORPUS]
+    nll_ids = tokenizer.encode(corpus["nll"])[:NLL_TOKENS]
     if len(nll_ids) < 2:
         raise RuntimeError("NLL text tokenised to <2 tokens")
     x = torch.tensor([nll_ids], device=device)
@@ -633,7 +822,7 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
     pad_id = tokenizer.pad_token_id
     if pad_id is None:
         pad_id = tokenizer.eos_token_id
-    for prompt in PROMPTS:
+    for prompt in corpus["prompts"]:
         ids = tokenizer(prompt, return_tensors="pt")
         ids = {k: v.to(device) for k, v in ids.items()}
         with torch.inference_mode():
@@ -666,7 +855,9 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
         "median_4gram_repeat": round(med_r4, 4),
         "median_distinct_ratio": round(med_dis, 4),
         "worst_max_repeat_run": int(worst),
-        "n_prompts": len(PROMPTS),
+        "n_prompts": len(corpus["prompts"]),
+        "corpus": ACTIVE_CORPUS,
+        "corpus_note": corpus["note"],
         "nll_tokens": len(nll_ids),
         "gen_tokens": GEN_TOKENS,
         "r4s": [round(x, 6) for x in r4s],
@@ -677,8 +868,31 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
     }
 
 
+# median_4gram_repeat is a FRACTION of 4-grams that repeat, so its range is
+# [0, 1]. `R4_MULT x dense` is unbounded: for any parent repeating more than a
+# third of its 4-grams the bar lands ABOVE the highest value the metric can take,
+# and the diversity axis cannot reject anything. Qwen3-0.6B's dense median is
+# 0.3619, its bar was 1.0857, and G017_ORGAN_ALLOCATION.json records the
+# deliberately INVERTED control -- 82% of 4-grams repeating -- as
+# diversity_ok: TRUE. The conjunction had quietly become perplexity alone, which
+# is the single-proxy failure the gate exists to prevent.
+#
+# THE CAP, and where it comes from: a bar may not sit more than halfway from the
+# reference to total collapse. Both fixed points already belong to the problem --
+# the parent the specimen is judged against, and the ceiling the metric cannot
+# exceed -- so this is derived, not chosen to produce a wanted verdict. For any
+# parent below dense_r4 = 1/3 it changes NOTHING: O003's bar stays 0.1614 and
+# every verdict in the capability cliff is untouched.
+R4_CEILING = 1.0
+
+
+def r4_bar(dense_r4: float) -> float:
+    """The diversity bar, capped so it stays inside the metric it measures."""
+    return min(R4_MULT * float(dense_r4), (float(dense_r4) + R4_CEILING) / 2.0)
+
+
 def gate_from_reference(cap: dict[str, Any], ref: dict[str, Any]) -> dict[str, Any]:
-    r4_max = R4_MULT * float(ref["r4_full"])
+    r4_max = r4_bar(float(ref["r4_full"]))
     ppl_max = PPL_MULT * float(ref["ppl_full"])
     ppl_ok = float(cap["ppl_full"]) <= ppl_max
     r4_ok = float(cap["r4_full"]) <= r4_max
@@ -692,6 +906,9 @@ def gate_from_reference(cap: dict[str, Any], ref: dict[str, Any]) -> dict[str, A
         "gate_r4_max": round(r4_max, 4),
         "gate_ppl_max": round(ppl_max, 4),
         "gate_r4_mult": R4_MULT,
+        "gate_r4_capped": bool(R4_MULT * float(ref["r4_full"]) > r4_max),
+        "gate_r4_uncapped": round(R4_MULT * float(ref["r4_full"]), 4),
+        "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
         "gate_ppl_mult": PPL_MULT,
         "evaluator": "tools/future/organ_allocation.py::measure_capability",
         "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
@@ -750,6 +967,13 @@ def _public_arm(plan: dict[str, Any], cap: dict[str, Any] | None, gate: dict[str
         "execution_complete": False,
         "execution_note": "NR rematerializes dense W_hat; there is no low-rank kernel",
     }
+    # A mirror arm declares WHICH comparison it belongs to. Without this the
+    # receipt reads as one eleven-way comparison and an auditor correctly calls
+    # a sound design confounded, because arms from different pairs hold organs
+    # of different sizes and are not meant to be compared at all.
+    for key in ("pair", "cheap_organ", "rich_organ"):
+        if plan.get(key) is not None:
+            out[key] = plan[key]
     if cap is not None:
         out["capability"] = {
             "ppl": cap["ppl"],
@@ -796,6 +1020,95 @@ def _pareto_better(a: dict[str, Any], b: dict[str, Any]) -> str:
     if (not a_better_some) and (not b_better_some):
         return "tie"
     return "mixed"
+
+
+def _g021_verdict(arms: dict[str, Any], orders: dict[str, list]) -> dict[str, Any]:
+    """UNIFORM vs GLOBAL-PRIOR vs LOCAL-ANATOMY at matched complete EBPW. [S010 11]
+
+    Three arms, one question: does allocating by THIS body's own measured
+    anatomy preserve capability better than allocating by the campaign-wide
+    prior, or better than not allocating at all? INVERTED stays as the global
+    arm's control and is reported, not compared here.
+
+    Capability decides first. Any arm that fails the conjunction gate cannot
+    win on continuous axes alone -- that is the G017 lesson, and dropping it
+    would let a less-collapsed-but-broken arm be called a winner.
+    """
+    names = ("UNIFORM", "ORGAN_WEIGHTED", "LOCAL")
+    pairs = {
+        "LOCAL_vs_UNIFORM": _pareto_better(arms["LOCAL"], arms["UNIFORM"]),
+        "LOCAL_vs_GLOBAL": _pareto_better(arms["LOCAL"], arms["ORGAN_WEIGHTED"]),
+        "GLOBAL_vs_UNIFORM": _pareto_better(arms["ORGAN_WEIGHTED"], arms["UNIFORM"]),
+    }
+    passing = [n for n in names if bool(arms[n].get("capability_ok"))]
+    # A winner must pass the gate AND not be Pareto-dominated by another passer.
+    winners = []
+    for n in passing:
+        dominated = any(
+            m != n and _pareto_better(arms[m], arms[n]) == "a" for m in passing)
+        if not dominated:
+            winners.append(n)
+    if len(winners) == 1:
+        outcome = winners[0]
+    elif not passing:
+        outcome = "NONE_PASSES_GATE"
+    else:
+        outcome = "UNDECIDED"
+    rows = {
+        n: {
+            "ppl": arms[n]["capability"]["ppl_full"],
+            "r4": arms[n]["capability"]["r4_full"],
+            "capability_ok": bool(arms[n].get("capability_ok")),
+            "complete_ebpw": arms[n]["complete_ebpw"],
+        }
+        for n in names
+    }
+    if outcome == "LOCAL":
+        prior_note = (
+            "LOCAL anatomy is the stronger allocation prior on this body; "
+            "promote local measurement over the global median where measured")
+    elif outcome == "ORGAN_WEIGHTED":
+        prior_note = (
+            "the GLOBAL prior beat this body's own anatomy; the local "
+            "structural metric does not map directly to compressibility")
+    elif outcome == "UNIFORM":
+        prior_note = (
+            "structure-only allocation is too weak on this body: neither "
+            "ordering beat spending the same bytes equally")
+    elif outcome == "NONE_PASSES_GATE":
+        prior_note = (
+            "no arm survived the conjunction gate at this budget; the "
+            "comparison is unresolved, not a UNIFORM win")
+    else:
+        prior_note = (
+            "two or more arms pass the gate and none Pareto-dominates the "
+            "others; the discriminator did not separate them at this budget")
+    sentence = (
+        f"G021 {outcome}: at matched complete EBPW "
+        f"{arms['UNIFORM']['complete_ebpw']:.4f}, "
+        + "; ".join(
+            f"{n} ppl {rows[n]['ppl']:.4f} r4 {rows[n]['r4']:.4f} "
+            f"gate {'PASS' if rows[n]['capability_ok'] else 'FAIL'}"
+            for n in names)
+        + f". LOCAL order {','.join(orders.get('local') or [])} vs GLOBAL "
+        f"{','.join(orders.get('global') or [])}. {prior_note}."
+    )
+    return {
+        "question": "UNIFORM vs GLOBAL-PRIOR vs LOCAL-ANATOMY at matched complete EBPW",
+        "outcome": outcome,
+        "winners": winners,
+        "passing_gate": passing,
+        "pareto": pairs,
+        "arms": rows,
+        "orders": orders,
+        "prior_update": prior_note,
+        "inverted_control": {
+            "ppl": arms["INVERTED"]["capability"]["ppl_full"],
+            "r4": arms["INVERTED"]["capability"]["r4_full"],
+            "capability_ok": bool(arms["INVERTED"].get("capability_ok")),
+        },
+        "verdict_sentence": sentence,
+    }
 
 
 def _verdict(arms: dict[str, Any]) -> dict[str, Any]:
@@ -907,7 +1220,7 @@ def run_experiment(
     require_ok("G017 organ allocation", expected_gb=expected_gb)
 
     inv = inventory(snapshot)
-    plans = plan_three_arms(inv, TARGET_ORGAN_EBPW)
+    plans = plan_three_arms(inv, TARGET_ORGAN_EBPW, slug)
     mutation = None if skip_mutation else run_mutation_check()
     sweep_row = _local_ordering_from_sweep(slug)
     local_order = [r["organ"] for r in (sweep_row or {}).get("organ_ordering") or []]
@@ -949,8 +1262,11 @@ def run_experiment(
         arms_pub[name] = _public_arm(plan, arm_caps.get(name), gates.get(name))
 
     verdict = None
+    g021 = None
     if arm_caps:
         verdict = _verdict(arms_pub)
+        g021 = _g021_verdict(
+            arms_pub, {"local": local_order, "global": global_order})
 
     residual = plans["ebpw_residual_weighted_vs_uniform"]
     doc: dict[str, Any] = {
@@ -971,10 +1287,16 @@ def run_experiment(
         },
         "local_vs_global": (
             "local k>q (global q>k) and local down>gate (global gate>down); "
-            "the three 100% laws hold; allocation uses the GLOBAL prior"
+            "the three 100% laws hold. G021 runs BOTH orderings as arms: "
+            "ORGAN_WEIGHTED is the global prior, LOCAL is this body's own "
+            "measured deficits, at the same matched byte budget"
         ),
+        "local_deficit": local_deficits(slug) if local_order else None,
         "sweep_row": sweep_row,
         "target_mean_organ_ebpw": TARGET_ORGAN_EBPW,
+        "uniform_spec": {"bits": UNIFORM_AFFINE[0], "group": UNIFORM_AFFINE[1],
+                         "note": "UNIFORM defines the matched byte budget; every "
+                                 "arm is held to its organ_bytes"},
         "source_params": inv["source_params"],
         "organ_params": inv["organ_params"],
         "n_organ_tensors": inv["n_organs"],
@@ -997,11 +1319,12 @@ def run_experiment(
         "dense_parent_capability": dense_cap,
         "arms": arms_pub,
         "matched_ebpw": {
-            "UNIFORM": arms_pub["UNIFORM"]["complete_ebpw"],
-            "ORGAN_WEIGHTED": arms_pub["ORGAN_WEIGHTED"]["complete_ebpw"],
-            "INVERTED": arms_pub["INVERTED"]["complete_ebpw"],
+            **{n: arms_pub[n]["complete_ebpw"] for n in POLICIES},
             "residual_weighted_vs_uniform": round(residual, 6),
+            "residual_local_vs_uniform": round(
+                plans["ebpw_residual_local_vs_uniform"], 6),
         },
+        "g021_verdict": g021,
         "mutation_check": mutation,
         "applied": applied,
         "guard_at_start": guard.as_dict(),
@@ -1016,8 +1339,10 @@ def run_experiment(
             "q4g64 is the cheapest NR that still has a live conjunction here.",
             "ORGAN_WEIGHTED/INVERTED are the closest monotone affine assignments "
             "on the q2/q3/q4/q8 × g32/64/128 grid, not a rate-distortion optimum.",
-            "Allocation uses the GLOBAL prior, not this body's local order "
-            "(local is k>q; global is q>k).",
+            "LOCAL and GLOBAL differ by two adjacent transpositions (k/q, "
+            "down/gate) and by tilt endpoint ratio (1.505 local vs 1.745 "
+            "global). That is the whole size of the G021 effect: a small "
+            "reordering of a monotone ramp, not a different representation.",
             "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on "
             "CPU fp32 — the existing gate's budget, not a large eval.",
             "The parent is bf16 on disk; compute is fp32. Gate multipliers "
@@ -1109,8 +1434,14 @@ def ingest_g017_into_ledger(
     row = next((r for r in led["specimens"] if r["slug"] == slug), None)
     if row is None:
         raise RuntimeError(f"{slug} is not in the ledger")
+    # capability_ok is the CONJUNCTION (perplexity AND 4-gram diversity). The one
+    # row written by hand recorded ppl_ok here instead, so a UNIFORM arm that
+    # FAILS diversity was published as a capability pass -- the ledger's only
+    # nr_candidate row contradicting its own receipt. Read the conjunction, and
+    # emit matched_complete_ebpw under the name the ledger actually stores.
     value = {
         "form": "organ-unequal affine NR",
+        "matched_complete_ebpw": rec["arms"]["UNIFORM"]["complete_ebpw"],
         "complete_ebpw": rec["arms"]["UNIFORM"]["complete_ebpw"],
         "unequal_beats_uniform": rec["verdict"]["unequal_beats_uniform"],
         "uniform_capability_ok": rec["arms"]["UNIFORM"]["capability_ok"],
@@ -1122,11 +1453,26 @@ def ingest_g017_into_ledger(
         "verdict": rec["verdict_sentence"],
     }
     actions = []
-    if row["axes"]["nr_candidate"]["state"] == "OWED":
+    # REFRESH, not just first-write. The guard used to skip any row that was
+    # already MEASURED, which made this function structurally incapable of
+    # correcting a bad row -- and a row hand-assembled around it published
+    # nulls for three ppl fields the receipt actually carries. A producer that
+    # cannot overwrite its own output is not the authority for that output.
+    # Refuse only when the row cites a DIFFERENT receipt, since that is someone
+    # else's evidence, not a stale copy of ours.
+    cell = row["axes"]["nr_candidate"]
+    cited = cell.get("receipt")
+    if cell["state"] == "OWED":
         measured(row, "nr_candidate", value, receipt_path)
         actions.append("nr_candidate MEASURED")
+    elif cited in (None, receipt_path):
+        before = dict(cell.get("value") or {})
+        measured(row, "nr_candidate", value, receipt_path)
+        changed = sorted(k for k in set(before) | set(value) if before.get(k) != value.get(k))
+        actions.append(f"nr_candidate REFRESHED from its own receipt; changed={changed}"
+                       if changed else "nr_candidate already matches its receipt")
     else:
-        actions.append(f"nr_candidate already {row['axes']['nr_candidate']['state']}")
+        actions.append(f"nr_candidate cites a different receipt ({cited}); refusing to overwrite")
     if row["axes"]["nx_disposition"]["state"] == "OWED":
         refused(
             row,
@@ -1144,19 +1490,694 @@ def ingest_g017_into_ledger(
     return {"slug": slug, "actions": actions, "progress": progress(led)}
 
 
+ISOLATE_SCHEMA = "hawking.future.g022_group_isolation.v1"
+ISOLATE_RECEIPT = "G022_GROUP_ISOLATION.json"
+
+
+def run_isolation_experiment(
+    *,
+    snapshot: str | None = None,
+    slug: str | None = None,
+    expected_gb: float = 8.0,
+) -> dict[str, Any]:
+    """WHICH organ group makes the winning allocation win?
+
+    GLOBAL_ANATOMY is the only arm to pass the conjunction on two corpora, but
+    the mechanism is unattributed: GLOBAL and ANTI_SENSITIVITY agree on {q,o}
+    and still differ by 0.21 r4, so the win is not one organ's doing. Each arm
+    here changes GLOBAL in EXACTLY ONE equal-parameter group and leaves the
+    other two identical, so every arm is byte-exact and depth-exact against the
+    base and the capability delta is that group's contribution and nothing else.
+    """
+    from campaign_memory_guard import require_ok, resource_cost, sample
+
+    snapshot = snapshot or SPECIMEN_PATH
+    slug = slug or SPECIMEN_SLUG
+    guard = sample(expected_gb=expected_gb)
+    if guard.state == "STOP":
+        return {"schema": ISOLATE_SCHEMA, "status": "GUARD_STOP",
+                "guard": guard.as_dict(),
+                "verdict_sentence": "NO RESULT: campaign_memory_guard STOP before load"}
+    require_ok("G022 group isolation", expected_gb=expected_gb)
+
+    C, M, R = ALLOC_CHEAP, ALLOC_MID, ALLOC_RICH
+    base = {"q_proj": C, "o_proj": M, "k_proj": C, "v_proj": M,
+            "gate_proj": C, "down_proj": M, "up_proj": R}
+    arms: dict[str, dict[str, tuple[int, int]]] = {"GLOBAL_BASE": dict(base)}
+    # One group changed per arm. Nothing else moves.
+    a = dict(base); a["q_proj"], a["o_proj"] = M, C
+    arms["SWAP_qo"] = a
+    a = dict(base); a["k_proj"], a["v_proj"] = M, C
+    arms["SWAP_kv"] = a
+    a = dict(base); a["gate_proj"], a["down_proj"] = M, C     # crush down instead of gate
+    arms["MLP_crush_down"] = a
+    a = dict(base); a["gate_proj"], a["up_proj"] = R, C       # crush up, protect gate
+    arms["MLP_crush_up"] = a
+
+    inv = inventory(snapshot)
+    plans = {n: plan_arm(inv, n, assignment=asg) for n, asg in arms.items()}
+    names = list(plans)
+    caps: dict[str, Any] = {}
+    gates: dict[str, Any] = {}
+    applied: dict[str, Any] = {}
+    with resource_cost(interval_s=2.0, label="G022_ISO") as cost:
+        weights = _load_bf16_payloads(inv)
+        model, tok = _load_model(snapshot)
+        dense_cap = measure_capability(model, tok)
+        for nm in names:
+            rec = reconstruct_arm(inv, weights, plans[nm]["specs"])
+            applied[nm] = _apply_recs(model, rec)
+            del rec
+            caps[nm] = measure_capability(model, tok)
+            gates[nm] = gate_from_reference(caps[nm], dense_cap)
+        del model, weights
+
+    pub = {n: _public_arm({k: v for k, v in plans[n].items() if k != "specs"},
+                          caps[n], gates[n]) for n in names}
+    b_ppl = pub["GLOBAL_BASE"]["capability"]["ppl_full"]
+    b_r4 = pub["GLOBAL_BASE"]["capability"]["r4_full"]
+    rows = []
+    for n in names:
+        if n == "GLOBAL_BASE":
+            continue
+        changed = sorted(k for k in base if arms[n][k] != base[k])
+        rows.append({
+            "arm": n, "group_changed": changed,
+            "delta_ppl": round(pub[n]["capability"]["ppl_full"] - b_ppl, 6),
+            "delta_r4": round(pub[n]["capability"]["r4_full"] - b_r4, 6),
+            "ppl": round(pub[n]["capability"]["ppl_full"], 6),
+            "r4": round(pub[n]["capability"]["r4_full"], 6),
+            "gate_ok": bool(pub[n]["capability_ok"]),
+        })
+    rows.sort(key=lambda r: -abs(r["delta_r4"]))
+    byte_set = {p["organ_bytes"] for p in plans.values()}
+    depth_set = {tuple(sorted(v["bits"] for v in plans[n]["per_organ"].values()))
+                 for n in names}
+    dominant = rows[0] if rows else None
+    return {
+        "schema": ISOLATE_SCHEMA, "obligation": "G022", "status": "MEASURED",
+        "question": ("which equal-parameter organ group is responsible for the "
+                     "GLOBAL_ANATOMY allocation win?"),
+        "specimen": slug, "specimen_path": snapshot,
+        "base_assignment": {k: f"q{v[0]}-g{v[1]}" for k, v in base.items()},
+        "assignments": {n: {k: f"q{v[0]}-g{v[1]}" for k, v in asg.items()}
+                        for n, asg in arms.items()},
+        "byte_exact_across_all_arms": len(byte_set) == 1,
+        "depth_exact_across_all_arms": len(depth_set) == 1,
+        "organ_bytes": sorted(byte_set),
+        "base_ppl": round(b_ppl, 6), "base_r4": round(b_r4, 6),
+        "base_gate_ok": bool(pub["GLOBAL_BASE"]["capability_ok"]),
+        "per_group": rows,
+        "dominant_group": dominant["group_changed"] if dominant else None,
+        "dense_parent_capability": dense_cap,
+        "arms": pub, "applied": applied,
+        "guard_at_start": guard.as_dict(), "resource": cost, "device": "cpu",
+        "nr_not_nx": True,
+        "weaker_than_it_looks": [
+            "Single-group swaps measure each group AGAINST THIS BASE. They do not "
+            "prove the groups are independent; a different base could reorder them.",
+            "One specimen, one budget, one corpus.",
+        ],
+        "verdict_sentence": (
+            f"G022 on {slug}: base GLOBAL_ANATOMY ppl {b_ppl:.4f} r4 {b_r4:.4f} "
+            f"({'PASS' if pub['GLOBAL_BASE']['capability_ok'] else 'FAIL'}), all arms "
+            f"byte-exact and depth-exact. Group effect on diversity, largest first: "
+            + "; ".join(f"{r['arm']} d_r4 {r['delta_r4']:+.4f} d_ppl {r['delta_ppl']:+.4f}"
+                        for r in rows) + "."),
+    }
+
+
+ALLOC_SCHEMA = "hawking.future.g012_sensitivity_allocation.v1"
+ALLOC_RECEIPT = "G012_SENSITIVITY_ALLOCATION.json"
+
+# The tilt. Chosen so a pair {cheap, mid} and a triple {cheap, mid, rich} each
+# reproduce all-RICH's byte total EXACTLY on this specimen's equal-parameter
+# groups -- verified, delta 0 bytes. Every arm below is therefore byte-exact,
+# and the three TILTED arms additionally share one bit-depth multiset, which is
+# the confound LAW003 says destroys an ordering claim.
+ALLOC_CHEAP = (3, 32)
+ALLOC_MID = (4, 32)
+ALLOC_RICH = (4, 64)
+
+
+def allocation_arms(sensitivity: dict[str, float]) -> dict[str, dict[str, tuple[int, int]]]:
+    """UNIFORM plus three permutations of ONE multiset over the equal-size groups.
+
+    Within {q,o}, {k,v} and {down,gate,up} any permutation is byte-identical, so
+    the only thing that varies between the tilted arms is WHICH organ is
+    protected. SENSITIVITY spends the cheapest spec on the organ measured least
+    sensitive; ANTI_SENSITIVITY is its negative control and must do WORSE, or
+    the map has no predictive power; GLOBAL_ANATOMY spends it on the organ the
+    structural prior calls most redundant.
+    """
+    pairs = (("o_proj", "q_proj"), ("k_proj", "v_proj"))
+    triple = ("down_proj", "gate_proj", "up_proj")
+
+    def order_by(score: dict[str, float], names, reverse: bool):
+        return sorted(names, key=lambda n: score[n], reverse=reverse)
+
+    glob = dict(PRIOR_DEFICIT)
+    arms: dict[str, dict[str, tuple[int, int]]] = {}
+    arms["UNIFORM"] = {f: ALLOC_RICH for f in STANDARD_ORGANS}
+
+    def build(score: dict[str, float], reverse: bool) -> dict[str, tuple[int, int]]:
+        # reverse=False: LOWEST score first == cheapest spec to the lowest score.
+        a: dict[str, tuple[int, int]] = {}
+        for grp in pairs:
+            lo, hi = order_by(score, grp, reverse)
+            a[lo], a[hi] = ALLOC_CHEAP, ALLOC_MID
+        lo, mid, hi = order_by(score, triple, reverse)
+        a[lo], a[mid], a[hi] = ALLOC_CHEAP, ALLOC_MID, ALLOC_RICH
+        return a
+
+    # Least sensitive gets the cheapest spec.
+    arms["SENSITIVITY"] = build(sensitivity, reverse=False)
+    # Negative control: most sensitive gets the cheapest spec.
+    arms["ANTI_SENSITIVITY"] = build(sensitivity, reverse=True)
+    # Highest structural deficit gets the cheapest spec -- the prior's own rule.
+    arms["GLOBAL_ANATOMY"] = build(glob, reverse=True)
+    return arms
+
+
+def run_allocation_experiment(
+    *,
+    snapshot: str | None = None,
+    slug: str | None = None,
+    expected_gb: float = 8.0,
+    sensitivity_receipt: str = "receipts/future/G011_ORGAN_SENSITIVITY.json",
+) -> dict[str, Any]:
+    """Does allocating by MEASURED sensitivity beat allocating by anatomy?"""
+    from campaign_memory_guard import require_ok, resource_cost, sample
+
+    snapshot = snapshot or SPECIMEN_PATH
+    slug = slug or SPECIMEN_SLUG
+    src = _REPO / sensitivity_receipt
+    if not src.is_file():
+        raise FileNotFoundError(
+            f"{sensitivity_receipt} is required: this arm allocates by MEASURED "
+            "sensitivity and will not fall back to a structural proxy")
+    sdoc = json.loads(src.read_text())
+    sens = {r["organ"]: float(r["delta_ppl"]) for r in sdoc["sensitivity"]}
+    missing = sorted(set(STANDARD_ORGANS) - set(sens))
+    if missing:
+        raise ValueError(f"{sensitivity_receipt} has no measured sensitivity for {missing}")
+
+    guard = sample(expected_gb=expected_gb)
+    if guard.state == "STOP":
+        return {"schema": ALLOC_SCHEMA, "status": "GUARD_STOP", "guard": guard.as_dict(),
+                "verdict_sentence": "NO RESULT: campaign_memory_guard STOP before load"}
+    require_ok("G012 sensitivity allocation", expected_gb=expected_gb)
+
+    inv = inventory(snapshot)
+    assigns = allocation_arms(sens)
+    plans = {n: plan_arm(inv, n, assignment=a) for n, a in assigns.items()}
+    names = list(plans)
+    byte_set = {p["organ_bytes"] for p in plans.values()}
+    depth_sets = {n: tuple(sorted(v["bits"] for v in plans[n]["per_organ"].values()))
+                  for n in names}
+    tilted = [n for n in names if n != "UNIFORM"]
+
+    caps: dict[str, Any] = {}
+    gates: dict[str, Any] = {}
+    applied: dict[str, Any] = {}
+    with resource_cost(interval_s=2.0, label="G012_ALLOC") as cost:
+        weights = _load_bf16_payloads(inv)
+        model, tok = _load_model(snapshot)
+        dense_cap = measure_capability(model, tok)
+        for nm in names:
+            rec = reconstruct_arm(inv, weights, plans[nm]["specs"])
+            applied[nm] = _apply_recs(model, rec)
+            del rec
+            caps[nm] = measure_capability(model, tok)
+            gates[nm] = gate_from_reference(caps[nm], dense_cap)
+        del model, weights
+
+    arms_pub = {n: _public_arm({k: v for k, v in plans[n].items() if k != "specs"},
+                               caps[n], gates[n]) for n in names}
+    sens_p = arms_pub["SENSITIVITY"]["capability"]["ppl_full"]
+    anti_p = arms_pub["ANTI_SENSITIVITY"]["capability"]["ppl_full"]
+    glob_p = arms_pub["GLOBAL_ANATOMY"]["capability"]["ppl_full"]
+    uni_p = arms_pub["UNIFORM"]["capability"]["ppl_full"]
+
+    # CAPABILITY decides, not perplexity. Ranking these arms on likelihood alone
+    # reported "anatomy not beaten" while missing that the anatomy arm was the
+    # only one to survive the conjunction -- the exact one-metric trap LAW008
+    # exists to prevent, walked into by the verdict function itself.
+    passing = [n for n in names if bool(arms_pub[n].get("capability_ok"))]
+    winners = [n for n in passing
+               if not any(m != n and _pareto_better(arms_pub[m], arms_pub[n]) == "a"
+                          for m in passing)]
+    # The control is about the MAP, and is judged on the continuous axes because
+    # neither it nor its mirror may survive the gate at a given budget.
+    control_holds = sens_p < anti_p
+    if len(winners) == 1:
+        outcome = f"{winners[0]}_WINS"
+        note = (f"{winners[0]} is the only allocation to survive the conjunction at "
+                f"identical bytes; likelihood alone would have ranked it differently")
+    elif not passing:
+        outcome = "NONE_PASSES_GATE"
+        note = ("no allocation survived the conjunction at this budget; the "
+                "comparison between them is unresolved, not a win for the best ppl")
+    else:
+        outcome = "UNDECIDED"
+        note = ("more than one allocation passes and none Pareto-dominates the "
+                "others at this budget")
+    if not control_holds:
+        outcome = "MAP_HAS_NO_PREDICTIVE_POWER"
+        note = ("the anti-sensitivity control matched or beat the sensitivity arm at "
+                "identical bytes and identical bit depths; the measured map does not "
+                "predict allocation tolerance and must not be used as one. " + note)
+
+    return {
+        "schema": ALLOC_SCHEMA,
+        "obligation": "G012",
+        "status": "MEASURED",
+        "question": ("does allocating by MEASURED behavioural sensitivity beat "
+                     "allocating by structural anatomy, at identical bytes and "
+                     "identical bit depths?"),
+        "specimen": slug,
+        "specimen_path": snapshot,
+        "sensitivity_source": sensitivity_receipt,
+        "measured_sensitivity": sens,
+        "specs": {"cheap": f"q{ALLOC_CHEAP[0]}-g{ALLOC_CHEAP[1]}",
+                  "mid": f"q{ALLOC_MID[0]}-g{ALLOC_MID[1]}",
+                  "rich": f"q{ALLOC_RICH[0]}-g{ALLOC_RICH[1]}"},
+        "assignments": {n: {f: f"q{c[0]}-g{c[1]}" for f, c in a.items()}
+                        for n, a in assigns.items()},
+        "byte_exact_across_all_arms": len(byte_set) == 1,
+        "organ_bytes": sorted(byte_set),
+        "depth_multisets": {n: list(v) for n, v in depth_sets.items()},
+        "depth_exact_across_tilted_arms": len({depth_sets[n] for n in tilted}) == 1,
+        "uniform_depth_differs_by_design": True,
+        "outcome": outcome,
+        "winners": winners,
+        "passing_gate": passing,
+        "control_holds": control_holds,
+        "control_gap_ppl": round(anti_p - sens_p, 6),
+        "decided_by": "the capability conjunction, not perplexity alone",
+        "dense_parent_capability": dense_cap,
+        "arms": arms_pub,
+        "applied": applied,
+        "guard_at_start": guard.as_dict(),
+        "resource": cost,
+        "device": "cpu",
+        "nr_not_nx": True,
+        "weaker_than_it_looks": [
+            "The sensitivity map was measured at ONE perturbation size on THIS body; "
+            "allocating by it is an out-of-sample use of an in-sample measurement.",
+            "UNIFORM is byte-matched but NOT depth-matched -- it cannot be, since "
+            "uniform means one spec everywhere. Only the three tilted arms are a "
+            "clean ordering comparison.",
+            "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU "
+            "fp32 -- the existing gate's budget, not a large eval.",
+        ],
+        "verdict_sentence": (
+            f"G012 {outcome} on {slug} at complete EBPW "
+            f"{arms_pub['UNIFORM']['complete_ebpw']:.4f}, all arms byte-exact: "
+            f"SENSITIVITY ppl {sens_p:.4f}, ANTI_SENSITIVITY (control) {anti_p:.4f}, "
+            f"GLOBAL_ANATOMY {glob_p:.4f}, UNIFORM {uni_p:.4f}; gate PASS = "
+            f"{passing or 'none'}. {note}."),
+    }
+
+
+SENS_SCHEMA = "hawking.future.g011_organ_sensitivity.v1"
+SENS_RECEIPT = "G011_ORGAN_SENSITIVITY.json"
+
+
+def run_sensitivity_experiment(
+    *,
+    snapshot: str | None = None,
+    slug: str | None = None,
+    expected_gb: float = 8.0,
+    cheap: tuple[int, int] = (3, 64),
+) -> dict[str, Any]:
+    """Per-organ BEHAVIOURAL sensitivity, measured, not inferred from structure.
+
+    G017 and G021 both turned on the assumption that structural redundancy tells
+    you what an organ tolerates. This measures tolerance directly: hold every
+    organ at the base spec, drop exactly ONE to the cheap spec, and read the
+    capability slope. One perturbation, one organ, everything else fixed.
+
+    Organs differ in size, so the raw delta is also reported per megabyte saved
+    -- otherwise the biggest organ always looks the most sensitive simply
+    because crushing it removes the most information.
+
+    The control that matters: the measured ordering must not be the structural
+    ordering by construction. It is not -- structure is never consulted here.
+    """
+    from campaign_memory_guard import require_ok, resource_cost, sample
+
+    snapshot = snapshot or SPECIMEN_PATH
+    slug = slug or SPECIMEN_SLUG
+    guard = sample(expected_gb=expected_gb)
+    if guard.state == "STOP":
+        return {"schema": SENS_SCHEMA, "status": "GUARD_STOP",
+                "guard": guard.as_dict(),
+                "verdict_sentence": "NO RESULT: campaign_memory_guard STOP before load"}
+    require_ok("G011 organ sensitivity", expected_gb=expected_gb)
+
+    inv = inventory(snapshot)
+    organs = [f for f in STANDARD_ORGANS if inv["organ_params"].get(f)]
+    base_assign = {f: UNIFORM_AFFINE for f in inv["organ_params"]}
+    plans = {"BASE": plan_arm(inv, "UNIFORM", assignment=base_assign)}
+    for fam in organs:
+        a = dict(base_assign)
+        a[fam] = cheap
+        plans[fam] = plan_arm(inv, f"CRUSH_{fam}", assignment=a)
+    names = list(plans)
+
+    caps: dict[str, Any] = {}
+    gates: dict[str, Any] = {}
+    applied: dict[str, Any] = {}
+    with resource_cost(interval_s=2.0, label="G011_SENS") as cost:
+        weights = _load_bf16_payloads(inv)
+        model, tok = _load_model(snapshot)
+        dense_cap = measure_capability(model, tok)
+        for nm in names:
+            rec = reconstruct_arm(inv, weights, plans[nm]["specs"])
+            applied[nm] = _apply_recs(model, rec)
+            del rec
+            caps[nm] = measure_capability(model, tok)
+            gates[nm] = gate_from_reference(caps[nm], dense_cap)
+        del model, weights
+
+    base_ppl = float(caps["BASE"]["ppl_full"])
+    base_r4 = float(caps["BASE"]["r4_full"])
+    base_bytes = int(plans["BASE"]["organ_bytes"])
+    local = local_deficits(slug)
+    rows = []
+    for fam in organs:
+        saved = base_bytes - int(plans[fam]["organ_bytes"])
+        d_ppl = float(caps[fam]["ppl_full"]) - base_ppl
+        d_r4 = float(caps[fam]["r4_full"]) - base_r4
+        mb = saved / 1e6
+        rows.append({
+            "organ": fam,
+            "delta_ppl": round(d_ppl, 6),
+            "delta_r4": round(d_r4, 6),
+            "bytes_saved": saved,
+            # Per-MB, because a bigger organ loses more information at the same
+            # spec and would otherwise always look the most sensitive.
+            "delta_ppl_per_mb_saved": round(d_ppl / mb, 6) if mb else None,
+            "gate_ok": bool(gates[fam]["capability_ok"]),
+            "ppl": round(float(caps[fam]["ppl_full"]), 6),
+            "r4": round(float(caps[fam]["r4_full"]), 6),
+            "global_deficit": PRIOR_DEFICIT[fam],
+            "local_deficit": local.get(fam),
+        })
+    by_raw = [r["organ"] for r in sorted(rows, key=lambda r: r["delta_ppl"])]
+    by_mb = [r["organ"] for r in sorted(rows, key=lambda r: (r["delta_ppl_per_mb_saved"] or 0.0))]
+    by_global = [r["organ"] for r in sorted(rows, key=lambda r: -r["global_deficit"])]
+    by_local = [r["organ"] for r in sorted(rows, key=lambda r: -(r["local_deficit"] or 0.0))]
+
+    def _rank_agreement(a: list[str], b: list[str]) -> dict[str, Any]:
+        ra = {n: i for i, n in enumerate(a)}
+        rb = {n: i for i, n in enumerate(b)}
+        conc = disc = 0
+        for i in range(len(a)):
+            for j in range(i + 1, len(a)):
+                x, y = a[i], a[j]
+                if (ra[x] - ra[y]) * (rb[x] - rb[y]) > 0:
+                    conc += 1
+                else:
+                    disc += 1
+        n = conc + disc
+        return {"concordant": conc, "discordant": disc,
+                "kendall_tau": round((conc - disc) / n, 4) if n else None}
+
+    out = {
+        "schema": SENS_SCHEMA,
+        "obligation": "G011",
+        "status": "MEASURED",
+        "question": ("which organs actually carry behaviour? one organ dropped to "
+                     "the cheap spec at a time, everything else held at base"),
+        "specimen": slug,
+        "specimen_path": snapshot,
+        "base_spec": f"q{UNIFORM_AFFINE[0]}-g{UNIFORM_AFFINE[1]}",
+        "cheap_spec": f"q{cheap[0]}-g{cheap[1]}",
+        "base_ppl": round(base_ppl, 6),
+        "base_r4": round(base_r4, 6),
+        "dense_parent_capability": dense_cap,
+        "sensitivity": sorted(rows, key=lambda r: -r["delta_ppl"]),
+        "ordering_least_to_most_sensitive_raw": by_raw,
+        "ordering_least_to_most_sensitive_per_mb": by_mb,
+        "ordering_by_global_deficit_desc": by_global,
+        "ordering_by_local_deficit_desc": by_local,
+        "agreement_raw_vs_global": _rank_agreement(by_raw, by_global),
+        "agreement_raw_vs_local": _rank_agreement(by_raw, by_local),
+        "agreement_per_mb_vs_global": _rank_agreement(by_mb, by_global),
+        "agreement_per_mb_vs_local": _rank_agreement(by_mb, by_local),
+        "control": ("structure is never consulted in producing the measured "
+                    "ordering, so agreement with the deficit ordering is a "
+                    "finding and not an artefact of construction"),
+        "applied": applied,
+        "guard_at_start": guard.as_dict(),
+        "resource": cost,
+        "device": "cpu",
+        "nr_not_nx": True,
+        "weaker_than_it_looks": [
+            "One specimen, one perturbation size (base -> cheap), one direction.",
+            "Sensitivity measured at ONE point is a local slope, not a curve; an "
+            "organ flat here may cliff at a deeper spec.",
+            "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU "
+            "fp32 -- deterministic given the weights, but not robust to a "
+            "different prompt set.",
+        ],
+    }
+    out["verdict_sentence"] = (
+        f"G011 sensitivity on {slug}: crushing one organ at a time from "
+        f"{out['base_spec']} to {out['cheap_spec']}. Least to most sensitive by raw "
+        f"ppl delta: {', '.join(by_raw)}. Global structural prior would predict "
+        f"{', '.join(by_global)} (tau {out['agreement_raw_vs_global']['kendall_tau']}); "
+        f"local anatomy would predict {', '.join(by_local)} "
+        f"(tau {out['agreement_raw_vs_local']['kendall_tau']})."
+    )
+    return out
+
+
+MIRROR_SCHEMA = "hawking.future.g021_mirror_swap.v1"
+MIRROR_RECEIPT = "G021_MIRROR_SWAP.json"
+
+
+def run_mirror_experiment(
+    *,
+    snapshot: str | None = None,
+    slug: str | None = None,
+    expected_gb: float = 8.0,
+    cheap: tuple[int, int] = (3, 64),
+    rich: tuple[int, int] = (8, 64),
+) -> dict[str, Any]:
+    """Does it matter WHICH organ gets the bytes, holding everything else exact?
+
+    The monotone-ramp arms could not answer this. Each policy picked its own
+    bit-depth multiset to hit the budget, and on this specimen minimum bit depth
+    separates perplexity almost perfectly: every arm that reached q2 landed at
+    6.76-12.84, every arm that stopped at q3+ landed at 5.23-6.17. So a
+    UNIFORM-vs-GLOBAL-vs-LOCAL difference is mostly a depth difference wearing
+    an ordering label.
+
+    Here the two arms of a pair hold organs of IDENTICAL parameter count and
+    exchange the same two specs. Same total bytes, same complete EBPW, same
+    depth multiset, same everything -- except which organ is protected. If the
+    structural prior means anything for allocation, crushing the HIGH-deficit
+    organ of a pair should cost less than crushing the LOW-deficit one.
+    """
+    from campaign_memory_guard import require_ok, resource_cost, sample
+
+    snapshot = snapshot or SPECIMEN_PATH
+    slug = slug or SPECIMEN_SLUG
+    guard = sample(expected_gb=expected_gb)
+    if guard.state == "STOP":
+        return {"schema": MIRROR_SCHEMA, "status": "GUARD_STOP",
+                "guard": guard.as_dict(),
+                "verdict_sentence": "NO RESULT: campaign_memory_guard STOP before load; "
+                                    + "; ".join(guard.reasons)}
+    require_ok("G021 mirror swap", expected_gb=expected_gb)
+
+    inv = inventory(snapshot)
+    plans = plan_mirror_arms(inv, cheap=cheap, rich=rich)
+    names = [k for k in plans if not k.startswith("_")]
+    local = local_deficits(slug)
+
+    dense_cap = None
+    caps: dict[str, Any] = {}
+    gates: dict[str, Any] = {}
+    applied: dict[str, Any] = {}
+    with resource_cost(interval_s=2.0, label="G021_MIRROR") as cost:
+        # Eleven arms reconstructed up front would hold eleven fp32 copies of
+        # every organ at once. Keep the bf16 payloads and rebuild ONE arm at a
+        # time instead: peak is payloads + one arm, not payloads x eleven.
+        weights = _load_bf16_payloads(inv)
+        model, tok = _load_model(snapshot)
+        probe = reconstruct_arm(inv, weights, plans["BASE"]["specs"])
+        n_named = sum(1 for nm, _ in model.named_parameters() if nm in probe)
+        if n_named != inv["n_organs"]:
+            raise RuntimeError(
+                f"HF named_parameters matched {n_named} of {inv['n_organs']} organs")
+        del probe
+        applied["n_organ_tensors"] = inv["n_organs"]
+        dense_cap = measure_capability(model, tok)
+        for nm in names:
+            rec = reconstruct_arm(inv, weights, plans[nm]["specs"])
+            applied[nm] = _apply_recs(model, rec)
+            del rec
+            caps[nm] = measure_capability(model, tok)
+            gates[nm] = gate_from_reference(caps[nm], dense_cap)
+        del model, weights
+
+    arms_pub: dict[str, Any] = {}
+    for n in names:
+        plan = {k: v for k, v in plans[n].items() if k != "specs"}
+        arms_pub[n] = _public_arm(plan, caps[n], gates[n])
+
+    # One row per pair: the two mirrored arms and which organ turned out to be
+    # the cheaper one to crush.
+    rows = []
+    for a, b in [tuple(x) for x in plans["_pairs"]]:
+        ka, kb = f"{a}|{b}:{a}_cheap", f"{a}|{b}:{b}_cheap"
+        pa, pb = arms_pub[ka], arms_pub[kb]
+        ppl_a = pa["capability"]["ppl_full"]
+        ppl_b = pb["capability"]["ppl_full"]
+        r4_a = pa["capability"]["r4_full"]
+        r4_b = pb["capability"]["r4_full"]
+        # "cheaper to crush" = the arm with the BETTER capability is the one whose
+        # crushed organ tolerated it.
+        better = _pareto_better(pa, pb)
+        tolerant = {"a": a, "b": b}.get(better)
+        pred_global = a if PRIOR_DEFICIT[a] > PRIOR_DEFICIT[b] else b
+        pred_local = a if local[a] > local[b] else b
+        rows.append({
+            "pair": [a, b],
+            "bytes_identical": pa["organ_bytes"] == pb["organ_bytes"],
+            "complete_ebpw": pa["complete_ebpw"],
+            "crush_" + a: {"ppl": ppl_a, "r4": r4_a, "gate_ok": pa["capability_ok"]},
+            "crush_" + b: {"ppl": ppl_b, "r4": r4_b, "gate_ok": pb["capability_ok"]},
+            "ppl_delta_crush_a_minus_b": round(ppl_a - ppl_b, 6),
+            "pareto": better,
+            "more_tolerant_organ": tolerant,
+            "global_prior_predicts_tolerant": pred_global,
+            "local_anatomy_predicts_tolerant": pred_local,
+            "global_correct": None if tolerant is None else (tolerant == pred_global),
+            "local_correct": None if tolerant is None else (tolerant == pred_local),
+            "priors_agree": pred_global == pred_local,
+            "deficits": {a: {"global": PRIOR_DEFICIT[a], "local": local[a]},
+                         b: {"global": PRIOR_DEFICIT[b], "local": local[b]}},
+        })
+    decided = [r for r in rows if r["global_correct"] is not None]
+    g_hits = sum(1 for r in decided if r["global_correct"])
+    l_hits = sum(1 for r in decided if r["local_correct"])
+    disagree = [r for r in rows if not r["priors_agree"]]
+    sentence = (
+        f"G021 mirror swap on {slug}: {len(rows)} equal-size organ pairs, each arm "
+        f"byte-identical and depth-identical to its mirror. Decided pairs "
+        f"{len(decided)}/{len(rows)}. The GLOBAL structural prior predicted the more "
+        f"tolerant organ {g_hits}/{len(decided)}; the LOCAL anatomy predicted it "
+        f"{l_hits}/{len(decided)}. The two priors disagree on "
+        f"{[r['pair'] for r in disagree] or 'no pair'}."
+    )
+    return {
+        "schema": MIRROR_SCHEMA,
+        "obligation": "G021",
+        "status": "MEASURED",
+        "question": ("holding total bytes, complete EBPW and the bit-depth multiset "
+                     "EXACTLY constant, does it matter which organ is protected?"),
+        "why_this_design": (
+            "The monotone-ramp arms confound ordering with depth: each policy "
+            "chooses its own multiset to hit the budget, and on this body minimum "
+            "bit depth separates perplexity almost perfectly. Equal-parameter "
+            "organs exchanging the same two specs remove that confound entirely."),
+        "specimen": slug,
+        "specimen_path": snapshot,
+        "cheap_spec": f"q{cheap[0]}-g{cheap[1]}",
+        "rich_spec": f"q{rich[0]}-g{rich[1]}",
+        "base_spec": f"q{UNIFORM_AFFINE[0]}-g{UNIFORM_AFFINE[1]}",
+        "pairs": rows,
+        "global_prior_hits": g_hits,
+        "local_prior_hits": l_hits,
+        "n_decided": len(decided),
+        "n_pairs": len(rows),
+        "prior_deficit": dict(PRIOR_DEFICIT),
+        "local_deficit": local,
+        "dense_parent_capability": dense_cap,
+        "arms": arms_pub,
+        "applied": applied,
+        "guard_at_start": guard.as_dict(),
+        "resource": cost,
+        "device": "cpu",
+        "nr_not_nx": True,
+        "weaker_than_it_looks": [
+            "One specimen, one base budget, one cheap/rich spec pair. A pair that "
+            "does not separate here may separate at another depth.",
+            "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU "
+            "fp32 -- the existing gate's budget, not a large eval.",
+            "Greedy decoding makes each number deterministic given the weights, so "
+            "there is no seed spread; that is NOT robustness to a different prompt "
+            "set, and a small ppl gap should not be read as a large effect.",
+        ],
+        "verdict_sentence": sentence,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--selfcheck", action="store_true")
     p.add_argument("--alloc-only", action="store_true")
     p.add_argument("--mutation-check", action="store_true")
     p.add_argument("--run", action="store_true")
+    p.add_argument("--corpus", default="A", choices=sorted(CORPORA),
+                   help="which capability corpus to evaluate on. Every number in "
+                        "the campaign so far is corpus A; B exists to test whether "
+                        "a result survives a different domain and register.")
+    p.add_argument("--isolate", action="store_true",
+                   help="which organ group makes the winning allocation win: one "
+                        "group changed per arm, everything else identical")
+    p.add_argument("--allocate", action="store_true",
+                   help="allocate by MEASURED sensitivity vs structural anatomy vs "
+                        "uniform, byte-exact and depth-exact, with an "
+                        "anti-sensitivity negative control")
+    p.add_argument("--sensitivity", action="store_true",
+                   help="per-organ behavioural sensitivity: one organ crushed at "
+                        "a time, everything else held at base")
+    p.add_argument("--mirror", action="store_true",
+                   help="byte-exact, depth-exact organ swap; the unconfounded "
+                        "form of the G021 ordering question")
     p.add_argument("--ingest-ledger", action="store_true")
     p.add_argument("--snapshot", default=None)
     p.add_argument("--slug", default=None)
     p.add_argument("--receipt", default=None)
     p.add_argument("--expected-gb", type=float, default=8.0)
     p.add_argument("--skip-mutation", action="store_true")
+    # The budget knob. G021 ran every arm at q4-g64 and NO arm survived the
+    # conjunction, so the three-way comparison could not name a winner -- the
+    # arms were being ranked while all of them were already broken. Making the
+    # UNIFORM spec a parameter lets the same experiment run at a budget where
+    # UNIFORM is alive, which is the only place the question resolves. [S010 31]
+    p.add_argument("--uniform-spec", default=None,
+                   help="BITSxGROUP for the UNIFORM arm, e.g. 4x32. UNIFORM "
+                        "defines the matched byte budget every arm is held to.")
     args = p.parse_args(argv)
+    globals()["ACTIVE_CORPUS"] = args.corpus
+    if args.receipt:
+        # Validate the write path BEFORE the model load. This exact call used
+        # to fail on the last line of the run, after every arm was measured.
+        from _common import receipt_name as _receipt_name
+        try:
+            args.receipt = _receipt_name(args.receipt)
+        except ValueError as exc:
+            raise SystemExit(f"--receipt: {exc}")
+    if args.uniform_spec:
+        try:
+            bits_s, group_s = str(args.uniform_spec).lower().split("x", 1)
+            bits, group = int(bits_s), int(group_s)
+        except Exception:
+            raise SystemExit(f"--uniform-spec wants BITSxGROUP, got {args.uniform_spec!r}")
+        if (bits, group) not in AFFINE_CFGS:
+            raise SystemExit(
+                f"--uniform-spec {bits}x{group} is not on the billed affine grid "
+                f"{AFFINE_CFGS}; an unbilled spec has no accounting")
+        globals()["UNIFORM_AFFINE"] = (bits, group)
+        # Same formula the module constant documents: bits + 32/group.
+        globals()["TARGET_ORGAN_EBPW"] = bits + 32.0 / group
     if args.selfcheck:
         out = selfcheck()
         print(json.dumps(out, indent=2, sort_keys=True))
@@ -1166,6 +2187,34 @@ def main(argv: list[str] | None = None) -> int:
         out = run_mutation_check()
         print(json.dumps(out, indent=2, sort_keys=True))
         print("MUTATION_CHECK_OK")
+        return 0
+    if args.isolate:
+        doc = run_isolation_experiment(
+            snapshot=args.snapshot, slug=args.slug, expected_gb=args.expected_gb)
+        path = write_doc(doc, args.receipt or ISOLATE_RECEIPT)
+        print(path)
+        print(doc["verdict_sentence"])
+        return 0
+    if args.allocate:
+        doc = run_allocation_experiment(
+            snapshot=args.snapshot, slug=args.slug, expected_gb=args.expected_gb)
+        path = write_doc(doc, args.receipt or ALLOC_RECEIPT)
+        print(path)
+        print(doc["verdict_sentence"])
+        return 0
+    if args.sensitivity:
+        doc = run_sensitivity_experiment(
+            snapshot=args.snapshot, slug=args.slug, expected_gb=args.expected_gb)
+        path = write_doc(doc, args.receipt or SENS_RECEIPT)
+        print(path)
+        print(doc["verdict_sentence"])
+        return 0
+    if args.mirror:
+        doc = run_mirror_experiment(
+            snapshot=args.snapshot, slug=args.slug, expected_gb=args.expected_gb)
+        path = write_doc(doc, args.receipt or MIRROR_RECEIPT)
+        print(path)
+        print(doc["verdict_sentence"])
         return 0
     if args.alloc_only:
         inv = inventory(SPECIMEN_PATH)

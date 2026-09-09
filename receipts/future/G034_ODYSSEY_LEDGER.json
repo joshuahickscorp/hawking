@@ -1417,10 +1417,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "mlx_lm's ModelArgs for this family predates this config's fields: TypeError: ModelArgs.__init__() missing 1 required positional argument: 'tie_word_embeddings'",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release whose ModelArgs accepts this config"
     },
     "cpu": {
      "state": "OWED",
@@ -1585,10 +1586,19 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 2165.1372,
+      "decode_tps_median": 73.558,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2-24B-A2B_a3bbacd91a67__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -1597,10 +1607,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 2165.1372,
+      "decode_tps": 73.558,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2-24B-A2B_a3bbacd91a67__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -1823,10 +1839,19 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 522.593,
+      "decode_tps_median": 22.9537,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-14B_40c069824f42__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -1835,10 +1860,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 522.593,
+      "decode_tps": 22.9537,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-14B_40c069824f42__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -1953,10 +1984,19 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 535.3749,
+      "decode_tps_median": 23.0722,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-reasoning-plus_69baf8528e1b__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -1965,10 +2005,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 535.3749,
+      "decode_tps": 23.0722,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-reasoning-plus_69baf8528e1b__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -2897,10 +2943,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "mlx_lm's ModelArgs for this family predates this config's fields: TypeError: ModelArgs.__init__() missing 1 required positional argument: 'tie_word_embeddings'",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release whose ModelArgs accepts this config"
     },
     "cpu": {
      "state": "OWED",
@@ -3980,10 +4027,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "a 512-token prefill in one Metal command buffer exceeds this host's GPU watchdog for this architecture; reproduced in two independent runs with the body alone in its own process, so it is not the memory pressure that caused the first round's timeouts",
+     "receipt": null,
+     "reopen_when": "a chunked-prefill path that splits the command buffer, or a host with a longer GPU watchdog. Do NOT shrink prompt_tokens to make it pass: every measured body used 512 and changing it makes the axis incomparable"
     },
     "cpu": {
      "state": "OWED",
@@ -4164,10 +4212,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1107.0591,
+      "decode_tps_median": 42.1811,
+      "prefill_spread_pct": 0.8,
+      "decode_spread_pct": 0.79,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_allenai--Olmo-3-1025-7B_a81bae42db39__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -4176,10 +4235,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1107.0591,
+      "decode_tps": 42.1811,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_allenai--Olmo-3-1025-7B_a81bae42db39__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -4328,10 +4393,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1066.2484,
+      "decode_tps_median": 42.8726,
+      "prefill_spread_pct": 0.27,
+      "decode_spread_pct": 0.07,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_bigcode--starcoder2-7b_bb9afde76d79__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -4340,10 +4416,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1066.2484,
+      "decode_tps": 42.8726,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_bigcode--starcoder2-7b_bb9afde76d79__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -4690,10 +4772,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "a 512-token prefill in one Metal command buffer exceeds this host's GPU watchdog for this architecture; reproduced in two independent runs with the body alone in its own process, so it is not the memory pressure that caused the first round's timeouts",
+     "receipt": null,
+     "reopen_when": "a chunked-prefill path that splits the command buffer, or a host with a longer GPU watchdog. Do NOT shrink prompt_tokens to make it pass: every measured body used 512 and changing it makes the axis incomparable"
     },
     "cpu": {
      "state": "OWED",
@@ -4742,8 +4825,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the body is not stored in safetensors; mlx has no loader for the format on disk: FileNotFoundError: No safetensors found in /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+     "receipt": null,
+     "reopen_when": "the body is re-acquired in safetensors, or a converter is run against the stored format"
     },
     "cpu": {
      "state": "REFUSED",
@@ -5518,8 +5602,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type phi4mm not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -5800,8 +5885,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type smolvlm not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -5980,22 +6066,50 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1706.4356,
+      "decode_tps_median": 67.0047,
+      "prefill_spread_pct": 0.41,
+      "decode_spread_pct": 0.4,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-4B-Instruct-2507_cdbee75f17c0__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 227.8936,
+      "decode_tps_median": 4.4861,
+      "prefill_spread_pct": 30.86,
+      "decode_spread_pct": 1.74,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-4B-Instruct-2507_cdbee75f17c0__torch.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1706.4356,
+      "decode_tps": 67.0047,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-4B-Instruct-2507_cdbee75f17c0__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -6110,22 +6224,50 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1973.3476,
+      "decode_tps_median": 69.2452,
+      "prefill_spread_pct": 0.27,
+      "decode_spread_pct": 0.34,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-mini-instruct_cfbefacb9925__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 328.8648,
+      "decode_tps_median": 4.7778,
+      "prefill_spread_pct": 56.55,
+      "decode_spread_pct": 0.3,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-mini-instruct_cfbefacb9925__torch.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1973.3476,
+      "decode_tps": 69.2452,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-mini-instruct_cfbefacb9925__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -6316,16 +6458,28 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "a 512-token prefill in one Metal command buffer exceeds this host's GPU watchdog for this architecture; reproduced in two independent runs with the body alone in its own process, so it is not the memory pressure that caused the first round's timeouts",
+     "receipt": null,
+     "reopen_when": "a chunked-prefill path that splits the command buffer, or a host with a longer GPU watchdog. Do NOT shrink prompt_tokens to make it pass: every measured body used 512 and changing it makes the axis incomparable"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 67.0824,
+      "decode_tps_median": 6.5143,
+      "prefill_spread_pct": 132.22,
+      "decode_spread_pct": 10.9,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_ai21labs--AI21-Jamba2-3B_525c6c8e1d9f__torch.json"
     },
     "tps": {
      "state": "OWED",
@@ -6514,22 +6668,50 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 2011.2231,
+      "decode_tps_median": 74.5599,
+      "prefill_spread_pct": 0.33,
+      "decode_spread_pct": 0.13,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_ibm-granite--granite-4.0-h-micro_d5f01a3ea75f__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 39.5553,
+      "decode_tps_median": 5.7575,
+      "prefill_spread_pct": 8.3,
+      "decode_spread_pct": 0.53,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_ibm-granite--granite-4.0-h-micro_d5f01a3ea75f__torch.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 2011.2231,
+      "decode_tps": 74.5599,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_ibm-granite--granite-4.0-h-micro_d5f01a3ea75f__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -6729,16 +6911,28 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "mlx_lm's ModelArgs for this family predates this config's fields: TypeError: ModelArgs.__init__() missing 1 required positional argument: 'block_ff_dim'",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release whose ModelArgs accepts this config"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 103.5669,
+      "decode_tps_median": 7.4806,
+      "prefill_spread_pct": 36.73,
+      "decode_spread_pct": 2.47,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-2.6B-Base_c57bdaed1ef1__torch.json"
     },
     "tps": {
      "state": "OWED",
@@ -6909,16 +7103,28 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "the checkpoint's parameter set does not match what mlx_lm builds for this family: ValueError: Missing 210 parameters: \nmodel.layers.0.mlp.down_proj.weight_scale,\nmodel.layers.0.mlp.gate_proj.weight_scale,\nmodel.layers.0.mlp.up_proj.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release matching this checkpoint variant, or a converted variant of the body"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 261.3664,
+      "decode_tps_median": 1.7756,
+      "prefill_spread_pct": 328.69,
+      "decode_spread_pct": 5.28,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--bitnet-b1.58-2B-4T-bf16_276681394656__torch.json"
     },
     "tps": {
      "state": "OWED",
@@ -6961,8 +7167,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the snapshot carries no config.json, so it is not a transformers-format checkpoint: FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f/config.json'",
+     "receipt": null,
+     "reopen_when": "a transformers-format snapshot of this body is acquired"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7225,8 +7432,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type vjepa2 not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7403,33 +7611,73 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 4958.4356,
+      "decode_tps_median": 160.1033,
+      "prefill_spread_pct": 0.34,
+      "decode_spread_pct": 0.08,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_tiiuae--Falcon3-1B-Instruct_28ba2251970a__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 740.2475,
+      "decode_tps_median": 12.8097,
+      "prefill_spread_pct": 12.56,
+      "decode_spread_pct": 12.09,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_tiiuae--Falcon3-1B-Instruct_28ba2251970a__torch.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 4958.4356,
+      "decode_tps": 160.1033,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_tiiuae--Falcon3-1B-Instruct_28ba2251970a__mlx.json"
     },
     "nr_candidate": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "form": "organ-unequal affine NR",
+      "matched_complete_ebpw": 8.1989,
+      "complete_ebpw": 8.1989,
+      "unequal_beats_uniform": false,
+      "uniform_capability_ok": true,
+      "organ_weighted_capability_ok": true,
+      "inverted_capability_ok": true,
+      "uniform_ppl": 3.7994,
+      "organ_weighted_ppl": 3.7982,
+      "inverted_ppl": 3.6711,
+      "verdict": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 8.1989 \u2014 ppl 3.7982 vs 3.7994 (delta +0.0012, negative means weighted worse), median_4gram_repeat 0.0377 vs 0.0280 (delta -0.0097). INVERTED ppl 3.6711 r4 0.0278 (INVERTED won or tied ORGAN_WEIGHTED; the prior did not transfer)."
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/G008_ORGAN_ALLOCATION_SECOND_BODY.json"
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "G017 arms are NR, not NX: encode_affine rematerializes dense W_hat (execution_complete is false; there is no organ-unequal affine kernel). Reopen when a kernel consumes the packed affine codes directly at the matched 9.2619 complete EBPW without a dense parent.",
      "receipt": null
     }
    }
@@ -7781,8 +8029,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type t5 not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7831,8 +8080,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the body is not stored in safetensors; mlx has no loader for the format on disk: FileNotFoundError: No safetensors found in /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+     "receipt": null,
+     "reopen_when": "the body is re-acquired in safetensors, or a converter is run against the stored format"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7881,8 +8131,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the body is not stored in safetensors; mlx has no loader for the format on disk: FileNotFoundError: No safetensors found in /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+     "receipt": null,
+     "reopen_when": "the body is re-acquired in safetensors, or a converter is run against the stored format"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8090,22 +8341,50 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 6271.7973,
+      "decode_tps_median": 208.2904,
+      "prefill_spread_pct": 1.42,
+      "decode_spread_pct": 1.34,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 885.3998,
+      "decode_tps_median": 17.9134,
+      "prefill_spread_pct": 21.26,
+      "decode_spread_pct": 2.94,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__torch.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 6271.7973,
+      "decode_tps": 208.2904,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -8252,8 +8531,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type timesfm not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8582,8 +8862,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type whisper not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8708,8 +8989,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type modernbert not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8883,34 +9165,68 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "Metal via mlx_lm 0.32.1",
+      "weights_dtype": "bfloat16",
+      "prefill_tps_median": 10032.5845,
+      "decode_tps_median": 196.2655,
+      "prefill_spread_pct": 1.22,
+      "decode_spread_pct": 3.11,
+      "repeats": 5,
+      "warmup_discarded": 1,
+      "context": 512,
+      "concurrency": 1,
+      "note": "first GPU measurement in the campaign; mx.eval() forced on every timed region because mlx is lazy"
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers/torch float32",
+      "prefill_tps_median": 946.5177,
+      "decode_tps_median": 14.2041,
+      "prefill_spread_pct": 17.84,
+      "decode_spread_pct": 15.86,
+      "note": "re-measured on a QUIET machine; the earlier 831.7/10.65 was taken while an external job held the host, so it understated the body by 14% prefill and 33% decode"
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__torch.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "best_measured_prefill_tps": 10032.5845,
+      "best_measured_decode_tps": 196.2655,
+      "backend": "mlx/Metal/bf16",
+      "context": 512,
+      "concurrency": 1,
+      "supersedes": "the earlier torch/CPU/fp32 figure, which was ALSO measured under external contention",
+      "cpu_fp32_quiet_machine": {
+       "prefill_tps": 946.5177,
+       "decode_tps": 14.2041
+      }
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__mlx.json"
     },
     "nr_candidate": {
      "state": "MEASURED",
      "value": {
+      "form": "organ-unequal affine NR",
+      "matched_complete_ebpw": 9.2619,
+      "complete_ebpw": 9.2619,
       "unequal_beats_uniform": false,
-      "uniform_capability_ok": true,
+      "uniform_capability_ok": false,
       "organ_weighted_capability_ok": false,
       "inverted_capability_ok": false,
-      "matched_complete_ebpw": 9.2619,
       "uniform_ppl": 5.2278,
       "organ_weighted_ppl": 6.1738,
-      "inverted_ppl": 12.84
+      "inverted_ppl": 12.84,
+      "verdict": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 9.2619 \u2014 ppl 6.1738 vs 5.2278 (delta -0.9460, negative means weighted worse), median_4gram_repeat 0.6923 vs 0.7103 (delta +0.0180). INVERTED ppl 12.8400 r4 0.8224 (ORGAN_WEIGHTED did not Pareto-beat UNIFORM at matched EBPW)."
      },
      "reason": null,
      "receipt": "receipts/future/G017_ORGAN_ALLOCATION.json"
@@ -9054,8 +9370,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type depth_anything not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -9229,16 +9546,28 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "the checkpoint's parameter set does not match what mlx_lm builds for this family: ValueError: Received 310 parameters not in model: \nembed_tokens.weight,\nlayers.0.input_layernorm.weight,\nlayers.0.mlp.down_proj.weight,\nlayers.0.mlp.g",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release matching this checkpoint variant, or a converted variant of the body"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 965.8068,
+      "decode_tps_median": 15.2378,
+      "prefill_spread_pct": 9.2,
+      "decode_spread_pct": 8.69,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-Embedding-0.6B_97b0c614be4d__torch.json"
     },
     "tps": {
      "state": "OWED",
@@ -9279,10 +9608,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 643.702,
+      "decode_tps_median": 133.1422,
+      "prefill_spread_pct": 0.19,
+      "decode_spread_pct": 0.45,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--bitnet-b1.58-2B-4T_04c3b9ad9361__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -9291,10 +9631,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 643.702,
+      "decode_tps": 133.1422,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--bitnet-b1.58-2B-4T_04c3b9ad9361__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -9677,8 +10023,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type sam2_video not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",

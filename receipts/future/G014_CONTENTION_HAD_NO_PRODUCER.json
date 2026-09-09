@@ -1,0 +1,53 @@
+{
+ "obligation": "G014",
+ "finding": "THE CONTENTION LOG HAD NO PRODUCER",
+ "before": "four decisions on disk, every one typed by hand. Nothing in the repository wrote CONTENTION_DECISIONS.jsonl; autonomy_ratio.py only READ it. G014 requires a recorded decision EACH TIME lanes are paused or reaped for the resident, and 'each time' was enforced by memory -- which is not enforcement. A pause nobody remembered to write down leaves no trace, and an incomplete record is indistinguishable from a complete one.",
+ "fix": "tools/future/contention.py. decide(subject, expected_gb, lanes) takes the decision against a LIVE guard reading and has already recorded it when it returns -- recording is not a separate step a caller can forget. record() REFUSES a decision carrying no guard reading, and refuses a reading with no measured state.",
+ "acceptance_a": {
+  "requirement": "a recorded decision each time lanes are paused/reaped, with the guard reading that forced it",
+  "status": "MECHANISM IN PLACE AND BOTH BRANCHES PROVEN",
+  "honest_limit": "no pause has EVER occurred in production -- all five recorded decisions are 'allowed', because the guard has never said STOP during contention. The pause branch is therefore proven by INJECTION, not by a live event. That is the strongest evidence available: verifying it by waiting for real memory pressure means verifying it by waiting for a failure."
+ },
+ "acceptance_b": {
+  "requirement": "two distinct counters in the autonomy receipt",
+  "status": "SATISFIED",
+  "reading": {
+   "CLAUDE_PROGRESS_artifacts": 70,
+   "HCLI_rounds": 21,
+   "self_selected": 21,
+   "accepted_mutations": 0,
+   "accepted_measurements": 16
+  },
+  "note": "autonomy_ratio.py prints 'no ratio is printed: the two counters are not commensurable' and never averages them"
+ },
+ "verify_run_literally": {
+  "autonomy_ratio_reports_both_separately": true,
+  "contention_decisions_with_measured_guard_state": 5,
+  "newest_decision_taken_by_the_producer": {
+   "ts": "2026-09-08T01:33:50Z",
+   "action": "allowed",
+   "guard": {
+    "free_gb": 62.09,
+    "state": "OK",
+    "swapfiles": 0,
+    "residents": 1,
+    "resident_rss_gb": 11.17,
+    "headroom_gb": 54.09
+   },
+   "subject": "superwave-2 (BLOCKED: Grok balance exhausted) + round21b-resident",
+   "why": "the guard reading is live and it SEES the resident -- residents 1, RSS 11.17 GB -- which the executable-basename fix earlier this campaign made possible. An earlier decision in this same log recorded residents 0 while a 12 GB resident was running."
+  }
+ },
+ "selftest": {
+  "result": "PASS",
+  "covers": [
+   "healthy guard -> allowed",
+   "STOP guard -> paused, carrying the reasons that forced it",
+   "no guard reading -> ValueError, prose refused as evidence"
+  ],
+  "mutation": "two mutations, both caught: (a) pause branch forced to always allow -> the STOP case fails AND the decision no longer carries the forcing reading; (b) the no-guard refusal replaced with a defaulted snapshot -> prose is recorded and the entry count goes wrong. Restored green, marker grep 0.",
+  "hygiene": "the selftest writes two entries and removes them, and asserts the log is restored to its prior length. A test that pollutes the record it is testing corrupts the evidence for the obligation it serves."
+ },
+ "what_this_does_not_claim": "that contention has been exercised under real pressure. It has not. It claims the decision is now taken by a producer against a measured state, that both branches work, and that a decision without evidence cannot be recorded at all.",
+ "scar": "A LOG WITH NO WRITER IS A HABIT, NOT A CONTROL. Ask what would happen if the person stopped remembering."
+}

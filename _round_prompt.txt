@@ -1,0 +1,5 @@
+ROUND 3. Your answer contains ZERO numbers. An engineering answer without a number is an opinion. Measure something and give the figure.
+
+Read receipts/runtime/CENSUS_2026_09_05.md for the measured state.
+Do not summarise it back. Change something and measure the change.
+Report: what you ran, the exact output, and what it refutes.

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. CPU float32 -- this is NOT the body's best achievable speed and must not be read as one. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 12.8097,
+  "decode_tps_spread": {
+    "in_run_order": [
+      12.8097,
+      13.346,
+      11.9069
+    ],
+    "max": 13.346,
+    "median": 12.8097,
+    "min": 11.9069,
+    "monotone_drift": "NONE",
+    "spread_pct": 12.09
+  },
+  "device": "cpu",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": false,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "executed on cpu; no GPU work was dispatched",
+  "measurement_contract": {
+    "backend_device": "cpu",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 112.475,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+    "warmup_repeats_discarded": 0
+  },
+  "nr": "source body as stored on disk, unmodified; torch float32 on CPU",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 740.2475,
+  "prefill_tps_spread": {
+    "first_cell_note": "the slowest repeat is the FIRST one: a cold cell, not a property of the body; the median excludes it but the spread does not",
+    "in_run_order": [
+      676.6804,
+      761.6462,
+      740.2475
+    ],
+    "max": 761.6462,
+    "median": 740.2475,
+    "min": 676.6804,
+    "monotone_drift": "NONE",
+    "spread_pct": 12.56
+  },
+  "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 15.1667,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 2.1205
+  }
+}

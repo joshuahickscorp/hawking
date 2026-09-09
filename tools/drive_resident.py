@@ -107,7 +107,7 @@ def run_round(prompt: str, cycles: int = 3, timeout: int = 2400) -> str:
     try:
         r = subprocess.run(
             [sys.executable, "-u", "-m", "hcli", "1", "--task-file", str(pf),
-             "--model", str(PROFILE), "--max-cycles", str(cycles)],
+             "--model", str(PROFILE)],
             cwd=str(W), capture_output=True, text=True, timeout=timeout,
         )
         return (r.stdout or "") + (r.stderr or "")

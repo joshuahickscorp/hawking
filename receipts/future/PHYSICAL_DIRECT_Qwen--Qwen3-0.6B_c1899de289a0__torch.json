@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. CPU float32 -- this is NOT the body's best achievable speed and must not be read as one. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 14.2041,
+  "decode_tps_spread": {
+    "in_run_order": [
+      16.0272,
+      14.2041,
+      15.8433,
+      13.8334,
+      14.1895
+    ],
+    "max": 16.0272,
+    "median": 14.2041,
+    "min": 13.8334,
+    "monotone_drift": "NONE",
+    "spread_pct": 15.86
+  },
+  "device": "cpu",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": false,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "executed on cpu; no GPU work was dispatched",
+  "measurement_contract": {
+    "backend_device": "cpu",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 1.186,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 5,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+    "warmup_repeats_discarded": 0
+  },
+  "nr": "source body unmodified; torch float32 on CPU",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 946.5177,
+  "prefill_tps_spread": {
+    "first_cell_note": "the slowest repeat is the FIRST one: a cold cell, not a property of the body; the median excludes it but the spread does not",
+    "in_run_order": [
+      878.9213,
+      1035.7598,
+      990.1223,
+      946.5177,
+      933.451
+    ],
+    "max": 1035.7598,
+    "median": 946.5177,
+    "min": 878.9213,
+    "monotone_drift": "NONE",
+    "spread_pct": 17.84
+  },
+  "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "totals": {
+    "decode_tokens": 320,
+    "decode_wall_s": 21.6754,
+    "prefill_tokens": 2560,
+    "prefill_wall_s": 2.6834
+  }
+}
