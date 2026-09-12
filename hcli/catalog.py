@@ -40,6 +40,8 @@ class Body:
     revision: str = ""
     source: str = "repo"           # repo | modellake | user
     detail: Dict[str, Any] = field(default_factory=dict)
+    admitted: bool = True
+    admission_reason: str = ""
 
     def to_openai(self, *, loaded: bool = False) -> Dict[str, Any]:
         row = {
@@ -53,10 +55,13 @@ class Body:
                 "source": self.source,
                 "gb": round(self.bytes / 1e9, 2) if self.bytes else None,
                 "loaded": loaded,
+                "admitted": self.admitted,
             },
         }
         if self.revision:
             row["hawking"]["revision"] = self.revision
+        if self.admission_reason:
+            row["hawking"]["admission_reason"] = self.admission_reason
         return row
 
 
@@ -93,6 +98,9 @@ def _native_profiles(root: Path) -> List[Body]:
                 "qualification": data.get("qualification"),
                 "greedy": (data.get("generation") or {}).get("do_sample") is False,
             },
+            admitted=bool(data.get("qualification")),
+            admission_reason=("" if data.get("qualification") else
+                              "native profile has no qualification contract"),
         ))
     return out
 
@@ -121,6 +129,9 @@ def _modellake(root: Path = MODELLAKE) -> List[Body]:
             bytes=_dir_bytes(entry),
             revision=revision,
             source="modellake",
+            admitted=False,
+            admission_reason=("ModelLake preserves the source specimen; no "
+                              "qualified Hawking execution binding is recorded"),
         ))
     return out
 
@@ -144,7 +155,7 @@ def _deduplicate(bodies: List[Body]) -> List[Body]:
 
 
 def catalog(extra_roots: Optional[List[str]] = None) -> List[Body]:
-    """Every selectable body, repo profiles first."""
+    """Admitted executable bodies only, repo profiles first."""
     bodies: List[Body] = []
     bodies.extend(_native_profiles(REPO))
     bodies.extend(_modellake())
@@ -156,8 +167,15 @@ def catalog(extra_roots: Optional[List[str]] = None) -> List[Body]:
             bodies.extend(_native_profiles(path.parent))
         elif (path / "config.json").is_file():
             bodies.append(Body(name=path.name, path=str(path), kind="mlx",
-                               bytes=_dir_bytes(path), source="user"))
-    return _deduplicate(bodies)
+                               bytes=_dir_bytes(path), source="user",
+                               admitted=False,
+                               admission_reason="no qualified execution binding"))
+    return _deduplicate([body for body in bodies if body.admitted])
+
+
+def specimen_catalog() -> List[Body]:
+    """Discoverable source specimens kept outside executable selection."""
+    return _deduplicate([body for body in _modellake() if not body.admitted])
 
 
 def resolve(name: str, bodies: Optional[List[Body]] = None) -> Optional[Body]:
@@ -195,4 +213,7 @@ def missing_sources() -> List[str]:
     if not MODELLAKE.is_dir():
         out.append(f"the ModelLake volume is not mounted ({MODELLAKE}), so no "
                    f"specimens are listed")
+    else:
+        out.append("ModelLake source specimens are listed separately and cannot be "
+                   "selected until a qualified execution binding exists")
     return out

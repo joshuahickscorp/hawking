@@ -399,8 +399,92 @@ enum GravityCmd {
     Verify(GravityVerifyArgs),
 }
 
+#[derive(Subcommand, Debug, Clone, Copy, PartialEq, Eq)]
+enum SelectAction {
+    /// Open the selected artifact in Hawking's local terminal surface.
+    Execute,
+    /// Start the configured headless service with this artifact.
+    Serve,
+    /// Start or reuse the configured service and open Hawking Web.
+    Web,
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+enum PublicActionBinding {
+    Native,
+    HcliCompatibilityAdapter,
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+struct PublicActionSpec {
+    id: &'static str,
+    category: &'static str,
+    invocation: &'static str,
+    binding: PublicActionBinding,
+    implemented: bool,
+}
+
+const PUBLIC_ACTIONS: &[PublicActionSpec] = &[
+    PublicActionSpec {
+        id: "gravity",
+        category: "gravity",
+        invocation: "hawking gravity",
+        binding: PublicActionBinding::Native,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "models",
+        category: "models",
+        invocation: "hawking models",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.execute",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> execute",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.serve",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> serve",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.web",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> web",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+];
+
 #[derive(Subcommand, Debug)]
 enum Cmd {
+    /// List exact artifact identities known to Hawking.
+    Models {
+        /// Emit the shared catalog as JSON for menus and automation.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+        /// Resident URL used only to mark the currently loaded artifact.
+        #[arg(long, default_value = "http://127.0.0.1:8011/v1")]
+        base: String,
+    },
+    /// Select one artifact for one explicit action in this invocation.
+    Select {
+        artifact: String,
+        #[command(subcommand)]
+        action: SelectAction,
+    },
+    /// Print the typed public action catalog used by launchers and menus.
+    Actions {
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
     /// Start the OpenAI-compatible HTTP server. For sealed Gravity artifacts,
     /// prefer `hawking gravity serve --artifact <PATH>`; this compatibility form
     /// retains the historical `--gravity` and `HAWKING_GRAVITY` selectors.
@@ -845,6 +929,31 @@ fn main() -> Result<()> {
     );
     apply_profile(&cli.profile, announce_profile);
     match cli.cmd {
+        Cmd::Models { json, base } => {
+            let mut args = vec!["models".to_owned(), "--include-specimens".to_owned()];
+            if json {
+                args.push("--json".to_owned());
+            }
+            args.push("--base".to_owned());
+            args.push(base);
+            run_hcli_public_action_owned("models", args)
+        }
+        Cmd::Select { artifact, action } => {
+            let artifact = resolve_hcli_artifact(&artifact)?;
+            let verb = match action {
+                SelectAction::Execute => None,
+                SelectAction::Serve => Some("serve"),
+                SelectAction::Web => Some("web"),
+            };
+            let mut args = Vec::new();
+            if let Some(verb) = verb {
+                args.push(verb.to_owned());
+            }
+            args.push("--model".to_owned());
+            args.push(artifact);
+            run_hcli_public_action_owned("select", args)
+        }
+        Cmd::Actions { json } => public_actions_main(json),
         Cmd::Serve(args)
         | Cmd::Gravity {
             command: Some(GravityCmd::Serve(args)),
@@ -1343,6 +1452,71 @@ fn main() -> Result<()> {
             concurrency,
         } => fit_main(weights, intent, max_context, concurrency),
     }
+}
+
+fn public_actions_main(json: bool) -> Result<()> {
+    if json {
+        println!("{}", serde_json::to_string_pretty(PUBLIC_ACTIONS)?);
+    } else {
+        for action in PUBLIC_ACTIONS {
+            println!("{:<18} {}", action.id, action.invocation);
+        }
+    }
+    Ok(())
+}
+
+fn run_hcli_public_action_owned(label: &str, args: Vec<String>) -> Result<()> {
+    let python = hawking_python();
+    let status = std::process::Command::new(&python)
+        .arg("-m")
+        .arg("hcli")
+        .args(&args)
+        .status()
+        .map_err(|error| {
+            anyhow::anyhow!(
+                "could not start Hawking {label} through the hcli compatibility adapter: {error}"
+            )
+        })?;
+    if !status.success() {
+        return Err(anyhow::anyhow!("Hawking {label} exited with {status}"));
+    }
+    Ok(())
+}
+
+fn hawking_python() -> std::ffi::OsString {
+    std::env::var_os("HAWKING_PYTHON").unwrap_or_else(|| "python3".into())
+}
+
+fn resolve_hcli_artifact(artifact: &str) -> Result<String> {
+    let output = std::process::Command::new(hawking_python())
+        .args(["-m", "hcli", "models", artifact, "--resolve-only"])
+        .output()
+        .map_err(|error| anyhow::anyhow!("could not resolve Hawking artifact: {error}"))?;
+    if !output.status.success() {
+        let reason = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+        return Err(anyhow::anyhow!(
+            "artifact selection refused: {}",
+            if reason.is_empty() {
+                output.status.to_string()
+            } else {
+                reason
+            }
+        ));
+    }
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout)
+        .map_err(|error| anyhow::anyhow!("artifact resolver returned invalid JSON: {error}"))?;
+    if value.get("schema").and_then(serde_json::Value::as_str)
+        != Some("hawking.artifact_selection.v1")
+    {
+        return Err(anyhow::anyhow!(
+            "artifact resolver returned an unknown schema"
+        ));
+    }
+    value
+        .get("path")
+        .and_then(serde_json::Value::as_str)
+        .map(str::to_owned)
+        .ok_or_else(|| anyhow::anyhow!("artifact resolver omitted the exact path"))
 }
 
 /// Print the truthful capability identity for bare `hawking gravity`. This is

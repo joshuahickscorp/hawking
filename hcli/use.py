@@ -23,7 +23,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Dict, List, Optional
 
-from .catalog import Body, catalog, missing_sources, resolve
+from .catalog import Body, catalog, missing_sources, resolve, specimen_catalog
 from .serve import DEFAULT_BASE_URL
 
 
@@ -35,7 +35,7 @@ def _get(url: str, timeout: float = 3.0) -> Optional[Dict[str, Any]]:
         return None
 
 
-def _post(url: str, body: Dict[str, Any], timeout: float) -> tuple:
+def post_json(url: str, body: Dict[str, Any], timeout: float) -> tuple:
     request = urllib.request.Request(
         url, data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json"}, method="POST")
@@ -85,6 +85,10 @@ def main(argv: Optional[list] = None) -> int:
                     help="name or path to switch to; omit to list")
     ap.add_argument("--base", default=DEFAULT_BASE_URL)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--include-specimens", action="store_true",
+                    help="show unqualified ModelLake source specimens separately")
+    ap.add_argument("--resolve-only", action="store_true",
+                    help="resolve one admitted exact identity without contacting a resident")
     ap.add_argument("--timeout", type=float, default=1800.0)
     a = ap.parse_args(list(argv or []))
 
@@ -93,6 +97,31 @@ def main(argv: Optional[list] = None) -> int:
     except Exception as exc:
         print(f"could not read the catalog: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2
+    specimens = specimen_catalog() if a.include_specimens else []
+
+    if a.resolve_only:
+        if not a.model:
+            print("--resolve-only requires a model identity or path", file=sys.stderr)
+            return 2
+        try:
+            target = resolve(a.model, bodies)
+        except LookupError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        if target is None:
+            print(f"no admitted body named {a.model!r}; `hcli models` lists admitted bodies",
+                  file=sys.stderr)
+            return 2
+        print(json.dumps({
+            "schema": "hawking.artifact_selection.v1",
+            "name": target.name,
+            "path": target.path,
+            "revision": target.revision,
+            "kind": target.kind,
+            "supported_actions": ["execute", "serve", "web"],
+        }))
+        return 0
+
     current = loaded_name(a.base)
 
     if not a.model:
@@ -100,9 +129,15 @@ def main(argv: Optional[list] = None) -> int:
             print(json.dumps({
                 "loaded": current,
                 "bodies": [b.to_openai(loaded=(b.name == current)) for b in bodies],
+                "specimens": [b.to_openai() for b in specimens],
                 "notes": missing_sources()}, indent=2))
         else:
             print(render(bodies, current, missing_sources()))
+            if specimens:
+                print("\n source specimens (not selectable):")
+                for specimen in specimens:
+                    revision = f"@{specimen.revision[:12]}" if specimen.revision else ""
+                    print(f"   {specimen.name}{revision}  {specimen.admission_reason}")
         return 0
 
     try:
@@ -125,8 +160,8 @@ def main(argv: Optional[list] = None) -> int:
         return 0
 
     print(f"switching {current} -> {target.name} ...", flush=True)
-    status, body = _post(a.base.rstrip("/") + "/v1/switch",
-                         {"model": target.name}, a.timeout)
+    status, body = post_json(a.base.rstrip("/") + "/v1/switch",
+                             {"model": target.name}, a.timeout)
     if status != 200:
         message = (body.get("error") or {}).get("message") or body
         print(f"REFUSED ({status}): {message}", file=sys.stderr)
@@ -136,6 +171,10 @@ def main(argv: Optional[list] = None) -> int:
                f"  (was {body.get('from', current)})")
     print("open browser sessions follow this change; no reconnect needed.")
     return 0
+
+
+# Private-name compatibility for callers that imported the pre-unification helper.
+_post = post_json
 
 
 if __name__ == "__main__":

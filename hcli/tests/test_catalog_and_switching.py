@@ -12,7 +12,7 @@ import json
 import unittest
 from pathlib import Path
 
-from hcli.catalog import Body, _deduplicate, resolve
+from hcli.catalog import Body, _deduplicate, _modellake, catalog, resolve
 from hcli.serve import Resident
 
 
@@ -75,6 +75,29 @@ class TestNamesDoNotCollideSilently(unittest.TestCase):
     def test_a_path_resolves_to_its_body(self):
         bodies = [_body("Qwen3-14B", path="/tmp")]
         self.assertEqual(resolve("/tmp", bodies).name, "Qwen3-14B")
+
+    def test_raw_modellake_directory_is_a_specimen_not_an_admitted_body(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            specimen = Path(root) / "Org--Model@abcdef123456"
+            specimen.mkdir()
+            (specimen / "config.json").write_text("{}", encoding="utf-8")
+            rows = _modellake(Path(root))
+            self.assertEqual(len(rows), 1)
+            self.assertFalse(rows[0].admitted)
+            self.assertIn("no qualified Hawking execution binding", rows[0].admission_reason)
+
+    def test_explicit_unqualified_directory_is_excluded_from_normal_catalog(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            specimen = Path(root) / "candidate"
+            specimen.mkdir()
+            (specimen / "config.json").write_text("{}", encoding="utf-8")
+            self.assertEqual(catalog([str(specimen)]), [
+                body for body in catalog() if body.admitted
+            ])
 
 
 class TestSwitching(unittest.TestCase):

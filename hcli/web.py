@@ -58,6 +58,41 @@ def surface_health(host: str, port: int) -> Optional[Dict[str, Any]]:
     return None
 
 
+def reconcile_requested_resident(existing: Dict[str, Any], requested: str,
+                                 base_url: str, timeout: float) -> Dict[str, Any]:
+    """Make an explicit Web selection true or refuse before opening the UI."""
+    from .catalog import catalog, resolve
+    from .use import post_json
+
+    requested_path = os.path.realpath(os.path.expanduser(requested))
+    loaded_path = existing.get("model")
+    if loaded_path and os.path.realpath(os.path.expanduser(str(loaded_path))) == requested_path:
+        return existing
+
+    try:
+        target = resolve(requested, catalog(extra_roots=[requested]))
+    except LookupError as exc:
+        raise RuntimeError(str(exc)) from exc
+    if target is None:
+        raise RuntimeError(
+            f"the resident is {existing.get('resident')!r}, while {requested!r} "
+            "is not an admitted catalog identity that the running surface can switch to; "
+            "stop this surface or select a listed artifact")
+    if existing.get("resident") == target.name:
+        return existing
+
+    status, body = post_json(base_url.rstrip("/") + "/switch",
+                             {"model": target.name}, timeout)
+    if status != 200:
+        message = (body.get("error") or {}).get("message") or body
+        raise RuntimeError(f"resident switch refused ({status}): {message}")
+    updated = dict(existing)
+    updated.update(body)
+    updated["resident"] = body.get("resident") or target.name
+    updated["model"] = target.path
+    return updated
+
+
 def wait_for_surface(host: str, port: int, *, timeout: float,
                      proc: Optional[subprocess.Popen] = None,
                      log: Optional[Path] = None) -> Dict[str, Any]:
@@ -183,6 +218,7 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--no-webui", action="store_true",
                     help="start only the OpenAI surface and print its URL")
     ap.add_argument("--ready-timeout", type=float, default=900.0)
+    ap.add_argument("--switch-timeout", type=float, default=1800.0)
     ap.add_argument("--write", action="store_true",
                     help="grant repo-scoped write authority (see `hcli build`)")
     a = ap.parse_args(list(argv or []))
@@ -196,6 +232,13 @@ def main(argv: Optional[list] = None) -> int:
     existing = surface_health(a.host, a.port)
     surface_proc = None
     if existing:
+        if a.model:
+            try:
+                existing = reconcile_requested_resident(
+                    existing, model, base_url, a.switch_timeout)
+            except RuntimeError as exc:
+                print(f"REFUSED: {exc}", file=sys.stderr)
+                return 2
         print(f"reusing the resident already answering on http://{a.host}:{a.port} "
               f"({existing.get('resident')})")
         serve_log = log_dir / "serve.log"
