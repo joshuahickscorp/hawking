@@ -339,21 +339,25 @@ fn ratio0_attention_execution_region(
                 program_id: "projection_program".to_owned(),
                 backend: Backend::Metal,
                 operation_ids: names(&["attention_norm", "q_project", "kv_project"]),
+                waits_for: BTreeSet::new(),
             },
             BackendProgram {
                 program_id: "kv_state_program".to_owned(),
                 backend: Backend::Metal,
                 operation_ids: names(&["kv_state_update"]),
+                waits_for: names(&["projection_program"]),
             },
             BackendProgram {
                 program_id: "attention_program".to_owned(),
                 backend: Backend::Metal,
                 operation_ids: names(&["sparse_attention"]),
+                waits_for: names(&["projection_program", "kv_state_program"]),
             },
             BackendProgram {
                 program_id: "output_program".to_owned(),
                 backend: Backend::Metal,
                 operation_ids: names(&["output_project"]),
+                waits_for: names(&["attention_program"]),
             },
         ],
     };

@@ -478,8 +478,8 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
         def do_GET(self) -> None:  # noqa: N802
             path = self.path.rstrip("/") or "/"
             if path in ("/v1/models", "/models"):
-                # Every body a person could pick, so Open WebUI's dropdown is
-                # the model picker rather than a one-entry label.
+                # Every admitted body, so a source specimen cannot become
+                # executable merely because Open WebUI displayed its name.
                 rows = getattr(backend, "catalog", None)
                 if callable(rows):
                     return self._send(200, {"object": "list", "data": rows()})
@@ -793,18 +793,17 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
                  ready_timeout: float = 600.0, repo: Any = None,
                  registry: Any = None, write: bool = False):
     """Spawn the resident, wait for it, and return (httpd, identity, health)."""
-    from .catalog import Body, catalog, resolve
-    from .runtime_iface import classify_backend, make_backend_for_model
+    from .catalog import catalog, resolve
+    from .runtime_iface import make_backend_for_model
 
     try:
         body = resolve(model)
     except LookupError:
         body = None
     if body is None:
-        # A path that is not in the catalog is still servable; it just has no
-        # menu entry. Naming it after its own file keeps identity honest.
-        body = Body(name=Path(str(model)).stem, path=str(model),
-                    kind=classify_backend(str(model)), source="user")
+        raise LookupError(
+            f"{model!r} has no admitted Hawking execution binding; "
+            "source specimens must be qualified before serve")
 
     backend = make_backend_for_model(body.path)
     backend.spawn()

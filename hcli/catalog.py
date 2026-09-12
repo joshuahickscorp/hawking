@@ -1,10 +1,10 @@
-"""Every Hawking body a person could pick, named the way a person would pick it.
+"""Admitted Hawking bodies and separately discoverable source specimens.
 
 WHY A SEPARATE MODULE. `discover_models` already walks roots and identifies
 native profiles, MLX directories and GGUF files -- that part is not rebuilt here.
 What was missing is the bit a dropdown needs: a STABLE, SHORT, UNIQUE name per
-body, and a single list that spans the sealed profiles in the repo and the
-specimens on the ModelLake volume.
+body. ModelLake specimens remain visible as source identities but stay outside
+the executable catalog until a qualified execution binding is recorded.
 
 NAMES ARE IDENTITY, SO THEY MUST NOT COLLIDE OR DRIFT. A ModelLake specimen
 directory is `Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0`; nobody wants to read
@@ -20,6 +20,7 @@ its entries is worse than one that says the drive is unplugged.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -42,6 +43,7 @@ class Body:
     detail: Dict[str, Any] = field(default_factory=dict)
     admitted: bool = True
     admission_reason: str = ""
+    supported_actions: tuple[str, ...] = ()
 
     def to_openai(self, *, loaded: bool = False) -> Dict[str, Any]:
         row = {
@@ -56,6 +58,7 @@ class Body:
                 "gb": round(self.bytes / 1e9, 2) if self.bytes else None,
                 "loaded": loaded,
                 "admitted": self.admitted,
+                "supported_actions": list(self.supported_actions),
             },
         }
         if self.revision:
@@ -87,6 +90,20 @@ def _native_profiles(root: Path) -> List[Body]:
         except Exception:
             continue
         identity = str(data.get("resident_identity") or profile.stem)
+        qualification = data.get("qualification")
+        admission = data.get("admission") or {}
+        evidence = admission.get("evidence") or []
+        admitted = (
+            data.get("profile_schema") == "hcli.provider.profile.v1"
+            and data.get("provider") == "native"
+            and data.get("runtime") == "hawking-native"
+            and admission.get("status") == "ADMITTED"
+            and bool(admission.get("contract"))
+            and isinstance(evidence, list)
+            and bool(evidence)
+            and isinstance(qualification, str)
+            and bool(qualification.strip())
+        )
         out.append(Body(
             name=identity,
             path=str(profile),
@@ -95,12 +112,16 @@ def _native_profiles(root: Path) -> List[Body]:
             detail={
                 "family": data.get("family"),
                 "ebpw": data.get("physical_ebpw"),
-                "qualification": data.get("qualification"),
+                "qualification": qualification,
+                "admission_contract": admission.get("contract"),
+                "admission_evidence": evidence,
                 "greedy": (data.get("generation") or {}).get("do_sample") is False,
             },
-            admitted=bool(data.get("qualification")),
-            admission_reason=("" if data.get("qualification") else
-                              "native profile has no qualification contract"),
+            admitted=admitted,
+            admission_reason=("" if admitted else
+                              "native profile has no explicit admitted contract and evidence"),
+            revision=hashlib.sha256(profile.read_bytes()).hexdigest(),
+            supported_actions=(("execute", "serve", "web") if admitted else ()),
         ))
     return out
 
@@ -132,6 +153,7 @@ def _modellake(root: Path = MODELLAKE) -> List[Body]:
             admitted=False,
             admission_reason=("ModelLake preserves the source specimen; no "
                               "qualified Hawking execution binding is recorded"),
+            supported_actions=(),
         ))
     return out
 

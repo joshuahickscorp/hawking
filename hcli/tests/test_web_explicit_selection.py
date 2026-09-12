@@ -27,6 +27,7 @@ class TestExplicitWebSelection(unittest.TestCase):
             path="/tmp/wanted.json",
             kind="noetic_native",
             revision="revision",
+            supported_actions=("execute", "serve", "web"),
         )
         original_catalog = catalog_module.catalog
         original_resolve = catalog_module.resolve
@@ -52,7 +53,7 @@ class TestExplicitWebSelection(unittest.TestCase):
         self.assertEqual(updated["model"], target.path)
         self.assertEqual(
             calls,
-            [("http://127.0.0.1:8011/v1/switch", {"model": target.name}, 7.0)],
+            [("http://127.0.0.1:8011/v1/switch", {"model": target.path}, 7.0)],
         )
 
     def test_unknown_artifact_refuses_instead_of_reusing_wrong_resident(self):

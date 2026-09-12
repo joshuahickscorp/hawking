@@ -1,6 +1,20 @@
-# HCLI DAEMONIC MANIFESTO
+# HAWKING PERSISTENT INTELLIGENCE MANIFESTO
 
-## The Operating Constitution of Hawking's Cognitive Agent
+## The operating constitution of Hawking's cognitive agent
+
+Hawking is the public system and command surface. `hawkingd` is its persistent
+operating owner. HCLI and HIDE are historical implementation and compatibility
+names throughout the older sections of this manifesto; they do not name peer
+products. Gravity is Hawking's science and machinery for discovering the
+capability-preserving cognitive, representational, executable and physical form
+best suited to an objective and machine. Collapse is Gravity's verb.
+
+The executable default for reusable work is: find the canonical owner, retrieve
+an applicable method, invoke or extend it, verify the result, record the evidence
+in the existing receipt/mission owner, and make the next compatible caller reuse
+it. A known incompatibility must fail closed with its scope and reopening
+condition. `tools/verify/hawking_terminology.py` checks new public prose without
+rewriting historical evidence.
 
 HCLI is not a chatbot, a coding assistant, a collection of tools, or a thin interface over a language model. HCLI is intended to become the persistent operating intelligence of Hawking: the cognitive layer through which a human can investigate, reason, plan, build, test, measure, recover, research, adapt, and eventually conduct autonomous science across the capabilities exposed by Agent OS.
 

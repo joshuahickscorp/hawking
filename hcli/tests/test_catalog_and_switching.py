@@ -9,10 +9,13 @@ id and goes to the network for it.
 from __future__ import annotations
 
 import json
+import hashlib
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
-from hcli.catalog import Body, _deduplicate, _modellake, catalog, resolve
+from hcli.catalog import Body, _deduplicate, _modellake, _native_profiles, catalog, resolve
 from hcli.serve import Resident
 
 
@@ -47,6 +50,49 @@ class _FakeBackend:
 
 
 class TestNamesDoNotCollideSilently(unittest.TestCase):
+    def test_native_admission_binds_actions_to_exact_profile_bytes(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            profile = Path(root) / "hawking-native.test.json"
+            profile.write_text(json.dumps({
+                "resident_identity": "sealed-test",
+                "profile_schema": "hcli.provider.profile.v1",
+                "provider": "native",
+                "runtime": "hawking-native",
+                "qualification": "QUALIFIED_REFERENCE_PATH",
+                "admission": {
+                    "status": "ADMITTED",
+                    "contract": "reference_path",
+                    "evidence": ["fixtures/reference.json"],
+                },
+            }), encoding="utf-8")
+            body = _native_profiles(Path(root))[0]
+            self.assertTrue(body.admitted)
+            self.assertEqual(body.revision, hashlib.sha256(profile.read_bytes()).hexdigest())
+            self.assertEqual(body.supported_actions, ("execute", "serve", "web"))
+
+    def test_rejected_native_profile_has_no_actions(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            profile = Path(root) / "hawking-native.rejected.json"
+            profile.write_text(json.dumps({
+                "resident_identity": "rejected-test",
+                "profile_schema": "hcli.provider.profile.v1",
+                "provider": "native",
+                "runtime": "hawking-native",
+                "qualification": "UNQUALIFIED_CANDIDATE",
+                "admission": {
+                    "status": "REJECTED",
+                    "contract": "reference_path",
+                    "evidence": ["fixtures/rejected.json"],
+                },
+            }), encoding="utf-8")
+            body = _native_profiles(Path(root))[0]
+            self.assertFalse(body.admitted)
+            self.assertEqual(body.supported_actions, ())
+
     def test_a_collision_qualifies_both_rather_than_shadowing_one(self):
         rows = _deduplicate([
             _body("Qwen3-4B", revision="aaaaaaaaaaaa"),
@@ -185,6 +231,19 @@ class TestSwitchStopsBeforeStarting(unittest.TestCase):
         self.assertEqual(order, ["stop old", "spawn new"],
                          "the new resident spawned while the old one was still loaded")
         self.assertEqual(resident.identity, "new")
+
+
+class TestTerminologyGuard(unittest.TestCase):
+    def test_guard_selfcheck_runs_in_normal_python_suite(self):
+        repo = Path(__file__).resolve().parents[2]
+        result = subprocess.run(
+            [sys.executable, str(repo / "tools/verify/hawking_terminology.py"), "--selfcheck"],
+            cwd=repo,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("PASS", result.stdout)
 
 
 if __name__ == "__main__":

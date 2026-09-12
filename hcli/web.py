@@ -78,11 +78,8 @@ def reconcile_requested_resident(existing: Dict[str, Any], requested: str,
             f"the resident is {existing.get('resident')!r}, while {requested!r} "
             "is not an admitted catalog identity that the running surface can switch to; "
             "stop this surface or select a listed artifact")
-    if existing.get("resident") == target.name:
-        return existing
-
     status, body = post_json(base_url.rstrip("/") + "/switch",
-                             {"model": target.name}, timeout)
+                             {"model": target.path}, timeout)
     if status != 200:
         message = (body.get("error") or {}).get("message") or body
         raise RuntimeError(f"resident switch refused ({status}): {message}")
@@ -243,6 +240,17 @@ def main(argv: Optional[list] = None) -> int:
               f"({existing.get('resident')})")
         serve_log = log_dir / "serve.log"
     else:
+        from .catalog import catalog, resolve
+        try:
+            target = resolve(model, catalog(extra_roots=[model]))
+        except LookupError as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return 2
+        if target is None or "web" not in target.supported_actions:
+            print(f"REFUSED: {model!r} has no admitted Hawking Web execution binding",
+                  file=sys.stderr)
+            return 2
+        model = target.path
         print(f"starting resident {Path(model).stem} ...", flush=True)
         surface_proc, serve_log = start_surface(model, a.host, a.port, log_dir,
                                                 write=bool(a.write))

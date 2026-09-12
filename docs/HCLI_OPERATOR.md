@@ -8,7 +8,7 @@ authority. You state an objective; it does the engineering.
 ```bash
 hcli web                 # browser chat on the current resident, read/research
 hcli build               # the same chat WITH repo-scoped write authority
-hcli use                 # list 54 bodies; hcli use Qwen3-14B to switch live
+hcli use                 # list admitted bodies; use an exact name/path to switch
 hcli serve               # the OpenAI endpoint only (Open WebUI points here)
 hcli report              # measure the loaded body: cold prefill, warm reuse, decode
 hcli stop                # put down what web/serve/build started

@@ -118,7 +118,7 @@ def main(argv: Optional[list] = None) -> int:
             "path": target.path,
             "revision": target.revision,
             "kind": target.kind,
-            "supported_actions": ["execute", "serve", "web"],
+            "supported_actions": list(target.supported_actions),
         }))
         return 0
 

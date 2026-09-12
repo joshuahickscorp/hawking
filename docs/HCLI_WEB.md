@@ -1,6 +1,6 @@
 # Hawking in a browser
 
-`hcli web` puts any Hawking body behind
+`hcli web` puts an admitted Hawking body behind
 [Open WebUI](https://github.com/open-webui/open-webui), and the dropdown in that
 browser page switches which one answers -- over the same connection, with no
 reconnect and no restart.
@@ -12,7 +12,7 @@ No flags needed for any of it. Works from any directory.
 ```bash
 hcli web                    # browser chat, opens the tab
 hcli web Qwen3-14B          # ... starting on a particular body
-hcli use                    # every body, * marks the one answering
+    hcli use                    # admitted bodies, * marks the one answering
 hcli use Qwen3-14B          # switch; open browser sessions follow
 hcli serve                  # endpoint only, no browser
 hcli report                 # measure the loaded body, writes a receipt
@@ -33,7 +33,7 @@ cd ~/Downloads/hawking && /usr/local/bin/python3.12 -m hcli install-shims
 ```
 
 That interpreter matters: the shims previously pointed at a venv with no `mlx`,
-which would have failed 53 of the 54 bodies at load while `python -m hcli` from
+which would have failed most ModelLake specimens at load while `python -m hcli` from
 the repo worked perfectly.
 
 Logs: `~/.hcli/web/serve.log`, `~/.hcli/web/webui.log`. Reports:
@@ -59,11 +59,10 @@ Two OpenAI surfaces already existed and neither can drive a chat:
 
 ## Switching bodies
 
-`/v1/models` lists every body the catalog can find -- the native profiles in the
-repo plus every ModelLake specimen -- so Open WebUI's dropdown *is* the model
-picker. Selecting one sends `model` on the next request and the surface swaps to
-it. Measured: `sealed-3.14` to `Qwen3-0.6B` in 1.4 s, and back again inside a
-single chat request.
+`/v1/models` lists admitted bodies only. `hawking models` reports raw ModelLake
+downloads separately as source specimens; they cannot enter the dropdown until
+a qualified execution binding exists. Selecting an admitted body sends its exact
+catalog path to the switch endpoint.
 
 Three rules the switch keeps:
 

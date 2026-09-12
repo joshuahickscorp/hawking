@@ -42,12 +42,13 @@ crosswalk and compatibility sunset conditions live in
 
 | Concern | Canonical home | Boundary |
 |---|---|---|
-| Hawking CLI and command ingress | Python `hcli.cli`, `hcli.commands`, `hcli.controller` plus Rust `hawking` and compatibility `hide-backend`/`hcli` | One typed Hawking action surface is the target; compatibility names must preserve identical authority |
+| Hawking CLI and command ingress | Rust `hawking` owns Gravity plus the typed model action catalog; Python `hcli` and Rust `hide-backend`/`hcli` are compatibility adapters | `hawking models`, `actions`, and per-invocation `select` resolve admitted identities; adapters preserve authority |
 | Internal capability and lifecycle machinery | `hcli.agentos` plus canonical `hcli.goal`, `hcli.workunit`, `hcli.scheduler`, `hcli.mission`, `hcli.verifier_pipeline` | AgentOS is an internal namespace; scheduling/proposal is not verification |
 | Runtime and provider execution | `hcli.runtime`, `hcli.engine`, `hcli.backends`, `hcli.session`, `hcli.models` | Provider output is evidence only after the verifier accepts it |
 | Crash-safe persistence | `hcli.persist` | The shared text/bytes/JSON atomic writers; specialized compare-and-swap remains in its owner |
 | Doctor diagnosis | `tools.doctor.engine` and `tools.doctor.*` | Metadata/receipt diagnosis; no weight loading or hardware claim |
 | Gravity | `hcli.gravity`, `tools/gravity_*.py`, model adapters, Rust runtime crates and verifier owners | Representation search, compilation and physical optimization share one function; evidence scopes remain distinct |
+| Legal execution regions | `hawking_core::gravity::execution` | Fingerprinted operations, exact data/control/state boundaries, convexity, ownership, synchronization, resource support and ordered schedule coverage; structural validation is plan evidence only |
 | Status verification | `tools.verify.status_causality` | A status may assert only what its actual probe establishes |
 | Roadmap and reachability | `tools.roadmap`, especially `tools.roadmap.capability_reachability` | Definitions/imports are not calls; receipts are citations, not callers |
 | Odyssey and ModelLake | `tools.odyssey`, including `tools.odyssey.modellake_promote` | Specimen lifecycle and promotion stay separate from Doctor/Gravity |
