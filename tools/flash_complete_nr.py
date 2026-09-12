@@ -27,6 +27,8 @@ DEFAULT_TARGET_EBPW = ("1.0", "0.75", "0.5", "0.25", "0.1")
 LOWRANK_ACTIVATION_SCREEN_SCHEMA = "hawking.odyssey.stacked_expert_lowrank_sparse_repair.v1"
 SHARDED_LOOKUP_PQ_SCREEN_SCHEMA = "hawking.odyssey.sharded_lookup_pq_screen.v1"
 PLE_ACCESS_TRACE_SCHEMA = "hawking.odyssey.ple_access_trace.v1"
+PLE_SOURCE_OUTPUT_CONTROL_SCHEMA = "hawking.odyssey.ple_source_output_control.v1"
+PLE_REFERENCE_FORMULA_ORACLE_SCHEMA = "hawking.odyssey.ple_reference_formula_oracle.v1"
 
 
 def sha(path: Path) -> str:
@@ -203,6 +205,64 @@ def _ple_access_trace_summary(document: dict | None) -> dict | None:
     }
 
 
+def _ple_source_output_control_summary(document: dict | None) -> dict | None:
+    """Carry a sealed PLE formula control without laundering it into parity."""
+    if (
+        not document
+        or document.get("schema") != PLE_SOURCE_OUTPUT_CONTROL_SCHEMA
+        or document.get("status")
+        != "SOURCE_BOUND_PLE_OUTPUT_CONTROL__NO_INDEPENDENT_PLE_OUTPUT_PARITY"
+    ):
+        return None
+    input_control = document.get("input_control")
+    active = document.get("active_lookup")
+    outputs = document.get("outputs")
+    post = outputs.get("post_injection_state") if isinstance(outputs, dict) else None
+    if not isinstance(input_control, dict) or not isinstance(active, dict) or not isinstance(post, dict):
+        return None
+    fields = (
+        "token_count",
+        "lookup_events",
+        "lookup_events_per_token",
+        "unique_source_rows",
+        "unique_source_bytes",
+    )
+    if any(not isinstance(active.get(field), int) for field in fields):
+        return None
+    return {
+        "status": document["status"],
+        "input_qualification": input_control.get("qualification"),
+        "input_state_sha256": (input_control.get("state") or {}).get("sha256"),
+        **{field: active[field] for field in fields},
+        "post_injection_state_sha256": post.get("sha256"),
+        "mutable_state_bytes": outputs.get("mutable_state_bytes"),
+        "boundary": "SOURCE_FORMULA_INPUT_OUTPUT_CONTROL_ONLY__NOT_INDEPENDENT_PLE_PARITY_OR_CAPABILITY",
+    }
+
+
+def _ple_reference_formula_parity_summary(document: dict | None) -> dict | None:
+    """Expose a bounded reference-framework formula pass without broadening scope."""
+    if (
+        not document
+        or document.get("schema") != PLE_REFERENCE_FORMULA_ORACLE_SCHEMA
+        or document.get("status") != "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS"
+    ):
+        return None
+    metrics = document.get("metrics")
+    source_control = document.get("source_control")
+    if not isinstance(metrics, dict) or not isinstance(source_control, dict):
+        return None
+    fields = ("max_abs", "rmse", "relative_l2", "cosine", "finite")
+    if not all(field in metrics for field in fields):
+        return None
+    return {
+        "status": document["status"],
+        "source_control_seal": source_control.get("seal_sha256"),
+        **{field: metrics[field] for field in fields},
+        "boundary": "ONE_SEALED_PLE_CONTROL_REFERENCE_FORMULA_PARITY_ONLY__NOT_FULL_CHECKPOINT_OR_CAPABILITY",
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--census", type=Path, default=Path("receipts/headless/FLASH_ORGAN_CENSUS.json"))
@@ -227,6 +287,18 @@ def main() -> int:
         type=Path,
         default=Path("receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"),
         help="optional source-algorithm PLE token-to-row address trace",
+    )
+    ap.add_argument(
+        "--ple-source-output-control",
+        type=Path,
+        default=Path("receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json"),
+        help="optional source-bound PLE formula/input output control",
+    )
+    ap.add_argument(
+        "--ple-reference-formula-parity",
+        type=Path,
+        default=Path("receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"),
+        help="optional bounded reference-framework PLE formula parity receipt",
     )
     ap.add_argument(
         "--target-ebpw",
@@ -265,16 +337,28 @@ def main() -> int:
         PLE_ACCESS_TRACE_SCHEMA,
         "n-gram access trace",
     )
+    ple_source_output_control = optional_receipt(
+        a.ple_source_output_control,
+        PLE_SOURCE_OUTPUT_CONTROL_SCHEMA,
+        "PLE source output control",
+    )
+    ple_reference_formula_parity = optional_receipt(
+        a.ple_reference_formula_parity,
+        PLE_REFERENCE_FORMULA_ORACLE_SCHEMA,
+        "PLE reference formula parity",
+    )
     lowrank_activation_targets = _best_lowrank_activation_rows(lowrank_activation_screen)
     ngram_pq_targets = _ngram_pq_summary(ngram_pq_screen)
     ngram_access_summary = _ple_access_trace_summary(ngram_access_trace)
+    ple_source_output_summary = _ple_source_output_control_summary(ple_source_output_control)
+    ple_reference_formula_summary = _ple_reference_formula_parity_summary(ple_reference_formula_parity)
     if census.get("schema") != "hawking.flash.organ_census.v1":
         raise SystemExit("unexpected census schema")
     families = {row["family"]: row for row in census.get("family_summary", [])}
     ngram_q4 = next((row for row in (ngram_screen or {}).get("quantization_screen", []) if row.get("candidate") == "uniform_q4_g32"), None)
     parts = [
         {"family": "embedding_lm_head", "representation": "source_bf16_exact", "runtime_required": True, "qualification": "complete terminal control exists"},
-        {"family": "ngram_embedding", "representation": "factorized_lookup_candidate", "runtime_required": True, "qualification": "128-shard global row layout and source-algorithm accepted-token addresses are bound; static global-PQ rate screen is negative, while PLE output fidelity and native compact lookup remain open"},
+        {"family": "ngram_embedding", "representation": "factorized_lookup_candidate", "runtime_required": True, "qualification": "128-shard global row layout, source-algorithm addresses, and one sealed source-bound PLE formula/input control have passed reference-framework parity on one BOS control; broader PLE output coverage and native compact lookup remain open"},
         {"family": "norm", "representation": "source_bf16_exact", "runtime_required": True, "qualification": "source graph contract"},
         {"family": "linear_attention_hyperconnection", "representation": "source_bf16_exact", "runtime_required": True, "qualification": "48-layer source parity and stateful organ/prefix evidence"},
         {"family": "full_attention", "representation": "source_bf16_exact", "runtime_required": True, "qualification": "all full-attention source organs and KV organ evidence"},
@@ -328,6 +412,8 @@ def main() -> int:
             "routed_lowrank_activation_screen_sha256": sha(a.routed_lowrank_activation_screen) if lowrank_activation_screen else None,
             "ngram_pq_screen_sha256": sha(a.ngram_pq_screen) if ngram_pq_screen else None,
             "ngram_access_trace_sha256": sha(a.ngram_access_trace) if ngram_access_trace else None,
+            "ple_source_output_control_sha256": sha(a.ple_source_output_control) if ple_source_output_control else None,
+            "ple_reference_formula_parity_sha256": sha(a.ple_reference_formula_parity) if ple_reference_formula_parity else None,
         },
         "representation": {
             "scope": "complete 48-layer Flash model",
@@ -358,7 +444,7 @@ def main() -> int:
                         "pinned BF16 source-family bodies",
                         "unqualified dynamic routed-expert bank representation",
                         "unqualified n-gram representation and lookup path",
-                        "unmeasured source PLE output/hidden-state control for selective repair",
+                        "unqualified broader PLE output coverage and native compact PLE runtime",
                         "unmeasured complete direct runtime state",
                         "unmeasured complete direct scratch working set",
                     ],
@@ -369,7 +455,7 @@ def main() -> int:
             "candidate_variants": [
                 {"name": "external_source_bf16_control", "source_control_ebpw": 16.0, "nr_complete_ebpw": None, "runnable_nr": False, "capability_status": "source-control-only"},
                 {"name": "route_conditioned_compact_experts_v0", "complete_bits_per_weight": None, "runtime_ready": False, "capability_status": "not-yet-qualified", "open": "dynamic expert-bank representation and accepted-token accounting", "bank_screen": "cross-expert sharing hypothesis is weak in sampled real weights; pursue active-route storage, not unconditional shared basis"},
-                {"name": "ngram_factorized_lookup_v0", "complete_bits_per_weight": None, "runtime_ready": False, "capability_status": "not-yet-qualified", "open": "source PLE output/activation control, lookup representation fidelity, and native compact lookup", "lookup_oracle_status": (ngram_lookup or {}).get("status"), "access_trace": ngram_access_summary},
+                {"name": "ngram_factorized_lookup_v0", "complete_bits_per_weight": None, "runtime_ready": False, "capability_status": "not-yet-qualified", "open": "broader PLE output coverage, lookup representation fidelity, and native compact lookup", "lookup_oracle_status": (ngram_lookup or {}).get("status"), "access_trace": ngram_access_summary, "source_output_control": ple_source_output_summary, "reference_formula_parity": ple_reference_formula_summary},
                 {"name": "ngram_uniform_q4_g32_v0", "complete_bits_per_weight": None, "runtime_ready": False, "capability_status": "stage-a-only", "nominal_bpw": (ngram_q4 or {}).get("nominal_bpw"), "sample_cosine": (ngram_q4 or {}).get("sample_cosine"), "open": "activation/output sensitivity and native compact lookup"},
                 {"name": "ngram_packed_q4_g32_lookup_v1", "complete_bits_per_weight": 4.0 + 32.0 / 32.0, "runtime_ready": False, "capability_status": "row-oracle-only", "sample_rows": ((ngram_lookup or {}).get("source") or {}).get("sample_rows"), "mean_lookup_ns": ((ngram_lookup or {}).get("bench") or {}).get("lookup_ns_mean"), "open": "native lookup kernel, activation sensitivity, collision semantics, and complete-token impact"},
                 {"name": "ngram_packed_q3_g32_lookup_v1", "complete_bits_per_weight": 3.0 + 32.0 / 32.0, "runtime_ready": False, "capability_status": "row-oracle-only", "sample_rows": ((ngram_lookup or {}).get("source") or {}).get("sample_rows"), "mean_lookup_ns": ((ngram_lookup or {}).get("bench") or {}).get("lookup_ns_mean"), "open": "native lookup kernel, activation sensitivity, collision semantics, and complete-token impact"},
@@ -387,7 +473,7 @@ def main() -> int:
                     "runtime_ready": False,
                     "capability_status": "HELDOUT_STATIC_NEGATIVE__NOT_ESCALATED",
                     "target_summary": ngram_pq_targets,
-                    "open": "The source-algorithm address trace is now bound, but a source PLE output/hidden-state control is still required before testing selective hot-row repair or a learned/generative table representation; do not materialize uniform global PQ from this screen.",
+                    "open": "The source-algorithm address trace and one sealed reference-checked PLE formula/input control are bound. Test selective repair against that output control before considering learned/generative table representations; do not materialize uniform global PQ from this screen.",
                 },
             ],
             "portable_identity": {
@@ -396,6 +482,8 @@ def main() -> int:
                 "routed_lowrank_activation_screen": str(a.routed_lowrank_activation_screen) if lowrank_activation_screen else None,
                 "ngram_pq_screen": str(a.ngram_pq_screen) if ngram_pq_screen else None,
                 "ngram_access_trace": str(a.ngram_access_trace) if ngram_access_trace else None,
+                "ple_source_output_control": str(a.ple_source_output_control) if ple_source_output_control else None,
+                "ple_reference_formula_parity": str(a.ple_reference_formula_parity) if ple_reference_formula_parity else None,
             },
         },
         "kernel_requirements": [
@@ -418,11 +506,11 @@ def main() -> int:
             {
                 "receipt": str(a.ngram_pq_screen),
                 "finding": ngram_pq_targets,
-                "law": "Shared product quantization can meet sub-bit projected n-gram table budgets arithmetically, but its held-out row distortion is high at the tested rates; the bound token-to-row trace permits future selective-repair controls, but not a PLE-output or capability claim.",
+                "law": "Shared product quantization can meet sub-bit projected n-gram table budgets arithmetically, but its held-out row distortion is high at the tested rates; source addresses plus one reference-checked PLE formula/input control now permit bounded selective-repair controls, but not broad PLE parity or capability claims.",
             },
         ],
         "claim_boundary": "This is a complete source-family inventory plus an open-NR accounting baseline. The exact 16.0 EBPW figure belongs only to external source BF16 storage; this receipt claims no complete NR EBPW, closed standalone runnable NR, accepted-token TPS, or capability preservation.",
-        "next": "Use the source-bound routed-MoE bridge and direct packed substrate as controls. The n-gram address trace is now closed; obtain a source PLE output/hidden-state control before testing selective hot-row repair or a learned/generative lookup representation. Replace only Pareto survivors, close every dependency before reporting complete EBPW, and build NX only when a machine specialization earns it.",
+        "next": "Use the source-bound routed-MoE bridge and direct packed substrate as controls. The n-gram address trace and one sealed reference-checked PLE formula/input control are now closed; test selective repair or a learned/generative lookup representation against that bounded output, expand to additional source inputs/token boundaries, and begin native PLE execution only when a direct representation survives. Replace only Pareto survivors, close every dependency before reporting complete EBPW, and build NX only when a machine specialization earns it.",
     }
     ok, bad = validate(doc)
     if not ok:
