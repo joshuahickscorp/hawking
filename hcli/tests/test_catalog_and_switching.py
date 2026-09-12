@@ -9,10 +9,13 @@ id and goes to the network for it.
 from __future__ import annotations
 
 import json
+import hashlib
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
-from hcli.catalog import Body, _deduplicate, catalog, resolve
+from hcli.catalog import Body, _deduplicate, _modellake, _native_profiles, catalog, resolve
 from hcli.serve import Resident
 
 
@@ -47,6 +50,49 @@ class _FakeBackend:
 
 
 class TestNamesDoNotCollideSilently(unittest.TestCase):
+    def test_native_admission_binds_actions_to_exact_profile_bytes(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            profile = Path(root) / "hawking-native.test.json"
+            profile.write_text(json.dumps({
+                "resident_identity": "sealed-test",
+                "profile_schema": "hcli.provider.profile.v1",
+                "provider": "native",
+                "runtime": "hawking-native",
+                "qualification": "QUALIFIED_REFERENCE_PATH",
+                "admission": {
+                    "status": "ADMITTED",
+                    "contract": "reference_path",
+                    "evidence": ["fixtures/reference.json"],
+                },
+            }), encoding="utf-8")
+            body = _native_profiles(Path(root))[0]
+            self.assertTrue(body.admitted)
+            self.assertEqual(body.revision, hashlib.sha256(profile.read_bytes()).hexdigest())
+            self.assertEqual(body.supported_actions, ("execute", "serve", "web"))
+
+    def test_rejected_native_profile_has_no_actions(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            profile = Path(root) / "hawking-native.rejected.json"
+            profile.write_text(json.dumps({
+                "resident_identity": "rejected-test",
+                "profile_schema": "hcli.provider.profile.v1",
+                "provider": "native",
+                "runtime": "hawking-native",
+                "qualification": "UNQUALIFIED_CANDIDATE",
+                "admission": {
+                    "status": "REJECTED",
+                    "contract": "reference_path",
+                    "evidence": ["fixtures/rejected.json"],
+                },
+            }), encoding="utf-8")
+            body = _native_profiles(Path(root))[0]
+            self.assertFalse(body.admitted)
+            self.assertEqual(body.supported_actions, ())
+
     def test_a_collision_qualifies_both_rather_than_shadowing_one(self):
         rows = _deduplicate([
             _body("Qwen3-4B", revision="aaaaaaaaaaaa"),
@@ -76,6 +122,29 @@ class TestNamesDoNotCollideSilently(unittest.TestCase):
         bodies = [_body("Qwen3-14B", path="/tmp")]
         self.assertEqual(resolve("/tmp", bodies).name, "Qwen3-14B")
 
+    def test_raw_modellake_directory_is_a_specimen_not_an_admitted_body(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            specimen = Path(root) / "Org--Model@abcdef123456"
+            specimen.mkdir()
+            (specimen / "config.json").write_text("{}", encoding="utf-8")
+            rows = _modellake(Path(root))
+            self.assertEqual(len(rows), 1)
+            self.assertFalse(rows[0].admitted)
+            self.assertIn("no qualified Hawking execution binding", rows[0].admission_reason)
+
+    def test_explicit_unqualified_directory_is_excluded_from_normal_catalog(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            specimen = Path(root) / "candidate"
+            specimen.mkdir()
+            (specimen / "config.json").write_text("{}", encoding="utf-8")
+            self.assertEqual(catalog([str(specimen)]), [
+                body for body in catalog() if body.admitted
+            ])
+
 
 class TestGravityCatalogBoundary(unittest.TestCase):
     def test_normal_catalog_exposes_admitted_gravity_bodies_only(self):
@@ -94,6 +163,8 @@ class TestGravityCatalogBoundary(unittest.TestCase):
                 "path": str(body),
                 "kind": "mlx",
                 "status": "OPERATIONAL_DEVELOPMENTAL",
+                "revision": "a" * 64,
+                "supported_actions": ["execute", "serve", "web"],
                 "role": "developmental resident",
             }]}))
             lake = root / "lake"
@@ -115,6 +186,29 @@ class TestGravityCatalogBoundary(unittest.TestCase):
             self.assertNotIn("raw-model", normal_names)
             self.assertIn("KIMI_P0_OPERATIONAL", research_names)
             self.assertIn("raw-model", research_names)
+            admitted = next(row for row in normal if row.name == "KIMI_P0_OPERATIONAL")
+            self.assertEqual(admitted.revision, "a" * 64)
+            self.assertEqual(admitted.supported_actions, ("execute", "serve", "web"))
+
+    def test_registry_entry_without_exact_revision_is_not_executable(self):
+        import tempfile
+        import hcli.catalog as catalog_mod
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = root / "body"
+            body.mkdir()
+            (body / "config.json").write_text("{}")
+            (body / "model.safetensors").write_bytes(b"fixture")
+            registry = root / "gravity-artifacts.json"
+            registry.write_text(json.dumps({"artifacts": [{
+                "id": "UNBOUND",
+                "path": str(body),
+                "kind": "mlx",
+                "status": "ADMITTED",
+                "supported_actions": ["serve"],
+            }]}))
+            self.assertEqual(catalog_mod._gravity_artifacts(registry), [])
 
 
 class TestSwitching(unittest.TestCase):
@@ -228,6 +322,19 @@ class TestSwitchStopsBeforeStarting(unittest.TestCase):
         self.assertEqual(seen, [("LFM2-24B-A2B", True)])
         self.assertFalse(resident.tools_verdict["qualified"])
         self.assertIn("research body", resident.tools_verdict["reason"])
+
+
+class TestTerminologyGuard(unittest.TestCase):
+    def test_guard_selfcheck_runs_in_normal_python_suite(self):
+        repo = Path(__file__).resolve().parents[2]
+        result = subprocess.run(
+            [sys.executable, str(repo / "tools/verify/hawking_terminology.py"), "--selfcheck"],
+            cwd=repo,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("PASS", result.stdout)
 
 
 if __name__ == "__main__":

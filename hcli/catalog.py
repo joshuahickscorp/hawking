@@ -1,9 +1,11 @@
-"""Every Hawking body a person could pick, named the way a person would pick it.
+"""Admitted Hawking bodies and separately discoverable source specimens.
 
 WHY A SEPARATE MODULE. `discover_models` already walks roots and identifies
 native profiles, MLX directories and GGUF files -- that part is not rebuilt here.
 What was missing is the bit a dropdown needs: a STABLE, SHORT, UNIQUE name per
 body, and a single list of explicitly admitted Gravity execution artifacts.
+ModelLake specimens remain visible as source identities but stay outside the
+executable catalog until a qualified execution binding is recorded.
 
 NAMES ARE IDENTITY, SO THEY MUST NOT COLLIDE OR DRIFT. A ModelLake specimen
 directory is `Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0`; nobody wants to read
@@ -19,6 +21,7 @@ its entries is worse than one that says the drive is unplugged.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -52,6 +55,9 @@ class Body:
     revision: str = ""
     source: str = "repo"           # repo | modellake | user
     detail: Dict[str, Any] = field(default_factory=dict)
+    admitted: bool = True
+    admission_reason: str = ""
+    supported_actions: tuple[str, ...] = ()
 
     def to_openai(self, *, loaded: bool = False) -> Dict[str, Any]:
         row = {
@@ -65,12 +71,16 @@ class Body:
                 "source": self.source,
                 "gb": round(self.bytes / 1e9, 2) if self.bytes else None,
                 "loaded": loaded,
+                "admitted": self.admitted,
+                "supported_actions": list(self.supported_actions),
             },
         }
         if self.revision:
             row["hawking"]["revision"] = self.revision
         if self.detail:
             row["hawking"]["artifact"] = dict(self.detail)
+        if self.admission_reason:
+            row["hawking"]["admission_reason"] = self.admission_reason
         return row
 
 
@@ -96,6 +106,20 @@ def _native_profiles(root: Path) -> List[Body]:
         except Exception:
             continue
         identity = str(data.get("resident_identity") or profile.stem)
+        qualification = data.get("qualification")
+        admission = data.get("admission") or {}
+        evidence = admission.get("evidence") or []
+        admitted = (
+            data.get("profile_schema") == "hcli.provider.profile.v1"
+            and data.get("provider") == "native"
+            and data.get("runtime") == "hawking-native"
+            and admission.get("status") == "ADMITTED"
+            and bool(admission.get("contract"))
+            and isinstance(evidence, list)
+            and bool(evidence)
+            and isinstance(qualification, str)
+            and bool(qualification.strip())
+        )
         out.append(Body(
             name=identity,
             path=str(profile),
@@ -104,9 +128,16 @@ def _native_profiles(root: Path) -> List[Body]:
             detail={
                 "family": data.get("family"),
                 "ebpw": data.get("physical_ebpw"),
-                "qualification": data.get("qualification"),
+                "qualification": qualification,
+                "admission_contract": admission.get("contract"),
+                "admission_evidence": evidence,
                 "greedy": (data.get("generation") or {}).get("do_sample") is False,
             },
+            admitted=admitted,
+            admission_reason=("" if admitted else
+                              "native profile has no explicit admitted contract and evidence"),
+            revision=hashlib.sha256(profile.read_bytes()).hexdigest(),
+            supported_actions=(("execute", "serve", "web") if admitted else ()),
         ))
     return out
 
@@ -138,11 +169,15 @@ def _modellake(root: Optional[Path] = None) -> List[Body]:
             bytes=_dir_bytes(entry),
             revision=revision,
             source="modellake",
+            admitted=False,
+            admission_reason=("ModelLake preserves the source specimen; no "
+                              "qualified Hawking execution binding is recorded"),
+            supported_actions=(),
         ))
     return out
 
 
-def _gravity_artifacts(path: Path = GRAVITY_REGISTRY) -> List[Body]:
+def _gravity_artifacts(path: Optional[Path] = None) -> List[Body]:
     """Read the small admitted-artifact registry used by normal execution.
 
     The ModelLake is deliberately not the default execution menu.  This
@@ -151,6 +186,7 @@ def _gravity_artifacts(path: Path = GRAVITY_REGISTRY) -> List[Body]:
     selector identity.  Missing or non-executable entries are omitted rather
     than surfaced as choices that will fail only after a click.
     """
+    path = GRAVITY_REGISTRY if path is None else path
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
@@ -188,12 +224,28 @@ def _gravity_artifacts(path: Path = GRAVITY_REGISTRY) -> List[Body]:
             continue
         detail = {
             key: value for key, value in entry.items()
-            if key not in {"id", "path", "kind", "status", "bytes"}
+            if key not in {
+                "id", "path", "kind", "status", "bytes", "revision",
+                "supported_actions",
+            }
         }
         detail.update({"status": status, "registry": str(path)})
+        revision = str(entry.get("revision") or "").strip()
+        actions = entry.get("supported_actions")
+        if not (
+            len(revision) == 64
+            and all(character in "0123456789abcdefABCDEF" for character in revision)
+            and isinstance(actions, list)
+            and actions
+            and all(action in {"execute", "serve", "web"} for action in actions)
+        ):
+            continue
         out.append(Body(name=name, path=str(resolved), kind=kind,
                         bytes=int(entry.get("bytes") or size),
-                        source="gravity", detail=detail))
+                        source="gravity", detail=detail,
+                        revision=revision.lower(),
+                        admitted=True,
+                        supported_actions=tuple(actions)))
     return out
 
 
@@ -234,8 +286,17 @@ def catalog(extra_roots: Optional[List[str]] = None, *, research: bool = False) 
             bodies.extend(_native_profiles(path.parent))
         elif (path / "config.json").is_file():
             bodies.append(Body(name=path.name, path=str(path), kind="mlx",
-                               bytes=_dir_bytes(path), source="user"))
-    return _deduplicate(bodies)
+                               bytes=_dir_bytes(path), source="user",
+                               admitted=False,
+                               admission_reason="no qualified execution binding"))
+    return _deduplicate([
+        body for body in bodies if body.admitted or research
+    ])
+
+
+def specimen_catalog() -> List[Body]:
+    """Discoverable source specimens kept outside executable selection."""
+    return _deduplicate([body for body in _modellake() if not body.admitted])
 
 
 def resolve(name: str, bodies: Optional[List[Body]] = None, *, research: bool = False) -> Optional[Body]:
@@ -273,4 +334,7 @@ def missing_sources() -> List[str]:
     if not MODELLAKE.is_dir():
         out.append(f"the ModelLake volume is not mounted ({MODELLAKE}), so no "
                    f"specimens are listed")
+    else:
+        out.append("ModelLake source specimens are listed separately and cannot be "
+                   "selected until a qualified execution binding exists")
     return out

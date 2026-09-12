@@ -14,6 +14,7 @@ No flags needed for any of it. Works from any directory.
 hcli web                    # browser chat, opens the tab
 hcli use                    # admitted Gravity bodies only
 hcli use KIMI_P0_OPERATIONAL # switch an admitted body when supported
+hcli web KIMI_P0_OPERATIONAL # ... starting on an exact admitted body
 hcli serve                  # endpoint only, no browser
 hcli report                 # measure the loaded body, writes a receipt
 hcli report KIMI_P0_OPERATIONAL # measure the admitted body
@@ -33,7 +34,7 @@ cd ~/Downloads/hawking && /usr/local/bin/python3.12 -m hcli install-shims
 ```
 
 That interpreter matters: the shims previously pointed at a venv with no `mlx`,
-which would have failed 53 of the 54 bodies at load while `python -m hcli` from
+which would have failed most ModelLake specimens at load while `python -m hcli` from
 the repo worked perfectly.
 
 Logs: `~/.hcli/web/serve.log`, `~/.hcli/web/webui.log`. Reports:
@@ -64,6 +65,9 @@ Open WebUI cannot accidentally offer raw ModelLake specimens, archived
 Ascension/Qwen3.8 artifacts, or an unqualified checkpoint. Research access is
 separate and explicit; the normal dropdown is an execution surface, not the
 scientific population.
+`hawking models` reports raw ModelLake downloads separately as source specimens.
+Selecting an admitted body binds its exact catalog path, revision, and supported
+action before the switch endpoint is called.
 
 Three rules the switch keeps:
 

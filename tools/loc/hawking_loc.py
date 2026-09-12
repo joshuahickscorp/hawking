@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -127,20 +128,165 @@ def git(args: list[str]) -> str:
 
 
 def line_count(rev: str | None, path: str) -> int:
+    return len(file_bytes(rev, path).split(b"\n")) - 1
+
+
+def file_bytes(rev: str | None, path: str) -> bytes:
     if rev is None:
         f = REPO / path
         try:
-            return len(f.read_bytes().split(b"\n")) - 1 if f.exists() else 0
+            return f.read_bytes() if f.exists() else b""
         except OSError:
-            return 0
+            return b""
     try:
-        blob = subprocess.run(
+        return subprocess.run(
             ["git", "-C", str(REPO), "show", f"{rev}:{path}"],
             capture_output=True, check=True,
         ).stdout
     except subprocess.CalledProcessError:
+        return b""
+
+
+def rust_test_excluding_count(source: bytes) -> int:
+    """Count physical Rust lines outside items guarded by ``cfg(test)``.
+
+    This is a deliberately stable syntactic census rather than a build-profile
+    estimate. It excludes the cfg attribute, adjacent attributes and the whole
+    following item. Braces inside ordinary strings and comments are ignored so
+    an assertion message cannot alter the measured item boundary.
+    """
+    lines = source.split(b"\n")[:-1]
+    text = [line.decode("utf-8", "replace") for line in lines]
+    shape: list[str] = []
+    block_comment_depth = 0
+    raw_terminator = ""
+    for line in text:
+        out: list[str] = []
+        index = 0
+        in_string = False
+        escaped = False
+        while index < len(line):
+            pair = line[index:index + 2]
+            char = line[index]
+            if raw_terminator:
+                if line.startswith(raw_terminator, index):
+                    index += len(raw_terminator)
+                    raw_terminator = ""
+                else:
+                    index += 1
+                out.append(" ")
+                continue
+            if block_comment_depth:
+                if pair == "/*":
+                    block_comment_depth += 1
+                    index += 2
+                elif pair == "*/":
+                    block_comment_depth -= 1
+                    index += 2
+                else:
+                    index += 1
+                continue
+            if in_string:
+                out.append(" ")
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == '"':
+                    in_string = False
+                index += 1
+                continue
+            raw = re.match(r'(?:br|r)(?P<hashes>#{0,255})"', line[index:])
+            if raw:
+                raw_terminator = '"' + raw.group("hashes")
+                width = raw.end()
+                out.extend(" " * width)
+                index += width
+                continue
+            char_literal = re.match(r"'(?:\\.|[^\\'])'", line[index:])
+            if char_literal:
+                width = char_literal.end()
+                out.extend(" " * width)
+                index += width
+                continue
+            if pair == "//":
+                break
+            if pair == "/*":
+                block_comment_depth = 1
+                index += 2
+                continue
+            if char == '"':
+                in_string = True
+                out.append(" ")
+            else:
+                out.append(char)
+            index += 1
+        shape.append("".join(out))
+
+    excluded: set[int] = set()
+    index = 0
+    while index < len(shape):
+        stripped = shape[index].strip()
+        if not stripped.startswith("#[cfg"):
+            index += 1
+            continue
+        attribute_end = index
+        attribute = stripped
+        while "]" not in attribute and attribute_end + 1 < len(shape):
+            attribute_end += 1
+            attribute += shape[attribute_end].strip()
+        if "test" not in attribute:
+            index = attribute_end + 1
+            continue
+
+        item_start = attribute_end + 1
+        while item_start < len(shape) and (
+            not shape[item_start].strip()
+            or shape[item_start].lstrip().startswith("#")
+        ):
+            item_start += 1
+        end = item_start
+        depth = 0
+        opened = False
+        while end < len(shape):
+            code = shape[end]
+            if not opened and ";" in code and "{" not in code:
+                break
+            opens = code.count("{")
+            closes = code.count("}")
+            if opens:
+                opened = True
+            depth += opens - closes
+            if opened and depth <= 0:
+                break
+            end += 1
+        excluded.update(range(index, min(end + 1, len(shape))))
+        index = max(end + 1, index + 1)
+    return len(lines) - len(excluded)
+
+
+def strict_runtime_count(rev: str | None, path: str, *, test_file: bool) -> int:
+    """Physical runtime lines with path tests and inline Rust tests removed."""
+    if test_file:
         return 0
-    return len(blob.split(b"\n")) - 1
+    source = file_bytes(rev, path)
+    if path.endswith(".rs"):
+        return rust_test_excluding_count(source)
+    return len(source.split(b"\n")) - 1
+
+
+def rust_python_composition(langs: dict[str, int], scope: str) -> dict:
+    """Report the Rust mandate without changing the established LOC policy."""
+    rust = langs.get("rust", 0)
+    python = langs.get("python", 0)
+    denominator = rust + python
+    return {
+        "scope": scope,
+        "rust_LOC": rust,
+        "python_LOC": python,
+        "denominator_LOC": denominator,
+        "rust_percent": round((100.0 * rust / denominator), 6) if denominator else None,
+    }
 
 
 def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
@@ -161,6 +307,10 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
     product_loc = 0
     product_files = 0
     product_langs: dict[str, int] = {}
+    strict_runtime_langs: dict[str, int] = {}
+    strict_product_langs: dict[str, int] = {}
+    strict_runtime_loc = 0
+    strict_product_loc = 0
     n_active = 0
 
     for path in files:
@@ -179,14 +329,20 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
         langs[lang] = langs.get(lang, 0) + n
         sub = subsystem(path)
         subs[sub] = subs.get(sub, 0) + n
-        if is_test(path):
+        test_file = is_test(path)
+        if test_file:
             test_loc += n
         else:
             runtime_loc += n
+        strict_n = strict_runtime_count(rev, path, test_file=test_file)
+        strict_runtime_loc += strict_n
+        strict_runtime_langs[lang] = strict_runtime_langs.get(lang, 0) + strict_n
         if is_product(path):
             product_loc += n
             product_files += 1
             product_langs[lang] = product_langs.get(lang, 0) + n
+            strict_product_loc += strict_n
+            strict_product_langs[lang] = strict_product_langs.get(lang, 0) + strict_n
 
     combined = sum(langs.values())
     return {
@@ -202,9 +358,29 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
         "laboratory_LOC": subs.get("laboratory", 0),
         "test_LOC": test_loc,
         "runtime_LOC": runtime_loc,
+        "test_excluding_runtime_LOC": strict_runtime_loc,
+        "inline_or_path_test_LOC": combined - strict_runtime_loc,
         "product_LOC": product_loc,
+        "test_excluding_product_LOC": strict_product_loc,
         "product_files": product_files,
         "product_by_language": dict(sorted(product_langs.items())),
+        "test_excluding_runtime_by_language": dict(sorted(strict_runtime_langs.items())),
+        "test_excluding_product_by_language": dict(sorted(strict_product_langs.items())),
+        "rust_python_composition": rust_python_composition(
+            langs, "all active tracked first-party Rust and Python physical lines"
+        ),
+        "product_rust_python_composition": rust_python_composition(
+            product_langs,
+            "minimum-product Rust and Python physical lines selected by is_product",
+        ),
+        "test_excluding_runtime_rust_python_composition": rust_python_composition(
+            strict_runtime_langs,
+            "active first-party runtime lines after path tests and inline cfg(test) Rust items are excluded",
+        ),
+        "test_excluding_product_rust_python_composition": rust_python_composition(
+            strict_product_langs,
+            "minimum-product runtime lines after path tests and inline cfg(test) Rust items are excluded",
+        ),
         "generated_LOC": buckets.get("generated", 0),
         "archived_LOC": buckets.get("archived", 0),
         "vendored_LOC": buckets.get("vendored", 0),
@@ -217,6 +393,9 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
             "include_untracked_active_source": include_untracked,
             "languages": sorted(set(LANGS.values())),
             "excluded_buckets": ["vendored", "generated", "archived", "build"],
+            "included_paths": "tracked active source extensions in LANGS",
+            "test_excluding_rule": "exclude test/bench paths and complete Rust items carrying cfg(test)",
+            "minimum_product_paths": "hcli non-test Python plus crates/*/src and crates/*/shaders, excluding examples, benches and tests",
             "no_gaming": (
                 "physical lines only; comment stripping, line packing, minification, "
                 "extension renaming and moving code out of the tree change nothing"
@@ -251,6 +430,17 @@ def main() -> int:
     print(f"minimum product LOC: {r['product_LOC']:,}  in {r['product_files']:,} files")
     for k, v in r["by_language"].items():
         print(f"  {k:<12} {v:>9,}")
+    for label, key in (
+        ("active Rust/Python", "rust_python_composition"),
+        ("product Rust/Python", "product_rust_python_composition"),
+        ("strict runtime Rust/Python", "test_excluding_runtime_rust_python_composition"),
+        ("strict product Rust/Python", "test_excluding_product_rust_python_composition"),
+    ):
+        row = r[key]
+        print(
+            f"{label}: {row['rust_LOC']:,} / {row['denominator_LOC']:,} "
+            f"Rust ({row['rust_percent']:.2f}%)"
+        )
     print("subsystem:")
     for k, v in r["by_subsystem"].items():
         print(f"  {k:<12} {v:>9,}")
@@ -278,8 +468,17 @@ def _selfcheck() -> None:
     assert is_product("crates/hawking-core/src/lib.rs")
     assert is_product("hcli/engine.py")
     assert is_product("hcli/agentos/vmcp/file_eye.py")
+    assert rust_python_composition({"rust": 3, "python": 1}, "test") == {
+        "scope": "test",
+        "rust_LOC": 3,
+        "python_LOC": 1,
+        "denominator_LOC": 4,
+        "rust_percent": 75.0,
+    }
     assert not is_product("crates/hawking-core/examples/flash_fast_chain.rs")
     assert not is_product("research/lab/runtime.py")
+    fixture = b"pub fn live() {}\n#[cfg(test)]\nmod tests {\n  #[test]\n  fn check() { assert_eq!(\"}\", \"}\"); }\n}\npub fn after() {}\n"
+    assert rust_test_excluding_count(fixture) == 2
     print("selfcheck ok")
 
 

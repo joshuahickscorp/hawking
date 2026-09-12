@@ -7,6 +7,7 @@ mod capture;
 use anyhow::Result;
 use clap::{Args, Parser, Subcommand};
 use std::collections::BTreeMap;
+use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -263,7 +264,7 @@ struct ServeArgs {
     /// Serve a sealed `.gravity` / activation-aware artifact (directory or shard
     /// file). Also accepted via env `HAWKING_GRAVITY`; the first ordered shard in
     /// a valid model directory is resolved before the real server starts.
-    #[arg(long, visible_alias = "artifact", value_name = "PATH")]
+    #[arg(long = "artifact", visible_alias = "gravity", value_name = "PATH")]
     gravity: Option<PathBuf>,
     #[command(flatten)]
     controls: ServeControls,
@@ -399,8 +400,110 @@ enum GravityCmd {
     Verify(GravityVerifyArgs),
 }
 
+#[derive(Subcommand, Debug, Clone, Copy, PartialEq, Eq)]
+enum SelectAction {
+    /// Open the selected artifact in Hawking's local terminal surface.
+    Execute,
+    /// Start the configured headless service with this artifact.
+    Serve,
+    /// Start or reuse the configured service and open Hawking Web.
+    Web,
+}
+
+impl SelectAction {
+    fn id(self) -> &'static str {
+        match self {
+            Self::Execute => "execute",
+            Self::Serve => "serve",
+            Self::Web => "web",
+        }
+    }
+
+    fn hcli_verb(self) -> Option<&'static str> {
+        match self {
+            Self::Execute => None,
+            Self::Serve => Some("serve"),
+            Self::Web => Some("web"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+enum PublicActionBinding {
+    Native,
+    HcliCompatibilityAdapter,
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+struct PublicActionSpec {
+    id: &'static str,
+    category: &'static str,
+    invocation: &'static str,
+    binding: PublicActionBinding,
+    implemented: bool,
+}
+
+const PUBLIC_ACTIONS: &[PublicActionSpec] = &[
+    PublicActionSpec {
+        id: "gravity",
+        category: "gravity",
+        invocation: "hawking gravity",
+        binding: PublicActionBinding::Native,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "models",
+        category: "models",
+        invocation: "hawking models",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.execute",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> execute",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.serve",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> serve",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.web",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> web",
+        binding: PublicActionBinding::HcliCompatibilityAdapter,
+        implemented: true,
+    },
+];
+
 #[derive(Subcommand, Debug)]
 enum Cmd {
+    /// List exact artifact identities known to Hawking.
+    Models {
+        /// Emit the shared catalog as JSON for menus and automation.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+        /// Resident URL used only to mark the currently loaded artifact.
+        #[arg(long, default_value = "http://127.0.0.1:8011/v1")]
+        base: String,
+    },
+    /// Select one artifact for one explicit action in this invocation.
+    Select {
+        artifact: String,
+        #[command(subcommand)]
+        action: SelectAction,
+    },
+    /// Print the CLI action metadata projection available to launchers and menus.
+    Actions {
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
     /// Start the OpenAI-compatible HTTP server. For sealed Gravity artifacts,
     /// prefer `hawking gravity serve --artifact <PATH>`; this compatibility form
     /// retains the historical `--gravity` and `HAWKING_GRAVITY` selectors.
@@ -845,6 +948,42 @@ fn main() -> Result<()> {
     );
     apply_profile(&cli.profile, announce_profile);
     match cli.cmd {
+        Cmd::Models { json, base } => {
+            let mut args = vec!["models".to_owned(), "--include-specimens".to_owned()];
+            if json {
+                args.push("--json".to_owned());
+            }
+            args.push("--base".to_owned());
+            args.push(base);
+            run_hcli_public_action_owned("models", args)
+        }
+        Cmd::Select { artifact, action } => {
+            let resolved = resolve_hcli_artifact(&artifact)?;
+            if !resolved
+                .supported_actions
+                .iter()
+                .any(|supported| supported == action.id())
+            {
+                return Err(anyhow::anyhow!(
+                    "artifact revision {} does not support action {}",
+                    resolved.revision,
+                    action.id()
+                ));
+            }
+            if matches!(action, SelectAction::Execute) && !std::io::stdin().is_terminal() {
+                return Err(anyhow::anyhow!(
+                    "select ... execute requires an interactive terminal; automation must use serve or web"
+                ));
+            }
+            let mut args = Vec::new();
+            if let Some(verb) = action.hcli_verb() {
+                args.push(verb.to_owned());
+            }
+            args.push("--model".to_owned());
+            args.push(resolved.path);
+            run_hcli_public_action_owned("select", args)
+        }
+        Cmd::Actions { json } => public_actions_main(json),
         Cmd::Serve(args)
         | Cmd::Gravity {
             command: Some(GravityCmd::Serve(args)),
@@ -1342,6 +1481,188 @@ fn main() -> Result<()> {
             max_context,
             concurrency,
         } => fit_main(weights, intent, max_context, concurrency),
+    }
+}
+
+fn public_actions_main(json: bool) -> Result<()> {
+    if json {
+        println!("{}", serde_json::to_string_pretty(PUBLIC_ACTIONS)?);
+    } else {
+        for action in PUBLIC_ACTIONS {
+            println!("{:<18} {}", action.id, action.invocation);
+        }
+    }
+    Ok(())
+}
+
+fn run_hcli_public_action_owned(label: &str, args: Vec<String>) -> Result<()> {
+    let python = hawking_python();
+    let mut command = std::process::Command::new(&python);
+    configure_hcli_adapter(&mut command)?;
+    let status = command
+        .arg("-m")
+        .arg("hcli")
+        .args(&args)
+        .status()
+        .map_err(|error| {
+            anyhow::anyhow!(
+                "could not start Hawking {label} through the hcli compatibility adapter: {error}"
+            )
+        })?;
+    if !status.success() {
+        return Err(anyhow::anyhow!("Hawking {label} exited with {status}"));
+    }
+    Ok(())
+}
+
+fn hawking_python() -> std::ffi::OsString {
+    std::env::var_os("HAWKING_PYTHON").unwrap_or_else(|| "python3".into())
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct ResolvedHcliArtifact {
+    path: String,
+    revision: String,
+    supported_actions: Vec<String>,
+}
+
+fn parse_hcli_artifact(value: &serde_json::Value) -> Result<ResolvedHcliArtifact> {
+    if value.get("schema").and_then(serde_json::Value::as_str)
+        != Some("hawking.artifact_selection.v1")
+    {
+        return Err(anyhow::anyhow!(
+            "artifact resolver returned an unknown schema"
+        ));
+    }
+    let path = value
+        .get("path")
+        .and_then(serde_json::Value::as_str)
+        .filter(|path| !path.is_empty())
+        .map(str::to_owned)
+        .ok_or_else(|| anyhow::anyhow!("artifact resolver omitted the exact path"))?;
+    let revision = value
+        .get("revision")
+        .and_then(serde_json::Value::as_str)
+        .filter(|revision| {
+            revision.len() == 64 && revision.bytes().all(|byte| byte.is_ascii_hexdigit())
+        })
+        .map(str::to_owned)
+        .ok_or_else(|| anyhow::anyhow!("artifact resolver omitted an exact SHA-256 revision"))?;
+    let supported_actions = value
+        .get("supported_actions")
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| anyhow::anyhow!("artifact resolver omitted supported actions"))?
+        .iter()
+        .map(|action| {
+            action
+                .as_str()
+                .map(str::to_owned)
+                .ok_or_else(|| anyhow::anyhow!("artifact resolver returned a non-string action"))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(ResolvedHcliArtifact {
+        path,
+        revision,
+        supported_actions,
+    })
+}
+
+fn resolve_hcli_artifact(artifact: &str) -> Result<ResolvedHcliArtifact> {
+    let mut command = std::process::Command::new(hawking_python());
+    configure_hcli_adapter(&mut command)?;
+    let output = command
+        .args(["-m", "hcli", "models", artifact, "--resolve-only"])
+        .output()
+        .map_err(|error| anyhow::anyhow!("could not resolve Hawking artifact: {error}"))?;
+    if !output.status.success() {
+        let reason = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+        return Err(anyhow::anyhow!(
+            "artifact selection refused: {}",
+            if reason.is_empty() {
+                output.status.to_string()
+            } else {
+                reason
+            }
+        ));
+    }
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout)
+        .map_err(|error| anyhow::anyhow!("artifact resolver returned invalid JSON: {error}"))?;
+    parse_hcli_artifact(&value)
+}
+
+fn configure_hcli_adapter(command: &mut std::process::Command) -> Result<()> {
+    let configured = std::env::var_os("HAWKING_HCLI_ROOT").map(PathBuf::from);
+    let source_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .map(Path::to_path_buf);
+    let root = configured
+        .or(source_root)
+        .ok_or_else(|| anyhow::anyhow!("Hawking HCLI adapter root is unavailable"))?;
+    if !root.join("hcli/__main__.py").is_file() {
+        return Err(anyhow::anyhow!(
+            "Hawking HCLI adapter is absent at {}; set HAWKING_HCLI_ROOT to the paired source root",
+            root.display()
+        ));
+    }
+    let mut paths = vec![root];
+    if let Some(existing) = std::env::var_os("PYTHONPATH") {
+        paths.extend(std::env::split_paths(&existing));
+    }
+    command.env("PYTHONPATH", std::env::join_paths(paths)?);
+    Ok(())
+}
+
+#[cfg(test)]
+mod public_surface_tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    #[test]
+    fn typed_public_actions_have_unique_ids() {
+        let ids = PUBLIC_ACTIONS
+            .iter()
+            .map(|action| action.id)
+            .collect::<BTreeSet<_>>();
+        assert_eq!(ids.len(), PUBLIC_ACTIONS.len());
+        assert!(PUBLIC_ACTIONS.iter().all(|action| action.implemented));
+    }
+
+    #[test]
+    fn select_grammar_is_artifact_then_action() {
+        let cli = Cli::try_parse_from(["hawking", "select", "sealed-3.14", "web"]).unwrap();
+        assert!(matches!(
+            cli.cmd,
+            Cmd::Select {
+                artifact,
+                action: SelectAction::Web,
+            } if artifact == "sealed-3.14"
+        ));
+    }
+
+    #[test]
+    fn select_requires_an_action() {
+        assert!(Cli::try_parse_from(["hawking", "select", "sealed-3.14"]).is_err());
+    }
+
+    #[test]
+    fn resolver_contract_requires_revision_and_actions() {
+        let value = serde_json::json!({
+            "schema": "hawking.artifact_selection.v1",
+            "path": "/tmp/profile.json",
+            "revision": "a".repeat(64),
+            "supported_actions": ["serve"]
+        });
+        let parsed = parse_hcli_artifact(&value).unwrap();
+        assert_eq!(parsed.path, "/tmp/profile.json");
+        assert_eq!(parsed.supported_actions, vec!["serve"]);
+
+        let missing_revision = serde_json::json!({
+            "schema": "hawking.artifact_selection.v1",
+            "path": "/tmp/profile.json",
+            "supported_actions": ["serve"]
+        });
+        assert!(parse_hcli_artifact(&missing_revision).is_err());
     }
 }
 

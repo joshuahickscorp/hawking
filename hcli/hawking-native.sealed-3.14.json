@@ -27,6 +27,14 @@
   "executable_profile": "release-fast",
   "physical_ebpw": 3.1393,
   "qualification": "capability 30/43 historical sealed contract",
+  "admission": {
+    "status": "ADMITTED",
+    "contract": "historical_capability",
+    "evidence": [
+      "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+      "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+    ]
+  },
   "current_runtime": {
     "complete_tps_current_measured": 24.4086,
     "complete_tps_historical_qualified": 34.0,

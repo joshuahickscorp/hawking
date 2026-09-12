@@ -19,6 +19,7 @@ use std::mem::size_of;
 use crate::gravity_deepseek_v4::{
     DeepSeekV4FullStreamReader, NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
 };
+use crate::gravity_deepseek_v4_attention_device::DeepSeekV4Ratio0AttentionDeviceExecutor;
 use crate::gravity_deepseek_v4_bos_layer_attention_device::expected_bos_compress_ratio;
 use crate::gravity_deepseek_v4_layer0_continuation::{
     verify_layer0_position1_continuation_anchors, yarn_rope_table_for_position_verified,
@@ -379,6 +380,15 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
         token_position: usize,
         kv_cache: &mut DeepSeekV4FullseqLayerKvCache,
     ) -> Result<DeepSeekV4FullseqAttentionDeviceOutput> {
+        if self.compress_ratio == 0 {
+            // This executes before any Metal encoding, so an illegal semantic
+            // boundary or schedule prevents the real ratio-zero graph from running.
+            let _execution_contract = DeepSeekV4Ratio0AttentionDeviceExecutor::prepare(
+                &self.catalog,
+                self.layer,
+                token_position,
+            )?;
+        }
         if context_queue_identity(metal) != self.context_queue_identity {
             return Err(fullseq_error(
                 "fullseq attention requires its preparation MetalContext/queue",

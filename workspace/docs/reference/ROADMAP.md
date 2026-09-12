@@ -10,6 +10,18 @@ release , not new features.
 
 ## Near term
 
+- Integrate the Hawking core-unification commits after reconciling their
+  public-surface overlap with the active Flash lane. The native DeepSeek-V4
+  legal-region files did not overlap the dirty main set at handoff, but still
+  need verification on the exact committed integration base before changing a
+  resident.
+- Extend the native legal-region validator from the ratio-zero attention
+  preparation seam to PhysicalGraph lowering and execution receipts. Structural
+  validation remains plan-only until backend execution and numerical gates pass.
+- Recover the authoritative Hawking Web frontend source before projecting the
+  typed `hawking actions` catalog into menus. The committed checkout contains a
+  built bundle and source map, which are not acceptable edit authorities.
+
 - Bring the docs back in line with the code. `ARCHITECTURE.md` and `MODELS.md` still
   describe Gemma 2, Phi-3, OLMoE, Mamba2 and Mixtral as part of the engine; those adapters
   were moved out of the tree into `packs/hawking-adapters-extra.json`.
