@@ -8,14 +8,14 @@ not authorize a merge, deployment, resident restart or live-state migration.
 - Base: `ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e`
 - Worktree: `/Users/scammermike/Downloads/hawking/.worktrees/hawking-core-unification`
 - Branch: `codex/hawking-core-unification`
-- Implementation tip: `1146b6201a269341c96553ce73d0b4794dfecb99`
+- Implementation tip: `1146b62012577ca12d6dba26af5d8ed8318b611f`
 - `c1cc507fe41273b9366fbcbf5cf33d9898b62065` — accepted vocabulary,
   migration authority, architecture ownership and reproducible language census.
 - `3914e2acf9d7891294d4b68258d0f0ce12f1b48c` — first native Gravity
   legal-region contract and ratio-zero plan adapter.
 - `635bcf77b64a2d21c6df703fabe6f570a14e8b10` — first Hawking
   model/action surface and admitted/specimen split.
-- `1146b6201a269341c96553ce73d0b4794dfecb99` — connects the native contract
+- `1146b62012577ca12d6dba26af5d8ed8318b611f` — connects the native contract
   to the real full-sequence ratio-zero caller, closes validation gaps, hardens
   exact artifact selection and records the reviewed limitations.
 
