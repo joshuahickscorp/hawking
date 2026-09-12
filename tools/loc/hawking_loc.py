@@ -143,6 +143,20 @@ def line_count(rev: str | None, path: str) -> int:
     return len(blob.split(b"\n")) - 1
 
 
+def rust_python_composition(langs: dict[str, int], scope: str) -> dict:
+    """Report the Rust mandate without changing the established LOC policy."""
+    rust = langs.get("rust", 0)
+    python = langs.get("python", 0)
+    denominator = rust + python
+    return {
+        "scope": scope,
+        "rust_LOC": rust,
+        "python_LOC": python,
+        "denominator_LOC": denominator,
+        "rust_percent": round((100.0 * rust / denominator), 6) if denominator else None,
+    }
+
+
 def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
     if rev is None:
         files = git(["ls-files"]).splitlines()
@@ -205,6 +219,13 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
         "product_LOC": product_loc,
         "product_files": product_files,
         "product_by_language": dict(sorted(product_langs.items())),
+        "rust_python_composition": rust_python_composition(
+            langs, "all active tracked first-party Rust and Python physical lines"
+        ),
+        "product_rust_python_composition": rust_python_composition(
+            product_langs,
+            "minimum-product Rust and Python physical lines selected by is_product",
+        ),
         "generated_LOC": buckets.get("generated", 0),
         "archived_LOC": buckets.get("archived", 0),
         "vendored_LOC": buckets.get("vendored", 0),
@@ -251,6 +272,15 @@ def main() -> int:
     print(f"minimum product LOC: {r['product_LOC']:,}  in {r['product_files']:,} files")
     for k, v in r["by_language"].items():
         print(f"  {k:<12} {v:>9,}")
+    for label, key in (
+        ("active Rust/Python", "rust_python_composition"),
+        ("product Rust/Python", "product_rust_python_composition"),
+    ):
+        row = r[key]
+        print(
+            f"{label}: {row['rust_LOC']:,} / {row['denominator_LOC']:,} "
+            f"Rust ({row['rust_percent']:.2f}%)"
+        )
     print("subsystem:")
     for k, v in r["by_subsystem"].items():
         print(f"  {k:<12} {v:>9,}")
@@ -278,6 +308,13 @@ def _selfcheck() -> None:
     assert is_product("crates/hawking-core/src/lib.rs")
     assert is_product("hcli/engine.py")
     assert is_product("hcli/agentos/vmcp/file_eye.py")
+    assert rust_python_composition({"rust": 3, "python": 1}, "test") == {
+        "scope": "test",
+        "rust_LOC": 3,
+        "python_LOC": 1,
+        "denominator_LOC": 4,
+        "rust_percent": 75.0,
+    }
     assert not is_product("crates/hawking-core/examples/flash_fast_chain.rs")
     assert not is_product("research/lab/runtime.py")
     print("selfcheck ok")

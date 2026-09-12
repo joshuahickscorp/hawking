@@ -734,9 +734,11 @@ def test_flash_router_selection_applies_stable_fp32_softmax_top_k_and_normalizat
 
 
 def test_canonical_nomenclature_is_versioned_without_renaming_legacy_terms():
-    assert NOMENCLATURE_VERSION == "HAWKING_NOMENCLATURE_V1"
+    assert NOMENCLATURE_VERSION == "HAWKING_NOMENCLATURE_V2"
     assert CANONICAL_PIPELINE[0] == "SourceSpecimen"
     assert CANONICAL_PIPELINE[-1] == "ResidentInstance"
+    assert "Singularity" not in CANONICAL_PIPELINE
+    assert CANONICAL_PIPELINE[1:3] == ("Gravity", "NR")
     assert COMPATIBILITY_ALIASES["quantization"] == "GravityOperator"
     assert COMPATIBILITY_ALIASES["artifact"] == "SemanticInspectionRequired"
     graph = compile_physical_graph({"model_id": "flash-next", "organs": []})

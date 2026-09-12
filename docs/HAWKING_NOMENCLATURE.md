@@ -1,124 +1,128 @@
-# Hawking Nomenclature — Canonical Paradigm
+# Hawking nomenclature and migration map
 
-**Status:** current forward vocabulary
-**Version:** `HAWKING_NOMENCLATURE_V1`
-**Scope:** active HCLI, Flash-Next, Gravity, Noetic, accelerator, and resident
-work. Historical receipts and sealed identifiers remain unchanged.
+**Status:** forward vocabulary and implementation migration authority
 
-This is a glossary and semantic contract, not a second roadmap. The existing
-campaign canons and handoffs remain historical sources; new work uses this
-vocabulary and carries `nomenclature_version`.
+**Version:** `HAWKING_NOMENCLATURE_V2`
 
-## The canonical pipeline
+**Base:** `ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e`
+
+This updates the existing nomenclature contract. It is not another Hawking
+constitution or a second registry. Historical receipts, schemas, hashes and
+paths retain their original bytes and names.
+
+## One system
+
+Hawking is the complete local physical AI environment. `hawkingd` is its
+persistent operating owner. Hawking Web and Hawking CLI are interaction
+surfaces. HCLI, HIDE and AgentOS remain implementation or compatibility names
+where removing them would break a real interface; they are not peer products.
+
+Gravity is Hawking's science and machinery for discovering the
+capability-preserving cognitive, representational, executable and physical
+form best suited to an objective and machine.
+
+Collapse is the transformation Gravity performs. It is not a service,
+registry, qualification, or artifact kind. Nova is the Gravity transformation
+class that changes the learned organism and records parent-to-descendant
+lineage.
+
+## Canonical lifecycle
 
 ```text
-SOURCE SPECIMEN
-      ↓
-DOCTOR
-      ↓
-GRAVITY
-      ↓
-NOETIC IR / NOETIC PROGRAM
-      ↓
-NOETIC COMPILER
-      ↓
-PHYSICAL GRAPH COMPILER
-      ↓
-HAWKING ACCELERATOR
-      ↓
-NOETIC EXECUTABLE CANDIDATES
-      ↓
-PARETO FRONTIER
-      ↓
-SINGULARITY
-      ↓
-RESIDENT
+Source Specimen
+    -> Gravity
+    -> NR revision
+    -> physical plan and backend programs
+    -> NX candidate
+    -> qualification and Pareto comparison
+    -> selected NX for an execution profile
+    -> resident instance
 ```
 
-## Canonical meanings
+An **NR** is a mutable, inspectable, portable semantic organism with an
+identifiable revision. An **NX** is an immutable deployment realization of one
+exact NR revision and explicit contract. Its complete dependency closure is
+accounted even when immutable shared dependencies are referenced by identity.
+Mutable KV, recurrent, routing and session state belongs to an NX instance;
+its layout and transition rules belong to the NX contract.
 
-| Term | Meaning | Hawking boundary |
-|---|---|---|
-| **Source Specimen** | The cold, pinned source checkpoint from which a candidate is derived. | The exact Flash-Next ModelLake specimen and manifest are a Source Specimen. |
-| **Doctor** | Measures, prescribes, verifies, and rejects. | Doctor is a mechanism on the Gravity/Noetic line, not a model or campaign brand. |
-| **Gravity** | The process/search engine for capability-preserving reduction of physical cost. Quantization is one Gravity operator. | Gravity is not a file format. Existing `.gravity` formats and `hawking.gravity.*` schemas are compatibility-preserved historical/runtime identifiers. |
-| **Noetic IR / Noetic Program** | The representation and executable-intelligence ontology of a candidate. It can contain tensors, codebooks, routing, state, generators, graphs, and policies; it need not be a tensor. | `hcli.noetic.representation_descriptor.v1` is the active descriptor boundary for Flash experiments. |
-| **Noetic Executable** | A complete runnable bundle independent of the cold Source Specimen. | A complete Flash bundle is not yet built; `FLASH_NEXT_NOETIC_EXECUTABLE.json` is an explicitly refused scaffold. |
-| **Noetic Executable Candidate** | A qualified, runnable candidate under consideration for a product/machine profile. | Bounded Flash Q4 transform, loader, and kernel receipts are evidence for a candidate component, not a complete candidate. |
-| **Physical Graph Compiler** | Lowers Noetic structure into device dataflow, placement, synchronization, and kernel calls. | `hcli.physical_graph.v1` remains a planning boundary until execution evidence exists. |
-| **Hawking Accelerator** | The physical execution substrate: Metal/GPU and any future governed accelerator backend. | A Metal dispatch receipt is physical component evidence; it is not a full model runtime receipt. |
-| **Pareto Frontier** | The set of non-dominated qualified Noetic Executables across the measured objective dimensions. | EBPW, accepted TPS, capability, memory, and product constraints must be considered together. |
-| **Pareto Archive** | The durable record of frontier candidates and their rejection/qualification reasons. | Older Pareto tables remain readable; they are not silently renamed or rewritten. |
-| **Singularity** | One Noetic Executable promoted from the Pareto Frontier for an explicit product contract, capability contract, machine genome, and execution profile. | No Singularity is selected by the current Flash scaffold. |
-| **Singularity Profile** | The explicit identity of the product/machine/execution profile that justifies a Singularity choice. | A future selection must include profile identity; “best model” is not an identity. |
-| **Resident** | The currently instantiated/running Noetic Executable. | The sealed Qwen resident is the current local default profile, not an HCLI type assumption. |
+Odyssey is population science and transfer/falsification inside Gravity.
+ModelLake owns source/specimen identity, storage, retention and provenance. A
+download is not an admitted runtime body. Pulsar, Magnetar and Themis are
+machine-relative roles for fast work, deep cognition and independent
+adjudication.
+
+## Internal contracts
+
+| Contract | Responsibility |
+|---|---|
+| MachineGenome | Measured machine identity, capabilities, constraints, freshness and evidence tier. |
+| PhysicalGraph | Planning projection over stable semantic identities, placement, state/effects and synchronization. |
+| HWIR | Spatial/hardware lowering where a backend needs typed streams and resource constraints. It is not mandatory for CPU, Metal or ANE. |
+| MegaKernel | Explicit semantic operations and effects, stage annotations, legal regions, selected schedules and backend programs. It does not require one shader or minimum dispatch count. |
+
+`LOAD`, `DECODE`, `ROUTE`, `PROJECT`, `ACCUMULATE`, `STATE_UPDATE` and
+`SAMPLE` are MegaKernel annotations. Exact operator semantics remain below
+them. Representation decode and autoregressive token decode must use distinct
+operator identities.
+
+## Migration map
+
+The map is the implementation crosswalk. Status is updated only when callers,
+compatibility and tests support the claim.
+
+| Class | Old identity | Canonical owner | Actual callers/dependencies | Compatibility and tests | Status and removal condition |
+|---|---|---|---|---|---|
+| SEMANTIC_CHANGE | Product-level HCLI / HIDE | Hawking CLI / Hawking Web | `pyproject.toml`, `hcli.cli`, `hcli.web`, Rust `hawking`, OpenWebUI | Keep `hcli`, `jhcli`, package and environment spellings until isolated install, command and permission parity pass. | IN_PROGRESS; retire public framing after all installed entry points forward to Hawking. |
+| OWNER_CONSOLIDATION | AgentOS as peer product | Hawking internal capability/authority machinery | `hcli.agentos`, tools, WorkUnits, resident supervisor | Preserve imports and authority gates; update forward help/docs. | IN_PROGRESS; namespace may remain indefinitely while peer-product language disappears. |
+| OWNER_CONSOLIDATION | Deep Gravity and Model/Context/State Gravity | Gravity runs with explicit target, budget and policy | Gravity tools, plans and historical receipts | Preserve command/schema/history aliases; new public definitions use Gravity. | IN_PROGRESS; remove a live duplicate engine only after its callers use the canonical owner. |
+| RENAME_ONLY | Doctor / Tabula product framing | Gravity discovery and diagnosis | `tools.doctor`, `tools.future.tabula`, tool registry | Keep exact tool entry points; describe them as Gravity operations. | PLANNED; remove aliases only after caller census reaches zero. |
+| SEMANTIC_CHANGE | transient Noetic pipeline vocabulary | NR revision -> physical plan -> NX candidate | `hcli.nomenclature`, artifact loaders, PhysicalGraph and receipts | V1 remains readable; V2 is emitted by new serializers. | IN_PROGRESS; old schemas remain historical compatibility forever. |
+| RENAME_ONLY | Singularity / Singularity Profile | selected NX / execution profile | nomenclature module, roadmap prose, historical selection records | Read aliases as `SelectedNX` / `ExecutionProfile`; never rewrite receipts. | IN_PROGRESS; remove public use when bounded terminology check is green. |
+| OWNER_CONSOLIDATION | Event Horizon as current subsystem | Gravity repository/tool consolidation | roadmap lineage and archive records | Preserve campaign names and evidence paths. | ACCEPTED; no current runtime owner may be created under this name. |
+| OWNER_CONSOLIDATION | Multiple machine-genome representations | Machine facts with specialized measured producers and compatibility projections | `hcli.machine`, `hcli.genomes`, `tools.accelerator.machine_genome`, placement | Preserve freshness and evidence-tier gates; never let a compatibility bag become admission authority. | PLANNED; consolidate only with differential fixture coverage. |
+| RUST_PORT | Python graph/state legality and applicability mechanics | Hawking native Gravity core | `hcli.physical_graph`, architecture adapters, backend plans | Native validator requires differential valid/invalid fixtures; Python may remain an independent oracle or forwarding skin. | IN_PROGRESS; delete production duplication after a real caller uses native authority. |
+| OWNER_CONSOLIDATION | Model-named reusable execution mechanics | MegaKernel legal-region and backend contracts | Rust kernels, model adapters, PhysicalGraph, recorded Flash fixtures | Model adapters keep genuine math; move only general state/effect/region rules. | IN_PROGRESS; live Flash kernel overlap waits for its committed safe boundary. |
+| OWNER_CONSOLIDATION | Method, Law, Scar, observation and verifier copies | Their existing distinct owners, referenced by identity | architecture atlas, Accelerator Law base, negative index, profilers and verifier pipeline | Reject duplicate canonical IDs; retain independent oracles. | PLANNED; no shared database is implied. |
+
+Migration classes mean:
+
+- `RENAME_ONLY`: interface spelling changes without behavior change.
+- `OWNER_CONSOLIDATION`: callers converge on one implementation authority.
+- `RUST_PORT`: a native owner replaces Python production mechanics under
+  conformance tests.
+- `SEMANTIC_CHANGE`: behavior, schema, numerical policy or qualification meaning
+  changes and must be reviewed separately.
+
+## Compatibility aliases
+
+New code translates historical language at an explicit boundary:
+
+| Historical phrase | Forward interpretation |
+|---|---|
+| source model, checkpoint | Source Specimen |
+| compressed or compact model | NR or NX candidate after inspecting whether it is runnable |
+| quantizer | Specific algorithm, or Gravity operator when used as a transformation class |
+| Noetic IR / Program | Concrete internal NR form |
+| Noetic Compiler | compilation inside Gravity |
+| Hawking Accelerator | Hawking execution backend; the standalone/community release intention remains preserved in `H-ACCELERATOR.md` |
+| Singularity | selected NX for an explicit execution profile |
+| resident model | resident NX instance when actually loaded |
+| Constellation | informal collection of admitted Stars |
+| fast genesis | measured lifecycle objective, not a subsystem |
+
+Historical names are evidence, not cleanup debt. Never rename sealed receipts,
+hashed paths, schema strings, source manifests or scientific identifiers for
+cosmetic consistency.
 
 ## Selection law
 
-Never choose a Singularity by minimum EBPW alone. EBPW is an accounting
-dimension, not a universal ordering. A higher-EBPW candidate may be the
-Singularity when it is capability-equivalent, fits the product/memory contract,
-and wins the selected execution profile's accepted useful work or latency
-objective. The lower-EBPW candidate remains in the Pareto Archive and may be
-selected for another profile.
+No name grants qualification. Selection resolves an exact artifact revision
+and supported execution path. Pareto comparison uses the declared capability,
+machine and execution contract; minimum EBPW alone is not a universal order.
 
-For Flash-Next, the current evidence therefore means:
+The forward law is:
 
-- independent Q4/G64 is the selected **bounded tensor representation** because
-  its observed tensor EBPW is lower (`4.25` bits/value);
-- shared BF16 basis + NF4 residual is retained as a lower-error quality
-  alternate (`4.28125` bits/value);
-- neither is a Singularity or complete Noetic Executable until full closure,
-  capability, and protected complete-token execution are proven.
+> ONE HAWKING. ONE GRAVITY. COLLAPSE IS THE VERB.
 
-## Compatibility and migration
-
-Historical names are evidence, not cleanup debt. Do not rename or move sealed
-receipts, hashed paths, schema strings, crate names, or the large ModelLake
-tree merely for aesthetics. New code may translate old language into the
-canonical semantic class:
-
-| Legacy/ambiguous phrase | Canonical interpretation |
-|---|---|
-| `source model`, `checkpoint`, downloaded model | **Source Specimen** |
-| `quantizer`, `quantization` | **Gravity operator** when it is a cost-reduction search/transform; keep the narrower term when it names an algorithm. |
-| `compressed model`, `compact model` | **Noetic representation** or **Noetic Executable Candidate**, depending on whether it is storage-only or runnable. |
-| `artifact` | **Noetic Executable**, **candidate**, or **receipt** only after semantic inspection; retain `artifact` in compatibility schemas when it is part of a sealed ABI. |
-| `winner`, `best model`, `final model`, `production model` | **Pareto Candidate** or **Singularity** only when qualification and profile identity justify it; otherwise use the precise observed status. |
-| `resident model` | **Resident** when the object is actually instantiated; otherwise **Source Specimen** or candidate. |
-| `model lake` | **ModelLake source-specimen store**; storage location, not a representation or runtime. |
-
-New active receipts should contain:
-
-```json
-{"nomenclature_version": "HAWKING_NOMENCLATURE_V1"}
-```
-
-Parsers may expose a canonical semantic view while retaining the original
-field and schema. Historical receipts must remain byte-for-byte untouched.
-
-## Active implementation map
-
-- `hcli.nomenclature` owns the forward vocabulary, version, pipeline, and
-  compatibility aliases.
-- `hcli.physical_graph` serializes the canonical version and compiler-stage
-  metadata while retaining its existing schema and behavior.
-- `hcli.agentos` Flash receipts add the canonical version and distinguish
-  Source Specimen evidence, Noetic representation, bounded accelerator
-  evidence, executable scaffold, and Resident/TPS claims.
-- `tools/headless/nomenclature_census.py` and
-  `receipts/headless/NOMENCLATURE_CENSUS.json` remain the search/index boundary.
-  The census classifies names rather than performing mechanical renames.
-- `tools/headless/nomenclature_census.py`, old canons, and sealed receipts are
-  not permission to treat every occurrence of “artifact,” “gravity,” or
-  “resident” as the same semantic object. Inspect behavior first.
-
-## Final law
-
-> **GRAVITY DISCOVERS.**
-> **NOETIC REPRESENTS.**
-> **THE COMPILER LOWERS.**
-> **THE ACCELERATOR EXECUTES.**
-> **PARETO REMEMBERS.**
-> **SINGULARITY CHOOSES.**
-> **THE RESIDENT RUNS.**
+<!-- DOC_STATUS: CURRENT -->

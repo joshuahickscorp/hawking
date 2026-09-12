@@ -9,33 +9,45 @@ must not be treated as a second architecture map.
 ## Operating shape
 
 ```text
-model/specimen metadata ──┐
-                          v
-                      HCLI ── Python AgentOS control plane + Rust hcli backend,
-                          │  typed tools, work units, gates, missions, receipts
-                          v
-                hawking-core / hawking / hawking-serve
-                          │
-                 CPU reference + Apple Metal runtime
+Hawking Web / Hawking CLI
+          │
+          v
+       hawkingd ── objectives, tools, work units, memory, gates, receipts
+          │
+          v
+       Gravity ── discovery, collapse, compilation, planning, qualification
+          │
+          v
+ NR revision -> physical plan -> backend programs -> NX -> resident instance
 ```
 
-HCLI is the single product/control-plane name. Python owns the comparative-
-advantage orchestration and resident supervision; the Rust `hcli` binary in
-`hide-backend` owns the consolidated HIDE backend, durable backend protocol,
-tools, sessions, and runtime-facing composition. Rust also owns model execution
-and serving. A receipt or a plan never raises the capability ceiling of an
-unmeasured artifact.
+Hawking is the single product/system name. `hawkingd` owns persistent local
+operation and may supervise multiple descendants while retaining one sovereign
+process tree. Python currently owns comparative-advantage orchestration and
+resident supervision; the Rust `hcli` binary in `hide-backend` owns the durable
+backend protocol, tools, sessions and runtime-facing composition. These HCLI,
+HIDE and AgentOS names remain implementation and compatibility identities while
+their public product framing migrates to Hawking. Rust owns model execution and
+serving. A receipt or plan never raises the capability ceiling of an unmeasured
+artifact.
+
+Gravity is the single discovery, analysis, transformation, compilation,
+physical-optimization and qualification function. Doctor and Tabula are
+diagnostic/discovery operations within Gravity. Odyssey is its population
+science; ModelLake is source/specimen storage and provenance. The implementation
+crosswalk and compatibility sunset conditions live in
+`docs/HAWKING_NOMENCLATURE.md`.
 
 ## Ownership map
 
 | Concern | Canonical home | Boundary |
 |---|---|---|
-| Product CLI and command ingress | Python `hcli.cli`, `hcli.commands`, `hcli.controller` plus Rust `hide-backend`/`hcli` | One HCLI product surface; Python is the orchestration skin and Rust is the backend authority |
-| AgentOS work and lifecycle | `hcli.agentos` plus canonical `hcli.goal`, `hcli.workunit`, `hcli.scheduler`, `hcli.mission`, `hcli.verifier_pipeline` | Scheduling/proposal is not verification |
+| Hawking CLI and command ingress | Python `hcli.cli`, `hcli.commands`, `hcli.controller` plus Rust `hawking` and compatibility `hide-backend`/`hcli` | One typed Hawking action surface is the target; compatibility names must preserve identical authority |
+| Internal capability and lifecycle machinery | `hcli.agentos` plus canonical `hcli.goal`, `hcli.workunit`, `hcli.scheduler`, `hcli.mission`, `hcli.verifier_pipeline` | AgentOS is an internal namespace; scheduling/proposal is not verification |
 | Runtime and provider execution | `hcli.runtime`, `hcli.engine`, `hcli.backends`, `hcli.session`, `hcli.models` | Provider output is evidence only after the verifier accepts it |
 | Crash-safe persistence | `hcli.persist` | The shared text/bytes/JSON atomic writers; specialized compare-and-swap remains in its owner |
 | Doctor diagnosis | `tools.doctor.engine` and `tools.doctor.*` | Metadata/receipt diagnosis; no weight loading or hardware claim |
-| Gravity representation search | `hcli.gravity`, `hcli.agentos.flash_representation_experiment`, `tools/gravity_*.py`, Rust runtime crates | Search/compile is distinct from physical qualification |
+| Gravity | `hcli.gravity`, `tools/gravity_*.py`, model adapters, Rust runtime crates and verifier owners | Representation search, compilation and physical optimization share one function; evidence scopes remain distinct |
 | Status verification | `tools.verify.status_causality` | A status may assert only what its actual probe establishes |
 | Roadmap and reachability | `tools.roadmap`, especially `tools.roadmap.capability_reachability` | Definitions/imports are not calls; receipts are citations, not callers |
 | Odyssey and ModelLake | `tools.odyssey`, including `tools.odyssey.modellake_promote` | Specimen lifecycle and promotion stay separate from Doctor/Gravity |
