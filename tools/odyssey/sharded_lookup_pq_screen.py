@@ -21,6 +21,7 @@ import math
 import struct
 import sys
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -36,6 +37,23 @@ DEFAULT_TENSOR_PATTERN = "ngram_embedding.shard_"
 METADATA_BYTES = 128
 DECODER_SUPPORT_BYTES = 65536
 SCHEMA = "hawking.odyssey.sharded_lookup_pq_screen.v1"
+
+
+@dataclass(frozen=True)
+class ProductQuantizer:
+    """A fitted shared-PQ family reusable by function-aware controls."""
+
+    subdimension: int
+    cardinality: int
+    codebooks: tuple[np.ndarray, ...]
+
+    @property
+    def code_bits_per_subspace(self) -> int:
+        return _require_power_of_two(self.cardinality, "PQ card")
+
+    @property
+    def subspaces_per_row(self) -> int:
+        return len(self.codebooks)
 
 
 def _sha256_bytes(payload: bytes) -> str:
@@ -250,7 +268,57 @@ def _encode_decode(values: np.ndarray, codebooks: list[np.ndarray], subdim: int)
     return restored
 
 
-def _metrics(reference: np.ndarray, candidate: np.ndarray) -> dict[str, float | int | bool | None]:
+def fit_product_quantizer(
+    train: np.ndarray,
+    *,
+    subdimension: int,
+    cardinality: int,
+    iterations: int,
+    seed: int,
+) -> ProductQuantizer:
+    """Fit one deterministic BF16 shared-PQ family without serializing a table.
+
+    Function-aware architecture adapters reuse this exact construction instead
+    of rebuilding a subtly different PQ implementation around every new
+    specimen.  The returned object contains only shared codebooks; callers
+    remain responsible for billing projected per-row codes and for making no
+    materialized-representation claim unless they actually construct one.
+    """
+    train = np.asarray(train, dtype=np.float32)
+    if train.ndim != 2 or train.shape[0] < 2:
+        raise ValueError("PQ training population must be a non-empty 2D matrix")
+    width = int(train.shape[1])
+    subdimension = int(subdimension)
+    cardinality = int(cardinality)
+    if subdimension <= 0 or width % subdimension:
+        raise ValueError(f"sub-dimension {subdimension} does not divide lookup width {width}")
+    _require_power_of_two(cardinality, "PQ card")
+    if cardinality > train.shape[0]:
+        raise ValueError(
+            f"PQ card {cardinality} exceeds {train.shape[0]} train rows; increase sampling"
+        )
+    codebooks = tuple(
+        _kmeans(
+            train[:, index * subdimension:(index + 1) * subdimension],
+            cardinality,
+            iterations,
+            seed + 104729 * index + 1009 * cardinality + subdimension,
+        )
+        for index in range(width // subdimension)
+    )
+    return ProductQuantizer(
+        subdimension=subdimension,
+        cardinality=cardinality,
+        codebooks=codebooks,
+    )
+
+
+def encode_decode_product_quantizer(values: np.ndarray, quantizer: ProductQuantizer) -> np.ndarray:
+    """Reconstruct rows with a fitted shared-PQ family."""
+    return _encode_decode(values, list(quantizer.codebooks), quantizer.subdimension)
+
+
+def row_metrics(reference: np.ndarray, candidate: np.ndarray) -> dict[str, float | int | bool | None]:
     errors = reference - candidate
     reference_norm = np.linalg.norm(reference, axis=1)
     candidate_norm = np.linalg.norm(candidate, axis=1)
@@ -278,6 +346,11 @@ def _metrics(reference: np.ndarray, candidate: np.ndarray) -> dict[str, float | 
     }
 
 
+# Keep the historical private spelling for older receipts/tests while giving
+# function-aware architecture adapters one obvious reusable metric owner.
+_metrics = row_metrics
+
+
 def screen(
     train: np.ndarray,
     heldout: np.ndarray,
@@ -303,22 +376,16 @@ def screen(
             raise ValueError(f"sub-dimension {subdim} does not divide lookup width {width}")
         chunks = width // subdim
         for card in sorted(set(int(value) for value in cards)):
-            bits = _require_power_of_two(card, "PQ card")
-            if card > train.shape[0]:
-                raise ValueError(
-                    f"PQ card {card} exceeds {train.shape[0]} train rows; increase sampling"
-                )
-            codebooks = [
-                _kmeans(
-                    train[:, index * subdim:(index + 1) * subdim],
-                    card,
-                    iterations,
-                    seed + 104729 * index + 1009 * card + subdim,
-                )
-                for index in range(chunks)
-            ]
-            train_reconstructed = _encode_decode(train, codebooks, subdim)
-            heldout_reconstructed = _encode_decode(heldout, codebooks, subdim)
+            quantizer = fit_product_quantizer(
+                train,
+                subdimension=subdim,
+                cardinality=card,
+                iterations=iterations,
+                seed=seed,
+            )
+            bits = quantizer.code_bits_per_subspace
+            train_reconstructed = encode_decode_product_quantizer(train, quantizer)
+            heldout_reconstructed = encode_decode_product_quantizer(heldout, quantizer)
             code_payload_bits = int(total_rows) * chunks * bits
             code_payload_bytes = (code_payload_bits + 7) // 8
             codebook_bytes = chunks * card * subdim * 2

@@ -73,6 +73,24 @@
     },
     {
       "applicable": false,
+      "id": "M-source-bound-ple-output-control",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'architecture_contract'",
+        "missing architecture tags: hashed_ngram, hyperconnection, sharded_lookup, stateful_decoder",
+        "missing required features: addressable_source_lookup_rows, source_bound_pre_layer_hidden_state, source_projection_norm_and_convolution_payloads, versioned_PLE_reference_formula"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-reference-ple-formula-oracle",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'verification'",
+        "missing architecture tags: hashed_ngram, hyperconnection, stateful_decoder",
+        "missing required features: installed_pinned_reference_framework, small_placeholder_embedding_or_equivalent_no_full_table_allocation, source_bound_formula_control"
+      ]
+    },
+    {
+      "applicable": false,
       "id": "M-route-major-packed-q4-routed-moe",
       "reasons": [
         "objective_family='representation_accounting' does not match 'physical_execution'",
@@ -101,7 +119,7 @@
     "objective_family": "representation_accounting",
     "schema": "hawking.gravity.observed_traits.v1"
   },
-  "recorded_at": "2026-09-12T04:09:11Z",
+  "recorded_at": "2026-09-12T04:13:45Z",
   "refusal": "no applicable method has a compatible automatic adapter",
   "scars": [
     {

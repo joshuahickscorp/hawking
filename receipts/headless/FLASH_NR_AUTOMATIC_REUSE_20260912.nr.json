@@ -18,7 +18,9 @@
     "ngram_lookup_oracle_sha256": "0ec2e29bea64123b7a5d32cd33a153d6c35c9eed58aae7fc909a62e76c9a994a",
     "routed_lowrank_activation_screen_sha256": "677d6a84ffd292f178dfbb6a5b0445187990d2f2161dec0303a78f17c44d29b9",
     "ngram_pq_screen_sha256": "33b53d39e238520bf647ff9d31c5d457a5d3a773246436685bcf72d44e4260b3",
-    "ngram_access_trace_sha256": "38e9e690e00fade6a5c99ef223fc15ae7e1071058953eda0348e18db33ad88c5"
+    "ngram_access_trace_sha256": "38e9e690e00fade6a5c99ef223fc15ae7e1071058953eda0348e18db33ad88c5",
+    "ple_source_output_control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66",
+    "ple_reference_formula_parity_sha256": "8c1b854d0c4410a0deb0a1e185b0cd3c2fe7d1d6c22fdd9ed3c57f8b0c84d189"
   },
   "representation": {
     "scope": "complete 48-layer Flash model",
@@ -34,7 +36,7 @@
         "family": "ngram_embedding",
         "representation": "factorized_lookup_candidate",
         "runtime_required": true,
-        "qualification": "128-shard global row layout and source-algorithm accepted-token addresses are bound; static global-PQ rate screen is negative, while PLE output fidelity and native compact lookup remain open",
+        "qualification": "128-shard global row layout, source-algorithm addresses, and one sealed source-bound PLE formula/input control have passed reference-framework parity on one BOS control; broader PLE output coverage and native compact lookup remain open",
         "source_control_bytes": 102400491520
       },
       {
@@ -123,7 +125,7 @@
           "pinned BF16 source-family bodies",
           "unqualified dynamic routed-expert bank representation",
           "unqualified n-gram representation and lookup path",
-          "unmeasured source PLE output/hidden-state control for selective repair",
+          "unqualified broader PLE output coverage and native compact PLE runtime",
           "unmeasured complete direct runtime state",
           "unmeasured complete direct scratch working set"
         ],
@@ -170,7 +172,7 @@
         "complete_bits_per_weight": null,
         "runtime_ready": false,
         "capability_status": "not-yet-qualified",
-        "open": "source PLE output/activation control, lookup representation fidelity, and native compact lookup",
+        "open": "broader PLE output coverage, lookup representation fidelity, and native compact lookup",
         "lookup_oracle_status": "REAL_ROW_PACKED_LOOKUP_ORACLE",
         "access_trace": {
           "status": "SOURCE_ALGORITHM_BOUND_TOKEN_ACCESS_TRACE__NOT_PLE_OUTPUT_PARITY",
@@ -182,6 +184,29 @@
           "unique_source_bytes": 35840,
           "source_bytes_referenced_across_events": 35840,
           "boundary": "ADDRESS_AND_SOURCE_ROW_BINDING_ONLY__NOT_PLE_OUTPUT_OR_CAPABILITY"
+        },
+        "source_output_control": {
+          "status": "SOURCE_BOUND_PLE_OUTPUT_CONTROL__NO_INDEPENDENT_PLE_OUTPUT_PARITY",
+          "input_qualification": "EXACT_LAYER_SOURCE_PARITY",
+          "input_state_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+          "token_count": 1,
+          "lookup_events": 16,
+          "lookup_events_per_token": 16,
+          "unique_source_rows": 16,
+          "unique_source_bytes": 5120,
+          "post_injection_state_sha256": "8359f389f65bb2308179775efe6f0dd933ec12d91d798f63a808a805758a6aa5",
+          "mutable_state_bytes": 368656,
+          "boundary": "SOURCE_FORMULA_INPUT_OUTPUT_CONTROL_ONLY__NOT_INDEPENDENT_PLE_PARITY_OR_CAPABILITY"
+        },
+        "reference_formula_parity": {
+          "status": "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS",
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "max_abs": 4.470348358154297e-08,
+          "rmse": 1.9919543169561657e-09,
+          "relative_l2": 1.498442827596591e-07,
+          "cosine": 1.0,
+          "finite": true,
+          "boundary": "ONE_SEALED_PLE_CONTROL_REFERENCE_FORMULA_PARITY_ONLY__NOT_FULL_CHECKPOINT_OR_CAPABILITY"
         }
       },
       {
@@ -335,7 +360,7 @@
             "target_projected_table_ebpw": 1.0
           }
         ],
-        "open": "The source-algorithm address trace is now bound, but a source PLE output/hidden-state control is still required before testing selective hot-row repair or a learned/generative table representation; do not materialize uniform global PQ from this screen."
+        "open": "The source-algorithm address trace and one sealed reference-checked PLE formula/input control are bound. Test selective repair against that output control before considering learned/generative table representations; do not materialize uniform global PQ from this screen."
       }
     ],
     "portable_identity": {
@@ -343,7 +368,9 @@
       "doctor": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json",
       "routed_lowrank_activation_screen": "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json",
       "ngram_pq_screen": "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json",
-      "ngram_access_trace": "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
+      "ngram_access_trace": "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json",
+      "ple_source_output_control": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+      "ple_reference_formula_parity": "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
     }
   },
   "kernel_requirements": [
@@ -379,7 +406,7 @@
   },
   "evidence": {
     "state": "STATIC_ACCOUNTING_ONLY",
-    "recorded_at": "2026-09-12T04:09:11Z",
+    "recorded_at": "2026-09-12T04:13:45Z",
     "recorded_by": "tools/flash_complete_nr.py representation composition",
     "rule": "S032 \u00a73 -- NR composition carries no physical timing claim"
   },
@@ -512,10 +539,10 @@
           "target_projected_table_ebpw": 1.0
         }
       ],
-      "law": "Shared product quantization can meet sub-bit projected n-gram table budgets arithmetically, but its held-out row distortion is high at the tested rates; the bound token-to-row trace permits future selective-repair controls, but not a PLE-output or capability claim."
+      "law": "Shared product quantization can meet sub-bit projected n-gram table budgets arithmetically, but its held-out row distortion is high at the tested rates; source addresses plus one reference-checked PLE formula/input control now permit bounded selective-repair controls, but not broad PLE parity or capability claims."
     }
   ],
   "claim_boundary": "This is a complete source-family inventory plus an open-NR accounting baseline. The exact 16.0 EBPW figure belongs only to external source BF16 storage; this receipt claims no complete NR EBPW, closed standalone runnable NR, accepted-token TPS, or capability preservation.",
-  "next": "Use the source-bound routed-MoE bridge and direct packed substrate as controls. The n-gram address trace is now closed; obtain a source PLE output/hidden-state control before testing selective hot-row repair or a learned/generative lookup representation. Replace only Pareto survivors, close every dependency before reporting complete EBPW, and build NX only when a machine specialization earns it.",
-  "seal_sha256": "e7656b5ee393bf7bfe76ebbe4a995fde1df4c1e76ce08904d7626d04d95a8fb7"
+  "next": "Use the source-bound routed-MoE bridge and direct packed substrate as controls. The n-gram address trace and one sealed reference-checked PLE formula/input control are now closed; test selective repair or a learned/generative lookup representation against that bounded output, expand to additional source inputs/token boundaries, and begin native PLE execution only when a direct representation survives. Replace only Pareto survivors, close every dependency before reporting complete EBPW, and build NX only when a machine specialization earns it.",
+  "seal_sha256": "e1043eeb22e6783a64a538cfe64f97b62b780eb290f2b6f7de02881c9673e627"
 }

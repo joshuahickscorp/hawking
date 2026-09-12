@@ -1,10 +1,10 @@
 {
-  "active_files": 2538,
+  "active_files": 2543,
   "archived_LOC": 76,
   "by_language": {
     "lean": 22,
     "markdown": 69317,
-    "python": 561642,
+    "python": 563563,
     "rust": 454034,
     "shader": 48320,
     "shell": 3656,
@@ -13,16 +13,16 @@
   "by_subsystem": {
     "hawking": 405007,
     "hide": 165189,
-    "laboratory": 328235,
+    "laboratory": 330156,
     "shared": 309564
   },
-  "combined_active_monorepo_LOC": 1207995,
-  "commit": "ac81444f177915a2f50888893f502408b52d0584",
+  "combined_active_monorepo_LOC": 1209916,
+  "commit": "7d29d8f338bf3b46fa1e22c0b6adae24c0a0b52b",
   "generated_LOC": 0,
   "hawking_active_LOC": 405007,
   "hide_active_LOC": 165189,
-  "inline_or_path_test_LOC": 197474,
-  "laboratory_LOC": 328235,
+  "inline_or_path_test_LOC": 197789,
+  "laboratory_LOC": 330156,
   "policy": {
     "counts": "physical lines of tracked source files",
     "excluded_buckets": [
@@ -62,17 +62,17 @@
     "scope": "minimum-product Rust and Python physical lines selected by is_product"
   },
   "rev": "WORKING_TREE",
-  "runtime_LOC": 1064103,
+  "runtime_LOC": 1065709,
   "rust_python_composition": {
-    "denominator_LOC": 1015676,
-    "python_LOC": 561642,
+    "denominator_LOC": 1017597,
+    "python_LOC": 563563,
     "rust_LOC": 454034,
-    "rust_percent": 44.702641,
+    "rust_percent": 44.618253,
     "scope": "all active tracked first-party Rust and Python physical lines"
   },
   "schema": "hawking.loc.authority.v1",
   "shared_contract_LOC": 309564,
-  "test_LOC": 143892,
+  "test_LOC": 144207,
   "test_excluding_product_LOC": 469279,
   "test_excluding_product_by_language": {
     "markdown": 9,
@@ -87,21 +87,21 @@
     "rust_percent": 77.845882,
     "scope": "minimum-product runtime lines after path tests and inline cfg(test) Rust items are excluded"
   },
-  "test_excluding_runtime_LOC": 1010521,
+  "test_excluding_runtime_LOC": 1012127,
   "test_excluding_runtime_by_language": {
     "lean": 22,
     "markdown": 69305,
-    "python": 448473,
+    "python": 450079,
     "rust": 369789,
     "shader": 48320,
     "shell": 3608,
     "typescript": 71004
   },
   "test_excluding_runtime_rust_python_composition": {
-    "denominator_LOC": 818262,
-    "python_LOC": 448473,
+    "denominator_LOC": 819868,
+    "python_LOC": 450079,
     "rust_LOC": 369789,
-    "rust_percent": 45.192005,
+    "rust_percent": 45.10348,
     "scope": "active first-party runtime lines after path tests and inline cfg(test) Rust items are excluded"
   },
   "vendored_LOC": 50284

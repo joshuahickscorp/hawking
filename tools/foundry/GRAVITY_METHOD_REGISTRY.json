@@ -622,7 +622,7 @@
       ],
       "status": "PROVEN_DISCRIMINATOR__TESTED_UNIFORM_GLOBAL_PQ_NEGATIVE",
       "claim_boundary": "The method is a bounded, held-out row discriminator. For Flash's 128-shard n-gram table, shared PQ reaches 0.093761 projected table EBPW but has 0.964632 held-out global relative-L2; the best tested <=0.5 projected point is 0.375011 EBPW with 0.847257 error. This rejects uniform global PQ as an escalation candidate at those tested rates. It does not establish full-table lookup semantics, active-token fidelity, direct execution, complete NR EBPW, or capability.",
-      "reopen_if": "An actual lookup-access trace justifies selective hot-row repair, a learned/generative representation, a different source distribution, or a non-uniform/shared-hierarchy representation that changes the tested hypothesis."
+      "reopen_if": "A source PLE output/hidden-state control paired with an actual lookup-access trace justifies selective hot-row repair, a learned/generative representation, a different source distribution, or a non-uniform/shared-hierarchy representation that changes the tested hypothesis."
     },
     {
       "id": "M-source-bound-ple-access-trace",
@@ -662,9 +662,90 @@
       "evidence": [
         "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
       ],
-      "status": "PROVEN_ADDRESS_CONTRACT__PLE_OUTPUT_CONTROL_OPEN",
+      "status": "PROVEN_ADDRESS_CONTRACT__FORMULA_OUTPUT_CONTROL_AVAILABLE",
       "claim_boundary": "For Flash's pinned Qwen4-Exp PLE configuration, this method binds the 16 EOS-aware hashed lookup rows per accepted token to real concatenated checkpoint rows. The first accepted seven-token trace covers 112 unique rows and 35,840 source bytes. It does not execute PLE projections, gates, norms, convolution, hidden-state inputs, direct lookup runtime, complete EBPW, or capability.",
-      "reopen_if": "A target uses a different n-gram hash, checkpoint layout, state rule, PLE layer ordering, or source output/activation control. Escalate to selective repair only after a source PLE output/hidden-state discriminator is sealed."
+      "reopen_if": "A target uses a different n-gram hash, checkpoint layout, state rule, or PLE layer ordering. Pair this address method with a source PLE output/hidden-state control before escalating to selective repair."
+    },
+    {
+      "id": "M-source-bound-ple-output-control",
+      "title": "Source-bound PLE formula and pre-layer activation control",
+      "family": "architecture_contract",
+      "implementation_owner": "tools/odyssey/ple_source_output_control.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder"],
+        "required_features": [
+          "source_bound_pre_layer_hidden_state",
+          "versioned_PLE_reference_formula",
+          "addressable_source_lookup_rows",
+          "source_projection_norm_and_convolution_payloads"
+        ],
+        "excluded_features": [
+          "treating_formula_evaluation_as_independent_source_model_output_parity",
+          "treating_active_lookup_rows_as_complete_artifact_bytes",
+          "claiming_native_runtime_or_capability_without_later_gates"
+        ]
+      },
+      "required_controls": [
+        "sealed_source_pre_layer_state_hash",
+        "source_config_and_reference_hashes",
+        "source_BF16_support_payload_hashes",
+        "source_lookup_row_hashes",
+        "reference_constant_parity_for_hash_multipliers_and_offsets",
+        "persistent_PLE_convolution_state",
+        "explicit_independent_output_parity_boundary"
+      ],
+      "accounting": [
+        "active_lookup_bytes",
+        "support_payload_bytes",
+        "post_injection_state_bytes",
+        "persistent_convolution_state_bytes",
+        "formula_construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+        "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+      ],
+      "status": "PROVEN_SOURCE_FORMULA_CONTROL__REFERENCE_PARITY_ONE_SEALED_INPUT",
+      "claim_boundary": "For the sealed Flash BOS pre-layer state, this method evaluates the documented PLE formula with exact source BF16 lookup rows and support payloads, emits a post-injection state and the persistent PLE convolution state, and matches the pinned Transformers PLE implementation within 4.47e-8 max-abs / 1.50e-7 relative-L2. It remains one control, not full checkpoint forward parity, a native PLE runtime, repeated token proof, full Flash fidelity, complete NR EBPW, TPS, or capability.",
+      "reopen_if": "Use this control to evaluate a materially different lookup/repair representation, expand it to independent source inputs/token boundaries, or develop a native execution path. Escalate to a complete token graph only after direct PLE execution and broader output comparison are available."
+    },
+    {
+      "id": "M-reference-ple-formula-oracle",
+      "title": "Reference-framework PLE formula parity oracle",
+      "family": "verification",
+      "implementation_owner": "tools/odyssey/ple_reference_formula_oracle.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "hyperconnection", "stateful_decoder"],
+        "required_features": [
+          "installed_pinned_reference_framework",
+          "source_bound_formula_control",
+          "small_placeholder_embedding_or_equivalent_no_full_table_allocation"
+        ],
+        "excluded_features": [
+          "full_source_model_loading_as_a_requirement",
+          "claiming_one_control_is_full_model_parity"
+        ]
+      },
+      "required_controls": [
+        "source_control_receipt_hash",
+        "reference_implementation_hash",
+        "candidate_output_hash",
+        "reference_output_hash",
+        "numerical_thresholds"
+      ],
+      "accounting": [
+        "max_abs",
+        "rmse",
+        "relative_l2",
+        "cosine",
+        "reference_output_bytes"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+      ],
+      "status": "PROVEN_ONE_CONTROL_REFERENCE_FORMULA_PARITY",
+      "claim_boundary": "The oracle validates the canonical PLE formula against the pinned Transformers PLE layer while substituting an exact source-row embedding for the uninstantiated giant lookup table. It does not validate source model loading, later layer behavior, native runtime, repeated state, complete NR EBPW, TPS, or capability.",
+      "reopen_if": "A reference version, precision path, PLE topology, source input control, or token/state boundary changes. Run the smallest matching source control before declaring broader parity."
     },
     {
       "id": "M-route-major-packed-q4-routed-moe",

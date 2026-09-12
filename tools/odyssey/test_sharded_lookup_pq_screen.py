@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from tools.odyssey.sharded_lookup_pq_screen import screen
+from tools.odyssey.sharded_lookup_pq_screen import (
+    encode_decode_product_quantizer,
+    fit_product_quantizer,
+    screen,
+)
 
 
 def test_pq_screen_is_deterministic_and_bills_the_projected_closure() -> None:
@@ -65,3 +69,25 @@ def test_pq_screen_rejects_incompatible_subdimensions() -> None:
         assert "does not divide" in str(exc)
     else:
         raise AssertionError("incompatible subdimension must be rejected")
+
+
+def test_fitted_quantizer_reuses_the_screen_construction_deterministically() -> None:
+    train = np.array(
+        [[0.0, 1.0, 2.0, 3.0], [0.1, 1.1, 2.1, 3.1], [4.0, 5.0, 6.0, 7.0]],
+        dtype=np.float32,
+    )
+    first = fit_product_quantizer(
+        train, subdimension=2, cardinality=2, iterations=3, seed=17
+    )
+    second = fit_product_quantizer(
+        train, subdimension=2, cardinality=2, iterations=3, seed=17
+    )
+    assert first.subdimension == 2
+    assert first.cardinality == 2
+    assert first.code_bits_per_subspace == 1
+    for a, b in zip(first.codebooks, second.codebooks, strict=True):
+        assert np.array_equal(a, b)
+    np.testing.assert_array_equal(
+        encode_decode_product_quantizer(train, first),
+        encode_decode_product_quantizer(train, second),
+    )

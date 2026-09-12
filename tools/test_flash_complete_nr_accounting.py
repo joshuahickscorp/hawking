@@ -92,3 +92,52 @@ def test_ple_access_trace_summary_preserves_its_output_boundary():
     assert summary["lookup_events_per_token"] == 16
     assert summary["boundary"].endswith("NOT_PLE_OUTPUT_OR_CAPABILITY")
     assert flash_nr._ple_access_trace_summary({"status": "PASSED"}) is None
+
+
+def test_ple_source_output_control_summary_preserves_its_parity_boundary():
+    document = {
+        "schema": flash_nr.PLE_SOURCE_OUTPUT_CONTROL_SCHEMA,
+        "status": "SOURCE_BOUND_PLE_OUTPUT_CONTROL__NO_INDEPENDENT_PLE_OUTPUT_PARITY",
+        "input_control": {
+            "qualification": "EXACT_LAYER_SOURCE_PARITY",
+            "state": {"sha256": "input-state"},
+        },
+        "active_lookup": {
+            "token_count": 1,
+            "lookup_events": 16,
+            "lookup_events_per_token": 16,
+            "unique_source_rows": 16,
+            "unique_source_bytes": 5120,
+        },
+        "outputs": {
+            "post_injection_state": {"sha256": "post-state"},
+            "mutable_state_bytes": 368656,
+        },
+    }
+    summary = flash_nr._ple_source_output_control_summary(document)
+    assert summary is not None
+    assert summary["input_qualification"] == "EXACT_LAYER_SOURCE_PARITY"
+    assert summary["lookup_events_per_token"] == 16
+    assert summary["boundary"].endswith("NOT_INDEPENDENT_PLE_PARITY_OR_CAPABILITY")
+    assert flash_nr._ple_source_output_control_summary({"status": "PASSED"}) is None
+
+
+def test_reference_formula_parity_summary_keeps_the_one_control_boundary():
+    document = {
+        "schema": flash_nr.PLE_REFERENCE_FORMULA_ORACLE_SCHEMA,
+        "status": "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS",
+        "source_control": {"seal_sha256": "source-control-seal"},
+        "metrics": {
+            "max_abs": 4.5e-8,
+            "rmse": 1e-8,
+            "relative_l2": 1.5e-7,
+            "cosine": 1.0,
+            "finite": True,
+        },
+    }
+    summary = flash_nr._ple_reference_formula_parity_summary(document)
+    assert summary is not None
+    assert summary["source_control_seal"] == "source-control-seal"
+    assert summary["relative_l2"] == 1.5e-7
+    assert summary["boundary"].endswith("NOT_FULL_CHECKPOINT_OR_CAPABILITY")
+    assert flash_nr._ple_reference_formula_parity_summary({"status": "PASSED"}) is None

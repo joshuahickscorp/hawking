@@ -1,0 +1,696 @@
+{
+  "active_lookup": {
+    "embedding_values_per_token": 2560,
+    "lookup_events": 16,
+    "lookup_events_per_token": 16,
+    "ordered_lookup_records": [
+      {
+        "combined_row": 9663979,
+        "global_head": 0,
+        "local_row": 2163943,
+        "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 3,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+      },
+      {
+        "combined_row": 26558231,
+        "global_head": 1,
+        "local_row": 1558111,
+        "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 10,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+      },
+      {
+        "combined_row": 56120240,
+        "global_head": 2,
+        "local_row": 1119976,
+        "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 22,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+      },
+      {
+        "combined_row": 74755659,
+        "global_head": 3,
+        "local_row": 2255311,
+        "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 29,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+      },
+      {
+        "combined_row": 80459717,
+        "global_head": 4,
+        "local_row": 459333,
+        "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 32,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+      },
+      {
+        "combined_row": 109265651,
+        "global_head": 5,
+        "local_row": 1765135,
+        "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 43,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+      },
+      {
+        "combined_row": 132697467,
+        "global_head": 6,
+        "local_row": 196831,
+        "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 53,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+      },
+      {
+        "combined_row": 151022725,
+        "global_head": 7,
+        "local_row": 1022005,
+        "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 60,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+      },
+      {
+        "combined_row": 170054832,
+        "global_head": 8,
+        "local_row": 54016,
+        "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 68,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+      },
+      {
+        "combined_row": 192967038,
+        "global_head": 9,
+        "local_row": 466114,
+        "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 77,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+      },
+      {
+        "combined_row": 200687722,
+        "global_head": 10,
+        "local_row": 686762,
+        "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 80,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+      },
+      {
+        "combined_row": 225763581,
+        "global_head": 11,
+        "local_row": 762501,
+        "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 90,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+      },
+      {
+        "combined_row": 259275737,
+        "global_head": 12,
+        "local_row": 1774501,
+        "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 103,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+      },
+      {
+        "combined_row": 272983544,
+        "global_head": 13,
+        "local_row": 482236,
+        "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 109,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+      },
+      {
+        "combined_row": 297596484,
+        "global_head": 14,
+        "local_row": 95056,
+        "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 119,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+      },
+      {
+        "combined_row": 300986548,
+        "global_head": 15,
+        "local_row": 985108,
+        "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      }
+    ],
+    "source_bytes_referenced_across_events": 5120,
+    "source_range_read_sha256": "252971962a85c94b3341b39eff45d569ff3253234cce5f430208c162ed65e359",
+    "source_row_bytes": 320,
+    "source_row_records": [
+      {
+        "combined_row": 9663979,
+        "local_row": 2163943,
+        "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+        "row_bytes": 320,
+        "shard_ordinal": 3,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+      },
+      {
+        "combined_row": 26558231,
+        "local_row": 1558111,
+        "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+        "row_bytes": 320,
+        "shard_ordinal": 10,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+      },
+      {
+        "combined_row": 56120240,
+        "local_row": 1119976,
+        "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+        "row_bytes": 320,
+        "shard_ordinal": 22,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+      },
+      {
+        "combined_row": 74755659,
+        "local_row": 2255311,
+        "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+        "row_bytes": 320,
+        "shard_ordinal": 29,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+      },
+      {
+        "combined_row": 80459717,
+        "local_row": 459333,
+        "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+        "row_bytes": 320,
+        "shard_ordinal": 32,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+      },
+      {
+        "combined_row": 109265651,
+        "local_row": 1765135,
+        "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+        "row_bytes": 320,
+        "shard_ordinal": 43,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+      },
+      {
+        "combined_row": 132697467,
+        "local_row": 196831,
+        "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+        "row_bytes": 320,
+        "shard_ordinal": 53,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+      },
+      {
+        "combined_row": 151022725,
+        "local_row": 1022005,
+        "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+        "row_bytes": 320,
+        "shard_ordinal": 60,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+      },
+      {
+        "combined_row": 170054832,
+        "local_row": 54016,
+        "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+        "row_bytes": 320,
+        "shard_ordinal": 68,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+      },
+      {
+        "combined_row": 192967038,
+        "local_row": 466114,
+        "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+        "row_bytes": 320,
+        "shard_ordinal": 77,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+      },
+      {
+        "combined_row": 200687722,
+        "local_row": 686762,
+        "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+        "row_bytes": 320,
+        "shard_ordinal": 80,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+      },
+      {
+        "combined_row": 225763581,
+        "local_row": 762501,
+        "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+        "row_bytes": 320,
+        "shard_ordinal": 90,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+      },
+      {
+        "combined_row": 259275737,
+        "local_row": 1774501,
+        "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+        "row_bytes": 320,
+        "shard_ordinal": 103,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+      },
+      {
+        "combined_row": 272983544,
+        "local_row": 482236,
+        "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+        "row_bytes": 320,
+        "shard_ordinal": 109,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+      },
+      {
+        "combined_row": 297596484,
+        "local_row": 95056,
+        "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+        "row_bytes": 320,
+        "shard_ordinal": 119,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+      },
+      {
+        "combined_row": 300986548,
+        "local_row": 985108,
+        "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+        "row_bytes": 320,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      }
+    ],
+    "token_count": 1,
+    "unique_source_bytes": 5120,
+    "unique_source_rows": 16
+  },
+  "checkpoint_layout": {
+    "combined_rows": 320001536,
+    "head_dimension": 160,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+    "sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "shard_count": 128,
+    "source_bytes": 102400491520,
+    "tensor_prefix": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_"
+  },
+  "claim_boundary": "This is one source-bound PLE formula/input control: the sealed layer-0 BOS state, reference-addressed source lookup rows, and exact source PLE support tensors produce a direct F32 PLE injection and persistent PLE convolution state. It does not establish independent HuggingFace/source PLE-output parity, layer-1 parity, an implemented native PLE runtime, full 48-layer Flash fidelity, complete NR closure/EBPW, TPS, or capability.",
+  "execution": {
+    "backend": "numpy_f32_source_formula_control",
+    "elapsed_ns": 63603083,
+    "source_lookup_row_range_reads": 16,
+    "source_lookup_tensor_full_materializations": 0,
+    "source_support_payload_bytes_materialized": 65679640,
+    "source_support_payload_materializations": 9,
+    "source_weights": "exact BF16 payloads decoded directly from source ranges"
+  },
+  "generated_at": "2026-09-12T03:59:25.871751+00:00",
+  "input_control": {
+    "input_token_id": 248044,
+    "qualification": "EXACT_LAYER_SOURCE_PARITY",
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-0/receipt.json",
+    "receipt_sha256": "a142afde4f3da336b8b23d68406704b5a87c807883a4fba82594261c9ebf5078",
+    "schema": "hawking.flash_noetic_complete_layer0_source_bf16.v1",
+    "source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "state": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "l2": 1.6130173206329346,
+      "max": 0.20019280910491943,
+      "min": -0.14697113633155823,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-0/state.f32",
+      "sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e"
+    }
+  },
+  "next": "Use the sealed post-PLE state as a bounded layer-1 input control; first compare this formula path with an independent source PLE oracle or native implementation, then evaluate non-uniform lookup/substrate repair against actual PLE-output sensitivity. Do not use active row bytes as a complete-representation claim.",
+  "outputs": {
+    "intermediate_shapes": {
+      "gate": [
+        1,
+        4
+      ],
+      "gated_value": [
+        1,
+        10240
+      ],
+      "gated_value_normed": [
+        1,
+        10240
+      ],
+      "key": [
+        1,
+        10240
+      ],
+      "value": [
+        1,
+        2560
+      ]
+    },
+    "mutable_state_bytes": 368656,
+    "persistent_ple_conv_state": {
+      "bytes": 368640,
+      "dtype": "F32_LE",
+      "elements": 92160,
+      "l2": 50.95667266845703,
+      "max": 10.544845581054688,
+      "min": -5.612277507781982,
+      "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.ple_conv_state.f32",
+      "sha256": "76def3e11f235c0285e681d6d2b4f5c080b5fe69228ccfa4f0ebf079d306cc36"
+    },
+    "ple_injection": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "l2": 1.3452072143554688,
+      "max": 0.2050073742866516,
+      "min": -0.24837079644203186,
+      "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.ple_injection.f32",
+      "sha256": "2761917fb36a92fd579689800a0e9eb10d67de90c57811df0a3b12ff4f7721d8"
+    },
+    "post_injection_is_next_layer_input": true,
+    "post_injection_state": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "l2": 2.058837890625,
+      "max": 0.20023292303085327,
+      "min": -0.2132818102836609,
+      "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.post_ple.f32",
+      "sha256": "8359f389f65bb2308179775efe6f0dd933ec12d91d798f63a808a805758a6aa5"
+    }
+  },
+  "promotion_allowed": false,
+  "reference_contract": {
+    "config": {
+      "config_seed": null,
+      "effective_seed": 1234,
+      "model_type": "qwen4_exp_text",
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "ple_layer_ids": [
+        2
+      ],
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+    },
+    "formula": {
+      "convolution": "four-tap depthwise causal cross-correlation with dilation=ngram_size",
+      "gate": "signed_sqrt(dot(key_normed, query_normed) / sqrt(hidden_size))",
+      "input": "sealed f32 pre-layer hidden state from source-parity layer 0",
+      "lookup": "16 EOS-aware source BF16 hashed n-gram rows concatenated to 2560 values",
+      "normalization": "grouped RMSNorm with source BF16 weights and source epsilon",
+      "output": "PLE injection and post-injection layer-1 input state",
+      "projection": "source BF16 key/value matrices evaluated in F32"
+    },
+    "implementation": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/transformers/models/qwen4_exp/modeling_qwen4_exp.py",
+    "implementation_scope": "Qwen4ExpTextPLELayer.forward + Qwen4ExpTextNGramEmbedding.forward",
+    "implementation_sha256": "ca9f00bbd73cfcfbad7ba6073b5ecc23ca27bdace58b746fe6ead6ab175efc0c",
+    "implementation_version": "transformers 5.17.0"
+  },
+  "schema": "hawking.odyssey.ple_source_output_control.v1",
+  "seal_sha256": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+  "source_support": {
+    "payload_bytes_materialized": 65679640,
+    "source_lookup_tensor_full_materializations": 0,
+    "source_model_loads": 0,
+    "tensors": [
+      {
+        "bytes": 52428800,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.key_proj.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "f431e2b51311b4bbea97ea0e02b6c35944033490dd5dc76bb5cc5b594f7af7de",
+        "shape": [
+          10240,
+          2560
+        ]
+      },
+      {
+        "bytes": 13107200,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.value_proj.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "d25aabbce09091bf133d776b41d5b3e0802c4d2523b9ca97003491c28db3c437",
+        "shape": [
+          2560,
+          2560
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.norm_key.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "516e94b36bec727c0d219282d9166ab7a6ad6684680d1f4f186b5738d2d5a6d6",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.norm_query.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "f5a531160c93e1345f15a02803fdefb5df59e830e7259d28f0cce8ca87fb121d",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.norm_conv.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "30ffcc1dfc34a7008f54447d199d9001dd534d8e04911976b587d2773575f705",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 81920,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.conv1d.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "06a84201bf8cc7082874aae671bc8688e848d51ccca9b78a0f1be791f1fb5f7e",
+        "shape": [
+          10240,
+          1,
+          4
+        ]
+      },
+      {
+        "bytes": 24,
+        "dtype": "I64",
+        "name": "model.language_model.layers.1.ple.ple_embedding.layer_multipliers",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "37349930c3c77bf4927b2afb6b50f30c404f42f00f5790bda96e7d9589c26477",
+        "shape": [
+          3
+        ],
+        "values": [
+          23703573157769,
+          20109073645365,
+          8052911324071
+        ]
+      },
+      {
+        "bytes": 128,
+        "dtype": "I64",
+        "name": "model.language_model.layers.1.ple.ple_embedding.ngram_heads_offsets",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "af1566f7a3be2f4a9ee8e2384aa161b8d45cfcbd92376827662a028679b7d8eb",
+        "shape": [
+          16
+        ],
+        "values": [
+          0,
+          20000003,
+          40000026,
+          60000059,
+          80000106,
+          100000165,
+          120000228,
+          140000297,
+          160000374,
+          180000455,
+          200000548,
+          220000655,
+          240000802,
+          260000955,
+          280001114,
+          300001275
+        ]
+      },
+      {
+        "bytes": 128,
+        "dtype": "I64",
+        "name": "model.language_model.layers.1.ple.ple_embedding.ngram_heads_vocab_sizes",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "81879b658d9974287ceecc77463e5fdd183cb4cd66692b061ea6af24ef414d39",
+        "shape": [
+          16
+        ],
+        "values": [
+          20000003,
+          20000023,
+          20000033,
+          20000047,
+          20000059,
+          20000063,
+          20000069,
+          20000077,
+          20000081,
+          20000093,
+          20000107,
+          20000147,
+          20000153,
+          20000159,
+          20000161,
+          20000171
+        ]
+      }
+    ]
+  },
+  "specimen": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "34567a4712bc",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "status": "SOURCE_BOUND_PLE_OUTPUT_CONTROL__NO_INDEPENDENT_PLE_OUTPUT_PARITY",
+  "token_sequence": {
+    "binding": "SEALED_LAYER0_BOS_INPUT",
+    "final_ngram_context": [
+      248044,
+      248044
+    ],
+    "initial_ngram_context": [
+      248044,
+      248044
+    ],
+    "token_ids": [
+      248044
+    ],
+    "trace": [
+      {
+        "accesses": [
+          {
+            "combined_row": 9663979,
+            "global_head": 0,
+            "head_within_ngram": 0,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 26558231,
+            "global_head": 1,
+            "head_within_ngram": 1,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 56120240,
+            "global_head": 2,
+            "head_within_ngram": 2,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 74755659,
+            "global_head": 3,
+            "head_within_ngram": 3,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 80459717,
+            "global_head": 4,
+            "head_within_ngram": 4,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 109265651,
+            "global_head": 5,
+            "head_within_ngram": 5,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 132697467,
+            "global_head": 6,
+            "head_within_ngram": 6,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 151022725,
+            "global_head": 7,
+            "head_within_ngram": 7,
+            "ngram_order": 2
+          },
+          {
+            "combined_row": 170054832,
+            "global_head": 8,
+            "head_within_ngram": 0,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 192967038,
+            "global_head": 9,
+            "head_within_ngram": 1,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 200687722,
+            "global_head": 10,
+            "head_within_ngram": 2,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 225763581,
+            "global_head": 11,
+            "head_within_ngram": 3,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 259275737,
+            "global_head": 12,
+            "head_within_ngram": 4,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 272983544,
+            "global_head": 13,
+            "head_within_ngram": 5,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 297596484,
+            "global_head": 14,
+            "head_within_ngram": 6,
+            "ngram_order": 3
+          },
+          {
+            "combined_row": 300986548,
+            "global_head": 15,
+            "head_within_ngram": 7,
+            "ngram_order": 3
+          }
+        ],
+        "segment_index": 0,
+        "segment_token_index": 0,
+        "session_token_index": 0,
+        "token_id": 248044
+      }
+    ]
+  }
+}
