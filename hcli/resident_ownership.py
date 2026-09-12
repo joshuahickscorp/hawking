@@ -25,9 +25,50 @@ from .backends import OpenAICompatibleBackend, terminate_pid
 from .persist import atomic_write_json
 from .resources import pid_is_alive, process_start_token
 
-_CORE_PATH = (
-    Path(__file__).resolve().parent.parent / "tools" / "future" / "resident_adoption.py"
-)
+def _decision_core_path() -> Path:
+    """Locate the pure adoption core from a checkout or stamped install.
+
+    The HCLI package is copied into ``~/.local/share/hcli/build-*`` by
+    ``install-shims``.  In that form ``Path(__file__).parent.parent`` is the
+    build directory, not the repository, so deriving ``tools/future`` from it
+    breaks an ordinary ``hcli web`` launch.  Keep the source module as the
+    single canonical owner, but resolve it through the install stamp when the
+    package is detached from the checkout.
+    """
+    candidates = []
+    configured = os.environ.get("HCLI_SOURCE_ROOT")
+    if configured:
+        candidates.append(Path(configured).expanduser() / "tools" / "future" /
+                          "resident_adoption.py")
+
+    package_root = Path(__file__).resolve().parent.parent
+    candidates.append(package_root / "tools" / "future" / "resident_adoption.py")
+
+    stamp_path = package_root / "install.json"
+    source: Optional[Path] = None
+    try:
+        stamp = json.loads(stamp_path.read_text(encoding="utf-8"))
+        raw_source = str(stamp.get("source", "")).strip()
+        if raw_source:
+            source = Path(raw_source).expanduser()
+    except (OSError, UnicodeError, json.JSONDecodeError, AttributeError):
+        source = None
+    if source is not None:
+        candidates.append(source / "tools" / "future" / "resident_adoption.py")
+        # install_shims stamps the package directory, while the source core
+        # lives beside that package at the repository root.
+        if source.name == "hcli":
+            candidates.append(source.parent / "tools" / "future" /
+                              "resident_adoption.py")
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    searched = ", ".join(str(path) for path in candidates)
+    raise ImportError(f"decision core is missing; searched: {searched}")
+
+
+_CORE_PATH = _decision_core_path()
 _spec = importlib.util.spec_from_file_location(
     "hawking_resident_adoption_core", _CORE_PATH
 )

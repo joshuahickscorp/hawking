@@ -15,7 +15,9 @@ def test_profile_echo_is_a_real_invocation():
     receipt = rec["tool_receipt"]
     assert receipt["schema"] == "hawking.vmcp.tool_receipt.v1"
     assert receipt["status"] == "ok"
-    assert receipt["elapsed_ms"] is not None
+    assert receipt["timing_unit"] == "ns"
+    assert isinstance(receipt["elapsed_ns"], int)
+    assert receipt["elapsed_ns"] >= 0
     assert receipt["network_used"] is False
     assert rec["execution"] == "REAL"
 

@@ -1,0 +1,86 @@
+{
+  "authority": {
+    "artifact_written": false,
+    "daemon_contacted": false,
+    "external_writes": false,
+    "tools_executed": false
+  },
+  "claim_boundary": "Direct KIMI response capability only. This does not prove broad coding capability, HCLI authorization, epistemic calibration, physical parity, destructive controls, or promotion readiness.",
+  "device": "mps",
+  "dtype": "bfloat16",
+  "elapsed_s": 361.7,
+  "generated_at": "2026-09-10T08:53:27.846077+00:00",
+  "schema": "hawking.kimi.workunit_capability_live.v1",
+  "scoring": "exact_json_object_equality_over_supplied_local_fixtures",
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "LIVE_INCOMPLETE",
+  "summary": {
+    "all_passed": false,
+    "passed": 3,
+    "score": "3/4",
+    "tasks": 4
+  },
+  "tasks": [
+    {
+      "expected": {
+        "operation": "evidence.record",
+        "samples": 12,
+        "status": "complete",
+        "target_met": true
+      },
+      "parse_error": null,
+      "parsed": {
+        "operation": "evidence.record",
+        "samples": 12,
+        "status": "complete",
+        "target_met": true
+      },
+      "passed": true,
+      "reply_snippet": "{\"operation\":\"evidence.record\",\"status\":\"complete\",\"samples\":12,\"target_met\":true}",
+      "task_id": "receipt_extract"
+    },
+    {
+      "expected": {
+        "next": "receipt"
+      },
+      "parse_error": null,
+      "parsed": {
+        "next": "receipt"
+      },
+      "passed": true,
+      "reply_snippet": "{\"next\":\"receipt\"}",
+      "task_id": "frontier_selection"
+    },
+    {
+      "expected": {
+        "allowed": [
+          "model.inspect"
+        ],
+        "withheld": [
+          "artifact.promote",
+          "external.write"
+        ]
+      },
+      "parse_error": "invalid JSON: Expecting value",
+      "parsed": null,
+      "passed": false,
+      "reply_snippet": "No markdown formattion.",
+      "task_id": "scope_partition"
+    },
+    {
+      "expected": {
+        "promotion": "withhold",
+        "reason": "artifact_hash_mismatch"
+      },
+      "parse_error": null,
+      "parsed": {
+        "promotion": "withhold",
+        "reason": "artifact_hash_mismatch"
+      },
+      "passed": true,
+      "reply_snippet": "{\"promotion\":\"withhold\",\"reason\":\"artifact_hash_mismatch\"}",
+      "task_id": "lineage_guard"
+    }
+  ]
+}

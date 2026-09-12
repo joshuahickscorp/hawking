@@ -74,8 +74,12 @@ def test_plan_document_agrees_with_the_live_lake():
 @pytest.mark.skipif(not REAL_SPECIMENS_DIR.is_dir(), reason="ModelLake volume not mounted")
 def test_deferred_giants_are_excluded_from_phase3():
     live = lp.snapshot()
-    assert live["deferred_n"] == 3
-    assert live["phase3_n"] == live["tiers"]["D_giant"]["n"] - 3
+    resident_repos = {
+        row["repo"] for row in lp.specimens.registry()["specimens"]
+    }
+    expected_deferred = len(resident_repos & lp.DEFERRED_GIANTS)
+    assert live["deferred_n"] == expected_deferred
+    assert live["phase3_n"] == live["tiers"]["D_giant"]["n"] - expected_deferred
 
 
 # --- gravity-gauntlet cost (receipts/runtime/GRAVITY_GAUNTLET_COST.md) ----
@@ -150,7 +154,7 @@ def test_gauntlet_hours_excludes_the_unmeasured_build_stage():
     assert g["A_tiny"]["probe_hours_lower_bound"] == pytest.approx(
         21 * lp.GRAVITY_BATTERY_MIXES["mean"] * lp.GRAVITY_PROBE_WALL_S["mean"] / 3600
     )
-    # D_giant row uses phase3 (minus the 3 deferred giants), not the raw tier
+    # D_giant row uses phase3 (minus resident deferred giants), not the raw tier
     assert g["D_giant_minus_deferred"]["n"] == 8
 
 

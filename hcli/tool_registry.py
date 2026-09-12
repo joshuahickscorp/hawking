@@ -37,6 +37,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
+from .latency import now_ns
+
 
 TOOL_SCHEMA = "hcli.agentos.tool.v1"
 
@@ -339,8 +341,21 @@ class ToolResult:
     artifact: Optional[Dict[str, Any]] = None
     started_at: float = field(default_factory=time.time)
     finished_at: Optional[float] = None
+    started_ns: int = field(default_factory=now_ns, repr=False)
+    finished_ns: Optional[int] = field(default=None, repr=False)
 
     def to_dict(self) -> Dict[str, Any]:
+        elapsed_ns = None
+        if self.finished_ns is not None:
+            elapsed_ns = max(0, int(self.finished_ns) - int(self.started_ns))
+        elif self.finished_at is not None:
+            # Compatibility for older direct constructors that only supplied
+            # wall-clock timestamps. New registry invocations pass monotonic
+            # ticks and never derive their measurement from the system clock.
+            elapsed_ns = max(
+                0,
+                int(round((self.finished_at - self.started_at) * 1_000_000_000)),
+            )
         return {
             "schema": "hcli.agentos.tool.result.v1",
             "tool": self.tool,
@@ -355,9 +370,13 @@ class ToolResult:
             "artifact": _redact(self.artifact),
             "started_at": self.started_at,
             "finished_at": self.finished_at,
+            "elapsed_ns": elapsed_ns,
+            "timing_unit": "ns",
+            # Derived compatibility view for v1 consumers. New readers use
+            # elapsed_ns, which remains exact and monotonic.
             "elapsed_s": (
-                self.finished_at - self.started_at
-                if self.finished_at is not None
+                elapsed_ns / 1_000_000_000.0
+                if elapsed_ns is not None
                 else None
             ),
         }
@@ -369,6 +388,97 @@ class ToolRegistry:
     def __init__(self, context: ToolContext):
         self.context = context
         self._tools: Dict[str, ToolSpec] = {}
+        # Registration is a build-time operation for the default registry, but
+        # callers may still add application tools later.  Keep the derived
+        # catalog structures lazy and invalidate them at the single mutation
+        # point instead of rebuilding alias roots and search text on every
+        # model turn.  The cached values are ToolSpecs/strings, not caller-
+        # mutable dictionaries, so discover() and describe() retain their
+        # existing fresh-result behavior.
+        self._catalog_index_cache: Optional[
+            Tuple[Tuple[ToolSpec, ...], Tuple[ToolSpec, ...], Dict[str, Tuple[str, ...]]]
+        ] = None
+        self._description_index_cache: Optional[
+            Tuple[Tuple[ToolSpec, str, str], ...]
+        ] = None
+        # The native dispatch fence uses only these two immutable contract
+        # fields. Avoid recreating every row for every tool invocation; a late
+        # registration invalidates it through the same single mutation point.
+        self._dispatch_entries_cache: Optional[Tuple[Dict[str, str], ...]] = None
+
+    def _invalidate_indexes(self) -> None:
+        self._catalog_index_cache = None
+        self._description_index_cache = None
+        self._dispatch_entries_cache = None
+
+    def _dispatch_entries(self) -> Tuple[Dict[str, str], ...]:
+        cached = self._dispatch_entries_cache
+        if cached is not None:
+            return cached
+        entries = tuple(
+            {"name": spec.name, "mutation": spec.mutation}
+            for spec in self._catalog_index()[0]
+        )
+        self._dispatch_entries_cache = entries
+        return entries
+
+    def _catalog_index(
+        self,
+    ) -> Tuple[Tuple[ToolSpec, ...], Tuple[ToolSpec, ...], Dict[str, Tuple[str, ...]]]:
+        """Build the immutable catalog index once per registry shape.
+
+        The registry deliberately remains mutable for application extensions,
+        so this is an invalidated cache rather than a module-level singleton.
+        Alias-chain resolution is centralized here; callers cannot observe a
+        different root depending on whether they asked for discovery or a
+        focused description.
+        """
+        cached = self._catalog_index_cache
+        if cached is not None:
+            return cached
+
+        def _root(name: str) -> str:
+            seen = {name}
+            spec = self._tools.get(name)
+            while spec is not None and spec.alias_of:
+                if spec.alias_of in seen:  # a cycle is a bug, not a loop to ride
+                    break
+                seen.add(spec.alias_of)
+                name = spec.alias_of
+                spec = self._tools.get(name)
+            return name
+
+        ordered = tuple(sorted(self._tools.values(), key=lambda item: item.name))
+        aliases: Dict[str, List[str]] = {}
+        for item in ordered:
+            if item.alias_of:
+                aliases.setdefault(_root(item.name), []).append(item.name)
+        canonical = tuple(item for item in ordered if not item.alias_of)
+        frozen_aliases = {
+            name: tuple(sorted(names)) for name, names in aliases.items()
+        }
+        result = (ordered, canonical, frozen_aliases)
+        self._catalog_index_cache = result
+        return result
+
+    def _description_index(self) -> Tuple[Tuple[ToolSpec, str, str], ...]:
+        """Return canonical specs with lower-cased search fields prepared."""
+        cached = self._description_index_cache
+        if cached is not None:
+            return cached
+        _ordered, canonical, _aliases = self._catalog_index()
+        result = tuple(
+            (
+                spec,
+                spec.name.lower(),
+                " ".join(
+                    (spec.name, spec.description, *spec.roles, *spec.resources)
+                ).lower(),
+            )
+            for spec in canonical
+        )
+        self._description_index_cache = result
+        return result
 
     def register(self, spec: ToolSpec) -> ToolSpec:
         name = str(spec.name or "").strip()
@@ -381,6 +491,7 @@ class ToolRegistry:
         if spec.alias_of and spec.alias_of not in self._tools:
             raise ValueError(f"alias target is not registered: {spec.alias_of}")
         self._tools[name] = spec
+        self._invalidate_indexes()
         return spec
 
     def get(self, name: str) -> Optional[ToolSpec]:
@@ -398,28 +509,10 @@ class ToolRegistry:
         are not independent model-facing capabilities. ``include_aliases``
         is available for diagnostics and migration audits.
         """
-        # Resolve alias CHAINS to their canonical root. Consolidation can make an
-        # alias point at a name that is itself now an alias -- filesystem.read ->
-        # fs.read -> fs -- and crediting only the direct target would leave the
-        # outer name callable but advertised by nothing. A capability nobody can
-        # find is the defect this campaign keeps paying for.
-        def _root(name: str) -> str:
-            seen = {name}
-            spec = self._tools.get(name)
-            while spec is not None and spec.alias_of:
-                if spec.alias_of in seen:  # a cycle is a bug, not a loop to ride
-                    break
-                seen.add(spec.alias_of)
-                name = spec.alias_of
-                spec = self._tools.get(name)
-            return name
-
-        aliases: Dict[str, List[str]] = {}
-        for item in self._tools.values():
-            if item.alias_of:
-                aliases.setdefault(_root(item.name), []).append(item.name)
+        ordered, canonical, aliases = self._catalog_index()
+        source = ordered if include_aliases else canonical
         result = []
-        for spec in sorted(self._tools.values(), key=lambda item: item.name):
+        for spec in source:
             if spec.alias_of and not include_aliases:
                 continue
             if role and spec.roles and role not in spec.roles:
@@ -457,21 +550,54 @@ class ToolRegistry:
         """
         query = str(focus or "").strip()
         terms = tuple(dict.fromkeys(re.findall(r"[a-z0-9][a-z0-9_.-]*", query.lower())))
+        retrieval_terms = tuple(dict.fromkeys(
+            term for item in terms
+            for term in (item, *_FOCUS_TERM_ALIASES.get(item, ()))
+        ))
         try:
             limit = max(1, min(32, int(max_results)))
         except (TypeError, ValueError):
             limit = 12
 
+        # The native child receives immutable catalog text and returns only an
+        # ordered list of canonical names. Python still owns schemas, aliases,
+        # permissions and dispatch; a native lookup cannot widen authority.
+        # If the child is absent or rejects a generation, retain the exact
+        # historical ranking below rather than inventing a second fallback.
+        try:
+            from .repo_context import native_tool_catalog
+            native = native_tool_catalog(
+                self.context.repo_root,
+                entries=[
+                    {"name": spec.name, "search_text": haystack}
+                    for spec, _name, haystack in self._description_index()
+                ],
+                terms=retrieval_terms,
+                max_results=limit,
+            )
+        except Exception:
+            native = None
+        if native is not None:
+            names = native.get("names")
+            by_name = {spec.name: spec for spec, _name, _haystack in self._description_index()}
+            if isinstance(names, list) and all(isinstance(name, str) and name in by_name for name in names):
+                chosen = [by_name[name] for name in names]
+                matches = [spec.to_dict() for spec in chosen]
+                return {
+                    "names": names,
+                    "matches": matches,
+                    "shown": len(matches),
+                    "match_count": native.get("match_count"),
+                    "truncated": bool(native.get("match_count", 0) > len(matches)),
+                    "focus": query,
+                    "provenance": "hawking-gravityd.tool-catalog.v1",
+                    "native_elapsed_ns": native.get("elapsed_ns"),
+                }
+
         scored: List[Tuple[int, str, ToolSpec]] = []
-        for spec in self._tools.values():
-            if spec.alias_of:
-                continue
-            name = spec.name.lower()
-            haystack = " ".join(
-                (spec.name, spec.description, *spec.roles, *spec.resources)
-            ).lower()
+        for spec, name, haystack in self._description_index():
             score = 0
-            for term in terms:
+            for term in retrieval_terms:
                 if term == name:
                     score += 100
                 elif term in name:
@@ -501,13 +627,39 @@ class ToolRegistry:
         invocation_id = f"tool-{uuid.uuid4()}"
         spec = self.get(name)
         started = time.time()
+        started_ns = now_ns()
         if spec is None:
             return ToolResult(
                 tool=str(name), invocation_id=invocation_id, ok=False,
                 error=f"unknown tool: {name}", failure_class="UNKNOWN_TOOL",
                 started_at=started, finished_at=time.time(),
+                started_ns=started_ns, finished_ns=now_ns(),
             )
         args = dict(arguments or {})
+        # This is an additional fail-closed admission fence, not a replacement
+        # for Python's schema/handler boundary. A native denial is final; an
+        # unavailable native child preserves the historical local check below.
+        try:
+            from .repo_context import native_tool_dispatch_admit
+            native_admission = native_tool_dispatch_admit(
+                self.context.repo_root,
+                entries=self._dispatch_entries(),
+                name=spec.name,
+                mutation=spec.mutation,
+                permissions=sorted(self.context.permissions),
+            )
+        except Exception:
+            native_admission = None
+        if native_admission is not None and native_admission.get("admitted") is not True:
+            return ToolResult(
+                tool=spec.name, invocation_id=invocation_id, ok=False,
+                error=str(native_admission.get("reason") or "native dispatch admission refused"),
+                failure_class="PERMISSION_DENIED", mutation=spec.mutation,
+                deterministic=spec.deterministic,
+                provenance={"source": "hawking-gravityd.tool-dispatch.v1"},
+                started_at=started, finished_at=time.time(),
+                started_ns=started_ns, finished_ns=now_ns(),
+            )
         schema_error = validate_input(args, spec.input_schema)
         if schema_error:
             return ToolResult(
@@ -516,6 +668,7 @@ class ToolRegistry:
                 mutation=spec.mutation, deterministic=spec.deterministic,
                 provenance={"source": spec.provenance},
                 started_at=started, finished_at=time.time(),
+                started_ns=started_ns, finished_ns=now_ns(),
             )
         # A caller may request a shorter timeout, never a longer one than the
         # tool contract declares.  Handlers that support timeouts receive the
@@ -534,6 +687,7 @@ class ToolRegistry:
                     mutation=spec.mutation, deterministic=spec.deterministic,
                     provenance={"source": spec.provenance},
                     started_at=started, finished_at=time.time(),
+                    started_ns=started_ns, finished_ns=now_ns(),
                 )
         if spec.mutation not in self.context.permissions:
             return ToolResult(
@@ -543,6 +697,7 @@ class ToolRegistry:
                 deterministic=spec.deterministic,
                 provenance={"source": spec.provenance},
                 started_at=started, finished_at=time.time(),
+                started_ns=started_ns, finished_ns=now_ns(),
             )
         try:
             value = spec.handler(self.context, args)
@@ -555,6 +710,7 @@ class ToolRegistry:
                     deterministic=spec.deterministic,
                     provenance={"source": spec.provenance},
                     started_at=started, finished_at=time.time(),
+                    started_ns=started_ns, finished_ns=now_ns(),
                 )
             finished = time.time()
             artifact = value.get("artifact") if isinstance(value, dict) else None
@@ -565,6 +721,7 @@ class ToolRegistry:
                 provenance={"source": spec.provenance, "observed_at": finished},
                 artifact=artifact if isinstance(artifact, dict) else None,
                 started_at=started, finished_at=finished,
+                started_ns=started_ns, finished_ns=now_ns(),
             )
         except subprocess.TimeoutExpired as exc:
             return ToolResult(
@@ -574,6 +731,7 @@ class ToolRegistry:
                 deterministic=spec.deterministic,
                 provenance={"source": spec.provenance},
                 started_at=started, finished_at=time.time(),
+                started_ns=started_ns, finished_ns=now_ns(),
             )
         except Exception as exc:  # noqa: BLE001 - tool failures are receipt data
             return ToolResult(
@@ -583,6 +741,7 @@ class ToolRegistry:
                 deterministic=spec.deterministic,
                 provenance={"source": spec.provenance},
                 started_at=started, finished_at=time.time(),
+                started_ns=started_ns, finished_ns=now_ns(),
             )
 
 
@@ -597,6 +756,28 @@ def _text_limit(value: Any, default: int = 64 * 1024, maximum: int = _MAX_READ_B
 #: observation budget is 500 characters; twelve compact rows fit, an unbounded
 #: lake or process table does not.
 _ACTIONABLE_SHOW_DEFAULT = 12
+
+# Focus retrieval is a semantic index, not a second permission system. These
+# bounded expansions make ordinary language such as "authorized defensive
+# security" reach the existing audit/shell/test/research primitives without
+# advertising mutation or inventing a generic god-tool. Canonical schemas and
+# mutation checks still decide what can actually be invoked.
+_FOCUS_TERM_ALIASES: Dict[str, Tuple[str, ...]] = {
+    # Product-level words name the capability plane, not one implementation.
+    # A live P0 asked for "HCLI/AgentOS" and received zero catalog matches even
+    # though the same session had 111 callable spellings.  Map those umbrella
+    # names onto the existing read/control vocabulary; scoring and the session's
+    # permission-filtered registry still decide which concrete doors survive.
+    "hcli": ("tool", "repository", "receipt", "process", "campaign"),
+    "agentos": ("tool", "repository", "receipt", "process", "campaign"),
+    "capabilities": ("tool", "repository", "receipt", "process", "campaign"),
+    "authorized": ("permission", "authority", "roles", "confirm"),
+    "authorised": ("permission", "authority", "roles", "confirm"),
+    "defensive": ("audit", "capability", "claim", "gravity", "tests"),
+    "security": ("audit", "capability", "claim", "shell", "git", "tests"),
+    "red-team": ("audit", "attack", "capability", "gravity", "tests"),
+    "redteam": ("audit", "attack", "capability", "gravity", "tests"),
+}
 
 
 def _shown_limit(value: Any, default: int = _ACTIONABLE_SHOW_DEFAULT, maximum: int = 32) -> int:
@@ -618,7 +799,7 @@ def _lead_with(payload: Mapping[str, Any], *first: str) -> Dict[str, Any]:
     return out
 
 
-_SCOPE_KEYS = ("n", "total", "count", "shown", "truncated", "truncation_note",
+_SCOPE_KEYS = ("n", "total", "count", "shown", "round_id", "truncated", "truncation_note",
                "n_owed", "n_processes", "n_orphaned", "n_ranked", "n_specimens",
                "specimen_count")
 
@@ -674,8 +855,40 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             f"read it first -- emit a create operation for that path."
         )
     limit = _text_limit(args.get("max_bytes"))
-    raw = path.read_bytes()
     encoding = str(args.get("encoding") or "utf-8")
+    start = args.get("start_line")
+    end = args.get("end_line")
+
+    # The resident Rust owner can handle the common UTF-8 repository path, but
+    # returning file bodies over JSONL is currently slower than the in-process
+    # handler. Keep it an explicit lab opt-in until a direct/shared-buffer ABI
+    # earns promotion. Non-UTF-8, negative-window, and non-repository cases
+    # always stay on the exact Python path.
+    native_window = all(
+        value is None or (isinstance(value, int) and not isinstance(value, bool) and value >= 0)
+        for value in (start, end)
+    )
+    if (
+        os.environ.get("HCLI_NATIVE_GRAVITY_READ") == "1"
+        and encoding.lower().replace("_", "-") == "utf-8"
+        and native_window
+    ):
+        try:
+            from .repo_context import native_filesystem_read
+            native = native_filesystem_read(
+                context.repo_root,
+                path,
+                max_bytes=limit,
+                start_line=start,
+                end_line=end,
+            )
+        except Exception:
+            native = None
+        if native is not None:
+            native["provenance"] = "hawking-gravityd.read-file.v1"
+            return native
+
+    raw = path.read_bytes()
 
     # A WINDOW, because without one a large file can only ever be read from the
     # top. fs.read returned the first 4,001 bytes of a 188,062-byte engine.py,
@@ -684,8 +897,6 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     # "Need to see the actual _record_model_call function ... to implement the
     # grammar_enforced field correctly". It could find the code and not look at
     # it. Lines are 1-indexed and inclusive, matching what fs.search returns.
-    start = args.get("start_line")
-    end = args.get("end_line")
     line_window = start is not None or end is not None
     if line_window:
         text = raw.decode(encoding, errors="replace")
@@ -808,6 +1019,39 @@ def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     # silently returning nothing when the two disagree.
     glob = single_file.name if single_file is not None else str(args.get("glob") or "*")
     limit = max(1, min(1000, int(args.get("max_results") or 100)))
+    max_per_file_raw = args.get("max_per_file")
+    max_per_file = (
+        max(1, min(1000, int(max_per_file_raw)))
+        if max_per_file_raw is not None else None
+    )
+    # Native search is used only for the same repository-root read scope that
+    # the resident index was built for. It keeps Python's exact case-sensitive
+    # line matching, basename glob, result cap, and per-file cap in the Rust
+    # query contract; a missing/stale/unavailable native path falls back to
+    # this bounded implementation.
+    try:
+        from .repo_context import native_filesystem_search
+        native = native_filesystem_search(
+            context.repo_root, root, needle=needle, glob=glob,
+            max_results=limit, max_per_file=max_per_file,
+        )
+    except Exception:
+        native = None
+    if native is not None:
+        matches = []
+        for row in native.get("matches") or []:
+            if not isinstance(row, dict):
+                continue
+            item = dict(row)
+            raw_path = item.get("path")
+            if raw_path is not None and not Path(str(raw_path)).is_absolute():
+                item["path"] = str(context.repo_root / str(raw_path))
+            matches.append(item)
+        native["root"] = str(root)
+        native["pattern"] = needle
+        native["matches"] = matches
+        native["provenance"] = "hawking-gravityd.search-files.v1"
+        return native
     matches: List[Dict[str, Any]] = []
     files_seen = 0
     skipped_large = 0
@@ -839,11 +1083,15 @@ def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
                 data = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
+            file_hits = 0
             for line_number, line in enumerate(data.splitlines(), 1):
                 if needle in line:
                     matches.append({"path": str(path), "line": line_number, "text": line[:1000]})
+                    file_hits += 1
                     if len(matches) >= limit:
                         return {"root": str(root), "pattern": needle, "matches": matches, "truncated": True, "files_seen": files_seen}
+                    if max_per_file is not None and file_hits >= max_per_file:
+                        break
     return {"root": str(root), "pattern": needle, "matches": matches, "truncated": False, "files_seen": files_seen}
 
 
@@ -868,6 +1116,23 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     # capture directories with tens of thousands of files. A tool that costs
     # half a minute is not a tool the model can afford to look with.
     recursive = bool(args.get("recursive", False))
+    # The resident Rust path performs the same bounded discovery without
+    # Python's os.walk/stat loop. It returns None when the native owner is not
+    # available or the path is outside its repository root, preserving the
+    # historical implementation as a differential compatibility path.
+    try:
+        from .repo_context import native_filesystem_list
+        native = native_filesystem_list(
+            context.repo_root, root, glob=glob, max_results=limit,
+            recursive=recursive,
+        )
+    except Exception:
+        native = None
+    if native is not None:
+        native["root"] = str(root)
+        native["glob"] = glob
+        native["provenance"] = "hawking-gravityd.list.v1"
+        return native
     entries: List[Dict[str, Any]] = []
     directories: List[Dict[str, Any]] = []
     truncated = False
@@ -895,7 +1160,10 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             path = Path(dirpath) / dirname
             directories.append({
                 "path": str(path.relative_to(root)),
+                "filename": path.name,
+                "type": "directory",
                 "kind": "directory",
+                "size": None,
             })
         for filename in sorted(filenames):
             if not Path(filename).match(glob):
@@ -910,7 +1178,16 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
                 size = path.stat().st_size
             except OSError:
                 continue
-            entries.append({"path": str(path.relative_to(root)), "bytes": size})
+            entries.append({
+                "path": str(path.relative_to(root)),
+                "filename": path.name,
+                "type": "file",
+                "kind": "file",
+                # Keep ``bytes`` for compatibility while making the
+                # model-facing discovery record self-describing.
+                "size": size,
+                "bytes": size,
+            })
         if not recursive:
             break
     return {
@@ -1832,6 +2109,34 @@ def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
     """
     root = context.repo_root
     out: Dict[str, Any] = {}
+    sovereign_path = root / "civilization" / "sovereign-goal.txt"
+    sovereign: Optional[Dict[str, Any]] = None
+    if sovereign_path.is_file():
+        try:
+            sovereign_text = sovereign_path.read_text(encoding="utf-8")
+            primary_match = re.search(
+                r"\bPRIMARY OBJECTIVE:\s*(.+)", sovereign_text)
+            headings = list(re.finditer(r"(?m)^###\s+(.+?)\s*$", sovereign_text))
+            latest_heading = headings[-1] if headings else None
+            latest_body = (
+                sovereign_text[latest_heading.end():].strip()
+                if latest_heading is not None else ""
+            )
+            sovereign = {
+                "path": str(sovereign_path.relative_to(root)),
+                "mtime": int(sovereign_path.stat().st_mtime),
+                "primary_objective": (
+                    primary_match.group(1).strip() if primary_match else None),
+                "latest_section": (
+                    latest_heading.group(1).strip()
+                    if latest_heading is not None else None),
+                "latest_section_excerpt": latest_body[:1600],
+            }
+        except Exception as exc:
+            sovereign = {
+                "path": str(sovereign_path.relative_to(root)),
+                "unreadable": f"{type(exc).__name__}: {exc}",
+            }
     led = root / "receipts" / "future" / "G034_ODYSSEY_LEDGER.json"
     axes: Dict[str, Any] = {}
     owed_depth: List[str] = []
@@ -1860,9 +2165,31 @@ def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
         newest = sorted(rdir.glob("*.json"), key=lambda q: q.stat().st_mtime,
                         reverse=True)[:6]
         for q in newest:
-            recent.append({"receipt": q.name, "mtime": int(q.stat().st_mtime)})
+            # receipt.read accepts repository-relative paths beginning with
+            # receipts/. A bare filename looked human-readable but was not an
+            # executable handoff: the resident had to guess the missing
+            # directory and repeatedly invented stale paths. Return the exact
+            # callable path owned by this state observation.
+            recent.append({
+                "receipt": str(q.relative_to(root)),
+                "mtime": int(q.stat().st_mtime),
+            })
     cont = _read_continuation(root)
+    continuation_written = (
+        cont.get("written_at") if isinstance(cont, dict) else None)
+    sovereign_mtime = sovereign.get("mtime") if isinstance(sovereign, dict) else None
+    continuation_older = bool(
+        isinstance(continuation_written, (int, float))
+        and isinstance(sovereign_mtime, (int, float))
+        and continuation_written < sovereign_mtime
+    )
     out = {
+        "authoritative_parent": sovereign,
+        "continuation_older_than_parent": continuation_older,
+        "authority_note": (
+            "civilization/sovereign-goal.txt carries the durable parent; the "
+            "continuation is a child checkpoint and must not override a newer "
+            "parent section"),
         "continuation": cont or (
             "no checkpoint on disk; this restart costs a re-planned campaign. "
             "Write one with campaign.checkpoint at the next transition."),
@@ -1952,27 +2279,83 @@ def _vmcp_query(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
 
 def _architecture_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     from .architecture import ArchitectureRecognizer
+    from .repo_context import native_mega_kernel_plan
 
     path = context.resolve_read_path(args.get("path"))
-    architecture_atlas = None
-    atlas_path = context.repo_root / "receipts" / "headless" / "ACCELERATOR_ARCHITECTURE_ATLAS.json"
-    try:
-        candidate = json.loads(atlas_path.read_text(encoding="utf-8"))
-        if isinstance(candidate, Mapping):
-            from tools.accelerator.architecture_atlas import validate_atlas
-
-            validate_atlas(candidate)
-            architecture_atlas = candidate
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
-        # Metadata inspection remains useful when the optional planning atlas
-        # is absent or stale; it simply returns the historical plan shape.
-        architecture_atlas = None
+    architecture_atlas = _load_architecture_atlas_for_context(context)
     backend = str(args.get("backend") or "").strip() or None
-    return ArchitectureRecognizer(max_tensors=int(args.get("max_tensors") or 250000)).inspect(
+    result = ArchitectureRecognizer(max_tensors=int(args.get("max_tensors") or 250000)).inspect(
         path,
         architecture_atlas=architecture_atlas,
         backend=backend,
     )
+    # The Python PhysicalGraph remains the compatibility contract. When this
+    # runs under hawkingd's single native child, additionally attach the
+    # Rust-owned normalized plan and its exact native-lowering registry. A
+    # missing or older child is non-fatal and cannot alter selection.
+    native = native_mega_kernel_plan(
+        context.repo_root,
+        model_id=str(result.get("model_id") or "unknown"),
+        organs=[
+            organ for organ in result.get("organs") or []
+            if isinstance(organ, Mapping) and organ.get("present")
+        ],
+    )
+    if isinstance(native, Mapping) and isinstance(native.get("plan"), Mapping):
+        graph = result.get("physical_graph")
+        if isinstance(graph, Mapping):
+            graph["native_mega_kernel"] = native["plan"]
+            graph["native_mega_kernel_claim_boundary"] = native.get("claim_boundary")
+    return result
+
+
+def _load_architecture_atlas_for_context(context: ToolContext) -> Optional[Mapping[str, Any]]:
+    """Load the canonical atlas from a checkout or an installed package source.
+
+    HCLI snapshots intentionally package only the runtime package, not the
+    whole Hawking checkout.  A package-local ``repo_root`` therefore may not
+    contain ``receipts/`` even though the install stamp still names the
+    authoritative source checkout.  This lookup keeps a read-only tool's
+    planning surface portable without copying or regenerating the atlas.
+    """
+
+    roots = [context.repo_root, Path(__file__).resolve().parent.parent]
+    stamp_path = Path(__file__).resolve().parent.parent / "install.json"
+    try:
+        stamp = json.loads(stamp_path.read_text(encoding="utf-8"))
+        source = Path(str(stamp.get("source") or "")).expanduser()
+        if source.is_dir():
+            roots.append(source.parent)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        pass
+
+    seen: set[Path] = set()
+    for root in roots:
+        try:
+            root = root.resolve(strict=False)
+        except OSError:
+            continue
+        if root in seen:
+            continue
+        seen.add(root)
+        atlas_path = root / "receipts" / "headless" / "ACCELERATOR_ARCHITECTURE_ATLAS.json"
+        try:
+            candidate = json.loads(atlas_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if not isinstance(candidate, Mapping):
+            continue
+        if (
+            candidate.get("schema") != "hawking.accelerator.architecture_atlas.v1"
+            or not isinstance(candidate.get("fingerprint"), str)
+            or len(str(candidate["fingerprint"])) != 64
+            or not isinstance(candidate.get("entries"), list)
+        ):
+            continue
+        return candidate
+    # Metadata inspection remains useful if the optional planning atlas is
+    # unavailable or invalid; it simply returns the historical plan shape.
+    return None
 
 
 def _doctor_query(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -2298,6 +2681,42 @@ def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         "expert_anatomy_reachable": census.get("expert_anatomy_reachable"),
         "reachable_gib": census.get("reachable_gib"),
         "blocked_gib": census.get("blocked_gib"),
+    }
+
+
+def _lake_catalog(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Read the resident native ModelLake catalog without a specimen walk.
+
+    The compatibility branch is intentionally small and explicit: it reads an
+    existing catalog JSON only.  It never substitutes a live lake walk when a
+    Rust daemon is missing, so runtime speed cannot silently change semantics.
+    """
+    catalog = str(args.get("catalog") or "receipts/future/modellake-index/catalog.json")
+    slug = str(args.get("slug") or "").strip() or None
+    try:
+        from .repo_context import native_modellake_catalog
+        native = native_modellake_catalog(context.repo_root, slug=slug, catalog=catalog)
+    except Exception:
+        native = None
+    if native is not None:
+        return {"backend": "hawking-gravityd", **native}
+    document = json.loads(Path(catalog).read_text(encoding="utf-8"))
+    if document.get("schema") != "hawking.modellake.index.catalog.v1":
+        raise ValueError(f"{catalog} is not a ModelLake catalog v1")
+    rows = document.get("specimens") or []
+    if slug:
+        row = next((row for row in rows if row.get("slug") == slug), None)
+        if row is None:
+            raise KeyError(f"{slug} is not in {catalog}")
+        return {"backend": "catalog-json-compat", "catalog": catalog, "specimen": row}
+    return {
+        "backend": "catalog-json-compat",
+        "catalog": catalog,
+        "n_specimens": document.get("n_specimens"),
+        "n_partial": document.get("n_partial"),
+        "tier2_used_bytes": document.get("tier2_used_bytes"),
+        "tier2_budget": document.get("tier2_budget"),
+        "over_budget": document.get("over_budget"),
     }
 
 
@@ -3263,7 +3682,12 @@ def _physical_rounds(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
         }
     paths = sorted(root.glob("*.json"), key=lambda q: q.stat().st_mtime, reverse=True)
     rows: List[Dict[str, Any]] = []
-    for q in paths[: max(shown * 4, 40)]:
+    # Non-emittable receipts can be newer than the last real model round (for
+    # example, a failed/closed HCLI turn). Limiting before filtering made the
+    # door report zero usable round ids even when hundreds of older emittable
+    # rounds existed. Walk until the requested number of emittable rows is
+    # found, or until the complete receipt directory has been checked.
+    for q in paths:
         try:
             d = json.loads(q.read_text())
         except Exception as exc:
@@ -3283,11 +3707,13 @@ def _physical_rounds(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
             "why": None if calls else "no model_calls -- nothing physical happened",
         })
     emittable = [r for r in rows if r.get("emittable")]
+    first_round_id = emittable[0]["round_id"] if emittable else None
     out = {
         "rounds": emittable[:shown],
         "n": len(emittable[:shown]),
         "total": len(paths),
         "shown": len(emittable[:shown]),
+        "round_id": first_round_id,
         "n_emittable_scanned": len(emittable),
         "n_scanned": len(rows),
         "next": "physical.emit with one of these round_id values",
@@ -3366,6 +3792,8 @@ def _physical_measure(context: ToolContext, args: Dict[str, Any]) -> Dict[str, A
     COSTLY: it loads and runs a model. Do not launch it beside another timing
     measurement; shared CPU invalidates both.
     """
+    if args.get("confirm") is not True:
+        raise PermissionError("physical measurement loads and runs a body; requires confirm=true")
     _future_tools_on_path(context)
     snapshot = str(args.get("snapshot") or "").strip()
     specimen = str(args.get("specimen") or "").strip()
@@ -3718,6 +4146,14 @@ def default_tool_registry(
         ),
     ))
     registry.register(ToolSpec(
+        "lake.catalog",
+        "Read one indexed ModelLake specimen or catalog summary without walking ModelLake or opening weights.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"catalog": {"type": "string"}, "slug": {"type": "string"}}},
+        resources=("filesystem",),
+        handler=_lake_catalog,
+    ))
+    registry.register(ToolSpec(
         "lake.census",
         "Reachability and complete EBPW for every ModelLake specimen, from safetensors headers only; reads no payload bytes.",
         {"type": "object", "additionalProperties": False,
@@ -3822,13 +4258,13 @@ def default_tool_registry(
     registry.register(ToolSpec(
         "fs.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
-         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
+         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}, "max_per_file": {"type": "integer"}}},
         handler=_search_files,
     ))
     registry.register(ToolSpec(
         "filesystem.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
-         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
+         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}, "max_per_file": {"type": "integer"}}},
         alias_of="fs.search", handler=_search_files,
     ))
     # `path` is NOT required: the handler already defaults to the workspace root
@@ -4466,9 +4902,10 @@ def default_tool_registry(
         "path and concurrency. This is how gpu/cpu/tps stop being OWED on bodies "
         "the resident never ran. COSTLY -- never run it beside another timing "
         "measurement.",
-        {"type": "object", "required": ["snapshot", "specimen"],
+        {"type": "object", "required": ["snapshot", "specimen", "confirm"],
          "additionalProperties": False,
          "properties": {"snapshot": {"type": "string"}, "specimen": {"type": "string"},
+                        "confirm": {"type": "boolean"},
                         "nr": {"type": "string"},
                         "prompt_tokens": {"type": "integer"},
                         "decode_tokens": {"type": "integer"},

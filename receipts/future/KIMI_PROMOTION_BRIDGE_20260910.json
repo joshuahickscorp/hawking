@@ -1,0 +1,9 @@
+{
+  "candidate_id": "OPG",
+  "claim_boundary": "Plan-only bridge. This command cannot write KIMI weights or create an NX artifact while the gate is refused.",
+  "gate_receipt": "receipts/future/KIMI_OPERATOR_GATE_20260910.json",
+  "generated_at": "2026-09-10T13:44:35.183376+00:00",
+  "reason": "candidate is absent from the gate receipt",
+  "schema": "hawking.kimi.promotion_bridge.v1",
+  "status": "PROMOTION_REFUSED"
+}

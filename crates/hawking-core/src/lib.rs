@@ -130,6 +130,23 @@ pub mod gravity_deepseek_v4_token_ns_ledger;
 /// ranges for a future Metal executor. It is storage-only: no device upload,
 /// forward, Engine, serving, or TPS surface exists here.
 pub mod gravity_deepseek_v4_verified_tensor_cache;
+/// Complete representation-byte manifest that feeds the deterministic policy.
+pub mod gravity_manifest;
+pub mod gravity_policy;
+/// Deterministic, bounded native repository search for the Gravity discovery lane.
+pub mod gravity_repo_search;
+/// Native pure ranking for the HCLI tool catalog; Python remains dispatch and
+/// permission authority.
+pub mod gravity_tool_catalog;
+/// Native name/mutation/permission admission fence below the Python tool
+/// dispatcher. It has no handler execution authority.
+pub mod gravity_tool_dispatch;
+/// Read-only deterministic ModelLake catalog query; it never walks sealed
+/// specimens or opens model payloads.
+pub mod model_lake_catalog;
+/// Deterministic header-only safetensors inventory and byte-closure verifier.
+/// Gravity admission uses this before any source payload becomes executable.
+pub mod safetensors_inventory;
 /// Unified TOKEN_NS schema + adapters + closure + lane reconciler.
 /// Does not sit on a runtime hot path; both existing ledgers stay as-is.
 pub mod token_ns;
@@ -143,6 +160,9 @@ pub mod gravity_llama;
 pub mod json_constrain;
 pub mod kernel_bench;
 pub mod kernels;
+/// Deterministic provider-neutral model-aware execution spine shared by
+/// CPU/Metal/ANE and future backend lowerings. Plan-only until gated.
+pub mod mega_kernel;
 pub mod metal;
 pub mod mixed_quant_store;
 pub mod model;

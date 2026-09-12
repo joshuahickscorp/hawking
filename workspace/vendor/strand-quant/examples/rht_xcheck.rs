@@ -1,4 +1,3 @@
-
 use strand_quant::{rht_forward, RhtConfig};
 
 fn rht_seed_for(name: &str) -> u64 {
@@ -15,7 +14,7 @@ fn main() {
     let n: usize = a.next().expect("in_features").parse().unwrap();
     let name = a.next().expect("tensor name");
     let seed = rht_seed_for(&name);
-    
+
     let x: Vec<f32> = (0..n)
         .map(|i| (i as f32) * 0.001 - 0.5 + ((i as f32) * 0.05).sin() * 0.1)
         .collect();

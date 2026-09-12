@@ -108,7 +108,7 @@ fn run_hawking(opts: &BenchOptions) -> Result<serde_json::Value> {
     // meaningful in aggregate. We serialize them in the returned value so
     // lib.rs can compute summaries for --trace-json.
     let mut all_dispatch_samples: Vec<hawking_core::metal::DispatchSample> = Vec::new();
-    let mut total_decode_ms: f64 = 0.0;
+    let mut total_decode_ns: u64 = 0;
     let prompt = resolve_prompt();
     for _ in 0..opts.trials {
         let req = GenerateRequest {
@@ -135,7 +135,7 @@ fn run_hawking(opts: &BenchOptions) -> Result<serde_json::Value> {
             .map_err(|e| anyhow!("{e}"))?;
         let decode_tps = measured_decode_tps(&stats).unwrap_or(0.0);
         tps.push(decode_tps);
-        total_decode_ms += stats.decode_ms;
+        total_decode_ns = total_decode_ns.saturating_add(stats.decode_elapsed_ns());
         let mut ts = serde_json::json!({
             "decode_tps": decode_tps,
             "produced_tokens": produced,
@@ -147,8 +147,11 @@ fn run_hawking(opts: &BenchOptions) -> Result<serde_json::Value> {
             } else {
                 stats.completion_tokens
             },
+            "timing_unit": "ns",
+            "prefill_ns": stats.prefill_elapsed_ns(),
+            "decode_ns": stats.decode_elapsed_ns(),
             "prefill_ms": stats.prefill_ms,
-            "decode_ms": stats.decode_ms,
+            "decode_ms": stats.decode_elapsed_ns() as f64 / 1_000_000.0,
             "draft_accepted": stats.draft_accepted,
             "draft_rejected": stats.draft_rejected,
             "profile_id": stats.profile_id,
@@ -198,7 +201,7 @@ fn run_hawking(opts: &BenchOptions) -> Result<serde_json::Value> {
     // all_dispatch_samples is empty and we omit both fields).
     if !all_dispatch_samples.is_empty() {
         let total_dispatch_us: u64 = all_dispatch_samples.iter().map(|s| s.wall_us).sum();
-        let total_decode_us = (total_decode_ms * 1000.0) as u64;
+        let total_decode_us = total_decode_ns / 1_000;
         if let Some(obj) = result.as_object_mut() {
             obj.insert(
                 "dispatch_samples".to_string(),

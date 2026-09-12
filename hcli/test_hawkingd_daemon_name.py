@@ -15,6 +15,7 @@ import tempfile
 from pathlib import Path
 
 import hcli.agentos.resident as R
+import hcli.hawkingd as D
 from hcli.cli import DAEMON_SHIM, install_shims
 
 
@@ -74,6 +75,46 @@ def test_daemon_main_routes_both_long_lived_roles():
     assert "--worker" in src and "_worker_main" in src
 
 
+def test_hawkingd_routes_the_http_surface(monkeypatch):
+    """The browser/OpenAI surface has the same daemon owner as the resident."""
+    import hcli.serve as serve
+
+    seen = []
+    monkeypatch.setattr(serve, "main", lambda argv: seen.append(argv) or 23)
+    assert D.main(["serve", "KIMI_P0_OPERATIONAL", "--port", "8014"]) == 23
+    assert seen == [["KIMI_P0_OPERATIONAL", "--port", "8014"]]
+
+
+def test_native_hawkingd_name_is_not_replaced_by_setproctitle():
+    """Activity Monitor should retain the native umbrella process name."""
+    import inspect
+    import hcli.serve as serve
+
+    src = inspect.getsource(serve.main)
+    assert 'Path(sys.executable).name != "hawkingd"' in src
+
+
+def test_daemon_lease_blocks_a_second_long_lived_surface(tmp_path, monkeypatch):
+    """A second port must not load another body into unified memory."""
+    lock = tmp_path / "hawkingd.lock"
+    monkeypatch.setenv("HCLI_DAEMON_LOCK", str(lock))
+    first = D.acquire_daemon_lease("serve", {"port": 8014})
+    try:
+        payload = __import__("json").loads(lock.read_text())
+        assert payload["role"] == "serve"
+        assert payload["port"] == 8014
+        try:
+            D.acquire_daemon_lease("serve", {"port": 8015})
+        except D.DaemonAlreadyRunning as exc:
+            assert "already owns" in str(exc)
+        else:
+            raise AssertionError("second Hawking surface was not refused")
+    finally:
+        first.release()
+    second = D.acquire_daemon_lease("serve", {"port": 8015})
+    second.release()
+
+
 def test_install_writes_a_daemon_shim_that_is_not_the_client():
     with tempfile.TemporaryDirectory() as tmp:
         assert install_shims(home=tmp) == 0
@@ -91,3 +132,11 @@ def test_install_writes_a_daemon_shim_that_is_not_the_client():
             "--supervise/--worker"
         )
         assert ".local/share/hcli/current" in dtext, "daemon shim lost its PYTHONPATH"
+        assert "-P -m hcli.hawkingd" in dtext, (
+            "daemon shim can be shadowed by an older checkout"
+        )
+        deployed = Path(tmp) / ".local/share/hcli/current/hawkingd"
+        assert deployed.is_file(), "native hawkingd executable identity was not installed"
+        assert '"$BASE/hawkingd"' in dtext, (
+            "daemon shim still exposes a generic Python executable to Activity Monitor"
+        )

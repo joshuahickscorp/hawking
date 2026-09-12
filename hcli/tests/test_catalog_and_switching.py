@@ -12,7 +12,7 @@ import json
 import unittest
 from pathlib import Path
 
-from hcli.catalog import Body, _deduplicate, resolve
+from hcli.catalog import Body, _deduplicate, catalog, resolve
 from hcli.serve import Resident
 
 
@@ -75,6 +75,46 @@ class TestNamesDoNotCollideSilently(unittest.TestCase):
     def test_a_path_resolves_to_its_body(self):
         bodies = [_body("Qwen3-14B", path="/tmp")]
         self.assertEqual(resolve("/tmp", bodies).name, "Qwen3-14B")
+
+
+class TestGravityCatalogBoundary(unittest.TestCase):
+    def test_normal_catalog_exposes_admitted_gravity_bodies_only(self):
+        import tempfile
+        import hcli.catalog as catalog_mod
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = root / "kimi"
+            body.mkdir()
+            (body / "config.json").write_text("{}")
+            (body / "model.safetensors").write_bytes(b"fixture")
+            registry = root / "gravity-artifacts.json"
+            registry.write_text(json.dumps({"artifacts": [{
+                "id": "KIMI_P0_OPERATIONAL",
+                "path": str(body),
+                "kind": "mlx",
+                "status": "OPERATIONAL_DEVELOPMENTAL",
+                "role": "developmental resident",
+            }]}))
+            lake = root / "lake"
+            lake.mkdir()
+            specimen = lake / "raw-model@abc"
+            specimen.mkdir()
+            (specimen / "config.json").write_text("{}")
+            (specimen / "model.safetensors").write_bytes(b"fixture")
+            old_registry, old_lake = catalog_mod.GRAVITY_REGISTRY, catalog_mod.MODELLAKE
+            catalog_mod.GRAVITY_REGISTRY, catalog_mod.MODELLAKE = registry, lake
+            try:
+                normal = catalog()
+                research = catalog(research=True)
+            finally:
+                catalog_mod.GRAVITY_REGISTRY, catalog_mod.MODELLAKE = old_registry, old_lake
+            normal_names = [row.name for row in normal]
+            research_names = [row.name for row in research]
+            self.assertIn("KIMI_P0_OPERATIONAL", normal_names)
+            self.assertNotIn("raw-model", normal_names)
+            self.assertIn("KIMI_P0_OPERATIONAL", research_names)
+            self.assertIn("raw-model", research_names)
 
 
 class TestSwitching(unittest.TestCase):
@@ -162,6 +202,32 @@ class TestSwitchStopsBeforeStarting(unittest.TestCase):
         self.assertEqual(order, ["stop old", "spawn new"],
                          "the new resident spawned while the old one was still loaded")
         self.assertEqual(resident.identity, "new")
+
+    def test_research_switch_resolves_only_in_research_catalog(self):
+        import hcli.catalog as catalog_mod
+        import hcli.runtime_iface as iface
+        old = _FakeBackend("old")
+        new = _FakeBackend("new")
+        target = _body("LFM2-24B-A2B", path="/tmp/lfm2")
+        seen = []
+
+        def fake_resolve(name, bodies=None, *, research=False):
+            seen.append((name, research))
+            return target if research else None
+
+        real_resolve, real_make = catalog_mod.resolve, iface.make_backend_for_model
+        catalog_mod.resolve = fake_resolve
+        iface.make_backend_for_model = lambda path, **kw: new
+        resident = Resident(_body("old", path="/tmp/old"), old)
+        try:
+            got = resident.switch("LFM2-24B-A2B", research=True)
+        finally:
+            catalog_mod.resolve, iface.make_backend_for_model = real_resolve, real_make
+        self.assertTrue(got["switched"])
+        self.assertTrue(got["research"])
+        self.assertEqual(seen, [("LFM2-24B-A2B", True)])
+        self.assertFalse(resident.tools_verdict["qualified"])
+        self.assertIn("research body", resident.tools_verdict["reason"])
 
 
 if __name__ == "__main__":

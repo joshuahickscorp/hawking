@@ -20,15 +20,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 mod macos {
     use hawking_core::kernels::{
         moe_topk_gate_tcb_ex, native_bf16_dual_seq_tcb,
-        native_bf16_gemv_hyperconnection_combine_tcb, native_bf16_gemv_seq_tcb,
+        native_bf16_gemv_geo_silu_scale_tcb, native_bf16_gemv_hyperconnection_combine_tcb,
+        native_bf16_gemv_seq_tcb,
         native_bf16_swiglu_seq_tcb, qwen_next_ba_split_to_decay_beta_source_bf16_tcb,
         qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb,
         qwen_next_bf16_compact_expert_gate_up_shared_swiglu_tcb, qwen_next_bf16_expert_down_tcb,
         qwen_next_bf16_expert_gate_up_swiglu_tcb, qwen_next_bf16_router_topk_shared_tcb,
         qwen_next_deltanet_source_bf16_gated_rmsnorm_tcb,
         qwen_next_gated_delta_decode_single_at_state_offset_tcb,
+        qwen_next_hyperconnection_grouped_rmsnorm_tcb,
         qwen_next_hyperconnection_input_fused_with_block_router_topk_tcb,
         qwen_next_hyperconnection_input_fused_with_block_tcb,
+        qwen_next_hyperconnection_read_mix_tcb, qwen_next_hyperconnection_silu_scale_tcb,
         qwen_next_moe_weighted_sum_add_shared_sigmoid_hc_tcb,
         qwen_next_qkv_split_rearrange_conv_l2_source_bf16_tcb,
     };
@@ -80,6 +83,13 @@ mod macos {
     }
 
     const SCHEMA: &str = "hawking.flash_noetic_complete_layer0_source_bf16.v1";
+    /// A sealed source-control handoff for a bounded routed-MoE comparison.
+    ///
+    /// This is deliberately a teacher/control artifact, not an NR payload.  It
+    /// carries the exact source-layer activation and source-routed reference so
+    /// a packed candidate can be judged without silently re-reading source
+    /// weights during its own execution.
+    const SOURCE_MOE_BRIDGE_SCHEMA: &str = "hawking.flash_source_moe_bridge.v1";
     const DISPATCH_LEDGER_SCHEMA: &str = "hawking.flash_layer0_dispatch_ledger.v1";
     const CRITICAL_PATH_SCHEMA: &str = "hawking.flash_layer0_critical_path.v1";
     const REPO_ID: &str = "Qwen/Qwen3.8-Flash-Next";
@@ -156,6 +166,10 @@ mod macos {
         pub(crate) state_out: PathBuf,
         pub(crate) state_output: Option<PathBuf>,
         pub(crate) base_state: Option<PathBuf>,
+        /// Emit a sealed CPU-source activation/route/routed-sum control after
+        /// this exact source-layer receipt has passed.  The candidate Q4 path
+        /// can consume this persisted control without a source-tensor read.
+        pub(crate) source_moe_bridge_out: Option<PathBuf>,
         pub(crate) compact_experts: bool,
         /// Opt-in protected probe: hand the previous layer's Metal buffer
         /// directly to the next layer.  CPU oracle work remains available for
@@ -334,6 +348,7 @@ mod macos {
             state_out: repo.join("receipts/headless/FLASH_LINEAR_PREFIX_L2_STATE.f32"),
             state_output: env::var_os("HCLI_FLASH_STATE_OUTPUT").map(PathBuf::from),
             base_state: env::var_os("HCLI_FLASH_BASE_STATE").map(PathBuf::from),
+            source_moe_bridge_out: None,
             compact_experts: false,
             device_resident: false,
             deep_verification: false,
@@ -363,12 +378,17 @@ mod macos {
                     args.base_state =
                         Some(PathBuf::from(values.next().ok_or("missing --base-state")?))
                 }
+                "--source-moe-bridge-out" => {
+                    args.source_moe_bridge_out = Some(PathBuf::from(
+                        values.next().ok_or("missing --source-moe-bridge-out")?,
+                    ))
+                }
                 "--compact-experts" => args.compact_experts = true,
                 "--device-resident" => args.device_resident = true,
                 "--deep-verification" => args.deep_verification = true,
                 "--help" | "-h" => {
                     println!(
-                        "usage: flash_noetic_complete_layer0 [--root DIR] [--layer N] [--prefix-layers N] [--warmup N] [--reps N] [--out FILE] [--state-out FILE] [--state-output F32] [--base-state F32] [--compact-experts] [--device-resident] [--deep-verification]"
+                        "usage: flash_noetic_complete_layer0 [--root DIR] [--layer N] [--prefix-layers N] [--warmup N] [--reps N] [--out FILE] [--state-out FILE] [--state-output F32] [--base-state F32] [--source-moe-bridge-out FILE] [--compact-experts] [--device-resident] [--deep-verification]"
                     );
                     std::process::exit(0);
                 }
@@ -409,6 +429,111 @@ mod macos {
             out.extend_from_slice(&value.to_le_bytes());
         }
         out
+    }
+
+    fn write_source_moe_bridge(
+        bridge_path: &Path,
+        layer_receipt_path: &Path,
+        layer_receipt_sha256: &str,
+        root: &Path,
+        layer: usize,
+        input_contract: &str,
+        expected: &CpuResult,
+    ) -> Result<(), Box<dyn Error>> {
+        if expected.mlp_input.len() != HIDDEN
+            || expected.routed_sum.len() != HIDDEN
+            || expected.route_ids.len() != TOP_K
+            || expected.route_weights.len() != TOP_K
+        {
+            return Err("source MoE bridge geometry drifted from the exact layer contract".into());
+        }
+        if expected
+            .mlp_input
+            .iter()
+            .chain(expected.routed_sum.iter())
+            .chain(expected.route_weights.iter())
+            .any(|value| !value.is_finite())
+        {
+            return Err("source MoE bridge refuses non-finite source control values".into());
+        }
+        let weight_sum = expected.route_weights.iter().copied().sum::<f32>();
+        if (weight_sum - 1.0).abs() > ROUTE_WEIGHT_TOLERANCE {
+            return Err("source MoE bridge route weights are not normalized".into());
+        }
+        if bridge_path == layer_receipt_path {
+            return Err("source MoE bridge path must not overwrite the source-layer receipt".into());
+        }
+        if let Some(parent) = bridge_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mlp_input_path = bridge_path.with_extension("mlp_input.f32");
+        let routed_sum_path = bridge_path.with_extension("routed_sum.f32");
+        let mlp_input = f32_bytes(&expected.mlp_input);
+        let routed_sum = f32_bytes(&expected.routed_sum);
+        fs::write(&mlp_input_path, &mlp_input)?;
+        fs::write(&routed_sum_path, &routed_sum)?;
+        let bridge = json!({
+            "schema": SOURCE_MOE_BRIDGE_SCHEMA,
+            "status": "PASSED",
+            "semantic_type": "SourceActivationControl",
+            "repo": REPO_ID,
+            "pinned_revision": PINNED_REVISION,
+            "nomenclature_version": NOMENCLATURE_VERSION,
+            "source_layer": {
+                "layer": layer,
+                "root": root,
+                "input_contract": input_contract,
+                "exact_source_graph_parity": true,
+                "source_layer_receipt": {
+                    "path": layer_receipt_path,
+                    "sha256": layer_receipt_sha256,
+                    "schema": SCHEMA,
+                    "status": "PASSED",
+                    "label": "[V]",
+                },
+            },
+            "mlp_input": {
+                "path": mlp_input_path,
+                "sha256": sha256_bytes(&mlp_input),
+                "bytes": mlp_input.len(),
+                "elements": expected.mlp_input.len(),
+                "dtype": "F32_LE",
+                "source": "exact CPU source oracle whose MLP-input device stage passed the linked source-layer receipt",
+                "label": "[V]",
+            },
+            "route_selection": {
+                "expert_ids": expected.route_ids.clone(),
+                "selected_weights": expected.route_weights.clone(),
+                "selected_weight_sum": weight_sum,
+                "router_logits": {
+                    "elements": expected.router_logits.len(),
+                    "dtype": "F32_LE",
+                    "sha256": sha256_bytes(&f32_bytes(&expected.router_logits)),
+                    "persisted": false,
+                },
+                "source": "exact CPU source oracle whose router and top-k device stages passed the linked source-layer receipt",
+                "label": "[V]",
+            },
+            "source_routed_sum": {
+                "path": routed_sum_path,
+                "sha256": sha256_bytes(&routed_sum),
+                "bytes": routed_sum.len(),
+                "elements": expected.routed_sum.len(),
+                "dtype": "F32_LE",
+                "source": "exact CPU source routed-MoE sum whose device stage passed the linked source-layer receipt",
+                "label": "[V]",
+            },
+            "direct_candidate_execution": {
+                "source_tensor_read_for_candidate_execution": false,
+                "source_weight_read_for_candidate_execution": false,
+                "source_control_is_a_teacher": true,
+                "standalone_nr_dependency": false,
+            },
+            "promotion_allowed": false,
+            "claim_boundary": "PASSED source-layer control artifact for a bounded representation experiment. It persists one exact source MLP activation, source-selected route IDs/weights, and source routed-MoE sum after linked layer parity. It is not a standalone NR dependency, an independently runnable model, complete EBPW, Flash TPS, or promotion evidence.",
+        });
+        fs::write(bridge_path, serde_json::to_vec_pretty(&bridge)?)?;
+        Ok(())
     }
 
     fn u32_bytes(values: &[u32]) -> Vec<u8> {
@@ -997,15 +1122,89 @@ mod macos {
             .unwrap_or(false)
     }
 
+    // Candidate physical schedule: the fused HC input organ executes two
+    // multi-million-operation GEMVs inside one threadgroup. Splitting only
+    // its already-admitted mathematical stages gives the projection rows
+    // independent GPU work. It is not an exact-body replacement until the
+    // complete state/route/token controls admit it.
+    fn split_hc_input() -> bool {
+        env::var("HAWKING_FLASH_HC_SPLIT")
+            .map(|value| {
+                matches!(
+                    value.trim().to_ascii_lowercase().as_str(),
+                    "1" | "true" | "on" | "yes"
+                )
+            })
+            .unwrap_or(false)
+    }
+
+    // Fuses the split HyperConnection low-rank SiLU directly into the tiled
+    // up projection. This is intentionally opt-in: the tiled reduction is a
+    // physical candidate even though the fused elementwise operation itself
+    // is algebraically identical.
+    fn fused_hc_up_silu() -> bool {
+        env::var("HAWKING_FLASH_HC_FUSE_UP_SILU")
+            .map(|value| {
+                matches!(
+                    value.trim().to_ascii_lowercase().as_str(),
+                    "1" | "true" | "on" | "yes"
+                )
+            })
+            .unwrap_or(false)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn encode_hc_input_split(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        norm_weight: &PinnedBuffer,
+        down_weight: &PinnedBuffer,
+        up_weight: &PinnedBuffer,
+        normalized: &PinnedBuffer,
+        low_rank: &PinnedBuffer,
+        low_rank_activation: &PinnedBuffer,
+        gate_logits: &PinnedBuffer,
+        output: &PinnedBuffer,
+        block_weight: &PinnedBuffer,
+        block_logits: &PinnedBuffer,
+    ) -> Result<(), Box<dyn Error>> {
+        qwen_next_hyperconnection_grouped_rmsnorm_tcb(
+            tcb, input, norm_weight, normalized, HIDDEN, STREAMS, EPS,
+        )?;
+        native_bf16_gemv_seq_tcb(
+            tcb, down_weight, normalized, low_rank, HC_LOWRANK, HC_ELEMENTS,
+        )?;
+        if fused_hc_up_silu() {
+            native_bf16_gemv_geo_silu_scale_tcb(
+                tcb, up_weight, low_rank, gate_logits, HC_ELEMENTS, HC_LOWRANK, STREAMS as f32,
+            )?;
+        } else {
+            qwen_next_hyperconnection_silu_scale_tcb(
+                tcb, low_rank, low_rank_activation, HC_LOWRANK, STREAMS as f32,
+            )?;
+            native_bf16_gemv_seq_tcb(
+                tcb, up_weight, low_rank_activation, gate_logits, HC_ELEMENTS, HC_LOWRANK,
+            )?;
+        }
+        qwen_next_hyperconnection_read_mix_tcb(
+            tcb, normalized, gate_logits, output, HIDDEN, STREAMS,
+        )?;
+        native_bf16_gemv_seq_tcb(
+            tcb, block_weight, normalized, block_logits, STREAMS, HC_ELEMENTS,
+        )?;
+        Ok(())
+    }
+
     fn expected_graph_dispatches_for_compact(compact: bool) -> usize {
         let base: usize = if compact { 13 } else { 16 };
-        base.saturating_sub(if fused_hc_router() {
+        base.saturating_sub(if fused_hc_router() && !split_hc_input() {
             2
         } else if fused_router_topk() {
             1
         } else {
             0
-        })
+        }).saturating_add(if split_hc_input() { 10 } else { 0 })
+            .saturating_sub(if split_hc_input() && fused_hc_up_silu() { 2 } else { 0 })
     }
 
     fn expected_graph_dispatches(weights: &DeviceWeights) -> usize {
@@ -1018,25 +1217,34 @@ mod macos {
         weights: &DeviceWeights,
         graph: &GraphBuffers,
     ) -> Result<(), Box<dyn Error>> {
-        qwen_next_hyperconnection_input_fused_with_block_tcb(
-            tcb,
-            &graph.base,
-            &weights.hc_attn_norm,
-            &weights.hc_attn_down,
-            &weights.hc_attn_up,
-            &graph.attn_norm,
-            &graph.attn_low_rank,
-            &graph.attn_low_rank_activation,
-            &graph.attn_gate_logits,
-            &graph.attn_input,
-            &weights.hc_attn_block,
-            &graph.attn_block_logits,
-            HIDDEN,
-            STREAMS,
-            HC_LOWRANK,
-            EPS,
-            STREAMS as f32,
-        )?;
+        if split_hc_input() {
+            encode_hc_input_split(
+                tcb, &graph.base, &weights.hc_attn_norm, &weights.hc_attn_down,
+                &weights.hc_attn_up, &graph.attn_norm, &graph.attn_low_rank,
+                &graph.attn_low_rank_activation, &graph.attn_gate_logits, &graph.attn_input,
+                &weights.hc_attn_block, &graph.attn_block_logits,
+            )?;
+        } else {
+            qwen_next_hyperconnection_input_fused_with_block_tcb(
+                tcb,
+                &graph.base,
+                &weights.hc_attn_norm,
+                &weights.hc_attn_down,
+                &weights.hc_attn_up,
+                &graph.attn_norm,
+                &graph.attn_low_rank,
+                &graph.attn_low_rank_activation,
+                &graph.attn_gate_logits,
+                &graph.attn_input,
+                &weights.hc_attn_block,
+                &graph.attn_block_logits,
+                HIDDEN,
+                STREAMS,
+                HC_LOWRANK,
+                EPS,
+                STREAMS as f32,
+            )?;
+        }
         native_bf16_dual_seq_tcb(
             tcb,
             &weights.qkv,
@@ -1125,7 +1333,7 @@ mod macos {
             STREAMS as f32,
         )?;
 
-        if fused_hc_router() {
+        if fused_hc_router() && !split_hc_input() {
             qwen_next_hyperconnection_input_fused_with_block_router_topk_tcb(
                 tcb,
                 &graph.post_attn_state,
@@ -1154,6 +1362,13 @@ mod macos {
                 STREAMS as f32,
                 true,
             )?;
+        } else if split_hc_input() {
+            encode_hc_input_split(
+                tcb, &graph.post_attn_state, &weights.hc_mlp_norm, &weights.hc_mlp_down,
+                &weights.hc_mlp_up, &graph.mlp_norm, &graph.mlp_low_rank,
+                &graph.mlp_low_rank_activation, &graph.mlp_gate_logits, &graph.mlp_input,
+                &weights.hc_mlp_block, &graph.mlp_block_logits,
+            )?;
         } else {
             qwen_next_hyperconnection_input_fused_with_block_tcb(
                 tcb,
@@ -1175,7 +1390,7 @@ mod macos {
                 STREAMS as f32,
             )?;
         }
-        if !fused_hc_router() && fused_router_topk() {
+        if (!fused_hc_router() || split_hc_input()) && fused_router_topk() {
             qwen_next_bf16_router_topk_shared_tcb(
                 tcb,
                 &weights.router,
@@ -1190,7 +1405,7 @@ mod macos {
                 HIDDEN,
                 true,
             )?;
-        } else if !fused_hc_router() {
+        } else if !fused_hc_router() || split_hc_input() {
             native_bf16_dual_seq_tcb(
                 tcb,
                 &weights.router,
@@ -2683,6 +2898,63 @@ mod macos {
             );
         }
         let mut dispatch_ledger = dispatch_names;
+        if split_hc_input() {
+            let mut expanded = Vec::with_capacity(dispatch_ledger.len() + 10);
+            for row in dispatch_ledger {
+                let is_hc_input = row.get("kernel").and_then(Value::as_str)
+                    == Some("qwen_next_hyperconnection_input_fused_with_block");
+                if !is_hc_input {
+                    expanded.push(row);
+                    continue;
+                }
+                let input = row.get("input").and_then(Value::as_str).unwrap_or("HC input");
+                let output = row.get("output").and_then(Value::as_str).unwrap_or("HC output");
+                let prefix = if input.starts_with("base/") { "attn" } else { "mlp" };
+                for (kernel, stage) in [
+                    ("qwen_next_hyperconnection_grouped_rmsnorm", "grouped RMSNorm"),
+                    ("gemv_native_bf16_seq", "low-rank down projection"),
+                    ("qwen_next_hyperconnection_silu_scale", "low-rank SiLU"),
+                    ("gemv_native_bf16_seq", "low-rank up projection"),
+                    ("qwen_next_hyperconnection_read_mix", "stream read mix"),
+                    ("gemv_native_bf16_seq", "block-logit projection"),
+                ] {
+                    expanded.push(json!({
+                        "kernel": kernel,
+                        "input": input,
+                        "output": output,
+                        "classification": "CANDIDATE",
+                        "fusion_candidate": "re-fuse only after independent-row occupancy is measured",
+                        "why_it_exists": format!("{prefix} HyperConnection split schedule: {stage}"),
+                        "gpu_ns": Value::Null,
+                        "host_encode_us": Value::Null,
+                        "barrier_or_dependency": "ordered candidate stages within one TokenCommandBuffer"
+                    }));
+                }
+            }
+            dispatch_ledger = expanded;
+            if fused_hc_up_silu() {
+                dispatch_ledger.retain(|row| {
+                    row.get("kernel").and_then(Value::as_str)
+                        != Some("qwen_next_hyperconnection_silu_scale")
+                });
+                for row in &mut dispatch_ledger {
+                    let is_split_up = row.get("kernel").and_then(Value::as_str)
+                        == Some("gemv_native_bf16_seq")
+                        && row
+                            .get("why_it_exists")
+                            .and_then(Value::as_str)
+                            .is_some_and(|value| value.ends_with("low-rank up projection"));
+                    if is_split_up {
+                        row["kernel"] = Value::String(
+                            "gemv_native_bf16_geo_vec4_tg128_silu_scale".into(),
+                        );
+                        row["fusion_candidate"] = Value::String(
+                            "tiled low-rank up projection consumes SiLU(input / divisor) directly; preserve geo occupancy while removing the activation launch".into(),
+                        );
+                    }
+                }
+            }
+        }
         if args.compact_experts {
             dispatch_ledger.retain(|row| {
                 !(row.get("kernel").and_then(Value::as_str) == Some("qwen_next_bf16_expert_down")
@@ -2714,7 +2986,7 @@ mod macos {
                 }
             }
         }
-        if fused_hc_router() {
+        if fused_hc_router() && !split_hc_input() {
             dispatch_ledger.retain(|row| {
                 let kernel = row.get("kernel").and_then(Value::as_str);
                 let input = row.get("input").and_then(Value::as_str);
@@ -2767,12 +3039,18 @@ mod macos {
                 }
             }
         }
-        if args.compact_experts && fused_moe_vec4() {
+        let fused_moe_gateup_geo = hawking_core::env_on("HAWKING_FLASH_MOE_GATEUP_GEO");
+        if args.compact_experts && (fused_moe_vec4() || fused_moe_gateup_geo) {
             for row in &mut dispatch_ledger {
                 match row.get("kernel").and_then(Value::as_str) {
                     Some("qwen_next_bf16_compact_expert_gate_up_shared_swiglu") => {
                         row["kernel"] = Value::String(
-                            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4".into(),
+                            if fused_moe_gateup_geo {
+                                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32"
+                            } else {
+                                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4"
+                            }
+                            .into(),
                         );
                     }
                     Some("qwen_next_bf16_compact_expert_down_shared_direct_hc") => {
@@ -2830,7 +3108,9 @@ mod macos {
             "claim_boundary": "logical dispatch ledger; per-dispatch GPU ns is populated only when the explicit diagnostic trace mode supplies it; integrated graph GPU ns is authoritative in the layer receipt",
             "promotion_allowed": false
         });
-        let expert_kernel_label = if args.compact_experts && fused_moe_vec4() {
+        let expert_kernel_label = if args.compact_experts && fused_moe_gateup_geo {
+            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32 + qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4"
+        } else if args.compact_experts && fused_moe_vec4() {
             "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4 + qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4"
         } else if args.compact_experts {
             "qwen_next_bf16_compact_expert_gate_up_shared_swiglu + qwen_next_bf16_compact_expert_down_shared_direct_hc"
@@ -2978,6 +3258,11 @@ mod macos {
         } else {
             "gemv_native_bf16_swiglu_seq"
         };
+        let hyperconnection_silu_kernel = if split_hc_input() && fused_hc_up_silu() {
+            "gemv_native_bf16_geo_vec4_tg128_silu_scale"
+        } else {
+            "qwen_next_hyperconnection_silu_scale"
+        };
         let compact_moe_kernel = if fused_moe_vec4() {
             "qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4"
         } else if hawking_core::env_on("HAWKING_FLASH_MOE_GEO") {
@@ -2985,7 +3270,9 @@ mod macos {
         } else {
             "qwen_next_bf16_compact_expert_down_shared_direct_hc"
         };
-        let compact_gate_up_kernel = if fused_moe_vec4() {
+        let compact_gate_up_kernel = if fused_moe_gateup_geo {
+            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32"
+        } else if fused_moe_vec4() {
             "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4"
         } else {
             "qwen_next_bf16_compact_expert_gate_up_shared_swiglu"
@@ -3046,6 +3333,18 @@ mod macos {
                 "route_ids": expected.route_ids.clone(),
                 "route_lut": weights.expert_lut.clone(),
             },
+            "source_moe_bridge": {
+                "requested": args.source_moe_bridge_out.is_some(),
+                "status": if args.source_moe_bridge_out.is_none() {
+                    "NOT_REQUESTED"
+                } else if status == "PASSED" {
+                    "EMITTED_AFTER_SOURCE_RECEIPT_SEAL"
+                } else {
+                    "WITHHELD_SOURCE_LAYER_PARITY"
+                },
+                "path": args.source_moe_bridge_out.as_ref(),
+                "contract": "A source-control handoff is emitted only after this exact source-layer receipt is sealed. It may teach a bounded candidate comparison but is not an NR closure dependency.",
+            },
             "execution": {
                 "device": device,
                 "provider": "apple_metal",
@@ -3061,6 +3360,10 @@ mod macos {
                 "source_bf16_geo_candidate": source_bf16_geo,
                 "source_bf16_geo_dual_candidate": source_bf16_geo_dual,
                 "source_bf16_moe_vec4_candidate": fused_moe_vec4(),
+                "source_bf16_moe_geo_candidate": hawking_core::env_on("HAWKING_FLASH_MOE_GEO") && !fused_moe_vec4(),
+                "source_bf16_moe_gateup_geo_candidate": fused_moe_gateup_geo,
+                "hyperconnection_split_candidate": split_hc_input(),
+                "hyperconnection_fused_up_silu_candidate": split_hc_input() && fused_hc_up_silu(),
                 "router_topk_fused_candidate": fused_router_topk() || fused_hc_router(),
                 "router_topk_fused_into_mlp_hc_candidate": fused_hc_router(),
                 "host_activation_roundtrips": 0,
@@ -3108,7 +3411,7 @@ mod macos {
                 source_bf16_gemv_kernel,
                 source_bf16_dual_kernel,
                 "qwen_next_hyperconnection_grouped_rmsnorm",
-                "qwen_next_hyperconnection_silu_scale",
+                hyperconnection_silu_kernel,
                 "qwen_next_hyperconnection_read_mix",
                 "qwen_next_qkv_split_rearrange_conv_l2",
                 "qwen_next_ba_split_to_decay_beta_source_bf16",
@@ -3127,7 +3430,7 @@ mod macos {
                 source_bf16_gemv_kernel,
                 source_bf16_dual_kernel,
                 "qwen_next_hyperconnection_grouped_rmsnorm",
-                "qwen_next_hyperconnection_silu_scale",
+                hyperconnection_silu_kernel,
                 "qwen_next_hyperconnection_read_mix",
                 "qwen_next_qkv_split_rearrange_conv_l2",
                 "qwen_next_ba_split_to_decay_beta_source_bf16",
@@ -3173,6 +3476,28 @@ mod macos {
             fs::create_dir_all(parent)?;
         }
         fs::write(&args.out, serde_json::to_vec_pretty(&receipt)?)?;
+        if status == "PASSED" {
+            if let Some(bridge_path) = args.source_moe_bridge_out.as_ref() {
+                let layer_receipt_sha256 = sha256_bytes(&fs::read(&args.out)?);
+                write_source_moe_bridge(
+                    bridge_path,
+                    &args.out,
+                    &layer_receipt_sha256,
+                    &root,
+                    args.layer,
+                    if args.base_state.is_some() {
+                        "FLASH_NEXT_PREFIX_FED_STATE"
+                    } else {
+                        "FLASH_NEXT_TEXT_BASELINE_BOS_SOURCE_EMBEDDING"
+                    },
+                    &expected,
+                )?;
+                eprintln!(
+                    "Flash {layer_label}: sealed source MoE bridge at {}",
+                    bridge_path.display()
+                );
+            }
+        }
         let dispatch_out = args
             .out
             .with_file_name(format!("FLASH_LAYER{}_DISPATCH_LEDGER.json", args.layer));
@@ -3342,9 +3667,17 @@ mod macos {
 
     pub(crate) struct StatefulLinearLayer {
         layer: usize,
-        weights: LayerWeights,
+        // Source weights are retained only for source-oracle diagnostics and
+        // source-backed controls. A direct compact resident must be able to
+        // retain the Metal bank without silently keeping an equivalent host
+        // bank alive for the rest of the session.
+        weights: Option<LayerWeights>,
         device_weights: DeviceWeights,
         graph: GraphBuffers,
+        source_load_ns: u64,
+        source_payload_bytes: u64,
+        device_prepare_ns: u64,
+        graph_prepare_ns: u64,
     }
 
     impl StatefulLinearLayer {
@@ -3354,14 +3687,26 @@ mod macos {
             layer: usize,
             first_base: &[f32],
         ) -> Result<Self, Box<dyn Error>> {
+            let source_before = index.bytes_read_total();
+            let source_started = Instant::now();
             let weights = load_layer_weights_compact(index, layer, first_base)?;
+            let source_load_ns = source_started.elapsed().as_nanos() as u64;
+            let source_payload_bytes = index.bytes_read_total().saturating_sub(source_before);
+            let device_started = Instant::now();
             let device_weights = load_device_weights(context, &weights)?;
+            let device_prepare_ns = device_started.elapsed().as_nanos() as u64;
+            let graph_started = Instant::now();
             let graph = new_graph_buffers(context, &[0.0; HC_ELEMENTS])?;
+            let graph_prepare_ns = graph_started.elapsed().as_nanos() as u64;
             Ok(Self {
                 layer,
-                weights,
+                weights: Some(weights),
                 device_weights,
                 graph,
+                source_load_ns,
+                source_payload_bytes,
+                device_prepare_ns,
+                graph_prepare_ns,
             })
         }
 
@@ -3376,14 +3721,26 @@ mod macos {
             layer: usize,
             first_base: &[f32],
         ) -> Result<Self, Box<dyn Error>> {
+            let source_before = index.bytes_read_total();
+            let source_started = Instant::now();
             let weights = load_layer_weights(index, layer)?;
+            let source_load_ns = source_started.elapsed().as_nanos() as u64;
+            let source_payload_bytes = index.bytes_read_total().saturating_sub(source_before);
+            let device_started = Instant::now();
             let device_weights = load_device_weights(context, &weights)?;
+            let device_prepare_ns = device_started.elapsed().as_nanos() as u64;
+            let graph_started = Instant::now();
             let graph = new_graph_buffers(context, first_base)?;
+            let graph_prepare_ns = graph_started.elapsed().as_nanos() as u64;
             Ok(Self {
                 layer,
-                weights,
+                weights: Some(weights),
                 device_weights,
                 graph,
+                source_load_ns,
+                source_payload_bytes,
+                device_prepare_ns,
+                graph_prepare_ns,
             })
         }
 
@@ -3397,50 +3754,140 @@ mod macos {
             route_ids: &[u32],
             first_base: &[f32],
         ) -> Result<Self, Box<dyn Error>> {
+            let source_before = index.bytes_read_total();
+            let source_started = Instant::now();
             let weights = load_layer_weights_compact_union(index, layer, route_ids)?;
+            let source_load_ns = source_started.elapsed().as_nanos() as u64;
+            let source_payload_bytes = index.bytes_read_total().saturating_sub(source_before);
+            let device_started = Instant::now();
             let device_weights = load_device_weights(context, &weights)?;
+            let device_prepare_ns = device_started.elapsed().as_nanos() as u64;
+            let graph_started = Instant::now();
             let graph = new_graph_buffers(context, first_base)?;
+            let graph_prepare_ns = graph_started.elapsed().as_nanos() as u64;
             Ok(Self {
                 layer,
-                weights,
+                weights: Some(weights),
                 device_weights,
                 graph,
+                source_load_ns,
+                source_payload_bytes,
+                device_prepare_ns,
+                graph_prepare_ns,
             })
         }
 
-        pub(crate) fn step(
+        /// Construct a route-union compact layer whose immutable runtime
+        /// ownership is device-only after the one-time source upload. This is
+        /// deliberately opt-in: source-oracle methods are unavailable on the
+        /// returned layer, so diagnostic controls continue using
+        /// `new_compact_union`.
+        pub(crate) fn new_compact_union_device_only(
+            index: &SourceBf16Index,
+            context: &MetalContext,
+            layer: usize,
+            route_ids: &[u32],
+            first_base: &[f32],
+        ) -> Result<Self, Box<dyn Error>> {
+            let source_before = index.bytes_read_total();
+            let source_started = Instant::now();
+            let weights = load_layer_weights_compact_union(index, layer, route_ids)?;
+            let source_load_ns = source_started.elapsed().as_nanos() as u64;
+            let source_payload_bytes = index.bytes_read_total().saturating_sub(source_before);
+            let device_started = Instant::now();
+            let device_weights = load_device_weights(context, &weights)?;
+            let device_prepare_ns = device_started.elapsed().as_nanos() as u64;
+            // `weights` is intentionally dropped here. The stateful step path
+            // consumes only `device_weights` and graph/state buffers.
+            drop(weights);
+            let graph_started = Instant::now();
+            let graph = new_graph_buffers(context, first_base)?;
+            let graph_prepare_ns = graph_started.elapsed().as_nanos() as u64;
+            Ok(Self {
+                layer,
+                weights: None,
+                device_weights,
+                graph,
+                source_load_ns,
+                source_payload_bytes,
+                device_prepare_ns,
+                graph_prepare_ns,
+            })
+        }
+
+        /// Encode one resident step without deciding its CPU synchronization
+        /// policy.  This is the shared physical contract used by the normal
+        /// exact/timed path and the token-major scheduler probe: the graph,
+        /// buffers, state reset, and dispatch topology stay identical.
+        /// Append this resident organ to a caller-owned ordered token region.
+        /// The caller may place adjacent device-dependent organs in the same
+        /// command buffer; no host activation is introduced at that boundary.
+        pub(crate) fn encode_step_into(
+            &mut self,
+            context: &MetalContext,
+            tcb: &mut TokenCommandBuffer<'_>,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            reset: bool,
+        ) -> Result<usize, Box<dyn Error>> {
+            if let Some(base) = host_base {
+                MetalContext::write_buffer_bytes(&self.graph.base, &f32_bytes(base));
+            }
+            if reset {
+                reset_states(context, &self.graph);
+            }
+            if let Some(previous) = device_base {
+                tcb.copy_buffer_bytes(previous, 0, &self.graph.base, 0, (HC_ELEMENTS * 4) as u64)?;
+            }
+            let dispatches_before = tcb.dispatch_count();
+            encode_graph(tcb, &self.device_weights, &self.graph)?;
+            let dispatches = tcb.dispatch_count().saturating_sub(dispatches_before);
+            let expected_dispatches = expected_graph_dispatches(&self.device_weights);
+            if dispatches != expected_dispatches {
+                return Err(format!("stateful layer-{} dispatch topology drifted before submission: encoded={dispatches} expected={expected_dispatches}", self.layer).into());
+            }
+            Ok(dispatches)
+        }
+
+        fn encode_step<'a>(
+            &mut self,
+            context: &'a MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            reset: bool,
+        ) -> Result<(TokenCommandBuffer<'a>, usize), Box<dyn Error>> {
+            let mut tcb = TokenCommandBuffer::new(context);
+            let dispatches = self.encode_step_into(context, &mut tcb, host_base, device_base, reset)?;
+            Ok((tcb, dispatches))
+        }
+
+        fn step_impl(
             &mut self,
             context: &MetalContext,
             host_base: Option<&[f32]>,
             device_base: Option<&PinnedBuffer>,
             reset: bool,
-        ) -> Result<(PinnedBuffer, u64, u64, usize, Vec<f32>), Box<dyn Error>> {
-            if let Some(base) = host_base {
-                MetalContext::write_buffer_bytes(&self.graph.base, &f32_bytes(base));
-            }
+            snapshot: bool,
+        ) -> Result<(PinnedBuffer, u64, u64, usize, Option<Vec<f32>>), Box<dyn Error>> {
             let started = Instant::now();
-            if reset {
-                reset_states(context, &self.graph);
-            }
-            let mut tcb = TokenCommandBuffer::new(context);
-            if let Some(previous) = device_base {
-                tcb.copy_buffer_bytes(previous, 0, &self.graph.base, 0, (HC_ELEMENTS * 4) as u64)?;
-            }
-            encode_graph(&mut tcb, &self.device_weights, &self.graph)?;
-            let dispatches = tcb.dispatch_count();
+            let (tcb, dispatches) = self.encode_step(context, host_base, device_base, reset)?;
             let timing = tcb.commit_and_wait_timed()?;
-            let expected_dispatches = expected_graph_dispatches(&self.device_weights);
-            if dispatches != expected_dispatches || timing.dispatches != expected_dispatches as u64
+            if timing.dispatches != dispatches as u64
             {
-                return Err(format!("stateful layer-{} dispatch topology drifted: encoded={dispatches} timed={} expected={expected_dispatches}", self.layer, timing.dispatches).into());
+                return Err(format!("stateful layer-{} dispatch topology drifted at completion: encoded={dispatches} timed={}", self.layer, timing.dispatches).into());
             }
             let wall_ns = started.elapsed().as_nanos() as u64;
-            let final_state = snapshot_f32(&self.graph.final_state, HC_ELEMENTS);
-            if final_state.iter().any(|v| !v.is_finite()) {
-                return Err(
-                    format!("stateful layer-{} produced non-finite output", self.layer).into(),
-                );
-            }
+            let final_state = if snapshot {
+                let state = snapshot_f32(&self.graph.final_state, HC_ELEMENTS);
+                if state.iter().any(|v| !v.is_finite()) {
+                    return Err(
+                        format!("stateful layer-{} produced non-finite output", self.layer).into(),
+                    );
+                }
+                Some(state)
+            } else {
+                None
+            };
             Ok((
                 self.graph.final_state.clone(),
                 timing.gpu_ns.unwrap_or(0),
@@ -3448,6 +3895,84 @@ mod macos {
                 timing.dispatches as usize,
                 final_state,
             ))
+        }
+
+        /// Diagnostic step: retains a host snapshot for exact-state controls.
+        pub(crate) fn step(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            reset: bool,
+        ) -> Result<(PinnedBuffer, u64, u64, usize, Vec<f32>), Box<dyn Error>> {
+            let (output, gpu_ns, wall_ns, dispatches, state) =
+                self.step_impl(context, host_base, device_base, reset, true)?;
+            Ok((output, gpu_ns, wall_ns, dispatches, state.ok_or("diagnostic linear step omitted state")?))
+        }
+
+        /// Timed resident step: executes the same device graph without a
+        /// device-to-host activation copy or per-layer diagnostic payload.
+        pub(crate) fn step_fast(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            reset: bool,
+        ) -> Result<(PinnedBuffer, u64, u64, usize), Box<dyn Error>> {
+            let (output, gpu_ns, wall_ns, dispatches, _) =
+                self.step_impl(context, host_base, device_base, reset, false)?;
+            Ok((output, gpu_ns, wall_ns, dispatches))
+        }
+
+        /// Submit the exact same resident graph without a per-layer CPU
+        /// fence.  Metal queue order preserves device dependencies; a later
+        /// full-attention bank or token boundary supplies the drain.  This is
+        /// intentionally a scheduler probe, not a claim that the kernels or
+        /// model arithmetic changed.
+        pub(crate) fn step_submit_fast(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            reset: bool,
+        ) -> Result<(PinnedBuffer, usize), Box<dyn Error>> {
+            let (tcb, dispatches) = self.encode_step(context, host_base, device_base, reset)?;
+            tcb.commit_no_wait()?;
+            Ok((self.graph.final_state.clone(), dispatches))
+        }
+
+        /// Device-owned output used to chain this organ into a caller-owned
+        /// command-buffer region.  It is never mapped to host memory here.
+        pub(crate) fn final_state_buffer(&self) -> PinnedBuffer {
+            self.graph.final_state.clone()
+        }
+
+        /// Exact mutable state retained by this layer across decode tokens.
+        ///
+        /// We deliberately exclude immutable weights and per-token scratch:
+        /// this number is for the continuation-state census, not a model-size
+        /// or full-memory claim.
+        pub(crate) const fn persistent_state_bytes() -> usize {
+            (CONV_STATE_ELEMENTS + RECURRENT_STATE_ELEMENTS) * std::mem::size_of::<f32>()
+        }
+
+        /// One-time construction buckets for a resident decode layer.  They
+        /// deliberately exclude token execution and make it possible to bill
+        /// source extraction, Metal uploads, and graph allocation separately
+        /// before deciding which component deserves persistent ownership.
+        pub(crate) const fn prepare_timing_ns(&self) -> (u64, u64, u64) {
+            (
+                self.source_load_ns,
+                self.device_prepare_ns,
+                self.graph_prepare_ns,
+            )
+        }
+
+        /// Source payload consumed exactly once while this device bank was
+        /// constructed.  This is distinct from its persistent recurrence
+        /// state and remains available after source weights are released.
+        pub(crate) const fn source_payload_bytes(&self) -> u64 {
+            self.source_payload_bytes
         }
 
         /// Read the router's selected original expert IDs after a step. This
@@ -3471,12 +3996,26 @@ mod macos {
         /// zero, so callers should use this for the reset/first-token row only;
         /// later rows remain stateful device-teacher observations.
         pub(crate) fn source_mlp_input_parity(&self, base: &[f32]) -> Value {
-            let expected = source_layer_from_base(&self.weights, base);
+            let weights = self
+                .weights
+                .as_ref()
+                .expect("source parity requires a source-backed linear layer");
+            let expected = source_layer_from_base(weights, base);
             metrics(&expected.mlp_input, &self.mlp_input(), OUTPUT_TOLERANCE)
         }
 
         pub(crate) fn source_route_ids(&self, base: &[f32]) -> Vec<u32> {
-            source_layer_from_base(&self.weights, base).route_ids
+            let weights = self
+                .weights
+                .as_ref()
+                .expect("source route oracle requires a source-backed linear layer");
+            source_layer_from_base(weights, base).route_ids
+        }
+
+        /// Whether this layer intentionally retained its source-side immutable
+        /// weights after preparing its device-resident execution bank.
+        pub(crate) const fn host_weights_retained(&self) -> bool {
+            self.weights.is_some()
         }
     }
 
@@ -3556,7 +4095,13 @@ mod macos {
             } else {
                 StatefulLinearLayer::new(&index, &context, layer, &expected_base)?
             };
-            let expected = source_layer_from_base(&session.weights, &expected_base);
+            let expected = source_layer_from_base(
+                session
+                    .weights
+                    .as_ref()
+                    .expect("prefix source oracle requires source-backed weights"),
+                &expected_base,
+            );
             expected_base = expected.final_state.clone();
             expected_finals.push(expected.final_state);
             layers.push(session);
@@ -3669,7 +4214,14 @@ mod macos {
             } else {
                 StatefulLinearLayer::new(&index, &context, layer, &expected_base)?
             };
-            expected_base = source_layer_from_base(&session.weights, &expected_base).final_state;
+            expected_base = source_layer_from_base(
+                session
+                    .weights
+                    .as_ref()
+                    .expect("prefix source oracle requires source-backed weights"),
+                &expected_base,
+            )
+            .final_state;
             layers.push(session);
         }
         let mut outputs = Vec::with_capacity(token_ids.len());

@@ -1481,6 +1481,8 @@ pub struct DecodeTelemetry {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub output_tokens: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decode_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub decode_ms: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub completed_decode_forwards: Option<u64>,
@@ -1490,18 +1492,31 @@ pub struct DecodeTelemetry {
 
 impl DecodeTelemetry {
     pub fn validate(&self) -> HcliBridgeResult<()> {
-        match (self.decode_ms, self.completed_decode_forwards) {
-            (Some(milliseconds), Some(forwards)) => {
-                if !milliseconds.is_finite() || milliseconds <= 0.0 {
+        if self
+            .decode_ms
+            .is_some_and(|milliseconds| !milliseconds.is_finite() || milliseconds <= 0.0)
+        {
+            return Err(HcliBridgeError::validation(
+                "result.telemetry.decode_ms",
+                "must be finite and greater than zero",
+            ));
+        }
+        let decode_ns = self.decode_ns.or_else(|| {
+            let milliseconds = self.decode_ms?;
+            legacy_decode_ms_to_ns(milliseconds)
+        });
+        match (decode_ns, self.completed_decode_forwards) {
+            (Some(nanoseconds), Some(forwards)) => {
+                if nanoseconds == 0 {
                     return Err(HcliBridgeError::validation(
-                        "result.telemetry.decode_ms",
-                        "must be finite and greater than zero",
+                        "result.telemetry.decode_ns",
+                        "must be greater than zero",
                     ));
                 }
                 if forwards == 0 {
                     return Err(HcliBridgeError::validation(
                         "result.telemetry.completed_decode_forwards",
-                        "must be greater than zero when decode_ms is present",
+                        "must be greater than zero when decode_ns is present",
                     ));
                 }
             }
@@ -1509,18 +1524,17 @@ impl DecodeTelemetry {
             _ => {
                 return Err(HcliBridgeError::validation(
                     "result.telemetry",
-                    "decode_ms and completed_decode_forwards must be reported together",
+                    "decode_ns/decode_ms and completed_decode_forwards must be reported together",
                 ));
             }
         }
         if let Some(tps) = self.decode_forwards_per_second {
-            let (milliseconds, forwards) = self
-                .decode_ms
+            let (nanoseconds, forwards) = decode_ns
                 .zip(self.completed_decode_forwards)
                 .ok_or_else(|| {
                     HcliBridgeError::validation(
                         "result.telemetry.decode_forwards_per_second",
-                        "requires decode_ms and completed_decode_forwards",
+                        "requires decode_ns/decode_ms and completed_decode_forwards",
                     )
                 })?;
             if !tps.is_finite() || tps <= 0.0 {
@@ -1529,17 +1543,27 @@ impl DecodeTelemetry {
                     "must be finite and greater than zero",
                 ));
             }
-            let expected = forwards as f64 * 1_000.0 / milliseconds;
+            let expected = forwards as f64 * 1_000_000_000.0 / nanoseconds as f64;
             let tolerance = expected.mul_add(0.05, 0.05);
             if (expected - tps).abs() > tolerance {
                 return Err(HcliBridgeError::validation(
                     "result.telemetry.decode_forwards_per_second",
-                    "does not agree with completed_decode_forwards / decode_ms",
+                    "does not agree with completed_decode_forwards / decode_ns",
                 ));
             }
         }
         Ok(())
     }
+}
+
+/// Derive a nanosecond duration from an old finite millisecond value for the
+/// bridge's compatibility parser. New producers should send `decode_ns`.
+fn legacy_decode_ms_to_ns(milliseconds: f64) -> Option<u64> {
+    if !milliseconds.is_finite() || milliseconds <= 0.0 {
+        return None;
+    }
+    let nanoseconds = milliseconds * 1_000_000.0;
+    (nanoseconds <= u64::MAX as f64).then(|| nanoseconds.round() as u64)
 }
 
 /// Durable event references reported only when a `generate` adapter actually
@@ -1626,6 +1650,8 @@ pub struct AgentRealization {
     pub input_tokens: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub output_tokens: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wall_elapsed_ns: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub wall_elapsed_ms: Option<u64>,
 }
@@ -2525,6 +2551,7 @@ mod tests {
                 telemetry: Some(DecodeTelemetry {
                     input_tokens: Some(100),
                     output_tokens: Some(64),
+                    decode_ns: None,
                     decode_ms: None,
                     completed_decode_forwards: None,
                     decode_forwards_per_second: Some(80.0),
@@ -2552,6 +2579,7 @@ mod tests {
                 telemetry: Some(DecodeTelemetry {
                     input_tokens: Some(100),
                     output_tokens: Some(64),
+                    decode_ns: Some(800_000_000),
                     decode_ms: Some(800.0),
                     completed_decode_forwards: Some(64),
                     decode_forwards_per_second: Some(80.0),

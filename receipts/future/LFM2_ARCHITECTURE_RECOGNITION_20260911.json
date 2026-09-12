@@ -1,0 +1,138 @@
+{
+ "repo": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+ "revision": "local",
+ "architectures": [
+  "Lfm2MoeForCausalLM"
+ ],
+ "model_type": "lfm2_moe",
+ "n_tensors": 7610,
+ "n_unmatched": 68,
+ "organs": [
+  {
+   "organ": "embed",
+   "status": "KNOWN",
+   "n_tensors": 1,
+   "n_layers": 0,
+   "confidence": 0.32,
+   "example": [
+    "model.embed_tokens.weight"
+   ]
+  },
+  {
+   "organ": "gqa_attention",
+   "status": "KNOWN",
+   "n_tensors": 30,
+   "n_layers": 10,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.10.self_attn.k_proj.weight",
+    "model.layers.10.self_attn.q_proj.weight"
+   ]
+  },
+  {
+   "organ": "mlp_down",
+   "status": "KNOWN",
+   "n_tensors": 2,
+   "n_layers": 2,
+   "confidence": 0.604,
+   "example": [
+    "model.layers.0.feed_forward.w2.weight",
+    "model.layers.1.feed_forward.w2.weight"
+   ]
+  },
+  {
+   "organ": "mlp_gate_up",
+   "status": "KNOWN",
+   "n_tensors": 4,
+   "n_layers": 2,
+   "confidence": 0.608,
+   "example": [
+    "model.layers.0.feed_forward.w1.weight",
+    "model.layers.0.feed_forward.w3.weight"
+   ]
+  },
+  {
+   "organ": "moe_expert",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 7296,
+   "n_layers": 38,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.10.feed_forward.experts.0.w1.weight",
+    "model.layers.10.feed_forward.experts.0.w2.weight"
+   ]
+  },
+  {
+   "organ": "moe_router",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 38,
+   "n_layers": 38,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.10.feed_forward.gate.weight",
+    "model.layers.11.feed_forward.gate.weight"
+   ]
+  },
+  {
+   "organ": "recurrent_state",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 70,
+   "n_layers": 40,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.0.conv.in_proj.weight",
+    "model.layers.0.conv.out_proj.weight"
+   ]
+  },
+  {
+   "organ": "rmsnorm",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 101,
+   "n_layers": 40,
+   "confidence": 0.98,
+   "example": [
+    "model.embedding_norm.weight",
+    "model.layers.0.ffn_norm.weight"
+   ]
+  }
+ ],
+ "unrecognized": [
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.feed_forward.expert_bias",
+   "n_tensors": 38,
+   "confidence": 0.5
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.conv.conv.weight",
+   "n_tensors": 30,
+   "confidence": 0.5
+  }
+ ],
+ "folded_organ": null,
+ "novelty": {
+  "novel_organs": [
+   "moe_expert",
+   "moe_router",
+   "recurrent_state",
+   "rmsnorm"
+  ],
+  "novel_axes": [
+   "routing",
+   "state"
+  ],
+  "n_unrecognized_clusters": 2,
+  "new_scale_regime": 40,
+  "transfer_test_value": 0.6
+ },
+ "analysis_wall_s": 0.017,
+ "loaded_weights": false,
+ "classification": "STATIC_STREAMABLE",
+ "schema": "hawking.headless.architecture_recognizer.local_snapshot.v1",
+ "source": "local_safetensors_headers",
+ "did_not_load_weights": true,
+ "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67"
+}

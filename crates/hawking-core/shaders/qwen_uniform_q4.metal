@@ -1815,6 +1815,59 @@ kernel void qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128(
     }
 }
 
+// Route-major sibling of the Q4/G64 geometric matvec.  Unlike the ordinary
+// concatenated-row path, each routed expert consumes its own 640-value
+// activation.  Keeping the route-major activations and rows contiguous lets
+// one command buffer cover every selected down projection without a dense
+// reconstruction or a host roundtrip.
+//
+// Grid: ceil((routes * rows_per_route) / 2) * 128, TG 128.
+kernel void qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* inputs      [[buffer(2)]],
+    device float* outputs           [[buffer(3)]],
+    constant uint& routes           [[buffer(4)]],
+    constant uint& rows_per_route   [[buffer(5)]],
+    constant uint& cols             [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint global_row = group_id * 2u + team;
+    const uint total_rows = routes * rows_per_route;
+    float acc = 0.0f;
+    if (global_row < total_rows) {
+        const uint route = global_row / rows_per_route;
+        const uint local_row = global_row - route * rows_per_route;
+        const uint rgb0 = (route * rows_per_route + local_row) * groups_per_row;
+        device const float* input = inputs + route * cols;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += qwen_uniform_q4_unpack8(packed, scale, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && global_row < total_rows) {
+        outputs[global_row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
 // Concatenate-grid geo_tpr64: one dispatch covers two independent matvecs that
 // share the input activation and the column geometry but not the row index
 // (DeltaNet qkvz + ba). Each thread still owns one row of one matrix.

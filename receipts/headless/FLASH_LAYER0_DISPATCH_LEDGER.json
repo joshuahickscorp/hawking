@@ -1,6 +1,6 @@
 {
   "claim_boundary": "logical dispatch ledger; per-dispatch GPU ns is populated only when the explicit diagnostic trace mode supplies it; integrated graph GPU ns is authoritative in the layer receipt",
-  "dispatch_count": 20,
+  "dispatch_count": 16,
   "integrated_graph": true,
   "layer": 0,
   "promotion_allowed": false,
@@ -8,13 +8,13 @@
     {
       "barrier_or_dependency": "ordered within one TokenCommandBuffer",
       "classification": "NECESSARY",
-      "fusion_candidate": "physically fused five-stage HC input organ",
+      "fusion_candidate": "physically fused five-stage HC input plus block injection",
       "gpu_ns": null,
       "host_encode_us": null,
-      "input": "base/[4,2560] + hc_norm + hc_down + hc_up",
-      "kernel": "qwen_next_hyperconnection_input_fused",
-      "output": "attn_norm + low_rank + activation + gate_logits + attn_input",
-      "why_it_exists": "single-threadgroup staged source-order superkernel"
+      "input": "base/[4,2560] + hc_norm + hc_down + hc_up + hc_attn_block",
+      "kernel": "qwen_next_hyperconnection_input_fused_with_block",
+      "output": "attn_norm + low_rank + activation + gate_logits + attn_input + attn_block_logits",
+      "why_it_exists": "single-threadgroup staged source-order superkernel with in-flight block GEMV"
     },
     {
       "barrier_or_dependency": "ordered within one TokenCommandBuffer",
@@ -85,46 +85,24 @@
     {
       "barrier_or_dependency": "ordered within one TokenCommandBuffer",
       "classification": "NECESSARY",
-      "fusion_candidate": "fuse output projection",
+      "fusion_candidate": "fuse output projection with HC write",
       "gpu_ns": null,
       "host_encode_us": null,
-      "input": "gated_output + out_proj",
-      "kernel": "gemv_native_bf16_seq",
-      "output": "attn_block_output",
-      "why_it_exists": "linear-attention output projection"
+      "input": "gated_output + out_proj + base + attn_block_logits",
+      "kernel": "gemv_native_bf16_hyperconnection_combine",
+      "output": "attn_block_output + post_attn_state",
+      "why_it_exists": "source-order output GEMV and exact stream-major HC combine"
     },
     {
       "barrier_or_dependency": "ordered within one TokenCommandBuffer",
       "classification": "NECESSARY",
-      "fusion_candidate": "share normalized read",
+      "fusion_candidate": "physically fused five-stage HC input plus block injection",
       "gpu_ns": null,
       "host_encode_us": null,
-      "input": "attn_norm + attn_block_weight",
-      "kernel": "gemv_native_bf16_seq",
-      "output": "attn_block_logits",
-      "why_it_exists": "source HyperConnection block injection"
-    },
-    {
-      "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-      "classification": "NECESSARY",
-      "fusion_candidate": "fuse write",
-      "gpu_ns": null,
-      "host_encode_us": null,
-      "input": "base + attn_block_output + attn_block_logits",
-      "kernel": "qwen_next_hyperconnection_combine",
-      "output": "post_attn_state",
-      "why_it_exists": "exact HC block write"
-    },
-    {
-      "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-      "classification": "NECESSARY",
-      "fusion_candidate": "physically fused five-stage HC input organ",
-      "gpu_ns": null,
-      "host_encode_us": null,
-      "input": "post_attn_state + hc_norm + hc_down + hc_up",
-      "kernel": "qwen_next_hyperconnection_input_fused",
-      "output": "mlp_norm + low_rank + activation + gate_logits + mlp_input",
-      "why_it_exists": "single-threadgroup staged source-order superkernel"
+      "input": "post_attn_state + hc_norm + hc_down + hc_up + hc_mlp_block",
+      "kernel": "qwen_next_hyperconnection_input_fused_with_block",
+      "output": "mlp_norm + low_rank + activation + gate_logits + mlp_input + mlp_block_logits",
+      "why_it_exists": "single-threadgroup staged source-order superkernel with in-flight block GEMV"
     },
     {
       "barrier_or_dependency": "ordered within one TokenCommandBuffer",
@@ -195,48 +173,17 @@
     {
       "barrier_or_dependency": "ordered within one TokenCommandBuffer",
       "classification": "NECESSARY",
-      "fusion_candidate": "fuse routed sum + shared sigmoid gate + add after parity",
+      "fusion_candidate": "fuse routed sum + shared sigmoid gate + MLP HyperConnection write",
       "gpu_ns": null,
       "host_encode_us": null,
-      "input": "routed_outputs + route_weights + shared_output + shared_scalar",
-      "kernel": "qwen_next_moe_weighted_sum_add_shared_sigmoid",
-      "output": "moe_output",
-      "why_it_exists": "source-order MoE epilogue with routed/shared stage outputs retained"
-    },
-    {
-      "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-      "classification": "NECESSARY",
-      "fusion_candidate": "share normalized MLP read",
-      "gpu_ns": null,
-      "host_encode_us": null,
-      "input": "mlp_norm + hc_mlp_block",
-      "kernel": "gemv_native_bf16_seq",
-      "output": "mlp_block_logits",
-      "why_it_exists": "source MLP block injection"
-    },
-    {
-      "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-      "classification": "NECESSARY",
-      "fusion_candidate": "fuse MLP write",
-      "gpu_ns": null,
-      "host_encode_us": null,
-      "input": "post_attn_state + moe_output + mlp_block_logits",
-      "kernel": "qwen_next_hyperconnection_combine",
-      "output": "final_state",
-      "why_it_exists": "exact layer output boundary"
+      "input": "routed_outputs + route_weights + shared_output + shared_scalar + post_attn_state + mlp_block_logits",
+      "kernel": "qwen_next_moe_weighted_sum_add_shared_sigmoid_hc",
+      "output": "moe_output + final_state",
+      "why_it_exists": "source-order MoE epilogue with routed/shared stage outputs and final state retained"
     }
   ],
   "schema": "hawking.flash_layer0_dispatch_ledger.v1",
   "source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
   "status": "PASSED",
-  "trace_mode": "off",
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
-  }
+  "trace_mode": "off"
 }

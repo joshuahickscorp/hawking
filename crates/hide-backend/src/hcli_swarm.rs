@@ -126,7 +126,7 @@ pub async fn run_parallel_analysis_swarm(
     let mut started_agents = 0usize;
     let mut total_model_calls = 0u64;
     let mut completed_decode_forwards = 0u64;
-    let mut decode_ms = 0.0f64;
+    let mut decode_ns = 0u64;
     let mut complete_metric_calls = 0u64;
     let mut lanes_json = Vec::with_capacity(lanes);
     let mut artifact_manifest = Vec::with_capacity(lanes);
@@ -156,17 +156,17 @@ pub async fn run_parallel_analysis_swarm(
                         .and_then(Value::as_u64)
                         .unwrap_or(0),
                 );
-                let lane_decode_ms = result
+                let lane_decode_ns = result
                     .receipt
-                    .pointer("/agent/model_metrics/decode_ms")
-                    .and_then(Value::as_f64);
+                    .pointer("/agent/model_metrics")
+                    .and_then(payload_decode_ns);
                 let lane_forwards = result
                     .receipt
                     .pointer("/agent/model_metrics/completed_decode_forwards")
                     .and_then(Value::as_u64);
-                if let (Some(ms), Some(forwards)) = (lane_decode_ms, lane_forwards) {
-                    if ms > 0.0 && forwards > 0 {
-                        decode_ms += ms;
+                if let (Some(nanoseconds), Some(forwards)) = (lane_decode_ns, lane_forwards) {
+                    if nanoseconds > 0 && forwards > 0 {
+                        decode_ns = decode_ns.saturating_add(nanoseconds);
                         completed_decode_forwards =
                             completed_decode_forwards.saturating_add(forwards);
                     }
@@ -221,10 +221,10 @@ pub async fn run_parallel_analysis_swarm(
 
     let all_agent_calls_have_complete_metrics = total_model_calls > 0
         && complete_metric_calls == total_model_calls
-        && decode_ms > 0.0
+        && decode_ns > 0
         && completed_decode_forwards > 0;
     let aggregate_complete_forward_tps = all_agent_calls_have_complete_metrics
-        .then(|| completed_decode_forwards as f64 / (decode_ms / 1_000.0));
+        .then(|| completed_decode_forwards as f64 * 1_000_000_000.0 / decode_ns as f64);
     let synthesis_attempt = match (
         config.synthesize,
         config.model_url.as_deref(),
@@ -265,18 +265,23 @@ pub async fn run_parallel_analysis_swarm(
             "output_tokens": outcome.stats.output_tokens,
             "requested_max_output_tokens": outcome.requested_max_output_tokens,
             "endpoint_max_output_tokens": outcome.endpoint_max_output_tokens,
-            "decode_ms": outcome.stats.decode_ms,
+            "timing_unit": "ns",
+            "decode_ns": outcome.stats.effective_decode_ns(),
+            "decode_ms": outcome.stats.effective_decode_ms(),
             "completed_decode_forwards": outcome.stats.completed_decode_forwards,
-            "complete_forward_tps": outcome.stats.decode_ms.zip(outcome.stats.completed_decode_forwards)
-                .and_then(|(milliseconds, forwards)| (milliseconds > 0.0 && forwards > 0).then(|| forwards as f64 / (milliseconds / 1_000.0))),
+            "complete_forward_tps": outcome.stats.effective_decode_ns().zip(outcome.stats.completed_decode_forwards)
+                .and_then(|(nanoseconds, forwards)| (nanoseconds > 0 && forwards > 0).then(|| forwards as f64 * 1_000_000_000.0 / nanoseconds as f64)),
         })
     });
+    let wall_elapsed_ns = started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
     let mut receipt = json!({
         "schema": HCLI_SWARM_RECEIPT_SCHEMA,
         "status": if complete { "completed" } else { "incomplete" },
         "started_ms": started_ms,
         "finished_ms": now_ms(),
-        "wall_elapsed_ms": started.elapsed().as_millis() as u64,
+        "timing_unit": "ns",
+        "wall_elapsed_ns": wall_elapsed_ns,
+        "wall_elapsed_ms": wall_elapsed_ns / 1_000_000,
         "goal": {
             "text": config.goal,
             "blake3": blake3::hash(config.goal.as_bytes()).to_hex().to_string(),
@@ -305,12 +310,15 @@ pub async fn run_parallel_analysis_swarm(
             "model_call_count": total_model_calls,
             "complete_forward_metric_call_count": complete_metric_calls,
             "completed_decode_forwards": completed_decode_forwards,
-            "decode_ms": all_agent_calls_have_complete_metrics.then_some(decode_ms),
+            "timing_unit": "ns",
+            "decode_ns": all_agent_calls_have_complete_metrics.then_some(decode_ns),
+            "decode_ms": all_agent_calls_have_complete_metrics
+                .then_some(decode_ns as f64 / 1_000_000.0),
             "aggregate_complete_forward_tps": aggregate_complete_forward_tps,
             "tps_authority": if aggregate_complete_forward_tps.is_some() {
-                "all recorded agent calls exposed completed_decode_forwards plus decode_ms; reported value is sum(forwards) / sum(decode_ms)"
+                "all recorded agent calls exposed completed_decode_forwards plus decode_ns; reported value is sum(forwards) * 1e9 / sum(decode_ns)"
             } else {
-                "unavailable: every recorded agent model call must expose both completed_decode_forwards and decode_ms"
+                "unavailable: every recorded agent model call must expose both completed_decode_forwards and decode_ns"
             },
         },
         "artifact_manifest": {
@@ -333,7 +341,7 @@ pub async fn run_parallel_analysis_swarm(
             "It is not a worktree-isolated write swarm. Default SuggestOnly autonomy prevents the high-compute profile from granting raw effects.",
             "Lane receipts are sealed audit artifacts but are not automatically available to later lanes as context. A future coordinator must add shared evidence manifests, source partitioning, barriers, and verifier/judge contracts.",
             "Agent wall time includes model planning, verification, tools, and scheduling. It is not decode TPS.",
-            "A complete-forward TPS claim requires runtime-reported completed_decode_forwards plus decode_ms for every recorded model call.",
+            "A complete-forward TPS claim requires runtime-reported completed_decode_forwards plus decode_ns for every recorded model call.",
         ],
     });
     seal(&mut receipt)?;
@@ -342,6 +350,23 @@ pub async fn run_parallel_analysis_swarm(
         synthesis,
         receipt,
     })
+}
+
+/// Prefer exact integer model timing while retaining read compatibility with
+/// older lane receipts that recorded only floating-point milliseconds.
+fn payload_decode_ns(payload: &Value) -> Option<u64> {
+    payload
+        .get("decode_ns")
+        .and_then(Value::as_u64)
+        .filter(|nanoseconds| *nanoseconds > 0)
+        .or_else(|| {
+            let milliseconds = payload.get("decode_ms").and_then(Value::as_f64)?;
+            if !milliseconds.is_finite() || milliseconds <= 0.0 {
+                return None;
+            }
+            let nanoseconds = milliseconds * 1_000_000.0;
+            (nanoseconds <= u64::MAX as f64).then(|| nanoseconds.round() as u64)
+        })
 }
 
 #[derive(Clone, Copy)]
@@ -635,6 +660,17 @@ mod tests {
                 .pointer("/execution/effective_max_concurrency")
                 .and_then(Value::as_u64),
             Some(2)
+        );
+        let elapsed_ns = result
+            .receipt
+            .get("wall_elapsed_ns")
+            .and_then(Value::as_u64)
+            .expect("swarm wall timing is nanosecond-native");
+        assert!(elapsed_ns > 0);
+        assert_eq!(result.receipt["timing_unit"], "ns");
+        assert_eq!(
+            result.receipt["wall_elapsed_ms"],
+            Value::from(elapsed_ns / 1_000_000)
         );
         assert_eq!(
             result

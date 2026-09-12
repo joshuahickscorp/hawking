@@ -22,6 +22,8 @@ Functions:
       Garbage input returns ``state="unknown"`` and does not raise.
   ``find_grok_run() -> str``
       PATH lookup. Raises ``GrokNotAvailable``. Never invents a binary.
+  ``find_grok_mission() -> str``
+      PATH lookup for the optional Grok V2 mission compiler.
   ``validate_contract_text(text)``
       Raises ``GrokContractError`` if the caller did not supply a contract
       with WRITE and VERIFY sections. This module never drafts one.
@@ -31,11 +33,17 @@ Functions:
   plus ``dry_run``, ``task_dir``, ``receipt_path``, ``stdout``, ``stderr``,
   ``resolved_command`` (inner ``grok`` command when ``GROK_DRYRUN=1``).
 
-``GrokBridge(workspace, receipts_dir=None)``
+  ``GrokBridge(workspace, receipts_dir=None)``
   ``delegate(task, contract_text, *, profile="power", background=True,
              no_worktree=True, mutation_lock=None, dry_run=None)``
   ``audit(task, contract_text, *, background=True, dry_run=None)``
   ``consult(prompt, *, background=True, dry_run=None)``
+  ``revise(task_id, contract_text, *, dry_run=None, mutation_lock=None)``
+  ``verify(task_id) -> dict``     provider-side structured receipt; not HCLI acceptance
+  ``doctor() -> dict``            provider health output, preserved verbatim
+  ``mission(mission_file, *, mode, dry_run, mutation_lock) -> dict``
+      optional Grok V2 DAG mission adapter
+  ``telemetry(task_id) -> dict``  observed telemetry or an explicit absence
   ``status(task_id) -> dict``     normalized via ``parse_grok_status``
   ``wait(task_id, timeout=3600.0) -> dict``
   ``report(task_id) -> str``      contents of ``grok-report.md``
@@ -146,8 +154,16 @@ NO_MUTATION_LOCK_WARNING = (
     "outside a live mission."
 )
 
+NO_MISSION_LOCK_WARNING = (
+    "GrokBridge.mission/revise: no mutation_lock provided; "
+    "no mutation-serialization was applied. A live HCLI mission MUST pass "
+    "the shared MUTATION lock; dry plans are safe without it."
+)
+
 DEFAULT_TASKS_ROOT = Path.home() / ".claude-grok" / "tasks"
 DEFAULT_GROK_RUN_HINT = Path.home() / ".claude-grok" / "bin" / "grok-run"
+DEFAULT_GROK_MISSION_HINT = Path.home() / ".claude-grok" / "bin" / "grok-mission"
+GROK_MISSION_MODES = frozenset({"ECONOMY", "BALANCED", "FAST", "ULTRA"})
 
 _WRITE_HEADING = re.compile(
     r"^\s{0,3}#{0,3}\s*(?:WRITE|EDIT|OUTPUT)\b",
@@ -251,6 +267,28 @@ def find_grok_run() -> str:
         "grok-run is not on PATH (shutil.which returned None) and is not at "
         f"{DEFAULT_GROK_RUN_HINT}. Install it there, or set GROK_RUN. "
         "Refusing to invent a task id or pretend a Grok session ran."
+    )
+
+
+def find_grok_mission() -> str:
+    """Return the V2 mission entry point without inventing a fallback."""
+    override = os.environ.get("GROK_MISSION")
+    if override:
+        path = Path(override)
+        if path.is_file() and os.access(path, os.X_OK):
+            return str(path)
+        raise GrokNotAvailable(
+            f"GROK_MISSION={override} is set but is not an executable file"
+        )
+    found = shutil.which("grok-mission")
+    if found:
+        return found
+    if DEFAULT_GROK_MISSION_HINT.is_file() and os.access(DEFAULT_GROK_MISSION_HINT, os.X_OK):
+        return str(DEFAULT_GROK_MISSION_HINT)
+    raise GrokNotAvailable(
+        "grok-mission is not on PATH and is not at "
+        f"{DEFAULT_GROK_MISSION_HINT}. Install it there, set GROK_MISSION, "
+        "or leave V2 mission scheduling unavailable."
     )
 
 
@@ -817,6 +855,196 @@ class GrokBridge:
             dry_run=_want_dry_run(dry_run),
             mutation_serialized=False,
         )
+
+    def revise(
+        self,
+        task_id: str,
+        contract_text: str,
+        *,
+        dry_run: Optional[bool] = None,
+        timeout: float = 43200.0,
+        mutation_lock: Optional[Union[MutationLockFactory, AbstractContextManager[Any]]] = None,
+    ) -> Dict[str, Any]:
+        """Resume one Grok task with a new contract under HCLI's write lock."""
+        validate_contract_text(contract_text)
+        self._require_task_id(task_id)
+        contract_path = self._write_contract_file(
+            f"revision-{str(task_id).strip()}", contract_text
+        )
+        dry = _want_dry_run(dry_run)
+        if mutation_lock is None and not dry:
+            LOG.warning(NO_MISSION_LOCK_WARNING)
+        argv = [
+            find_grok_run(),
+            "revise",
+            "--id",
+            str(task_id).strip(),
+            "--contract",
+            str(contract_path),
+        ]
+        locker = nullcontext() if dry else _as_mutation_lock(mutation_lock)
+        with locker:
+            result = self._run(argv, dry_run=dry, check=False, timeout=timeout)
+        out = {
+            "task_id": str(task_id).strip(),
+            "ok": result.returncode == 0,
+            "exit_code": result.returncode,
+            "dry_run": dry,
+            "command_run": argv,
+            "contract_path": str(contract_path),
+            "stdout": (result.stdout or "")[-12000:],
+            "stderr": (result.stderr or "")[-12000:],
+            "mutation_serialized": bool(dry or mutation_lock is not None),
+            "receipt_path": str(self.receipt_path(str(task_id).strip())),
+            "limitations": [
+                "A revision is provider work; HCLI acceptance still requires its own verifier.",
+            ],
+        }
+        if self._read_receipt(str(task_id).strip()) is not None:
+            self._update_receipt(str(task_id).strip(), extra={"last_revision": out})
+        return out
+
+    def verify(self, task_id: str, *, timeout: float = 120.0) -> Dict[str, Any]:
+        """Read Grok's structured receipt without promoting it to HCLI evidence."""
+        self._require_task_id(task_id)
+        task = str(task_id).strip()
+        argv = [find_grok_run(), "verify", "--id", task]
+        result = self._run(argv, dry_run=False, check=False, timeout=timeout)
+        raw = (result.stdout or "").strip()
+        parsed: Optional[Dict[str, Any]] = None
+        if raw:
+            try:
+                candidate = json.loads(raw)
+            except (TypeError, ValueError):
+                candidate = None
+            if isinstance(candidate, dict):
+                parsed = candidate
+        return {
+            "task_id": task,
+            "ok": result.returncode == 0,
+            "exit_code": result.returncode,
+            "command_run": argv,
+            "provider_receipt": parsed,
+            "stdout": raw[-12000:],
+            "stderr": (result.stderr or "")[-12000:],
+            "hcli_acceptance": False,
+            "hcli_acceptance_reason": "provider verify output is advisory until HCLI independently verifies the workspace",
+        }
+
+    def doctor(self) -> Dict[str, Any]:
+        """Run the provider adapter's own health check and preserve its output."""
+        argv = [find_grok_run(), "doctor"]
+        result = self._run(argv, dry_run=False, check=False)
+        return {
+            "ok": result.returncode == 0,
+            "command_run": argv,
+            "exit_code": result.returncode,
+            "stdout": (result.stdout or "")[-12000:],
+            "stderr": (result.stderr or "")[-12000:],
+        }
+
+    def telemetry(self, task_id: str) -> Dict[str, Any]:
+        """Read one Grok telemetry row; absence stays explicit rather than null-shaped success."""
+        self._require_task_id(task_id)
+        receipt = self._read_receipt(str(task_id)) or {}
+        task_dir = receipt.get("task_dir") or (DEFAULT_TASKS_ROOT / str(task_id))
+        path = Path(str(task_dir)) / "telemetry.json"
+        if not path.is_file():
+            return {
+                "task_id": str(task_id),
+                "observed": False,
+                "path": str(path),
+                "reason": "telemetry.json absent",
+            }
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            return {
+                "task_id": str(task_id),
+                "observed": False,
+                "path": str(path),
+                "reason": f"telemetry.json unreadable: {type(exc).__name__}",
+            }
+        return {
+            "task_id": str(task_id),
+            "observed": isinstance(data, dict),
+            "path": str(path),
+            "telemetry": data if isinstance(data, dict) else None,
+            "reason": None if isinstance(data, dict) else "telemetry.json is not an object",
+        }
+
+    def mission(
+        self,
+        mission_file: Union[str, Path],
+        *,
+        mode: str = "BALANCED",
+        dry_run: bool = False,
+        timeout: float = 43200.0,
+        mutation_lock: Optional[Union[MutationLockFactory, AbstractContextManager[Any]]] = None,
+    ) -> Dict[str, Any]:
+        """Expose Grok V2's DAG mission compiler behind HCLI's receipt boundary.
+
+        The V2 scheduler remains an adapter: HCLI records the exact invocation,
+        does not treat its stdout as verification, and serializes the launch
+        against the HCLI mutation resource unless the caller explicitly runs a
+        dry plan.
+        """
+        raw = Path(str(mission_file)).expanduser()
+        if not raw.is_absolute():
+            raw = self.workspace / raw
+        path = raw.resolve()
+        try:
+            path.relative_to(self.workspace.resolve())
+        except ValueError as exc:
+            raise GrokContractError(
+                "mission file must be inside the HCLI workspace"
+            ) from exc
+        if not path.is_file():
+            raise GrokContractError(f"mission file not found: {mission_file}")
+        selected = str(mode or "BALANCED").upper()
+        if selected not in GROK_MISSION_MODES:
+            raise GrokContractError(
+                f"unknown Grok V2 mission mode {mode!r}; choose "
+                + ", ".join(sorted(GROK_MISSION_MODES))
+            )
+        if mutation_lock is None and not dry_run:
+            LOG.warning(NO_MISSION_LOCK_WARNING)
+        argv = [
+            find_grok_mission(),
+            str(path),
+            "--repo",
+            str(self.workspace),
+            "--mode",
+            selected,
+        ]
+        if dry_run:
+            argv.append("--dry")
+        locker = nullcontext() if dry_run else _as_mutation_lock(mutation_lock)
+        with locker:
+            result = self._run(argv, dry_run=False, check=False, timeout=timeout)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+        self.receipts_dir.mkdir(parents=True, exist_ok=True)
+        receipt_path = self.receipts_dir / f"mission-{stamp}-{os.getpid()}.json"
+        payload = {
+            "schema": "hcli.grok_mission.v1",
+            "mode": selected,
+            "dry_run": bool(dry_run),
+            "mission_file": str(path),
+            "workspace": str(self.workspace),
+            "command_run": argv,
+            "mutation_serialized": bool(dry_run or mutation_lock is not None),
+            "exit_code": result.returncode,
+            "ok": result.returncode == 0,
+            "stdout": (result.stdout or "")[-12000:],
+            "stderr": (result.stderr or "")[-12000:],
+            "receipt_path": str(receipt_path),
+            "limitations": [
+                "V2 stdout is a provider report, not HCLI verification.",
+                "HCLI must independently inspect artifacts and run its own verifier before acceptance.",
+            ],
+        }
+        atomic_write_json(receipt_path, payload)
+        return payload
 
     def status(self, task_id: str) -> Dict[str, Any]:
         """Run ``grok-run status --id`` and return the normalized dict."""

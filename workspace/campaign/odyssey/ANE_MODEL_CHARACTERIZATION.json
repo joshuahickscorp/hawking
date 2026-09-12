@@ -1,0 +1,129 @@
+{
+  "schema": "hawking.odyssey.ane_model_characterization.v1",
+  "status": "ACTIVE_SECONDARY_ODYSSEY_LANE__GENERIC_PUBLIC_FIXTURE_CLOSED",
+  "authority": "Existing Gravity PhysicalGraph and ANEProvider owners; this registry is a durable work queue and evidence index, not a promotion authority.",
+  "machine": {
+    "host": "Apple M3 Ultra",
+    "compute_surfaces": ["CPU", "GPU", "UNIFIED_MEMORY", "NEURAL_ENGINE"],
+    "measurement_unit": "ns",
+    "primary_physical_objective": "maximum_verified_complete_useful_work_per_wall",
+    "ane_public_boundary": true
+  },
+  "claim_boundary": [
+    "A device list is not a placement result.",
+    "A plan row is not a latency result.",
+    "An organ result is not a complete-token result.",
+    "A result for one model, organ, shape, or representation does not transfer generically without cross-scope evidence.",
+    "No ANE candidate may displace the Metal route without source parity, capability, transfer/synchronization accounting, and protected complete-token evidence."
+  ],
+  "current_provider_evidence": {
+    "source_profile": "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+    "source_atlas": "receipts/headless/APPLE_ANE_ATLAS.json",
+    "neural_engine_observed": true,
+    "mlcomputeplan_observed": true,
+    "measured_atlas_ready": false,
+    "latest_generic_fixture_revalidation": {
+      "receipt": "receipts/headless/ANE_PUBLIC_FIXTURE_REVALIDATION_20260911.json",
+      "sha256": "602f217274ecec4daaceb71278be2782e8eea2333b9af7b8ad781f1775f7d408",
+      "fixture": "workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+      "scope": "one public Core ML ios16.mul fixture; generic toolchain/device control only",
+      "status": "PASSED__CPU_PREFERRED",
+      "observed_devices": ["NEURAL_ENGINE", "GPU", "CPU"],
+      "supported_for_fixture_op": ["CPU", "GPU", "NEURAL_ENGINE"],
+      "preferred_for_fixture_op": "CPU",
+      "ane_placement_observed": false,
+      "warm_prediction_ns": {"min": 48995, "mean": 64105, "max": 108957},
+      "interpretation": "The supported public toolchain is live and the fixture plan is reproducible, but this fixture is CPU-preferred. Its prediction time and plan cannot transfer to Flash, KIMI, or an ANE promotion claim."
+    },
+    "interpretation": "public device and generic fixture-plan evidence exists, but the measured ANE atlas and model-scoped complete useful work do not",
+    "promotion": "WITHHELD"
+  },
+  "models": [
+    {
+      "model_id": "KIMI_P0_OPERATIONAL",
+      "role": "bounded_local_resident_control",
+      "source_identity": "sealed_by_KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911",
+      "runtime_route": "native_hawking_runtime_and_metal_control",
+      "status": "ACTIVE_WORKER__ANE_UNMEASURED",
+      "organs": [
+        {"id": "embedding_and_lm_head", "operation": "matmul", "shape": [], "measurement_state": "UNMEASURED"},
+        {"id": "attention_or_recurrent_state", "operation": "state_update", "shape": [], "measurement_state": "UNMEASURED"},
+        {"id": "routed_expert_projection", "operation": "matmul", "shape": [], "measurement_state": "UNMEASURED"},
+        {"id": "routing_and_sampling", "operation": "top_k", "shape": [], "measurement_state": "UNMEASURED"}
+      ],
+      "next_evidence": "model-scoped Core ML authoring/plan plus matched CPU/GPU/ANE organ controls; no ANE number is currently earned"
+    },
+    {
+      "model_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "role": "primary_pulsar_resident_star_candidate",
+      "source_identity": "receipts/future/FLASH_NEXT_RESOURCE_RUNTIME_PREFLIGHT_20260911.json",
+      "runtime_route": "static_source_anatomy__metal_primary__ane_candidate",
+      "status": "ACTIVE_STATIC_WORK__ANE_TOOLCHAIN_BLOCKED__CPU_GPU_BOUNDED_PARITY_OBSERVED",
+      "latest_model_card": "receipts/future/FLASH_NEXT_ANE_MEGAKERNEL_MODEL_CARD_20260911.json",
+      "organs": [
+        {"id": "embedding_lm_head", "operation": "matmul", "shape": [1, 2560], "measurement_state": "UNMEASURED"},
+        {"id": "routed_expert_gate_up", "operation": "matmul", "shape": [512, 1280, 2560], "measurement_state": "UNMEASURED"},
+        {"id": "routed_expert_down", "operation": "matmul", "shape": [1, 640], "measurement_state": "UNMEASURED"},
+        {"id": "router_top_k", "operation": "top_k", "shape": [1, 10], "measurement_state": "UNMEASURED"},
+        {"id": "linear_attention_state", "operation": "state_update", "shape": [1, 48, 128, 128], "measurement_state": "UNMEASURED"},
+        {"id": "full_attention_sdpa", "operation": "sdpa", "shape": [1, 24, 1, 256], "measurement_state": "UNMEASURED"},
+        {"id": "normalization", "operation": "rmsnorm", "shape": [1, 2560], "measurement_state": "UNMEASURED"}
+      ],
+      "bounded_cpu_gpu_evidence": {
+        "receipt": "receipts/future/FLASH_NEXT_LAYER0_CPU_GPU_DIAGNOSTIC_20260911.json",
+        "scope": "exact source-BF16 Flash layer-0 linear-attention plus routed/shared MoE graph on one BOS embedding",
+        "state": "DIAGNOSTIC_PARITY_TIMING_ONLY",
+        "cpu_oracle_ns": 115779584,
+        "gpu_graph_ns": 21983499,
+        "gpu_host_wall_ns": 290295541,
+        "complete_token_runtime": false,
+        "promotion_allowed": false,
+        "interpretation": "A real source-sealed CPU oracle and Metal graph exist at one bounded layer scope. They are not a matched sustained placement A/B and do not fill any complete-token CPU/GPU/ANE matrix cell."
+      },
+      "next_evidence": "repeat the bounded layer-0 graph under a clean measured CPU/GPU control protocol, then obtain a lawful public Core ML authoring/compile path and model-scoped MLComputePlan before ANE work"
+    }
+  ],
+  "control_matrix": [
+    "CPU",
+    "GPU_METAL",
+    "ANE_PUBLIC_COREML",
+    "CPU_PLUS_ANE",
+    "CPU_PLUS_GPU",
+    "CONCURRENT_ONLY_WHEN_MEASURED"
+  ],
+  "mega_kernel": {
+    "schema": "hcli.physical_graph.mega_kernel.v1",
+    "status": "PLAN_AND_LOWERING_SPINE_ACTIVE",
+    "meaning": "One model-aware execution spine with backend-native stage implementations; not a claim that one monolithic vendor kernel exists.",
+    "stages": ["LOAD", "DECODE", "ROUTE", "PROJECT", "ACCUMULATE", "STATE_UPDATE", "SAMPLE"],
+    "backend_slots": ["cpu", "gpu", "ane", "remote"],
+    "dynamic_slots": ["token", "position", "route", "representation", "state_layout", "sampling"],
+    "persistent_state": ["weights_or_representation", "route_cache", "kv_or_recurrent_state"],
+    "decode_state_contract": "Model-scoped route/KV/recurrent regions persist across accepted decode steps. Prefix replay is explicitly not counted as decode; byte sizes and device residency remain unresolved until an exact lowering measures them.",
+    "fusion_rule": "source parity first; then measure complete useful work including transfer, synchronization, residency, and fallback",
+    "owner": "hcli.physical_graph plus native Rust/Metal lowerings as each primitive earns promotion"
+  },
+  "required_evidence_per_model": [
+    "exact source seal and architecture anatomy",
+    "model-scoped organ shapes and representation",
+    "public Core ML device/plan placement for the exact operation",
+    "matched CPU, GPU, ANE, and relevant concurrent controls",
+    "transfer, synchronization, residency, and fallback accounting",
+    "source-parity and capability receipt",
+    "protected complete-token wall-time result",
+    "independent review before any backend promotion"
+  ],
+  "current_blockers": [
+    "system Core ML authoring dependency coremltools is absent",
+    "the active developer directory is CommandLineTools rather than a full Xcode developer directory; public fixture probes work, but the Core ML authoring dependency is absent",
+    "no Flash-specific compiled MLProgram or MLComputePlan evidence exists",
+    "no ANE latency, throughput, energy, capability, or complete-token result is claimed"
+  ],
+  "reopen_conditions": [
+    "public authoring/compile path is available",
+    "a model-specific graph can be compiled without bypassing platform security boundaries",
+    "MLComputePlan and runtime placement are observed for the exact model/organ",
+    "protected complete-token A/B shows useful work improvement over the current route"
+  ],
+  "next_action": "Keep this lane open in Odyssey; characterize KIMI and Flash per model as toolchain permits, keep Metal primary, and lower repeated stages into the shared MegaKernel spine without claiming ANE execution before evidence."
+}

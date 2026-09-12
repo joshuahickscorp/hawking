@@ -37,9 +37,11 @@ fn default_max_tokens_applied_when_absent() {
 }
 #[test]
 fn stats_json_has_genstats_field_names_and_dec_tps() {
-    let j = hawking_generate_stats_json(14, 64, 2000.0, true, "q4k-predec-f16s");
+    let j = hawking_generate_stats_json(14, 64, 2_000_000_000, true, "q4k-predec-f16s");
     assert_eq!(j["prompt_tokens"], 14);
     assert_eq!(j["completion_tokens"], 64);
+    assert_eq!(j["timing_unit"], "ns");
+    assert_eq!(j["decode_ns"], 2_000_000_000u64);
     assert_eq!(j["decode_ms"], 2000.0);
     assert_eq!(j["dec_tps"].as_f64().unwrap().round(), 32.0);
     assert_eq!(j["token_only_path_used"], true);
@@ -49,6 +51,6 @@ fn stats_json_has_genstats_field_names_and_dec_tps() {
 }
 #[test]
 fn stats_dec_tps_zero_safe_when_no_decode() {
-    let j = hawking_generate_stats_json(5, 0, 0.0, false, "f16");
+    let j = hawking_generate_stats_json(5, 0, 0, false, "f16");
     assert!(j["dec_tps"].as_f64().unwrap().is_finite());
 }

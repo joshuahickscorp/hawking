@@ -18,14 +18,22 @@ def lake(tmp_path, monkeypatch):
     partial = model_root / "partial"
     specimens = model_root / "specimens"
     manifests = tmp_path / "manifests"
+    lake_manifests = tmp_path / "lake-manifests"
     partial.mkdir(parents=True)
     specimens.mkdir(parents=True)
     manifests.mkdir(parents=True)
+    lake_manifests.mkdir(parents=True)
     monkeypatch.setattr(mp, "MODEL_ROOT", model_root)
     monkeypatch.setattr(mp, "PARTIAL_ROOT", partial)
     monkeypatch.setattr(mp, "SPECIMEN_ROOT", specimens)
     monkeypatch.setattr(mp, "MANIFEST_DIR", manifests)
-    return {"partial": partial, "specimens": specimens, "manifests": manifests}
+    monkeypatch.setattr(mp, "LAKE_MANIFEST_ROOT", lake_manifests)
+    return {
+        "partial": partial,
+        "specimens": specimens,
+        "manifests": manifests,
+        "lake_manifests": lake_manifests,
+    }
 
 
 def _write_manifest(lake, tag, files):
@@ -106,6 +114,9 @@ def test_promote_go_moves_atomically(lake):
     assert dest.is_dir()
     for name, content in FILES.items():
         assert (dest / name).read_bytes() == content
+    lake_manifest = lake["lake_manifests"] / f"{TAG}.json"
+    assert lake_manifest.is_file()
+    assert json.loads(lake_manifest.read_text())["resolved_sha"] == "deadbeefcafe"
 
 
 def test_promote_refuses_incomplete_source(lake):

@@ -543,7 +543,7 @@ impl SealedAdmissionRoot {
 pub fn open_admitted_dsv4f_reader(
     source: impl AsRef<Path>,
 ) -> Result<(DeepSeekV4FullStreamReader, SealedAdmissionRoot)> {
-    crate::startup_timing::time_ms_result("open_admitted_reader", || {
+    crate::startup_timing::time_ns_result("open_admitted_reader", || {
         let source = source.as_ref();
         let mode = DeepSeekV4VerifyMode::from_env()?;
         if let Some(reader) =
@@ -562,7 +562,7 @@ pub fn open_admitted_dsv4f_reader(
 /// receipt. Required because a later append doubled the on-disk journal
 /// (139674 = 2 × 69837) and broke `DeepSeekV4FullStreamReader::admit`.
 pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedAdmissionRoot> {
-    crate::startup_timing::time_ms_result("prepare_admission_root", || {
+    crate::startup_timing::time_ns_result("prepare_admission_root", || {
         prepare_sealed_admission_root_inner(source)
     })
 }
@@ -594,7 +594,7 @@ fn prepare_sealed_admission_root_inner(source: impl AsRef<Path>) -> Result<Seale
 
     let journal_path = source.join("stream-journal.json");
     let ranges_path = source.join("stream-ranges.jsonl");
-    crate::startup_timing::time_ms_result("prepare_journal_hash", || {
+    crate::startup_timing::time_ns_result("prepare_journal_hash", || {
         if sha256_file(&journal_path)? != expected_journal {
             Err(gravity(
                 "stream-journal.json no longer matches the sealed restart receipt",
@@ -603,7 +603,7 @@ fn prepare_sealed_admission_root_inner(source: impl AsRef<Path>) -> Result<Seale
             Ok(())
         }
     })?;
-    let on_disk_ranges = crate::startup_timing::time_ms_result("prepare_ranges_full_hash", || {
+    let on_disk_ranges = crate::startup_timing::time_ns_result("prepare_ranges_full_hash", || {
         sha256_file(&ranges_path)
     })?;
     if on_disk_ranges == expected_ranges {
@@ -616,7 +616,7 @@ fn prepare_sealed_admission_root_inner(source: impl AsRef<Path>) -> Result<Seale
     }
 
     let (prefix_sha, prefix_lines) =
-        crate::startup_timing::time_ms_result("prepare_ranges_prefix_hash", || {
+        crate::startup_timing::time_ns_result("prepare_ranges_prefix_hash", || {
             sha256_first_lines(&ranges_path, range_count)
         })?;
     if prefix_sha != expected_ranges {
@@ -634,8 +634,8 @@ fn prepare_sealed_admission_root_inner(source: impl AsRef<Path>) -> Result<Seale
             .unwrap_or(0)
     ));
     fs::create_dir_all(&view_root)?;
-    let result = crate::startup_timing::time_ms_result("prepare_clone_view", || -> Result<()> {
-        crate::startup_timing::time_ms_result("prepare_clone_manifest", || {
+    let result = crate::startup_timing::time_ns_result("prepare_clone_view", || -> Result<()> {
+        crate::startup_timing::time_ns_result("prepare_clone_manifest", || {
             clone_or_link_file(
                 &source.join("manifest.json"),
                 &view_root.join("manifest.json"),
@@ -649,20 +649,20 @@ fn prepare_sealed_admission_root_inner(source: impl AsRef<Path>) -> Result<Seale
             &source.join("stream-journal.json"),
             &view_root.join("stream-journal.json"),
         )?;
-        crate::startup_timing::time_ms_result("prepare_write_ranges_prefix", || {
+        crate::startup_timing::time_ns_result("prepare_write_ranges_prefix", || {
             write_first_lines(
                 &ranges_path,
                 &view_root.join("stream-ranges.jsonl"),
                 range_count,
             )
         })?;
-        crate::startup_timing::time_ms_result("prepare_clone_metadata", || {
+        crate::startup_timing::time_ns_result("prepare_clone_metadata", || {
             clone_or_link_tree(&source.join("metadata"), &view_root.join("metadata"))
         })?;
-        crate::startup_timing::time_ms_result("prepare_clone_chunks", || {
+        crate::startup_timing::time_ns_result("prepare_clone_chunks", || {
             clone_or_link_tree(&source.join("chunks"), &view_root.join("chunks"))
         })?;
-        crate::startup_timing::time_ms_result("prepare_copy_admission_receipt", || {
+        crate::startup_timing::time_ns_result("prepare_copy_admission_receipt", || {
             copy_admission_receipt_into_view(source, &view_root)
         })?;
         Ok(())

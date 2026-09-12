@@ -14,7 +14,7 @@ MLP treatment for it.
 Weights are never loaded. config.json and model.safetensors.index.json are enough,
 and both are small.
 """
-import argparse, json, re, sys, time, urllib.error, urllib.request
+import argparse, json, re, struct, sys, time, urllib.error, urllib.request
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -68,6 +68,41 @@ def fetch(repo, rev):
     except urllib.error.HTTPError:
         wmap = {}                      # single-shard repos have no index; recorded as such
     return cfg, sorted(wmap)
+
+
+def local_snapshot(snapshot):
+    """Read local config and safetensors *headers* without loading weights.
+
+    Hub repositories may omit ``model.safetensors.index.json`` for a single
+    shard.  Treating that layout as a zero-tensor body makes a local sealed
+    specimen invisible to the first Noetic stage.  Header parsing keeps the
+    static-streamable evidence class: no tensor payload is read or mapped.
+    """
+    root = Path(snapshot).expanduser().resolve()
+    cfg_path = root / "config.json"
+    if not cfg_path.is_file():
+        raise FileNotFoundError(f"local snapshot lacks config.json: {root}")
+    cfg = json.loads(cfg_path.read_text())
+    if not isinstance(cfg, dict):
+        raise ValueError(f"local snapshot config is not an object: {cfg_path}")
+    shards = sorted(root.glob("*.safetensors"))
+    if not shards:
+        raise FileNotFoundError(f"local snapshot has no safetensors shards: {root}")
+    names = []
+    for shard in shards:
+        with shard.open("rb") as stream:
+            size_raw = stream.read(8)
+            if len(size_raw) != 8:
+                raise ValueError(f"truncated safetensors header length: {shard}")
+            header_size = struct.unpack("<Q", size_raw)[0]
+            header_raw = stream.read(header_size)
+        if len(header_raw) != header_size:
+            raise ValueError(f"truncated safetensors header: {shard}")
+        header = json.loads(header_raw)
+        if not isinstance(header, dict):
+            raise ValueError(f"invalid safetensors header object: {shard}")
+        names.extend(str(name) for name in header if name != "__metadata__")
+    return cfg, sorted(set(names))
 
 
 MATRIX = RH / "ORGAN_FRONTIER_MATRIX.json"
@@ -270,7 +305,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--emit", required=True)
     ap.add_argument("--repo"); ap.add_argument("--revision")
+    ap.add_argument("--snapshot", help="local safetensors directory; header-only")
     a = ap.parse_args()
+
+    if a.snapshot:
+        if a.repo:
+            ap.error("--snapshot and --repo are mutually exclusive")
+        cfg, names = local_snapshot(a.snapshot)
+        out = recognize(str(Path(a.snapshot).resolve()), "local", cfg, names)
+        out.update({
+            "schema": "hawking.headless.architecture_recognizer.local_snapshot.v1",
+            "source": "local_safetensors_headers",
+            "did_not_load_weights": True,
+            "snapshot": str(Path(a.snapshot).resolve()),
+        })
+        Path(a.emit).write_text(json.dumps(out, indent=1))
+        print(json.dumps({
+            "snapshot": out["snapshot"],
+            "model_type": out["model_type"],
+            "n_tensors": out["n_tensors"],
+            "organs": [row["organ"] for row in out["organs"]],
+            "n_unrecognized": out["n_unmatched"],
+            "classification": out["classification"],
+        }, indent=1))
+        return 0
 
     if a.repo:
         print(json.dumps(recognize(a.repo, a.revision or "main"), indent=1))

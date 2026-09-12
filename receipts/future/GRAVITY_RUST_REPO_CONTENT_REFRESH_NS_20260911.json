@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.gravity.rust.repository-content-refresh.v1",
+  "status": "ACCEPTED",
+  "recorded_at": "2026-09-11T17:10:22Z",
+  "machine": "Apple M3 Ultra",
+  "scope": "resident Rust repository search after a source-content edit; same checkout, same contained query, same max-files limit",
+  "timing_unit": "ns",
+  "change": {
+    "prior_path": "any freshness change rebuilt both the file search index and path index",
+    "candidate_path": "content-only edits rebuild the search index while retaining the immutable path index; directory/layout edits still rebuild both",
+    "invalidation": "generation and candidate cache are updated atomically; path_generation remains stable for content-only edits"
+  },
+  "protocol": {
+    "query": "needle timing_unit; scope hcli/; glob *.py; max_results 20; max_per_file 3",
+    "fresh_probe_per_run": true,
+    "runs_per_variant": 4,
+    "result_count_each_run": 20,
+    "same_result_set": true
+  },
+  "control_ns": [
+    2033841750,
+    2088418875,
+    2034096792,
+    2041464667
+  ],
+  "candidate_ns": [
+    1967412875,
+    1955447000,
+    1964279459,
+    1953014417
+  ],
+  "summary": {
+    "control_median_ns": 2037780729.5,
+    "candidate_median_ns": 1959859437.5,
+    "median_reduction_percent": 3.82,
+    "control_max_of_four_ns": 2088418875,
+    "candidate_max_of_four_ns": 1967412875,
+    "max_of_four_reduction_percent": 5.79,
+    "interpretation": "small but repeatable content-refresh reduction under this filesystem protocol; not a general filesystem or model-TPS claim"
+  },
+  "verification": {
+    "focused_rust_tests": "15 passed, 0 failed",
+    "format_check": "passed",
+    "workspace_release_binary": "crates/hawking-core target/release/hawking-gravityd",
+    "live_daemon_restarted": false,
+    "sovereign_tree": "existing hawkingd root and descendants untouched"
+  },
+  "claim_boundary": "This receipt covers a native repository lifecycle reduction only. It does not claim model speed, end-to-end HCLI TPS, capability, ANE execution, or Odyssey readiness."
+}

@@ -111,6 +111,12 @@ pub struct IndexStats {
     pub reused: usize,
     pub files: usize,
     pub merkle_dirty: usize,
+    /// Monotonic wall duration for the collection pass. Nanoseconds are the
+    /// canonical value so sub-millisecond index work is not rounded away.
+    #[serde(default)]
+    pub elapsed_ns: u64,
+    /// Compatibility projection for consumers that still expect milliseconds.
+    /// New producers derive this from `elapsed_ns` rather than timing twice.
     pub elapsed_ms: u64,
     pub cold: bool,
 }
@@ -754,6 +760,7 @@ pub fn collect_reachability_facts(opts: &CollectOptions) -> Result<ReachabilityD
     let mut dump = aggregate(files, per_file);
     dump.commit = commit_sha.clone();
     let nfiles = dump.files.len();
+    let elapsed_ns = t0.elapsed().as_nanos().min(u64::MAX as u128) as u64;
     dump.index = IndexStats {
         merkle_dirty: if cold {
             nfiles
@@ -763,7 +770,8 @@ pub fn collect_reachability_facts(opts: &CollectOptions) -> Result<ReachabilityD
         parsed,
         reused,
         files: nfiles,
-        elapsed_ms: t0.elapsed().as_millis() as u64,
+        elapsed_ns,
+        elapsed_ms: elapsed_ns / 1_000_000,
         cold,
     };
     Ok(dump)
@@ -1305,6 +1313,8 @@ mod tests {
         let first = collect_reachability_facts(&opts).unwrap();
         assert!(first.index.cold);
         assert_eq!(first.index.parsed, 2);
+        assert!(first.index.elapsed_ns > 0);
+        assert_eq!(first.index.elapsed_ms, first.index.elapsed_ns / 1_000_000);
         assert!(first
             .calls
             .iter()

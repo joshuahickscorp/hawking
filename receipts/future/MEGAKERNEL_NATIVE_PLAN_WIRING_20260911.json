@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.gravity.megakernel_native_plan_wiring.v1",
+  "status": "ACCEPTED_PLAN_WIRING__NO_EXECUTION_CLAIM",
+  "recorded_at": "2026-09-11T17:42:03Z",
+  "objective": "Make the Rust-owned MegaKernel contract queryable by the single hawkingd-supervised native Gravity child and attach it to HCLI architecture inspection when available.",
+  "implementation": {
+    "rust_plan_owner": "crates/hawking-core/src/mega_kernel.rs",
+    "native_endpoint": "hawking.gravityd.mega-kernel-plan.v1",
+    "native_binary": "workspace/ops/build/rust/release/hawking-gravityd",
+    "hcli_attachment": "architecture.inspect -> physical_graph.native_mega_kernel",
+    "compatibility": "An unavailable or older native child returns no attachment; Python PhysicalGraph remains authoritative and selection stays unchanged."
+  },
+  "verification": {
+    "native_query": {
+      "model_id": "flash-next",
+      "organs": ["router", "state"],
+      "schema": "hawking.gravityd.mega-kernel-plan.v1",
+      "stage_order": ["LOAD", "DECODE", "ROUTE", "PROJECT", "ACCUMULATE", "STATE_UPDATE", "SAMPLE"],
+      "registered_lowering": "qwen3b_metal_pass_through_poc",
+      "registered_lowering_promotion_eligible": false
+    },
+    "source_tests": {
+      "command": "python3 -m pytest -q hcli/test_architecture.py hcli/test_ane_provider.py hcli/tests/test_hcli_science_boundaries.py",
+      "result": "33 passed"
+    },
+    "rust_checks": {
+      "command": "cargo fmt --all -- --check && cargo check -p hawking-core --bin hawking-gravityd && cargo test -p hawking-core mega_kernel --quiet",
+      "result": "PASS; focused MegaKernel tests 4 passed"
+    },
+    "packaged_tests": {
+      "snapshot": "/Users/scammermike/.local/share/hcli/build-20260911-174203",
+      "command": "PYTHONPATH=snapshot python3 -m pytest -q snapshot/hcli/test_architecture.py snapshot/hcli/test_ane_provider.py",
+      "result": "8 passed"
+    }
+  },
+  "flash_next_read_only_observation": {
+    "present_organs": 9,
+    "backend_matrix": ["CPU", "GPU", "ANE"],
+    "state": "ALL_UNMEASURED",
+    "promotion": "WITHHELD"
+  },
+  "claim_boundary": [
+    "This wires a deterministic plan and registry query, not a unified executing kernel.",
+    "The only registered native lowering is a fixed-shape Qwen2.5-3B-style Metal pass-through POC.",
+    "It is not applicable to Flash-Next and is not source-parity, full-model, capability, or throughput evidence.",
+    "No CPU, GPU, ANE, or concurrent placement has been selected or measured by this receipt.",
+    "The live hawkingd process was not restarted; the new snapshot takes effect for new controlled daemon starts."
+  ],
+  "next_action": "Keep the per-model CPU/GPU/ANE matrices open in Odyssey. Add a native lowering only after an exact model/organ parity target and protected complete-work measurement exist."
+}

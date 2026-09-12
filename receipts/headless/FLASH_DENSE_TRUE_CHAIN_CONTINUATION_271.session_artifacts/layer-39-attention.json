@@ -1,0 +1,176 @@
+{
+  "execution": {
+    "claim_boundary": "One full-attention bank owns its immutable Metal weights and KV state across the named token slots. This is an organ-level resident primitive, not complete token-major whole-model residency or TPS.",
+    "context_reused": true,
+    "device_weight_bytes": 5171657728,
+    "expert_bank_mode": "dense",
+    "host_source_weights_retained_during_token_loop": false,
+    "immutable_weight_ownership": "device_only_after_source_upload",
+    "kv_cache_reused": true,
+    "kv_cache_slots": 6,
+    "process_boundary": "one native process",
+    "source_payload_bytes_read": 5171656704,
+    "state_memory": {
+      "growth_bytes_per_token": 4096,
+      "persistent_kv_bytes": 24576
+    },
+    "timing": {
+      "device_prepare_ns": 309027000,
+      "execution_dispatches": 84,
+      "execution_gpu_ns": 38419331,
+      "execution_wall_ns": 131472500,
+      "graph_prepare_ns": 114250,
+      "source_load_ns": 42174187625
+    },
+    "weights_reused": true
+  },
+  "layer": 39,
+  "schema": "hawking.flash.stateful_full_attention_resident_bank.v1",
+  "status": "PASSED_STATEFUL_KV_ORGAN",
+  "steps": [
+    {
+      "command_wait_ns": 99805583,
+      "dispatches": 14,
+      "encode_ns": 99333,
+      "final_state_sha256": "db4c348efc5f3af66c69467039915fcdf1443a70bcdb6552c7a2e6d0a064dfdd",
+      "finite": true,
+      "gpu_ns": 8483500,
+      "route_ids": [
+        356,
+        242,
+        323,
+        148,
+        158,
+        506,
+        199,
+        394,
+        147,
+        496
+      ],
+      "source_weights_retained": false,
+      "step": 0,
+      "token_id": 5423,
+      "wall_ns": 99905042
+    },
+    {
+      "command_wait_ns": 6241792,
+      "dispatches": 14,
+      "encode_ns": 67583,
+      "final_state_sha256": "014894ce200b0d8f119a779b2d00a4c34488d5728a2d775cbc66c1f2a9bffeec",
+      "finite": true,
+      "gpu_ns": 5983333,
+      "route_ids": [
+        356,
+        242,
+        394,
+        477,
+        45,
+        199,
+        496,
+        158,
+        506,
+        323
+      ],
+      "source_weights_retained": false,
+      "step": 1,
+      "token_id": 799,
+      "wall_ns": 6309458
+    },
+    {
+      "command_wait_ns": 6247000,
+      "dispatches": 14,
+      "encode_ns": 46667,
+      "final_state_sha256": "c539c4b9ad624c48098e447de32e9b1640e5cdba290e1af27b35a051c9697eb2",
+      "finite": true,
+      "gpu_ns": 5989458,
+      "route_ids": [
+        356,
+        242,
+        477,
+        45,
+        496,
+        323,
+        480,
+        336,
+        167,
+        82
+      ],
+      "source_weights_retained": false,
+      "step": 2,
+      "token_id": 4581,
+      "wall_ns": 6293750
+    },
+    {
+      "command_wait_ns": 6274250,
+      "dispatches": 14,
+      "encode_ns": 41167,
+      "final_state_sha256": "65db1e46945084683df331eb56b6ff41c61ab932c976f6c88e761d81e6f85f08",
+      "finite": true,
+      "gpu_ns": 5982041,
+      "route_ids": [
+        356,
+        477,
+        45,
+        496,
+        242,
+        128,
+        167,
+        336,
+        143,
+        81
+      ],
+      "source_weights_retained": false,
+      "step": 3,
+      "token_id": 3817,
+      "wall_ns": 6315500
+    },
+    {
+      "command_wait_ns": 6287833,
+      "dispatches": 14,
+      "encode_ns": 72167,
+      "final_state_sha256": "0f265b98a3dd52c36f66f4864791cfa90befcde15430273b6005ff3da534a57a",
+      "finite": true,
+      "gpu_ns": 5989291,
+      "route_ids": [
+        242,
+        356,
+        128,
+        496,
+        477,
+        82,
+        45,
+        323,
+        336,
+        267
+      ],
+      "source_weights_retained": false,
+      "step": 4,
+      "token_id": 13,
+      "wall_ns": 6360042
+    },
+    {
+      "command_wait_ns": 6242625,
+      "dispatches": 14,
+      "encode_ns": 46000,
+      "final_state_sha256": "035065475813df44bb724139583394a44b43a1907cfa0ebe2a11079046fdf1d3",
+      "finite": true,
+      "gpu_ns": 5991708,
+      "route_ids": [
+        356,
+        242,
+        128,
+        477,
+        167,
+        496,
+        267,
+        45,
+        336,
+        82
+      ],
+      "source_weights_retained": false,
+      "step": 5,
+      "token_id": 271,
+      "wall_ns": 6288708
+    }
+  ]
+}

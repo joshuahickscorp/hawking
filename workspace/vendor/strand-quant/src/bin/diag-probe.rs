@@ -1,4 +1,3 @@
-
 use std::fs;
 use std::time::Instant;
 
@@ -15,7 +14,7 @@ fn read_bf16(path: &str, name: &str) -> Vec<f32> {
     let hl = u64::from_le_bytes(bytes[0..8].try_into().unwrap()) as usize;
     let json = std::str::from_utf8(&bytes[8..8 + hl]).unwrap();
     let ds = 8 + hl;
-    
+
     let key = format!("\"{name}\"");
     let p = json.find(&key).unwrap();
     let rest = &json[p..];
@@ -52,8 +51,11 @@ fn main() {
         (gt.iter().map(|&x| (x as f64 - m).powi(2)).sum::<f64>() / gt.len() as f64).sqrt()
     });
     println!("(Q4_K reference on this tensor: ~7.45% rel, 4.5 bpw, scale+min per 32 weights)\n");
-    println!("{:>5} {:>5} {:>5} {:>8} {:>11} {:>9}", "k", "L", "blk", "tot_bpw", "mse", "rel%");
-    
+    println!(
+        "{:>5} {:>5} {:>5} {:>8} {:>11} {:>9}",
+        "k", "L", "blk", "tot_bpw", "mse", "rel%"
+    );
+
     for &k in &[4u32] {
         for &l in &[10u32, 12] {
             for &blk in &[256usize, 64, 32, 16] {
@@ -63,7 +65,12 @@ fn main() {
                 let (m, rel) = mse(&gt, &recon);
                 println!(
                     "{:>5} {:>5} {:>5} {:>8.3} {:>11.3e} {:>8.2}%",
-                    cfg.k_bits, cfg.l_bits, cfg.block_len, enc.total_bpw(&cfg), m, rel
+                    cfg.k_bits,
+                    cfg.l_bits,
+                    cfg.block_len,
+                    enc.total_bpw(&cfg),
+                    m,
+                    rel
                 );
             }
         }

@@ -40,6 +40,24 @@ ROOT = Path(__file__).resolve().parents[2]
 
 # Ordered: the FIRST pattern that matches wins, so the specific ones lead.
 ORGANS: tuple[tuple[str, str, str], ...] = (
+    # Qwen4-Exp: its 512 experts are stored as stacked [expert, out, in]
+    # tensors, not the older per-expert ``experts.17.down_proj.weight`` form.
+    # Keep these explicit: a broad ``.*expert.*`` rule would hide the next
+    # novel checkpoint from the UNKNOWN accounting that protects KSB001.
+    ("mtp_routed_experts", "language", r"^mtp\.layers\.\d+\.mlp\.experts\.(gate_up_proj|down_proj)$"),
+    ("mtp_shared_experts", "language", r"^mtp\.layers\.\d+\.mlp\.shared_expert\.(gate_proj|up_proj|down_proj)\.weight$"),
+    ("mtp_shared_expert_router", "language", r"^mtp\.layers\.\d+\.mlp\.shared_expert_gate\.weight$"),
+    ("routed_experts", "language", r"(?:^|\.)layers\.\d+\.mlp\.experts\.(gate_up_proj|down_proj)$"),
+    ("shared_experts", "language", r"(?:^|\.)layers\.\d+\.mlp\.shared_expert\.(gate_proj|up_proj|down_proj)\.weight$"),
+    ("shared_expert_router", "language", r"(?:^|\.)layers\.\d+\.mlp\.shared_expert_gate\.weight$"),
+    ("recurrent_state", "language", r"(?:^|\.)layers\.\d+\.linear_attn\."),
+    ("hyper_connection", "language", r"(?:^|\.)layers\.\d+\.(attn|mlp)_hyper_connection\."),
+    ("hyper_connection", "language", r"(?:^|\.)hyper_connection_mixer\."),
+    ("positional_local_embedding", "language", r"(?:^|\.)layers\.\d+\.ple\."),
+    ("qsa_attention", "language", r"(?:^|\.)layers\.\d+\.self_attn\."),
+    ("mtp_head", "language", r"^mtp\.(fc_embedding|fc_hidden|pre_fc_norm_embedding|pre_fc_norm_hidden)\."),
+    ("vision", "vision", r"^model\.visual\."),
+    ("mm_projector", "vision", r"^model\.visual\.merger\."),
     ("vision",            "vision", r"^vision_tower\."),
     ("mm_projector",      "vision", r"^multi_modal_projector\."),
     ("routed_experts",    "language", r"\.mlp\.experts\.\d+\.(gate|up|down)_proj\.weight$"),
@@ -166,6 +184,18 @@ def _selftest() -> int:
         "language_model.model.norm.weight",
         "language_model.model.embed_tokens.weight",
         "language_model.lm_head.weight",
+        # Flash-Next/Qwen4-Exp stacked-expert and stateful organs.
+        "model.language_model.layers.1.mlp.experts.gate_up_proj",
+        "model.language_model.layers.1.mlp.experts.down_proj",
+        "model.language_model.layers.1.mlp.shared_expert.down_proj.weight",
+        "model.language_model.layers.1.mlp.shared_expert_gate.weight",
+        "model.language_model.layers.1.linear_attn.in_proj_qkv.weight",
+        "model.language_model.layers.1.attn_hyper_connection.input_mix_weight_up.weight",
+        "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_12.weight",
+        "model.language_model.layers.11.self_attn.indexer.index_qk_proj.weight",
+        "model.visual.blocks.1.attn.qkv.weight",
+        "mtp.layers.0.mlp.experts.gate_up_proj",
+        "mtp.layers.0.mlp.shared_expert_gate.weight",
         "vision_tower.encoder.blocks.2.wqkv.weight",
         "multi_modal_projector.linear_1.weight",
     ]
@@ -184,7 +214,7 @@ def _selftest() -> int:
     assert classify("m.layers.0.mlp.gate_proj.weight")[0] == "dense_mlp"
     # And the router must not be read as a dense gate_proj.
     assert classify("m.layers.1.mlp.gate.weight")[0] == "router"
-    print("selftest OK: 14 real names classified, 2 invented names refused, "
+    print("selftest OK: real names classified, 2 invented names refused, "
           "expert/dense/router ordering holds")
     return 0
 

@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .backends import is_remote_endpoint
+from .latency import now_ns, since_ns
 from .persist import atomic_write_json
 
 
@@ -44,8 +45,13 @@ def _version(name: str, *args: str) -> Dict[str, Any]:
         return {"status": "BROKEN", "executable": path, "error": type(exc).__name__}
 
 
+def _probe_timing(started_ns: int) -> Dict[str, Any]:
+    """Return canonical monotonic probe duration telemetry."""
+    return {"timing_unit": "ns", "elapsed_ns": since_ns(started_ns)}
+
+
 def _public_probe(url: str) -> Dict[str, Any]:
-    started = time.perf_counter()
+    started_ns = now_ns()
     request = urllib.request.Request(
         url, headers={"User-Agent": "hcli-agentos-connectivity/1"}, method="GET"
     )
@@ -56,7 +62,7 @@ def _public_probe(url: str) -> Dict[str, Any]:
                 "status": "AVAILABLE",
                 "http_status": getattr(response, "status", None),
                 "url": url,
-                "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                **_probe_timing(started_ns),
             }
     except urllib.error.HTTPError as exc:
         # Reachable-but-authenticated or rate-limited is still connectivity;
@@ -65,14 +71,14 @@ def _public_probe(url: str) -> Dict[str, Any]:
             "status": "AUTH_REQUIRED" if exc.code in {401, 403} else "AVAILABLE",
             "http_status": exc.code,
             "url": url,
-            "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+            **_probe_timing(started_ns),
         }
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         return {
             "status": "UNAVAILABLE",
             "url": url,
             "error": type(exc).__name__,
-            "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+            **_probe_timing(started_ns),
         }
 
 

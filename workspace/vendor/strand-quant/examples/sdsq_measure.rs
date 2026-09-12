@@ -36,7 +36,9 @@ fn order0_entropy_bits(syms: &[i64]) -> f64 {
 }
 
 fn main() {
-    let path = std::env::args().nth(1).expect("usage: sdsq_measure <archive.strand>");
+    let path = std::env::args()
+        .nth(1)
+        .expect("usage: sdsq_measure <archive.strand>");
     let buf = std::fs::read(&path).expect("read archive");
     let flen = buf.len();
 
@@ -53,12 +55,18 @@ fn main() {
     // --- scale_q: prefer SDSQ section; else inline from the seek table ---
     let scale_q: Vec<i32> = match read_sdsq(&path).expect("read sdsq") {
         Some(s) => {
-            eprintln!("  scale_q source = SDSQ section ({} values)", s.scale_q.len());
+            eprintln!(
+                "  scale_q source = SDSQ section ({} values)",
+                s.scale_q.len()
+            );
             s.scale_q
         }
         None => {
             eprintln!("  scale_q source = inline seek table");
-            hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect()
+            hdr.tensors
+                .iter()
+                .flat_map(|t| t.table.iter().map(|r| r.scale_q))
+                .collect()
         }
     };
     assert_eq!(scale_q.len(), total_blocks);
@@ -77,7 +85,10 @@ fn main() {
             }
         }
     }
-    eprintln!("  sub_scale codes = {} (SUB_BLOCK={SUB_BLOCK})", sub_codes.len());
+    eprintln!(
+        "  sub_scale codes = {} (SUB_BLOCK={SUB_BLOCK})",
+        sub_codes.len()
+    );
 
     // --- scale_q measurement ---
     let scale_raw: Vec<i64> = scale_q.iter().map(|&v| v as i64).collect();
@@ -100,18 +111,33 @@ fn main() {
     println!("params={total_params} blocks={total_blocks}");
     println!("\n-- scale_q --");
     println!("  H (order-0)           = {sq_h:.4} bits/sym");
-    println!("  rANS achieved         = {sq_bps:.4} bits/sym  (overhead = H+{:.4})", sq_bps - sq_h);
-    println!("  <= H+0.05 ?           = {}", if sq_bps <= sq_h + 0.05 { "YES" } else { "NO" });
+    println!(
+        "  rANS achieved         = {sq_bps:.4} bits/sym  (overhead = H+{:.4})",
+        sq_bps - sq_h
+    );
+    println!(
+        "  <= H+0.05 ?           = {}",
+        if sq_bps <= sq_h + 0.05 { "YES" } else { "NO" }
+    );
     println!("  inline 32-bit bpw     = {sq_inline_bpw:.4}");
     println!("  rANS stream bpw       = {sq_rans_bpw:.4}");
-    println!("  recoverable bpw       = {:.4}", sq_inline_bpw - sq_rans_bpw);
+    println!(
+        "  recoverable bpw       = {:.4}",
+        sq_inline_bpw - sq_rans_bpw
+    );
 
     println!("\n-- sub_scale --");
     println!("  H (order-0)           = {ss_h:.4} bits/sym");
-    println!("  rANS achieved         = {ss_bps:.4} bits/sym  (overhead = H+{:.4})", ss_bps - ss_h);
+    println!(
+        "  rANS achieved         = {ss_bps:.4} bits/sym  (overhead = H+{:.4})",
+        ss_bps - ss_h
+    );
     println!("  inline 6-bit bpw      = {ss_inline_bpw:.4}");
     println!("  rANS stream bpw       = {ss_rans_bpw:.4}");
-    println!("  recoverable bpw       = {:.4}", ss_inline_bpw - ss_rans_bpw);
+    println!(
+        "  recoverable bpw       = {:.4}",
+        ss_inline_bpw - ss_rans_bpw
+    );
 
     // --- full-file bpw before/after the seek-table shrink ---
     // Recompute the table-section bytes (page-padded per tensor) at 16 vs 12 B.
@@ -129,7 +155,11 @@ fn main() {
     } else {
         flen
     };
-    let after_bytes = if flags & 2 != 0 { flen } else { flen.saturating_sub(table_saving) };
+    let after_bytes = if flags & 2 != 0 {
+        flen
+    } else {
+        flen.saturating_sub(table_saving)
+    };
     let before_bpw = before_bytes as f64 * 8.0 / total_params as f64;
     let after_bpw = after_bytes as f64 * 8.0 / total_params as f64;
 
@@ -139,5 +169,8 @@ fn main() {
     println!("  seek-table saving              = {table_saving} bytes");
     println!("  BEFORE (16-byte records)       = {before_bytes} bytes -> {before_bpw:.4} bpw");
     println!("  AFTER  (12-byte records)       = {after_bytes} bytes -> {after_bpw:.4} bpw");
-    println!("  full-file delta                = {:.4} bpw", before_bpw - after_bpw);
+    println!(
+        "  full-file delta                = {:.4} bpw",
+        before_bpw - after_bpw
+    );
 }

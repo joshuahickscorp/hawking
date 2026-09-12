@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.gravity.rust.accelerator-regression-timing.v1",
+  "status": "ACCEPTED",
+  "recorded_at": "2026-09-11T16:52:08Z",
+  "scope": "accelerator regression audit timing producers",
+  "timing_unit": "ns",
+  "changes": {
+    "request_boundary": "_run_one_request now samples one monotonic integer start and records wall_ns from the shared hcli.latency authority",
+    "audit_boundary": "run_accelerator_regression now records run_started_ns and elapsed_ns; elapsed_s is derived only for compatibility",
+    "provenance": "started_at and finished_at remain Unix wall-clock provenance fields",
+    "timeout_clock": "timeout control remains separate and is not relabeled as a latency measurement"
+  },
+  "verification": {
+    "py_compile": "hcli/agentos/accelerator_regression.py, hcli/agentos/native_gate.py, hcli/repo_context.py",
+    "focused_tests": "26 passed, 0 failed",
+    "diff_check": "passed",
+    "installed_snapshot": "/Users/scammermike/.local/share/hcli/build-20260911-165131",
+    "hcli_package_digest": "4420d89e0986ba6cf45ce38756cb8275fdf11f2e3b9ea0cb3cd8ba51c0d7f99a",
+    "native_hcli_digest": "457e335e7ea547f5fa6a6339edcffce5f7a139bc74115e9965634767ca848f54",
+    "native_gravityd_digest": "1ef21197043fc804f568c05e0b83a32b06de8cac7f08740b38948e8721893c35",
+    "installed_module_compile": "passed"
+  },
+  "runtime": {
+    "live_daemon_restarted": false,
+    "sovereign_tree": "hawkingd remains the production root; no standalone hawking-gravityd process was left running"
+  },
+  "claim_boundary": "This is a measurement-contract precision migration only. It makes accelerator regression receipts ns-first; it does not claim model speed, TPS improvement, capability, or Odyssey readiness."
+}

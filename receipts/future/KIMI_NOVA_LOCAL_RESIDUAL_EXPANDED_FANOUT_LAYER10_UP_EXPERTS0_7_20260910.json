@@ -1,0 +1,3028 @@
+{
+  "activation_corpus": {
+    "path": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "split": "interleaved even rows train, odd rows held-out",
+    "train_and_heldout_rows": {
+      "0": {
+        "heldout": 33,
+        "train": 34
+      },
+      "1": {
+        "heldout": 9,
+        "train": 10
+      },
+      "2": {
+        "heldout": 1,
+        "train": 1
+      },
+      "3": {
+        "heldout": 10,
+        "train": 10
+      },
+      "4": {
+        "heldout": 7,
+        "train": 8
+      },
+      "5": {
+        "heldout": 7,
+        "train": 8
+      },
+      "6": {
+        "heldout": 17,
+        "train": 18
+      },
+      "7": {
+        "heldout": 50,
+        "train": 51
+      }
+    }
+  },
+  "claim_boundary": "Bounded representation-native Nova organ experiment. Dense source weights are teacher targets only; deployed shared and expert-local factors are consumed without dense-parent materialization and held-out real routed inputs are measured. This is not full-model capability, end-to-end TPS, a production kernel, NX, or promotion evidence.",
+  "expert_count": 8,
+  "fanout_timing": {
+    "execution": "CPU representation-native training plus direct-reference fanout",
+    "method_soft_budget_ms": 120000.0,
+    "sum_variant_elapsed_ms": 49682.75733385235,
+    "variant_count": 12,
+    "wall_elapsed_ms": 24879.99324995326,
+    "workers": 2
+  },
+  "fit": {
+    "learning_rate": 0.02,
+    "sample_rows_per_tensor": 128,
+    "steps": 500,
+    "teacher_targets": "W_e x computed from immutable source weights",
+    "variants": [
+      [
+        16,
+        16,
+        4
+      ],
+      [
+        32,
+        16,
+        4
+      ],
+      [
+        32,
+        16,
+        8
+      ],
+      [
+        32,
+        32,
+        4
+      ],
+      [
+        32,
+        32,
+        8
+      ],
+      [
+        48,
+        32,
+        8
+      ],
+      [
+        64,
+        32,
+        16
+      ],
+      [
+        64,
+        48,
+        16
+      ],
+      [
+        64,
+        64,
+        16
+      ],
+      [
+        96,
+        64,
+        16
+      ],
+      [
+        96,
+        96,
+        16
+      ],
+      [
+        96,
+        96,
+        32
+      ]
+    ]
+  },
+  "generated_at": "2026-09-10T17:16:25.398172+00:00",
+  "guard": {
+    "end": {
+      "compressor_gb": 7.57,
+      "expected_gb": 0.0,
+      "free_gb": 61.54,
+      "headroom_gb": 61.54,
+      "reasons": [],
+      "reclaimable_gb": 32.13,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.41,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.15
+    },
+    "entry": {
+      "compressor_gb": 7.57,
+      "expected_gb": 2.0,
+      "free_gb": 61.19,
+      "headroom_gb": 59.19,
+      "reasons": [],
+      "reclaimable_gb": 31.47,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.71,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.89
+    },
+    "loaded": {
+      "compressor_gb": 7.57,
+      "expected_gb": 2.0,
+      "free_gb": 60.61,
+      "headroom_gb": 58.61,
+      "reasons": [],
+      "reclaimable_gb": 31.46,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.16,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 6.36
+    }
+  },
+  "immutable_base": true,
+  "next_discriminator": "If the local residual materially improves held-out error, add native-kernel and organ capability checks; otherwise change topology rather than increasing sparse metadata.",
+  "organ": "layer10_routed_experts_0_to_7",
+  "python": "3.14.6",
+  "ranked_summary": [
+    {
+      "complete_ebpw": 0.140625,
+      "mean_cosine": 0.6068441555765804,
+      "mean_relative_l2": 0.7572525680889348,
+      "p95_relative_l2": 0.9689612982644366,
+      "training_ms": 3482.729124953039,
+      "variant": {
+        "col_rank": 16,
+        "residual_rank": 4,
+        "row_rank": 16,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.15767045454545456,
+      "mean_cosine": 0.6266117789852086,
+      "mean_relative_l2": 0.7421487037159398,
+      "p95_relative_l2": 1.030107729043195,
+      "training_ms": 3482.64233302325,
+      "variant": {
+        "col_rank": 16,
+        "residual_rank": 4,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.18323863636363635,
+      "mean_cosine": 0.6352494918365976,
+      "mean_relative_l2": 0.7334756059090046,
+      "p95_relative_l2": 0.9931803137257826,
+      "training_ms": 4039.084666001145,
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 4,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.234375,
+      "mean_cosine": 0.6633332357811395,
+      "mean_relative_l2": 0.7036857496634772,
+      "p95_relative_l2": 1.0331932347095139,
+      "training_ms": 4041.6388330049813,
+      "variant": {
+        "col_rank": 16,
+        "residual_rank": 8,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.2599431818181818,
+      "mean_cosine": 0.6540574158972768,
+      "mean_relative_l2": 0.7105390733421212,
+      "p95_relative_l2": 1.029153488761975,
+      "training_ms": 4098.771416989621,
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 8,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.2784090909090909,
+      "mean_cosine": 0.6622609335984757,
+      "mean_relative_l2": 0.7030498723611502,
+      "p95_relative_l2": 1.0396129500882016,
+      "training_ms": 4098.6407499876805,
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 8,
+        "row_rank": 48,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.4502840909090909,
+      "mean_cosine": 0.6711120983557914,
+      "mean_relative_l2": 0.7156106811831835,
+      "p95_relative_l2": 0.9954771360978477,
+      "training_ms": 4057.269125012681,
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 16,
+        "row_rank": 64,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.4786931818181818,
+      "mean_cosine": 0.671711697284855,
+      "mean_relative_l2": 0.6923111010666027,
+      "p95_relative_l2": 0.9871032603711654,
+      "training_ms": 4060.9698750195093,
+      "variant": {
+        "col_rank": 48,
+        "residual_rank": 16,
+        "row_rank": 64,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.5071022727272727,
+      "mean_cosine": 0.6506917476376046,
+      "mean_relative_l2": 0.7203169478609956,
+      "p95_relative_l2": 1.0526021520276339,
+      "training_ms": 4105.4337079986,
+      "variant": {
+        "col_rank": 64,
+        "residual_rank": 16,
+        "row_rank": 64,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.5497159090909091,
+      "mean_cosine": 0.6499937265249554,
+      "mean_relative_l2": 0.7270980211191366,
+      "p95_relative_l2": 1.0444705752037287,
+      "training_ms": 4110.909749986604,
+      "variant": {
+        "col_rank": 64,
+        "residual_rank": 16,
+        "row_rank": 96,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.6122159090909091,
+      "mean_cosine": 0.6127283799726126,
+      "mean_relative_l2": 0.7835329880201668,
+      "p95_relative_l2": 1.1915924321070357,
+      "training_ms": 4187.42737499997,
+      "variant": {
+        "col_rank": 96,
+        "residual_rank": 16,
+        "row_rank": 96,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.9190340909090909,
+      "mean_cosine": 0.6541906993335752,
+      "mean_relative_l2": 0.7082069696576526,
+      "p95_relative_l2": 1.0561429190802034,
+      "training_ms": 4200.258957978804,
+      "variant": {
+        "col_rank": 96,
+        "residual_rank": 32,
+        "row_rank": 96,
+        "tensor_family": "up_proj.weight"
+      }
+    }
+  ],
+  "results": [
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 405504,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 273490,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u16_v16_r4.npz",
+        "sha256": "5f5c8a2304daeb27e1eab5d2f3931c21549e237085a52480103cb943db329584"
+      },
+      "fanout": {
+        "elapsed_ms": 3868.7442910159007,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.0172098058777215,
+        "mean_cosine": 0.6068441555765804,
+        "mean_relative_l2": 0.7572525680889348,
+        "p95_relative_l2": 0.9689612982644366,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 16,
+        "complete_accounting": {
+          "billed_ms": 0.000184,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 335872,
+              "gb": 0.000336,
+              "ms": 0.000184,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.140625,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.140625,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.140625,
+            "stored_bytes": 405504
+          },
+          "executable_bytes": 405504,
+          "executable_gb": 0.000406,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u16_v16_r4",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 4096,
+              "category": "regions",
+              "gb": 4e-06,
+              "ms": 2e-06,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 221184,
+              "category": "regions",
+              "gb": 0.000221,
+              "ms": 0.000121,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 45056,
+              "category": "tables",
+              "gb": 4.5e-05,
+              "ms": 2.5e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "tables",
+              "gb": 6.6e-05,
+              "ms": 3.6e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 405504,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 405504,
+          "stored_bpw": 0.140625,
+          "stored_bytes": 405504,
+          "stored_gb": 0.000406,
+          "stored_ms": 0.000184
+        },
+        "expert_core_bytes": 4096,
+        "expert_local_residual_factor_bytes": 221184,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 4,
+        "row_rank": 16,
+        "shared_input_basis_bytes": 65536,
+        "shared_output_basis_bytes": 45056
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 2.2173330071382225,
+        "dense_oracle_batch_samples_ms": [
+          2.23033397924155,
+          2.1328749717213213,
+          2.2173330071382225
+        ],
+        "direct_batch_median_ms": 0.5938329850323498,
+        "direct_batch_samples_ms": [
+          0.556665996555239,
+          0.5938329850323498,
+          0.6006250041536987
+        ],
+        "elapsed_ms": 3868.7442910159007,
+        "torch_threads": 1,
+        "training_ms": 3482.729124953039
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9977542757987976,
+          0.177817702293396
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 16,
+        "residual_rank": 4,
+        "row_rank": 16,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 454656,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 312525,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u32_v16_r4.npz",
+        "sha256": "767a8971be33c81194cfdd35fb07a0069f36512cd6c6bdf48b6dde6364df7c55"
+      },
+      "fanout": {
+        "elapsed_ms": 3871.057291980833,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.31684673656074,
+        "mean_cosine": 0.6266117789852086,
+        "mean_relative_l2": 0.7421487037159398,
+        "p95_relative_l2": 1.030107729043195,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 16,
+        "complete_accounting": {
+          "billed_ms": 0.00021,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 385024,
+              "gb": 0.000385,
+              "ms": 0.00021,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.15767045454545456,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.15767045454545456,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.15767045454545456,
+            "stored_bytes": 454656
+          },
+          "executable_bytes": 454656,
+          "executable_gb": 0.000455,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u32_v16_r4",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 8192,
+              "category": "regions",
+              "gb": 8e-06,
+              "ms": 4e-06,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 221184,
+              "category": "regions",
+              "gb": 0.000221,
+              "ms": 0.000121,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 90112,
+              "category": "tables",
+              "gb": 9e-05,
+              "ms": 4.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "tables",
+              "gb": 6.6e-05,
+              "ms": 3.6e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 454656,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 454656,
+          "stored_bpw": 0.15767045454545456,
+          "stored_bytes": 454656,
+          "stored_gb": 0.000455,
+          "stored_ms": 0.00021
+        },
+        "expert_core_bytes": 8192,
+        "expert_local_residual_factor_bytes": 221184,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 4,
+        "row_rank": 32,
+        "shared_input_basis_bytes": 65536,
+        "shared_output_basis_bytes": 90112
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 2.271417004521936,
+        "dense_oracle_batch_samples_ms": [
+          2.122374949976802,
+          2.271417004521936,
+          2.3121669655665755
+        ],
+        "direct_batch_median_ms": 0.568667019251734,
+        "direct_batch_samples_ms": [
+          0.568667019251734,
+          0.5667920340783894,
+          0.5930829793214798
+        ],
+        "elapsed_ms": 3871.057291980833,
+        "torch_threads": 1,
+        "training_ms": 3482.64233302325
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.994019627571106,
+          0.11237767338752747
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 16,
+        "residual_rank": 4,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 675840,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 489052,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u32_v16_r8.npz",
+        "sha256": "0f214cf468e6329024109a7954279f7a77f16c18987623318a02b784291e420c"
+      },
+      "fanout": {
+        "elapsed_ms": 4099.197250034194,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.3941448236464073,
+        "mean_cosine": 0.6633332357811395,
+        "mean_relative_l2": 0.7036857496634772,
+        "p95_relative_l2": 1.0331932347095139,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 16,
+        "complete_accounting": {
+          "billed_ms": 0.000331,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 606208,
+              "gb": 0.000606,
+              "ms": 0.000331,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.234375,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.234375,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.234375,
+            "stored_bytes": 675840
+          },
+          "executable_bytes": 675840,
+          "executable_gb": 0.000676,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u32_v16_r8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 8192,
+              "category": "regions",
+              "gb": 8e-06,
+              "ms": 4e-06,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 442368,
+              "category": "regions",
+              "gb": 0.000442,
+              "ms": 0.000242,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 90112,
+              "category": "tables",
+              "gb": 9e-05,
+              "ms": 4.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "tables",
+              "gb": 6.6e-05,
+              "ms": 3.6e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 675840,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 675840,
+          "stored_bpw": 0.234375,
+          "stored_bytes": 675840,
+          "stored_gb": 0.000676,
+          "stored_ms": 0.000331
+        },
+        "expert_core_bytes": 8192,
+        "expert_local_residual_factor_bytes": 442368,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 8,
+        "row_rank": 32,
+        "shared_input_basis_bytes": 65536,
+        "shared_output_basis_bytes": 90112
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 2.1272909943945706,
+        "dense_oracle_batch_samples_ms": [
+          1.6899160109460354,
+          2.1272909943945706,
+          2.149541978724301
+        ],
+        "direct_batch_median_ms": 0.6531659746542573,
+        "direct_batch_samples_ms": [
+          0.16891700215637684,
+          0.6531659746542573,
+          0.654792005661875
+        ],
+        "elapsed_ms": 4099.197250034194,
+        "torch_threads": 1,
+        "training_ms": 4041.6388330049813
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9955233335494995,
+          0.0513334646821022
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 16,
+        "residual_rank": 8,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 528384,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 371304,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u32_v32_r4.npz",
+        "sha256": "b81726b7b12d7096767bc064bd92ed3c587cbb9cae04db3072a5f5596c71e506"
+      },
+      "fanout": {
+        "elapsed_ms": 4091.4434589794837,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.059953249861561,
+        "mean_cosine": 0.6352494918365976,
+        "mean_relative_l2": 0.7334756059090046,
+        "p95_relative_l2": 0.9931803137257826,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 32,
+        "complete_accounting": {
+          "billed_ms": 0.000251,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 458752,
+              "gb": 0.000459,
+              "ms": 0.000251,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.18323863636363635,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.18323863636363635,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.18323863636363635,
+            "stored_bytes": 528384
+          },
+          "executable_bytes": 528384,
+          "executable_gb": 0.000528,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u32_v32_r4",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 16384,
+              "category": "regions",
+              "gb": 1.6e-05,
+              "ms": 9e-06,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 221184,
+              "category": "regions",
+              "gb": 0.000221,
+              "ms": 0.000121,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 90112,
+              "category": "tables",
+              "gb": 9e-05,
+              "ms": 4.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 131072,
+              "category": "tables",
+              "gb": 0.000131,
+              "ms": 7.2e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 528384,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 528384,
+          "stored_bpw": 0.18323863636363635,
+          "stored_bytes": 528384,
+          "stored_gb": 0.000528,
+          "stored_ms": 0.000251
+        },
+        "expert_core_bytes": 16384,
+        "expert_local_residual_factor_bytes": 221184,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 4,
+        "row_rank": 32,
+        "shared_input_basis_bytes": 131072,
+        "shared_output_basis_bytes": 90112
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 2.2055000299587846,
+        "dense_oracle_batch_samples_ms": [
+          1.92604202311486,
+          2.2055000299587846,
+          2.2828339715488255
+        ],
+        "direct_batch_median_ms": 0.5869159940630198,
+        "direct_batch_samples_ms": [
+          0.3696249914355576,
+          0.5869159940630198,
+          0.5995829706080258
+        ],
+        "elapsed_ms": 4091.4434589794837,
+        "torch_threads": 1,
+        "training_ms": 4039.084666001145
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9938087463378906,
+          0.11145801842212677
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 4,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 749568,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 547671,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u32_v32_r8.npz",
+        "sha256": "19b16847f363c0aa95621a5ec99b4590ba704161656ddcc2a0c38fec391e5d09"
+      },
+      "fanout": {
+        "elapsed_ms": 4162.455209007021,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.197902527100569,
+        "mean_cosine": 0.6540574158972768,
+        "mean_relative_l2": 0.7105390733421212,
+        "p95_relative_l2": 1.029153488761975,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 32,
+        "complete_accounting": {
+          "billed_ms": 0.000372,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 679936,
+              "gb": 0.00068,
+              "ms": 0.000372,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.2599431818181818,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.2599431818181818,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.2599431818181818,
+            "stored_bytes": 749568
+          },
+          "executable_bytes": 749568,
+          "executable_gb": 0.00075,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u32_v32_r8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 16384,
+              "category": "regions",
+              "gb": 1.6e-05,
+              "ms": 9e-06,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 442368,
+              "category": "regions",
+              "gb": 0.000442,
+              "ms": 0.000242,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 90112,
+              "category": "tables",
+              "gb": 9e-05,
+              "ms": 4.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 131072,
+              "category": "tables",
+              "gb": 0.000131,
+              "ms": 7.2e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 749568,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 749568,
+          "stored_bpw": 0.2599431818181818,
+          "stored_bytes": 749568,
+          "stored_gb": 0.00075,
+          "stored_ms": 0.000372
+        },
+        "expert_core_bytes": 16384,
+        "expert_local_residual_factor_bytes": 442368,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 8,
+        "row_rank": 32,
+        "shared_input_basis_bytes": 131072,
+        "shared_output_basis_bytes": 90112
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.1277910089120269,
+        "dense_oracle_batch_samples_ms": [
+          1.2095829588361084,
+          1.0247090249322355,
+          1.1277910089120269
+        ],
+        "direct_batch_median_ms": 0.3428750205785036,
+        "direct_batch_samples_ms": [
+          0.3428750205785036,
+          0.15708297723904252,
+          0.4169999738223851
+        ],
+        "elapsed_ms": 4162.455209007021,
+        "torch_threads": 1,
+        "training_ms": 4098.771416989621
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.993517279624939,
+          0.05004730820655823
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 8,
+        "row_rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 802816,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 589660,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u48_v32_r8.npz",
+        "sha256": "52d6bbb5ff2338fff1e7b07b543905c5afa690405792538b1c67a25146b22044"
+      },
+      "fanout": {
+        "elapsed_ms": 4165.1009999914095,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.2173043608925276,
+        "mean_cosine": 0.6622609335984757,
+        "mean_relative_l2": 0.7030498723611502,
+        "p95_relative_l2": 1.0396129500882016,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 32,
+        "complete_accounting": {
+          "billed_ms": 0.000402,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 733184,
+              "gb": 0.000733,
+              "ms": 0.000402,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.2784090909090909,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.2784090909090909,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.2784090909090909,
+            "stored_bytes": 802816
+          },
+          "executable_bytes": 802816,
+          "executable_gb": 0.000803,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u48_v32_r8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 24576,
+              "category": "regions",
+              "gb": 2.5e-05,
+              "ms": 1.4e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 442368,
+              "category": "regions",
+              "gb": 0.000442,
+              "ms": 0.000242,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 135168,
+              "category": "tables",
+              "gb": 0.000135,
+              "ms": 7.4e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 131072,
+              "category": "tables",
+              "gb": 0.000131,
+              "ms": 7.2e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 802816,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 802816,
+          "stored_bpw": 0.2784090909090909,
+          "stored_bytes": 802816,
+          "stored_gb": 0.000803,
+          "stored_ms": 0.000402
+        },
+        "expert_core_bytes": 24576,
+        "expert_local_residual_factor_bytes": 442368,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 8,
+        "row_rank": 48,
+        "shared_input_basis_bytes": 131072,
+        "shared_output_basis_bytes": 135168
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.9383329888805747,
+        "dense_oracle_batch_samples_ms": [
+          0.9553749696351588,
+          0.9383329888805747,
+          0.9296250063925982
+        ],
+        "direct_batch_median_ms": 0.179499969817698,
+        "direct_batch_samples_ms": [
+          0.16604101983830333,
+          0.18741603707894683,
+          0.179499969817698
+        ],
+        "elapsed_ms": 4165.1009999914095,
+        "torch_threads": 1,
+        "training_ms": 4098.6407499876805
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9898186326026917,
+          0.0325399786233902
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 8,
+        "row_rank": 48,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 1298432,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 984537,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u64_v32_r16.npz",
+        "sha256": "aff69ecbe4e1b1cf5f719c112e7be99809550fbf0b1e30365fb002cd1bc055a5"
+      },
+      "fanout": {
+        "elapsed_ms": 4146.890165982768,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.5495916945983261,
+        "mean_cosine": 0.6711120983557914,
+        "mean_relative_l2": 0.7156106811831835,
+        "p95_relative_l2": 0.9954771360978477,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 32,
+        "complete_accounting": {
+          "billed_ms": 0.000673,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1228800,
+              "gb": 0.001229,
+              "ms": 0.000673,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.4502840909090909,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.4502840909090909,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.4502840909090909,
+            "stored_bytes": 1298432
+          },
+          "executable_bytes": 1298432,
+          "executable_gb": 0.001298,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u64_v32_r16",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 32768,
+              "category": "regions",
+              "gb": 3.3e-05,
+              "ms": 1.8e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 884736,
+              "category": "regions",
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 180224,
+              "category": "tables",
+              "gb": 0.00018,
+              "ms": 9.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 131072,
+              "category": "tables",
+              "gb": 0.000131,
+              "ms": 7.2e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1298432,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1298432,
+          "stored_bpw": 0.4502840909090909,
+          "stored_bytes": 1298432,
+          "stored_gb": 0.001298,
+          "stored_ms": 0.000673
+        },
+        "expert_core_bytes": 32768,
+        "expert_local_residual_factor_bytes": 884736,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 16,
+        "row_rank": 64,
+        "shared_input_basis_bytes": 131072,
+        "shared_output_basis_bytes": 180224
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.0897089960053563,
+        "dense_oracle_batch_samples_ms": [
+          1.0897089960053563,
+          0.9511660318821669,
+          1.4814999885857105
+        ],
+        "direct_batch_median_ms": 0.31762500293552876,
+        "direct_batch_samples_ms": [
+          0.3997919848188758,
+          0.2959999837912619,
+          0.31762500293552876
+        ],
+        "elapsed_ms": 4146.890165982768,
+        "torch_threads": 1,
+        "training_ms": 4057.269125012681
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.990361213684082,
+          0.10509029775857925
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 32,
+        "residual_rank": 16,
+        "row_rank": 64,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 1380352,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1049568,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u64_v48_r16.npz",
+        "sha256": "55ad8274ec6ceb155323933b8d9d58a662c8c775c53d86e5ec44a8a0aa305b44"
+      },
+      "fanout": {
+        "elapsed_ms": 4153.8469169754535,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.2106759884098754,
+        "mean_cosine": 0.671711697284855,
+        "mean_relative_l2": 0.6923111010666027,
+        "p95_relative_l2": 0.9871032603711654,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 48,
+        "complete_accounting": {
+          "billed_ms": 0.000718,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1310720,
+              "gb": 0.001311,
+              "ms": 0.000718,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.4786931818181818,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.4786931818181818,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.4786931818181818,
+            "stored_bytes": 1380352
+          },
+          "executable_bytes": 1380352,
+          "executable_gb": 0.00138,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u64_v48_r16",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 49152,
+              "category": "regions",
+              "gb": 4.9e-05,
+              "ms": 2.7e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 884736,
+              "category": "regions",
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 180224,
+              "category": "tables",
+              "gb": 0.00018,
+              "ms": 9.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 196608,
+              "category": "tables",
+              "gb": 0.000197,
+              "ms": 0.000108,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1380352,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1380352,
+          "stored_bpw": 0.4786931818181818,
+          "stored_bytes": 1380352,
+          "stored_gb": 0.00138,
+          "stored_ms": 0.000718
+        },
+        "expert_core_bytes": 49152,
+        "expert_local_residual_factor_bytes": 884736,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 16,
+        "row_rank": 64,
+        "shared_input_basis_bytes": 196608,
+        "shared_output_basis_bytes": 180224
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.9305420098826289,
+        "dense_oracle_batch_samples_ms": [
+          0.9305420098826289,
+          0.8794160094112158,
+          0.9633330046199262
+        ],
+        "direct_batch_median_ms": 0.169792037922889,
+        "direct_batch_samples_ms": [
+          0.16970804426819086,
+          0.169792037922889,
+          0.20654202671721578
+        ],
+        "elapsed_ms": 4153.8469169754535,
+        "torch_threads": 1,
+        "training_ms": 4060.9698750195093
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.985184907913208,
+          0.027899473905563354
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 48,
+        "residual_rank": 16,
+        "row_rank": 64,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 1462272,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1114818,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u64_v64_r16.npz",
+        "sha256": "3e8439d3389515880ff776fcbd24dd131732a33aeaa0740ed574d16a87876363"
+      },
+      "fanout": {
+        "elapsed_ms": 4209.585374977905,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.6411209096612736,
+        "mean_cosine": 0.6506917476376046,
+        "mean_relative_l2": 0.7203169478609956,
+        "p95_relative_l2": 1.0526021520276339,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 64,
+        "complete_accounting": {
+          "billed_ms": 0.000762,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1392640,
+              "gb": 0.001393,
+              "ms": 0.000762,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.5071022727272727,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.5071022727272727,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.5071022727272727,
+            "stored_bytes": 1462272
+          },
+          "executable_bytes": 1462272,
+          "executable_gb": 0.001462,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u64_v64_r16",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 65536,
+              "category": "regions",
+              "gb": 6.6e-05,
+              "ms": 3.6e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 884736,
+              "category": "regions",
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 180224,
+              "category": "tables",
+              "gb": 0.00018,
+              "ms": 9.9e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 262144,
+              "category": "tables",
+              "gb": 0.000262,
+              "ms": 0.000143,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1462272,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1462272,
+          "stored_bpw": 0.5071022727272727,
+          "stored_bytes": 1462272,
+          "stored_gb": 0.001462,
+          "stored_ms": 0.000762
+        },
+        "expert_core_bytes": 65536,
+        "expert_local_residual_factor_bytes": 884736,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 16,
+        "row_rank": 64,
+        "shared_input_basis_bytes": 262144,
+        "shared_output_basis_bytes": 180224
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.221582992002368,
+        "dense_oracle_batch_samples_ms": [
+          1.5637499745935202,
+          1.221582992002368,
+          1.1936249793507159
+        ],
+        "direct_batch_median_ms": 0.17708400264382362,
+        "direct_batch_samples_ms": [
+          0.2749170525930822,
+          0.17708400264382362,
+          0.1508340355940163
+        ],
+        "elapsed_ms": 4209.585374977905,
+        "torch_threads": 1,
+        "training_ms": 4105.4337079986
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9849649667739868,
+          0.02943757176399231
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 64,
+        "residual_rank": 16,
+        "row_rank": 64,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 1585152,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1213818,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u96_v64_r16.npz",
+        "sha256": "223f78115d3a9247b9d4791cd576e9a9dbade0c4d6d5c673fbd53499b522dd9c"
+      },
+      "fanout": {
+        "elapsed_ms": 4218.112416972872,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.6369975382576532,
+        "mean_cosine": 0.6499937265249554,
+        "mean_relative_l2": 0.7270980211191366,
+        "p95_relative_l2": 1.0444705752037287,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 64,
+        "complete_accounting": {
+          "billed_ms": 0.000829,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1515520,
+              "gb": 0.001516,
+              "ms": 0.000829,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.5497159090909091,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.5497159090909091,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.5497159090909091,
+            "stored_bytes": 1585152
+          },
+          "executable_bytes": 1585152,
+          "executable_gb": 0.001585,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u96_v64_r16",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 98304,
+              "category": "regions",
+              "gb": 9.8e-05,
+              "ms": 5.4e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 884736,
+              "category": "regions",
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 270336,
+              "category": "tables",
+              "gb": 0.00027,
+              "ms": 0.000148,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 262144,
+              "category": "tables",
+              "gb": 0.000262,
+              "ms": 0.000143,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1585152,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1585152,
+          "stored_bpw": 0.5497159090909091,
+          "stored_bytes": 1585152,
+          "stored_gb": 0.001585,
+          "stored_ms": 0.000829
+        },
+        "expert_core_bytes": 98304,
+        "expert_local_residual_factor_bytes": 884736,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 16,
+        "row_rank": 96,
+        "shared_input_basis_bytes": 262144,
+        "shared_output_basis_bytes": 270336
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.886790978256613,
+        "dense_oracle_batch_samples_ms": [
+          0.886790978256613,
+          0.8840420050546527,
+          0.8912499761208892
+        ],
+        "direct_batch_median_ms": 0.20229199435561895,
+        "direct_batch_samples_ms": [
+          0.19195902859792113,
+          0.20408298587426543,
+          0.20229199435561895
+        ],
+        "elapsed_ms": 4218.112416972872,
+        "torch_threads": 1,
+        "training_ms": 4110.909749986604
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9824720025062561,
+          0.046874597668647766
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 64,
+        "residual_rank": 16,
+        "row_rank": 96,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 1765376,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1357236,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u96_v96_r16.npz",
+        "sha256": "c1e6fb16cc6f7dbfba3e13732485bafd55de8479d2969a0b19060dec6b9e75a0"
+      },
+      "fanout": {
+        "elapsed_ms": 4322.757707966957,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.729455610799963,
+        "mean_cosine": 0.6127283799726126,
+        "mean_relative_l2": 0.7835329880201668,
+        "p95_relative_l2": 1.1915924321070357,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 96,
+        "complete_accounting": {
+          "billed_ms": 0.000927,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1695744,
+              "gb": 0.001696,
+              "ms": 0.000927,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.6122159090909091,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.6122159090909091,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.6122159090909091,
+            "stored_bytes": 1765376
+          },
+          "executable_bytes": 1765376,
+          "executable_gb": 0.001765,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u96_v96_r16",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 147456,
+              "category": "regions",
+              "gb": 0.000147,
+              "ms": 8e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 884736,
+              "category": "regions",
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 270336,
+              "category": "tables",
+              "gb": 0.00027,
+              "ms": 0.000148,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 393216,
+              "category": "tables",
+              "gb": 0.000393,
+              "ms": 0.000215,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1765376,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1765376,
+          "stored_bpw": 0.6122159090909091,
+          "stored_bytes": 1765376,
+          "stored_gb": 0.001765,
+          "stored_ms": 0.000927
+        },
+        "expert_core_bytes": 147456,
+        "expert_local_residual_factor_bytes": 884736,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 16,
+        "row_rank": 96,
+        "shared_input_basis_bytes": 393216,
+        "shared_output_basis_bytes": 270336
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.128292002249509,
+        "dense_oracle_batch_samples_ms": [
+          1.354083011392504,
+          1.128292002249509,
+          0.9519170271232724
+        ],
+        "direct_batch_median_ms": 0.35624997690320015,
+        "direct_batch_samples_ms": [
+          0.35624997690320015,
+          0.4729169886559248,
+          0.3095419961027801
+        ],
+        "elapsed_ms": 4322.757707966957,
+        "torch_threads": 1,
+        "training_ms": 4187.42737499997
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9757329821586609,
+          0.05000424385070801
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 96,
+        "residual_rank": 16,
+        "row_rank": 96,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "z = V^T x; y = U(C_e z) + A_e(B_e^T x)",
+        "persistent_representation_bytes": 2650112,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 2060832,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "core_0",
+          "core_1",
+          "core_2",
+          "core_3",
+          "core_4",
+          "core_5",
+          "core_6",
+          "core_7",
+          "residual_a_0",
+          "residual_a_1",
+          "residual_a_2",
+          "residual_a_3",
+          "residual_a_4",
+          "residual_a_5",
+          "residual_a_6",
+          "residual_a_7",
+          "residual_b_0",
+          "residual_b_1",
+          "residual_b_2",
+          "residual_b_3",
+          "residual_b_4",
+          "residual_b_5",
+          "residual_b_6",
+          "residual_b_7",
+          "u",
+          "v"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded/nova_local_residual_u96_v96_r32.npz",
+        "sha256": "153c04631500e1a28393e8c1faadc6aa8fe7201433b9b28ee907d2ad0554331d"
+      },
+      "fanout": {
+        "elapsed_ms": 4373.566249967553,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.5801063615439912,
+        "mean_cosine": 0.6541906993335752,
+        "mean_relative_l2": 0.7082069696576526,
+        "p95_relative_l2": 1.0561429190802034,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "col_rank": 96,
+        "complete_accounting": {
+          "billed_ms": 0.001411,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 2580480,
+              "gb": 0.00258,
+              "ms": 0.001411,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.9190340909090909,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.9190340909090909,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.9190340909090909,
+            "stored_bytes": 2650112
+          },
+          "executable_bytes": 2650112,
+          "executable_gb": 0.00265,
+          "flags": [],
+          "id": "KIMI_nova_shared_core_local_residual_u96_v96_r32",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 147456,
+              "category": "regions",
+              "gb": 0.000147,
+              "ms": 8e-05,
+              "ms_per_gb": 0.547282,
+              "name": "expert_core_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 1769472,
+              "category": "regions",
+              "gb": 0.001769,
+              "ms": 0.000968,
+              "ms_per_gb": 0.547282,
+              "name": "expert_local_residual_factors_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 270336,
+              "category": "tables",
+              "gb": 0.00027,
+              "ms": 0.000148,
+              "ms_per_gb": 0.547282,
+              "name": "shared_output_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 393216,
+              "category": "tables",
+              "gb": 0.000393,
+              "ms": 0.000215,
+              "ms_per_gb": 0.547282,
+              "name": "shared_input_basis_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_local_residual_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 2650112,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 2650112,
+          "stored_bpw": 0.9190340909090909,
+          "stored_bytes": 2650112,
+          "stored_gb": 0.00265,
+          "stored_ms": 0.001411
+        },
+        "expert_core_bytes": 147456,
+        "expert_local_residual_factor_bytes": 1769472,
+        "family": "learned_shared_tucker_plus_expert_local_low_rank_residual",
+        "residual_rank": 32,
+        "row_rank": 96,
+        "shared_input_basis_bytes": 393216,
+        "shared_output_basis_bytes": 270336
+      },
+      "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.8965000160969794,
+        "dense_oracle_batch_samples_ms": [
+          0.9314169874414802,
+          0.8848329889588058,
+          0.8965000160969794
+        ],
+        "direct_batch_median_ms": 0.2560839639045298,
+        "direct_batch_samples_ms": [
+          0.24991697864606977,
+          0.26958296075463295,
+          0.2560839639045298
+        ],
+        "elapsed_ms": 4373.566249967553,
+        "torch_threads": 1,
+        "training_ms": 4200.258957978804
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9746999740600586,
+          0.013974780216813087
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "col_rank": 96,
+        "residual_rank": 32,
+        "row_rank": 96,
+        "tensor_family": "up_proj.weight"
+      }
+    }
+  ],
+  "schema": "hawking.future.kimi_nova_local_residual_fanout.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_nova_local_residual_fanout.py",
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "REPRESENTATION_NATIVE_NOVA_LOCAL_RESIDUAL_FANOUT_COMPLETE",
+  "tensor_family": "up_proj.weight",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+  ]
+}

@@ -9,10 +9,13 @@ policy of its own.
 """
 from __future__ import annotations
 
+import atexit
 import json
 import os
+import select
 import shutil
 import subprocess
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -22,19 +25,137 @@ class NativeProcessError(RuntimeError):
     """The Rust HCLI process authority could not be invoked."""
 
 
-def _native_binary() -> Path:
+class _NativeProcessServer:
+    """Persistent adapter for the canonical Rust process inspector.
+
+    The server is created only inside a daemon-owned process when the
+    resident environment opts into native Gravity. Standalone compatibility
+    calls retain the original one-shot Rust CLI path, while production HCLI
+    avoids paying its multi-second binary startup for every observation.
+    """
+
+    def __init__(self, root: Path, binary: Path) -> None:
+        self.root = root
+        self._lock = threading.Lock()
+        self._process = subprocess.Popen(
+            [str(binary), "processes-server", "--workspace", str(root)],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            bufsize=1,
+        )
+
+    def request(self, payload: dict[str, object]) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            if (
+                self._process.poll() is not None
+                or self._process.stdin is None
+                or self._process.stdout is None
+            ):
+                return None
+            try:
+                self._process.stdin.write(json.dumps(payload) + "\n")
+                self._process.stdin.flush()
+                if not select.select([self._process.stdout], [], [], 30.0)[0]:
+                    return None
+                response = json.loads(self._process.stdout.readline())
+            except (OSError, UnicodeError, ValueError):
+                return None
+        if not isinstance(response, dict) or response.get("ok") is False:
+            return None
+        result = response.get("result")
+        return result if isinstance(result, dict) else None
+
+    def stop(self) -> None:
+        with self._lock:
+            if self._process.poll() is None and self._process.stdin is not None:
+                try:
+                    self._process.stdin.write('{"op":"shutdown"}\n')
+                    self._process.stdin.flush()
+                except OSError:
+                    pass
+            try:
+                self._process.terminate()
+                self._process.wait(timeout=2)
+            except (OSError, subprocess.SubprocessError):
+                pass
+
+
+_NATIVE_PROCESS_SERVERS: Dict[Path, _NativeProcessServer] = {}
+_NATIVE_PROCESS_LOCK = threading.Lock()
+
+
+def _stop_native_process_servers() -> None:
+    """Close daemon-owned Rust observers without affecting standalone callers."""
+    with _NATIVE_PROCESS_LOCK:
+        servers = list(_NATIVE_PROCESS_SERVERS.values())
+        _NATIVE_PROCESS_SERVERS.clear()
+    for server in servers:
+        server.stop()
+
+
+atexit.register(_stop_native_process_servers)
+
+
+def _linked_checkout_root(active: Path) -> Optional[Path]:
+    """Return the primary checkout that owns a linked worktree's gitdir."""
+    marker = active / ".git"
+    if marker.is_dir():
+        return active
+    if not marker.is_file():
+        return None
+    try:
+        line = marker.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not line.startswith("gitdir:"):
+        return None
+    gitdir = Path(line.split(":", 1)[1].strip()).expanduser()
+    if not gitdir.is_absolute():
+        gitdir = active / gitdir
+    gitdir = gitdir.resolve(strict=False)
+    common_git = next((parent for parent in gitdir.parents
+                       if parent.name == ".git"), None)
+    return common_git.parent if common_git is not None else None
+
+
+def _native_binary(
+    workspace: Optional[str | os.PathLike[str]] = None,
+) -> Path:
     """Resolve the built Rust HCLI binary without confusing it with Python hcli."""
     explicit = os.environ.get("HCLI_NATIVE_HCLI") or os.environ.get("HCLI_RUST_BIN")
     candidates = [Path(explicit)] if explicit else []
     checkout = Path(__file__).resolve().parents[1]
+    active = Path(workspace or Path.cwd()).expanduser().resolve()
+    primary = _linked_checkout_root(active)
     candidates.extend(
         [
-            checkout / "target" / "debug" / "hcli",
+            # Installed snapshots carry the exact Rust authority selected at
+            # package time.  This must precede checkout discovery so a call
+            # from an unrelated directory cannot silently select another
+            # build or fall back to a Python process parser.
+            checkout / "hcli-rust",
+            # Installed Python snapshots live under ~/.local/share/hcli and do
+            # not normally contain Cargo output; older snapshots continue to
+            # use the active Hawking workspace, whose target directory is the
+            # native owner's canonical build location.
+            active / "target" / "release" / "hcli",
+            active / "target" / "debug" / "hcli",
+            active / "workspace" / "ops" / "build" / "rust" / "release" / "hcli",
+            active / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
+            *(([
+                primary / "workspace" / "ops" / "build" / "rust" / "release" / "hcli",
+                primary / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
+                primary / "target" / "release" / "hcli",
+                primary / "target" / "debug" / "hcli",
+            ]) if primary is not None and primary != active else []),
             checkout / "target" / "release" / "hcli",
-            checkout / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
+            checkout / "target" / "debug" / "hcli",
             checkout / "workspace" / "ops" / "build" / "rust" / "release" / "hcli",
-            checkout.parent.parent / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
+            checkout / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
             checkout.parent.parent / "workspace" / "ops" / "build" / "rust" / "release" / "hcli",
+            checkout.parent.parent / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
         ]
     )
     named = shutil.which("hcli-rust")
@@ -58,7 +179,32 @@ def _native_result(
     dry_run: bool = False,
 ) -> Dict[str, Any]:
     root = Path(workspace or Path.cwd()).expanduser().resolve()
-    args = [str(_native_binary()), "processes", "--workspace", str(root), "--json"]
+    if os.environ.get("HCLI_NATIVE_PROCESS_SERVER") == "1":
+        operation = "reap" if reap else "orphaned" if orphaned else "inspect"
+        request: Dict[str, object] = {"op": operation}
+        if operation == "inspect":
+            request["footprint"] = not no_footprint
+        if operation == "reap":
+            request["dry_run"] = dry_run
+        server: Optional[_NativeProcessServer] = None
+        try:
+            binary = _native_binary(root)
+            with _NATIVE_PROCESS_LOCK:
+                server = _NATIVE_PROCESS_SERVERS.get(root)
+                if server is None:
+                    server = _NativeProcessServer(root, binary)
+                    _NATIVE_PROCESS_SERVERS[root] = server
+            result = server.request(request)
+        except (NativeProcessError, OSError, subprocess.SubprocessError):
+            result = None
+        if result is not None:
+            return result
+        if server is not None:
+            with _NATIVE_PROCESS_LOCK:
+                if _NATIVE_PROCESS_SERVERS.get(root) is server:
+                    _NATIVE_PROCESS_SERVERS.pop(root, None)
+            server.stop()
+    args = [str(_native_binary(root)), "processes", "--workspace", str(root), "--json"]
     if no_footprint:
         args.append("--no-footprint")
     if orphaned:

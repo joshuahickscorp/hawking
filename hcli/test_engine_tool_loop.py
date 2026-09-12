@@ -16,7 +16,12 @@ from pathlib import Path
 
 import pytest
 
-from hcli.engine import Engine, HCLI_RESULT_SCHEMA
+from hcli.engine import (
+    Engine,
+    HCLI_RESULT_SCHEMA,
+    _AGENTIC_SYSTEM_PROMPT,
+    _is_contract_example_echo,
+)
 from hcli.backends import StructuredOutputContract, schema_instruction
 from hcli.tool_registry import default_tool_registry
 from hcli.workspace import Workspace
@@ -205,8 +210,21 @@ def test_directory_listing_includes_immediate_directories(tmp_path):
     )
 
     assert result.ok, result.error
-    assert result.value["directories"] == [{"path": "child", "kind": "directory"}]
-    assert result.value["files"] == [{"path": "note.txt", "bytes": 9}]
+    assert result.value["directories"] == [{
+        "path": "child",
+        "filename": "child",
+        "type": "directory",
+        "kind": "directory",
+        "size": None,
+    }]
+    assert result.value["files"] == [{
+        "path": "note.txt",
+        "filename": "note.txt",
+        "type": "file",
+        "kind": "file",
+        "size": 9,
+        "bytes": 9,
+    }]
 
 
 def test_obvious_directory_question_uses_the_typed_tool_without_model_startup(tmp_path):
@@ -328,6 +346,116 @@ def test_no_tools_enters_the_closed_budget_path_on_the_first_call(monkeypatch):
     assert result["kind"] == "answer"
     assert len(prompts) == 1
     assert prompts[0]["tools_allowed"] is False
+
+
+def test_contract_example_echo_is_retried_once_instead_of_mutated(monkeypatch):
+    engine = Engine.__new__(Engine)
+    engine._cancelled = False
+    engine.MAX_TOOL_ROUNDS = 4
+    replies = iter([
+        {
+            "kind": "mutation",
+            "content": "what changed",
+            "operations": [{
+                "op": "create",
+                "path": "dir/file.txt",
+                "new_lines": ["line one", "line two"],
+            }],
+            "tests": ["cmd"],
+        },
+        {"kind": "answer", "content": "No grounded mutation is justified."},
+    ])
+    calls = []
+    engine._prompt_with_observations = lambda *args, **kwargs: "closed"
+    engine._call_model = lambda *args, **kwargs: calls.append(kwargs) or next(replies)
+    engine._sanitize_result = lambda value: value
+    engine._emit = lambda *args, **kwargs: None
+    engine._write_receipt = lambda **kwargs: "receipt"
+    monkeypatch.setenv("HCLI_NO_TOOLS", "1")
+
+    result = engine.execute(
+        "ROLE: implementation\nOBJECTIVE: repair",
+        evidence=[{"path": "hcli/serve.py", "content": "observed"}],
+        compiled={},
+    )
+
+    assert result["status"] == "completed"
+    assert result["content"] == "No grounded mutation is justified."
+    assert len(calls) == 2
+    assert "dir/file.txt" in calls[1]["history"][-1]["content"]
+
+
+def test_contract_example_echo_detector_does_not_match_a_real_mutation():
+    assert _is_contract_example_echo({
+        "kind": "mutation",
+        "content": "persist the stream turn",
+        "operations": [{"op": "replace", "path": "hcli/serve.py"}],
+        "tests": ["hcli/tests/test_serve_openai_surface.py"],
+    }) is False
+
+
+def test_agentic_prompt_has_a_shape_but_no_copyable_fake_mutation():
+    assert "Mutation fields:" in _AGENTIC_SYSTEM_PROMPT
+    assert "operations=[operation objects]" in _AGENTIC_SYSTEM_PROMPT
+    assert "dir/file.txt" not in _AGENTIC_SYSTEM_PROMPT
+    assert "line one" not in _AGENTIC_SYSTEM_PROMPT
+    assert 'tests=["cmd"]' not in _AGENTIC_SYSTEM_PROMPT
+
+
+def test_mutation_grounding_rejects_placeholders_before_file_io(tmp_path):
+    engine = Engine(Workspace(str(tmp_path)))
+    errors = engine._mutation_grounding_errors({
+        "kind": "mutation",
+        "content": "Local repair of JSON syntax",
+        "operations": [{
+            "op": "replace",
+            "path": "path/to/file.json",
+            "old_lines": [],
+            "new_lines": ["{}"],
+        }],
+        "tests": ["cat path/to/file.json"],
+    })
+    assert any("placeholder path" in item for item in errors)
+    assert any("not an admitted focused pytest path" in item for item in errors)
+    assert not (tmp_path / "path").exists()
+
+
+def test_mutation_grounding_accepts_existing_file_and_focused_test(tmp_path):
+    (tmp_path / "hcli").mkdir()
+    (tmp_path / "hcli" / "serve.py").write_text("OLD = True\n")
+    (tmp_path / "hcli" / "test_serve.py").write_text(
+        "def test_old():\n    assert True\n"
+    )
+    engine = Engine(Workspace(str(tmp_path)))
+    errors = engine._mutation_grounding_errors({
+        "kind": "mutation",
+        "content": "persist streaming state",
+        "operations": [{
+            "op": "replace",
+            "path": "hcli/serve.py",
+            "old_lines": ["OLD = True"],
+            "new_lines": ["OLD = False"],
+        }],
+        "tests": ["hcli/test_serve.py"],
+    })
+    assert errors == []
+
+
+def test_mutation_grounding_accepts_a_focused_test_created_by_the_transaction(tmp_path):
+    (tmp_path / "hcli" / "tests").mkdir(parents=True)
+    engine = Engine(Workspace(str(tmp_path)))
+    errors = engine._mutation_grounding_errors({
+        "kind": "mutation",
+        "content": "add streaming persistence regression",
+        "operations": [{
+            "op": "create",
+            "path": "hcli/tests/test_session_state_persistence.py",
+            "new_lines": ["def test_stream_state():", "    assert True"],
+        }],
+        "tests": ["pytest -v hcli/tests/test_session_state_persistence.py"],
+    })
+    assert errors == []
+    assert not (tmp_path / "hcli" / "tests" / "test_session_state_persistence.py").exists()
 
 
 def test_sanitizer_accepts_tool_use_and_drops_nameless_calls():

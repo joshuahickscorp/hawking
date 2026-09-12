@@ -53,7 +53,9 @@ impl Drop for TmpFile {
 }
 
 fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-    (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
+    (0..n)
+        .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
+        .collect()
 }
 
 /// Two STRICT 2-D tensors (in_features divisible by block_len), the shape the sprint
@@ -96,7 +98,13 @@ fn build_test_archive() -> (Vec<u8>, EncodedTensor, EncodedTensor) {
 
 fn sample_outl() -> Vec<Option<OutlierWire>> {
     vec![
-        Some(OutlierWire::from_selection(1024, vec![3, 511, 700], vec![5, 127, -127], 0.3125, 8)),
+        Some(OutlierWire::from_selection(
+            1024,
+            vec![3, 511, 700],
+            vec![5, 127, -127],
+            0.3125,
+            8,
+        )),
         None,
     ]
 }
@@ -299,8 +307,11 @@ fn c2_scale_q_stream_is_lossless_against_real_archive_values() {
     let hdr = read_strand_v2_header(&buf).unwrap();
 
     // The exact scale_q integers C2 would entropy-code (one per block, all tensors).
-    let scale_q: Vec<i32> =
-        hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect();
+    let scale_q: Vec<i32> = hdr
+        .tensors
+        .iter()
+        .flat_map(|t| t.table.iter().map(|r| r.scale_q))
+        .collect();
     assert!(!scale_q.is_empty(), "fixture must have blocks to code");
 
     // A C2 coder is byte-LOSSLESS by construction: decode(encode(scale_q)) == scale_q.
@@ -318,7 +329,11 @@ fn c2_scale_q_stream_is_lossless_against_real_archive_values() {
     // Also assert the values are well-formed i32 (rANS zig-zag/varint must round-trip the
     // full i32 range; negative scales are legal).
     for &s in &scale_q {
-        assert_eq!(i64::from(s) as i32, s, "scale_q must survive the i64 codec width");
+        assert_eq!(
+            i64::from(s) as i32,
+            s,
+            "scale_q must survive the i64 codec width"
+        );
     }
 }
 
@@ -346,8 +361,11 @@ fn outl_sdsq_sprv_full_stack_all_read_back() {
 
     // The exact per-block scale_q the producer feeds SDSQ (== the seek-table values).
     let hdr = read_strand_v2_header(&buf).unwrap();
-    let scale_q: Vec<i32> =
-        hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect();
+    let scale_q: Vec<i32> = hdr
+        .tensors
+        .iter()
+        .flat_map(|t| t.table.iter().map(|r| r.scale_q))
+        .collect();
     assert!(!scale_q.is_empty());
 
     // Stack all three in canonical order.
@@ -367,7 +385,11 @@ fn outl_sdsq_sprv_full_stack_all_read_back() {
     // page-aligned — but each DATA section under it (OUTL, SDSQ) page-pads its own end,
     // which is what lets the next section start page-aligned. (Confirmed by the OUTL/SDSQ
     // round-trip tests; here we only assert the seal terminates the file.)
-    assert_ne!(on_disk.len() % PAGE, 0, "SPRV-sealed file ends at the seal, not a page boundary");
+    assert_ne!(
+        on_disk.len() % PAGE,
+        0,
+        "SPRV-sealed file ends at the seal, not a page boundary"
+    );
 
     // (1) OUTL survives two sections above it (SDSQ + SPRV). THE hazard assertion.
     let outl = read_outl_bytes(&on_disk, true)
@@ -380,16 +402,26 @@ fn outl_sdsq_sprv_full_stack_all_read_back() {
     let sdsq = read_sdsq_bytes(&on_disk, true)
         .expect("sdsq read must not error")
         .expect("SDSQ must be readable beneath the SPRV seal");
-    assert_eq!(sdsq.scale_q, scale_q, "SDSQ-decoded scale_q must equal the stored seek-table scale_q");
+    assert_eq!(
+        sdsq.scale_q, scale_q,
+        "SDSQ-decoded scale_q must equal the stored seek-table scale_q"
+    );
 
     // (3) SPRV is the outermost seal and self-consistent.
     assert_eq!(read_sprv(&path).unwrap().expect("SPRV present"), sprv);
     assert!(read_sprv_bytes(&on_disk, true).unwrap().is_some());
 
     // (4) The v2 core bytes — seek table included — are byte-stable under the full chain.
-    assert_eq!(&on_disk[..buf.len()], &buf[..], "v2 prefix (incl. seek table) untouched");
+    assert_eq!(
+        &on_disk[..buf.len()],
+        &buf[..],
+        "v2 prefix (incl. seek table) untouched"
+    );
 
     // (5) Seal discipline still holds: appending SDSQ behind the SPRV seal is rejected.
     let err = append_sdsq(&path, &scale_q).unwrap_err();
-    assert!(err.contains("BEFORE SPRV"), "SDSQ-behind-SPRV must name the order rule: {err}");
+    assert!(
+        err.contains("BEFORE SPRV"),
+        "SDSQ-behind-SPRV must name the order rule: {err}"
+    );
 }

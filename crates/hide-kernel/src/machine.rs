@@ -607,6 +607,8 @@ pub mod driver {
                 "model_rounds": aggregate.rounds,
                 "input_tokens": aggregate.input_tokens,
                 "output_tokens": aggregate.output_tokens,
+                "timing_unit": "ns",
+                "decode_ns": aggregate.decode_ns(),
                 "decode_ms": aggregate.decode_ms(),
                 "completed_decode_forwards": aggregate.completed_decode_forwards(),
                 "decode_tps": aggregate.complete_forward_tps(),
@@ -932,7 +934,9 @@ pub mod driver {
                         "stage": stage,
                         "input_tokens": stats.input_tokens,
                         "output_tokens": stats.output_tokens,
-                        "decode_ms": stats.decode_ms,
+                        "timing_unit": "ns",
+                        "decode_ns": stats.effective_decode_ns(),
+                        "decode_ms": stats.effective_decode_ms(),
                         "completed_decode_forwards": stats.completed_decode_forwards,
                         "decode_tps": stats.decode_tokens_per_second,
                     }),
@@ -990,7 +994,7 @@ pub mod driver {
         rounds: u32,
         input_tokens: usize,
         output_tokens: usize,
-        decode_ms_total: f64,
+        decode_ns_total: u64,
         completed_decode_forwards_total: usize,
         every_round_has_complete_decode_metric: bool,
     }
@@ -1000,9 +1004,9 @@ pub mod driver {
             self.rounds = self.rounds.saturating_add(1);
             self.input_tokens = self.input_tokens.saturating_add(stats.input_tokens);
             self.output_tokens = self.output_tokens.saturating_add(stats.output_tokens);
-            match (stats.decode_ms, stats.completed_decode_forwards) {
-                (Some(ms), Some(forwards)) if ms > 0.0 && forwards > 0 => {
-                    self.decode_ms_total += ms;
+            match (stats.effective_decode_ns(), stats.completed_decode_forwards) {
+                (Some(nanoseconds), Some(forwards)) if nanoseconds > 0 && forwards > 0 => {
+                    self.decode_ns_total = self.decode_ns_total.saturating_add(nanoseconds);
                     self.completed_decode_forwards_total = self
                         .completed_decode_forwards_total
                         .saturating_add(forwards);
@@ -1012,17 +1016,22 @@ pub mod driver {
             // The initial `false` is meaningful only before the first round.
             if self.rounds == 1
                 && matches!(
-                    (stats.decode_ms, stats.completed_decode_forwards),
-                    (Some(ms), Some(forwards)) if ms > 0.0 && forwards > 0
+                    (stats.effective_decode_ns(), stats.completed_decode_forwards),
+                    (Some(nanoseconds), Some(forwards)) if nanoseconds > 0 && forwards > 0
                 )
             {
                 self.every_round_has_complete_decode_metric = true;
             }
         }
 
-        fn decode_ms(&self) -> Option<f64> {
+        fn decode_ns(&self) -> Option<u64> {
             self.every_round_has_complete_decode_metric
-                .then_some(self.decode_ms_total)
+                .then_some(self.decode_ns_total)
+        }
+
+        fn decode_ms(&self) -> Option<f64> {
+            self.decode_ns()
+                .map(|nanoseconds| nanoseconds as f64 / 1_000_000.0)
         }
 
         fn completed_decode_forwards(&self) -> Option<usize> {
@@ -1031,8 +1040,9 @@ pub mod driver {
         }
 
         fn complete_forward_tps(&self) -> Option<f64> {
-            (self.every_round_has_complete_decode_metric && self.decode_ms_total > 0.0).then(|| {
-                self.completed_decode_forwards_total as f64 / (self.decode_ms_total / 1_000.0)
+            (self.every_round_has_complete_decode_metric && self.decode_ns_total > 0).then(|| {
+                self.completed_decode_forwards_total as f64 * 1_000_000_000.0
+                    / self.decode_ns_total as f64
             })
         }
     }

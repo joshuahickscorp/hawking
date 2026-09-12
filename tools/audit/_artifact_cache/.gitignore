@@ -1,3 +1,0 @@
-# Derived sidecar + materialized HEAD blobs. Never the durable receipts.
-*
-!.gitignore

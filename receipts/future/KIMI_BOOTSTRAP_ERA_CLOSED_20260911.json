@@ -1,0 +1,77 @@
+{
+  "schema": "hawking.kimi.bootstrap_era_closure.v1",
+  "recorded_at": "2026-09-11T08:02:00Z",
+  "status": "CLOSED_AT_EARNED_BOUNDARY",
+  "purpose": "Close the KIMI bootstrap era without reopening withheld autonomous-writing work or conflating the process tree with one literal operating-system PID.",
+  "operational_artifact": {
+    "id": "KIMI_P0_OPERATIONAL",
+    "freeze": "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+    "weight_lineage": "KIMI_BASE unchanged",
+    "admitted_authority": [
+      "local conversation",
+      "read/research HCLI work",
+      "repository and ModelLake investigation",
+      "tool-using scientific assistance",
+      "receipt/evidence consumption",
+      "hypothesis and experiment planning",
+      "supervised proposal generation"
+    ],
+    "withheld_authority": [
+      "autonomous repository writing",
+      "self-certifying development",
+      "unsupervised mutation authority",
+      "autonomous Odyssey writing",
+      "autonomous self-improvement promotion"
+    ],
+    "withheld_authority_law": "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json"
+  },
+  "runtime_invariant": {
+    "name": "ONE_SOVEREIGN_HAWKINGD_PROCESS_TREE",
+    "literal_single_pid_required": false,
+    "observed_root": {
+      "pid": 59189,
+      "ppid": 1,
+      "role": "hawkingd serve",
+      "port": 8011
+    },
+    "observed_daemon_owned_descendants": [
+      {"pid": 59193, "ppid": 59189, "role": "one KIMI provider"},
+      {"pid": 59206, "ppid": 59189, "role": "Open WebUI client :8080"},
+      {"pid": 59241, "ppid": 59189, "role": "Open WebUI client :8081"}
+    ],
+    "live_health": "http://127.0.0.1:8011/health reported status=ok, resident=KIMI_P0_OPERATIONAL, authority=read, provider_children=daemon-owned",
+    "normal_model_selector": ["KIMI_P0_OPERATIONAL"],
+    "normal_modellake_visibility": "hidden",
+    "claim_boundary": "Provider and UI subprocesses are healthy supervised descendants, not independent Hawking services. Unrelated host processes are outside this ownership scope."
+  },
+  "era_result": {
+    "p0_status": "FROZEN_OPERATIONAL_DEVELOPMENTAL_BOUNDED_AUTHORITY",
+    "blind_autonomous_write": "WITHHELD_NOT_A_USAGE_PREREQUISITE",
+    "refusal_intervention_family": "sealed negative science; no learned-weight candidate promoted",
+    "density_specimens": "preserved separately; organ-scope density results do not become operational P0 claims",
+    "harness_policy": "Do not tune synthetic write gates further unless an actual Odyssey WorkUnit exposes a general blocking deficiency."
+  },
+  "successor_campaign": {
+    "name": "ODYSSEY_PLUS_COMPOUNDING_GRAVITY",
+    "active_phase": "MOE_TRANSFER_CLUSTER",
+    "active_workunit": "workspace/campaign/odyssey/LFM2_RUNTIME_ADMISSION_WORKUNIT.md",
+    "next_specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+    "sequence": [
+      "high-value MoE transfer cluster",
+      "Flash-Next priority override",
+      "deep Pulsar/Gravity pass",
+      "qualified local Pulsar plus Codex continue Odyssey",
+      "rolling ModelLake retirement",
+      "V4.1 acquisition when disk gate permits",
+      "finish Odyssey",
+      "Star Series"
+    ]
+  },
+  "verification": {
+    "source_of_process_truth": "ps ancestry plus /health observed at closure",
+    "operational_freeze": "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+    "schedule_authority": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "continuation": "workspace/campaign/odyssey/CONTINUATION.json"
+  },
+  "claim_boundary": "This closes the bootstrap era and begins the next scientific campaign. It does not promote KIMI P0 beyond its earned authority, claim full-model sub-bit capability, or assert that LFM2 runtime admission has succeeded."
+}

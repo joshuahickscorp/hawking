@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.flash.repeated_accepted_decode_runner.v1",
+  "status": "PASSED_STATEFUL_REPEATED_ACCEPTED_DECODE",
+  "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "reference_generated_token_ids": [
+    2972,
+    96125
+  ],
+  "reference_discovery_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.reference-discovery.json",
+  "verification_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.json",
+  "verification_session": "one source-bound session; prompt prefill occurs once at its start and no token-boundary reset or re-prefill is claimed",
+  "elapsed_ns": 4249890112000,
+  "claim_boundary": "This runner proves only the verification receipt it validates. It does not time a clean repeated benchmark, establish TPS, capability, EBPW, direct Noetic execution, or residency."
+}

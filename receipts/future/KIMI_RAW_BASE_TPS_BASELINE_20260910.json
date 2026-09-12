@@ -1,0 +1,255 @@
+{
+  "claim_boundary": "Raw KIMI_BASE physical generation timing only. The cached local snapshot was used; this is not a CorpDrive cold-load measurement, not a direct Noetic decoder, not a capability-preservation receipt, not a qualified TPS milestone, and not promotion or Odyssey admission evidence.",
+  "contexts": [
+    {
+      "context_repeats": 0,
+      "rows": [
+        {
+          "completion_end_to_end_tps": 71.315,
+          "completion_tokens": 32,
+          "context_repeats": 0,
+          "first_yield_ms": 97.083,
+          "prefill_plus_first_decode_tps": 206.01,
+          "prompt_tokens": 20,
+          "rep": 0,
+          "steady_decode_ms": 351.628,
+          "steady_decode_tps": 88.161,
+          "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+          "total_generation_ms": 448.711
+        },
+        {
+          "completion_end_to_end_tps": 71.553,
+          "completion_tokens": 32,
+          "context_repeats": 0,
+          "first_yield_ms": 96.083,
+          "prefill_plus_first_decode_tps": 208.153,
+          "prompt_tokens": 20,
+          "rep": 1,
+          "steady_decode_ms": 351.139,
+          "steady_decode_tps": 88.284,
+          "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+          "total_generation_ms": 447.222
+        }
+      ],
+      "summary": {
+        "completion_end_to_end_tps_median": 71.434,
+        "completion_tokens_median": 32.0,
+        "first_yield_ms_median": 96.583,
+        "prefill_plus_first_decode_tps_median": 207.0815,
+        "prompt_tokens_median": 20.0,
+        "rep_count": 2,
+        "steady_decode_ms_median": 351.3835,
+        "steady_decode_tps_median": 88.2225,
+        "total_generation_ms_median": 447.9665
+      }
+    },
+    {
+      "context_repeats": 64,
+      "rows": [
+        {
+          "completion_end_to_end_tps": 60.704,
+          "completion_tokens": 32,
+          "context_repeats": 64,
+          "first_yield_ms": 161.384,
+          "prefill_plus_first_decode_tps": 1313.639,
+          "prompt_tokens": 212,
+          "rep": 0,
+          "steady_decode_ms": 365.768,
+          "steady_decode_tps": 84.753,
+          "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+          "total_generation_ms": 527.152
+        },
+        {
+          "completion_end_to_end_tps": 60.703,
+          "completion_tokens": 32,
+          "context_repeats": 64,
+          "first_yield_ms": 161.515,
+          "prefill_plus_first_decode_tps": 1312.568,
+          "prompt_tokens": 212,
+          "rep": 1,
+          "steady_decode_ms": 365.637,
+          "steady_decode_tps": 84.783,
+          "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+          "total_generation_ms": 527.153
+        }
+      ],
+      "summary": {
+        "completion_end_to_end_tps_median": 60.703500000000005,
+        "completion_tokens_median": 32.0,
+        "first_yield_ms_median": 161.4495,
+        "prefill_plus_first_decode_tps_median": 1313.1035,
+        "prompt_tokens_median": 212.0,
+        "rep_count": 2,
+        "steady_decode_ms_median": 365.7025,
+        "steady_decode_tps_median": 84.768,
+        "total_generation_ms_median": 527.1525
+      }
+    },
+    {
+      "context_repeats": 256,
+      "rows": [
+        {
+          "completion_end_to_end_tps": 34.998,
+          "completion_tokens": 32,
+          "context_repeats": 256,
+          "first_yield_ms": 537.249,
+          "prefill_plus_first_decode_tps": 1466.731,
+          "prompt_tokens": 788,
+          "rep": 0,
+          "steady_decode_ms": 377.079,
+          "steady_decode_tps": 82.211,
+          "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+          "total_generation_ms": 914.328
+        },
+        {
+          "completion_end_to_end_tps": 46.323,
+          "completion_tokens": 32,
+          "context_repeats": 256,
+          "first_yield_ms": 328.913,
+          "prefill_plus_first_decode_tps": 2395.772,
+          "prompt_tokens": 788,
+          "rep": 1,
+          "steady_decode_ms": 361.882,
+          "steady_decode_tps": 85.663,
+          "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+          "total_generation_ms": 690.795
+        }
+      ],
+      "summary": {
+        "completion_end_to_end_tps_median": 40.6605,
+        "completion_tokens_median": 32.0,
+        "first_yield_ms_median": 433.081,
+        "prefill_plus_first_decode_tps_median": 1931.2514999999999,
+        "prompt_tokens_median": 788.0,
+        "rep_count": 2,
+        "steady_decode_ms_median": 369.4805,
+        "steady_decode_tps_median": 83.937,
+        "total_generation_ms_median": 802.5615
+      }
+    }
+  ],
+  "generated_at": "2026-09-10T16:33:54.534499+00:00",
+  "immutable_base": true,
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.6"
+  },
+  "measurement_contract": {
+    "api": "mlx_lm.generate_step",
+    "concurrency": 1,
+    "contexts": [
+      0,
+      64,
+      256
+    ],
+    "max_tokens": 32,
+    "prefill_decode_boundary": "first_yield_ms includes prompt processing plus the first decode step; steady_decode_ms excludes that first-yield interval",
+    "reps_per_context": 2,
+    "sampling": "greedy generate_step default",
+    "warmup_excluded": true
+  },
+  "model_snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+  "resource": {
+    "bracket": {
+      "compressor_gb_peak": 7.65,
+      "compressor_gb_start": 7.65,
+      "free_gb_end": 32.29,
+      "free_gb_low": 31.7,
+      "free_gb_start": 31.77,
+      "label": "raw KIMI_BASE timing",
+      "peak_unknown_reason": null,
+      "resident_rss_gb_peak": 0.0,
+      "samples": 1,
+      "swapfiles_delta": 0,
+      "swapfiles_end": 4,
+      "swapfiles_start": 4,
+      "wall_s": 3.59
+    },
+    "entry": {
+      "compressor_gb": 7.65,
+      "expected_gb": 32.0,
+      "free_gb": 62.11,
+      "headroom_gb": 30.11,
+      "reasons": [],
+      "reclaimable_gb": 20.78,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 41.32,
+      "swap_gb": 4.0,
+      "swapfiles": 4,
+      "wired_gb": 5.9
+    },
+    "loaded": {
+      "compressor_gb": 7.65,
+      "expected_gb": 32.0,
+      "free_gb": 29.57,
+      "headroom_gb": -2.43,
+      "reasons": [
+        "expected 32.0 GB leaves -2.4 GB headroom, below 1.5 GB"
+      ],
+      "reclaimable_gb": 29.45,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "STOP",
+      "strictly_free_gb": 0.12,
+      "swap_gb": 4.0,
+      "swapfiles": 4,
+      "wired_gb": 28.31
+    },
+    "measurement_end": {
+      "compressor_gb": 7.65,
+      "expected_gb": 0.0,
+      "free_gb": 32.29,
+      "headroom_gb": 32.29,
+      "reasons": [],
+      "reclaimable_gb": 29.85,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 2.44,
+      "swap_gb": 4.0,
+      "swapfiles": 4,
+      "wired_gb": 35.27
+    },
+    "warm": {
+      "compressor_gb": 7.65,
+      "expected_gb": 32.0,
+      "free_gb": 31.77,
+      "headroom_gb": -0.23,
+      "reasons": [
+        "expected 32.0 GB leaves -0.2 GB headroom, below 1.5 GB"
+      ],
+      "reclaimable_gb": 29.25,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "STOP",
+      "strictly_free_gb": 2.53,
+      "swap_gb": 4.0,
+      "swapfiles": 4,
+      "wired_gb": 35.99
+    },
+    "watch_samples": 1,
+    "watch_worst_state": "OK"
+  },
+  "schema": "hawking.future.kimi_raw_tps_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_raw_tps_baseline.py",
+  "source_model": "KIMI_BASE",
+  "status": "RAW_KIMI_BASE_TIMING_COMPLETE_NOT_QUALIFIED",
+  "timing": {
+    "load_s": 6.235,
+    "total_s": 10.203,
+    "warmup": {
+      "completion_end_to_end_tps": 20.635,
+      "completion_tokens": 4,
+      "first_yield_ms": 159.174,
+      "prefill_plus_first_decode_tps": 125.649,
+      "prompt_tokens": 20,
+      "steady_decode_ms": 34.674,
+      "steady_decode_tps": 86.519,
+      "token_count_contract": "all generated tokens yielded before EOS or max_tokens",
+      "total_generation_ms": 193.848
+    },
+    "warmup_s": 0.194
+  }
+}

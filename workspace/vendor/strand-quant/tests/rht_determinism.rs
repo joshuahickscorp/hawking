@@ -233,7 +233,10 @@ fn rht_seed_matches_spec_over_name_corpus() {
         checked += 1;
     }
     eprintln!("rht_seed_for: {checked} names cross-checked against FNV-1a spec");
-    assert!(checked >= 4096 + 256 + 96 * 7, "name corpus shrank unexpectedly");
+    assert!(
+        checked >= 4096 + 256 + 96 * 7,
+        "name corpus shrank unexpectedly"
+    );
 }
 
 #[test]
@@ -252,8 +255,15 @@ fn rht_seed_structural_invariants() {
         let bytes: Vec<u8> = (0..len).map(|_| spec_splitmix64(&mut s) as u8).collect();
         let name = String::from_utf8_lossy(&bytes).into_owned();
         let seed = rht_seed_for(&name);
-        assert_eq!(seed & 1, 1, "rht_seed_for produced an even seed for {name:?}");
-        assert_ne!(seed, 0, "rht_seed_for produced the sentinel 0 (means 'no RHT')");
+        assert_eq!(
+            seed & 1,
+            1,
+            "rht_seed_for produced an even seed for {name:?}"
+        );
+        assert_ne!(
+            seed, 0,
+            "rht_seed_for produced the sentinel 0 (means 'no RHT')"
+        );
     }
 
     // (c) byte-order sensitivity: distinct projections / layer orders must map
@@ -347,7 +357,10 @@ fn splitmix_and_sign_are_deterministic_and_bipolar() {
         }
     }
     // both signs must occur (a constant sign would make RHT a no-op rotation)
-    assert!(pos > 0 && neg > 0, "sign_at degenerate: pos={pos} neg={neg}");
+    assert!(
+        pos > 0 && neg > 0,
+        "sign_at degenerate: pos={pos} neg={neg}"
+    );
     // crude balance check — over 140k draws, neither sign should dominate wildly
     let total = (pos + neg) as f64;
     let frac = pos as f64 / total;
@@ -446,7 +459,10 @@ fn round_trip_is_value_exact_and_bit_exact_modulo_signed_zero() {
             continue;
         }
         for trial in 0..16u64 {
-            let seed = trial.wrapping_mul(0x9E37_79B9_7F4A_7C15).wrapping_add(n as u64) | 1;
+            let seed = trial
+                .wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                .wrapping_add(n as u64)
+                | 1;
             let cfg = RhtConfig::from_seed(seed);
             // use small-magnitude reals so the relative bound is meaningful
             let x = dyadic_signal(n, seed, 32768, 15); // values in [-1,1], step 2^-15
@@ -473,7 +489,13 @@ fn signed_zero_is_the_only_bit_artifact_and_is_itself_deterministic() {
     let cfg = RhtConfig::from_seed(0x0BAD_F00D_0000_0001);
     let n = HADAMARD_BLOCK; // single block, all elements transformed
     let x: Vec<f32> = (0..n)
-        .map(|i| if i % 3 == 0 { 0.0 } else { ((i % 7) as f32 - 3.0) / 4.0 })
+        .map(|i| {
+            if i % 3 == 0 {
+                0.0
+            } else {
+                ((i % 7) as f32 - 3.0) / 4.0
+            }
+        })
         .collect();
 
     let back1 = rht_inverse(&rht_forward(&x, &cfg), &cfg);
@@ -486,7 +508,10 @@ fn signed_zero_is_the_only_bit_artifact_and_is_itself_deterministic() {
     );
     // The artifact reproduces exactly — true to_bits() equality between two runs.
     assert!(
-        back1.iter().zip(&back2).all(|(a, b)| a.to_bits() == b.to_bits()),
+        back1
+            .iter()
+            .zip(&back2)
+            .all(|(a, b)| a.to_bits() == b.to_bits()),
         "the signed-zero artifact is not reproducible — float nondeterminism!"
     );
     // And it really does occur (otherwise this test would be vacuous).
@@ -510,7 +535,12 @@ fn forward_is_bit_reproducible() {
     let seeds = [0u64, 1, 0xDEAD_BEEF, 0xA5A5_1234_DEAD_0001, u64::MAX];
     for &seed in &seeds {
         let cfg = RhtConfig::from_seed(seed);
-        for &n in &[HADAMARD_BLOCK, HADAMARD_BLOCK * 3, HADAMARD_BLOCK * 2 + 91, 896] {
+        for &n in &[
+            HADAMARD_BLOCK,
+            HADAMARD_BLOCK * 3,
+            HADAMARD_BLOCK * 2 + 91,
+            896,
+        ] {
             let x = dyadic_signal(n, seed ^ 0xC0FFEE, 8192, 13);
             let a = rht_forward(&x, &cfg);
             let b = rht_forward(&x, &cfg);
@@ -552,26 +582,53 @@ fn forward_golden_vector_bits() {
 
     // A few exact element bits, as a human-readable cross-check of the sentinel.
     let expect_first16: [u32; 16] = [
-        0xbf50_0000, 0xbfe8_0000, 0xc0a2_0000, 0xc082_0000, 0xc08a_0000, 0xc0c2_0000, 0x40de_0000,
-        0x3f98_0000, 0x40ca_0000, 0xc06c_0000, 0xc0be_0000, 0x3fc8_0000, 0x3f50_0000, 0x4004_0000,
-        0x4092_0000, 0xc0b6_0000,
+        0xbf50_0000,
+        0xbfe8_0000,
+        0xc0a2_0000,
+        0xc082_0000,
+        0xc08a_0000,
+        0xc0c2_0000,
+        0x40de_0000,
+        0x3f98_0000,
+        0x40ca_0000,
+        0xc06c_0000,
+        0xc0be_0000,
+        0x3fc8_0000,
+        0x3f50_0000,
+        0x4004_0000,
+        0x4092_0000,
+        0xc0b6_0000,
     ];
     for (i, &want) in expect_first16.iter().enumerate() {
         assert_eq!(y[i].to_bits(), want, "golden bits drift at element {i}");
     }
     let expect_last8: [u32; 8] = [
-        0x405c_0000, 0xc0ca_0000, 0x402c_0000, 0xc109_0000, 0xc101_0000, 0xbfc8_0000, 0x4103_0000,
+        0x405c_0000,
+        0xc0ca_0000,
+        0x402c_0000,
+        0xc109_0000,
+        0xc101_0000,
+        0xbfc8_0000,
+        0x4103_0000,
         0x40a6_0000,
     ];
     for (k, &want) in expect_last8.iter().enumerate() {
         let i = y.len() - 8 + k;
-        assert_eq!(y[i].to_bits(), want, "golden bits drift at tail element {i}");
+        assert_eq!(
+            y[i].to_bits(),
+            want,
+            "golden bits drift at tail element {i}"
+        );
     }
 
     // All forward outputs are multiples of 1/16 (sanity: confirms exactness).
     for v in &y {
         let scaled = v * 16.0;
-        assert_eq!(scaled, scaled.round(), "forward output not a multiple of 1/16");
+        assert_eq!(
+            scaled,
+            scaled.round(),
+            "forward output not a multiple of 1/16"
+        );
     }
 }
 
@@ -648,7 +705,9 @@ fn rows_equals_flat_when_in_features_256_aligned() {
         let rows = rht_forward_rows(&x, &cfg, in_f);
         assert_eq!(flat.len(), rows.len());
         assert!(
-            flat.iter().zip(&rows).all(|(a, b)| a.to_bits() == b.to_bits()),
+            flat.iter()
+                .zip(&rows)
+                .all(|(a, b)| a.to_bits() == b.to_bits()),
             "row-aware RHT diverged (bitwise) from flat at aligned in_features={in_f}"
         );
     }

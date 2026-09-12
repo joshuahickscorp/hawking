@@ -1,0 +1,9 @@
+{
+  "candidate_id": "OPG",
+  "gate_receipt": "receipts/future/KIMI_OPERATOR_GATE_20260910.json",
+  "generated_at": "2026-09-10T13:44:35.173964+00:00",
+  "reason": "candidate is absent from the promotion gate receipt",
+  "schema": "hawking.kimi.odyssey_bridge.v1",
+  "scope": [],
+  "status": "KIMI_WORKER_WITHHELD"
+}

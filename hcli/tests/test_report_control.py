@@ -68,6 +68,8 @@ class TestWarmTurnsNeedsItsControl(unittest.TestCase):
         self.assertTrue(got["prefix_reuse"], got)
         self.assertIn("does NOT re-pay", got["verdict"])
         self.assertGreaterEqual(got["speedup"], 2.0)
+        self.assertEqual(got["timing_unit"], "ns")
+        self.assertTrue(all(isinstance(row["wall_ns"], int) for row in got["turns"]))
 
     def test_no_reuse_is_reported_as_no_reuse(self):
         httpd, base = _surface(lambda text: 0.20)

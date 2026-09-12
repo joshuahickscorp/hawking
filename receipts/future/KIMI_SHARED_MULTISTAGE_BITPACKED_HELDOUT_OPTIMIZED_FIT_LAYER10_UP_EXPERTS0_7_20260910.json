@@ -1,0 +1,1028 @@
+{
+  "claim_boundary": "Bounded routed-expert multistage representation reference only. It validates packed direct consumption and held-out probe error on eight projection tensors, not full-model capability, end-to-end TPS, production kernel qualification, NX, or KIMI promotion.",
+  "expert_count": 8,
+  "fanout_timing": {
+    "execution": "CPU packed multistage held-out fanout; not model TPS",
+    "method_soft_budget_ms": 60000.0,
+    "variant_count": 6,
+    "wall_elapsed_ms": 13446.728416951373,
+    "workers": 6
+  },
+  "fit": {
+    "activation_probes_are_held_out": true,
+    "bit_packing_variants": [
+      {
+        "bits": 4,
+        "entries": 16,
+        "stages": 2
+      },
+      {
+        "bits": 4,
+        "entries": 16,
+        "stages": 3
+      },
+      {
+        "bits": 4,
+        "entries": 16,
+        "stages": 4
+      },
+      {
+        "bits": 4,
+        "entries": 16,
+        "stages": 6
+      },
+      {
+        "bits": 3,
+        "entries": 8,
+        "stages": 6
+      },
+      {
+        "bits": 3,
+        "entries": 8,
+        "stages": 8
+      }
+    ],
+    "fit_ms": 6006.877709005494,
+    "lloyd_steps": 4,
+    "sample_rows_per_tensor": 256
+  },
+  "generated_at": "2026-09-10T15:41:56.552294+00:00",
+  "immutable_base": true,
+  "next_discriminator": "Take any Pareto survivor into output-aware held-out residual allocation and integrated organ capability tests; scale only after those gates pass.",
+  "organ": "layer10_routed_experts_0_to_7",
+  "python": "3.14.6",
+  "ranked_summary": [
+    {
+      "bits_per_code": 4,
+      "complete_ebpw": 0.3196022727272727,
+      "direct_batch_median_ms": 474.94529199320823,
+      "entries_per_codebook": 16,
+      "mean_cosine": 0.4495407755021006,
+      "mean_relative_l2": 0.8941693100307372,
+      "p95_relative_l2": 0.9123471598458441,
+      "stages": 2
+    },
+    {
+      "bits_per_code": 4,
+      "complete_ebpw": 0.5923295454545454,
+      "direct_batch_median_ms": 366.38452048646286,
+      "entries_per_codebook": 16,
+      "mean_cosine": 0.5389927900396287,
+      "mean_relative_l2": 0.8432711413311372,
+      "p95_relative_l2": 0.8625608771204643,
+      "stages": 3
+    },
+    {
+      "bits_per_code": 4,
+      "complete_ebpw": 0.6150568181818182,
+      "direct_batch_median_ms": 283.06131248245947,
+      "entries_per_codebook": 16,
+      "mean_cosine": 0.6083993818610907,
+      "mean_relative_l2": 0.7946741476554032,
+      "p95_relative_l2": 0.8161243651850958,
+      "stages": 4
+    },
+    {
+      "bits_per_code": 3,
+      "complete_ebpw": 0.8423295454545454,
+      "direct_batch_median_ms": 115.86895797518082,
+      "entries_per_codebook": 8,
+      "mean_cosine": 0.6273150080814958,
+      "mean_relative_l2": 0.7795105921753532,
+      "p95_relative_l2": 0.8037845459375936,
+      "stages": 6
+    },
+    {
+      "bits_per_code": 3,
+      "complete_ebpw": 0.8650568181818182,
+      "direct_batch_median_ms": 61.601666995557025,
+      "entries_per_codebook": 8,
+      "mean_cosine": 0.7035485724918544,
+      "mean_relative_l2": 0.7113839575503508,
+      "p95_relative_l2": 0.7344304099643741,
+      "stages": 8
+    },
+    {
+      "bits_per_code": 4,
+      "complete_ebpw": 0.9105113636363636,
+      "direct_batch_median_ms": 234.87618751823902,
+      "entries_per_codebook": 16,
+      "mean_cosine": 0.7100168135948479,
+      "mean_relative_l2": 0.7051916043130617,
+      "p95_relative_l2": 0.7299676164035706,
+      "stages": 6
+    }
+  ],
+  "results": [
+    {
+      "direct_execution": {
+        "decoder": "unpack 4-bit codes directly from persistent bytes; sum codebooks; group matvec",
+        "dense_parent_materialized_by_direct_path": false,
+        "persistent_representation_bytes": 921600,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 8576.372958021238,
+        "soft_budget_ms": 60000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 0.9249572406710884,
+        "mean_cosine": 0.4495407755021006,
+        "mean_relative_l2": 0.8941693100307372,
+        "p95_relative_l2": 0.9123471598458441,
+        "probe_count": 16,
+        "probe_tensor_pairs": 128
+      },
+      "representation": {
+        "codebook_bytes": 131072,
+        "complete_accounting": {
+          "billed_ms": 0.000467,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 851968,
+              "gb": 0.000852,
+              "ms": 0.000467,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.3196022727272727,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.3196022727272727,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.3196022727272727,
+            "stored_bytes": 921600
+          },
+          "executable_bytes": 921600,
+          "executable_gb": 0.000922,
+          "flags": [],
+          "id": "KIMI_shared_multistage_bitpacked_2x4bit_e16_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 720896,
+              "category": "regions",
+              "gb": 0.000721,
+              "ms": 0.000395,
+              "ms_per_gb": 0.547282,
+              "name": "bitpacked_multistage_codes",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 131072,
+              "category": "tables",
+              "gb": 0.000131,
+              "ms": 7.2e-05,
+              "ms_per_gb": 0.547282,
+              "name": "shared_bf16_residual_codebooks",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "bitpacked_direct_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 921600,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 921600,
+          "stored_bpw": 0.3196022727272727,
+          "stored_bytes": 921600,
+          "stored_gb": 0.000922,
+          "stored_ms": 0.000467
+        },
+        "family": "shared_multistage_residual_codebooks",
+        "groups": 64,
+        "packed_index_bytes": 720896
+      },
+      "status": "HELDOUT_BITPACKED_MULTISTAGE_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.5342504775617272,
+        "dense_oracle_batch_samples_ms": [
+          1.5587089583277702,
+          1.509791996795684
+        ],
+        "direct_batch_median_ms": 474.94529199320823,
+        "direct_batch_samples_ms": [
+          475.9382919874042,
+          473.95229199901223
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "heldout_probe_elapsed_ms": 8576.372958021238,
+        "torch_threads": 1
+      },
+      "variant": {
+        "bits_per_code": 4,
+        "entries_per_codebook": 16,
+        "stages": 2,
+        "vector_width": 32
+      }
+    },
+    {
+      "direct_execution": {
+        "decoder": "unpack 4-bit codes directly from persistent bytes; sum codebooks; group matvec",
+        "dense_parent_materialized_by_direct_path": false,
+        "persistent_representation_bytes": 1708032,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 10448.774832999334,
+        "soft_budget_ms": 60000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 0.8801609093768545,
+        "mean_cosine": 0.5389927900396287,
+        "mean_relative_l2": 0.8432711413311372,
+        "p95_relative_l2": 0.8625608771204643,
+        "probe_count": 16,
+        "probe_tensor_pairs": 128
+      },
+      "representation": {
+        "codebook_bytes": 196608,
+        "complete_accounting": {
+          "billed_ms": 0.000897,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1638400,
+              "gb": 0.001638,
+              "ms": 0.000897,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.5923295454545454,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.5923295454545454,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.5923295454545454,
+            "stored_bytes": 1708032
+          },
+          "executable_bytes": 1708032,
+          "executable_gb": 0.001708,
+          "flags": [],
+          "id": "KIMI_shared_multistage_bitpacked_3x4bit_e16_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 1441792,
+              "category": "regions",
+              "gb": 0.001442,
+              "ms": 0.000789,
+              "ms_per_gb": 0.547282,
+              "name": "bitpacked_multistage_codes",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 196608,
+              "category": "tables",
+              "gb": 0.000197,
+              "ms": 0.000108,
+              "ms_per_gb": 0.547282,
+              "name": "shared_bf16_residual_codebooks",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "bitpacked_direct_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1708032,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1708032,
+          "stored_bpw": 0.5923295454545454,
+          "stored_bytes": 1708032,
+          "stored_gb": 0.001708,
+          "stored_ms": 0.000897
+        },
+        "family": "shared_multistage_residual_codebooks",
+        "groups": 64,
+        "packed_index_bytes": 1441792
+      },
+      "status": "HELDOUT_BITPACKED_MULTISTAGE_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.4194994873832911,
+        "dense_oracle_batch_samples_ms": [
+          1.4729159884154797,
+          1.3660829863511026
+        ],
+        "direct_batch_median_ms": 366.38452048646286,
+        "direct_batch_samples_ms": [
+          367.15212499257177,
+          365.61691598035395
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "heldout_probe_elapsed_ms": 10448.774832999334,
+        "torch_threads": 1
+      },
+      "variant": {
+        "bits_per_code": 4,
+        "entries_per_codebook": 16,
+        "stages": 3,
+        "vector_width": 32
+      }
+    },
+    {
+      "direct_execution": {
+        "decoder": "unpack 4-bit codes directly from persistent bytes; sum codebooks; group matvec",
+        "dense_parent_materialized_by_direct_path": false,
+        "persistent_representation_bytes": 1773568,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 11523.410042049363,
+        "soft_budget_ms": 60000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 0.826452746158767,
+        "mean_cosine": 0.6083993818610907,
+        "mean_relative_l2": 0.7946741476554032,
+        "p95_relative_l2": 0.8161243651850958,
+        "probe_count": 16,
+        "probe_tensor_pairs": 128
+      },
+      "representation": {
+        "codebook_bytes": 262144,
+        "complete_accounting": {
+          "billed_ms": 0.000932,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1703936,
+              "gb": 0.001704,
+              "ms": 0.000932,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.6150568181818182,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.6150568181818182,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.6150568181818182,
+            "stored_bytes": 1773568
+          },
+          "executable_bytes": 1773568,
+          "executable_gb": 0.001774,
+          "flags": [],
+          "id": "KIMI_shared_multistage_bitpacked_4x4bit_e16_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 1441792,
+              "category": "regions",
+              "gb": 0.001442,
+              "ms": 0.000789,
+              "ms_per_gb": 0.547282,
+              "name": "bitpacked_multistage_codes",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 262144,
+              "category": "tables",
+              "gb": 0.000262,
+              "ms": 0.000143,
+              "ms_per_gb": 0.547282,
+              "name": "shared_bf16_residual_codebooks",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "bitpacked_direct_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1773568,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1773568,
+          "stored_bpw": 0.6150568181818182,
+          "stored_bytes": 1773568,
+          "stored_gb": 0.001774,
+          "stored_ms": 0.000932
+        },
+        "family": "shared_multistage_residual_codebooks",
+        "groups": 64,
+        "packed_index_bytes": 1441792
+      },
+      "status": "HELDOUT_BITPACKED_MULTISTAGE_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.4137295074760914,
+        "dense_oracle_batch_samples_ms": [
+          1.376125030219555,
+          1.4513339847326279
+        ],
+        "direct_batch_median_ms": 283.06131248245947,
+        "direct_batch_samples_ms": [
+          281.8686249665916,
+          284.25399999832734
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "heldout_probe_elapsed_ms": 11523.410042049363,
+        "torch_threads": 1
+      },
+      "variant": {
+        "bits_per_code": 4,
+        "entries_per_codebook": 16,
+        "stages": 4,
+        "vector_width": 32
+      }
+    },
+    {
+      "direct_execution": {
+        "decoder": "unpack 4-bit codes directly from persistent bytes; sum codebooks; group matvec",
+        "dense_parent_materialized_by_direct_path": false,
+        "persistent_representation_bytes": 2625536,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 12852.414249966387,
+        "soft_budget_ms": 60000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 0.7374842103403499,
+        "mean_cosine": 0.7100168135948479,
+        "mean_relative_l2": 0.7051916043130617,
+        "p95_relative_l2": 0.7299676164035706,
+        "probe_count": 16,
+        "probe_tensor_pairs": 128
+      },
+      "representation": {
+        "codebook_bytes": 393216,
+        "complete_accounting": {
+          "billed_ms": 0.001399,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 2555904,
+              "gb": 0.002556,
+              "ms": 0.001399,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.9105113636363636,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.9105113636363636,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.9105113636363636,
+            "stored_bytes": 2625536
+          },
+          "executable_bytes": 2625536,
+          "executable_gb": 0.002626,
+          "flags": [],
+          "id": "KIMI_shared_multistage_bitpacked_6x4bit_e16_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 2162688,
+              "category": "regions",
+              "gb": 0.002163,
+              "ms": 0.001184,
+              "ms_per_gb": 0.547282,
+              "name": "bitpacked_multistage_codes",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 393216,
+              "category": "tables",
+              "gb": 0.000393,
+              "ms": 0.000215,
+              "ms_per_gb": 0.547282,
+              "name": "shared_bf16_residual_codebooks",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "bitpacked_direct_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 2625536,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 2625536,
+          "stored_bpw": 0.9105113636363636,
+          "stored_bytes": 2625536,
+          "stored_gb": 0.002626,
+          "stored_ms": 0.001399
+        },
+        "family": "shared_multistage_residual_codebooks",
+        "groups": 64,
+        "packed_index_bytes": 2162688
+      },
+      "status": "HELDOUT_BITPACKED_MULTISTAGE_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.2463750026654452,
+        "dense_oracle_batch_samples_ms": [
+          1.1508329771459103,
+          1.3419170281849802
+        ],
+        "direct_batch_median_ms": 234.87618751823902,
+        "direct_batch_samples_ms": [
+          233.50345803191885,
+          236.2489170045592
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "heldout_probe_elapsed_ms": 12852.414249966387,
+        "torch_threads": 1
+      },
+      "variant": {
+        "bits_per_code": 4,
+        "entries_per_codebook": 16,
+        "stages": 6,
+        "vector_width": 32
+      }
+    },
+    {
+      "direct_execution": {
+        "decoder": "unpack 4-bit codes directly from persistent bytes; sum codebooks; group matvec",
+        "dense_parent_materialized_by_direct_path": false,
+        "persistent_representation_bytes": 2428928,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 13217.302458011545,
+        "soft_budget_ms": 60000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 0.8152193887067191,
+        "mean_cosine": 0.6273150080814958,
+        "mean_relative_l2": 0.7795105921753532,
+        "p95_relative_l2": 0.8037845459375936,
+        "probe_count": 16,
+        "probe_tensor_pairs": 128
+      },
+      "representation": {
+        "codebook_bytes": 196608,
+        "complete_accounting": {
+          "billed_ms": 0.001292,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 2359296,
+              "gb": 0.002359,
+              "ms": 0.001292,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.8423295454545454,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.8423295454545454,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.8423295454545454,
+            "stored_bytes": 2428928
+          },
+          "executable_bytes": 2428928,
+          "executable_gb": 0.002429,
+          "flags": [],
+          "id": "KIMI_shared_multistage_bitpacked_6x3bit_e8_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 2162688,
+              "category": "regions",
+              "gb": 0.002163,
+              "ms": 0.001184,
+              "ms_per_gb": 0.547282,
+              "name": "bitpacked_multistage_codes",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 196608,
+              "category": "tables",
+              "gb": 0.000197,
+              "ms": 0.000108,
+              "ms_per_gb": 0.547282,
+              "name": "shared_bf16_residual_codebooks",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "bitpacked_direct_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 2428928,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 2428928,
+          "stored_bpw": 0.8423295454545454,
+          "stored_bytes": 2428928,
+          "stored_gb": 0.002429,
+          "stored_ms": 0.001292
+        },
+        "family": "shared_multistage_residual_codebooks",
+        "groups": 64,
+        "packed_index_bytes": 2162688
+      },
+      "status": "HELDOUT_BITPACKED_MULTISTAGE_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.0074165184050798,
+        "dense_oracle_batch_samples_ms": [
+          1.0296250111423433,
+          0.9852080256678164
+        ],
+        "direct_batch_median_ms": 115.86895797518082,
+        "direct_batch_samples_ms": [
+          116.26404098933563,
+          115.47387496102601
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "heldout_probe_elapsed_ms": 13217.302458011545,
+        "torch_threads": 1
+      },
+      "variant": {
+        "bits_per_code": 3,
+        "entries_per_codebook": 8,
+        "stages": 6,
+        "vector_width": 32
+      }
+    },
+    {
+      "direct_execution": {
+        "decoder": "unpack 4-bit codes directly from persistent bytes; sum codebooks; group matvec",
+        "dense_parent_materialized_by_direct_path": false,
+        "persistent_representation_bytes": 2494464,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 13445.584375003818,
+        "soft_budget_ms": 60000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 0.760881162076275,
+        "mean_cosine": 0.7035485724918544,
+        "mean_relative_l2": 0.7113839575503508,
+        "p95_relative_l2": 0.7344304099643741,
+        "probe_count": 16,
+        "probe_tensor_pairs": 128
+      },
+      "representation": {
+        "codebook_bytes": 262144,
+        "complete_accounting": {
+          "billed_ms": 0.001327,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 2424832,
+              "gb": 0.002425,
+              "ms": 0.001327,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.8650568181818182,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.8650568181818182,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.8650568181818182,
+            "stored_bytes": 2494464
+          },
+          "executable_bytes": 2494464,
+          "executable_gb": 0.002494,
+          "flags": [],
+          "id": "KIMI_shared_multistage_bitpacked_8x3bit_e8_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 2162688,
+              "category": "regions",
+              "gb": 0.002163,
+              "ms": 0.001184,
+              "ms_per_gb": 0.547282,
+              "name": "bitpacked_multistage_codes",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 262144,
+              "category": "tables",
+              "gb": 0.000262,
+              "ms": 0.000143,
+              "ms_per_gb": 0.547282,
+              "name": "shared_bf16_residual_codebooks",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "bitpacked_direct_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 2494464,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 2494464,
+          "stored_bpw": 0.8650568181818182,
+          "stored_bytes": 2494464,
+          "stored_gb": 0.002494,
+          "stored_ms": 0.001327
+        },
+        "family": "shared_multistage_residual_codebooks",
+        "groups": 64,
+        "packed_index_bytes": 2162688
+      },
+      "status": "HELDOUT_BITPACKED_MULTISTAGE_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.940541474847123,
+        "dense_oracle_batch_samples_ms": [
+          0.9446669719181955,
+          0.9364159777760506
+        ],
+        "direct_batch_median_ms": 61.601666995557025,
+        "direct_batch_samples_ms": [
+          61.53820897452533,
+          61.66512501658872
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "heldout_probe_elapsed_ms": 13445.584375003818,
+        "torch_threads": 1
+      },
+      "variant": {
+        "bits_per_code": 3,
+        "entries_per_codebook": 8,
+        "stages": 8,
+        "vector_width": 32
+      }
+    }
+  ],
+  "schema": "hawking.future.kimi_shared_multistage_bitpacked_fanout.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_shared_multistage_bitpacked_fanout.py",
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "HELDOUT_BITPACKED_MULTISTAGE_FANOUT_COMPLETE",
+  "tensor_family": "up_proj.weight",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+  ]
+}

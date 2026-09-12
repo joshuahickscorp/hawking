@@ -1487,7 +1487,7 @@ class CommandHandler:
         self._grok_root = root
         return self._grok
 
-    def _grok_mutation_lock(self):
+    def _grok_mutation_lock(self, unit_id="hcli-grok-delegate"):
         lock = getattr(self.controller, "mutation_lock", None)
         if lock is None:
             mission = getattr(self.controller, "mission", None)
@@ -1510,7 +1510,6 @@ class CommandHandler:
 
         @contextmanager
         def mutation_lock():
-            unit_id = "hcli-grok-delegate"
             if not lock.acquire(unit_id):
                 raise RuntimeError("MUTATION lock held")
             try:
@@ -1526,7 +1525,12 @@ class CommandHandler:
             "  /grok delegate <task-slug> <contract-file-path>\n"
             "  /grok audit <task-slug> <contract-file-path>\n"
             "  /grok consult <prompt text...>\n"
+            "  /grok revise <task-id> <contract-file-path>\n"
+            "  /grok verify <task-id>\n"
+            "  /grok mission <mission-file> [ECONOMY|BALANCED|FAST|ULTRA] [--dry]\n"
+            "  /grok doctor\n"
             "  /grok status <task-id>\n"
+            "  /grok telemetry <task-id>\n"
             "  /grok wait <task-id>\n"
             "  /grok report <task-id>\n"
             "  /grok cleanup <task-id>"
@@ -1542,7 +1546,12 @@ class CommandHandler:
             "delegate",
             "audit",
             "consult",
+            "revise",
+            "verify",
+            "mission",
+            "doctor",
             "status",
+            "telemetry",
             "wait",
             "report",
             "cleanup",
@@ -1553,6 +1562,70 @@ class CommandHandler:
 
         try:
             bridge = self._grok_bridge()
+            if verb == "doctor":
+                if rest:
+                    return usage
+                out = bridge.doctor()
+                self.last_value = out
+                return (
+                    f"grok doctor ok={out.get('ok')} exit={out.get('exit_code')}\n"
+                    f"{out.get('stdout') or out.get('stderr') or '(no output)'}"
+                )
+            if verb == "mission":
+                if not rest:
+                    return "Usage: /grok mission <mission-file> [ECONOMY|BALANCED|FAST|ULTRA] [--dry]"
+                tokens = rest.split()
+                dry = "--dry" in tokens
+                tokens = [token for token in tokens if token != "--dry"]
+                if not tokens or len(tokens) > 2:
+                    return "Usage: /grok mission <mission-file> [ECONOMY|BALANCED|FAST|ULTRA] [--dry]"
+                mission_file = tokens[0]
+                mode = tokens[1] if len(tokens) == 2 else "BALANCED"
+                out = bridge.mission(
+                    mission_file,
+                    mode=mode,
+                    dry_run=dry,
+                    mutation_lock=self._grok_mutation_lock("hcli-grok-mission"),
+                )
+                self.last_value = out
+                output = (out.get("stdout") or out.get("stderr") or "").strip()
+                if len(output) > 12000:
+                    output = output[-12000:]
+                return (
+                    f"grok mission mode={out.get('mode')} ok={out.get('ok')} "
+                    f"exit={out.get('exit_code')} receipt={out.get('receipt_path')}"
+                    + (f"\n{output}" if output else "")
+                )
+            if verb == "revise":
+                if not rest:
+                    return "Usage: /grok revise <task-id> <contract-file-path>"
+                task, _, path = rest.partition(" ")
+                task, path = task.strip(), path.strip()
+                if not task or not path:
+                    return "Usage: /grok revise <task-id> <contract-file-path>"
+                contract = Path(path).expanduser()
+                if not contract.is_file():
+                    rooted = Path(self.controller.workspace_root) / path
+                    if rooted.is_file():
+                        contract = rooted
+                if not contract.is_file():
+                    return f"Contract file not found: {path}"
+                out = bridge.revise(
+                    task,
+                    contract.read_text(encoding="utf-8"),
+                    mutation_lock=self._grok_mutation_lock("hcli-grok-revise"),
+                )
+                self.last_value = out
+                return (
+                    f"grok revise {out.get('task_id', task)} "
+                    f"ok={out.get('ok')} exit={out.get('exit_code')}"
+                )
+            if verb == "verify":
+                if not rest:
+                    return "Usage: /grok verify <task-id>"
+                parsed = bridge.verify(rest)
+                self.last_value = parsed
+                return json.dumps(parsed, indent=2, sort_keys=True, default=str)
             if verb in ("delegate", "audit"):
                 if not rest:
                     return f"Usage: /grok {verb} <task-slug> <contract-file-path>"
@@ -1594,6 +1667,10 @@ class CommandHandler:
                     f"state={parsed.get('state')} "
                     f"exit={parsed.get('exit_code')}"
                 )
+            if verb == "telemetry":
+                parsed = bridge.telemetry(rest)
+                self.last_value = parsed
+                return json.dumps(parsed, indent=2, sort_keys=True, default=str)
             if verb == "wait":
                 parsed = bridge.wait(rest)
                 self.last_value = parsed

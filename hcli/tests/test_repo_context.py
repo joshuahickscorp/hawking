@@ -17,8 +17,9 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from hcli.repo_context import RepoContext, inject
+from hcli.repo_context import RepoContext, inject, prewarm_native_gravity_index
 
 
 def _repo(tmp: Path, git: bool = True) -> Path:
@@ -49,6 +50,33 @@ class TestDetection(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw:
             self.assertIsNone(RepoContext.detect(raw))
 
+    def test_prewarm_starts_native_child_without_a_query(self):
+        root = Path("/tmp/hawking-native-prewarm-fixture")
+        binary = Path("/tmp/hawking-gravityd-fixture")
+        with patch.dict("os.environ", {"HCLI_NATIVE_GRAVITY": "1"}, clear=False), \
+             patch("hcli.repo_context._native_gravity_binary", return_value=binary), \
+             patch("hcli.repo_context._NativeGravityIndex") as spawned, \
+             patch("hcli.repo_context._NATIVE_GRAVITY_INDEXES", {}):
+            self.assertTrue(prewarm_native_gravity_index(root))
+            spawned.assert_called_once_with(root, binary)
+
+    def test_native_binary_cache_drops_stale_paths_and_sees_later_install(self):
+        import hcli.repo_context as repo_context
+
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw).resolve()
+            binary = root / "hawking-gravityd"
+            binary.write_bytes(b"placeholder")
+            binary.chmod(0o755)
+            with patch.dict("os.environ", {"HCLI_GRAVITYD_BIN": str(binary)}, clear=False):
+                repo_context._NATIVE_GRAVITY_BINARY_CACHE.pop((str(root), str(binary)), None)
+                self.assertEqual(repo_context._native_gravity_binary(root), binary)
+                binary.unlink()
+                self.assertNotEqual(repo_context._native_gravity_binary(root), binary)
+                binary.write_bytes(b"reinstalled")
+                binary.chmod(0o755)
+                self.assertEqual(repo_context._native_gravity_binary(root), binary)
+
 
 class TestRetrievalPrecision(unittest.TestCase):
     def setUp(self):
@@ -74,6 +102,24 @@ class TestRetrievalPrecision(unittest.TestCase):
 
     def test_a_question_matching_nothing_returns_nothing(self):
         self.assertEqual(self.ctx.files_for("what is the capital of France"), [])
+
+    def test_goal_only_question_uses_distinctive_content_for_orientation(self):
+        target = self.root / "hcli" / "session_transport.py"
+        target.write_text(
+            "OpenAI-compatible streaming browser chat persists session state "
+            "across refresh and restart.\n"
+        )
+        with patch.object(
+            self.ctx,
+            "_candidate_files",
+            side_effect=AssertionError("content orientation must not walk the tree"),
+        ):
+            picked = self.ctx.paths_for(
+                "Determine whether OpenAI-compatible streaming browser chat "
+                "preserves durable session state across refresh or restart."
+            )
+        self.assertTrue(picked)
+        self.assertEqual(picked[0], "hcli/session_transport.py")
 
 
 class TestInjection(unittest.TestCase):

@@ -44,6 +44,34 @@ def test_retiring_an_unrecorded_specimen_is_refused():
     assert r["retired"] is False and "manifest" in r["why"]
 
 
+def test_retirement_archives_manifest_and_keeps_recipe_reversible(tmp_path, monkeypatch):
+    lake = tmp_path / "lake"
+    tier2 = lake / "specimens"
+    partial = lake / "partial"
+    manifests = lake / "manifests"
+    body = tier2 / "acme--x@deadbeefcafe"
+    body.mkdir(parents=True)
+    partial.mkdir()
+    manifests.mkdir()
+    (body / "weights.bin").write_bytes(b"weights")
+    (manifests / "acme--x@deadbeefcafe.json").write_text(json.dumps({
+        "reacquisition": "hf download acme/x --revision deadbeefcafe --local-dir <dest>"
+    }))
+    monkeypatch.setattr(ml, "LAKE", lake)
+    monkeypatch.setattr(ml, "TIER2", tier2)
+    monkeypatch.setattr(ml, "PARTIAL", partial)
+    monkeypatch.setattr(ml, "MANIFESTS", manifests)
+
+    outcome = ml.retire("acme--x@deadbeefcafe")
+
+    assert outcome["retired"] is True
+    assert not body.exists()
+    assert not (manifests / "acme--x@deadbeefcafe.json").exists()
+    archived = manifests / "retired" / "acme--x@deadbeefcafe.json"
+    assert archived.is_file()
+    assert json.loads(archived.read_text())["reacquisition"].startswith("hf download")
+
+
 def test_cycle_receipt_proves_each_property():
     d = json.load(open(R))
     steps = {s["step"]: s for s in d["cycle"]}

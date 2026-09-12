@@ -1,0 +1,786 @@
+{
+  "schema": "hawking.modellake.scheduling_authority.v2",
+  "authority": {
+    "name": "Hawking ModelLake Odyssey scheduling authority",
+    "status": "ACTIVE",
+    "mode": "CAMPAIGN_PHASE_GATED_ACQUISITION_ONLY",
+    "precedence": "This file is the canonical ModelLake/Odyssey scheduling control state. It controls campaign ordering and scheduled acquisition, but never grants deletion authority.",
+    "generated_on": "2026-09-10",
+    "updated_on": "2026-09-11",
+    "source_policies": [
+      {
+        "path": "/Users/scammermike/.codex/attachments/2361687e-b8b5-4ce4-ac94-315b38ac5efc/pasted-text.txt",
+        "role": "retention allowlist and initial capacity plan"
+      },
+      {
+        "path": "/Users/scammermike/.codex/attachments/43fbc4ea-ba0a-49d9-b95f-cb133d25146c/pasted-text.txt",
+        "role": "current campaign scheduling override",
+        "precedence": "SUPERSEDES_STRICT_SIZE_ORDERING_WHERE_A_PHASE_PRIORITY_OVERRIDE_APPLIES"
+      },
+      {
+        "path": "/Users/scammermike/.codex/attachments/d1c7d4c8-7e1a-4d4c-b26d-4b36b5825cb1/pasted-text.txt",
+        "role": "transferability-first adjacency curriculum and asynchronous V4.1 acquisition directive",
+        "precedence": "SUPERSEDES_FIXED_SIZE_ORDERING_FOR_ODYSSEY_PROCESSING; PRESERVES_RETENTION_AND_DELETION_GUARDS"
+      }
+    ],
+    "evidence": [
+      "receipts/odyssey-i/MODELLAKE_MARCH_PROGRESS.json",
+      "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json",
+      "receipts/odyssey-i/MODELLAKE_CENSUS_2026-09-09.json",
+      "receipts/future/KIMI_PHASE_TRANSITION_20260910.json",
+      "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+      "receipts/future/ODYSSEY_MOE_TRANSFER_CLUSTER_OPEN_20260911.json",
+      "receipts/future/MOE_TRANSFER_CLUSTER_COMPACT_REVIEW_20260911.json",
+      "receipts/odyssey-i/MODELLAKE_TRANSFER_CURRICULUM_OVERRIDE_20260911.json",
+      "workspace/campaign/odyssey/gravity-artifacts.json",
+      "workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION.json",
+      "workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION_WORKUNIT.md",
+      "docs/ACCELERATOR_ANE.md"
+    ]
+  },
+  "layout": {
+    "lake_root": "/Volumes/corpdrive/hawking-modellake",
+    "sealed_specimen_root": "/Volumes/corpdrive/hawking-modellake/specimens",
+    "live_manifest_root": "/Volumes/corpdrive/hawking-modellake/manifests",
+    "retired_manifest_root": "/Volumes/corpdrive/hawking-modellake/manifests/retired",
+    "durable_index_root": "/Volumes/corpdrive/hawking-modellake/index",
+    "lake_log_root": "/Volumes/corpdrive/hawking-modellake/logs",
+    "transient_partial_root": "/Volumes/corpdrive/hawking-modellake/partial",
+    "transient_claim_root": "/Volumes/corpdrive/hawking-modellake/claims",
+    "watch_manifest_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/watch-manifests",
+    "body_publish_rule": "download into partial/, verify exact manifest, atomically rename into specimens/",
+    "manifest_rule": "one live manifest per resident body; retired recipes move under manifests/retired/",
+    "index_rule": "index may write only index/ and must never write into specimens/"
+  },
+  "execution": {
+    "acquisition_armed": true,
+    "deletion_armed": false,
+    "automatic_deletion": false,
+    "operator_authorization_required_for_acquisition": false,
+    "operator_authorization_required_for_deletion": true,
+    "fail_closed_if_this_file_is_missing_or_invalid": true,
+    "ordinary_queue_policy_while_target_waits": "CONTINUE_PHASE_CURRICULUM_WHILE_CAPACITY_BLOCKED",
+    "legacy_queue_admission_requires_active_campaign_phase": true,
+    "watcher_may_not_infer_phase_completion": true,
+    "watcher_may_not_transition_campaign_phase": true,
+    "never_delete_by_glob_or_by_name_pattern": true
+  },
+  "campaign": {
+    "id": "CLUSTER_MOE_TO_FLASH_NEXT_PULSAR_PUSH",
+    "status": "ACTIVE",
+    "objective": "MAXIMUM_SCIENTIFIC_TRANSFER_AND_MAXIMUM_HAWKING_CAPABILITY_GROWTH_PER_UNIT_OF_CLOUD_WORK_WALL_TIME_AND_PHYSICAL_RESOURCE",
+    "strict_size_ordering": "SUPERSEDED_WHERE_AN_EXPLICIT_PHASE_PRIORITY_OVERRIDE_APPLIES",
+    "active_phase": "FLASH_NEXT_PULSAR_PASS",
+    "phase_transition_rule": "An active phase changes only through an explicit update to this control state after the phase's listed evidence requirements are met. The watcher may enforce a phase but may never infer completion, promote a phase, or delete a specimen.",
+    "metrics_for_subsequent_specimens": [
+      "reusable_methods_applied",
+      "bespoke_code_required",
+      "cloud_interventions",
+      "model_loads",
+      "time_to_trustworthy_evidence",
+      "new_laws_or_scars",
+      "cloud_work_per_subsequent_specimen"
+    ],
+    "selection_policy": {
+      "mode": "DYNAMIC_TRANSFER_VALUE_FIRST",
+      "priority_formula": "transferability * expected_novelty * strategic_value / expected_cost",
+      "rolling_mix": {
+        "adjacency_driven_target_fraction": 0.8,
+        "novelty_probe_target_fraction": 0.2,
+        "rule": "Apply over the next practical rolling window, not as a rigid alternation. A novelty probe may move earlier when it cheaply falsifies a high-value law."
+      },
+      "rank_by": [
+        "architecture_and_organ_topology",
+        "active_and_total_parameters",
+        "expert_count_and_experts_per_token",
+        "router_and_shared_expert_structure",
+        "attention_linear_attention_or_recurrent_state",
+        "tensor_shapes_and_spectral_profile",
+        "expert_similarity_and_representation_susceptibility",
+        "state_activation_and_physical_footprint",
+        "expected_information_gain_per_minute"
+      ],
+      "do_not_rank_by": ["marketing_family_name_alone", "allocated_bytes_alone", "parameter_count_alone"],
+      "next_specimen_rule": "At each sealed result, rescore unfinished candidates and select the specimen expected to raise the floor for its successors most. Preserve held-out controls and skip already sealed work unless new evidence materially invalidates it.",
+      "processing_order_is_independent_of_retirement_order": true
+    },
+    "post_flash_curriculum": {
+      "state": "PENDING_DYNAMIC_SELECTION_AFTER_FLASH",
+      "strict_total_order": false,
+      "within_tier_rule": "Choose by the live priority formula after every sealed result; entries are adjacency bands and controls, not an immutable queue.",
+      "tiers": [
+        {
+          "id": "TIER_1_NEAREST_TRANSFER",
+          "share_class": "ADJACENCY",
+          "purpose": "Reuse Flash/Qwen/MoE machinery with minimal architectural mutation.",
+          "candidates": [
+            {"slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b", "role": "same-family MoE plus code-domain mutation; strategic KEEP"},
+            {"slug": "Qwen--Qwen3-14B@40c069824f42", "role": "same-family dense topology control"},
+            {"slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0", "role": "small same-family transfer/control; strategic KEEP"},
+            {"slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f", "role": "128-expert top-8 shared-expert contrast; reuse compact-review evidence first"},
+            {"slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67", "role": "64-expert top-4 conv contrast; compact review already sealed, reopen only on contradiction"}
+          ]
+        },
+        {
+          "id": "TIER_2_ONE_MAJOR_MUTATION",
+          "share_class": "ADJACENCY",
+          "purpose": "Change one dominant axis: recurrent/linear state, routing scale, or modality.",
+          "candidates": [
+            {"slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471", "role": "MoE plus latent/recurrent state; reuse compact-review and O007 evidence first"},
+            {"slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f", "role": "cheap hybrid SSM transfer check"},
+            {"slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8", "role": "hybrid MoE/sequence contrast"},
+            {"slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8", "role": "small multimodal mutation; compare to sealed O006 before any deep rerun"}
+          ]
+        },
+        {
+          "id": "TIER_3_GENERALIZATION_AND_NOVELTY",
+          "share_class": "MIXED_80_20_CONTROL_POOL",
+          "purpose": "Test learned Gravity laws beyond the adjacency corridor and reserve cheap falsifiers.",
+          "candidates": [
+            {"slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994", "role": "pure SSM held control; strategic KEEP"},
+            {"slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178", "role": "matrix-state recurrence novelty probe"},
+            {"slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361", "role": "native ternary representation control; strategic KEEP"},
+            {"slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf", "role": "masked-diffusion falsification control; strategic KEEP"},
+            {"slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a", "role": "second masked-diffusion generalization control"},
+            {"slug": "openai--whisper-large-v3-turbo@41f01f3fe87f", "role": "encoder-decoder and audio held control; strategic KEEP"},
+            {"slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5", "role": "domain-distant numeric falsifier; strategic KEEP"},
+            {"slug": "arcinstitute--evo2_7b@bda0089f9258", "role": "DNA-domain falsifier; strategic KEEP"}
+          ]
+        },
+        {
+          "id": "TIER_4_GIANT_MAGNETAR",
+          "share_class": "HIGH_COST_STRATEGIC",
+          "purpose": "Run giant contenders after transferable machinery is mature; acquisition may happen earlier when capacity permits.",
+          "candidates": [
+            {"slug": "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa", "role": "primary new Magnetar target; acquire ASAP under the independent capacity gate"},
+            {"slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d", "role": "288-expert next-generation Flash contender; strategic KEEP"},
+            {"slug": "moonshotai--Kimi-K3@9f62e4e9fffb", "role": "giant comparison control; conditional hold through V4.1 verdict"},
+            {"slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6", "role": "old-source comparison only; temporary hold until V4.1 verification"}
+          ]
+        }
+      ],
+      "evidence_reuse_only": [
+        "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+        "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+        "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+        "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba"
+      ]
+    },
+    "secondary_lanes": [
+      {
+        "id": "V41_ASAP_ACQUISITION",
+        "state": "ACTIVE_CAPACITY_GATED",
+        "target": "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa",
+        "relationship_to_odyssey": "ASYNCHRONOUS_NONBLOCKING_ACQUISITION_LANE",
+        "trigger": "first safe live capacity crossing in any valid active campaign phase",
+        "does_not_block": "Flash-Next work or transferability-first Odyssey processing while capacity remains insufficient",
+        "deletion_authority": "NONE"
+      },
+      {
+        "id": "ANE_PER_MODEL_CHARACTERIZATION",
+        "state": "ACTIVE_SECONDARY",
+        "owner": "Gravity PhysicalGraph + ANEProvider",
+        "workunit": "workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION_WORKUNIT.md",
+        "registry": "workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION.json",
+        "scope": "Characterize CPU/GPU/ANE/UMA placement per model and organ; preserve exact model scope.",
+        "current_boundary": "Public device observation and static plan evidence only; no Flash ANE execution or latency is claimed.",
+        "selection_rule": "Measured complete useful work after capability, source-parity, transfer, synchronization, and fallback gates.",
+        "does_not_block": "Flash static Deep Gravity, KIMI bounded worker use, or Rust Gravity repatriation.",
+        "next_action": "architecture.inspect now emits a model-scoped ANE/MegaKernel work card for each recognized specimen. Obtain a lawful public authoring/compile path, then run the smallest exact-organ plan and matched controls."
+      },
+      {
+        "id": "MEGA_KERNEL_LOWERING",
+        "state": "ACTIVE_CROSS_BACKEND_SPINE",
+        "owner": "Gravity PhysicalGraph with native Rust/Metal lowerings",
+        "scope": "Lower repeated model-aware stages through one provider-neutral execution spine with backend-native implementations.",
+        "schema": "hcli.physical_graph.mega_kernel.v1",
+        "stages": ["LOAD", "DECODE", "ROUTE", "PROJECT", "ACCUMULATE", "STATE_UPDATE", "SAMPLE"],
+        "qualification": "Plan-only until source parity and protected complete useful work are measured.",
+        "next_action": "Reuse existing kernels and add only measured stage lowerings; never promote a monolithic-kernel claim from a graph plan."
+      },
+      {
+        "id": "GRAVITY_RUST_REPATRIATION",
+        "state": "ACTIVE",
+        "owner": "hawking-core native Rust services",
+        "scope": "Continue measured ns-first migration of high-frequency Gravity control-plane owners while preserving one hawkingd sovereign process tree.",
+        "latest_receipt": "receipts/future/GRAVITY_RUST_REPO_CONTENT_REFRESH_NS_20260911.json"
+      }
+    ],
+    "phases": [
+      {
+        "id": "KIMI_CLOSEOUT",
+        "state": "COMPLETE_BOUNDED",
+        "legacy_queue_admission": "PAUSED",
+        "purpose": "Complete the active KIMI/HCLI closeout without restarting completed specimens or disturbing sealed evidence.",
+        "preserve": [
+          "KIMI_P0_OPERATIONAL as the working local Resident/control",
+          "density and frontier artifacts as separate evidence",
+          "Kimi Laws, Scars, representation methods, direct-execution methods, physical measurements, tool/HCLI lessons, and negative science"
+        ],
+        "evidence": [
+          "receipts/future/KIMI_PHASE_TRANSITION_20260910.json",
+          "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+          "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+          "workspace/campaign/odyssey/gravity-artifacts.json"
+        ],
+        "completed_on": "2026-09-11",
+        "completion_boundary": "P0 is frozen and admitted for bounded conversation/read/research/tool assistance; autonomous writing remains explicitly WITHHELD and is not an Odyssey phase blocker.",
+        "exit_requirements": [
+          "the active KIMI/HCLI closeout obligations have sealed evidence or an explicit bounded unresolved-state record",
+          "KIMI_P0_OPERATIONAL remains preserved as a developmental Resident/control",
+          "no completed Kimi specimen or sealed receipt is restarted, discarded, or rewritten"
+        ],
+        "next_phase": "MOE_TRANSFER_CLUSTER"
+      },
+      {
+        "id": "MOE_TRANSFER_CLUSTER",
+        "state": "COMPLETE_COMPACT_REVIEW",
+        "legacy_queue_admission": "PAUSED",
+        "purpose": "Run a compact, materially distinct MoE/sparse transfer cluster to canonize only methods that transfer under defined applicability conditions.",
+        "active_work": {
+          "specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+          "reason": "Smallest materially distinct planned MoE anchor; resident and statically screenable without another model load.",
+          "cheap_discriminator": "Layer-2 anatomy, matched-rate curve, and direct PQ reference completed: cross-expert sharing DEAD; static raw one-stage PQ and pure BF16 low-rank are dominated at their tested budgets; two-stage PQ remains only a repair candidate.",
+        "next_action": "Compact review sealed in receipts/future/MOE_TRANSFER_CLUSTER_COMPACT_REVIEW_20260911.json. Preserve remaining controls as prospective evidence; do not extend static siblings before Flash-Next unless its results materially challenge the transfer law.",
+          "receipt": "receipts/future/ODYSSEY_MOE_TRANSFER_CLUSTER_OPEN_20260911.json"
+        },
+        "work_policy": {
+          "default": "TRANSFER_EXPERIMENT_NOT_PRODUCTION_DEEP_GRAVITY",
+          "do_not_count_near_identical_siblings_as_independent_architectural_evidence": true,
+          "canonicalize_only_after": "cross_specimen_transfer_with_defined_applicability_conditions",
+          "transfer_spine": [
+            "anatomy_and_accounting",
+            "expert_and_routing_analysis",
+            "shared_structures",
+            "low_rank_and_basis_methods",
+            "PQ_vector_and_additive_residuals",
+            "protected_salient_residuals",
+            "recoverability",
+            "direct_routed_execution",
+            "capability_evaluation",
+            "physical_layout_kernel_lessons",
+            "EBPW_and_TPS_measurement"
+          ]
+        },
+        "specimens": [
+          {
+            "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+            "role": "compact_simple_moe_transfer_anchor",
+            "architecture_evidence": "Lfm2MoeForCausalLM; 64 experts, top-4 routing",
+            "independence_group": "lfm2_moe"
+          },
+          {
+            "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+            "role": "large_glm_moe_transfer_contrast",
+            "architecture_evidence": "Glm4MoeForCausalLM; 128 routed experts, top-8 routing, 1 shared expert",
+            "independence_group": "glm4_moe"
+          },
+          {
+            "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+            "role": "linear_sequence_moe_transfer_contrast",
+            "architecture_evidence": "KimiLinearForCausalLM; 256 experts, top-8 routing",
+            "independence_group": "kimi_linear_moe"
+          },
+          {
+            "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+            "role": "small_high_expert_count_transfer_contrast",
+            "architecture_evidence": "256 routed experts, top-6 routing, 2 shared experts",
+            "independence_group": "inkling_moe"
+          },
+          {
+            "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+            "role": "flash_moe_transfer_contrast",
+            "architecture_evidence": "GLM5 Next text; 288 routed experts, top-8 routing",
+            "independence_group": "glm5_next_moe"
+          },
+          {
+            "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+            "role": "code_capability_transfer_control",
+            "architecture_evidence": "Qwen3MoeForCausalLM; 128 experts, top-8 routing",
+            "independence_group": "qwen3_moe",
+            "independence_constraint": "Treat as a capability-domain control, not independent architecture evidence; compare against the sealed O005 Qwen3-30B evidence without restarting O005."
+          }
+        ],
+        "evidence_reuse_only": [
+          {
+            "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+            "receipt": "receipts/odyssey-i/O005_PATIENT_SEAL.json",
+            "reason": "O005 is sealed; reuse its MoE evidence and negative science without restarting the specimen because Gravity improved."
+          },
+          {
+            "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+            "receipt": "receipts/odyssey-i/O006_DOCTOR_SEAL.json",
+            "reason": "O006 is sealed; reuse multimodal MoE transfer evidence without restarting the specimen because Gravity improved."
+          }
+        ],
+        "advance_when_any": [
+          "all planned materially distinct cluster transfer experiments have sealed their applicability and negative-result evidence",
+          "a sealed evidence review establishes that further intermediate cluster models have lower expected information value than Flash-Next"
+        ],
+        "next_phase": "FLASH_NEXT_PULSAR_PASS"
+      },
+      {
+        "id": "FLASH_NEXT_PULSAR_PASS",
+        "state": "ACTIVE",
+        "legacy_queue_admission": "PAUSED",
+        "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "source_policy": "PRISTINE_RESIDENT_SOURCE_REMAINS_AUTHORITY",
+        "role": "PRIMARY_PULSAR_RESIDENT_STAR_CANDIDATE",
+        "purpose": "Run a full Star/Deep-Gravity pass rather than an ordinary Odyssey specimen pass.",
+        "required_work": [
+          "capability",
+          "complete_EBPW",
+          "direct_execution",
+          "representation_composition",
+          "recoverability",
+          "Deep_Gravity",
+          "Nova_if_justified",
+          "CPU_GPU_physical_optimization",
+          "ANE_per_model_characterization",
+          "MegaKernel_provider_neutral_lowering",
+          "TPS",
+          "context_and_prefill",
+          "HCLI_tool_performance",
+          "daemon_behavior",
+          "real_blind_engineering_WorkUnits"
+        ],
+        "stop_rule": "Continue while measured improvements and informative hypotheses remain; do not impose prior Kimi thresholds artificially.",
+        "questions": [
+          "HOW_SMALL_CAN_GRAVITY_MAKE_A_HIGH_CAPABILITY_PULSAR",
+          "HOW_FAST_CAN_PHYSICAL_GRAVITY_MAKE_IT_RUN"
+        ],
+        "next_phase": "FLASH_NEXT_WITH_CODEX_ODYSSEY"
+      },
+      {
+        "id": "FLASH_NEXT_WITH_CODEX_ODYSSEY",
+        "state": "PENDING",
+        "legacy_queue_admission": "PAUSED",
+        "entry_condition": "Flash-Next has earned useful operational qualification through sealed evidence; KIMI_P0 remains preserved.",
+        "division_of_labor": {
+          "local_pulsar": [
+            "repetitive_science",
+            "anatomy",
+            "receipts",
+            "experiment_execution",
+            "repository_work",
+            "hypothesis_generation",
+            "routine_analysis"
+          ],
+          "codex_frontier_cloud": "genuinely_unresolved_architecture_science_and_engineering_questions",
+          "tools_and_mechanical_verifiers": "authority"
+        },
+        "measurement": "Measure whether cloud work per subsequent specimen decreases.",
+        "next_phase": "ROLLING_RETIREMENT"
+      },
+      {
+        "id": "ROLLING_RETIREMENT",
+        "state": "PENDING",
+        "legacy_queue_admission": "PAUSED",
+        "purpose": "Recover ModelLake capacity while Odyssey advances, subject to the unchanged explicit retention and deletion safety law.",
+        "no_automatic_deletion": true,
+        "next_phase": "MAIN_ODYSSEY_POPULATION"
+      },
+      {
+        "id": "MAIN_ODYSSEY_POPULATION",
+        "state": "PENDING",
+        "legacy_queue_admission": "ALLOW",
+        "purpose": "Finish the broader ModelLake campaign using the dynamic transferability-first adjacency curriculum.",
+        "policy": [
+          "do_not_rerun_old_specimens_merely_because_Gravity_improved",
+          "apply_new_Laws_prospectively_unless_an_old_conclusion_is_materially_invalidated",
+          "track_the_campaign_metrics_for_every_subsequent_specimen"
+        ],
+        "next_phase": "STAR_SERIES"
+      },
+      {
+        "id": "STAR_SERIES",
+        "state": "PENDING",
+        "legacy_queue_admission": "PAUSED",
+        "purpose": "Run the deeper post-Odyssey Star-series campaign; role admission follows evidence, not source-model identity.",
+        "roles": {
+          "PULSAR": {
+            "leading_candidate": "Qwen--Qwen3.8-Flash-Next@34567a4712bc descendant",
+            "objective": "maximum_verified_HCLI_work_per_wall"
+          },
+          "MAGNETAR": {
+            "candidates": [
+              "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa",
+              "moonshotai--Kimi-K3@9f62e4e9fffb",
+              "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+            ],
+            "objective": "maximum_useful_deep_cognition_within_acceptable_local_physical_cost"
+          },
+          "THEMIS": {
+            "selection": "independent_mechanical_semantic_multimodal_and_meta_evaluation_bodies_from_Odyssey_evidence",
+            "objective": "decide_what_Hawking_should_believe"
+          }
+        },
+        "deeper_gravity_scope": [
+          "representation_native_training",
+          "Nova",
+          "expert_restructuring",
+          "shared_and_generated_representations",
+          "topology_modification",
+          "recoverability_guided_reduction",
+          "description_length_gauge_descent",
+          "direct_hardware_specific_execution",
+          "context_and_state_optimization",
+          "ANE_experimentation",
+          "custom_kernels",
+          "machine_wide_physical_scheduling",
+          "later_external_accelerator_work"
+        ]
+      }
+    ]
+  },
+  "explicit_operator_actions": [
+    {
+      "action": "REMOVE_EXACT_SPECIMEN",
+      "status": "COMPLETED",
+      "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+      "expected_allocated_bytes": 360024432640,
+      "freed_allocated_bytes": 360024432640,
+      "completed_on": "2026-09-10",
+      "replacement": {
+        "repo": "Qwen/Qwen3.8-Flash-Next",
+        "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "manifest": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+        "verified_present": true,
+        "action": "REUSE_EXISTING_OFFICIAL_RELEASE"
+      },
+      "reason": "The community abliterated copy caused probe problems; retain the official Qwen release instead."
+    }
+  ],
+  "capacity": {
+    "tier2_budget_bytes": 3500000000000,
+    "physical_free_floor_bytes": 100000000000,
+    "watcher_known_temporary_bytes": 20000000000,
+    "scratch_reserve_fraction": 0.05,
+    "uncertainty_reserve_fraction": 0.02,
+    "live_snapshot": {
+      "tier2_used_bytes": 4352674967552,
+      "free_hdd_bytes": 451817222144,
+      "resident_specimen_count": 55,
+      "observed_on": "2026-09-11"
+    },
+    "target_gate": {
+      "required": [
+        "tier2_used_bytes + active_reserved_bytes + target_remaining_bytes <= tier2_budget_bytes",
+        "projected_free_bytes_after_target_and_reserves >= physical_free_floor_bytes",
+        "the target is not already complete at its exact revision",
+        "the target manifest resolves to the pinned revision and expected selected bytes",
+        "no active experiment references a retirement candidate"
+      ],
+      "minimum_free_before_start_bytes": 666035288314,
+      "trigger_policy": {
+        "basis": "LIVE_CAPACITY_THRESHOLD",
+        "priority": "START_ON_FIRST_SAFE_CAPACITY_CROSSING",
+        "not_based_on": [
+          "fixed_deleted_model_count",
+          "completion_of_all_legacy_retirements"
+        ],
+        "minimum_additional_clearance_from_current_snapshot_bytes": 1362988321117,
+        "minimum_additional_physical_free_bytes": 214218066170,
+        "active_transfer_rule": "finish_active_transfers_then_admit_this_target_before_new_legacy_queue_items",
+        "note": "The target becomes eligible as soon as the live hard budget and physical-free gates pass. The watcher must not wait for a fixed number of deletions or for every default retirement candidate to be removed."
+      },
+      "pre_target_clearance_note": "If all 17 current KEEP/HOLD specimens remain, at least 155753650525 additional allocated bytes must be cleared beyond the remaining default retirement candidates before the 510313353565-byte target can satisfy the 3.5 TB tier-2 budget. This is a gate, not an instruction to delete a held model."
+    }
+  },
+  "acquisition": {
+    "schedule_order": "V41_ASYNCHRONOUS_CAPACITY_GATED_TARGET_FIRST; LEGACY_QUEUE_FOLLOWS_ACTIVE_PHASE_AND_TRANSFER_CURRICULUM",
+    "target": {
+      "action": "ACQUIRE_AND_KEEP",
+      "status": "SCHEDULED",
+      "priority": "P0-MAGNETAR",
+      "admission_policy": "ANY_VALID_ACTIVE_PHASE_ON_CAPACITY_GATE",
+      "campaign_relation": "ASYNCHRONOUS_NONBLOCKING_ACQUISITION_LANE",
+      "repo": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+      "resolved_sha": "dba1be0a40aa45a94ad051997016db3960a90277",
+      "slug": "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa",
+      "mode": "all",
+      "expected_selected_bytes": 510313353565,
+      "expected_file_count": 88,
+      "destination_partial": "/Volumes/corpdrive/hawking-modellake/partial/deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa",
+      "destination_final": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa",
+      "download_when": "any valid campaign phase is active and all live target_gate conditions are true; do not wait for a later Odyssey phase or a fixed deletion count",
+      "post_download": [
+        "promote atomically from partial/ to specimens/",
+        "seal exact revision, file inventory, hashes, and provenance",
+        "admit the exact source to the Star-series Magnetar tournament",
+        "run the Odyssey and Gravity Magnetar comparison harness against K3",
+        "keep the sealed V4.1 specimen regardless of the K3 verdict",
+        "do not change K3 retention without the separate comparison and explicit deletion authorization"
+      ]
+    },
+    "runtime_gate": {
+      "download_and_seal_before_runtime_adapter": true,
+      "resident_execution_allowed_only_after": [
+        "runtime adapter or explicit compatibility attestation exists",
+        "runtime smoke test passes",
+        "one complete exact-revision direct-execution check is sealed"
+      ],
+      "current_status": "REQUIRES_ADAPTER_OR_EXPLICIT_RUNTIME_ATTESTATION"
+    }
+  },
+  "retention": {
+    "rolling_safety_lead": 2,
+    "delete_authority": "EXPLICIT_DIRECTIVE_REQUIRED",
+    "delete_only_if": [
+      "specimen_odyssey_receipt_sealed",
+      "specimen_integrity_and_provenance_receipts_sealed",
+      "two_subsequent_odyssey_specimens_sealed",
+      "specimen_not_on_keep_allowlist",
+      "specimen_not_referenced_by_active_experiment",
+      "specimen_not_required_as_current_star_candidate",
+      "exact_slug_and_manifest_resolved_before_delete",
+      "no active writer or download process references the specimen",
+      "a deletion receipt is written before and after the operation"
+    ],
+    "keep_allowlist": {
+      "permanent_or_strategic": [
+        "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+        "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+        "thinkingmachines--Inkling-Small@8cc5877b44d3",
+        "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+        "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+        "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+        "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+        "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+        "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+        "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+        "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+        "openai--whisper-large-v3-turbo@41f01f3fe87f",
+        "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+        "arcinstitute--evo2_7b@bda0089f9258"
+      ],
+      "conditional_hold": [
+        {
+          "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+          "state": "HOLD_UNTIL_V41_MAGNETAR_VERDICT",
+          "reason": "Do not delete before complete Hawking/Gravity comparison against V4.1."
+        }
+      ],
+      "temporary_hold": [
+        {
+          "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+          "state": "HOLD_UNTIL_V41_VERIFIED",
+          "reason": "Retain through V4.1 acquisition, exact integrity verification, and the two-specimen safety window; retirement still requires an explicit directive."
+        }
+      ],
+      "new_target": "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa"
+    },
+    "default_retire_after_odyssey": [
+      {
+        "order": 1,
+        "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+        "allocated_bytes": 897986560
+      },
+      {
+        "order": 2,
+        "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+        "allocated_bytes": 1341374464
+      },
+      {
+        "order": 3,
+        "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+        "allocated_bytes": 1519280128
+      },
+      {
+        "order": 4,
+        "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+        "allocated_bytes": 1585766400
+      },
+      {
+        "order": 5,
+        "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+        "allocated_bytes": 2989576192
+      },
+      {
+        "order": 6,
+        "slug": "google--flan-t5-large@0613663d0d48",
+        "allocated_bytes": 3135967232
+      },
+      {
+        "order": 7,
+        "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+        "allocated_bytes": 3349053440
+      },
+      {
+        "order": 8,
+        "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+        "allocated_bytes": 4138921984
+      },
+      {
+        "order": 9,
+        "slug": "boltz-community--boltz-2@6fdef46d763f",
+        "allocated_bytes": 4348735488
+      },
+      {
+        "order": 10,
+        "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+        "allocated_bytes": 4834910208
+      },
+      {
+        "order": 11,
+        "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+        "allocated_bytes": 5412429824
+      },
+      {
+        "order": 12,
+        "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+        "allocated_bytes": 6392733696
+      },
+      {
+        "order": 13,
+        "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+        "allocated_bytes": 6402789376
+      },
+      {
+        "order": 14,
+        "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+        "allocated_bytes": 7694200832
+      },
+      {
+        "order": 15,
+        "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+        "allocated_bytes": 8992264192
+      },
+      {
+        "order": 16,
+        "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+        "allocated_bytes": 12878954496
+      },
+      {
+        "order": 17,
+        "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+        "allocated_bytes": 13888450560
+      },
+      {
+        "order": 18,
+        "slug": "facebook--musicgen-large@15ccdc920998",
+        "allocated_bytes": 13957939200
+      },
+      {
+        "order": 19,
+        "slug": "lerobot--pi0_base@25c379b52ba2",
+        "allocated_bytes": 14005678080
+      },
+      {
+        "order": 20,
+        "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+        "allocated_bytes": 14171410432
+      },
+      {
+        "order": 21,
+        "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+        "allocated_bytes": 14351339520
+      },
+      {
+        "order": 22,
+        "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+        "allocated_bytes": 14605987840
+      },
+      {
+        "order": 23,
+        "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+        "allocated_bytes": 15182319616
+      },
+      {
+        "order": 24,
+        "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+        "allocated_bytes": 15760744448
+      },
+      {
+        "order": 25,
+        "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+        "allocated_bytes": 16513032192
+      },
+      {
+        "order": 26,
+        "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+        "allocated_bytes": 17546022912
+      },
+      {
+        "order": 27,
+        "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+        "allocated_bytes": 17962008576
+      },
+      {
+        "order": 28,
+        "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+        "allocated_bytes": 26543038464
+      },
+      {
+        "order": 29,
+        "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+        "allocated_bytes": 29328015360
+      },
+      {
+        "order": 30,
+        "slug": "Qwen--Qwen3-14B@40c069824f42",
+        "allocated_bytes": 29552730112
+      },
+      {
+        "order": 31,
+        "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+        "allocated_bytes": 47693139968
+      },
+      {
+        "order": 32,
+        "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+        "allocated_bytes": 61084360704
+      },
+      {
+        "order": 33,
+        "slug": "arcinstitute--evo2_40b@d529aa57c307",
+        "allocated_bytes": 82253537280
+      },
+      {
+        "order": 34,
+        "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+        "allocated_bytes": 96077959168
+      },
+      {
+        "order": 35,
+        "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+        "allocated_bytes": 98253824000
+      },
+      {
+        "order": 36,
+        "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+        "allocated_bytes": 126201843712
+      },
+      {
+        "order": 37,
+        "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+        "allocated_bytes": 145424363520
+      },
+      {
+        "order": 38,
+        "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+        "allocated_bytes": 220961980416
+      },
+      {
+        "order": 39,
+        "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+        "allocated_bytes": 360024432640,
+        "status": "COMPLETED_DELETE"
+      }
+    ],
+    "default_retire_total_allocated_bytes": 1567259103232,
+    "default_retire_remaining_allocated_bytes": 1207234670592,
+    "retirement_order": "ascending_allocated_bytes",
+    "retirement_is_eligibility_only": true
+  },
+  "transition_rules": {
+    "old_v4_to_retire": "only after V4.1 exact integrity and acquisition verification, the old V4 Flash obligations and replacement conditions are satisfied, Odyssey completion, and the two-specimen safety lead; explicit directive still required",
+    "k3_to_retire": "only after complete V4.1 Magnetar comparison and an explicit directive",
+    "phase_transition": "only after the active phase's evidence requirements are sealed or a bounded unresolved-state record is explicit; the watcher must not infer or perform the transition",
+    "no_keep_entry_means": "eligible for retirement after all delete_only_if guards pass; not an automatic delete command",
+    "receipts_are_preserved": true
+  }
+}

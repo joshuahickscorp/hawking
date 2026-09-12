@@ -28,6 +28,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .latency import event_elapsed_ns
+
 PASS = "PASS"
 FAIL = "FAIL"
 UNKNOWN = "UNKNOWN"
@@ -258,22 +260,32 @@ def evaluate(
             if isinstance(call, dict):
                 calls.append(call)
 
-    # Tool latency. These are local function calls; milliseconds or it is broken.
-    tool_ms = sorted(
-        float((r.get("data") or {}).get("elapsed_s") or 0.0) * 1000.0
+    # Tool latency is authoritative in monotonic integer nanoseconds. Old
+    # elapsed_s events are read by event_elapsed_ns for historical receipts;
+    # new Engine events never write them.
+    tool_ns = sorted(
+        elapsed
         for r in events
         if r.get("type") == "tool_call_finished"
+        for elapsed in [event_elapsed_ns(r.get("data") or {})]
+        if elapsed is not None
     )
-    if not tool_ms:
+    if not tool_ns:
         record("tools_fast", UNKNOWN, "no tool calls yet")
     else:
-        p95 = tool_ms[min(len(tool_ms) - 1, int(len(tool_ms) * 0.95))]
-        measured["tool_p95_ms"] = round(p95, 3)
-        budget = budgets["tool_p95_ms"]
+        p95_ns = tool_ns[min(len(tool_ns) - 1, int(len(tool_ns) * 0.95))]
+        measured["tool_p95_ns"] = p95_ns
+        # Compatibility view for callers that still display the v1 verdict.
+        measured["tool_p95_ms"] = round(p95_ns / 1_000_000.0, 3)
+        if "tool_p95_ns" in budgets:
+            budget_ns = max(0, int(budgets["tool_p95_ns"]))
+        else:
+            budget_ns = max(0, int(round(float(budgets["tool_p95_ms"]) * 1_000_000.0)))
         record(
             "tools_fast",
-            PASS if p95 <= budget else FAIL,
-            f"p95 {p95:.1f} ms over {len(tool_ms)} calls (budget {budget} ms)",
+            PASS if p95_ns <= budget_ns else FAIL,
+            f"p95 {p95_ns} ns ({p95_ns / 1_000_000.0:.3f} ms) over "
+            f"{len(tool_ns)} calls (budget {budget_ns} ns)",
         )
 
     # Round trips per goal. A round is a model call; the tools it drives are
@@ -297,12 +309,21 @@ def evaluate(
         )
 
     # Effective prefill rate: prompt tokens the caller asked for, per second of
-    # wall. KV reuse raises this WITHOUT the kernel getting faster, which is the
-    # point -- this is the number a caller experiences.
+    # wall. New model-call receipts store wall_ns; the old wall_s field is read
+    # only for historical receipts. KV reuse raises this WITHOUT the kernel
+    # getting faster, which is the point -- this is the number a caller
+    # experiences.
     rated = [
-        (float(c.get("prompt_tokens") or 0), float(c.get("wall_s") or 0.0))
+        (
+            float(c.get("prompt_tokens") or 0),
+            (
+                float(c["wall_ns"]) / 1_000_000_000.0
+                if c.get("wall_ns") is not None
+                else float(c.get("wall_s") or 0.0)
+            ),
+        )
         for c in calls
-        if c.get("prompt_tokens") and c.get("wall_s")
+        if c.get("prompt_tokens") and (c.get("wall_ns") or c.get("wall_s"))
     ]
     if not rated:
         record("prefill_fast", UNKNOWN, "no timed model calls yet")

@@ -31,8 +31,9 @@
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
 use strand_quant::gate_utils::{is_quantizable_linear, rht_seed_for};
-use strand_quant::rht::{rht_forward_cols, rht_forward_rows, rht_inverse_cols, rht_inverse_rows,
-    RhtConfig};
+use strand_quant::rht::{
+    rht_forward_cols, rht_forward_rows, rht_inverse_cols, rht_inverse_rows, RhtConfig,
+};
 use strand_quant::safetensor_io::SafeTensors;
 use strand_quant::TrellisConfig;
 
@@ -122,8 +123,16 @@ fn score_variant(
         }
     }
     Score {
-        rel_rms: if pw > 0.0 { (se / pw).sqrt() * 100.0 } else { 0.0 },
-        aw_err: if awp > 0.0 { (awe / awp).sqrt() * 100.0 } else { 0.0 },
+        rel_rms: if pw > 0.0 {
+            (se / pw).sqrt() * 100.0
+        } else {
+            0.0
+        },
+        aw_err: if awp > 0.0 {
+            (awe / awp).sqrt() * 100.0
+        } else {
+            0.0
+        },
     }
 }
 
@@ -134,7 +143,10 @@ fn main() {
     } else {
         TrellisConfig::for_bpw(bits as f64)
     };
-    let opts = EncodeOpts { adaptive: true, ..EncodeOpts::default() };
+    let opts = EncodeOpts {
+        adaptive: true,
+        ..EncodeOpts::default()
+    };
     let st = SafeTensors::open(&input).expect("open safetensors");
 
     // Pick one representative tensor per projection class from layer 0 (cheap, structural).
@@ -229,8 +241,11 @@ fn main() {
     } else {
         0.0
     };
-    println!("\n  mean AW-err: default {:.4}%  best-of-bank {:.4}%  -> {rel_gain:+.3}% proxy gain",
-        agg_def_aw / n, agg_best_aw / n);
+    println!(
+        "\n  mean AW-err: default {:.4}%  best-of-bank {:.4}%  -> {rel_gain:+.3}% proxy gain",
+        agg_def_aw / n,
+        agg_best_aw / n
+    );
     if any_gain && rel_gain > 0.5 {
         println!(
             "  verdict: seed/basis search shows >0.5% activation-weighted proxy gain — worth a\n\

@@ -3,8 +3,7 @@
 WHY A SEPARATE MODULE. `discover_models` already walks roots and identifies
 native profiles, MLX directories and GGUF files -- that part is not rebuilt here.
 What was missing is the bit a dropdown needs: a STABLE, SHORT, UNIQUE name per
-body, and a single list that spans the sealed profiles in the repo and the
-specimens on the ModelLake volume.
+body, and a single list of explicitly admitted Gravity execution artifacts.
 
 NAMES ARE IDENTITY, SO THEY MUST NOT COLLIDE OR DRIFT. A ModelLake specimen
 directory is `Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0`; nobody wants to read
@@ -27,6 +26,19 @@ from typing import Any, Dict, List, Optional
 
 MODELLAKE = Path("/Volumes/corpdrive/hawking-modellake/specimens")
 REPO = Path(__file__).resolve().parent
+PROJECT_ROOT = REPO.parent
+# Installed HCLI snapshots live under ~/.local/share and therefore cannot
+# derive the checkout's workspace registry from __file__.  The shim supplies
+# this explicit source path; editable checkouts keep the local default.
+_registry_env = os.environ.get("HCLI_GRAVITY_REGISTRY")
+GRAVITY_REGISTRY = Path(_registry_env).expanduser() if _registry_env else (
+    PROJECT_ROOT / "workspace/campaign/odyssey/gravity-artifacts.json"
+)
+GRAVITY_STATUSES = frozenset({
+    "ADMITTED",
+    "OPERATIONAL_DEVELOPMENTAL",
+    "FROZEN_OPERATIONAL_DEVELOPMENTAL",
+})
 
 
 @dataclass
@@ -57,6 +69,8 @@ class Body:
         }
         if self.revision:
             row["hawking"]["revision"] = self.revision
+        if self.detail:
+            row["hawking"]["artifact"] = dict(self.detail)
         return row
 
 
@@ -97,7 +111,10 @@ def _native_profiles(root: Path) -> List[Body]:
     return out
 
 
-def _modellake(root: Path = MODELLAKE) -> List[Body]:
+def _modellake(root: Optional[Path] = None) -> List[Body]:
+    # Resolve the default at call time so tests and mounted-volume changes can
+    # replace the research root without having to rewrite a bound default.
+    root = MODELLAKE if root is None else root
     if not root.is_dir():
         return []
     out: List[Body] = []
@@ -125,6 +142,61 @@ def _modellake(root: Path = MODELLAKE) -> List[Body]:
     return out
 
 
+def _gravity_artifacts(path: Path = GRAVITY_REGISTRY) -> List[Body]:
+    """Read the small admitted-artifact registry used by normal execution.
+
+    The ModelLake is deliberately not the default execution menu.  This
+    registry is the one place where a model becomes a user-facing Gravity
+    body, with its lineage and qualification receipts kept beside the stable
+    selector identity.  Missing or non-executable entries are omitted rather
+    than surfaced as choices that will fail only after a click.
+    """
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return []
+    entries = document.get("artifacts") if isinstance(document, dict) else None
+    if not isinstance(entries, list):
+        return []
+    out: List[Body] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        name = str(entry.get("id") or "").strip()
+        raw_path = str(entry.get("path") or "").strip()
+        status = str(entry.get("status") or "").strip()
+        if not name or not raw_path or status not in GRAVITY_STATUSES:
+            continue
+        resolved = Path(os.path.realpath(os.path.expanduser(raw_path)))
+        if not resolved.exists():
+            continue
+        kind = str(entry.get("kind") or "mlx")
+        try:
+            if kind == "mlx":
+                from .backends import is_mlx_model_dir, model_bytes_at
+                if not is_mlx_model_dir(str(resolved)):
+                    continue
+                size = int(model_bytes_at(str(resolved)) or 0)
+            elif kind == "noetic_native":
+                from .hawking_native import is_hawking_native_path
+                if not is_hawking_native_path(str(resolved)):
+                    continue
+                size = _dir_bytes(resolved)
+            else:
+                continue
+        except Exception:
+            continue
+        detail = {
+            key: value for key, value in entry.items()
+            if key not in {"id", "path", "kind", "status", "bytes"}
+        }
+        detail.update({"status": status, "registry": str(path)})
+        out.append(Body(name=name, path=str(resolved), kind=kind,
+                        bytes=int(entry.get("bytes") or size),
+                        source="gravity", detail=detail))
+    return out
+
+
 def _deduplicate(bodies: List[Body]) -> List[Body]:
     """Two bodies may want the same label. Neither may silently win.
 
@@ -143,11 +215,17 @@ def _deduplicate(bodies: List[Body]) -> List[Body]:
     return out
 
 
-def catalog(extra_roots: Optional[List[str]] = None) -> List[Body]:
-    """Every selectable body, repo profiles first."""
+def catalog(extra_roots: Optional[List[str]] = None, *, research: bool = False) -> List[Body]:
+    """Normal execution bodies, or the explicit research catalog.
+
+    Normal callers see only explicitly admitted Gravity artifacts.
+    ``research=True`` is the deliberate advanced door that adds ModelLake
+    specimens; it is never used by the OpenAI model picker or normal switching.
+    """
     bodies: List[Body] = []
-    bodies.extend(_native_profiles(REPO))
-    bodies.extend(_modellake())
+    bodies.extend(_gravity_artifacts())
+    if research:
+        bodies.extend(_modellake())
     for root in extra_roots or []:
         path = Path(os.path.expanduser(root))
         if not path.exists():
@@ -160,13 +238,13 @@ def catalog(extra_roots: Optional[List[str]] = None) -> List[Body]:
     return _deduplicate(bodies)
 
 
-def resolve(name: str, bodies: Optional[List[Body]] = None) -> Optional[Body]:
+def resolve(name: str, bodies: Optional[List[Body]] = None, *, research: bool = False) -> Optional[Body]:
     """Find a body by name, then by path, then by unique case-insensitive prefix.
 
     Prefix matching is a convenience that REFUSES when ambiguous rather than
     picking one, so `hcli use qwen3` says which ones it could have meant.
     """
-    bodies = bodies if bodies is not None else catalog()
+    bodies = bodies if bodies is not None else catalog(research=research)
     text = str(name or "").strip()
     if not text:
         return None

@@ -27,6 +27,8 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from .latency import now_ns, since_ns
+
 
 PROTOCOL_SCHEMA = "hawking.native.resident.v1"
 QWEN38_PROTOCOL_SCHEMA = "hawking.qwen38.resident.v1"
@@ -1328,7 +1330,7 @@ class HawkingNativeConnector:
         max_new_tokens: int,
         max_seq_len: int,
         timeout: float,
-    ) -> Tuple[Dict[str, Any], float]:
+    ) -> Tuple[Dict[str, Any], int]:
         self.config.validate()
         output_fd, output_name = tempfile.mkstemp(prefix="hcli-hawking-", suffix=".json")
         os.close(output_fd)
@@ -1352,7 +1354,7 @@ class HawkingNativeConnector:
             "--out",
             str(output_path),
         ]
-        started = time.perf_counter()
+        started_ns = now_ns()
         try:
             try:
                 completed = subprocess.run(
@@ -1384,7 +1386,7 @@ class HawkingNativeConnector:
                 ) from exc
             if not isinstance(body, dict):
                 raise HawkingNativeProtocolError("native --out artifact is not an object")
-            return body, time.perf_counter() - started
+            return body, since_ns(started_ns)
         finally:
             try:
                 output_path.unlink()
@@ -1400,7 +1402,7 @@ class HawkingNativeConnector:
         config: HawkingNativeConfig,
         prompt: _RenderedPrompt,
         max_new_tokens: int,
-        wall_s: float,
+        wall_ns: int,
         mode: str,
         clamped: bool,
         payload_max_tokens: Optional[int] = None,
@@ -1431,23 +1433,27 @@ class HawkingNativeConnector:
             prompt_tokens = prompt.prompt_tokens
         native_wall_ns = body.get("wall_ns")
         try:
-            native_wall_s = float(native_wall_ns) / 1_000_000_000.0 if native_wall_ns is not None else None
+            native_wall_ns = (
+                max(0, int(native_wall_ns)) if native_wall_ns is not None else None
+            )
         except (TypeError, ValueError):
-            native_wall_s = None
+            native_wall_ns = None
         decode_wall_ns = body.get("decode_wall_ns")
         try:
-            decode_wall_s = float(decode_wall_ns) / 1_000_000_000.0 if decode_wall_ns else None
+            decode_wall_ns = max(0, int(decode_wall_ns)) if decode_wall_ns else None
         except (TypeError, ValueError):
-            decode_wall_s = None
+            decode_wall_ns = None
         decode_steps = body.get("decode_steps")
         try:
             decode_steps = int(decode_steps) if decode_steps is not None else 0
         except (TypeError, ValueError):
             decode_steps = 0
         decode_tps = None
-        if decode_steps > 0 and decode_wall_s and decode_wall_s > 0:
-            decode_tps = decode_steps / decode_wall_s
-        complete_tps = generated_count / wall_s if wall_s > 0 else None
+        if decode_steps > 0 and decode_wall_ns and decode_wall_ns > 0:
+            decode_tps = decode_steps * 1_000_000_000 / decode_wall_ns
+        complete_tps = (
+            generated_count * 1_000_000_000 / wall_ns if wall_ns > 0 else None
+        )
         runtime_identity = config.identity()
         declared_metrics = body.get("metrics")
         if isinstance(declared_metrics, dict):
@@ -1504,8 +1510,15 @@ class HawkingNativeConnector:
             "new_token_ids": list(generated),
             "complete_tps": complete_tps,
             "decode_tps": decode_tps,
-            "wall_ms": wall_s * 1000.0,
-            "generation_wall_s": native_wall_s,
+            "timing_unit": "ns",
+            "wall_ns": max(0, int(wall_ns)),
+            "wall_ms": max(0, int(wall_ns)) / 1_000_000.0,
+            "generation_wall_ns": native_wall_ns,
+            "generation_wall_s": (
+                native_wall_ns / 1_000_000_000.0
+                if native_wall_ns is not None
+                else None
+            ),
             "fallbacks": fallbacks,
             "dense_w_materialized": body.get("dense_w_materialized"),
             "generation_clamped": clamped,
@@ -1609,7 +1622,7 @@ class HawkingNativeConnector:
         retry_count = 0
         if mode == "one_shot":
             with self._one_shot_lock:
-                body, wall_s = self._run_one_shot(
+                body, wall_ns = self._run_one_shot(
                     prompt,
                     max_new_tokens=max_new_tokens,
                     max_seq_len=max_seq_len,
@@ -1620,7 +1633,7 @@ class HawkingNativeConnector:
                 config=self.config,
                 prompt=prompt,
                 max_new_tokens=max_new_tokens,
-                wall_s=wall_s,
+                wall_ns=wall_ns,
                 mode=mode,
                 clamped=clamped,
                 payload_max_tokens=getattr(self, "_last_payload_max_tokens", None),
@@ -1665,7 +1678,7 @@ class HawkingNativeConnector:
             grammar=request.get("grammar"),
             mode=mode,
         )
-        started = time.perf_counter()
+        started_ns = now_ns()
         try:
             body = self.resident.request(request, limit)
         except (HawkingNativeTimeout, HawkingNativeProtocolError, BrokenPipeError, OSError):
@@ -1680,7 +1693,7 @@ class HawkingNativeConnector:
                 },
                 limit,
             )
-        wall_s = time.perf_counter() - started
+        wall_ns = since_ns(started_ns)
         if body.get("status") == "error":
             raise HawkingNativeError(str(body.get("error") or "resident request failed"))
         _boundary_trace(
@@ -1707,7 +1720,7 @@ class HawkingNativeConnector:
             config=self.config,
             prompt=prompt,
             max_new_tokens=max_new_tokens,
-            wall_s=wall_s,
+            wall_ns=wall_ns,
             mode=mode,
             clamped=clamped,
             payload_max_tokens=getattr(self, "_last_payload_max_tokens", None),

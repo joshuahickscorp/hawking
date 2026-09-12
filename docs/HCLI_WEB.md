@@ -1,9 +1,10 @@
 # Hawking in a browser
 
-`hcli web` puts any Hawking body behind
+`hcli web` puts the admitted Hawking resident behind
 [Open WebUI](https://github.com/open-webui/open-webui), and the dropdown in that
-browser page switches which one answers -- over the same connection, with no
-reconnect and no restart.
+browser page talks to that one resident. The daemon owns the provider and
+Open WebUI child; `hcli web` exits after opening the client surface, so a shell
+launcher does not remain as another Python process.
 
 ## Cheat sheet
 
@@ -11,12 +12,11 @@ No flags needed for any of it. Works from any directory.
 
 ```bash
 hcli web                    # browser chat, opens the tab
-hcli web Qwen3-14B          # ... starting on a particular body
-hcli use                    # every body, * marks the one answering
-hcli use Qwen3-14B          # switch; open browser sessions follow
+hcli use                    # admitted Gravity bodies only
+hcli use KIMI_P0_OPERATIONAL # switch an admitted body when supported
 hcli serve                  # endpoint only, no browser
 hcli report                 # measure the loaded body, writes a receipt
-hcli report Qwen3-14B       # switch to it, then measure
+hcli report KIMI_P0_OPERATIONAL # measure the admitted body
 hcli stop                   # put down what web/serve started
 hcli --help                 # the verbs, grouped
 hcli                        # interactive session in the terminal
@@ -59,11 +59,11 @@ Two OpenAI surfaces already existed and neither can drive a chat:
 
 ## Switching bodies
 
-`/v1/models` lists every body the catalog can find -- the native profiles in the
-repo plus every ModelLake specimen -- so Open WebUI's dropdown *is* the model
-picker. Selecting one sends `model` on the next request and the surface swaps to
-it. Measured: `sealed-3.14` to `Qwen3-0.6B` in 1.4 s, and back again inside a
-single chat request.
+`/v1/models` lists only bodies admitted by the Gravity artifact registry, so
+Open WebUI cannot accidentally offer raw ModelLake specimens, archived
+Ascension/Qwen3.8 artifacts, or an unqualified checkpoint. Research access is
+separate and explicit; the normal dropdown is an execution surface, not the
+scientific population.
 
 Three rules the switch keeps:
 

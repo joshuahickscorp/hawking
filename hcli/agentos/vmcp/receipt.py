@@ -12,7 +12,6 @@ import os
 import time
 from typing import Any, Mapping, Sequence
 
-
 RECEIPT_SCHEMA = "hawking.vmcp.tool_receipt.v1"
 
 NETWORK_BASENAMES = frozenset(
@@ -131,6 +130,8 @@ def tool_receipt(
     invocation: Sequence[str] | Mapping[str, Any],
     status: str,
     started_at: str | None = None,
+    elapsed_ns: int | None = None,
+    # Compatibility input for older adapters. New producers must pass ns.
     elapsed_ms: float | None = None,
     version: str | None = None,
     input_ids: Sequence[str] | None = None,
@@ -142,6 +143,10 @@ def tool_receipt(
     canary: Mapping[str, Any] | None = None,
     extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if elapsed_ns is None and elapsed_ms is not None:
+        elapsed_ns = max(0, int(round(float(elapsed_ms) * 1_000_000.0)))
+    if elapsed_ns is not None:
+        elapsed_ns = max(0, int(elapsed_ns))
     rec: dict[str, Any] = {
         "schema": RECEIPT_SCHEMA,
         "tool": tool,
@@ -152,7 +157,8 @@ def tool_receipt(
         "output_ids": list(output_ids or []),
         "output_hashes": list(output_hashes or []),
         "started_at": started_at or utc_now(),
-        "elapsed_ms": None if elapsed_ms is None else float(elapsed_ms),
+        "timing_unit": "ns",
+        "elapsed_ns": elapsed_ns,
         "status": status,
         "limitations": list(limitations or []),
         "verifier": verifier,

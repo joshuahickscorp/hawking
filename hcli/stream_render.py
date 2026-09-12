@@ -30,6 +30,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
+from .latency import event_elapsed_ns, format_duration_ns
+
 # --- duplicated (not imported) from hcli.tui, kept byte-for-byte in sync ---
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
 _REASONING_RE = re.compile(r"reasoning_content\s*[:=].*?(?=\n\n|$)", re.DOTALL)
@@ -123,8 +125,14 @@ def _short_args(data: Dict[str, Any], limit: int = 60) -> str:
 
 def _tool_outcome(data: Dict[str, Any]) -> str:
     outcome = "ok" if bool(data.get("ok")) else "failed"
-    elapsed = data.get("elapsed_s")
-    extra = f"  {elapsed:.1f}s" if isinstance(elapsed, (int, float)) else ""
+    elapsed = event_elapsed_ns(data)
+    if "elapsed_ns" in data and elapsed is not None:
+        extra = f"  {format_duration_ns(elapsed)}"
+    else:
+        # Preserve the exact historical rendering for old event logs. This is
+        # a compatibility display path, not a new seconds measurement.
+        legacy = data.get("elapsed_s")
+        extra = f"  {legacy:.1f}s" if isinstance(legacy, (int, float)) else ""
     return f"{outcome}{extra}"
 
 

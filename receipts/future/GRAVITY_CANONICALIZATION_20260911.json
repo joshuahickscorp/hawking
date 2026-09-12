@@ -1,0 +1,381 @@
+{
+  "schema": "hawking.gravity.canonicalization.v1",
+  "status": "CANONICAL_OWNER_MAP_VALIDATED__PUBLISH_WITHHELD_MIXED_WORKTREE",
+  "canonical_owner_registry": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+  "canonical_owner_query": "tools/foundry/query_gravity_methods.py --owners --json",
+  "conceptual_surface": [
+    "discover_identify",
+    "methods_representations",
+    "account_verify",
+    "execute_physical",
+    "learn_odyssey"
+  ],
+  "enforced_rule": "New model-specific code is an adapter only unless it demonstrates a unique architectural seam; methods, controls, accounting, physical execution, and transfer evidence extend the registered owners.",
+  "validation": {
+    "focused_tests": "7 passed: tools/foundry/tests/test_query_gravity_methods.py plus tools/odyssey/test_flash_route_union_control.py",
+    "diff_check": "passed",
+    "owner_paths": "all registered canonical owner paths exist"
+  },
+  "language_census": {
+    "method": "wc -l over tracked workspace source paths; excludes target, virtualenvs, bytecode caches, and vendor from the primary total",
+    "production_rust_loc_crates": 447076,
+    "production_python_loc_hcli_tools_excluding_tests": 361436,
+    "hcli_tools_python_loc_including_tests": 463374,
+    "rust_loc_excluding_vendor": 449693,
+    "python_loc_excluding_caches": 569051,
+    "rust_percent_of_rust_python_excluding_vendor": 44.14,
+    "python_percent_of_rust_python_excluding_vendor": 55.86,
+    "vendor_rust_loc_reported_separately": 39189
+  },
+  "publication_reconciliation": {
+    "branch": "main",
+    "remote": "origin/main",
+    "ahead_commits": 335,
+    "modified_tracked_paths": 204,
+    "untracked_paths": 421,
+    "status": "WITHHELD",
+    "reason": "The worktree contains broad mixed source, historical receipts, generated campaign state, and unrelated local artifacts. A bulk stage/commit/push would violate the requested exclusion of transient and unrelated material.",
+    "reopen_condition": "Create a reviewed publish set that explicitly classifies generated/campaign artifacts and has no unowned paths; then stage, commit, push, and verify the selected remote HEAD."
+  },
+  "active_flash_frontier": {
+    "attempted_output": "receipts/headless/FLASH_ROUTE_UNION_TOKEN_MAJOR_DEVICE_ONLY_CONTROL.json",
+    "status": "CLEAN_BOUNDED_RESIDENT_REPLAY_EARNED",
+    "diagnosis": "The prior route trace is segmented rather than a true token-major 0-to-47 chain: each post-attention linear segment starts from embeddings, so it cannot be used as a complete-chain teacher. A staged dense true-chain control established the valid two-token teacher (271 then 248045). The compact token-major body now matches that teacher across all 48 layers and seven token slots: 36 linear and 12 full-attention device-only banks remain alive; every inter-layer activation handoff is device-buffer based; all routes, state hashes, and both continuation terminals pass; no source reset/re-prefill occurs. Compact construction is 245,855,989,167 ns versus 2,098,365,358,834 ns staged-dense wall, while compact source loading is 5,866,532,000 ns versus 126,963,511,042 ns dense source loading. A separate no-snapshot replay then measured 1.4075 bounded replay TPS (710,493,146 ns/token mean) over three repeats; 600 dispatches/token and 690,784,807 ns/token GPU time make the cost physical rather than source or host diagnostics. The exact vectorized compact-MoE path passed the full control and produced 1.4879 bounded replay TPS (672,076,791 ns/token, one repeat), a 5.7% improvement. The control-side layer census puts 88% of seven-token GPU time in the 36 linear-attention layers. A layer-46 physical trace then isolated DeltaNet recurrence at 10,985,000 ns; a parallel value-column implementation reduced that primitive to 114,000 ns and halved layer host time while single-layer parity passed. Its reduction association changes full recurrent state hashes, however. Under an explicit non-bitwise candidate contract, the complete 48-layer body retained all device-only banks, matched all seven routed steps and both source-terminal continuations without reset/re-prefill, and reached 3.4168 bounded replay TPS (292,674,812 ns/token mean) over three repeats: 2.43x the exact baseline. That candidate cannot replace the exact resident until a separately earned tolerance/capability contract admits the changed state arithmetic.",
+    "claim_boundary": "The compact body and clean replay are bounded to the recorded teacher sequence. The replay is not capability-qualified sustained decode TPS, future-route coverage, complete EBPW, or resident-promotion evidence."
+  },
+  "latest_flash_measurement": {
+    "baseline_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY.json",
+    "baseline_bounded_replay_tps": 1.4074731130481588,
+    "baseline_mean_token_wall_ns": 710493146,
+    "baseline_mean_token_gpu_ns": 690784807,
+    "baseline_dispatches_per_token": 600,
+    "vectorized_moe_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_MOE_VEC4.json",
+    "vectorized_moe_bounded_replay_tps": 1.4879252094274447,
+    "vectorized_moe_mean_token_wall_ns": 672076791,
+    "vectorized_moe_mean_token_gpu_ns": 655695352,
+    "delta_vi_candidate_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_VI_CANDIDATE_VEC4.json",
+    "delta_vi_candidate_bounded_replay_tps": 3.4167613986542853,
+    "delta_vi_candidate_mean_token_wall_ns": 292674812,
+    "delta_vi_candidate_mean_token_gpu_ns": 276891024,
+    "delta_vi_candidate_dispatches_per_token": 600,
+    "delta_vi_candidate_reference_contract": "two consecutive source-terminal tokens and all recorded routes accepted; exact per-layer state hashes intentionally withheld",
+    "delta_vi_layer46_recurrence_gpu_ns": {
+      "baseline": 10985000,
+      "candidate": 114000,
+      "speedup": 96.35964912280701
+    },
+    "delta_vi_simd_layer46_receipt": "receipts/headless/FLASH_LINEAR_L46_VI_SIMD_DISPATCH_TRACE.json",
+    "delta_vi_simd_layer46_recurrence_gpu_ns": 34000,
+    "delta_vi_simd_layer46_contract": "single-layer source tolerance, route, and deterministic repeated-output checks pass; it has not earned a complete-body state/route/token contract",
+    "post_delta_layer46_gpu_census_ns": {
+      "attention_hyperconnection_input": 1644000,
+      "mlp_hyperconnection_input": 1622000,
+      "hyperconnection_combine": 730000,
+      "qkv_z_projection": 418000,
+      "ba_projection": 395000,
+      "router_shared_projection": 371000,
+      "compact_expert_down": 302000,
+      "compact_expert_gate_up": 131000,
+      "deltanet_recurrence": 34000
+    },
+    "hc_split_layer46_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_DISPATCH_TRACE.json",
+    "hc_split_layer46_contract": "source parity and deterministic repeated-output checks pass at the isolated layer; it is a physical scheduling candidate, not an exact repeated-state admission",
+    "hc_split_layer46_input_gpu_ns": {
+      "fused_pre_delta": 3266000,
+      "split_projection_dominant_terms": 3226000,
+      "interpretation": "the split form increases dispatches and does not improve the isolated physical critical path despite improving row parallelism"
+    },
+    "hc_split_composed_candidate_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_HC_SPLIT_VI_CANDIDATE_VEC4.json",
+    "hc_split_composed_candidate_bounded_replay_tps": 3.4252018480868385,
+    "hc_split_composed_candidate_mean_token_wall_ns": 291953597,
+    "hc_split_composed_candidate_dispatches_per_token": 960,
+    "hc_split_composed_candidate_interpretation": "Routes and both terminals passed under the same state-hash-withheld candidate contract, but 3.4252 TPS versus 3.4168 TPS is within noise while dispatches grew from 600 to 960. Retain it as a negative physical scheduling result rather than promoting it.",
+    "full_attention_all_fused_receipt": "receipts/headless/FLASH_FULL_ATTENTION_L3_ALL_FUSED_TRACE.json",
+    "full_attention_all_fused_contract": "source-parity passed for QKV/GQA, fused attention gate, fused HC/router/top-k, and compact routed accumulation at layer 3",
+    "full_fused_candidate_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_FULL_FUSED_VI_CANDIDATE.json",
+    "full_fused_candidate_bounded_replay_tps": 3.490721994303093,
+    "full_fused_candidate_mean_token_wall_ns": 286473687,
+    "full_fused_candidate_dispatches_per_token": 480,
+    "full_fused_bf16_vec4_candidate_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_FULL_FUSED_BF16_VEC4_VI_CANDIDATE.json",
+    "full_fused_bf16_vec4_candidate_bounded_replay_tps": 3.747980583376701,
+    "full_fused_bf16_vec4_candidate_mean_token_wall_ns": 266810347,
+    "full_fused_bf16_vec4_candidate_mean_token_gpu_ns": 250711635,
+    "full_fused_bf16_vec4_candidate_dispatches_per_token": 480,
+    "full_fused_bf16_vec4_candidate_interpretation": "All 48 device-only banks retained, no reset/re-prefill, all recorded routes and both consecutive source-terminal checks passed under the existing state-hash-withheld candidate contract. This is the current best physical candidate, not qualified TPS or a resident promotion.",
+    "async_linear_submit_scheduler_probe_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_ASYNC_LINEAR_SUBMIT_BF16_VEC4_VI_CANDIDATE.json",
+    "async_linear_submit_scheduler_probe": {
+      "contract": "The same linear graph, buffers, recurrence, and 480 kernel dispatches/token submit without a CPU wait. Metal queue order carries device dependencies; each following full-attention command buffer drains its preceding linear region.",
+      "bounded_replay_tps": 3.911968227870334,
+      "mean_token_wall_ns": 255625798,
+      "baseline_bounded_replay_tps": 3.747980583376701,
+      "baseline_mean_token_wall_ns": 266810347,
+      "wall_speedup": 1.043753600331059,
+      "route_and_terminal_contract": "all recorded routes and both source-terminal continuation checks accepted; no source reset/re-prefill; per-layer state hash remains withheld by the pre-existing recurrence-reduction candidate contract",
+      "interpretation": "Positive but small scheduler gain. Per-linear-bank host waits are not the missing order-of-magnitude owner. Preserve the queue-ordered submit primitive; shift the physical attack to command-buffer and kernel-dispatch topology."
+    },
+    "linear_region_submission_probe_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_LINEAR_REGION_BF16_VEC4_VI_CANDIDATE.json",
+    "linear_region_submission_probe": {
+      "contract": "Three contiguous linear organs per region encode into one ordered command buffer, followed by the normal full-attention drain. This halves clean token command buffers from 48 to 24 while retaining all 480 kernel dispatches.",
+      "bounded_replay_tps": 3.8893802991250825,
+      "mean_token_wall_ns": 257110368,
+      "mean_command_buffers_per_token": 24,
+      "mean_dispatches_per_token": 480,
+      "queue_ordered_baseline_tps": 3.911968227870334,
+      "queue_ordered_baseline_wall_ns": 255625798,
+      "wall_speedup_vs_queue_ordered": 0.9942259426893278,
+      "route_and_terminal_contract": "all recorded routes and both source-terminal continuation checks accepted; no source reset/re-prefill; per-layer state hash remains withheld by the pre-existing recurrence-reduction candidate contract",
+      "interpretation": "Negative at body scope. Halving command-buffer count without reducing actual kernels did not improve wall time. Do not expand region submission as a standalone optimization; retain the generic region-encoding contract only as an enabler for measured cross-organ fusion."
+    },
+    "cooperative_gateup_geo_probe": {
+      "baseline_receipt": "receipts/headless/FLASH_LINEAR_L46_GATEUP_VEC4_VI_TIMING.json",
+      "candidate_receipt": "receipts/headless/FLASH_LINEAR_L46_GATEUP_GEO_VI_TIMING.json",
+      "canonical_owner": "crates/hawking-core/shaders/qwen_next.metal:qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32",
+      "activation": "HAWKING_FLASH_MOE_GATEUP_GEO=1",
+      "contract": "Eight layer-46 repetitions passed source-stage tolerance, exact route identity, deterministic repeated output, and final-state parity. The candidate is opt-in because it changes the accumulation association even though the measured source contract passes.",
+      "baseline_mean_gpu_ns": 5818103.5,
+      "candidate_mean_gpu_ns": 5608421.125,
+      "baseline_mean_host_ns": 7510328.125,
+      "candidate_mean_host_ns": 7311796.75,
+      "gpu_speedup": 1.037387059624557,
+      "host_speedup": 1.0271522009962872,
+      "dispatch_delta": 0,
+      "interpretation": "The cooperative SIMD reduction is an earned reusable local primitive, not an order-of-magnitude owner: it improves the representative full layer by 3.74% GPU and 2.72% host while removing no graph dispatches. Retain behind its explicit toggle; do not represent it as a whole-token or qualified-TPS result."
+    },
+    "vi_simd_gateup_geo_composed_probe": {
+      "receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_VI_SIMD_GATEUP_GEO_CANDIDATE.json",
+      "configuration": "HAWKING_FLASH_DELTANET_VI_SIMD=1, HAWKING_FLASH_MOE_GATEUP_GEO=1, source-BF16 vec4, fused HC/router/top-k, queue-ordered linear submit",
+      "contract": "All 48 compact device-only banks remained alive; all recorded routes and both independently checked source-terminal continuations passed; no reset/re-prefill occurred. Exact state hashes remain withheld because SIMD DeltaNet changes reduction association.",
+      "repetitions": 1,
+      "bounded_replay_tps": 3.8849136445272703,
+      "mean_token_wall_ns": 257405979,
+      "mean_dispatches_per_token": 504,
+      "queue_ordered_control_tps": 3.911968227870334,
+      "queue_ordered_control_mean_token_wall_ns": 255625798,
+      "interpretation": "The composed candidate is terminal/route-accepted but does not improve the current physical record in this one-replay probe. Its 504 dispatches/token versus the 480-dispatch control prevents treating the result as evidence for a new record or for the SIMD recurrence alone. Preserve the precise configuration and isolate any future recurrence comparison against a matched gate/up setting before reinvesting in full-body composition."
+    },
+    "hc_split_geo_composed_candidate": {
+      "layer_control": {
+        "vec4_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_VEC4_VI_TIMING.json",
+        "geo_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_VI_TRACE.json",
+        "contract": "Six source-parity layer-46 repetitions; warm samples exclude the first two construction-adjacent observations.",
+        "vec4_warm_mean_gpu_ns": 3566353.75,
+        "geo_warm_mean_gpu_ns": 2201562.25,
+        "gpu_speedup": 1.619919559394698,
+        "vec4_warm_mean_host_ns": 4004854,
+        "geo_warm_mean_host_ns": 2699551.75,
+        "host_speedup": 1.4835255519735824,
+        "dispatches": 22,
+        "source_parity": "PASS"
+      },
+      "body_receipt": "receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_HC_SPLIT_GEO_VI_CANDIDATE.json",
+      "configuration": "HAWKING_FLASH_HC_SPLIT=1, HAWKING_FLASH_BF16_GEO=1, HAWKING_FLASH_MOE_VEC4=1, HAWKING_FLASH_DELTANET_VI_EXACT=1, HAWKING_FLASH_ROUTER_TOPK_FUSED=1, HAWKING_FLASH_ASYNC_LINEAR_SUBMIT=1",
+      "contract": "All 48 compact device-only banks remained alive, every recorded route and both independently checked source-terminal continuations passed, and no reset/re-prefill occurred. Per-layer state hashes remain withheld because the geometry reduction changes accumulation association.",
+      "bounded_replay_tps": 5.9497432682804865,
+      "mean_token_wall_ns": 168074479,
+      "mean_dispatches_per_token": 912,
+      "queue_ordered_control_tps": 3.911968227870334,
+      "queue_ordered_control_mean_token_wall_ns": 255625798,
+      "body_wall_speedup": 1.521457301294173,
+      "exact_clean_baseline_tps": 1.4074731130481588,
+      "exact_clean_baseline_wall_ns": 710493146,
+      "speedup_vs_exact_clean_baseline": 4.227247564717026,
+      "interpretation": "The multi-threadgroup tiled projection is the current strongest reusable physical result: despite increasing dispatches, its direct geometry improvement dominates and establishes 5.9497 bounded candidate TPS. This is not qualified decode TPS or a resident promotion. The newly visible limiting term is dispatch/intermediate topology around the tiled projections; the next optimization must retain this parallel projection geometry while fusing only measured adjacent stages or reducing representation traffic."
+    },
+    "hc_split_geo_fused_up_silu_negative_control": {
+      "baseline_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_VI_TRACE.json",
+      "candidate_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_FUSED_UP_SILU_VI_TRACE.json",
+      "canonical_owner": "crates/hawking-core/shaders/matmul.metal:gemv_native_bf16_geo_vec4_tg128_silu_scale",
+      "activation": "HAWKING_FLASH_HC_SPLIT=1, HAWKING_FLASH_HC_FUSE_UP_SILU=1, HAWKING_FLASH_BF16_GEO=1",
+      "contract": "Six layer-46 repetitions passed strict source-stage tolerance, exact route identity, deterministic repeated output, and a 20-encoder dispatch ledger. Warm samples exclude the first two construction-adjacent observations.",
+      "baseline_warm_mean_gpu_ns": 2201562.25,
+      "candidate_warm_mean_gpu_ns": 2627812,
+      "baseline_warm_mean_host_ns": 2699551.75,
+      "candidate_warm_mean_host_ns": 3057822.75,
+      "gpu_speedup": 0.8377929052763288,
+      "host_speedup": 0.8828346083827129,
+      "encoder_delta": -2,
+      "interpretation": "Negative control. Folding the elementwise SiLU into the tiled up-projection removes two encoders per layer but disrupts the projection geometry enough to lose 19.4% GPU time. Do not compose this candidate into the 48-layer body. Preserve the standalone SiLU boundary while searching for traffic or geometry reductions that retain the tiled projections."
+    },
+    "hc_split_geo_compact_moe_geo_negative_control": {
+      "baseline_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_VI_TRACE.json",
+      "candidate_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_MOE_GEO_VI_TRACE.json",
+      "canonical_owner": "crates/hawking-core/shaders/qwen_next.metal:qwen_next_bf16_compact_expert_down_shared_direct_hc_geo_tg128",
+      "activation": "HAWKING_FLASH_HC_SPLIT=1, HAWKING_FLASH_BF16_GEO=1, HAWKING_FLASH_MOE_GEO=1, HAWKING_FLASH_DELTANET_VI_EXACT=1, HAWKING_FLASH_ROUTER_TOPK_FUSED=1",
+      "contract": "Six layer-46 repetitions passed source-stage tolerance, exact route identity, and deterministic repeated output; warm samples exclude the first two construction-adjacent observations.",
+      "baseline_warm_mean_gpu_ns": 2201562.25,
+      "candidate_warm_mean_gpu_ns": 2714061.75,
+      "baseline_warm_mean_host_ns": 2699551.75,
+      "candidate_warm_mean_host_ns": 3279500,
+      "gpu_speedup": 0.8111688136793498,
+      "host_speedup": 0.8231595517609391,
+      "dispatch_delta": 0,
+      "interpretation": "Negative control. The alternate geometry preserves the graph and source contract but loses 18.9% GPU time at the representative layer. Keep the direct compact-MoE vec4 down path for the HC-split body; do not spend a complete-body replay on this configuration."
+    },
+    "hc_split_geo_dual_projection_negative_control": {
+      "baseline_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_VI_TRACE.json",
+      "candidate_receipt": "receipts/headless/FLASH_LINEAR_L46_HC_SPLIT_GEO_DUAL_VI_TRACE.json",
+      "canonical_owner": "crates/hawking-core/shaders/matmul.metal:gemv_native_bf16_dual_geo_vec4_tg128",
+      "activation": "HAWKING_FLASH_HC_SPLIT=1, HAWKING_FLASH_BF16_GEO=1, HAWKING_FLASH_BF16_GEO_DUAL=1, HAWKING_FLASH_MOE_VEC4=1, HAWKING_FLASH_DELTANET_VI_EXACT=1, HAWKING_FLASH_ROUTER_TOPK_FUSED=1",
+      "contract": "Six layer-46 repetitions passed source-stage tolerance, exact route identity, and deterministic repeated output; warm samples exclude the first two construction-adjacent observations.",
+      "baseline_warm_mean_gpu_ns": 2201562.25,
+      "candidate_warm_mean_gpu_ns": 3035041.25,
+      "baseline_warm_mean_host_ns": 2699551.75,
+      "candidate_warm_mean_host_ns": 3491989.5,
+      "gpu_speedup": 0.7253813271895398,
+      "host_speedup": 0.7730698359774564,
+      "dispatch_delta": 0,
+      "interpretation": "Negative control. Applying tiled geometry to the dual projection loses 27.5% representative-layer GPU speed. Physical Gravity must choose geometry per organ: retain tiled single projections, retain the sequential dual projection, and do not infer a global benefit from a local kernel family."
+    },
+    "flash_noetic_q4_hyperconnection_runtime_repair": {
+      "prior_failure_observation": "The pre-repair invocation terminated at exact hyperconnection stage 0 with RMSNorm max_abs_error 2154.59375. It did not produce a sealed failure receipt; the terminal observation is recorded here rather than misrepresented as an artifact.",
+      "repaired_receipt": "receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE_RERUN_20260911.json",
+      "canonical_owner": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs:dispatch_hyperconnection_grouped_rmsnorm",
+      "repair": "Allocate the 128-f32 Metal threadgroup scratch region required by qwen_next_hyperconnection_grouped_rmsnorm, matching the canonical TokenCommandBuffer kernel wrapper contract.",
+      "contract": "Two warmups and seven measured device-resident Q4/G64 layer-0 routed-plus-shared MoE graphs passed all candidate-space stage checks after repair. This is a bounded component result, not source-BF16 activation parity or complete-token evidence.",
+      "graph_gpu_ns_median": 3052543,
+      "graph_host_wall_ns_median": 11664000,
+      "dispatches_per_graph": 33,
+      "source_router_top10_overlap": "8/10",
+      "interpretation": "A runtime-contract defect, not a Q4 representation theorem, had made the reusable direct Noetic graph fail before expert execution. The execution substrate is restored. The remaining gate is explicit source-BF16 route/output fidelity and complete-rate accounting; do not loosen it merely because candidate-space Metal parity is green."
+    },
+    "flash_noetic_routed_q4_direct_fusions": {
+      "canonical_owners": {
+        "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal:qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128",
+        "runtime": [
+          "crates/hawking-core/src/kernels/mod.rs:qwen_uniform_q4_group64_gate_up_swiglu_tcb",
+          "crates/hawking-core/src/kernels/mod.rs:qwen_uniform_q4_group64_routed_down_tcb"
+        ],
+        "candidate_discriminator": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs"
+      },
+      "contract": "The direct route-major Q4/G64 execution uses only persisted independent candidate bodies. Gate/up activations remain on Metal and are consumed by the route-aware down projection. The wrapper has a macOS CPU-oracle regression test with two routes and distinct device-resident route activations.",
+      "gate_up_receipt": "receipts/headless/FLASH_NOETIC_ROUTED_GATE_UP_FUSED_NATIVE_20260911.json",
+      "gate_up": {
+        "dispatches": "10 -> 1",
+        "gpu_ns_median": "155707 -> 54041",
+        "gpu_speedup": 2.88127532799171,
+        "host_wall_ns_median": "2653000 -> 291000",
+        "host_speedup": 9.116838487972508,
+        "candidate_output_parity": "PASS, max_abs_error 4.76837158203125e-7"
+      },
+      "down_receipt": "receipts/headless/FLASH_NOETIC_ROUTED_DOWN_FUSED_NATIVE_20260911.json",
+      "down": {
+        "dispatches": "10 -> 1",
+        "gpu_ns_median": "153332 -> 52334",
+        "gpu_speedup": 2.929873504796117,
+        "host_wall_ns_median": "3452000 -> 313000",
+        "host_speedup": 11.028753993610223,
+        "candidate_output_parity": "PASS, max_abs_error 3.5762786865234375e-7"
+      },
+      "composed_receipt": "receipts/headless/FLASH_NOETIC_ROUTED_MOE_FUSED_NATIVE_20260911.json",
+      "composed": {
+        "dispatches": "20 -> 2",
+        "gpu_ns_median": "178084 -> 61000",
+        "gpu_speedup": 2.9194098360655736,
+        "host_wall_ns_median": "5672000 -> 540000",
+        "host_speedup": 10.503703703703703,
+        "candidate_output_parity": "PASS, max_abs_error 5.4016709327697754e-8",
+        "deterministic_repetitions": 11,
+        "dense_rematerialization": "forbidden",
+        "host_launch_reduction_10x_earned": true
+      },
+      "source_route_authoritative_control": {
+        "receipt": "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_ROUTES_FUSED_NATIVE_20260911.json",
+        "route_authority": "The router receipt's independently observed source-native top-10 selected IDs and normalized weights select persisted Q4/G64 bodies. No source weight or source tensor is read by the direct execution.",
+        "candidate_q4_route_ids": [29, 309, 455, 374, 151, 93, 0, 500, 149, 220],
+        "source_native_route_ids": [29, 309, 455, 151, 500, 374, 15, 220, 37, 0],
+        "persisted_body_coverage": "10/10 source-selected experts; E15 and E37 gate/up and down bodies plus native parity receipts were added before execution.",
+        "dispatches": "20 -> 2",
+        "gpu_ns_median": "173291 -> 60416",
+        "gpu_speedup": 2.8682964777542375,
+        "host_wall_ns_median": "5469000 -> 521000",
+        "host_speedup": 10.497120921305182,
+        "candidate_output_parity": "PASS, max_abs_error 5.4016709327697754e-8",
+        "deterministic_repetitions": 11,
+        "source_tensor_read_for_direct_execution": false,
+        "source_weight_read_for_direct_execution": false,
+        "source_output_parity": "NOT_TESTED",
+        "interpretation": "The 10x bounded host launch reduction survives the source-native route identity control. This closes the prior 8/10 route-ID limitation for this direct-Q4 component, but does not turn candidate-body parity into source-BF16 output or token-level evidence."
+      },
+      "source_layer_bridge_control": {
+        "exact_layer_reference": "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_SOURCE_BRIDGE_CONTROL.json",
+        "bridge_receipt": "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "direct_q4_receipt": "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_LAYER_BRIDGE_FUSED_NATIVE.json",
+        "exact_layer_input_contract": "FLASH_NEXT_TEXT_BASELINE_LAYER0_BOS_SOURCE_EMBEDDING",
+        "exact_layer_source_token_id": 248044,
+        "exact_layer_source_route_ids": [411, 334, 286, 152, 291, 106, 421, 304, 226, 331],
+        "sealed_input": "2560 F32 values, SHA-256 bound to the passed exact source-layer receipt",
+        "sealed_source_routed_sum": "2560 F32 values, SHA-256 bound to the passed exact source-layer receipt",
+        "q4_body_coverage": "10/10 exact source-selected experts, full gate/up and down bodies plus independent native kernel-parity receipts",
+        "candidate_execution": "Two dispatches consume the sealed source MLP activation and Q4/G64 bodies with no source tensor or source weight read.",
+        "candidate_q4_cpu_gpu_parity": "PASS; 25,600 route-major values, max_abs_error 4.470348e-7, cosine 0.9999999999996",
+        "source_bf16_routed_sum_distortion": {
+          "status": "MEASURED__NO_CAPABILITY_THRESHOLD_DECLARED",
+          "cosine": 0.9950961734219215,
+          "rmse": 0.0015707757302093207,
+          "max_abs_error": 0.00551472045481205,
+          "host_weighted_sum_only": true
+        },
+        "historical_probe_route_id_overlap": "0/10; the old deterministic probe was retained as a distinct control rather than spliced into this source-layer bridge.",
+        "conclusion": "The source activation and route bridge is closed. It separates direct Q4 execution correctness from Q4 representation distortion on the actual source-layer control. The teacher bytes are not a standalone NR dependency, and no source-BF16 or capability qualification follows from this bounded result."
+      },
+      "qualification_boundary": "This earns a bounded direct Noetic physical primitive, a source-route-authoritative 10.50x host launch reduction, and a source-layer activation control. GPU work improves about 2.87x on the old source-route control and 2.91x on the current source-layer bridge. It is not source-BF16 output parity, a complete EBPW claim, complete-layer/token execution, qualified Flash TPS, or resident promotion.",
+      "next_action": "Use the measured source-routed-sum distortion to select the cheapest Q4 repair/composition discriminator, while the whole-body NR accountant rejects component-only 0.5 EBPW stories. Recompose only a source-control survivor that improves a real body owner without reintroducing source dependencies."
+    },
+    "token_latency_owner_census": {
+      "candidate_diagnostic_linear_attention_gpu_ns": 1624409792,
+      "candidate_diagnostic_full_attention_gpu_ns": 496463794,
+      "candidate_diagnostic_linear_attention_share": 0.765996200248131,
+      "candidate_command_dispatches_per_clean_token": 480,
+      "candidate_clean_gpu_ns_per_token": 250711635,
+      "candidate_clean_wall_ns_per_token": 266810347
+    },
+    "ten_x_hypotheses": [
+      {
+        "owner": "host command-buffer boundaries and token dispatch topology",
+        "current": "480 kernel dispatches/token; no-wait linear submission improved wall time 4.4%, while a valid 48-to-24 command-buffer region schedule was 0.6% slower than the queue-ordered control",
+        "ten_x_form": "cross-organ fusion that removes actual kernel dispatches and intermediate traffic while preserving resident device state, rather than merely relocating existing encoders into fewer command buffers",
+        "cheapest_falsifier": "fuse one repeated linear HyperConnection/projection/route subgraph whose dispatch ledger demonstrates at least a material dispatch reduction, then compare its source/route contract and clean body wall time against the current 480-dispatch candidate",
+        "status": "COMMAND_BUFFER_COUNT_FALSIFIED__ACTUAL_DISPATCH_REDUCTION_REQUIRED"
+      },
+      {
+        "owner": "selected-expert gate/up projection mapping",
+        "current": "The canonical cooperative SIMD reduction passed layer-46 source parity and improved whole-layer GPU time 3.74% without changing dispatch count.",
+        "ten_x_form": "combine representation-native active-row traffic reduction with a fused selected-expert contribution; a mapping-only reduction is insufficient",
+        "cheapest_falsifier": "measure a direct packed selected-expert contribution that removes an intermediate or a material source-BF16 read against the current compact route-union path",
+        "status": "LOCAL_PRIMITIVE_EARNED__NOT_A_TEN_X_OWNER"
+      },
+      {
+        "owner": "SIMD recurrent reduction plus compact-expert mapping composition",
+        "current": "A 48-layer route/terminal-accepted combination ran at 3.8849 bounded TPS with 504 dispatches/token, below the 3.9120 TPS 480-dispatch control in a one-replay probe.",
+        "ten_x_form": "none established from the combined run; any recurrence claim must isolate the SIMD reduction from compact-expert geometry and account for its 24-dispatch increase",
+        "cheapest_falsifier": "run the SIMD DeltaNet body against the matched vec4 compact-expert configuration, then compare clean dispatches, routes, terminals, and wall time before composing further changes",
+        "status": "COMPOSED_CANDIDATE_ACCEPTED__PHYSICAL_RECORD_NOT_IMPROVED"
+      },
+      {
+        "owner": "HyperConnection low-rank projection geometry",
+        "current": "The 22-dispatch tiled split geometry passed source parity at layer 46 (1.62x GPU speedup) and composed to 5.9497 bounded candidate TPS across the 48-layer resident body, but raises the body to 912 dispatches/token.",
+        "ten_x_form": "retain multi-threadgroup projection geometry while eliminating only proven intermediate and launch boundaries; do not return to the single-threadgroup fused serial projection",
+        "cheapest_falsifier": "fuse one adjacent post-projection elementwise consumer or producer without collapsing the tiled down/up launches, then compare source/route contract and clean body wall time against the 5.9497-TPS 912-dispatch candidate",
+        "status": "BODY_LEVEL_PHYSICAL_RECORD__FUSION_TOPOLOGY_NEXT"
+      },
+      {
+        "owner": "compact routed-expert execution",
+        "current": "route-union compact banks still execute source-BF16 direct kernels for selected expert rows",
+        "ten_x_form": "representation-native routed contribution with no conventional per-token expert reconstruction",
+        "cheapest_falsifier": "measure active rows/bytes and a representative direct-packed expert contribution against the current compact route-union kernel",
+        "status": "OPEN"
+      }
+    ],
+    "qualified_canonical_decode_tps": null,
+    "measurement_class": "clean bounded known-sequence replay, not qualified end-to-end TPS"
+  },
+  "nr_accounting_baseline": {
+    "receipt": "receipts/headless/FLASH_NR_ACCOUNTING_BASELINE_20260911.nr.json",
+    "canonical_rust_owner": "crates/hawking-core/src/gravity_manifest.rs:NoeticRepresentationManifest::totals + rate_budget",
+    "source_control": "359,999,963,128 bytes / 179,999,981,564 logical weights = exactly 16.0 EBPW; this is an external BF16 source-storage control, not a closed NR.",
+    "current_nr_status": "OPEN__NO_COMPLETE_EBPW_CLAIM",
+    "zero_point_five_budget": "11,249,998,848 bytes. Leaving every non-routed/non-ngram family at source BF16 costs 10,974,396,408 bytes and leaves routed experts plus n-gram only 275,602,440 bytes (12,634 ppm local EBPW).",
+    "interpretation": "A 0.5 complete-EBPW claim must be whole-body heterogeneous and close every dependency. Improving only the large MoE or n-gram families is insufficient if the rest of the source body remains untransformed."
+  },
+  "next_action": "Treat 5.9497 TPS / 168,074,479 ns per token as the best current state-hash-withheld bounded physical candidate and 3.9120 TPS as its prior queue-ordered control; neither is qualified TPS or a resident promotion. The tiled HyperConnection low-rank projection path passed layer source parity and achieved the body-level gain, but it expands dispatches to 912/token. Do not undo its multi-threadgroup geometry merely to lower a dispatch count. Three source-BF16 fusion/geometry variants are falsified at layer scope: SiLU-into-up (0.838x GPU), compact-MoE geo down (0.811x), and dual-projection geo (0.725x). Retain tiled single projections, sequential dual projections, and compact-MoE vec4. The direct-Q4 route-major primitive now has a sealed exact source-layer bridge: 10/10 actual source-selected expert bodies execute in two direct Q4 dispatches without source weight reads, and its source-routed-sum distortion is measured rather than hidden. That control is still not a complete EBPW, layer/token, or qualified TPS result. Use its measured distortion to choose a cheap repair/composition discriminator, while the open-NR whole-body budget rejects component-only 0.5 EBPW stories. Only recompose a positive layer control if the body retains route/terminal acceptance and improves the 5.9497-TPS wall result."
+}

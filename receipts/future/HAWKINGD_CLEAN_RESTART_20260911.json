@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.hawkingd.clean_restart.v1",
+  "recorded_at": "2026-09-11T07:55:00Z",
+  "status": "PASS",
+  "scope": "controlled stop and replacement of the P0 operational process tree",
+  "implementation": {
+    "change": "hcli stop waits for the lease-and-health-verified hawkingd owner to exit before reporting a safe restart",
+    "source": "hcli/web.py",
+    "installed_build": "/Users/scammermike/.local/share/hcli/build-20260911-075321"
+  },
+  "observed_after_restart": {
+    "root": {"pid": 69848, "ppid": 1, "role": "hawkingd serve :8011"},
+    "provider": {"pid": 69851, "ppid": 69848, "resident": "KIMI_P0_OPERATIONAL"},
+    "webui": [
+      {"pid": 69867, "ppid": 69848, "port": 8080},
+      {"pid": 69889, "ppid": 69848, "port": 8081}
+    ],
+    "unowned_hawking_provider_processes": [],
+    "health": "PASS",
+    "normal_selector": ["KIMI_P0_OPERATIONAL"],
+    "authority": "read"
+  },
+  "verification": {
+    "focused_tests": "32 passed",
+    "live_ancestry": "ps plus hawkingd /health",
+    "claim_boundary": "One controlled restart validates this lifecycle path. It does not qualify LFM2 runtime admission or remove the need for exact-PID orphan checks after future abnormal failures."
+  }
+}

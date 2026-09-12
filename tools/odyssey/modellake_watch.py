@@ -5,7 +5,8 @@ This watcher is deliberately conservative about state changes:
 
 * it attaches to already-running exact-revision downloads;
 * it never deletes, clears, promotes, or creates a second destination for a job;
-* it admits the smallest queued specimens alongside the remaining P0 partial;
+* it admits queued specimens only when the active campaign phase allows them;
+* it admits the operator-pinned V4.1 target only through the scheduling authority;
 * every new admission is checked against the physical drive free-space floor;
 * it records network, disk, process, and Hugging Face-auth health as JSONL.
 
@@ -41,6 +42,14 @@ if str(REPO_ROOT) not in sys.path:
 from tools.odyssey import modellake_promote  # noqa: E402
 ODYSSEY = REPO_ROOT / "workspace" / "campaign" / "odyssey"
 DOWNLOAD_DIR = ODYSSEY / "downloads"
+# The authority is deliberately kept beside the Odyssey control files rather
+# than on the busy external volume. It is the only source the watcher consults
+# for the scheduled V4.1 target and legacy-queue phase admission; the static
+# P0/QUEUE entries remain source inventories rather than scheduling authority.
+AUTHORITY_PATH = ODYSSEY / "MODELLAKE_SCHEDULING_AUTHORITY.json"
+AUTHORITY_SCHEMA = "hawking.modellake.scheduling_authority.v2"
+AUTHORITY_CAPACITY_CACHE_SECONDS = 30
+AUTHORITY_CAPACITY_RECHECK_SECONDS = 60
 # Keep watcher control metadata on the internal workspace. Writing it on the
 # busy external volume can block health sampling behind ModelLake I/O.
 MANIFEST_DIR = ODYSSEY / "watch-manifests"
@@ -390,6 +399,235 @@ def job(repo: str, revision: str, mode: str, priority: str) -> dict[str, object]
         "destination": str(local_destination(repo, revision)),
         "tag": slug(repo, revision),
     }
+
+
+def load_scheduling_authority(path: Path = AUTHORITY_PATH) -> dict[str, object] | None:
+    """Load the operator-authored ModelLake scheduling authority.
+
+    This is intentionally fail-closed. A missing, malformed, or wrong-schema
+    file must never turn into an implicit download or deletion policy. The
+    watcher only uses the acquisition portion; deletion remains outside this
+    process by design.
+    """
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return None
+    if not isinstance(data, dict) or data.get("schema") != AUTHORITY_SCHEMA:
+        return None
+    authority = data.get("authority")
+    execution = data.get("execution")
+    acquisition = data.get("acquisition")
+    if not isinstance(authority, dict) or authority.get("status") != "ACTIVE":
+        return None
+    if not isinstance(execution, dict) or not isinstance(acquisition, dict):
+        return None
+    if execution.get("acquisition_armed") is not True:
+        return None
+    # A v2 authority is not merely a target manifest: it must still name one
+    # valid active campaign phase. Targets may be asynchronous to that phase,
+    # but a malformed phase graph must never become an acquisition bypass.
+    if authority_active_campaign_phase(data) is None:
+        return None
+    return data
+
+
+def scheduled_authority_jobs(authority: dict[str, object] | None) -> list[dict[str, object]]:
+    """Return the exact-revision jobs authorized by the scheduling JSON."""
+    if authority is None:
+        return []
+    acquisition = authority.get("acquisition")
+    if not isinstance(acquisition, dict):
+        return []
+    target = acquisition.get("target")
+    if not isinstance(target, dict) or target.get("status") != "SCHEDULED":
+        return []
+    if target.get("action") != "ACQUIRE_AND_KEEP":
+        return []
+    repo = target.get("repo")
+    revision = target.get("revision")
+    resolved_sha = target.get("resolved_sha")
+    expected = target.get("expected_selected_bytes")
+    file_count = target.get("expected_file_count")
+    admission_policy = target.get("admission_policy")
+    if not (isinstance(repo, str) and repo
+            and isinstance(revision, str) and len(revision) == 40
+            and resolved_sha == revision
+            and isinstance(expected, int) and expected > 0
+            and isinstance(file_count, int) and file_count > 0
+            and admission_policy in {
+                "NAMED_PHASE_ONLY",
+                "ANY_VALID_ACTIVE_PHASE_ON_CAPACITY_GATE",
+            }):
+        return []
+    item = job(repo, revision, str(target.get("mode", "all")),
+               str(target.get("priority", "P0-AUTHORITY")))
+    # Only trusted, derived paths are used by the watcher. The JSON's path
+    # strings are descriptive and cannot redirect a download elsewhere.
+    item.update({
+        "expected": expected,
+        "expected_file_count": file_count,
+        "admission_policy": admission_policy,
+        "authority_target": True,
+    })
+    if admission_policy == "NAMED_PHASE_ONLY":
+        admission_phase = target.get("admission_phase")
+        if not isinstance(admission_phase, str) or not admission_phase:
+            return []
+        item["admission_phase"] = admission_phase
+    return [item]
+
+
+def authority_active_campaign_phase(
+    authority: dict[str, object] | None,
+) -> dict[str, object] | None:
+    """Return the sole active authority phase, or fail closed.
+
+    The scheduling authority is intentionally the only owner of campaign
+    ordering.  The watcher can enforce its active phase but cannot infer a
+    completion or silently advance it.
+    """
+    if not isinstance(authority, dict):
+        return None
+    campaign = authority.get("campaign")
+    if not isinstance(campaign, dict):
+        return None
+    active_id = campaign.get("active_phase")
+    phases = campaign.get("phases")
+    if not isinstance(active_id, str) or not active_id or not isinstance(phases, list):
+        return None
+    active = []
+    for phase in phases:
+        if not isinstance(phase, dict):
+            return None
+        phase_id = phase.get("id")
+        phase_state = phase.get("state")
+        admission = phase.get("legacy_queue_admission")
+        if not isinstance(phase_id, str) or not phase_id:
+            return None
+        if (not isinstance(phase_state, str)
+                or not (phase_state == "PENDING"
+                        or phase_state.startswith("ACTIVE")
+                        or phase_state.startswith("COMPLETE")
+                        or phase_state.startswith("SEALED"))):
+            return None
+        if admission not in {"ALLOW", "PAUSED"}:
+            return None
+        if phase_state == "ACTIVE":
+            active.append(phase)
+    if len(active) != 1 or active[0].get("id") != active_id:
+        return None
+    return active[0]
+
+
+def authority_target_phase_gate(
+    authority: dict[str, object] | None,
+    item: dict[str, object],
+) -> tuple[bool, dict[str, object]]:
+    """Apply campaign relationship policy before capacity admission.
+
+    An asynchronous target is eligible during any valid active campaign phase;
+    the separate capacity gate remains authoritative. Named-phase targets keep
+    the older strict behavior for backwards-compatible, fail-closed scheduling.
+    """
+    active = authority_active_campaign_phase(authority)
+    if active is None:
+        return False, {"reason": "campaign_phase_invalid"}
+    policy = item.get("admission_policy")
+    active_id = str(active["id"])
+    if policy == "ANY_VALID_ACTIVE_PHASE_ON_CAPACITY_GATE":
+        return True, {
+            "active_phase": active_id,
+            "admission_policy": policy,
+        }
+    if policy != "NAMED_PHASE_ONLY":
+        return False, {"reason": "target_admission_policy_invalid"}
+    target_phase = item.get("admission_phase")
+    if not isinstance(target_phase, str) or not target_phase:
+        return False, {"reason": "target_admission_phase_missing"}
+    if active_id != target_phase:
+        return False, {
+            "reason": "campaign_phase_not_active",
+            "active_phase": active_id,
+            "required_phase": target_phase,
+        }
+    return True, {"active_phase": active_id}
+
+
+def authority_legacy_queue_admission_allowed(
+    authority: dict[str, object] | None,
+) -> bool:
+    """Whether the active campaign phase permits new legacy acquisitions."""
+    active = authority_active_campaign_phase(authority)
+    return bool(active and active.get("legacy_queue_admission") == "ALLOW")
+
+
+def authority_tier2_used_bytes() -> int:
+    """Read the ModelLake tier-2 allocation without performing any mutation."""
+    from tools.odyssey import modellake
+
+    return int(modellake.tier2_used())
+
+
+_AUTHORITY_CAPACITY_CACHE: tuple[float, int] | None = None
+
+
+def authority_capacity_gate(
+    authority: dict[str, object],
+    reserved_bytes: int,
+    target_remaining_bytes: int,
+    free_bytes_now: int,
+) -> tuple[bool, dict[str, object]]:
+    """Apply the JSON target gate before admitting V4.1.
+
+    `reserved_bytes` includes active transfers plus the target remainder. The
+    tier-2 check is separate from the ordinary physical-free floor because the
+    ModelLake budget is a hard logical allocation ceiling. The `du`-based
+    tier-2 probe is cached briefly so a blocked target cannot make the watcher
+    recursively walk a multi-terabyte lake every 100 ms.
+    """
+    capacity = authority.get("capacity")
+    if not isinstance(capacity, dict):
+        return False, {"reason": "authority_capacity_section_missing"}
+    try:
+        budget = int(capacity["tier2_budget_bytes"])
+        floor = int(capacity["physical_free_floor_bytes"])
+        scratch_fraction = float(capacity.get("scratch_reserve_fraction", 0.05))
+        uncertainty_fraction = float(capacity.get("uncertainty_reserve_fraction", 0.02))
+    except (KeyError, TypeError, ValueError):
+        return False, {"reason": "authority_capacity_section_invalid"}
+
+    global _AUTHORITY_CAPACITY_CACHE
+    stamp = time.monotonic()
+    if (_AUTHORITY_CAPACITY_CACHE is not None
+            and stamp - _AUTHORITY_CAPACITY_CACHE[0] < AUTHORITY_CAPACITY_CACHE_SECONDS):
+        used = _AUTHORITY_CAPACITY_CACHE[1]
+    else:
+        try:
+            used = authority_tier2_used_bytes()
+        except (OSError, RuntimeError, ValueError, IndexError):
+            return False, {"reason": "tier2_used_unavailable"}
+        _AUTHORITY_CAPACITY_CACHE = (stamp, used)
+
+    target_remaining_bytes = max(0, int(target_remaining_bytes))
+    reserved_bytes = max(0, int(reserved_bytes))
+    scratch = max(10_000_000_000, int(target_remaining_bytes * scratch_fraction))
+    uncertainty = max(5_000_000_000, int(target_remaining_bytes * uncertainty_fraction))
+    projected_used = used + reserved_bytes
+    projected_free = free_bytes_now - reserved_bytes - scratch - uncertainty - KNOWN_TEMP_BYTES
+    details = {
+        "tier2_used_bytes": used,
+        "reserved_bytes": reserved_bytes,
+        "projected_tier2_used_bytes": projected_used,
+        "tier2_budget_bytes": budget,
+        "projected_free_bytes": projected_free,
+        "physical_free_floor_bytes": floor,
+    }
+    if projected_used > budget:
+        return False, {"reason": "tier2_budget", **details}
+    if projected_free < floor:
+        return False, {"reason": "physical_free_floor", **details}
+    return True, details
 
 
 # P0 exact totals were established from the pinned upstream manifests before
@@ -1138,6 +1376,7 @@ def main() -> int:
         return 2
 
     emit("watcher_started", pid=os.getpid(), floor_bytes=FLOOR_BYTES,
+         scheduling_authority=str(AUTHORITY_PATH),
          recovery_refresh_seconds=RECOVERY_REFRESH_SECONDS,
          rate_based_refresh=RATE_BASED_REFRESH_ENABLED,
          max_download_jobs=MAX_DOWNLOAD_JOBS, max_workers=MAX_WORKERS,
@@ -1171,6 +1410,8 @@ def main() -> int:
     refresh_requested: set[str] = set()
     last_idle_notice: float = 0.0
     blocked_auth_notice: set[str] = set()
+    authority_blocked_notice: set[str] = set()
+    authority_phase_notice: set[str] = set()
     notified_low_disk = False
     last_p0_done = False
     last_route_notice = 0.0
@@ -1199,7 +1440,32 @@ def main() -> int:
             notified_low_disk = False
 
         rows = process_rows()
-        all_items = P0 + QUEUE
+        authority = load_scheduling_authority()
+        authority_items = scheduled_authority_jobs(authority)
+        authority_active_items = []
+        for item in authority_items:
+            tag = str(item["tag"])
+            phase_ok, phase_details = authority_target_phase_gate(authority, item)
+            if phase_ok:
+                authority_active_items.append(item)
+                authority_phase_notice.discard(tag)
+                continue
+            if tag not in authority_phase_notice:
+                authority_phase_notice.add(tag)
+                reason = phase_details.get("reason")
+                fields = {k: v for k, v in phase_details.items() if k != "reason"}
+                emit("authority_admission_deferred", job=tag, reason=reason, **fields)
+        legacy_queue_allowed = authority_legacy_queue_admission_allowed(authority)
+        active_phase = authority_active_campaign_phase(authority)
+        if authority is not None and not legacy_queue_allowed and active_phase is not None:
+            phase_notice = f"legacy:{active_phase['id']}"
+            if phase_notice not in authority_phase_notice:
+                authority_phase_notice.add(phase_notice)
+                emit("legacy_queue_paused_by_campaign_phase",
+                     active_phase=active_phase["id"])
+        all_items = P0 + authority_items + QUEUE
+        authority_tags = {str(item["tag"]) for item in authority_items}
+        authority_active_tags = {str(item["tag"]) for item in authority_active_items}
         p0_tags = {str(item["tag"]) for item in P0}
         active_tags = set()
         active_remaining = 0
@@ -1213,6 +1479,16 @@ def main() -> int:
             pids = matching_pids(item, rows)
             running = bool(pids)
             cached_manifest = manifest_cache.get(tag)
+            # A future authority target remains visible for process adoption
+            # and cached-manifest reconciliation, but a target rejected by its
+            # campaign relationship policy must not trigger remote metadata.
+            if (tag in authority_tags and tag not in authority_active_tags
+                    and not running and cached_manifest is None):
+                cached_manifest = load_cached_manifest(item)
+                if cached_manifest is None:
+                    states.append({"job": tag, "state": "deferred_campaign_phase"})
+                    continue
+                manifest_cache[tag] = cached_manifest
             if cached_manifest is None:
                 cached_manifest_for = load_cached_manifest(item)
                 if cached_manifest_for is not None:
@@ -1328,7 +1604,12 @@ def main() -> int:
         # saturated the cap and the queue below was never reached. Lines 1311
         # and 1410 already union these two sets; this was the outlier.
         active_count = len(active_tags | set(children))
-        for item in QUEUE:
+        # Authority targets are ordered before the legacy queue. Their campaign
+        # relationship policy and hard capacity gate are independent: V4.1 can
+        # start at the first safe capacity crossing without changing Odyssey's
+        # transfer-first phase. Already-running transfers are never interrupted.
+        queue_items = authority_active_items + (QUEUE if legacy_queue_allowed else [])
+        for item in queue_items:
             if active_count >= MAX_DOWNLOAD_JOBS:
                 break
             tag = str(item["tag"])
@@ -1369,6 +1650,28 @@ def main() -> int:
                 # the scratch/uncertainty margins on the REMAINING bytes.
                 present = durable_bytes(item, files, sizes)
                 remaining = max(0, expected - present)
+                if tag in authority_tags and authority is not None:
+                    authority_ok, authority_details = authority_capacity_gate(
+                        authority,
+                        active_remaining + remaining,
+                        remaining,
+                        free,
+                    )
+                    if not authority_ok:
+                        if tag not in authority_blocked_notice:
+                            authority_blocked_notice.add(tag)
+                            reason = authority_details.get("reason")
+                            fields = {k: v for k, v in authority_details.items()
+                                      if k != "reason"}
+                            emit("authority_admission_blocked", job=tag,
+                                 reason=reason, **fields)
+                        execution = authority.get("execution")
+                        if (isinstance(execution, dict)
+                                and execution.get("ordinary_queue_policy")
+                                == "PAUSE_AFTER_ACTIVE_TRANSFERS"):
+                            break
+                        continue
+                    authority_blocked_notice.discard(tag)
                 scratch = max(10_000_000_000, int(remaining * 0.05))
                 uncertainty = max(5_000_000_000, int(remaining * 0.02))
                 projected = free - active_remaining - remaining - scratch - uncertainty - KNOWN_TEMP_BYTES
@@ -1571,6 +1874,12 @@ def main() -> int:
         if idle:
             pending = [t for t in retry_after.values() if t > loop_started]
             wait = IDLE_REARM_SECONDS
+            # A scheduled asynchronous authority target is waiting on live
+            # disk state, not a human phase transition. Recheck it promptly so
+            # the first safe capacity crossing is not delayed by the ordinary
+            # 30-minute fully-idle cadence.
+            if authority_active_items:
+                wait = min(wait, AUTHORITY_CAPACITY_RECHECK_SECONDS)
             if pending:
                 wait = min(wait, max(1.0, min(pending) - loop_started))
             if wait > sleep_for:

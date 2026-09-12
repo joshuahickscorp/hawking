@@ -1,5 +1,5 @@
 """What must stay true of the recognizer: it does not force-fit, and it stays calibrated."""
-import json, re, sys
+import json, re, struct, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -52,3 +52,32 @@ def test_no_weights_were_loaded():
     assert d["did_not_load_weights"] is True
     assert all(s["result"]["loaded_weights"] is False
                for s in d["specimens"] + d["heldout_specimens"])
+
+
+def test_local_single_shard_snapshot_reads_header_only(tmp_path):
+    """Single-shard bodies have no Hub index but still must be recognizable."""
+    (tmp_path / "config.json").write_text(json.dumps({"model_type": "lfm2_moe"}))
+    header = {
+        "model.layers.2.feed_forward.experts.0.w1.weight": {
+            "dtype": "BF16", "shape": [2, 2], "data_offsets": [0, 8]
+        },
+        "model.layers.2.feed_forward.experts.0.w2.weight": {
+            "dtype": "BF16", "shape": [2, 2], "data_offsets": [8, 16]
+        },
+        "model.layers.2.feed_forward.experts.0.w3.weight": {
+            "dtype": "BF16", "shape": [2, 2], "data_offsets": [16, 24]
+        },
+        "model.layers.2.feed_forward.gate.weight": {
+            "dtype": "BF16", "shape": [2, 2], "data_offsets": [24, 32]
+        },
+        "__metadata__": {"format": "pt"},
+    }
+    raw = json.dumps(header).encode()
+    (tmp_path / "model.safetensors").write_bytes(struct.pack("<Q", len(raw)) + raw)
+
+    cfg, names = ar.local_snapshot(tmp_path)
+    result = ar.recognize("local", "local", cfg, names)
+    got = {row["organ"] for row in result["organs"]}
+    assert result["loaded_weights"] is False
+    assert result["n_tensors"] == 4
+    assert {"moe_expert", "moe_router"} <= got

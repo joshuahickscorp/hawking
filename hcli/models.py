@@ -422,10 +422,12 @@ def resolve_model(explicit: Optional[str] = None,
 
 
 class ModelRegistry:
-    """Deterministic local GGUF + MLX-dir inventory and selection facade.
+    """Deterministic Gravity-artifact inventory and selection facade.
 
-    Discovery never loads a model. Ambiguous discovery remains ambiguous;
-    HCLI does not silently choose one of several installed models.
+    The normal interactive registry reads the admitted Gravity catalog and
+    never loads a model. Explicit roots retain the older filesystem census for
+    hermetic tests and research tooling. Ambiguous discovery remains
+    ambiguous; HCLI does not silently choose one of several installed models.
     Projector/adapter sidecar GGUFs are inventoried (is_projector=True) but
     are not selectable and do not count toward auto-select ambiguity.
     MLX weight directories (config.json + safetensors) are first-class.
@@ -433,17 +435,43 @@ class ModelRegistry:
     """
 
     def __init__(self, roots: Optional[List[str]] = None) -> None:
-        self.roots = list(
-            roots
-            if roots is not None
-            else [os.path.expanduser("~/models")]
-        )
+        # The interactive HCLI selector is an execution surface, not a raw
+        # filesystem census.  Explicit roots remain available to tests and
+        # research callers; the normal registry is backed by the admitted
+        # Gravity catalog in hcli.catalog.
+        self.roots = list(roots) if roots is not None else None
         self._models: Optional[List[ModelInfo]] = None
         self.selected: Optional[ModelInfo] = None
 
+    @staticmethod
+    def _gravity_models() -> List[ModelInfo]:
+        from .catalog import catalog as gravity_catalog
+
+        out: List[ModelInfo] = []
+        for body in gravity_catalog():
+            detail = body.detail or {}
+            out.append(ModelInfo(
+                path=body.path,
+                name=body.name,
+                size_bytes=int(body.bytes or 0),
+                family=str(detail.get("family") or body.name.split("_", 1)[0]),
+                param_class=str(detail.get("param_class") or "?B"),
+                quantization=str(
+                    detail.get("quantization")
+                    or detail.get("representation")
+                    or ("Gravity" if body.source == "gravity" else body.kind)
+                ),
+                provider=body.source,
+            ))
+        return out
+
     def discover(self, refresh: bool = False, include_sidecars: bool = False) -> List[ModelInfo]:
         if self._models is None or refresh:
-            self._models = discover_models(self.roots)
+            self._models = (
+                self._gravity_models()
+                if self.roots is None
+                else discover_models(self.roots)
+            )
 
         models = list(self._models)
         if not include_sidecars:
@@ -526,7 +554,7 @@ class ModelRegistry:
         models = self.discover()
 
         return {
-            "roots": list(self.roots),
+            "roots": list(self.roots) if self.roots is not None else ["gravity-registry"],
             "count": len(models),
             "selected": (
                 self.selected.path

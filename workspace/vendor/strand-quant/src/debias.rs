@@ -83,7 +83,10 @@ pub fn debias_tensor(
     bias_bits: u32,
 ) -> DebiasResult {
     assert_eq!(w.len(), recon.len(), "w/recon length mismatch");
-    assert!(in_features > 0 && w.len() % in_features == 0, "ragged tensor");
+    assert!(
+        in_features > 0 && w.len() % in_features == 0,
+        "ragged tensor"
+    );
     let out = w.len() / in_features;
     let mut rowsum_bias = vec![0.0f32; out];
     let mut bias_correction = vec![0.0f32; out];
@@ -103,7 +106,12 @@ pub fn debias_tensor(
         bias_correction[i] = (-(mu_bar as f64) * s) as f64 as f32;
     }
     let bpw_cost = bias_bits as f64 / in_features as f64;
-    DebiasResult { bias_correction, rowsum_bias, mu_bar, bpw_cost }
+    DebiasResult {
+        bias_correction,
+        rowsum_bias,
+        mu_bar,
+        bpw_cost,
+    }
 }
 
 /// Estimate `mu_bar` from a sample of activation vectors (each length `in_features`):
@@ -118,7 +126,11 @@ pub fn estimate_mu_bar(samples: &[Vec<f32>]) -> f32 {
             n += 1;
         }
     }
-    if n == 0 { 0.0 } else { (sum / n as f64) as f32 }
+    if n == 0 {
+        0.0
+    } else {
+        (sum / n as f64) as f32
+    }
 }
 
 /// Simulated output: `y = W x` for one activation vector (row-major `[out,in]`).
@@ -183,10 +195,12 @@ mod tests {
         let r = debias_tensor(&w, &recon, in_f, mu_bar, 16);
         let x = vec![mu_bar; in_f];
         let (_, rms_uncorr) = output_error(&w, &recon, in_f, &[x.clone()], None);
-        let (mean_corr, rms_corr) =
-            output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
+        let (mean_corr, rms_corr) = output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
         assert!(rms_uncorr > 1e-6, "need a real bias to cancel");
-        assert!(rms_corr < 1e-4, "corrected rms should vanish on constant x: {rms_corr}");
+        assert!(
+            rms_corr < 1e-4,
+            "corrected rms should vanish on constant x: {rms_corr}"
+        );
         assert!(mean_corr.abs() < 1e-4);
     }
 

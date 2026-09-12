@@ -1,6 +1,4 @@
-
 #![allow(unsafe_code)]
-
 #![allow(clippy::upper_case_acronyms)]
 
 use metal::{
@@ -121,12 +119,11 @@ pub struct MetalViterbi {
     device: Device,
     queue: CommandQueue,
     pipeline: metal::ComputePipelineState,
-    
+
     max_threads: usize,
 }
 
 impl MetalViterbi {
-    
     pub fn new() -> Option<Self> {
         let device = Device::system_default()?;
 
@@ -164,7 +161,12 @@ impl MetalViterbi {
             max_threads
         );
 
-        Some(Self { device, queue, pipeline, max_threads })
+        Some(Self {
+            device,
+            queue,
+            pipeline,
+            max_threads,
+        })
     }
 
     pub fn run_blocks(
@@ -238,8 +240,16 @@ impl MetalViterbi {
         enc.set_threadgroup_memory_length(0, tg_floats as NSUInteger);
         enc.set_threadgroup_memory_length(1, tg_floats as NSUInteger);
 
-        let tpg = MTLSize { width: num_states as NSUInteger, height: 1, depth: 1 };
-        let groups = MTLSize { width: n_blocks as NSUInteger, height: 1, depth: 1 };
+        let tpg = MTLSize {
+            width: num_states as NSUInteger,
+            height: 1,
+            depth: 1,
+        };
+        let groups = MTLSize {
+            width: n_blocks as NSUInteger,
+            height: 1,
+            depth: 1,
+        };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
 
@@ -249,15 +259,20 @@ impl MetalViterbi {
         let back_flat = self.read_u32(&back_buf, back_len)?;
         let final_cost = self.read_f32(&fc_buf, fc_len)?;
 
-        Some(GpuViterbiResult { back_flat, final_cost, max_block_len })
+        Some(GpuViterbiResult {
+            back_flat,
+            final_cost,
+            max_block_len,
+        })
     }
 
     fn upload<T: Copy>(&self, data: &[T]) -> Buffer {
         let byte_len = data.len() * std::mem::size_of::<T>();
-        let buf = self
-            .device
-            .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared);
-        
+        let buf = self.device.new_buffer(
+            byte_len.max(4) as NSUInteger,
+            MTLResourceOptions::StorageModeShared,
+        );
+
         unsafe {
             std::ptr::copy_nonoverlapping(
                 data.as_ptr() as *const u8,
@@ -269,21 +284,27 @@ impl MetalViterbi {
     }
 
     fn alloc_shared(&self, byte_len: usize) -> Buffer {
-        self.device
-            .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
+        self.device.new_buffer(
+            byte_len.max(4) as NSUInteger,
+            MTLResourceOptions::StorageModeShared,
+        )
     }
 
     fn read_u32(&self, buf: &Buffer, len: usize) -> Option<Vec<u32>> {
         let ptr = buf.contents() as *const u32;
-        if ptr.is_null() { return None; }
-        
+        if ptr.is_null() {
+            return None;
+        }
+
         Some(unsafe { std::slice::from_raw_parts(ptr, len) }.to_vec())
     }
 
     fn read_f32(&self, buf: &Buffer, len: usize) -> Option<Vec<f32>> {
         let ptr = buf.contents() as *const f32;
-        if ptr.is_null() { return None; }
-        
+        if ptr.is_null() {
+            return None;
+        }
+
         Some(unsafe { std::slice::from_raw_parts(ptr, len) }.to_vec())
     }
 }

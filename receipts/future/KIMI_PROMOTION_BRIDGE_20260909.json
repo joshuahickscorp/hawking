@@ -1,0 +1,21 @@
+{
+  "artifact_created": false,
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPA",
+  "claim_boundary": "Plan-only bridge. This command cannot write KIMI weights or create an NX artifact while the gate is refused.",
+  "gate_receipt": "receipts/future/KIMI_OPERATOR_GATE_20260909.json",
+  "generated_at": "2026-09-10T08:38:32.573594+00:00",
+  "missing_gates": [
+    "causal_behavior",
+    "candidate_live_evaluation",
+    "capability",
+    "epistemic",
+    "authorization",
+    "hcli",
+    "physical"
+  ],
+  "noetic_family": "kimi_operator_projection_sim",
+  "reason": "Noetic/NX handoff is downstream of every independent gate",
+  "schema": "hawking.kimi.promotion_bridge.v1",
+  "status": "PROMOTION_REFUSED",
+  "weights_written": false
+}

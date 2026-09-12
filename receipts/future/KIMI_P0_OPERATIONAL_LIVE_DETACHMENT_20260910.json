@@ -1,0 +1,98 @@
+{
+  "schema": "hawking.kimi.operational_p0.live_detachment.v1",
+  "generated_at": "2026-09-10",
+  "status": "LIVE_TOOLS_QUALIFIED_MISSION_WITHHELD",
+  "artifact_id": "KIMI_P0_OPERATIONAL",
+  "surface": {
+    "host": "127.0.0.1",
+    "port": 8014,
+    "openai_base_url": "http://127.0.0.1:8014/v1",
+    "backend": "mlx_vlm_server",
+    "local_snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+    "repo": "/Users/scammermike/Downloads/hawking",
+    "authority": "write",
+    "state": "ready",
+    "process_selection": "isolated test surface; pre-existing port-8011 build process preserved"
+  },
+  "surface_gates": {
+    "model_speaks": true,
+    "tool_qualification": {
+      "qualified": true,
+      "tool_count": 10,
+      "tools": [
+        "context.recall",
+        "debug.diagnose",
+        "forensics.snapshot",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "observation.expand",
+        "reverse.identify",
+        "web.fetch",
+        "web.search"
+      ]
+    },
+    "repo_context": true,
+    "sessions": true,
+    "observation_store": true,
+    "knowledge_store": true,
+    "write_engine_reachable": true,
+    "gravity_only_model_registry": true,
+    "modellake_default_hidden": true
+  },
+  "physical_benchmark": {
+    "receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_20260910.json",
+    "runtime_endpoint": "child endpoint recorded in the runtime receipt; HCLI surface remains http://127.0.0.1:8014/v1",
+    "measurement_path": "MLX-VLM child launched by this HCLI surface; HCLI wrapper remains the user-facing endpoint on port 8014",
+    "prefill_tps_by_context": {
+      "prompt_tokens_35": 328.4130028144996,
+      "prompt_tokens_227": 1303.496778001973,
+      "prompt_tokens_803": 2227.3019871019346
+    },
+    "steady_decode_tps_by_context": {
+      "prompt_tokens_35": 74.68366309739233,
+      "prompt_tokens_227": 74.61755406139201,
+      "prompt_tokens_803": 72.08845281908901
+    },
+    "end_to_end_tps_by_context": {
+      "prompt_tokens_35": 42.21699741835996,
+      "prompt_tokens_227": 32.64392312555461,
+      "prompt_tokens_803": 20.172871370621695
+    },
+    "mean_context_median_steady_decode_tps": 73.00105389709667,
+    "replicate_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_REPEAT2_20260910.json",
+    "swap_watch": "not included in this child receipt; live server remained healthy",
+    "claim_boundary": "Deployment-path physical timing only. This is not a reduced Noetic representation, capability-preservation evidence, qualified KIMI TPS, or admission milestone."
+  },
+  "blind_mission": {
+    "objective": "Find one small real user-visible HCLI/Open WebUI defect, make the smallest reversible repair, run focused tests, and report evidence without being given a target file.",
+    "attempts": [
+      {
+        "name": "initial_blind_trial",
+        "tools_used": ["fs.search", "fs.list", "web.fetch"],
+        "result": "FAILED_MODEL_JUDGMENT",
+        "failure": "KIMI invented a GitHub URL for a local repository file; web.fetch returned HTTP 404; no edit occurred.",
+        "supervisor_interventions": 0
+      },
+      {
+        "name": "local_only_recovery",
+        "tools_used": ["fs.list", "fs.read", "tests.run"],
+        "result": "FAILED_MISSION_COMPLETION",
+        "failure": "KIMI first selected a misspelled test path, then verified the corrected existing test, but treated a passing regression test as the requested defect and made no edit.",
+        "tests_verified": true,
+        "supervisor_interventions": 1
+      }
+    ],
+    "changed_paths": [],
+    "mission_gate": "FAIL",
+    "failure_class": ["MODEL", "MISSION_JUDGMENT"],
+    "operational_admission": false
+  },
+  "protocol_repairs_during_trial": [
+    "KIMI-VL structural backend selection routed the local artifact from mlx_lm.server to mlx_vlm.server.",
+    "Local model binding prevents a selector identity from becoming a remote Hugging Face lookup.",
+    "Explicit zero-argument English action intent is adapted conservatively.",
+    "Multiple complete JSON actions in one reply are consumed in order within the bounded tool budget."
+  ],
+  "claim_boundary": "KIMI_P0_OPERATIONAL is live, speaks, and reaches the qualified HCLI tool surface with repository-scoped write authority on the isolated test port. The blind real WorkUnit did not complete an independently verified edit, so resident/operational/Odyssey admission remains fail-closed. This receipt is not learned-weight repair, compressed-body evidence, or a capability-preserving EBPW claim."
+}

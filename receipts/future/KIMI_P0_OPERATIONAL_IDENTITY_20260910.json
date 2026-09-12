@@ -1,0 +1,109 @@
+{
+  "schema": "hawking.kimi.operational_p0_identity.v1",
+  "generated_at": "2026-09-10",
+  "status": "FROZEN_DEVELOPMENTAL_IDENTITY_MISSION_WITHHELD",
+  "artifact_id": "KIMI_P0_OPERATIONAL",
+  "historical_identity_receipt": true,
+  "bounded_operational_freeze": "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+  "role": "first operational developmental KIMI resident candidate",
+  "freeze": {
+    "identity_frozen": true,
+    "weights_frozen": true,
+    "in_place_mutation": false,
+    "parent_is_immutable": true,
+    "parent": "KIMI_BASE"
+  },
+  "lineage": {
+    "weight_lineage": "KIMI_BASE unchanged",
+    "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+    "local_executable_snapshot": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "source_revision": "398eede0903c",
+    "representation": "dense KIMI_BASE MLX snapshot",
+    "reduced_weight_claim": false,
+    "full_model_complete_ebpw": null,
+    "dense_parent_rematerialization": false
+  },
+  "qualification": {
+    "capability": {
+      "status": "QUALIFIED_BOUNDED",
+      "result": "4/4",
+      "receipt": "receipts/future/KIMI_WORKUNIT_CAPABILITY_LIVE_RETRY2_20260910.json"
+    },
+    "epistemic": {
+      "status": "QUALIFIED_BASE_CALIBRATION",
+      "result": "7/7",
+      "receipt": "receipts/future/KIMI_EPISTEMIC_LIVE_20260910.json"
+    },
+    "destructive_controls": {
+      "status": "QUALIFIED",
+      "result": "6/6",
+      "receipt": "receipts/future/KIMI_HCLI_BOUNDARY_CONTROLS_20260910.json"
+    },
+    "hcli_serving_contract": {
+      "status": "QUALIFIED_DEPLOYMENT_PATH_ONLY",
+      "bounded_passes": "16/16",
+      "effective_dead_end_refusals": "0/16",
+      "learned_weight_evidence": false,
+      "receipt": "receipts/future/KIMI_HCLI_ENGINE_LIVE_RETRY3_20260910.json"
+    },
+    "promotion": "WITHHELD",
+    "odyssey_worker": "WITHHELD"
+  },
+  "physical": {
+    "status": "DEPLOYMENT_PATH_RUNTIME_MEASURED_RAW_BASE_LINEAGE",
+    "receipt": "receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+    "steady_decode_tps_by_context": {
+      "prompt_tokens_20": 86.917,
+      "prompt_tokens_212": 83.386,
+      "prompt_tokens_788": 85.390
+    },
+    "mean_context_median_steady_decode_tps": 85.231,
+    "end_to_end_tps_by_context": {
+      "prompt_tokens_20": 77.938,
+      "prompt_tokens_212": 69.824,
+      "prompt_tokens_788": 59.892
+    },
+    "prefill_tps_by_context": {
+      "prompt_tokens_20": 253.534,
+      "prompt_tokens_212": 1386.796,
+      "prompt_tokens_788": 2274.033
+    },
+    "swap_watch": "OK",
+    "detached_runtime_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_20260910.json",
+    "detached_runtime_endpoint": "child endpoint recorded in the runtime receipt; HCLI surface remains http://127.0.0.1:8014/v1",
+    "detached_runtime_contexts": {
+      "prompt_tokens_35": {
+        "prefill_tps": 328.4130028144996,
+        "steady_decode_tps": 74.68366309739233,
+        "end_to_end_tps": 42.21699741835996
+      },
+      "prompt_tokens_227": {
+        "prefill_tps": 1303.496778001973,
+        "steady_decode_tps": 74.61755406139201,
+        "end_to_end_tps": 32.64392312555461
+      },
+      "prompt_tokens_803": {
+        "prefill_tps": 2227.3019871019346,
+        "steady_decode_tps": 72.08845281908901,
+        "end_to_end_tps": 20.172871370621695
+      }
+    },
+    "detached_runtime_mean_context_median_steady_decode_tps": 73.00105389709667,
+    "detached_runtime_replicate_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_REPEAT2_20260910.json",
+    "detached_runtime_replicate_context_median_steady_decode_tps": [73.81919639634056, 72.18291139785278, 70.83541297395267],
+    "detached_runtime_claim": "Measured on the MLX-VLM child launched by the live HCLI KIMI_P0_OPERATIONAL surface; not a reduced representation or capability-qualified TPS claim.",
+    "claim_boundary": "These are canonical raw KIMI_BASE timing measurements, not reduced-body or qualified-TPS claims."
+  },
+  "hcli": {
+    "default_registry": "workspace/campaign/odyssey/gravity-artifacts.json",
+    "normal_selector": "Gravity artifacts only",
+    "modellake_default": "hidden",
+    "research_selector": "explicit --research only",
+    "resident_catalog_wired": true,
+    "openwebui_models_surface": "/v1/models",
+    "live_detachment_receipt": "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json",
+    "blind_real_hawking_workunit": "ATTEMPTED_FAILED_NO_VERIFIED_EDIT",
+    "operational_admission": "WITHHELD_AFTER_BLIND_MISSION_FAILURE"
+  },
+  "claim_boundary": "This freezes the first useful dense KIMI lineage and its serving identity for development. It does not claim a compressed KIMI body, a capability-preserving reduced EBPW, learned refusal repair, Odyssey admission, or a passed blind mission gate."
+}

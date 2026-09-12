@@ -1,0 +1,3115 @@
+{
+  "claim_boundary": "Header-only scoped accounting. PQ codebooks are hypothetical shared BF16 tables; no weights were loaded, no codebook was fitted, no direct kernel was validated, and no capability, full-model EBPW, TPS, promotion, or NX claim is made.",
+  "families": [
+    "source_bf16",
+    "packed_int4",
+    "binary_latent",
+    "pq_d8_shared",
+    "pq_d16_shared",
+    "pq_d32_shared",
+    "pq_d64_shared",
+    "additive_2x8_shared",
+    "generated_seeded_1mb"
+  ],
+  "fanout_standard": {
+    "method_soft_budget_ms": 2000.0,
+    "optimization_target": "reduce search wall and summed accounting time without changing candidate equations",
+    "stop_rule": "time budget flags a static method; it does not authorize skipping accounting or capability gates",
+    "worker_policy": "min(cpu_count, method_count)"
+  },
+  "generated_at": "2026-09-10T15:08:24.195951+00:00",
+  "immutable_base": true,
+  "organ_selection": "layer 10 routed expert 23, shared experts, and attention",
+  "organs": {
+    "layer10_attention": {
+      "cheap_discriminator": {
+        "best_accounted_family": "generated_seeded_1mb",
+        "next_test": "load the selected organ, fit measured codebooks, then test output distortion/capability and a direct decoder",
+        "source_to_candidate_payload_only": "not a capability or physical result"
+      },
+      "families": {
+        "additive_2x8_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries": 256,
+            "codebook_sharing": "one pair per distinct row input-width class",
+            "codebooks": 2,
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 16,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 32
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001942,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 3547172,
+                "gb": 0.003547,
+                "ms": 0.001942,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 2.1023138912526913,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 2.1023138912526913,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 2.1023138912526913,
+              "stored_bytes": 3616804
+            },
+            "executable_bytes": 3616804,
+            "executable_gb": 0.003617,
+            "flags": [],
+            "id": "KIMI_layer10_attention_additive_2x8_shared",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 860196,
+                "category": "regions",
+                "gb": 0.00086,
+                "ms": 0.000471,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "tables",
+                "gb": 6.6e-05,
+                "ms": 3.6e-05,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_2",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 524288,
+                "category": "tables",
+                "gb": 0.000524,
+                "ms": 0.000287,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_16",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 2097152,
+                "category": "tables",
+                "gb": 0.002097,
+                "ms": 0.001148,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 3616804,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 3616804,
+            "stored_bpw": 2.1023138912526913,
+            "stored_bytes": 3616804,
+            "stored_gb": 0.003617,
+            "stored_ms": 0.001942
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.5685,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "binary_latent": {
+          "assumptions": {
+            "codes": "one sign bit per source element",
+            "direct_kernel": "NOT_VALIDATED",
+            "scale_offset_bytes_per_tensor": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.000941,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69680,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 1720392,
+                "gb": 0.00172,
+                "ms": 0.000941,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.0405023971280964,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.0405023971280964,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.0405023971280964,
+              "stored_bytes": 1790072
+            },
+            "executable_bytes": 1790072,
+            "executable_gb": 0.00179,
+            "flags": [],
+            "id": "KIMI_layer10_attention_binary_latent",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bitwidth": 1.0,
+                "bytes": 1720392,
+                "category": "regions",
+                "elements": 13763136,
+                "gb": 0.00172,
+                "ms": 0.000941,
+                "ms_per_gb": 0.547282,
+                "name": "binary_latent_sign_codes",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 48,
+                "category": "tables",
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "binary_per_tensor_scale_offset_f32",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1790072,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1790072,
+            "stored_bpw": 1.0405023971280964,
+            "stored_bytes": 1790072,
+            "stored_gb": 0.00179,
+            "stored_ms": 0.000941
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.306166,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "generated_seeded_1mb": {
+          "assumptions": {
+            "direct_kernel": "NOT_VALIDATED",
+            "generator": "hypothetical; no generator implementation or fit exists",
+            "generator_support_bytes": 1048576,
+            "latent_bytes_per_tensor": 256,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.0,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 1119744,
+                "gb": 0.00112,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 0.6508656166734094,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 0.6508656166734094,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 0.6508656166734094,
+              "stored_bytes": 1119744
+            },
+            "executable_bytes": 1119744,
+            "executable_gb": 0.00112,
+            "flags": [],
+            "id": "KIMI_layer10_attention_generated_seeded_1mb",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 1536,
+                "category": "regions",
+                "gb": 2e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "generator_latent_codes",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "generators",
+                "gb": 0.001049,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "hypothetical_shared_generator_support",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1119744,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1119744,
+            "stored_bpw": 0.6508656166734094,
+            "stored_bytes": 1119744,
+            "stored_gb": 0.00112,
+            "stored_ms": 0.0
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.220334,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "packed_int4": {
+          "assumptions": {
+            "quantizer": "uniform packed 4-bit control only; no capability claim",
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.003766,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 6881568,
+                "gb": 0.006882,
+                "ms": 0.003766,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 4.040474496510098,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 4.040474496510098,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 4.040474496510098,
+              "stored_bytes": 6951200
+            },
+            "executable_bytes": 6951200,
+            "executable_gb": 0.006951,
+            "flags": [],
+            "id": "KIMI_layer10_attention_packed_int4",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bitwidth": 4.0,
+                "bytes": 6881568,
+                "category": "regions",
+                "elements": 13763136,
+                "gb": 0.006882,
+                "ms": 0.003766,
+                "ms_per_gb": 0.547282,
+                "name": "packed_int4_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 6951200,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 6951200,
+            "stored_bpw": 4.040474496510098,
+            "stored_bytes": 6951200,
+            "stored_gb": 0.006951,
+            "stored_ms": 0.003766
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.006958,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d16_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "128": 3,
+              "32": 2,
+              "4": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 16
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001206,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 2203684,
+                "gb": 0.002204,
+                "ms": 0.001206,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.3213941938813945,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.3213941938813945,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.3213941938813945,
+              "stored_bytes": 2273316
+            },
+            "executable_bytes": 2273316,
+            "executable_gb": 0.002273,
+            "flags": [],
+            "id": "KIMI_layer10_attention_pq_d16_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 860196,
+                "category": "regions",
+                "gb": 0.00086,
+                "ms": 0.000471,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 32768,
+                "category": "tables",
+                "gb": 3.3e-05,
+                "ms": 1.8e-05,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_4",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 262144,
+                "category": "tables",
+                "gb": 0.000262,
+                "ms": 0.000143,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_32",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_128",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 2273316,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 2273316,
+            "stored_bpw": 1.3213941938813945,
+            "stored_bytes": 2273316,
+            "stored_gb": 0.002273,
+            "stored_ms": 0.001206
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.042583,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d32_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "16": 2,
+              "2": 1,
+              "64": 3
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 32
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.00097,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 1773586,
+                "gb": 0.001774,
+                "ms": 0.00097,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.0713941938813945,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.0713941938813945,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.0713941938813945,
+              "stored_bytes": 1843218
+            },
+            "executable_bytes": 1843218,
+            "executable_gb": 0.001843,
+            "flags": [],
+            "id": "KIMI_layer10_attention_pq_d32_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 430098,
+                "category": "regions",
+                "gb": 0.00043,
+                "ms": 0.000235,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 32768,
+                "category": "tables",
+                "gb": 3.3e-05,
+                "ms": 1.8e-05,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_2",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 262144,
+                "category": "tables",
+                "gb": 0.000262,
+                "ms": 0.000143,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_16",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1843218,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1843218,
+            "stored_bpw": 1.0713941938813945,
+            "stored_bytes": 1843218,
+            "stored_gb": 0.001843,
+            "stored_ms": 0.00097
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.651708,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d64_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "1": 1,
+              "32": 3,
+              "8": 2
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 64
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.000853,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 1558537,
+                "gb": 0.001559,
+                "ms": 0.000853,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 0.9463941938813945,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 0.9463941938813945,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 0.9463941938813945,
+              "stored_bytes": 1628169
+            },
+            "executable_bytes": 1628169,
+            "executable_gb": 0.001628,
+            "flags": [],
+            "id": "KIMI_layer10_attention_pq_d64_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 215049,
+                "category": "regions",
+                "gb": 0.000215,
+                "ms": 0.000118,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 32768,
+                "category": "tables",
+                "gb": 3.3e-05,
+                "ms": 1.8e-05,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_1",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 262144,
+                "category": "tables",
+                "gb": 0.000262,
+                "ms": 0.000143,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_8",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_32",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1628169,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1628169,
+            "stored_bpw": 0.9463941938813945,
+            "stored_bytes": 1628169,
+            "stored_gb": 0.001628,
+            "stored_ms": 0.000853
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.303834,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d8_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "256": 3,
+              "64": 2,
+              "8": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 8
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001676,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 3063880,
+                "gb": 0.003064,
+                "ms": 0.001676,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.8213941938813945,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.8213941938813945,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.8213941938813945,
+              "stored_bytes": 3133512
+            },
+            "executable_bytes": 3133512,
+            "executable_gb": 0.003134,
+            "flags": [],
+            "id": "KIMI_layer10_attention_pq_d8_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 1720392,
+                "category": "regions",
+                "gb": 0.00172,
+                "ms": 0.000941,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 32768,
+                "category": "tables",
+                "gb": 3.3e-05,
+                "ms": 1.8e-05,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_8",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 262144,
+                "category": "tables",
+                "gb": 0.000262,
+                "ms": 0.000143,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_256",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 3133512,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 3133512,
+            "stored_bpw": 1.8213941938813945,
+            "stored_bytes": 3133512,
+            "stored_gb": 0.003134,
+            "stored_ms": 0.001676
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.394958,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "source_bf16": {
+          "assumptions": {
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.015064,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 27526272,
+                "gb": 0.027526,
+                "ms": 0.015064,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 16.040474496510097,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 16.040474496510097,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 16.040474496510097,
+              "stored_bytes": 27595904
+            },
+            "executable_bytes": 27595904,
+            "executable_gb": 0.027596,
+            "flags": [],
+            "id": "KIMI_layer10_attention_source_bf16",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 13763136,
+            "parts": [
+              {
+                "bytes": 27526272,
+                "category": "regions",
+                "gb": 0.027526,
+                "ms": 0.015064,
+                "ms_per_gb": 0.547282,
+                "name": "source_bf16_payload",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 27595904,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 27595904,
+            "stored_bpw": 16.040474496510097,
+            "stored_bytes": 27595904,
+            "stored_gb": 0.027596,
+            "stored_ms": 0.015064
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.911208,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        }
+      },
+      "fanout_timing": {
+        "execution": "CPU header/accounting only; not model TPS",
+        "method_count": 9,
+        "sum_method_elapsed_ms": 5.406249,
+        "wall_elapsed_ms": 2.24025,
+        "workers": 9
+      },
+      "organ": "layer10_attention",
+      "parent_params": 13763136,
+      "source_bf16_payload_bytes": 27526272,
+      "tensor_count": 6,
+      "tensor_names": [
+        "language_model.model.layers.10.self_attn.kv_a_layernorm.weight",
+        "language_model.model.layers.10.self_attn.kv_a_proj_with_mqa.weight",
+        "language_model.model.layers.10.self_attn.kv_b_proj.weight",
+        "language_model.model.layers.10.self_attn.o_proj.weight",
+        "language_model.model.layers.10.self_attn.q_proj.weight",
+        "language_model.model.layers.10.self_attn.rotary_emb.inv_freq"
+      ]
+    },
+    "layer10_routed_expert23": {
+      "cheap_discriminator": {
+        "best_accounted_family": "generated_seeded_1mb",
+        "next_test": "load the selected organ, fit measured codebooks, then test output distortion/capability and a direct decoder",
+        "source_to_candidate_payload_only": "not a capability or physical result"
+      },
+      "families": {
+        "additive_2x8_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries": 256,
+            "codebook_sharing": "one pair per distinct row input-width class",
+            "codebooks": 2,
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 16,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 32
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.002233,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 4079616,
+                "gb": 0.00408,
+                "ms": 0.002233,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 3.837121212121212,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 3.837121212121212,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 3.837121212121212,
+              "stored_bytes": 4149248
+            },
+            "executable_bytes": 4149248,
+            "executable_gb": 0.004149,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_additive_2x8_shared",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 540672,
+                "category": "regions",
+                "gb": 0.000541,
+                "ms": 0.000296,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1441792,
+                "category": "tables",
+                "gb": 0.001442,
+                "ms": 0.000789,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_44",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 2097152,
+                "category": "tables",
+                "gb": 0.002097,
+                "ms": 0.001148,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 4149248,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 4149248,
+            "stored_bpw": 3.837121212121212,
+            "stored_bytes": 4149248,
+            "stored_gb": 0.004149,
+            "stored_ms": 0.002233
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.756833,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "binary_latent": {
+          "assumptions": {
+            "codes": "one sign bit per source element",
+            "direct_kernel": "NOT_VALIDATED",
+            "scale_offset_bytes_per_tensor": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.000592,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69656,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 1081344,
+                "gb": 0.001081,
+                "ms": 0.000592,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.0644161339962122,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.0644161339962122,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.0644161339962122,
+              "stored_bytes": 1151000
+            },
+            "executable_bytes": 1151000,
+            "executable_gb": 0.001151,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_binary_latent",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bitwidth": 1.0,
+                "bytes": 1081344,
+                "category": "regions",
+                "elements": 8650752,
+                "gb": 0.001081,
+                "ms": 0.000592,
+                "ms_per_gb": 0.547282,
+                "name": "binary_latent_sign_codes",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 24,
+                "category": "tables",
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "binary_per_tensor_scale_offset_f32",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1151000,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1151000,
+            "stored_bpw": 1.0644161339962122,
+            "stored_bytes": 1151000,
+            "stored_gb": 0.001151,
+            "stored_ms": 0.000592
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 2.333333,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "generated_seeded_1mb": {
+          "assumptions": {
+            "direct_kernel": "NOT_VALIDATED",
+            "generator": "hypothetical; no generator implementation or fit exists",
+            "generator_support_bytes": 1048576,
+            "latent_bytes_per_tensor": 256,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.0,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 1118976,
+                "gb": 0.001119,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.0348011363636365,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.0348011363636365,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.0348011363636365,
+              "stored_bytes": 1118976
+            },
+            "executable_bytes": 1118976,
+            "executable_gb": 0.001119,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_generated_seeded_1mb",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 768,
+                "category": "regions",
+                "gb": 1e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "generator_latent_codes",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "generators",
+                "gb": 0.001049,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "hypothetical_shared_generator_support",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1118976,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1118976,
+            "stored_bpw": 1.0348011363636365,
+            "stored_bytes": 1118976,
+            "stored_gb": 0.001119,
+            "stored_ms": 0.0
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.15725,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "packed_int4": {
+          "assumptions": {
+            "quantizer": "uniform packed 4-bit control only; no capability claim",
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.002367,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 4325376,
+                "gb": 0.004325,
+                "ms": 0.002367,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 4.0643939393939394,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 4.0643939393939394,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 4.0643939393939394,
+              "stored_bytes": 4395008
+            },
+            "executable_bytes": 4395008,
+            "executable_gb": 0.004395,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_packed_int4",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bitwidth": 4.0,
+                "bytes": 4325376,
+                "category": "regions",
+                "elements": 8650752,
+                "gb": 0.004325,
+                "ms": 0.002367,
+                "ms_per_gb": 0.547282,
+                "name": "packed_int4_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 4395008,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 4395008,
+            "stored_bpw": 4.0643939393939394,
+            "stored_bytes": 4395008,
+            "stored_gb": 0.004395,
+            "stored_ms": 0.002367
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 2.208541,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d16_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "128": 2,
+              "88": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 16
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001265,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 2310144,
+                "gb": 0.00231,
+                "ms": 0.001265,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 2.2007575757575757,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 2.2007575757575757,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 2.2007575757575757,
+              "stored_bytes": 2379776
+            },
+            "executable_bytes": 2379776,
+            "executable_gb": 0.00238,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_pq_d16_shared",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 540672,
+                "category": "regions",
+                "gb": 0.000541,
+                "ms": 0.000296,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 720896,
+                "category": "tables",
+                "gb": 0.000721,
+                "ms": 0.000395,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_88",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_128",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 2379776,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 2379776,
+            "stored_bpw": 2.2007575757575757,
+            "stored_bytes": 2379776,
+            "stored_gb": 0.00238,
+            "stored_ms": 0.001265
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.534917,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d32_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "44": 1,
+              "64": 2
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 32
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001117,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 2039808,
+                "gb": 0.00204,
+                "ms": 0.001117,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.9507575757575757,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.9507575757575757,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.9507575757575757,
+              "stored_bytes": 2109440
+            },
+            "executable_bytes": 2109440,
+            "executable_gb": 0.002109,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_pq_d32_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 270336,
+                "category": "regions",
+                "gb": 0.00027,
+                "ms": 0.000148,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 720896,
+                "category": "tables",
+                "gb": 0.000721,
+                "ms": 0.000395,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_44",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 2109440,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 2109440,
+            "stored_bpw": 1.9507575757575757,
+            "stored_bytes": 2109440,
+            "stored_gb": 0.002109,
+            "stored_ms": 0.001117
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.703583,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d64_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "22": 1,
+              "32": 2
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 64
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001043,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 1904640,
+                "gb": 0.001905,
+                "ms": 0.001043,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.8257575757575757,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.8257575757575757,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.8257575757575757,
+              "stored_bytes": 1974272
+            },
+            "executable_bytes": 1974272,
+            "executable_gb": 0.001974,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_pq_d64_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 135168,
+                "category": "regions",
+                "gb": 0.000135,
+                "ms": 7.4e-05,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 720896,
+                "category": "tables",
+                "gb": 0.000721,
+                "ms": 0.000395,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_22",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_32",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1974272,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1974272,
+            "stored_bpw": 1.8257575757575757,
+            "stored_bytes": 1974272,
+            "stored_gb": 0.001974,
+            "stored_ms": 0.001043
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.697417,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d8_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "176": 1,
+              "256": 2
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 8
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001561,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 2850816,
+                "gb": 0.002851,
+                "ms": 0.001561,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 2.7007575757575757,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 2.7007575757575757,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 2.7007575757575757,
+              "stored_bytes": 2920448
+            },
+            "executable_bytes": 2920448,
+            "executable_gb": 0.00292,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_pq_d8_shared",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 1081344,
+                "category": "regions",
+                "gb": 0.001081,
+                "ms": 0.000592,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 720896,
+                "category": "tables",
+                "gb": 0.000721,
+                "ms": 0.000395,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_176",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_256",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 2920448,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 2920448,
+            "stored_bpw": 2.7007575757575757,
+            "stored_bytes": 2920448,
+            "stored_gb": 0.00292,
+            "stored_ms": 0.001561
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.284458,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "source_bf16": {
+          "assumptions": {
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.009469,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 17301504,
+                "gb": 0.017302,
+                "ms": 0.009469,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 16.064393939393938,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 16.064393939393938,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 16.064393939393938,
+              "stored_bytes": 17371136
+            },
+            "executable_bytes": 17371136,
+            "executable_gb": 0.017371,
+            "flags": [],
+            "id": "KIMI_layer10_routed_expert23_source_bf16",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 8650752,
+            "parts": [
+              {
+                "bytes": 17301504,
+                "category": "regions",
+                "gb": 0.017302,
+                "ms": 0.009469,
+                "ms_per_gb": 0.547282,
+                "name": "source_bf16_payload",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 17371136,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 17371136,
+            "stored_bpw": 16.064393939393938,
+            "stored_bytes": 17371136,
+            "stored_gb": 0.017371,
+            "stored_ms": 0.009469
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.9405,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        }
+      },
+      "fanout_timing": {
+        "execution": "CPU header/accounting only; not model TPS",
+        "method_count": 9,
+        "sum_method_elapsed_ms": 12.616832,
+        "wall_elapsed_ms": 3.130458,
+        "workers": 9
+      },
+      "organ": "layer10_routed_expert23",
+      "parent_params": 8650752,
+      "source_bf16_payload_bytes": 17301504,
+      "tensor_count": 3,
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.23.down_proj.weight",
+        "language_model.model.layers.10.mlp.experts.23.gate_proj.weight",
+        "language_model.model.layers.10.mlp.experts.23.up_proj.weight"
+      ]
+    },
+    "layer10_shared_experts": {
+      "cheap_discriminator": {
+        "best_accounted_family": "generated_seeded_1mb",
+        "next_test": "load the selected organ, fit measured codebooks, then test output distortion/capability and a direct decoder",
+        "source_to_candidate_payload_only": "not a capability or physical result"
+      },
+      "families": {
+        "additive_2x8_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries": 256,
+            "codebook_sharing": "one pair per distinct row input-width class",
+            "codebooks": 2,
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 16,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 32
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.003318,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 6062080,
+                "gb": 0.006062,
+                "ms": 0.003318,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 2.835227272727273,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 2.835227272727273,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 2.835227272727273,
+              "stored_bytes": 6131712
+            },
+            "executable_bytes": 6131712,
+            "executable_gb": 0.006132,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_additive_2x8_shared",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 1081344,
+                "category": "regions",
+                "gb": 0.001081,
+                "ms": 0.000592,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 2097152,
+                "category": "tables",
+                "gb": 0.002097,
+                "ms": 0.001148,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 2883584,
+                "category": "tables",
+                "gb": 0.002884,
+                "ms": 0.001578,
+                "ms_per_gb": 0.547282,
+                "name": "additive_2x8_bf16_codebooks_groups_88",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 6131712,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 6131712,
+            "stored_bpw": 2.835227272727273,
+            "stored_bytes": 6131712,
+            "stored_gb": 0.006132,
+            "stored_ms": 0.003318
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.93175,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "binary_latent": {
+          "assumptions": {
+            "codes": "one sign bit per source element",
+            "direct_kernel": "NOT_VALIDATED",
+            "scale_offset_bytes_per_tensor": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001184,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69656,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 2162688,
+                "gb": 0.002163,
+                "ms": 0.001184,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.032208066998106,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.032208066998106,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.032208066998106,
+              "stored_bytes": 2232344
+            },
+            "executable_bytes": 2232344,
+            "executable_gb": 0.002232,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_binary_latent",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bitwidth": 1.0,
+                "bytes": 2162688,
+                "category": "regions",
+                "elements": 17301504,
+                "gb": 0.002163,
+                "ms": 0.001184,
+                "ms_per_gb": 0.547282,
+                "name": "binary_latent_sign_codes",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 24,
+                "category": "tables",
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "binary_per_tensor_scale_offset_f32",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 2232344,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 2232344,
+            "stored_bpw": 1.032208066998106,
+            "stored_bytes": 2232344,
+            "stored_gb": 0.002232,
+            "stored_ms": 0.001184
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.305209,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "generated_seeded_1mb": {
+          "assumptions": {
+            "direct_kernel": "NOT_VALIDATED",
+            "generator": "hypothetical; no generator implementation or fit exists",
+            "generator_support_bytes": 1048576,
+            "latent_bytes_per_tensor": 256,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.0,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 1118976,
+                "gb": 0.001119,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 0.5174005681818182,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 0.5174005681818182,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 0.5174005681818182,
+              "stored_bytes": 1118976
+            },
+            "executable_bytes": 1118976,
+            "executable_gb": 0.001119,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_generated_seeded_1mb",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 768,
+                "category": "regions",
+                "gb": 1e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "generator_latent_codes",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "generators",
+                "gb": 0.001049,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "hypothetical_shared_generator_support",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 1118976,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 1118976,
+            "stored_bpw": 0.5174005681818182,
+            "stored_bytes": 1118976,
+            "stored_gb": 0.001119,
+            "stored_ms": 0.0
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.186041,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "packed_int4": {
+          "assumptions": {
+            "quantizer": "uniform packed 4-bit control only; no capability claim",
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.004735,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 8650752,
+                "gb": 0.008651,
+                "ms": 0.004735,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 4.03219696969697,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 4.03219696969697,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 4.03219696969697,
+              "stored_bytes": 8720384
+            },
+            "executable_bytes": 8720384,
+            "executable_gb": 0.00872,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_packed_int4",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bitwidth": 4.0,
+                "bytes": 8650752,
+                "category": "regions",
+                "elements": 17301504,
+                "gb": 0.008651,
+                "ms": 0.004735,
+                "ms_per_gb": 0.547282,
+                "name": "packed_int4_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 8720384,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 8720384,
+            "stored_bpw": 4.03219696969697,
+            "stored_bytes": 8720384,
+            "stored_gb": 0.00872,
+            "stored_ms": 0.004735
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.577584,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d16_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "128": 2,
+              "176": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 16
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001955,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 3571712,
+                "gb": 0.003572,
+                "ms": 0.001955,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.683712121212121,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.683712121212121,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.683712121212121,
+              "stored_bytes": 3641344
+            },
+            "executable_bytes": 3641344,
+            "executable_gb": 0.003641,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_pq_d16_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 1081344,
+                "category": "regions",
+                "gb": 0.001081,
+                "ms": 0.000592,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_128",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1441792,
+                "category": "tables",
+                "gb": 0.001442,
+                "ms": 0.000789,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d16_bf16_codebook_groups_176",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 3641344,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 3641344,
+            "stored_bpw": 1.683712121212121,
+            "stored_bytes": 3641344,
+            "stored_gb": 0.003641,
+            "stored_ms": 0.001955
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.798416,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d32_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "64": 2,
+              "88": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 32
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001659,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 3031040,
+                "gb": 0.003031,
+                "ms": 0.001659,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.433712121212121,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.433712121212121,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.433712121212121,
+              "stored_bytes": 3100672
+            },
+            "executable_bytes": 3100672,
+            "executable_gb": 0.003101,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_pq_d32_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 540672,
+                "category": "regions",
+                "gb": 0.000541,
+                "ms": 0.000296,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_64",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1441792,
+                "category": "tables",
+                "gb": 0.001442,
+                "ms": 0.000789,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d32_bf16_codebook_groups_88",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 3100672,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 3100672,
+            "stored_bpw": 1.433712121212121,
+            "stored_bytes": 3100672,
+            "stored_gb": 0.003101,
+            "stored_ms": 0.001659
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 2.049416,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d64_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "32": 2,
+              "44": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 64
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.001511,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 2760704,
+                "gb": 0.002761,
+                "ms": 0.001511,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 1.308712121212121,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 1.308712121212121,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": true,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 1.308712121212121,
+              "stored_bytes": 2830336
+            },
+            "executable_bytes": 2830336,
+            "executable_gb": 0.00283,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_pq_d64_shared",
+            "is_sub2_executable": true,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 270336,
+                "category": "regions",
+                "gb": 0.00027,
+                "ms": 0.000148,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_32",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1441792,
+                "category": "tables",
+                "gb": 0.001442,
+                "ms": 0.000789,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d64_bf16_codebook_groups_44",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 2830336,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 2830336,
+            "stored_bpw": 1.308712121212121,
+            "stored_bytes": 2830336,
+            "stored_gb": 0.00283,
+            "stored_ms": 0.001511
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.988584,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "pq_d8_shared": {
+          "assumptions": {
+            "codebook_dtype": "bf16",
+            "codebook_entries_per_group": 256,
+            "codebook_group_classes": {
+              "256": 2,
+              "352": 1
+            },
+            "codebook_sharing": "one table per distinct row input-width class",
+            "direct_kernel": "NOT_VALIDATED",
+            "index_bits_per_vector": 8,
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096,
+            "vector_width": 8
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.002547,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 4653056,
+                "gb": 0.004653,
+                "ms": 0.002547,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 2.183712121212121,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 2.183712121212121,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 2.183712121212121,
+              "stored_bytes": 4722688
+            },
+            "executable_bytes": 4722688,
+            "executable_gb": 0.004723,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_pq_d8_shared",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 2162688,
+                "category": "regions",
+                "gb": 0.002163,
+                "ms": 0.001184,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_indices",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 1048576,
+                "category": "tables",
+                "gb": 0.001049,
+                "ms": 0.000574,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_256",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 1441792,
+                "category": "tables",
+                "gb": 0.001442,
+                "ms": 0.000789,
+                "ms_per_gb": 0.547282,
+                "name": "pq_d8_bf16_codebook_groups_352",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 4722688,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 4722688,
+            "stored_bpw": 2.183712121212121,
+            "stored_bytes": 4722688,
+            "stored_gb": 0.004723,
+            "stored_ms": 0.002547
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 0.562833,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        },
+        "source_bf16": {
+          "assumptions": {
+            "scoped_decoder_support_bytes": 65536,
+            "scoped_metadata_bytes": 4096
+          },
+          "capability_status": "NOT_MEASURED",
+          "complete_accounting": {
+            "billed_ms": 0.018938,
+            "by_stream_class": {
+              "activation": {
+                "bytes": 0,
+                "gb": 0.0,
+                "ms": 0.0,
+                "ms_per_gb": 2.906132
+              },
+              "broadcast_aux": {
+                "bytes": 69632,
+                "gb": 7e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0
+              },
+              "weight_codes": {
+                "bytes": 34603008,
+                "gb": 0.034603,
+                "ms": 0.018938,
+                "ms_per_gb": 0.547282
+              }
+            },
+            "complete_ebpw": 16.03219696969697,
+            "consumes_representation_directly": true,
+            "dense_parent_rematerialization": {
+              "complete_ebpw": 16.03219696969697,
+              "flag": null,
+              "flagged": false,
+              "is_sub2_executable": false,
+              "reason": "production consumes the representation directly",
+              "stored_bpw": 16.03219696969697,
+              "stored_bytes": 34672640
+            },
+            "executable_bytes": 34672640,
+            "executable_gb": 0.034673,
+            "flags": [],
+            "id": "KIMI_layer10_shared_experts_source_bf16",
+            "is_sub2_executable": false,
+            "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+            "parent_params": 17301504,
+            "parts": [
+              {
+                "bytes": 34603008,
+                "category": "regions",
+                "gb": 0.034603,
+                "ms": 0.018938,
+                "ms_per_gb": 0.547282,
+                "name": "source_bf16_payload",
+                "stream_class": "weight_codes"
+              },
+              {
+                "bytes": 4096,
+                "category": "metadata",
+                "gb": 4e-06,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_shape_and_dtype_metadata",
+                "stream_class": "broadcast_aux"
+              },
+              {
+                "bytes": 65536,
+                "category": "runtime_auxiliaries",
+                "gb": 6.6e-05,
+                "ms": 0.0,
+                "ms_per_gb": 0.0,
+                "name": "scoped_decoder_support_reserve",
+                "stream_class": "broadcast_aux"
+              }
+            ],
+            "parts_bytes": 34672640,
+            "reconciled": true,
+            "reconstructs_dense_parent": false,
+            "stated_total_bytes": 34672640,
+            "stored_bpw": 16.03219696969697,
+            "stored_bytes": 34672640,
+            "stored_gb": 0.034673,
+            "stored_ms": 0.018938
+          },
+          "direct_execution_status": "NOT_VALIDATED",
+          "timing": {
+            "accounting_elapsed_ms": 1.826417,
+            "soft_budget_ms": 2000.0,
+            "soft_budget_status": "WITHIN"
+          }
+        }
+      },
+      "fanout_timing": {
+        "execution": "CPU header/accounting only; not model TPS",
+        "method_count": 9,
+        "sum_method_elapsed_ms": 11.22625,
+        "wall_elapsed_ms": 2.859667,
+        "workers": 9
+      },
+      "organ": "layer10_shared_experts",
+      "parent_params": 17301504,
+      "source_bf16_payload_bytes": 34603008,
+      "tensor_count": 3,
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.shared_experts.down_proj.weight",
+        "language_model.model.layers.10.mlp.shared_experts.gate_proj.weight",
+        "language_model.model.layers.10.mlp.shared_experts.up_proj.weight"
+      ]
+    }
+  },
+  "schema": "hawking.future.kimi_ebpw_organ_screen.v1",
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "ACCOUNTING_SCREEN_ONLY",
+  "weight_load": false
+}

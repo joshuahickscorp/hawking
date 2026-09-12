@@ -8,6 +8,8 @@ test that calls the functions directly.
 from __future__ import annotations
 
 import json
+import pathlib
+import tempfile
 import threading
 import unittest
 import urllib.error
@@ -22,6 +24,7 @@ from hcli.serve import (
     profile_is_greedy,
     sampler_refusal,
     stream_frames,
+    visible_text,
 )
 
 
@@ -44,12 +47,49 @@ class _Backend:
         return _Result()
 
 
-def _serve(greedy=True):
+class _ToolBackend(_Backend):
+    identity = "kimi-test"
+    native_tools = False
+    tools_verdict = {"qualified": True}
+
+    def complete(self, payload, timeout=None):
+        self.seen.append(payload)
+        if len(self.seen) == 1:
+            return type("R", (), {
+                "text": '{"tool":"fs.list","arguments":{"path":"."}}',
+                "finish_reason": "stop", "degraded": [], "raw": {},
+            })()
+        return type("R", (), {
+            "text": "The dispatcher returned the directory observation.",
+            "finish_reason": "stop", "degraded": [], "raw": {},
+        })()
+
+
+class _WebUIManager:
+    def __init__(self):
+        self.started = []
+        self.stopped = []
+
+    def snapshot(self):
+        return [{"pid": 123, "port": 8081, "state": "running"}]
+
+    def start(self, port, endpoint, requester_pid):
+        self.started.append((port, endpoint, requester_pid))
+        return {"pid": 456, "port": port, "endpoint": endpoint, "state": "running"}
+
+    def stop(self, port, *, requester_pid=None):
+        self.stopped.append((port, requester_pid))
+        return True
+
+
+def _serve(greedy=True, webui_manager=None):
     backend = _Backend()
     httpd = ThreadingHTTPServer(
         ("127.0.0.1", 0),
         make_handler(backend, "sealed-3.14", greedy=greedy,
-                     health={"status": "ok", "resident": "sealed-3.14"}))
+                     health={"status": "ok", "resident": "sealed-3.14"},
+                     webui_manager=webui_manager,
+                     endpoint_base="http://127.0.0.1:8014/v1"))
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd, backend, f"http://127.0.0.1:{httpd.server_address[1]}"
 
@@ -90,6 +130,13 @@ class TestOpenAISurface(unittest.TestCase):
         self.assertEqual(body["choices"][0]["finish_reason"], "stop")
         self.assertEqual(body["usage"]["total_tokens"], 20)
 
+    def test_provider_timings_survive_the_hcli_response(self):
+        result = _Result()
+        result.raw = {"timings": {"predicted_per_second": 88.5}}
+        body = chat_payload(result, "sealed-3.14", request_id="timing-test")
+        self.assertEqual(body["timings"]["predicted_per_second"], 88.5)
+        self.assertEqual(body["hawking"]["timings_scope"], "final_model_call_only")
+
     def test_stream_true_returns_SSE_not_json(self):
         # The defect this pins: answering a streaming request with a JSON body
         # leaves the browser waiting forever on a stream that never frames.
@@ -112,6 +159,34 @@ class TestOpenAISurface(unittest.TestCase):
     def test_the_stream_flag_never_reaches_the_resident(self):
         _post(self.base, {"messages": [{"role": "user", "content": "hi"}], "stream": True})
         self.assertNotIn("stream", self.backend.seen[-1])
+
+    def test_streaming_browser_turn_persists_the_durable_session(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            backend = _Backend()
+            httpd = ThreadingHTTPServer(
+                ("127.0.0.1", 0),
+                make_handler(
+                    backend,
+                    "sealed-3.14",
+                    greedy=False,
+                    health={"status": "ok", "resident": "sealed-3.14"},
+                    stores={"state_root": tmp},
+                ),
+            )
+            threading.Thread(target=httpd.serve_forever, daemon=True).start()
+            self.addCleanup(httpd.shutdown)
+            base = f"http://127.0.0.1:{httpd.server_address[1]}"
+            code, _, raw = _post(base, {
+                "session_id": "stream-persist",
+                "messages": [{"role": "user", "content": "remember this objective"}],
+                "stream": True,
+            })
+            self.assertEqual(code, 200, raw)
+            saved = json.loads((
+                pathlib.Path(tmp) / ".hcli/chat/stream-persist.json"
+            ).read_text(encoding="utf-8"))
+            self.assertEqual(saved["turns"], 1)
+            self.assertEqual(saved["objective"], "remember this objective")
 
     def test_a_sampler_request_is_refused_with_the_accepted_value(self):
         code, _, raw = _post(self.base, {
@@ -137,6 +212,28 @@ class TestOpenAISurface(unittest.TestCase):
         self.assertEqual(code, 404)
         self.assertIn("/v1/chat/completions", json.loads(raw)["error"]["message"])
 
+    def test_daemon_webui_control_is_local_and_uses_the_shared_endpoint(self):
+        manager = _WebUIManager()
+        httpd, _, base = _serve(webui_manager=manager)
+        self.addCleanup(httpd.shutdown)
+        code, _, raw = _post(base, {
+            "port": 8082, "requester_pid": 789,
+        }, path="/hawkingd/webui")
+        self.assertEqual(code, 200, raw)
+        self.assertEqual(manager.started, [(8082, "http://127.0.0.1:8014/v1", 789)])
+        self.assertEqual(json.loads(raw)["endpoint"], "http://127.0.0.1:8014/v1")
+
+        with urllib.request.urlopen(base + "/hawkingd/webui", timeout=10) as response:
+            listing = json.loads(response.read())
+        self.assertEqual(listing["owner"], "hawkingd")
+        self.assertEqual(listing["client_surfaces"][0]["port"], 8081)
+
+        code, _, raw = _post(base, {
+            "port": 8082, "requester_pid": 789,
+        }, path="/hawkingd/webui/stop")
+        self.assertEqual(code, 200, raw)
+        self.assertEqual(manager.stopped, [(8082, 789)])
+
 
 class TestNonGreedyBackendDoesNotRefuse(unittest.TestCase):
     def test_an_mlx_specimen_may_sample(self):
@@ -145,6 +242,39 @@ class TestNonGreedyBackendDoesNotRefuse(unittest.TestCase):
         code, _, raw = _post(base, {
             "messages": [{"role": "user", "content": "hi"}], "temperature": 0.8})
         self.assertEqual(code, 200, raw)
+
+
+class TestToolLivenessEvidence(unittest.TestCase):
+    def test_response_distinguishes_offered_tools_from_dispatched_tools(self):
+        backend = _ToolBackend()
+        registry = type("Registry", (), {
+            "get": lambda self, name: None,
+            "invoke": lambda self, name, args: type(
+                "Result", (), {"ok": True, "value": {"files": ["proof.txt"]},
+                                "error": None, "provenance": {}})(),
+        })()
+        httpd = ThreadingHTTPServer(
+            ("127.0.0.1", 0),
+            make_handler(backend, "kimi-test", greedy=False,
+                         health={"status": "ok", "resident": "kimi-test"},
+                         registry=registry))
+        threading.Thread(target=httpd.serve_forever, daemon=True).start()
+        self.addCleanup(httpd.shutdown)
+        code, _, raw = _post(
+            f"http://127.0.0.1:{httpd.server_address[1]}",
+            {"messages": [{"role": "user", "content": "inspect it"}]})
+        self.assertEqual(code, 200, raw)
+        body = json.loads(raw)
+        self.assertEqual(body["choices"][0]["message"]["content"],
+                         "The dispatcher returned the directory observation.")
+        self.assertEqual(body["hawking"]["tool_contract"]["serialized_format"],
+                         "textual_json_contract")
+        self.assertGreater(body["hawking"]["tool_contract"]["serialized_count"], 0)
+        self.assertEqual(body["hawking"]["tool_contract"]["actual_invocations"], 1)
+        self.assertTrue(body["hawking"]["tools_used"][0]["dispatched"])
+        self.assertEqual(body["hawking"]["runtime"]["source"], "hawkingd:/health")
+        self.assertEqual(body["hawking"]["runtime"]["resident"], "kimi-test")
+        self.assertTrue(body["hawking"]["runtime"]["identity_match"])
 
 
 class TestGreedyDetection(unittest.TestCase):
@@ -190,6 +320,14 @@ class TestPayloadHelpers(unittest.TestCase):
 
     def test_models_payload_shape(self):
         self.assertEqual(models_payload("m")["data"][0]["id"], "m")
+
+    def test_known_template_markers_never_reach_visible_answer(self):
+        body = chat_payload(
+            type("R", (), {"text": "answer<|im_end|>", "finish_reason": "stop",
+                            "degraded": [], "raw": {}})(),
+            "m", request_id="marker-test")
+        self.assertEqual(body["choices"][0]["message"]["content"], "answer")
+        self.assertEqual(visible_text("<|im_start|>x<|eot_id|>"), "x")
 
 
 if __name__ == "__main__":

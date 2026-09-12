@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
+from .latency import now_ns, seconds_from_ns, since_ns, wall_elapsed_ns
+
 
 SCHEMA = "hawking.hcli.odyssey.gravity_gauntlet.v1"
 TARGET_HIT = "TARGET_HIT"
@@ -144,6 +146,18 @@ def _read_receipt(value: Mapping[str, Any] | str | Path) -> dict[str, Any]:
     return json.loads(Path(value).read_text())
 
 
+def _verification_wall_ns(data: Mapping[str, Any]) -> int | None:
+    value = data.get("verification_wall_ns")
+    if isinstance(value, int) and not isinstance(value, bool):
+        return max(0, value)
+    if isinstance(value, float) and value.is_integer():
+        return max(0, int(value))
+    legacy = data.get("verification_wall_s")
+    if isinstance(legacy, (int, float)) and not isinstance(legacy, bool):
+        return max(0, int(round(float(legacy) * 1_000_000_000)))
+    return None
+
+
 def _measured_complete_bpw(receipt: Mapping[str, Any]) -> tuple[float | None, str | None]:
     raw = receipt.get("complete_ebpw", receipt.get("complete_bpw"))
     if raw is None and isinstance(receipt.get("accounting"), Mapping):
@@ -223,6 +237,12 @@ def observe(candidate: Candidate, receipt: Mapping[str, Any] | str | Path, *, ta
     reject_reasons = [x for x in (complete_error, accounting_reason if not accounting_ok else None) if x]
     if not magnitude["adequate"]:
         reject_reasons.append(magnitude["reason"])
+    doctor = raw.get("doctor")
+    doctor_wall = doctor if isinstance(doctor, Mapping) else {}
+    measured_wall_ns = wall_elapsed_ns(raw)
+    if measured_wall_ns is None:
+        measured_wall_ns = wall_elapsed_ns(doctor_wall)
+    verification_wall_ns = _verification_wall_ns(raw)
     return {
         "receipt": raw.get("out") or raw.get("receipt_path"),
         "complete_ebpw": complete_bpw,
@@ -236,8 +256,10 @@ def observe(candidate: Candidate, receipt: Mapping[str, Any] | str | Path, *, ta
         "utilization_measured": utilization_measured,
         "magnitude_adequacy": magnitude,
         "persistent_bytes": raw.get("stored_bytes") or (raw.get("accounting") or {}).get("complete_bytes"),
-        "wall_s": raw.get("wall_s") or (raw.get("doctor") or {}).get("wall_s"),
-        "verification_wall_s": raw.get("verification_wall_s"),
+        "wall_ns": measured_wall_ns,
+        "wall_s": seconds_from_ns(measured_wall_ns),
+        "verification_wall_ns": verification_wall_ns,
+        "verification_wall_s": seconds_from_ns(verification_wall_ns),
         "resource_measurements": raw.get("resource_measurements") or raw.get("utilization"),
         "nr_release_verified": bool(raw.get("nr_release_verified") or raw.get("release_verified")),
         "target_eligible": bool(
@@ -304,6 +326,20 @@ class GravityGauntlet:
         self.budget = int(budget)
         self.target = float(target)
         self.state = self._load_or_init()
+        self._evaluated_ids = {
+            row["candidate"]["id"]
+            for row in self.state.get("iterations", [])
+            if isinstance(row, Mapping)
+            and isinstance(row.get("candidate"), Mapping)
+            and row["candidate"].get("id")
+        }
+        self._iteration_by_id = {
+            row["candidate"]["id"]: row
+            for row in self.state.get("iterations", [])
+            if isinstance(row, Mapping)
+            and isinstance(row.get("candidate"), Mapping)
+            and row["candidate"].get("id")
+        }
 
     def _load_or_init(self) -> dict[str, Any]:
         docs = {_candidate_doc(c)["id"]: c for c in self.candidates}
@@ -318,8 +354,9 @@ class GravityGauntlet:
             if list((state.get("target") or {}).get("requires") or []) != list(TARGET_REQUIREMENTS):
                 state.setdefault("target", {})["requires"] = list(TARGET_REQUIREMENTS)
                 _atomic_write(self.path, state)
+            self._normalize_cost(state)
             return state
-        return {
+        state = {
             "schema": SCHEMA,
             "authority": "HCLI single writer; verifier decides target status",
             "specimen": self.specimen,
@@ -331,18 +368,53 @@ class GravityGauntlet:
             "best_candidate_id": None,
             "nr": {"current_candidate_id": None, "released_candidate_ids": [], "release_verified": True},
             "terminal": None,
-            "cost": {"candidate_evaluations": 0, "wall_s": 0.0, "verification_wall_s": 0.0, "resource_cost": {}},
+            "cost": {
+                "candidate_evaluations": 0,
+                "wall_ns": 0,
+                "verification_wall_ns": 0,
+                "wall_s": 0.0,
+                "verification_wall_s": 0.0,
+                "timing_unit": "ns",
+                "resource_cost": {},
+            },
             "created_at": time.time(),
             "writer": {"pid": os.getpid(), "mode": "single_writer"},
         }
+        self._normalize_cost(state)
+        return state
+
+    @staticmethod
+    def _normalize_cost(state: dict[str, Any]) -> None:
+        """Backfill exact duration totals once, then keep them incremental."""
+        cost = state.setdefault("cost", {})
+        rows = state.get("iterations") or []
+        wall_ns = sum(
+            wall_elapsed_ns(row.get("observation", {})) or 0
+            for row in rows
+            if isinstance(row, Mapping)
+        )
+        verification_wall_ns = sum(
+            _verification_wall_ns(row.get("observation", {})) or 0
+            if isinstance(row, Mapping) and isinstance(row.get("observation"), Mapping)
+            else 0
+            for row in rows
+        )
+        cost["wall_ns"] = wall_ns
+        cost["verification_wall_ns"] = verification_wall_ns
+        cost["timing_unit"] = "ns"
+        cost["wall_s"] = seconds_from_ns(wall_ns) or 0.0
+        cost["verification_wall_s"] = seconds_from_ns(verification_wall_ns) or 0.0
 
     def _checkpoint(self) -> None:
         self.state["updated_at"] = time.time()
         _atomic_write(self.path, self.state)
 
     def _remaining(self) -> list[Candidate]:
-        done = {x["candidate"]["id"] for x in self.state["iterations"]}
-        return [_candidate_from_doc(self.state["candidate_space"][cid]) for cid in self.state["frontier"] if cid not in done]
+        return [
+            _candidate_from_doc(self.state["candidate_space"][cid])
+            for cid in self.state["frontier"]
+            if cid not in self._evaluated_ids
+        ]
 
     def _choose_next(self, observation: Mapping[str, Any], *, exclude_id: str | None = None) -> Candidate | None:
         remaining = self._remaining()
@@ -360,7 +432,7 @@ class GravityGauntlet:
         if observation.get("complete_ebpw") is None or not observation.get("complete_ebpw_measured"):
             return
         current_id = self.state.get("best_candidate_id")
-        current = next((x for x in self.state["iterations"] if x["candidate"]["id"] == current_id), None)
+        current = self._iteration_by_id.get(current_id) if current_id else None
         # Capability first, then bytes. Ranking on EBPW alone crowns whatever is
         # smallest, including a body that cannot generate -- the headline number
         # would then advertise a broken artifact.
@@ -376,9 +448,9 @@ class GravityGauntlet:
         if self.state["budget"]["used"] >= self.budget:
             self._finish_budget("allocated candidate budget is exhausted")
             return self.state
-        if any(x["candidate"]["id"] == candidate.id for x in self.state["iterations"]):
+        if candidate.id in self._evaluated_ids:
             raise ValueError(f"candidate {candidate.id} was already evaluated")
-        started = time.perf_counter()
+        started_ns = now_ns()
         observation = observe(candidate, receipt, target=self.target)
         prior = self.state["nr"].get("current_candidate_id")
         if prior and prior != candidate.id:
@@ -391,6 +463,7 @@ class GravityGauntlet:
             candidate_doc["parent_id"] = prior
             candidate_doc["mutation"] = "evidence_guided_precision_step"
         next_candidate = self._choose_next(observation, exclude_id=candidate.id)
+        step_wall_ns = since_ns(started_ns)
         row = {
             "candidate": candidate_doc,
             "observation": observation,
@@ -402,16 +475,23 @@ class GravityGauntlet:
                     else "capability signal weak/absent; prefer higher-precision survivor"
                 ),
             },
-            "wall_s": round(time.perf_counter() - started, 6),
+            "wall_ns": step_wall_ns,
+            "wall_s": seconds_from_ns(step_wall_ns) or 0.0,
+            "timing_unit": "ns",
         }
         self.state["iterations"].append(row)
+        self._evaluated_ids.add(candidate.id)
+        self._iteration_by_id[candidate.id] = row
         self.state["budget"]["used"] += 1
         self.state["nr"]["current_candidate_id"] = candidate.id
         self._update_best(candidate, observation)
         cost = self.state["cost"]
         cost["candidate_evaluations"] = self.state["budget"]["used"]
-        cost["wall_s"] = round(sum(float(x.get("observation", {}).get("wall_s") or 0.0) for x in self.state["iterations"]), 6)
-        cost["verification_wall_s"] = round(sum(float(x.get("observation", {}).get("verification_wall_s") or 0.0) for x in self.state["iterations"]), 6)
+        cost["wall_ns"] = int(cost.get("wall_ns") or 0) + int(observation.get("wall_ns") or 0)
+        cost["verification_wall_ns"] = int(cost.get("verification_wall_ns") or 0) + int(observation.get("verification_wall_ns") or 0)
+        cost["timing_unit"] = "ns"
+        cost["wall_s"] = seconds_from_ns(cost["wall_ns"]) or 0.0
+        cost["verification_wall_s"] = seconds_from_ns(cost["verification_wall_ns"]) or 0.0
         if observation.get("target_eligible"):
             self.state["terminal"] = {"disposition": TARGET_HIT, "candidate_id": candidate.id, "reason": "complete EBPW and all required gates passed"}
         elif self.state["budget"]["used"] >= self.budget or next_candidate is None:
@@ -421,7 +501,7 @@ class GravityGauntlet:
 
     def _finish_budget(self, reason: str) -> None:
         best_id = self.state.get("best_candidate_id")
-        best_row = next((x for x in self.state["iterations"] if x["candidate"]["id"] == best_id), None)
+        best_row = self._iteration_by_id.get(best_id) if best_id else None
         self.state["terminal"] = {
             "disposition": BUDGET_EXHAUSTED,
             "reason": reason,
@@ -449,7 +529,7 @@ class GravityGauntlet:
         # is one that lost capability, putting two different meanings of "best"
         # in the same terminal block.
         best_id = self.state.get("best_candidate_id")
-        row = next((x for x in self.state["iterations"] if x["candidate"]["id"] == best_id), None)
+        row = self._iteration_by_id.get(best_id) if best_id else None
         if row is not None and row["observation"].get("complete_ebpw") is not None:
             return float(row["observation"]["complete_ebpw"])
         vals = [float(x) for x in (y["observation"].get("complete_ebpw") for y in self.state["iterations"]) if x is not None]

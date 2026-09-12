@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.gravity.tool_gravity_checkpoint.v1",
+  "status": "CHECKPOINTED_INDEX_PASS_NO_PROMOTION",
+  "objective": "Compress HCLI's public tool surface while preserving semantic capability, authority, provenance, reachability, recovery, and physical usefulness.",
+  "active_front": "KIMI_BASE refusal/locality evidence sealed; Gravity canonical ontology and Tool Gravity reduction remain active",
+  "before_state": {
+    "registered_callable_spellings": 109,
+    "discoverable_model_facing_tools": 43,
+    "compatibility_aliases": 66,
+    "semantic_families": 36,
+    "inventory_receipt": "receipts/future/GRAVITY_TOOL_MAP.json",
+    "repository_inventory": {
+      "inventoried_files": 7764,
+      "gravity_adjacent_files": 2046,
+      "python_modules": 1347,
+      "test_files": 546
+    },
+    "benchmark_receipt": "receipts/future/GRAVITY_TOOL_BENCHMARK_CURRENT_20260909.json",
+    "security_focus_regression": "hcli/test_tool_gravity_focus.py"
+  },
+  "next_safe_action": "Use the sealed KIMI/HCLI receipts as the promotion boundary; keep KIMI promotion refused after the OPA–OPG candidate nulls. The first non-semantic Tool Gravity registry-index pass is sealed with catalog parity; next select one typed primitive family, migrate callers with parity tests, and benchmark catalog selection/recovery before alias retirement.",
+  "latest_measurement": {
+    "receipt": "receipts/future/GRAVITY_TOOL_BENCHMARK_AFTER_INDEX_PROMPT_20260910.json",
+    "status": "CURRENT_PARITY_CACHE_INDEX_PROMPT",
+    "surface_unchanged": true,
+    "registered_callable_spellings": 109,
+    "discoverable_model_facing_tools": 43,
+    "compatibility_aliases": 66,
+    "all_catalog_json_bytes": 76863,
+    "discoverable_catalog_json_bytes": 38773,
+    "median_discover_s": 0.00001647901081014424,
+    "median_focused_filesystem_s": 0.00001127048744820058,
+    "median_tool_registry_compile_s": 0.018626291013788432,
+    "full_prompt_catalog_chars": 4251,
+    "compact_prompt_catalog_chars": 1274,
+    "compact_prompt_reduction_percent": 70.03
+  },
+  "deferred_until": [
+    "the current KIMI live load/evaluation receipts are sealed",
+    "a single writer/worktree is available",
+    "caller and authority parity are proven for the selected family"
+  ],
+  "invariants": [
+    "no generic god tool",
+    "shell.readonly remains distinct from shell.exec",
+    "source.fetch remains distinct from source.acquire",
+    "read-only and mutation classes cannot be merged",
+    "old names remain callable until zero active callers and regression parity"
+  ],
+  "claim_boundary": "This checkpoint authorizes planning and measurement only. It does not authorize deletion, blind renaming, or permission widening."
+}

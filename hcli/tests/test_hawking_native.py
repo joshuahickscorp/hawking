@@ -147,6 +147,9 @@ class TestNativeConnector(TestCase):
             self.assertEqual(raw["choices"][0]["message"]["content"], "fixture answer")
             self.assertEqual(raw["usage"]["completion_tokens"], 2)
             self.assertEqual(raw["hawking"]["fallbacks"], 3)
+            self.assertEqual(raw["hawking"]["timing_unit"], "ns")
+            self.assertGreaterEqual(raw["hawking"]["wall_ns"], 0)
+            self.assertEqual(raw["hawking"]["generation_wall_ns"], 1_000_000)
             # An explicit request is allowed to exceed the profile's default
             # max_new_tokens; only the native context window may clamp it.
             self.assertFalse(raw["hawking"]["generation_clamped"])

@@ -39,6 +39,129 @@ def test_the_watcher_loop_actually_calls_the_gate_function():
     assert "last_events_emit" in varnames
 
 
+def test_the_watcher_loop_enforces_campaign_phase_admission_controls():
+    names = mw.main.__code__.co_names
+    assert "authority_target_phase_gate" in names
+    assert "authority_legacy_queue_admission_allowed" in names
+    assert "AUTHORITY_CAPACITY_RECHECK_SECONDS" in names
+
+
+def test_scheduling_authority_pins_v41_without_authorizing_deletion():
+    authority_path = mw.ODYSSEY / "MODELLAKE_SCHEDULING_AUTHORITY.json"
+    authority = mw.load_scheduling_authority(authority_path)
+
+    assert authority is not None
+    target = mw.scheduled_authority_jobs(authority)
+    assert len(target) == 1
+    assert target[0]["repo"] == "deepseek-ai/DeepSeek-V4.1-Flash"
+    assert target[0]["revision"] == "dba1be0a40aa45a94ad051997016db3960a90277"
+    assert target[0]["tag"] == "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa"
+    assert target[0]["expected"] == 510313353565
+    assert authority["execution"]["deletion_armed"] is False
+    assert authority["retention"]["rolling_safety_lead"] == 2
+    assert authority["campaign"]["active_phase"] == "FLASH_NEXT_PULSAR_PASS"
+    allowed, details = mw.authority_target_phase_gate(authority, target[0])
+    assert allowed is True
+    assert details["admission_policy"] == "ANY_VALID_ACTIVE_PHASE_ON_CAPACITY_GATE"
+    assert mw.authority_legacy_queue_admission_allowed(authority) is False
+
+
+def _authority_in_phase(phase_id: str) -> dict:
+    source = json.loads(
+        (mw.ODYSSEY / "MODELLAKE_SCHEDULING_AUTHORITY.json").read_text()
+    )
+    source["campaign"]["active_phase"] = phase_id
+    for phase in source["campaign"]["phases"]:
+        phase["state"] = "ACTIVE" if phase["id"] == phase_id else "PENDING"
+    return source
+
+
+@pytest.mark.parametrize("phase_id", ["FLASH_NEXT_PULSAR_PASS", "MAIN_ODYSSEY_POPULATION"])
+def test_v41_is_admissible_during_any_valid_active_phase(tmp_path, phase_id):
+    authority_path = tmp_path / "authority.json"
+    source = _authority_in_phase(phase_id)
+    authority_path.write_text(json.dumps(source))
+
+    authority = mw.load_scheduling_authority(authority_path)
+    assert authority is not None
+    target = mw.scheduled_authority_jobs(authority)
+    assert len(target) == 1
+    allowed, details = mw.authority_target_phase_gate(authority, target[0])
+    assert allowed is True
+    assert details["active_phase"] == phase_id
+
+
+def test_only_main_odyssey_phase_allows_new_legacy_queue_admissions(tmp_path):
+    authority_path = tmp_path / "authority.json"
+    source = _authority_in_phase("MAIN_ODYSSEY_POPULATION")
+    authority_path.write_text(json.dumps(source))
+
+    authority = mw.load_scheduling_authority(authority_path)
+    assert authority is not None
+    target = mw.scheduled_authority_jobs(authority)
+    assert len(target) == 1
+    allowed, details = mw.authority_target_phase_gate(authority, target[0])
+    assert allowed is True
+    assert details["admission_policy"] == "ANY_VALID_ACTIVE_PHASE_ON_CAPACITY_GATE"
+    assert mw.authority_legacy_queue_admission_allowed(authority) is True
+
+
+def test_invalid_campaign_phase_fails_closed_for_new_admissions(tmp_path):
+    authority_path = tmp_path / "authority.json"
+    source = _authority_in_phase("KIMI_CLOSEOUT")
+    source["campaign"]["active_phase"] = "NOT_A_REAL_PHASE"
+    authority_path.write_text(json.dumps(source))
+
+    assert mw.load_scheduling_authority(authority_path) is None
+    assert mw.authority_legacy_queue_admission_allowed(source) is False
+
+
+def test_scheduling_authority_fails_closed_when_disarmed(tmp_path):
+    authority_path = tmp_path / "authority.json"
+    source = json.loads(
+        (mw.ODYSSEY / "MODELLAKE_SCHEDULING_AUTHORITY.json").read_text()
+    )
+    source["execution"]["acquisition_armed"] = False
+    authority_path.write_text(json.dumps(source))
+
+    assert mw.load_scheduling_authority(authority_path) is None
+
+
+def test_v41_authority_gate_rejects_current_over_budget_state(monkeypatch):
+    authority = mw.load_scheduling_authority()
+    assert authority is not None
+    monkeypatch.setattr(mw, "_AUTHORITY_CAPACITY_CACHE", None)
+    monkeypatch.setattr(mw, "authority_tier2_used_bytes", lambda: 4712699400192)
+
+    allowed, details = mw.authority_capacity_gate(
+        authority,
+        reserved_bytes=510313353565,
+        target_remaining_bytes=510313353565,
+        free_bytes_now=91792486400,
+    )
+
+    assert allowed is False
+    assert details["reason"] == "tier2_budget"
+
+
+def test_v41_authority_gate_accepts_budget_and_floor_after_clearance(monkeypatch):
+    authority = mw.load_scheduling_authority()
+    assert authority is not None
+    target = 510313353565
+    monkeypatch.setattr(mw, "_AUTHORITY_CAPACITY_CACHE", None)
+    monkeypatch.setattr(mw, "authority_tier2_used_bytes", lambda: 2_900_000_000_000)
+
+    allowed, details = mw.authority_capacity_gate(
+        authority,
+        reserved_bytes=target,
+        target_remaining_bytes=target,
+        free_bytes_now=800_000_000_000,
+    )
+
+    assert allowed is True
+    assert details["projected_tier2_used_bytes"] <= 3_500_000_000_000
+
+
 def test_emit_modellake_events_once_runs_the_real_consumer_and_writes_the_receipt():
     from tools.future import modellake_events as me
 

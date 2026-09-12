@@ -27,33 +27,33 @@ use std::time::Instant;
 
 /// Process-local accumulators for fine-grained cold-payload buckets under
 /// `HAWKING_STARTUP_TIMING=1`. Reset at the start of each HGRAVS admission.
-static AW_PAYLOAD_READ_MS: AtomicU64 = AtomicU64::new(0);
-static AW_PAYLOAD_SHA256_MS: AtomicU64 = AtomicU64::new(0);
-static AW_PAYLOAD_LAYOUT_MS: AtomicU64 = AtomicU64::new(0);
+static AW_PAYLOAD_READ_NS: AtomicU64 = AtomicU64::new(0);
+static AW_PAYLOAD_SHA256_NS: AtomicU64 = AtomicU64::new(0);
+static AW_PAYLOAD_LAYOUT_NS: AtomicU64 = AtomicU64::new(0);
 
 fn aw_payload_timing_reset() {
-    AW_PAYLOAD_READ_MS.store(0, Ordering::Relaxed);
-    AW_PAYLOAD_SHA256_MS.store(0, Ordering::Relaxed);
-    AW_PAYLOAD_LAYOUT_MS.store(0, Ordering::Relaxed);
+    AW_PAYLOAD_READ_NS.store(0, Ordering::Relaxed);
+    AW_PAYLOAD_SHA256_NS.store(0, Ordering::Relaxed);
+    AW_PAYLOAD_LAYOUT_NS.store(0, Ordering::Relaxed);
 }
 
 fn aw_payload_timing_add(target: &AtomicU64, start: Instant) {
-    let ms = crate::startup_timing::duration_ms(start.elapsed());
-    target.fetch_add(ms, Ordering::Relaxed);
+    let ns = crate::startup_timing::duration_ns(start.elapsed());
+    target.fetch_add(ns, Ordering::Relaxed);
 }
 
 fn aw_payload_timing_flush() {
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_payload_file_read",
-        AW_PAYLOAD_READ_MS.load(Ordering::Relaxed),
+        AW_PAYLOAD_READ_NS.load(Ordering::Relaxed),
     );
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_payload_sha256",
-        AW_PAYLOAD_SHA256_MS.load(Ordering::Relaxed),
+        AW_PAYLOAD_SHA256_NS.load(Ordering::Relaxed),
     );
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_payload_layout_geometry",
-        AW_PAYLOAD_LAYOUT_MS.load(Ordering::Relaxed),
+        AW_PAYLOAD_LAYOUT_NS.load(Ordering::Relaxed),
     );
 }
 
@@ -1526,7 +1526,7 @@ fn validate_aw_tensor_row_with_payload(
     } else {
         let read_start = Instant::now();
         let bytes = read_regular_file(&expected_path, label)?;
-        aw_payload_timing_add(&AW_PAYLOAD_READ_MS, read_start);
+        aw_payload_timing_add(&AW_PAYLOAD_READ_NS, read_start);
         if artifact_bytes != u64::try_from(bytes.len()).unwrap_or(u64::MAX) {
             return Err(model_error(
                 label,
@@ -1535,7 +1535,7 @@ fn validate_aw_tensor_row_with_payload(
         }
         let hash_start = Instant::now();
         let observed = sha256_hex(&bytes);
-        aw_payload_timing_add(&AW_PAYLOAD_SHA256_MS, hash_start);
+        aw_payload_timing_add(&AW_PAYLOAD_SHA256_NS, hash_start);
         if observed != artifact_sha256 {
             return Err(model_error(
                 label,
@@ -1694,7 +1694,7 @@ fn validate_aw_tensor_row_with_payload(
         }
         Qwen30ActivationWeightedTensorLayout::Direct(parsed)
     };
-    aw_payload_timing_add(&AW_PAYLOAD_LAYOUT_MS, layout_start);
+    aw_payload_timing_add(&AW_PAYLOAD_LAYOUT_NS, layout_start);
     Ok((
         Qwen30ActivationWeightedTensor {
             tensor_name: tensor_name.to_owned(),
@@ -1950,7 +1950,7 @@ pub fn admit_qwen30_activation_weighted_svd_artifact(
     manifest_path: impl AsRef<Path>,
     admission: &Qwen30ActivationWeightedSvdAdmission,
 ) -> Result<Qwen30ActivationWeightedSvdArtifact> {
-    crate::startup_timing::time_ms_result("admit_hgravs_total", || {
+    crate::startup_timing::time_ns_result("admit_hgravs_total", || {
         admit_qwen30_activation_weighted_svd_artifact_inner(manifest_path, admission)
     })
 }
@@ -2052,9 +2052,9 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
                 .into(),
         ));
     }
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_manifest_seal",
-        crate::startup_timing::duration_ms(phase.elapsed()),
+        crate::startup_timing::duration_ns(phase.elapsed()),
     );
 
     // ---- Source chain (always) ----
@@ -2133,9 +2133,9 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
         &manifest_audit_seal,
     )?;
     let authority_selected_count = validate_aw_manifest_source(manifest_object, &source)?;
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_source_chain",
-        crate::startup_timing::duration_ms(phase.elapsed()),
+        crate::startup_timing::duration_ns(phase.elapsed()),
     );
 
     // ---- Selection + source-binding snapshot seals (always) ----
@@ -2147,9 +2147,9 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
         &sha256_hex(&receipt_raw),
         authority_selected_count,
     )?;
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_selection_snapshot_seals",
-        crate::startup_timing::duration_ms(phase.elapsed()),
+        crate::startup_timing::duration_ns(phase.elapsed()),
     );
 
     // ---- Terminal seal (always) ----
@@ -2194,9 +2194,9 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
             "activation-weighted terminal source audit seal differs from protected handoff".into(),
         ));
     }
-    crate::startup_timing::record_ms(
+    crate::startup_timing::record_ns(
         "admit_terminal_seal",
-        crate::startup_timing::duration_ms(phase.elapsed()),
+        crate::startup_timing::duration_ns(phase.elapsed()),
     );
 
     let rows = required_array(
@@ -2250,7 +2250,7 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
 
     // ---- Cold path: full per-payload SHA-256 ----
     let (validated_rows, payload_verification_workers) =
-        crate::startup_timing::time_ms_result("admit_payload_cold_rehash", || {
+        crate::startup_timing::time_ns_result("admit_payload_cold_rehash", || {
             validate_aw_tensor_rows_bounded_parallel(
                 rows,
                 root,
@@ -2277,7 +2277,7 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
     )?;
 
     if admission_warm_receipt::warm_receipt_enabled() {
-        let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_write", || {
+        let _ = crate::startup_timing::time_ns_result("admit_warm_receipt_write", || {
             // Store cold-validated geometry so the next warm hit can skip
             // re-parsing 18k HGRAVS01 headers / factor bodies.
             let specs = aw_receipt_specs_from_artifact(&artifact);
@@ -2316,7 +2316,7 @@ fn try_warm_aw_payload_admission(
     if !admission_warm_receipt::receipt_covers_manifest_rows(&receipt, rows, root, source)? {
         return Ok(None);
     }
-    let identity_ok = crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
+    let identity_ok = crate::startup_timing::time_ns_result("admit_warm_identity_recheck", || {
         admission_warm_receipt::receipt_identities_still_match(&receipt)
     })?;
     if !identity_ok {
@@ -2325,7 +2325,7 @@ fn try_warm_aw_payload_admission(
     }
 
     let warm_payloads =
-        crate::startup_timing::time_ms_result("admit_payload_warm_load_no_rehash", || {
+        crate::startup_timing::time_ns_result("admit_payload_warm_load_no_rehash", || {
             load_aw_warm_payloads_bounded_parallel(&receipt)
         })?;
 
@@ -2350,7 +2350,7 @@ fn try_warm_aw_payload_admission(
     // Selection / manifest bindings always re-proven; payload geometry parse
     // is skipped when the identity-matched receipt carries it.
     let (validated_rows, payload_verification_workers) =
-        crate::startup_timing::time_ms_result("admit_payload_warm_layout_revalidate", || {
+        crate::startup_timing::time_ns_result("admit_payload_warm_layout_revalidate", || {
             validate_aw_tensor_rows_bounded_parallel_with_warm(
                 rows,
                 root,
@@ -2380,7 +2380,7 @@ fn try_warm_aw_payload_admission(
     // so subsequent warm hits get the full geometry skip.
     if !geometry_hit {
         let _ =
-            crate::startup_timing::time_ms_result("admit_warm_receipt_geometry_upgrade", || {
+            crate::startup_timing::time_ns_result("admit_warm_receipt_geometry_upgrade", || {
                 let specs = aw_receipt_specs_from_artifact(&artifact);
                 let upgraded = admission_warm_receipt::build_receipt_from_specs(
                     &artifact.manifest_path,

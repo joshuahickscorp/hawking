@@ -1,0 +1,73 @@
+{
+  "schema": "hawking.kimi.hcli_web_multisession_endpoint_repair.v1",
+  "generated_at": "2026-09-10T23:58:21Z",
+  "status": "LIVE_REPAIRED",
+  "defect": {
+    "observed": "Open WebUI rendered but its persistent per-port configuration dialed stale http://127.0.0.1:8014/v1, so the admitted KIMI model did not load.",
+    "evidence": [
+      "/Users/scammermike/.hcli/web/webui-8080/webui.log",
+      "/Users/scammermike/.hcli/web/webui-8081/webui.log"
+    ]
+  },
+  "repair": {
+    "source": "hcli/web.py",
+    "source_sha256": "ffcc3d40f51045e6eca69df68da2969745860a1cf699d8eabe36ebc9c6d97ac6",
+    "mechanism": "Persist the exact health-checked Hawking OpenAI endpoint, local API key, OpenAI enable flag, and Gravity-only arena policy in each HCLI-owned OpenWebUI database. Environment defaults alone are not authoritative over existing persistent rows.",
+    "installed_snapshot": "/Users/scammermike/.local/share/hcli/build-20260910-235651/hcli",
+    "live_databases_rebound": [
+      "/Users/scammermike/.hcli/web/webui-8080/data/webui.db",
+      "/Users/scammermike/.hcli/web/webui-8081/data/webui.db"
+    ]
+  },
+  "live_topology": {
+    "hawkingd": {
+      "pid": 49691,
+      "endpoint": "http://127.0.0.1:8011/v1"
+    },
+    "resident_provider": {
+      "pid": 49696,
+      "parent_pid": 49691,
+      "model": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "rss_bytes_observed": 18398953472,
+      "copies_loaded": 1
+    },
+    "client_surfaces": [
+      {
+        "port": 8080,
+        "pid": 52309,
+        "parent_pid": 49691,
+        "endpoint": "http://127.0.0.1:8011/v1"
+      },
+      {
+        "port": 8081,
+        "pid": 52314,
+        "parent_pid": 49691,
+        "endpoint": "http://127.0.0.1:8011/v1"
+      }
+    ],
+    "session_semantics": "Each OpenWebUI port has an independent database, browser session, and chat history while sharing one immutable loaded resident body. Requests are stateless at the model HTTP boundary; prompt/session context belongs to each client conversation.",
+    "swap": "0.00M used"
+  },
+  "live_acceptance": [
+    {
+      "url": "http://127.0.0.1:8080",
+      "selected_model": "KIMI_P0_OPERATIONAL",
+      "prompt": "Reply with exactly: PRIMARY LIVE",
+      "observed_response": "{\"answer\": \"PRIMARY LIVE\"}",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:8081",
+      "selected_model": "KIMI_P0_OPERATIONAL",
+      "prompt": "Reply with exactly: HCLI LIVE",
+      "observed_response": "HCLI LIVE",
+      "passed": true
+    }
+  ],
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 /Library/Frameworks/Python.framework/Versions/3.12/bin/pytest -p no:cacheprovider hcli/test_web_surface.py tools/future/test_kimi_operator_live_evidence.py tools/future/test_kimi_operator_gate.py tools/future/test_kimi_promotion_bridge.py tools/future/test_kimi_odyssey_bridge.py -q",
+    "result": "34 passed",
+    "web_test_sha256": "fd20632949e2539c72be614d7ffd6f8244bb4799e7eed982fe7cb4fb0e2ab031"
+  },
+  "claim_boundary": "This proves two independent HCLI Web client sessions can discover and invoke the same admitted resident without loading duplicate model weights. It does not claim concurrent requests increase TPS, and it does not change the fail-closed operational mission/promotion status of KIMI_P0_OPERATIONAL."
+}

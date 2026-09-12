@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.kimi.oph_router_coverage_preflight.v1",
+  "generated_at": "2026-09-10T22:19:03Z",
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+  "candidate_method": "OPH",
+  "source_model": "KIMI_BASE",
+  "status": "REPAIR_VERIFIED_NOT_RERUN",
+  "repair": {
+    "problem": "OPH inferred common router layers from only the first refused and first complied observation, then raised an unstructured integration error when coverage was incomplete.",
+    "change": "Audit router-layer coverage across every captured behavior row and return NO_COMMON_ROUTER_LAYERS with per-group intersections, unions, and missing-row diagnostics before intervention work.",
+    "weights_written": false,
+    "model_loaded": false,
+    "mps_run_started": false
+  },
+  "verification": {
+    "tests": "python3 -m pytest -q tools/future/test_kimi_router_operator_live.py tools/future/test_moe_refusal_locality.py tools/future/test_kimi_operator_gate.py",
+    "passed": 27,
+    "skipped": 17,
+    "py_compile": true,
+    "diff_check": true
+  },
+  "source_hashes": {
+    "tools/future/kimi_router_operator_live.py": "a9446fdf211bf60eb7294b8b757bb59bcd2da9bba3c5fc0cabf49e46b4a43c6a",
+    "tools/future/test_kimi_router_operator_live.py": "c79b2b7b07e7c4743fb22c28419ad69253a94d1c64965613542239cc56ba4ba8"
+  },
+  "prior_evidence": {
+    "receipt": "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPH_ROUTER_RUN_FAILURE_20260910.json",
+    "status": "OPH_EXECUTION_INCOMPLETE",
+    "failure_class": "INTEGRATION",
+    "claim": "The prior OPH failure remains an integration failure; this repair does not establish router-layer coverage, behavior, causality, or promotion."
+  },
+  "next_action": "Run OPH only as a controlled clean MPS experiment after preserving the live daemon boundary; bind the resulting coverage and causal evidence candidate-specifically."
+}

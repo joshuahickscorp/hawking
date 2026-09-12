@@ -10,10 +10,13 @@ These pin the three properties that make a long conversation workable:
 """
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from hcli.chat_state import ChatSession, Plan, session_key, working_set
+from hcli.chat_state import (ChatSession, Plan, record_tool_trace, session_key,
+                             working_set)
 
 
 def _msgs(first="Write me a plan for context gravity"):
@@ -241,3 +244,26 @@ class TestApplyIntentIsImperative(unittest.TestCase):
         wrong = [(text, want, asked_to_apply(text))
                  for text, want in self.CASES if asked_to_apply(text) != want]
         self.assertEqual(wrong, [], f"apply-intent misread: {wrong}")
+
+
+class TestBrowserToolTrace(unittest.TestCase):
+    def test_streaming_trace_and_final_are_durable(self):
+        with TemporaryDirectory() as tmp:
+            session = ChatSession.load(tmp, "browser-a")
+            trace = [{
+                "tool": "fs.list",
+                "arguments": {"path": "."},
+                "ok": True,
+                "dispatched": True,
+                "observation": "fs.list returned: one.py",
+            }]
+            path = record_tool_trace(
+                session, trace,
+                tool_contract={"selected_count": 21, "actual_invocations": 1},
+                answer='{"liveness":"PASS"}', resident="KIMI_P0_OPERATIONAL",
+            )
+            value = json.loads(Path(path).read_text(encoding="utf-8"))
+            self.assertEqual(value["schema"], "hcli.chat.tool-trace.v1")
+            self.assertEqual(value["trace"], trace)
+            self.assertEqual(value["final"]["text"], '{"liveness":"PASS"}')
+            self.assertIn(path, session.evidence)

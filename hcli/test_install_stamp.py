@@ -115,6 +115,8 @@ def test_THE_STAMP_RECORDS_WHAT_WAS_DEPLOYED(tmp_path, monkeypatch):
     assert stamp["source"] == str(src)
     assert stamp["digest"] == package_digest(src)
     assert stamp["installed"]
+    assert stamp["native_gravityd"]["status"] == "unavailable"
+    assert stamp["native_hcli"]["status"] == "unavailable"
 
 
 if __name__ == "__main__":

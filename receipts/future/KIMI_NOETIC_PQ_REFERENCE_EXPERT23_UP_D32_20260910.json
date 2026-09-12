@@ -1,0 +1,148 @@
+{
+  "claim_boundary": "One-tensor CPU reference only. This validates a no-full-dense direct-consumer mechanism and measures approximation error for a cheap fit; it is not a fitted full-organ representation, model capability receipt, end-to-end TPS result, production kernel qualification, or KIMI promotion.",
+  "direct_execution": {
+    "dense_parent_materialized_by_direct_path": false,
+    "persistent_representation_bytes": 1208320,
+    "production_kernel": "NOT_VALIDATED",
+    "transient_group_expansion_bytes": 180224,
+    "verification_oracle": "dense matvec only; not part of direct path",
+    "verified": true
+  },
+  "error": {
+    "cosine": 0.6466806530952454,
+    "max_abs": 3.5332038402557373,
+    "relative_l2": 0.7627720935994695,
+    "rmse": 0.808712363243103
+  },
+  "generated_at": "2026-09-10T15:13:19.316751+00:00",
+  "immutable_base": true,
+  "next_discriminator": "Repeat across the three projection tensors with output-aware calibration and compare residual/protected-island alternatives before body-wide compilation.",
+  "python": "3.14.6",
+  "representation": {
+    "codebook_bytes": 1048576,
+    "codebook_dtype": "bf16",
+    "codebook_entries": 256,
+    "complete_accounting": {
+      "billed_ms": 0.000623,
+      "by_stream_class": {
+        "activation": {
+          "bytes": 0,
+          "gb": 0.0,
+          "ms": 0.0,
+          "ms_per_gb": 2.906132
+        },
+        "broadcast_aux": {
+          "bytes": 69632,
+          "gb": 7e-05,
+          "ms": 0.0,
+          "ms_per_gb": 0.0
+        },
+        "weight_codes": {
+          "bytes": 1138688,
+          "gb": 0.001139,
+          "ms": 0.000623,
+          "ms_per_gb": 0.547282
+        }
+      },
+      "complete_ebpw": 3.352272727272727,
+      "consumes_representation_directly": true,
+      "dense_parent_rematerialization": {
+        "complete_ebpw": 3.352272727272727,
+        "flag": null,
+        "flagged": false,
+        "is_sub2_executable": false,
+        "reason": "production consumes the representation directly",
+        "stored_bpw": 3.352272727272727,
+        "stored_bytes": 1208320
+      },
+      "executable_bytes": 1208320,
+      "executable_gb": 0.001208,
+      "flags": [],
+      "id": "KIMI_PQ_D32_language_model.model.layers.10.mlp.experts.23.up_proj.weight",
+      "is_sub2_executable": false,
+      "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+      "parent_params": 2883584,
+      "parts": [
+        {
+          "bytes": 90112,
+          "category": "regions",
+          "gb": 9e-05,
+          "ms": 4.9e-05,
+          "ms_per_gb": 0.547282,
+          "name": "pq_indices",
+          "stream_class": "weight_codes"
+        },
+        {
+          "bytes": 4096,
+          "category": "metadata",
+          "gb": 4e-06,
+          "ms": 0.0,
+          "ms_per_gb": 0.0,
+          "name": "scoped_metadata",
+          "stream_class": "broadcast_aux"
+        },
+        {
+          "bytes": 1048576,
+          "category": "tables",
+          "gb": 0.001049,
+          "ms": 0.000574,
+          "ms_per_gb": 0.547282,
+          "name": "bf16_codebooks",
+          "stream_class": "weight_codes"
+        },
+        {
+          "bytes": 65536,
+          "category": "runtime_auxiliaries",
+          "gb": 6.6e-05,
+          "ms": 0.0,
+          "ms_per_gb": 0.0,
+          "name": "direct_decoder_support",
+          "stream_class": "broadcast_aux"
+        }
+      ],
+      "parts_bytes": 1208320,
+      "reconciled": true,
+      "reconstructs_dense_parent": false,
+      "stated_total_bytes": 1208320,
+      "stored_bpw": 3.352272727272727,
+      "stored_bytes": 1208320,
+      "stored_gb": 0.001208,
+      "stored_ms": 0.000623
+    },
+    "family": "pq_d32_rowwise_reference",
+    "fit_steps": 1,
+    "groups": 64,
+    "index_bytes": 90112
+  },
+  "schema": "hawking.future.kimi_noetic_pq_reference.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_noetic_pq_reference.py",
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "DIRECT_REFERENCE_PASS",
+  "tensor": {
+    "dtype": "torch.bfloat16",
+    "name": "language_model.model.layers.10.mlp.experts.23.up_proj.weight",
+    "shape": [
+      1408,
+      2048
+    ],
+    "source_payload_bytes": 5767168,
+    "source_shard": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+    "source_shard_sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+  },
+  "timing": {
+    "dense_oracle_median_ms": 0.3445004695095122,
+    "dense_oracle_samples_ms": [
+      0.3468339564278722,
+      0.3421669825911522
+    ],
+    "direct_median_ms": 0.5554794915951788,
+    "direct_samples_ms": [
+      0.604791974183172,
+      0.5061670090071857
+    ],
+    "fit_excluded_from_matvec_timing": true,
+    "runtime": "isolated KIMI Python runtime",
+    "torch_threads": 1
+  }
+}

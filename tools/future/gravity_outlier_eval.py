@@ -226,6 +226,44 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
         return {"form": "binary_ef", "calibrated": bool(m.group(1)),
                 "per_expert": bool(m.group(1)), "frac": 0.0,
                 "group": _group(int(m.group(2)), s, affine=False), "bits": 1}
+    # Activation-weighted sparse: rank entries by |w|*sqrt(E[x^2]) and fit
+    # survivor scales against the same measured activation mass.  This is a
+    # materially different hypothesis from magnitude-only sparse.
+    m = re.fullmatch(r"sparseact([0-9.]+)(percal)?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "sparse_act", "density": float(m.group(1)),
+                "calibrated": True, "per_expert": bool(m.group(2)),
+                "frac": 0.0, "group": _group(int(m.group(3)), s, affine=False), "bits": 1}
+    # Two-level sparse coding spends two code bits per survivor, allowing
+    # +/-1 or +/-2 times a fitted scale.  It remains a research decoder until
+    # a native sparse kernel exists; its byte/error curve is independently
+    # measured rather than inferred from the binary arm.
+    m = re.fullmatch(r"ternarysparse([0-9.]+)(percal)?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "sparse_ternary", "density": float(m.group(1)),
+                "calibrated": bool(m.group(2)), "per_expert": bool(m.group(2)),
+                "frac": 0.0, "group": _group(int(m.group(3)), s, affine=False), "bits": 2}
+    # Allocate the sparse survivors by MoE organ: gate/up use one density and
+    # down_proj another.  The three Kimi expert organs have equal weight mass,
+    # so complete accounting is a transparent 2:1 weighted average.
+    m = re.fullmatch(r"organsparse([0-9.]+)u([0-9.]+)(percal)?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "organ_sparse", "up_density": float(m.group(1)),
+                "down_density": float(m.group(2)), "calibrated": bool(m.group(3)),
+                "per_expert": bool(m.group(3)), "frac": 0.0,
+                "group": _group(int(m.group(4)), s, affine=False), "bits": 1}
+    # Mixed organ codec: one organ gets two-level sparse codes and the other
+    # gets binary sparse codes.  The suffix names the ternary organ explicitly;
+    # both directions are tested because the allocation table says down_proj
+    # drives likelihood while gate/up drives output diversity.
+    for prefix, ternary_organ in (("organupternary", "up"),
+                                  ("organdownternary", "down")):
+        m = re.fullmatch(rf"{prefix}([0-9.]+)u([0-9.]+)(percal)?-g(\d+)", s, re.I)
+        if m:
+            return {"form": "organ_hybrid", "up_density": float(m.group(1)),
+                    "down_density": float(m.group(2)), "ternary_organ": ternary_organ,
+                    "calibrated": bool(m.group(3)), "per_expert": bool(m.group(3)),
+                    "frac": 0.0, "group": _group(int(m.group(4)), s, affine=False), "bits": 1}
     m = re.fullmatch(r"sparse([0-9.]+)(percal)?-g(\d+)", s, re.I)
     if m:
         return {"form": "sparse", "density": float(m.group(1)),
@@ -289,8 +327,20 @@ def predict_ebpw(spec: str) -> float:
                  + 32 / g)
     elif p["form"] == "binary_ef":
         per_w = 1 + 16 / g
-    elif p["form"] == "sparse":
+    elif p["form"] in ("sparse", "sparse_act"):
         per_w = p["density"] * (math.log2(g) + 1) + 16 / g
+    elif p["form"] == "sparse_ternary":
+        per_w = p["density"] * (math.log2(g) + 2) + 16 / g
+    elif p["form"] == "organ_sparse":
+        up = p["up_density"] * (math.log2(g) + 1) + 16 / g
+        down = p["down_density"] * (math.log2(g) + 1) + 16 / g
+        per_w = (2.0 * up + down) / 3.0
+    elif p["form"] == "organ_hybrid":
+        up_bits = 2 if p["ternary_organ"] == "up" else 1
+        down_bits = 2 if p["ternary_organ"] == "down" else 1
+        up = p["up_density"] * (math.log2(g) + up_bits) + 16 / g
+        down = p["down_density"] * (math.log2(g) + down_bits) + 16 / g
+        per_w = (2.0 * up + down) / 3.0
     elif p["form"] == "binary":
         per_w = 1 + 16 / g
     elif p["form"] == "resbinary":
@@ -437,6 +487,15 @@ def _representation_class(plan: dict[str, Any]) -> str:
         if plan.get("calibrated"):
             return "BINARY_ACT_CALIBRATED"
         return "BINARY_SCALED"
+    if form == "sparse_act":
+        return "SPARSE_BINARY_ACTIVATION_WEIGHTED"
+    if form == "sparse_ternary":
+        return "SPARSE_TERNARY_TWO_LEVEL"
+    if form == "organ_sparse":
+        return ("ORGAN_SPARSE_ACTIVATION_WEIGHTED" if plan.get("calibrated")
+                else "ORGAN_SPARSE")
+    if form == "organ_hybrid":
+        return f"ORGAN_{plan['ternary_organ'].upper()}_TERNARY_MIXED_SPARSE"
     return {
         "hotcold": "HOT_COLD_ROUTED",
         "binary_ef": "BINARY_ERROR_FEEDBACK",
@@ -451,6 +510,29 @@ def evaluate(candidate) -> dict[str, Any]:
     # S010 §5: the OS must never be the first component to discover Hawking
     # exceeded its budget. The 2026-09-06 watchdog panic happened during this
     # exact kind of experiment. Guard BEFORE the load, not after.
+    t0 = time.perf_counter()
+    phases: dict[str, float] = {}
+    resource_trace: list[dict[str, Any]] = []
+
+    def _mark(name: str, started: float) -> None:
+        phases[name] = round(time.perf_counter() - started, 4)
+
+    def _trace(label: str) -> None:
+        # A point trace exposes pressure at representation boundaries. It is
+        # not a utilization claim; short phases can have no sampler peak.
+        try:
+            import campaign_memory_guard as cmg
+            snap = cmg.sample()
+            row = snap.as_dict()
+            row.update({"label": label, "elapsed_s": round(time.perf_counter() - t0, 4)})
+            resource_trace.append(row)
+        except Exception as exc:
+            resource_trace.append({"label": label,
+                                   "error": f"{type(exc).__name__}: {exc}",
+                                   "elapsed_s": round(time.perf_counter() - t0, 4)})
+
+    _trace("entry")
+    guard_started = time.perf_counter()
     try:
         from campaign_memory_guard import require_ok, watch
         # bf16 O003 is ~30 GB resident; a quantised arm still peaks near it
@@ -459,39 +541,55 @@ def evaluate(candidate) -> dict[str, Any]:
         _guard = require_ok(f"gravity evaluate({candidate})", expected_gb=32.0)
     except ImportError:
         _guard, watch = None, None
+    _mark("admission_s", guard_started)
     """Execute one representation and return a gauntlet receipt."""
+    plan_started = time.perf_counter()
     plan = parse_spec(getattr(candidate, "spec", candidate))
-    t0 = time.perf_counter()
+    _mark("plan_s", plan_started)
     from mlx_lm import generate
+    load_started = time.perf_counter()
     model, tok = _load()
+    _mark("load_s", load_started)
+    _trace("loaded")
+    inventory_started = time.perf_counter()
     sw = [(p, m) for p, m in model.named_modules()
           if "switch_mlp" in p and isinstance(getattr(m, "weight", None), mx.array)]
     if len(sw) != 78:
         raise RuntimeError(f"expected 78 expert tensors, found {len(sw)}")
+    _mark("inventory_s", inventory_started)
 
     mx.random.seed(0)
     n_tot = sum(m.weight.size for _, m in sw)
     BIN = plan["form"] == "binary"
     RES = plan["form"] == "resbinary"
-    SPARSE = plan["form"] == "sparse"
+    SPARSE = plan["form"] in ("sparse", "sparse_act", "organ_sparse", "organ_hybrid")
+    SPARSE_TERNARY = plan["form"] == "sparse_ternary"
     PQ = plan["form"] == "pq"
     SB = plan["form"] == "sharedbasis"
     sb_values = 0
     pq_cb_values = 0
     EF = plan["form"] == "binary_ef"
+    calibration_started = time.perf_counter()
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
+    _mark("activation_calibration_s", calibration_started)
+    routing_started = time.perf_counter()
     route = collect_routing_counts(model, tok) if plan["form"] == "hotcold" else {}
+    _mark("routing_calibration_s", routing_started)
+    if act:
+        _trace("calibrated")
     hot_w = cold_w = 0
     kept = 0
     pq_index_bits = 0.0       # accumulated per tensor: mixed geometry is not uniform
     n_scales = 0            # ACTUAL scale count, from the per-tensor group used
     n_survivors = 0.0       # ACTUAL non-zero count for the sparse form
+    n_ternary_survivors = 0.0
     eff_groups: dict[int, int] = {}
     # Magnitude adequacy over the whole expert organ. Cosine alone is
     # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
     # actually catches a magnitude-destroyed representation.
     s_w2 = s_h2 = s_dot = 0.0
+    expert_started = time.perf_counter()
     if plan["form"] != "bf16":
         g0, bits, frac = plan["group"], plan["bits"], plan["frac"]
         for name, m in sw:
@@ -618,17 +716,72 @@ def evaluate(candidate) -> dict[str, Any]:
                     cols.append(qj)
                 rec = mx.concatenate(cols, axis=1).reshape(base.shape)
             elif SPARSE:
+                is_down = "down_proj" in name
+                dens = (plan["down_density"] if plan["form"] in ("organ_sparse", "organ_hybrid")
+                        and is_down else plan.get("density", plan.get("up_density", 0.0)))
+                ternary = (plan["form"] == "organ_hybrid" and
+                            ((plan["ternary_organ"] == "down") == is_down))
+                flatg = base.reshape(-1, g)
+                k = max(1, int(round(g * dens)))
+                d = act.get(id(m)) if plan.get("calibrated") else None
+                if d is None:
+                    dg = None
+                    score = mx.abs(flatg)
+                elif d.ndim == 2:
+                    dg = mx.broadcast_to(d.reshape(d.shape[0], 1, d.shape[1]), base.shape).reshape(-1, g)
+                    score = mx.abs(flatg) * mx.sqrt(mx.maximum(dg, 1e-12))
+                else:
+                    dg = mx.broadcast_to(d.reshape(1, -1),
+                                         base.reshape(-1, base.shape[-1]).shape).reshape(-1, g)
+                    score = mx.abs(flatg) * mx.sqrt(mx.maximum(dg, 1e-12))
+                # Activation salience approximates routed output error under a
+                # diagonal covariance; plain sparse uses raw magnitude here.
+                srt = mx.sort(score, axis=1)
+                thr = srt[:, g - k][:, None]
+                keep = (score >= thr).astype(mx.float32)
+                kept_g = mx.sum(keep, axis=1, keepdims=True)
+                if dg is None:
+                    dg = mx.ones_like(flatg)
+                if ternary:
+                    scale = (mx.sum(dg * mx.abs(flatg) * keep, axis=1, keepdims=True) /
+                             mx.maximum(mx.sum(dg * keep, axis=1, keepdims=True), 1e-12))
+                    mag = mx.ones_like(flatg)
+                    for _ in range(3):
+                        mag = mx.clip(mx.round(mx.abs(flatg) / mx.maximum(scale, 1e-12)), 1, 2)
+                        scale = (mx.sum(dg * mx.abs(flatg) * mag * keep, axis=1, keepdims=True) /
+                                 mx.maximum(mx.sum(dg * mag * mag * keep, axis=1, keepdims=True), 1e-12))
+                    rec = (scale * mx.sign(flatg) * mag * keep).reshape(base.shape)
+                    n_ternary_survivors += float(mx.sum(keep))
+                else:
+                    sc = (mx.sum(dg * mx.abs(flatg) * keep, axis=1, keepdims=True) /
+                          mx.maximum(mx.sum(dg * keep, axis=1, keepdims=True), 1e-12))
+                    rec = (sc * mx.sign(flatg) * keep).reshape(base.shape)
+                n_survivors += float(mx.sum(keep))
+            elif SPARSE_TERNARY:
                 dens = plan["density"]
                 flatg = base.reshape(-1, g)
                 k = max(1, int(round(g * dens)))
-                # per-group magnitude threshold: keep the k largest |w|
-                srt = mx.sort(mx.abs(flatg), axis=1)
-                thr = srt[:, g - k][:, None]
-                keep = (mx.abs(flatg) >= thr).astype(mx.float32)
-                kept_g = mx.sum(keep, axis=1, keepdims=True)
-                sc = (mx.sum(mx.abs(flatg) * keep, axis=1, keepdims=True)
-                      / mx.maximum(kept_g, 1.0))
-                rec = (sc * mx.sign(flatg) * keep).reshape(base.shape)
+                d = act.get(id(m)) if plan.get("calibrated") else None
+                if d is None:
+                    dg = mx.ones_like(flatg)
+                elif d.ndim == 2:
+                    dg = mx.broadcast_to(d.reshape(d.shape[0], 1, d.shape[1]), base.shape).reshape(-1, g)
+                else:
+                    dg = mx.broadcast_to(d.reshape(1, -1),
+                                         base.reshape(-1, base.shape[-1]).shape).reshape(-1, g)
+                score = mx.abs(flatg) * mx.sqrt(mx.maximum(dg, 1e-12))
+                thr = mx.sort(score, axis=1)[:, g - k][:, None]
+                keep = (score >= thr).astype(mx.float32)
+                # Two code bits per survivor encode {-2,-1,+1,+2}; fit the
+                # scale by weighted least squares for a few cheap updates.
+                scale = (mx.sum(dg * mx.abs(flatg) * keep, axis=1, keepdims=True) /
+                         mx.maximum(mx.sum(dg * keep, axis=1, keepdims=True), 1e-12))
+                mag = mx.ones_like(flatg)
+                for _ in range(3):
+                    mag = mx.clip(mx.round(mx.abs(flatg) / mx.maximum(scale, 1e-12)), 1, 2)
+                    scale = (mx.sum(dg * mx.abs(flatg) * mag * keep, axis=1, keepdims=True) /
+                             mx.maximum(mx.sum(dg * mag * mag * keep, axis=1, keepdims=True), 1e-12))
+                rec = (scale * mx.sign(flatg) * mag * keep).reshape(base.shape)
                 n_survivors += float(mx.sum(keep))
             elif RES:
                 flatg = base.reshape(-1, g)
@@ -678,18 +831,27 @@ def evaluate(candidate) -> dict[str, Any]:
             mx.eval(m.weight)
             del W, base, rec, rec_b
 
-        nb, ng = plan["ne_bits"], plan["ne_group"]
+    _mark("expert_transform_s", expert_started)
+    _trace("experts_replaced")
 
-        def pred(path, mm):
-            if "switch_mlp" in path or not hasattr(mm, "to_quantized"):
-                return False
-            w = getattr(mm, "weight", None)
-            return ({"bits": nb, "group_size": ng}
-                    if w is not None and w.shape[-1] % ng == 0 else False)
+    nonexpert_started = time.perf_counter()
+    nb, ng = plan["ne_bits"], plan["ne_group"]
 
+    def pred(path, mm):
+        if "switch_mlp" in path or not hasattr(mm, "to_quantized"):
+            return False
+        w = getattr(mm, "weight", None)
+        return ({"bits": nb, "group_size": ng}
+                if w is not None and w.shape[-1] % ng == 0 else False)
+
+    if plan["form"] != "bf16":
         nn.quantize(model, group_size=ng, bits=nb, class_predicate=pred)
+    _mark("non_expert_quantize_s", nonexpert_started)
+    sync_started = time.perf_counter()
     mx.eval(model.parameters())
     mx.synchronize()
+    _mark("materialize_sync_s", sync_started)
+    _trace("materialized")
     if plan["form"] == "bf16":
         magnitude_ratio, direction_similarity = 1.0, 1.0
     else:
@@ -716,9 +878,16 @@ def evaluate(candidate) -> dict[str, Any]:
                            + n_scales * 32)
         elif plan["form"] == "binary_ef":
             expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
-        elif plan["form"] == "sparse":
+        elif plan["form"] in ("sparse", "sparse_act", "organ_sparse"):
             idx_bits = math.log2(plan["group"])
             expert_bits = n_survivors * (idx_bits + 1) + n_scales * 16 + kept * 32
+        elif plan["form"] == "organ_hybrid":
+            idx_bits = math.log2(plan["group"])
+            expert_bits = (n_survivors * (idx_bits + 1) + n_ternary_survivors
+                           + n_scales * 16 + kept * 32)
+        elif plan["form"] == "sparse_ternary":
+            idx_bits = math.log2(plan["group"])
+            expert_bits = n_survivors * (idx_bits + 2) + n_scales * 16 + kept * 32
         elif plan["form"] == "binary":
             expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
         elif plan["form"] == "resbinary":
@@ -728,15 +897,21 @@ def evaluate(candidate) -> dict[str, Any]:
     complete_bytes = int(expert_bits / 8 + _leaf_bytes(model.parameters(), "switch_mlp"))
     complete_ebpw = complete_bytes * 8 / SRC_PARAMS
 
+    nll_started = time.perf_counter()
     ids = mx.array([tok.encode(NLL_TEXT)[:512]])
     lg = model(ids[:, :-1]).astype(mx.float32)
     lp = lg - mx.logsumexp(lg, axis=-1, keepdims=True)
     nll = float(-mx.take_along_axis(lp, ids[:, 1:, None], axis=-1).squeeze(-1).mean())
     ppl = 2.718281828459045 ** nll
+    _mark("nll_s", nll_started)
+    _trace("nll_complete")
 
     r4s, dis, worst = [], [], 1
+    generation_times: list[float] = []
     for pr in PROMPTS:
+        generation_started = time.perf_counter()
         tx = generate(model, tok, prompt=pr, max_tokens=96, verbose=False)
+        generation_times.append(round(time.perf_counter() - generation_started, 4))
         tt = tok.encode(tx)
         run = cur = 1
         for i in range(1, len(tt)):
@@ -750,6 +925,9 @@ def evaluate(candidate) -> dict[str, Any]:
     med_r4 = r4s[len(r4s) // 2]
     med_dis = dis[len(dis) // 2]
     capability_ok = bool(med_r4 <= R4_MAX and ppl <= PPL_MAX)
+    phases["generation_total_s"] = round(sum(generation_times), 4)
+    phases["generation_median_s"] = round(sorted(generation_times)[len(generation_times) // 2], 4)
+    _trace("generation_complete")
 
     return {
         "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
@@ -769,7 +947,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "magnitude_ratio": magnitude_ratio,
         "direction_similarity": direction_similarity,
         "n_calibrated_tensors": len(act),
-        "density_actual": (n_survivors / n_tot) if plan["form"] == "sparse" else None,
+        "density_actual": (n_survivors / n_tot) if plan["form"] in
+                          ("sparse", "sparse_act", "sparse_ternary", "organ_sparse", "organ_hybrid") else None,
         "hot_weights": hot_w, "cold_weights": cold_w,
         "hot_share_actual": (hot_w / (hot_w + cold_w)) if (hot_w + cold_w) else None,
         "effective_groups": {str(k): v for k, v in sorted(eff_groups.items())},
@@ -786,8 +965,13 @@ def evaluate(candidate) -> dict[str, Any]:
         "execution_complete": plan["form"] in ("affine", "bf16"),
         "execution_note": ("sparse side-channel has no kernel; measured capability and "
                            "bytes are exact, TPS for the represented form is UNMEASURED"
-                           if plan["form"] == "outlier_split" else "executes natively"),
+                           if plan["form"] in ("outlier_split", "sparse", "sparse_act",
+                                                "sparse_ternary", "organ_sparse", "organ_hybrid")
+                           else "executes natively"),
         "verifier_independent": False,
+        "stage_timing_s": phases,
+        "generation_prompt_times_s": generation_times,
+        "resource_trace": resource_trace,
         "wall_s": round(time.perf_counter() - t0, 3),
     }
 

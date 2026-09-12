@@ -1,17 +1,379 @@
 {
-  "objective": "Close the autonomy loop: one accepted unit, hence the first hcli_owned law.",
-  "active_specimen": "hcli/perception/store.py",
-  "why_this_specimen": "Small and new, with a gap I verified is genuinely RED before the change.",
-  "active_workunit": "AUTONOMY-4",
-  "hypothesis": "Both prior units died on a HARNESS defect, not a model one: insert/append fragments were compiled standalone and falsely rejected as syntax errors. That is fixed. The previous task was also ill-posed -- its test passed before any change. This one is verified red.",
-  "next_action": "ProjectStore.create in hcli/perception/store.py accepts an empty project name, so a project can be created whose name is the empty string. 1. Write hcli/tests/test_project_name_must_not_be_empty.py asserting that ProjectStore.create(tmp_path/'p', '') raises ValueError. 2. Run it. It MUST fail -- the guard does not exist yet. 3. Add the guard using op='insert_after' with old_lines copied VERBATIM from the file (the 'store = cls(root)' line inside create), raising ValueError when the name is empty or whitespace. Do not use replace_file. 4. Run the test again and confirm it passes. Report both runs as your evidence.",
+  "objective": "Continue Odyssey + Compounding Gravity through the Flash-Next Pulsar/Deep-Gravity pass; preserve KIMI_P0_OPERATIONAL as a bounded local Resident/control.",
+  "active_specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "why_this_specimen": "The scheduler's compact MoE review established that its full Pulsar pass has higher expected information value than another intermediate static sibling.",
+  "active_workunit": "ACTIVE: FLASH_NEXT_REPEATED_ACCEPTED_STATEFUL_DECODE; FOLLOW: CLEAN_REPEATED_TIMING -> STATE_DISPATCH_BYTES_CENSUS -> HIGHEST_VALUE_FLASH_PHYSICAL_OR_REPRESENTATION_OPTIMIZATION. Static Gravity remains CPU-only support work; no generic ANE/HCLI campaign is on the critical path.",
+  "hypothesis": "Apply the earned MoE laws prospectively: reject shared-basis fanouts absent measured superiority; admit low-rank only if Flash-Next anatomy clears matched-null thresholds; measure physical/runtime readiness independently before any resident claim.",
+  "next_action": "FLASH repeated accepted decode and the bounded route-safe compact control are GREEN: exact 48-layer source session, references [2972, 96125] independently accepted, no source reset/re-prefill, one native process. The dense teacher route union covered 2,510/24,576 expert rows (10.21%); the compact candidate replayed every observed route and both terminal references while cutting session source payload from 248,826,375,936 to 31,908,769,536 bytes (7.80×). Device-only ownership is green through both species during the exact full-session control: 36 compact linear layers retained 24,230,661,888 device-weight bytes with 0 retained linear source bytes and 27,894,464,512 observed process RSS. All 12 compact full-attention banks release source tensors after upload, reuse device banks and KV across the seven recorded token slots, and bill 7,678,144,512 device-weight bytes; they are deliberately released after their layer-major pass. The exact control accepted both terminal references under the strengthened residency verifier. One-pass cost was 134,143,163,000 ns, but remains source/materialization-bound and explicitly is not steady TPS. Canonical cross-model method owner: tools/foundry/GRAVITY_METHOD_REGISTRY.json; its Flash entries are receipt-linked and scoped until an independent architecture reproduces them. NEXT: build the smallest token-major resident decode owner that retains/reuses the already-qualified device-only full-attention banks and KV state across a second accepted decode sequence alongside the existing device-only linear banks; then measure true warm-token timing, state/dispatch/bytes-token census, and only then select the highest-value physical/representation optimization. Keep KIMI unloaded during protected Flash measurements; no generalized route, EBPW, capability, or residency claim is earned.",
   "evidence_refs": [
-    "hcli/perception/store.py"
+    "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+    "receipts/future/KIMI_BOOTSTRAP_ERA_CLOSED_20260911.json",
+    "receipts/future/ODYSSEY_MOE_TRANSFER_CLUSTER_OPEN_20260911.json",
+    "receipts/future/LFM2_ARCHITECTURE_RECOGNITION_20260911.json",
+    "receipts/future/LFM2_LAYER3_STATIC_ANATOMY_20260911.json",
+    "receipts/future/LFM2_MOE_DEPTH_STATIC_LAW_20260911.json",
+    "receipts/future/KIMI_P0_LFM2_EVIDENCE_SYNTHESIS_SCAR_20260911.json",
+    "receipts/future/LFM2_LAYER2_TERNARY_SPARSE_REPAIR_20260911.json",
+    "receipts/future/LFM2_LAYER2_BINARY_SPARSE_REPAIR_20260911.json",
+    "receipts/future/KIMI_LINEAR48_ARCHITECTURE_RECOGNITION_20260911.json",
+    "receipts/future/KIMI_LINEAR48_LAYER1_STATIC_ANATOMY_20260911.json",
+    "receipts/future/GLM45_AIR_ARCHITECTURE_RECOGNITION_20260911.json",
+    "receipts/future/GLM45_AIR_LAYER1_STATIC_ANATOMY_20260911.json",
+    "receipts/future/MOE_TRANSFER_STRUCTURE_LAW_20260911.json",
+    "receipts/future/MOE_TRANSFER_CLUSTER_COMPACT_REVIEW_20260911.json",
+    "receipts/future/LFM2_RUNTIME_ADMISSION_BLOCKED_20260911.json",
+    "receipts/future/FLASH_NEXT_ARCHITECTURE_RECOGNITION_20260911.json",
+    "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json",
+    "receipts/future/FLASH_NEXT_RESOURCE_RUNTIME_PREFLIGHT_20260911.json",
+    "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json",
+    "receipts/future/FLASH_NEXT_PLE_STATIC_SCREEN_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E0_LOWRANK_20260911.json",
+    "receipts/future/GRAVITY_RUST_CORE_ADMISSION_20260911.json",
+    "receipts/future/GRAVITY_RUST_REPATRIATION_BASELINE_20260911.json",
+    "workspace/campaign/odyssey/LFM2_RUNTIME_ADMISSION_WORKUNIT.md",
+    "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "receipts/odyssey-i/O005_PATIENT_SEAL.json",
+    "receipts/odyssey-i/O006_DOCTOR_SEAL.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E0_LOWRANK_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E0_LOWRANK_SPARSE_REPAIR_LOW_RANK_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_DOWN_E0_LOWRANK_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E1_LOWRANK_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E0_BINARY_TERNARY_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E1_BINARY_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E0_LOWRANK_BINARY_RESIDUAL_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_E1_LOWRANK_BINARY_RESIDUAL_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_L12_E0_LOWRANK_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_L24_E0_LOWRANK_SPARSE_REPAIR_20260911.json",
+    "receipts/future/FLASH_NEXT_ROUTED_GATEUP_L47_E0_LOWRANK_SPARSE_REPAIR_20260911.json",
+    "receipts/future/GRAVITY_RUST_NATIVE_SERVICE_LOOKUP_NS_20260911.json",
+    "receipts/future/GRAVITY_RUST_ACCELERATOR_REGRESSION_NS_20260911.json",
+    "receipts/future/GRAVITY_RUST_REPO_CONTENT_REFRESH_NS_20260911.json",
+    "workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION.json",
+    "workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION_WORKUNIT.md",
+    "docs/ACCELERATOR_ANE.md",
+        "receipts/future/FLASH_NEXT_ANE_MEGAKERNEL_MODEL_CARD_20260911.json"
+        ,"receipts/headless/ANE_PUBLIC_FIXTURE_REVALIDATION_20260911.json"
+        ,"receipts/future/FLASH_NEXT_ROUTED_GATEUP_L47_E0_BINARY_TERNARY_SPARSE_REPAIR_20260911.json"
+        ,"receipts/future/FLASH_NEXT_STATEFUL_RETRY_ADMISSION_20260911.json"
+        ,"receipts/future/FLASH_NEXT_REPEATED_ACCEPTED_DECODE_RUNNER_READY_20260911.json"
+        ,"receipts/future/MEGAKERNEL_PERSISTENT_DECODE_STATE_CONTRACT_20260911.json"
+        ,"receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_LINEAR_RESIDENT_CONTROL.json"
+        ,"receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_LINEAR_RESIDENT_CONTROL.TIMING_CENSUS.json"
+        ,"receipts/headless/FLASH_STATEFUL_GATE_ROUTE_UNION_DEVICE_ONLY_LINEAR_RESIDENT.json"
+        ,"receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.json"
+        ,"receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.TIMING_CENSUS.json"
+        ,"receipts/headless/FLASH_STATEFUL_GATE_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE.json"
   ],
   "open_jobs": [],
   "resource_deps": [
-    "--model"
+    "CPU and ModelLake storage for Flash static discriminators and per-model ANE planning; preserve the live hawkingd KIMI process tree",
+    "ANE toolchain work remains independent and must not claim or require GPU/Metal replacement until protected evidence exists",
+    "MegaKernel lowering reuses existing CPU/GPU/native owners and must not create a second daemon or model runtime"
   ],
-  "representations_ruled_out": [],
-  "written_at": 1788892941
+  "representations_ruled_out": [
+    "LFM2 layer-2 cross-expert shared basis",
+    "LFM2 layer-2 common-plus-delta",
+    "LFM2 layer-2 expert clustering as a primary linear sharing lever",
+    "LFM2 pure BF16 low-rank as the primary <=1 BPW substrate",
+    "LFM2 static raw one-stage PQ as the primary <=0.5 BPW substrate",
+    "LFM2 layer-2 rowwise ternary plus top-magnitude sparse repair as a competitive rate-distortion substrate"
+  ],
+  "latest_rust_latency": {
+    "timing_unit": "ns",
+    "operation": "resident rank_content_paths; six-term hcli/ scoped query; maximum four paths",
+    "files_seen": 1563,
+    "result_paths": [
+      "hcli/serve.py",
+      "hcli/chat_state.py",
+      "hcli/chat_tools.py",
+      "hcli/repo_context.py"
+    ],
+    "native_internal_median_of_run_medians_ns": 10104.5,
+    "native_internal_p95_median_of_runs_ns": 10375,
+    "jsonl_wall_median_of_run_medians_ns": 17833,
+    "jsonl_wall_p95_median_of_runs_ns": 20375,
+    "python_adapter_median_of_run_medians_ns": 35083,
+    "python_adapter_p95_median_of_runs_ns": 37958,
+    "accepted_changes": [
+      "context-filtered exact-term index",
+      "scope-aware candidate selection",
+      "deterministic bounded top-k selection",
+      "direct response serialization",
+      "borrowed indexed postings",
+      "compact JSON request envelope",
+      "fail-closed string-level native path validation",
+      "positive native binary-resolution cache",
+      "fresh-index candidate-scan elision with safe trigram substring prefilter",
+      "generation-keyed fresh-search candidate cache with rebuild invalidation",
+      "positive native dispatch admission cache",
+      "bounded parallel metadata freshness validation",
+      "read-mostly resident native-service adapter lookup"
+    ],
+    "full_repo_context_paths_for_median_of_run_medians_ns": 53916,
+    "full_repo_context_paths_for_p95_median_of_runs_ns": 57458,
+    "full_repo_context_paths_for_prior_median_ns": 128145.5,
+    "full_repo_context_paths_for_previous_validation_only_median_ns": 123791.5,
+    "full_repo_context_paths_for_median_reduction_percent": 57.75,
+    "full_repo_context_paths_for_p95_reduction_percent": 53.82,
+    "python_adapter_previous_median_ns": 95791.5,
+    "python_adapter_previous_p95_ns": 101750,
+    "fresh_search_candidate_scan_elision": {
+      "query": "hcli/ scope; needle hawkingd; glob *.py; max_results 20; max_per_file 3",
+      "timing_unit": "ns",
+      "prior_python_to_native_median_of_run_medians_ns": 1042937.5,
+      "prior_python_to_native_p95_median_of_runs_ns": 1059375,
+      "source_candidate_median_of_run_medians_ns": 969270.5,
+      "source_candidate_p95_median_of_runs_ns": 994958,
+      "installed_snapshot_median_of_run_medians_ns": 974375,
+      "installed_snapshot_p95_median_of_runs_ns": 1010625,
+      "installed_snapshot_median_reduction_percent": 6.57,
+      "installed_snapshot_p95_reduction_percent": 4.60,
+      "files_seen": 448,
+      "match_count": 20,
+      "truncated": true,
+      "focused_rust_tests": 15,
+      "status": "accepted"
+    },
+    "fresh_search_candidate_cache_optimization": {
+      "query": "hcli/ scope; needle hawkingd; glob *.py; max_results 20; max_per_file 3",
+      "timing_unit": "ns",
+      "prior_trigram_candidate_median_of_run_medians_ns": 969270.5,
+      "prior_trigram_candidate_p95_median_of_runs_ns": 994958,
+      "optimized_median_of_run_medians_ns": 896354,
+      "optimized_p95_median_of_runs_ns": 914750,
+      "installed_snapshot_median_of_run_medians_ns": 889271,
+      "installed_snapshot_p95_median_of_runs_ns": 967125,
+      "installed_snapshot_total_median_reduction_percent": 14.73,
+      "installed_snapshot_total_p95_reduction_percent": 8.71,
+      "total_median_reduction_percent": 14.05,
+      "total_p95_reduction_percent": 13.65,
+      "files_seen": 448,
+      "match_count": 20,
+      "truncated": true,
+      "focused_rust_tests": 15,
+      "status": "accepted"
+    },
+    "rejected_change": "Cow-based lowercase-allocation removal; no measured gain and slightly worse tail",
+    "claim": "repository-ranking, adapter validation, and transport bookkeeping only; no model-TPS or end-to-end HCLI-TPS claim",
+    "full_tool_registry_fs_search_parallel_freshness": {
+      "timing_unit": "ns",
+      "scope": "ten fresh sequential probes; each 100 warm full ToolRegistry.invoke fs.search calls for the same contained query",
+      "control_median_of_run_medians_ns": 1232875,
+      "control_p95_ns": 1261429.15,
+      "native_internal_median_of_run_medians_ns": 619666.5,
+      "native_internal_p95_ns": 644877.1,
+      "python_adapter_wall_median_of_run_medians_ns": 696197.75,
+      "python_adapter_wall_p95_ns": 724237.15,
+      "optimized_full_tool_registry_median_of_run_medians_ns": 967156.5,
+      "optimized_full_tool_registry_p95_ns": 1002683.65,
+      "total_median_reduction_percent": 21.55,
+      "total_p95_reduction_percent": 20.51,
+      "metadata_sequential_threshold": 128,
+      "metadata_stamps_per_worker": 128,
+      "metadata_max_workers": 8,
+      "probe_calls_per_run": 100,
+      "warmup_calls": 50,
+      "files_seen": 448,
+      "match_count": 20,
+      "truncated": true,
+      "focused_rust_tests": "749 passed, 8 ignored, 0 failed",
+      "status": "ACCEPTED",
+      "claim": "deterministic bounded filesystem freshness and native dispatch transport reduction with result parity; excludes model and end-to-end HCLI TPS"
+    },
+    "native_service_lookup_ns_optimization": {
+      "timing_unit": "ns",
+      "scope": "eight fresh sequential probes; each 100 warm resident rank_content_paths requests for the same eight-term repository query",
+      "control_lookup_median_of_run_medians_ns": 104291,
+      "control_lookup_p95_median_of_runs_ns": 112125,
+      "optimized_lookup_median_of_run_medians_ns": 24781,
+      "optimized_lookup_p95_median_of_runs_ns": 27416,
+      "median_reduction_percent": 76.24,
+      "p95_reduction_percent": 75.55,
+      "result_paths_unchanged": true,
+      "generation_unchanged": true,
+      "dead_child_fallback_preserved": true,
+      "prewarm_dead_child_recovery_preserved": true,
+      "focused_tests": "56 passed, 0 failed",
+      "status": "ACCEPTED",
+      "claim": "resident native service lookup and adapter bookkeeping only; excludes model speed, tool-body latency, end-to-end HCLI TPS, capability, and Odyssey readiness",
+      "receipt": "receipts/future/GRAVITY_RUST_NATIVE_SERVICE_LOOKUP_NS_20260911.json"
+    },
+    "accelerator_regression_ns_migration": {
+      "timing_unit": "ns",
+      "scope": "accelerator regression audit request and whole-run timing producers",
+      "canonical_fields": [
+        "run_started_ns",
+        "elapsed_ns",
+        "experiment.live.wall_ns"
+      ],
+      "compatibility_fields": [
+        "started_at",
+        "finished_at",
+        "elapsed_s"
+      ],
+      "focused_tests": "26 passed, 0 failed",
+      "installed_snapshot": "/Users/scammermike/.local/share/hcli/build-20260911-165131",
+      "status": "ACCEPTED",
+      "claim": "measurement-contract precision migration only; excludes model speed, TPS, capability, and Odyssey readiness",
+      "receipt": "receipts/future/GRAVITY_RUST_ACCELERATOR_REGRESSION_NS_20260911.json"
+    },
+    "repository_content_refresh_ns": {
+      "timing_unit": "ns",
+      "scope": "same contained repository query after source-content edit; content refresh versus prior full index rebuild",
+      "control_median_ns": 2037780729.5,
+      "candidate_median_ns": 1959859437.5,
+      "median_reduction_percent": 3.82,
+      "control_max_of_four_ns": 2088418875,
+      "candidate_max_of_four_ns": 1967412875,
+      "max_of_four_reduction_percent": 5.79,
+      "result_count_each_run": 20,
+      "result_set_unchanged": true,
+      "focused_rust_tests": "15 passed, 0 failed",
+      "status": "ACCEPTED",
+      "claim": "native repository lifecycle reduction only; excludes model speed, end-to-end HCLI TPS, capability, ANE execution, and Odyssey readiness",
+      "receipt": "receipts/future/GRAVITY_RUST_REPO_CONTENT_REFRESH_NS_20260911.json"
+    }
+  },
+  "latest_deployment": {
+    "snapshot": "/Users/scammermike/.local/share/hcli/build-20260911-174203",
+    "hcli_package_digest": "978a0c5d9f51add4ce6d9d244e2f22a662d801603e1f158734f9efdcb34eac87",
+    "hawking_gravityd_digest": "c8db56c81fb5355fd3246f615735c7dea442ff1f8a2db53c97ccc585da6acce0",
+    "hcli_rust_digest": "457e335e7ea547f5fa6a6339edcffce5f7a139bc74115e9965634767ca848f54",
+    "live_daemon_restarted": false,
+    "claim": "new snapshot installed and bundled; live hawkingd remains on its existing process image until a controlled restart"
+  },
+  "written_at": 1789147471.0,
+    "latest_stateful_runtime": {
+      "status": "PENDING_REPEATED_ACCEPTED_DECODE",
+      "admission_receipt": "receipts/future/FLASH_NEXT_STATEFUL_RETRY_ADMISSION_20260911.json",
+      "accepted_source_session_receipt": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "accepted_generation_tokens": 1,
+      "accepted_token_id": 2972,
+      "execution_scope": "one source-bound 48-layer native stateful forward; host diagnostic cross-species seams remain",
+      "next_gate": "feed accepted token continuation through at least one more deterministic decode step under a protected clean GPU lane",
+      "claim_boundary": "Not repeated decode, TPS, capability, EBPW, direct Noetic execution, or HCLI resident admission."
+    },
+    "latest_odyssey_static": {
+    "status": "STATIC_RATE_DISTORTION_ONLY",
+    "hypothesis": "within-expert BF16 low-rank factors plus selectively billed sparse residuals",
+    "samples": [
+      {
+        "tensor": "model.language_model.layers.1.mlp.experts.gate_up_proj",
+        "expert": 0,
+        "rank_1_no_residual_scoped_ebpw": 0.1790625,
+        "rank_1_no_residual_relative_l2": 0.9979106,
+        "rank_16_no_residual_scoped_ebpw": 0.4603125,
+        "rank_16_no_residual_relative_l2": 0.9701933
+      },
+      {
+        "tensor": "model.language_model.layers.1.mlp.experts.gate_up_proj",
+        "expert": 1,
+        "rank_1_no_residual_scoped_ebpw": 0.1790625,
+        "rank_1_no_residual_relative_l2": 0.9976321,
+        "rank_16_no_residual_scoped_ebpw": 0.4603125,
+        "rank_16_no_residual_relative_l2": 0.9704595
+      },
+      {
+        "tensor": "model.language_model.layers.1.mlp.experts.down_proj",
+        "expert": 0,
+        "rank_4_no_residual_scoped_ebpw": 0.445625,
+        "rank_4_no_residual_relative_l2": 0.9912478,
+        "rank_16_no_residual_scoped_ebpw": 0.820625,
+        "rank_16_no_residual_relative_l2": 0.9677722
+      }
+    ],
+    "interpretation": "gate_up low-rank slope replicated across two experts; down_proj is less compressible at comparable rate; no capability/direct/full-body/runtime/TPS claim",
+    "next_gate": "held-out routed-output evidence after a valid Flash-Next activation/runtime admission path",
+    "binary_screen": {
+      "hypothesis": "per-row scaled binary or ternary substrate plus explicitly billed sparse residual",
+      "tensor": "model.language_model.layers.1.mlp.experts.gate_up_proj",
+      "experts": [
+        0,
+        1
+      ],
+      "binary_expert_0": {
+        "no_residual_scoped_ebpw": 1.1665625,
+        "no_residual_relative_l2": 0.6195499,
+        "residual_0_005_scoped_ebpw": 1.4065625,
+        "residual_0_005_relative_l2": 0.5888205
+      },
+      "binary_expert_1": {
+        "no_residual_scoped_ebpw": 1.1665625,
+        "no_residual_relative_l2": 0.6103951,
+        "residual_0_005_scoped_ebpw": 1.4065625,
+        "residual_0_005_relative_l2": 0.5833675
+      },
+      "ternary_expert_0": {
+        "no_residual_scoped_ebpw": 2.1665625,
+        "no_residual_relative_l2": 0.924503
+      },
+      "interpretation": "binary repeats across two experts and dominates ternary at this billing; no capability/direct/full-body/runtime/TPS claim",
+      "next_gate": "held-out routed-output evidence after a valid Flash-Next activation/runtime admission path"
+    },
+    "composition_screen": {
+      "status": "STATIC_RATE_DISTORTION_ONLY__DOMINATED_AT_LOW_RATE",
+      "hypothesis": "BF16 low-rank factors plus dense per-row 1-bit residual stream",
+      "tensor": "model.language_model.layers.1.mlp.experts.gate_up_proj",
+      "experts": [
+        0,
+        1
+      ],
+      "rank_1": {
+        "complete_scoped_ebpw": 1.1853125,
+        "relative_l2_expert_0": 0.6181368,
+        "relative_l2_expert_1": 0.6088154,
+        "plain_binary_scoped_ebpw": 1.1665625,
+        "plain_binary_relative_l2_expert_0": 0.6195499,
+        "plain_binary_relative_l2_expert_1": 0.6103951
+      },
+      "interpretation": "composition is slightly worse than plain binary at the nearest comparable rate; higher ranks improve distortion only with higher bytes; no capability/direct/full-body/runtime/TPS claim",
+      "next_gate": "held-out routed-output evidence after a valid Flash-Next activation/runtime admission path"
+    },
+      "layer_sweep": {
+      "status": "STATIC_RATE_DISTORTION_ONLY",
+      "tensor": "model.language_model.layers.{1,12,24,47}.mlp.experts.gate_up_proj",
+      "expert": 0,
+      "ranks_tested": [
+        1,
+        4,
+        16,
+        32
+      ],
+      "no_residual_rank_16_relative_l2": {
+        "layer_1": 0.9701933,
+        "layer_12": 0.9638959,
+        "layer_24": 0.9723275,
+        "layer_47": 0.9469797
+      },
+      "residual_0_005_rank_16_relative_l2": {
+        "layer_1": 0.9407399,
+        "layer_12": 0.9379331,
+        "layer_24": 0.9475089,
+        "layer_47": 0.9127176
+      },
+      "interpretation": "static compressibility is depth-dependent; layer 47 is the best sampled target and layer 24 the weakest; nonuniform allocation is supported; no capability/direct/full-body/runtime/TPS claim",
+        "next_gate": "held-out routed-output evidence after a valid Flash-Next activation/runtime admission path"
+      },
+      "late_binary_control": {
+        "status": "STATIC_RATE_DISTORTION_ONLY",
+        "receipt": "receipts/future/FLASH_NEXT_ROUTED_GATEUP_L47_E0_BINARY_TERNARY_SPARSE_REPAIR_20260911.json",
+        "sha256": "ebc60877cf27e192d3cc5c2b8dac1f03a3b2003e6748c3d0cd9490a64acdb25e",
+        "tensor": "model.language_model.layers.47.mlp.experts.gate_up_proj",
+        "expert": 0,
+        "binary": {
+          "bare_complete_scoped_ebpw": 1.1665625,
+          "bare_relative_l2": 0.6282173,
+          "repair_0_005_complete_scoped_ebpw": 1.4065625,
+          "repair_0_005_relative_l2": 0.5713248
+        },
+        "lowrank_reference": {
+          "rank_16_repair_0_005_complete_scoped_ebpw": 0.7003125,
+          "rank_16_repair_0_005_relative_l2": 0.9127176,
+          "rank_32_repair_0_005_complete_scoped_ebpw": 1.0003125,
+          "rank_32_repair_0_005_relative_l2": 0.8895527
+        },
+        "interpretation": "At this layer/expert and exact billing, binary wins distortion only after crossing the sampled sub-1 frontier. Low rank remains the only sampled sub-1 substrate but with materially worse static error. This prioritizes activation-aware repair allocation over another generic static family; it is not capability, direct-execution, full-body EBPW, runtime, or TPS evidence.",
+        "next_gate": "held-out routed-output evidence after a valid Flash-Next activation/runtime admission path"
+      }
+  }
 }

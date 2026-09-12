@@ -143,6 +143,49 @@ _ORGAN_PATTERNS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("output_head", ("lm_head", "output", "classifier", "logits")),
 )
 
+# A recognizer never reads tensor payloads, so these are deliberately probe
+# contracts rather than asserted kernel shapes.  They let CPU/GPU/ANE planning
+# attach to the same model organs while marking unresolved geometry explicitly.
+_PHYSICAL_OPERATION_BY_ORGAN = {
+    "embedding": "matmul",
+    "attention": "sdpa",
+    "recurrent_or_deltanet": "state_update",
+    "moe_router": "matmul",
+    "moe_experts": "matmul",
+    "shared_expert": "matmul",
+    "normalization": "rmsnorm",
+    "ngram_or_lookup": "lookup",
+    "mtp_or_auxiliary_head": "matmul",
+    "output_head": "matmul",
+}
+
+
+def _physical_probe_shape(organ: str, hidden_size: Optional[int]) -> tuple[list[int], str]:
+    """Return only the geometry metadata can support without weight access."""
+
+    if organ == "ngram_or_lookup":
+        return [1], "metadata_generic_lookup"
+    if organ in {"attention", "recurrent_or_deltanet"}:
+        return [], "metadata_insufficient_for_state_or_head_geometry"
+    if hidden_size and hidden_size > 0:
+        return [1, hidden_size], "metadata_hidden_size_only"
+    return [], "metadata_hidden_size_unavailable"
+
+
+def _metadata_source_seal(model_id: str, source_records: Sequence[Mapping[str, Any]]) -> str:
+    """Seal the metadata inputs without misrepresenting it as a weight seal."""
+
+    body = {
+        "kind": "metadata_config_and_index_only_not_weight_identity",
+        "model_id": model_id,
+        "sources": [
+            {"kind": row.get("kind"), "sha256": row.get("sha256")}
+            for row in source_records
+        ],
+    }
+    encoded = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return "metadata:" + hashlib.sha256(encoded).hexdigest()
+
 
 @dataclass(frozen=True)
 class ArchitectureReport:
@@ -202,6 +245,7 @@ class ArchitectureRecognizer:
         lower_names = [(name, name.lower()) for name in names]
         for organ, signals in _ORGAN_PATTERNS:
             matched = [name for name, lower in lower_names if any(signal in lower for signal in signals)]
+            shape, shape_source = _physical_probe_shape(organ, hidden_size)
             organs.append({
                 "id": organ,
                 "present": bool(matched),
@@ -209,6 +253,10 @@ class ArchitectureRecognizer:
                 "examples": matched[:8],
                 "signals": list(signals),
                 "confidence": "high" if matched and index_path else "medium" if matched else "unknown",
+                "operation": _PHYSICAL_OPERATION_BY_ORGAN[organ],
+                "shape": shape,
+                "shape_source": shape_source,
+                "measurement_state": "UNMEASURED",
             })
 
         unresolved: List[str] = []
@@ -244,6 +292,7 @@ class ArchitectureRecognizer:
         if unresolved and confidence == "high":
             confidence = "medium"
         model_id = str(config.get("_name_or_path") or profile.get("model_id") or requested.name)
+        metadata_seal = _metadata_source_seal(model_id, source_records)
         document: Dict[str, Any] = {
             "schema": SCHEMA,
             "source": str(requested),
@@ -269,9 +318,10 @@ class ArchitectureRecognizer:
             },
             "hardware_gravity_plan": {
                 "memory_tier": "hot-ssd-or-ram-for-active-working-set; cold-store-for-canonical-source",
-                "placement_candidates": ["cpu", "gpu", "fpga", "remote"],
+                "placement_candidates": ["cpu", "gpu", "ane", "fpga", "remote"],
                 "measurement_required": ["bytes_per_weight", "active_bytes_per_token", "bandwidth", "latency", "capability_loss"],
                 "native_kernel_status": "not_claimed_by_metadata_recognizer",
+                "model_specific_physical_characterization": "required_before_backend_promotion",
             },
             "confidence": confidence,
             "unresolved": unresolved,
@@ -285,10 +335,21 @@ class ArchitectureRecognizer:
             },
         }
         try:
+            from .ane_provider import ANEProvider
             from .physical_graph import compile_physical_graph
 
+            ane_provider = ANEProvider.from_receipts()
+            document["ane_model_characterization"] = ane_provider.characterize_model(
+                model_id,
+                [organ for organ in organs if organ["present"]],
+                source_seal=metadata_seal,
+            )
+            document["ane_model_characterization"]["source_seal_scope"] = (
+                "metadata_config_and_index_only_not_weight_identity"
+            )
             document["physical_graph"] = compile_physical_graph(
                 document,
+                provider=ane_provider,
                 architecture_atlas=architecture_atlas,
                 backend=backend,
             )

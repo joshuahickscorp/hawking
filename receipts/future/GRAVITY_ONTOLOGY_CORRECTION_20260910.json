@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.gravity.ontology.v2",
+  "status": "CANONICAL_REDUCED_SURFACE",
+  "top_level": [
+    "HAWKING",
+    "HCLI",
+    "GRAVITY"
+  ],
+  "adjacent_terms": {
+    "ODYSSEY": "population-scale campaign that invokes Gravity",
+    "AGENTOS": "infrastructure",
+    "DEEP_GRAVITY": "Gravity mode with permission to search learned cognition, representation, and physical design together",
+    "NOVA": "Gravity operation that renews the learned organism through training or structural transformation",
+    "NOETIC_REPRESENTATION": "Gravity's mutable representation substrate",
+    "NX": "Gravity-produced machine-bound executable artifact",
+    "STAR": "model role/status receiving exceptionally deep Gravity"
+  },
+  "internal_tags": [
+    "DISCOVER",
+    "DIAGNOSE",
+    "REPRESENT",
+    "NOVA",
+    "EXECUTE",
+    "VERIFY"
+  ],
+  "reduction_law": "Do not make the conceptual surface grow at the rate of internal capability; implementation methods remain machinery below Gravity.",
+  "lineage_rule": "Every Nova transformation records parent identity/hash, objective, structural changes, trainable/frozen parameters, data classes, teacher, optimization objective, representation constraints, capability before/after, and physical before/after.",
+  "compatibility": {
+    "historical_tool_gravity": "internal Gravity reduction operation",
+    "historical_gravity_phase_names": "internal routing tags",
+    "historical_star_foundry": "Deep Gravity plus Nova workflow",
+    "historical_noetic_science": "Noetic Representation inside Gravity"
+  },
+  "claim_boundary": "This receipt changes conceptual ownership and vocabulary only; it does not authorize mass file moves, deletion, weight mutation, or artifact promotion."
+}

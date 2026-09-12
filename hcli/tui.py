@@ -11,6 +11,7 @@ import unicodedata
 from typing import Any, Callable, Dict, List, Optional, TextIO
 
 from .events import Event, EventBus
+from .latency import event_elapsed_ns, format_duration_ns
 from .mission import mission_state_path
 from .session_ledger import SessionLedger
 from .stream_render import (
@@ -408,10 +409,16 @@ class TUI:
         ok = bool(data.get("ok"))
         mark = "✓" if ok else "✗"
         outcome = "ok" if ok else "failed"
-        elapsed = data.get("elapsed_s")
+        elapsed_ns = event_elapsed_ns(data)
         extra = ""
-        if isinstance(elapsed, (int, float)):
-            extra = f"  {elapsed:.1f}s"
+        if "elapsed_ns" in data and elapsed_ns is not None:
+            extra = f"  {format_duration_ns(elapsed_ns)}"
+        else:
+            # Old event logs retain their historical seconds presentation;
+            # new producers emit elapsed_ns and take the branch above.
+            legacy = data.get("elapsed_s")
+            if isinstance(legacy, (int, float)):
+                extra = f"  {legacy:.1f}s"
         return f"{mark} {name}  {outcome}{extra}"
 
     def _on_event(self, event: Event):
@@ -509,9 +516,9 @@ class TUI:
             self._write_status_live()
             return
         if etype == "model_call_finished":
-            elapsed = data.get("elapsed_s")
-            if isinstance(elapsed, (int, float)):
-                self._phase_t0 = time.monotonic() - float(elapsed)
+            elapsed_ns = event_elapsed_ns(data)
+            if elapsed_ns is not None:
+                self._phase_t0 = time.monotonic() - (elapsed_ns / 1_000_000_000.0)
             self.status = self._format_status()
             return
         if etype == "heartbeat":
@@ -521,9 +528,9 @@ class TUI:
             # than losing it by calling through the pure function.
             phase = status_word(data.get("phase") or self._phase or "thinking")
             self._phase = phase
-            elapsed = data.get("elapsed_s")
-            if isinstance(elapsed, (int, float)):
-                self._phase_t0 = time.monotonic() - float(elapsed)
+            elapsed_ns = event_elapsed_ns(data)
+            if elapsed_ns is not None:
+                self._phase_t0 = time.monotonic() - (elapsed_ns / 1_000_000_000.0)
             tokens = data.get("prompt_tokens")
             if tokens is not None:
                 try:

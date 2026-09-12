@@ -3453,6 +3453,7 @@ fn stats_main(
     println!("finish_reason: {:?}", reason);
     println!("prompt_tokens: {}", stats.prompt_tokens);
     println!("completion_tokens: {}", stats.completion_tokens);
+    println!("decode_ns: {}", stats.decode_elapsed_ns());
     println!("decode_ms: {:.1}", stats.decode_ms);
     println!(
         "offload_budget_mb: {}",
@@ -3869,7 +3870,7 @@ fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Op
             engine
                 .generate(req, &mut |ev| {
                     if let StreamEvent::Done { stats, .. } = ev {
-                        measured_tps = (stats.decode_ms > 0.0).then(|| stats.dec_tps());
+                        measured_tps = (stats.decode_elapsed_ns() > 0).then(|| stats.dec_tps());
                     }
                 })
                 .ok()?;
@@ -4297,10 +4298,12 @@ fn generate_main(
                 let dec = stats.dec_tps();
                 let reason_s = stop_reason_label(&reason);
                 eprintln!(
-                    "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
+                    "\n[stats] reason={} prompt={} completion={} prefill_ns={} decode_ns={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
                     reason_s,
                     stats.prompt_tokens,
                     stats.completion_tokens,
+                    stats.prefill_elapsed_ns(),
+                    stats.decode_elapsed_ns(),
                     stats.prefill_ms,
                     stats.decode_ms,
                     dec,
@@ -4465,6 +4468,9 @@ fn write_native_tq_serve_report(
                 "completion_tokens",
                 serde_json::json!(stats.completion_tokens),
             ),
+            ("timing_unit", serde_json::json!("ns")),
+            ("prefill_ns", serde_json::json!(stats.prefill_elapsed_ns())),
+            ("decode_ns", serde_json::json!(stats.decode_elapsed_ns())),
             ("prefill_ms", serde_json::json!(stats.prefill_ms)),
             ("decode_ms", serde_json::json!(stats.decode_ms)),
             ("stop_reason", serde_json::json!(stop_reason_label(reason))),

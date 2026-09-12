@@ -1,10 +1,20 @@
 {
   "claim_boundary": "no vague runtime-overhead bucket; un-attributed per-dispatch GPU ownership remains explicitly unmeasured when trace mode is off",
   "integrated_graph_gpu_ns": [
-    22438125
+    3231458,
+    3157416,
+    3157958,
+    3150166,
+    3061875,
+    2770166
   ],
   "integrated_graph_host_ns": [
-    108654334
+    53851083,
+    3564833,
+    3532834,
+    3518625,
+    3750708,
+    3165791
   ],
   "layer": 46,
   "owners": [
@@ -15,7 +25,7 @@
       "owner": "norm"
     },
     {
-      "kernels": "gemv_native_bf16_seq",
+      "kernels": "gemv_native_bf16_dual_seq + gemv_native_bf16_seq",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "projections"
@@ -33,31 +43,31 @@
       "owner": "recurrence"
     },
     {
-      "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + out_proj",
+      "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + gemv_native_bf16_hyperconnection_combine",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "attention"
     },
     {
-      "kernels": "gemv_native_bf16_seq + moe_topk_gate",
+      "kernels": "qwen_next_bf16_router_topk_shared",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "routing"
     },
     {
-      "kernels": "qwen_next_bf16_expert_gate_up_swiglu + qwen_next_bf16_expert_down",
+      "kernels": "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4 + qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "selected experts"
     },
     {
-      "kernels": "gemv_native_bf16_seq + moe_batched_silu_mul",
+      "kernels": "qwen_next_bf16_compact_expert_gate_up_shared_swiglu + shared_down in direct HC epilogue",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "shared expert"
     },
     {
-      "kernels": "qwen_next_hyperconnection_combine",
+      "kernels": "qwen_next_bf16_compact_expert_down_shared_direct_hc",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "residual"
@@ -84,14 +94,5 @@
   "promotion_allowed": false,
   "schema": "hawking.flash_layer0_critical_path.v1",
   "source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
-  "status": "PASSED",
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
-  }
+  "status": "PASSED"
 }

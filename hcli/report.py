@@ -36,6 +36,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .latency import format_duration_ns, now_ns, seconds_from_ns
+
 DEFAULT_BASE = "http://127.0.0.1:8011"
 FILLER = ("The Hawking runtime schedules Metal command buffers across a hybrid "
           "state-space and attention body. ")
@@ -52,13 +54,17 @@ def _post(base: str, body: Dict[str, Any], timeout: float) -> Dict[str, Any]:
 
 def ask(base: str, messages: List[Dict[str, str]], *, max_tokens: int,
         timeout: float) -> Dict[str, Any]:
-    started = time.perf_counter()
+    started_ns = now_ns()
     data = _post(base, {"messages": messages, "max_tokens": max_tokens}, timeout)
-    wall = time.perf_counter() - started
+    wall_ns = max(0, now_ns() - started_ns)
+    wall_s = seconds_from_ns(wall_ns) or 0.0
     usage = data.get("usage") or {}
     choice = (data.get("choices") or [{}])[0]
     return {
-        "wall_s": wall,
+        "wall_ns": wall_ns,
+        # Compatibility view for callers of report.v1. Rates below are
+        # calculated from wall_ns, never from this rounded presentation value.
+        "wall_s": wall_s,
         "prompt_tokens": usage.get("prompt_tokens") or 0,
         "completion_tokens": usage.get("completion_tokens") or 0,
         "text": ((choice.get("message") or {}).get("content") or ""),
@@ -88,13 +94,15 @@ def cold_prefill(base: str, sizes: List[int], *, timeout: float) -> List[Dict[st
         got = ask(base, [{"role": "user", "content": prompt}],
                   max_tokens=8, timeout=timeout)
         tokens = got["prompt_tokens"]
-        wall = got["wall_s"]
+        wall_ns = got["wall_ns"]
+        wall_s = got["wall_s"]
         rows.append({
             "requested": size,
             "prompt_tokens": tokens,
-            "wall_s": round(wall, 2),
-            "prompt_tokens_per_s": round(tokens / wall, 1) if wall else None,
-            "ms_per_prompt_token": round(wall * 1000 / tokens, 1) if tokens else None,
+            "wall_ns": wall_ns,
+            "wall_s": round(wall_s, 2),
+            "prompt_tokens_per_s": round(tokens * 1_000_000_000 / wall_ns, 1) if wall_ns else None,
+            "ms_per_prompt_token": round(wall_ns / 1_000_000 / tokens, 1) if tokens else None,
         })
     return rows
 
@@ -107,6 +115,7 @@ def warm_turns(base: str, *, size: int, turns: int, timeout: float) -> Dict[str,
     first = ask(base, messages, max_tokens=8, timeout=timeout)
     rows.append({"turn": 1, "kind": "cold",
                  "prompt_tokens": first["prompt_tokens"],
+                 "wall_ns": first["wall_ns"],
                  "wall_s": round(first["wall_s"], 2)})
     reply = first["text"]
     for turn in range(2, turns + 1):
@@ -117,6 +126,7 @@ def warm_turns(base: str, *, size: int, turns: int, timeout: float) -> Dict[str,
         reply = got["text"]
         rows.append({"turn": turn, "kind": "extends prefix",
                      "prompt_tokens": got["prompt_tokens"],
+                     "wall_ns": got["wall_ns"],
                      "wall_s": round(got["wall_s"], 2)})
 
     # THE CONTROL. A different prompt of the same size must stay slow, or the
@@ -127,21 +137,27 @@ def warm_turns(base: str, *, size: int, turns: int, timeout: float) -> Dict[str,
                   max_tokens=8, timeout=timeout)
     rows.append({"turn": None, "kind": "control: different prompt, same size",
                  "prompt_tokens": control["prompt_tokens"],
+                 "wall_ns": control["wall_ns"],
                  "wall_s": round(control["wall_s"], 2)})
 
-    cold_s = rows[0]["wall_s"]
-    warm = [r["wall_s"] for r in rows[1:-1]]
-    control_s = rows[-1]["wall_s"]
-    warm_median = statistics.median(warm) if warm else None
-    speedup = (cold_s / warm_median) if warm_median else None
+    cold_ns = rows[0]["wall_ns"]
+    warm = [r["wall_ns"] for r in rows[1:-1]]
+    control_ns = rows[-1]["wall_ns"]
+    warm_median_ns = int(statistics.median(warm)) if warm else None
+    speedup = (cold_ns / warm_median_ns) if warm_median_ns else None
     # The control has to be within 2x of the cold turn for it to be a control at
     # all; otherwise something else changed and the comparison is void.
-    control_held = bool(control_s >= cold_s * 0.5)
+    control_held = bool(control_ns >= cold_ns * 0.5)
     return {
         "turns": rows,
-        "cold_s": cold_s,
-        "warm_median_s": warm_median,
-        "control_s": control_s,
+        "timing_unit": "ns",
+        "cold_ns": cold_ns,
+        "warm_median_ns": warm_median_ns,
+        "control_ns": control_ns,
+        # Compatibility aliases for report.v1 consumers.
+        "cold_s": seconds_from_ns(cold_ns),
+        "warm_median_s": seconds_from_ns(warm_median_ns),
+        "control_s": seconds_from_ns(control_ns),
         "speedup": round(speedup, 1) if speedup else None,
         "prefix_reuse": bool(speedup and speedup >= 2.0 and control_held),
         "verdict": (
@@ -160,13 +176,25 @@ def decode_rate(base: str, *, max_tokens: int, timeout: float) -> Dict[str, Any]
                       "Write a detailed paragraph about memory bandwidth."}],
               max_tokens=max_tokens, timeout=timeout)
     completion = got["completion_tokens"]
-    wall = got["wall_s"]
+    wall_ns = got["wall_ns"]
+    wall_s = got["wall_s"]
     return {
         "completion_tokens": completion,
-        "wall_s": round(wall, 2),
-        "tokens_per_s": round(completion / wall, 1) if wall else None,
-        "ms_per_token": round(wall * 1000 / completion, 1) if completion else None,
+        "wall_ns": wall_ns,
+        "wall_s": round(wall_s, 2),
+        "tokens_per_s": round(completion * 1_000_000_000 / wall_ns, 1) if wall_ns else None,
+        "ms_per_token": round(wall_ns / 1_000_000 / completion, 1) if completion else None,
     }
+
+
+def _wall_ns(row: Dict[str, Any]) -> Optional[int]:
+    value = row.get("wall_ns")
+    if isinstance(value, int) and not isinstance(value, bool):
+        return max(0, value)
+    legacy = row.get("wall_s")
+    if isinstance(legacy, (int, float)) and not isinstance(legacy, bool):
+        return max(0, int(round(float(legacy) * 1_000_000_000)))
+    return None
 
 
 def render(report: Dict[str, Any]) -> str:
@@ -182,7 +210,9 @@ def render(report: Dict[str, Any]) -> str:
         out.append("COLD  time to first answer, nothing cached")
         out.append(f"  {'prompt tok':>10}  {'wall':>8}  {'tok/s':>7}  {'ms/tok':>7}")
         for row in cold:
-            out.append(f"  {row['prompt_tokens']:>10}  {row['wall_s']:>7.2f}s  "
+            wall_ns = _wall_ns(row)
+            wall = format_duration_ns(wall_ns) if wall_ns is not None else "unknown"
+            out.append(f"  {row['prompt_tokens']:>10}  {wall:>8}  "
                        f"{row['prompt_tokens_per_s']:>7}  {row['ms_per_prompt_token']:>7}")
         out.append("")
     warm = report.get("warm_turns")
@@ -190,15 +220,21 @@ def render(report: Dict[str, Any]) -> str:
         out.append("WARM  does a follow-up turn re-pay the history?")
         for row in warm["turns"]:
             label = row["kind"] if row["turn"] is None else f"turn {row['turn']} ({row['kind']})"
-            out.append(f"  {label:<44} {row['prompt_tokens']:>6} tok  {row['wall_s']:>7.2f}s")
+            wall_ns = _wall_ns(row)
+            wall = format_duration_ns(wall_ns) if wall_ns is not None else "unknown"
+            out.append(f"  {label:<44} {row['prompt_tokens']:>6} tok  {wall:>8}")
         if warm.get("speedup"):
-            out.append(f"  speedup {warm['speedup']}x   control {warm['control_s']:.2f}s")
+            control_ns = warm.get("control_ns")
+            control = format_duration_ns(control_ns) if control_ns is not None else "unknown"
+            out.append(f"  speedup {warm['speedup']}x   control {control}")
         out.append(f"  -> {warm['verdict']}")
         out.append("")
     decode = report.get("decode")
     if decode:
+        wall_ns = _wall_ns(decode)
+        wall = format_duration_ns(wall_ns) if wall_ns is not None else "unknown"
         out.append(f"DECODE  {decode['completion_tokens']} tokens in "
-                   f"{decode['wall_s']:.2f}s = {decode['tokens_per_s']} tok/s "
+                   f"{wall} = {decode['tokens_per_s']} tok/s "
                    f"({decode['ms_per_token']} ms/token)")
         out.append("")
     if report.get("receipt"):
@@ -241,7 +277,8 @@ def main(argv: Optional[list] = None) -> int:
 
     skip = {s.strip() for s in a.skip.split(",") if s.strip()}
     report: Dict[str, Any] = {
-        "schema": "hcli.report.v1",
+        "schema": "hcli.report.v2",
+        "timing_unit": "ns",
         "base_url": a.base,
         "resident": resident,
         "started_at": time.time(),

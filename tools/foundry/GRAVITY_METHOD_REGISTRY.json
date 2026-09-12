@@ -1,6 +1,60 @@
 {
   "created_at": "2026-07-20T19:29:43+00:00",
   "current_generation": "GRAVITY_METHOD_V2",
+  "method_library_policy": {
+    "owner": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+    "purpose": "Canonical cross-model index of Gravity methods, their implementation owner, applicability, controls, accounting, evidence, claim boundary, and reopen condition.",
+    "selection_rule": "A query returns candidates only. A method becomes a target-model conclusion only after that model satisfies the listed controls and emits its own receipt.",
+    "do_not_duplicate": [
+      "model-specific markdown cookbook",
+      "unbound receipt list",
+      "unscoped cross-model performance claim"
+    ],
+    "updated_at": "2026-09-11T00:00:00-04:00"
+  },
+  "canonical_owners": {
+    "contract": "These are the living Gravity owners. Model-specific experiments, architecture adapters, receipts, and compatibility surfaces must extend or reference one of them unless a new architecture demonstrably requires unique execution logic.",
+    "discover_identify": {
+      "python": "tools/odyssey/arch_recognizer.py",
+      "rust": "crates/hawking-core/src/gravity_manifest.rs",
+      "evidence": "workspace/campaign/odyssey/TRANSFER_MATRIX.json"
+    },
+    "methods_representations": {
+      "registry": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "query": "tools/foundry/query_gravity_methods.py",
+      "compiler": "tools/odyssey/noetic_compiler.py"
+    },
+    "account_verify": {
+      "rust": "crates/hawking-core/src/token_ns",
+      "nr_manifest": "crates/hawking-core/src/gravity_manifest.rs",
+      "python": "tools/future/complete_ebpw.py",
+      "flash_adapter": "tools/flash_complete_nr.py",
+      "campaign_gate": "tools/flash_stateful_gate.py",
+      "contract": "A complete EBPW claim bills every persistent representation part against original logical weights, declares external dependencies, and reports active bytes per token plus mutable state and scratch separately. An open body may receive a rate budget but never a runnable-NR or complete-EBPW claim."
+    },
+    "execute_physical": {
+      "rust_runtime": "crates/hawking-core/src/model/gravity_engine.rs",
+      "rust_kernel": "crates/hawking-core/src/kernels/megakernel.rs",
+      "rust_latency": "crates/hawking-core/src/startup_timing.rs",
+      "physical_graph": "tools/odyssey/physical_graph_compiler.py",
+      "ane_contract": "hcli/ane_provider.py",
+      "direct_packed_moe": {
+        "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "runtime": "crates/hawking-core/src/kernels/mod.rs",
+        "candidate_discriminator": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs",
+        "route_authority_contract": {
+          "implementation": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs",
+          "symbol": "resolve_fused_route_selection"
+        }
+      }
+    },
+    "learn_odyssey": {
+      "campaign": "workspace/campaign/odyssey/TRANSFER_MATRIX.json",
+      "specimen_registry": "tools/odyssey/modellake.py",
+      "laws_and_failures": "tools/odyssey/known_failures.py"
+    },
+    "admission_rule": "A new model-specific runner is a thin adapter only: it names the architecture-specific seam, invokes the relevant canonical owner, emits a source-bound receipt, and adds an applicability or negative-transfer entry."
+  },
   "generations": {
     "GRAVITY_METHOD_V1": {
       "candidate_priors": {
@@ -301,5 +355,347 @@
       "supersedes": "GRAVITY_METHOD_V1"
     }
   },
-  "schema": "hawking.foundry.gravity_method_registry.v1"
+  "methods": [
+    {
+      "id": "M-closed-nr-rate-accounting",
+      "title": "Closed Noetic Representation accounting and rate budget",
+      "family": "representation_accounting",
+      "implementation_owner": "crates/hawking-core/src/gravity_manifest.rs + tools/future/complete_ebpw.py",
+      "applicability": {
+        "architecture_tags": ["any_model", "portable_nr"],
+        "required_features": ["logical_weight_denominator", "declared_persistent_parts"],
+        "excluded_features": ["payload_only_accounting", "implicit_source_or_runtime_dependencies"]
+      },
+      "required_controls": [
+        "complete_persistent_part_ledger",
+        "external_dependency_declaration",
+        "direct_execution_or_explicit_withholding",
+        "active_bytes_per_token_measured_or_withheld",
+        "mutable_state_and_scratch_measured_or_withheld",
+        "integer_ceiling_rate_budget"
+      ],
+      "accounting": [
+        "logical_weights",
+        "complete_persistent_bytes",
+        "complete_ebpw_ppm",
+        "active_bytes_per_token",
+        "mutable_state_bytes",
+        "scratch_bytes",
+        "dependency_closure",
+        "target_persistent_bytes_ceiling"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NR_ACCOUNTING_BASELINE_20260911.nr.json",
+        "receipts/headless/FLASH_ORGAN_CENSUS.json"
+      ],
+      "status": "PROVEN_ACCOUNTING_CONTRACT__FLASH_OPEN_BASELINE",
+      "claim_boundary": "The contract proves how Hawking charges a representation and refuses an open NR runnable claim. The Flash receipt is a source-control and target-budget baseline only; it does not establish a compact full-body representation, capability, direct full-body execution, or TPS.",
+      "reopen_if": "A representation needs a previously unmodelled persistent decoder/state class, or a target architecture uses a non-scalar denominator that cannot be mapped to original logical weights."
+    },
+    {
+      "id": "M-stateful-repeated-accepted-decode",
+      "title": "Stateful repeated accepted decode",
+      "family": "execution_state",
+      "implementation_owner": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+      "applicability": {
+        "architecture_tags": ["autoregressive_decoder"],
+        "required_features": ["source_bound_reference_contract", "persistent_model_state"],
+        "excluded_features": []
+      },
+      "required_controls": [
+        "exact_source_identity_and_revision",
+        "independent_reference_per_accepted_token",
+        "source_reset_or_reprefill_absent",
+        "state_memory_growth_measured",
+        "component_level_failure_diagnosis"
+      ],
+      "accounting": [
+        "accepted_token_sequence",
+        "persistent_state_bytes",
+        "source_load_ns",
+        "execution_ns",
+        "gpu_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_DENSE_ROUTE_TRACE_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.json"
+      ],
+      "status": "PROVEN_FLASH_SCOPED",
+      "claim_boundary": "Proves repeated accepted stateful decode for the named Flash source-bound controls. It neither establishes a warm resident whole-model TPS result nor transfers state semantics to another architecture without that architecture's own reference-bound control.",
+      "reopen_if": "A target model exposes a different state representation or cannot preserve an independently checked sequence without a source reset."
+    },
+    {
+      "id": "M-teacher-route-union-compact-experts",
+      "title": "Teacher-bound routed-expert union compaction",
+      "family": "moe_representation",
+      "implementation_owner": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts"],
+        "required_features": ["teacher_oracle_for_route_control", "expert_row_addressability"],
+        "excluded_features": ["claiming_live_router_generalization_from_teacher_routes"]
+      },
+      "required_controls": [
+        "exact_teacher_route_trace",
+        "route_union_census",
+        "full_dense_source_control",
+        "accepted_terminal_reference",
+        "complete_representation_accounting"
+      ],
+      "accounting": [
+        "selected_rows_over_total_rows",
+        "compact_bytes",
+        "source_bytes",
+        "representation_decode_overhead",
+        "no_live_router_or_global_tps_claim"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_ROUTE_UNION_CENSUS.json",
+        "receipts/headless/FLASH_ROUTE_UNION_COMPACT_CONTROL.json"
+      ],
+      "status": "PROVEN_FLASH_SCOPED",
+      "claim_boundary": "The Flash route union is an exact teacher-bound representation control. It is not a live-routing capability result, a whole-model complete-EBPW result, or a TPS claim.",
+      "reopen_if": "A target MoE has a different routing contract, inaccessible expert rows, or its measured route union does not offer sufficient active-byte reduction."
+    },
+    {
+      "id": "M-device-only-immutable-weight-release",
+      "title": "Release immutable source weights after device upload",
+      "family": "physical_residency",
+      "implementation_owner": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs + crates/hawking-core/examples/flash_full_attention_layer3.rs",
+      "applicability": {
+        "architecture_tags": ["metal", "autoregressive_decoder"],
+        "required_features": ["device_weight_upload", "reconstructible_or_pinned_source", "resident_device_buffers"],
+        "excluded_features": ["claiming_complete_residency_before_all_weight_owners_are_measured"]
+      },
+      "required_controls": [
+        "source_weights_explicitly_dropped_after_upload",
+        "host_source_weight_retention_receipt",
+        "device_weight_bytes_receipt",
+        "process_rss_observation",
+        "accepted_decode_control"
+      ],
+      "accounting": [
+        "device_weight_bytes",
+        "host_source_weight_bytes",
+        "observed_process_rss_bytes",
+        "source_load_ns",
+        "execution_ns",
+        "gpu_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_LINEAR_RESIDENT_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_BANK_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.TIMING_CENSUS.json"
+      ],
+      "status": "PROVEN_FLASH_SCOPED",
+      "claim_boundary": "Flash controls demonstrate release of the measured linear source tensors and all twelve full-attention source tensors after Metal upload. Linear banks remain process-lifetime resident; full-attention banks are reused across their layer-major token pass, not yet across a token-major whole body. This is not a complete long-lived resident model or warm-token TPS result.",
+      "reopen_if": "A target has an immutable weight owner that cannot be released after upload, retains hidden host copies during its token loop, or requires a different lifetime to obtain a fair warm-token measurement."
+    },
+    {
+      "id": "M-device-state-handoff",
+      "title": "Device-resident state handoff between execution organs",
+      "family": "physical_execution",
+      "implementation_owner": "crates/hawking-core/examples/flash_fast_chain.rs",
+      "applicability": {
+        "architecture_tags": ["metal", "multi_organ_decoder"],
+        "required_features": ["compatible_device_buffer_abi", "device_to_device_state_transition"],
+        "excluded_features": ["treating_single_token_chain_timing_as_streaming_tps"]
+      },
+      "required_controls": [
+        "device_handoff_receipt",
+        "terminal_reference_check",
+        "explicit_host_snapshot_boundary",
+        "token_major_repetition_before_tps_claim"
+      ],
+      "accounting": [
+        "device_handoff_count",
+        "host_snapshot_boundary",
+        "elapsed_ns",
+        "persistent_state_bytes"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+        "receipts/headless/FLASH_FAST_FUSED_L0_L47_V1"
+      ],
+      "status": "PROVEN_COMPONENT_SCOPED",
+      "claim_boundary": "Proves a no-host-snapshot device handoff across the recorded Flash chain. It does not by itself prove repeated state continuity, complete-model residency, or streaming TPS.",
+      "reopen_if": "A target organ boundary requires host-visible state, has incompatible layouts, or a repeated token control exposes state drift."
+    },
+    {
+      "id": "M-source-activation-rate-distortion",
+      "title": "Sealed source-activation representation rate--distortion screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/stacked_expert_lowrank_sparse_repair.py",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "source_activation_control"],
+        "required_features": [
+          "addressable_expert_matrix",
+          "sealed_source_activation",
+          "source_receipt_hash_binding",
+          "declared_scoped_accounting"
+        ],
+        "excluded_features": [
+          "treating_one_teacher_activation_as_held_out_capability",
+          "treating_a_teacher_control_as_an_nr_dependency"
+        ]
+      },
+      "required_controls": [
+        "passed_source_layer_receipt",
+        "activation_payload_sha256",
+        "source_route_membership",
+        "BF16_factor_and_repair_rounding",
+        "explicit_teacher_only_boundary"
+      ],
+      "accounting": [
+        "factor_bytes",
+        "sparse_value_and_index_bytes",
+        "decoder_support_bytes",
+        "scoped_ebpw",
+        "source_activation_matvec_error"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json"
+      ],
+      "status": "PROVEN_DISCRIMINATOR__TESTED_LOWRANK_SPARSE_SUBSTRATE_NEGATIVE",
+      "claim_boundary": "The method binds a selected source activation to a small matrix representation screen and exposes executed matvec distortion without laundering the teacher vector into an NR dependency. On Flash layer-0 source-selected expert 411, the best tested <=0.5 scoped point had source-activation relative-L2 0.697437. This is a negative result for the tested BF16 low-rank plus sparse-repair substrate on that control, not a full-expert, held-out, whole-model, or capability impossibility claim.",
+      "reopen_if": "A materially different representation adds multi-activation/held-out evidence, learned repair, a non-low-rank base, or a source-bound function objective that changes the tested information allocation."
+    },
+    {
+      "id": "M-sharded-lookup-heldout-pq-screen",
+      "title": "Held-out shared-PQ rate--distortion screen for sharded lookup tables",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/sharded_lookup_pq_screen.py",
+      "applicability": {
+        "architecture_tags": ["sharded_lookup", "lookup_table"],
+        "required_features": [
+          "indexed_or_addressable_sharded_2d_tensors",
+          "deterministic_disjoint_row_sampling",
+          "shared_codebook_candidate"
+        ],
+        "excluded_features": [
+          "claiming_projected_table_bytes_are_a_materialized_artifact",
+          "claiming_row_reconstruction_is_lookup_semantics_or_capability"
+        ]
+      },
+      "required_controls": [
+        "source_index_hash",
+        "train_heldout_row_separation",
+        "BF16_rounded_codebooks",
+        "codebook_and_decoder_accounting",
+        "projected_full_table_byte_closure"
+      ],
+      "accounting": [
+        "all_logical_table_rows",
+        "packed_subspace_codes",
+        "shared_BF16_codebooks",
+        "metadata",
+        "decoder_support",
+        "projected_table_ebpw",
+        "range_read_bytes",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json"
+      ],
+      "status": "PROVEN_DISCRIMINATOR__TESTED_UNIFORM_GLOBAL_PQ_NEGATIVE",
+      "claim_boundary": "The method is a bounded, held-out row discriminator. For Flash's 128-shard n-gram table, shared PQ reaches 0.093761 projected table EBPW but has 0.964632 held-out global relative-L2; the best tested <=0.5 projected point is 0.375011 EBPW with 0.847257 error. This rejects uniform global PQ as an escalation candidate at those tested rates. It does not establish full-table lookup semantics, active-token fidelity, direct execution, complete NR EBPW, or capability.",
+      "reopen_if": "An actual lookup-access trace justifies selective hot-row repair, a learned/generative representation, a different source distribution, or a non-uniform/shared-hierarchy representation that changes the tested hypothesis."
+    },
+    {
+      "id": "M-source-bound-ple-access-trace",
+      "title": "Source-bound PLE n-gram token-to-row access trace",
+      "family": "architecture_contract",
+      "implementation_owner": "tools/odyssey/ple_access_trace.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "stateful_decoder"],
+        "required_features": [
+          "versioned_reference_algorithm",
+          "addressable_concatenated_lookup_checkpoint",
+          "bounded_token_sequence_or_explicit_control",
+          "persistent_token_context"
+        ],
+        "excluded_features": [
+          "treating_token_to_row_addressing_as_lookup_output_parity",
+          "treating_referenced_active_rows_as_complete_representation_bytes",
+          "using_unbound_hotness_as_a_selective_repair_justification"
+        ]
+      },
+      "required_controls": [
+        "reference_implementation_hash",
+        "source_config_hash",
+        "checkpoint_index_and_numeric_shard_order",
+        "eos_aware_stateful_history",
+        "range_read_source_row_hashes",
+        "explicit_PLE_output_boundary"
+      ],
+      "accounting": [
+        "lookup_events_per_token",
+        "unique_source_rows",
+        "source_row_bytes",
+        "referenced_bytes_across_events",
+        "range_read_bytes",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
+      ],
+      "status": "PROVEN_ADDRESS_CONTRACT__PLE_OUTPUT_CONTROL_OPEN",
+      "claim_boundary": "For Flash's pinned Qwen4-Exp PLE configuration, this method binds the 16 EOS-aware hashed lookup rows per accepted token to real concatenated checkpoint rows. The first accepted seven-token trace covers 112 unique rows and 35,840 source bytes. It does not execute PLE projections, gates, norms, convolution, hidden-state inputs, direct lookup runtime, complete EBPW, or capability.",
+      "reopen_if": "A target uses a different n-gram hash, checkpoint layout, state rule, PLE layer ordering, or source output/activation control. Escalate to selective repair only after a source PLE output/hidden-state discriminator is sealed."
+    },
+    {
+      "id": "M-route-major-packed-q4-routed-moe",
+      "title": "Route-major direct packed Q4 routed-MoE execution",
+      "family": "physical_execution",
+      "implementation_owner": "crates/hawking-core/shaders/qwen_uniform_q4.metal + crates/hawking-core/src/kernels/mod.rs",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "metal", "uniform_q4_group64"],
+        "required_features": [
+          "compatible_selected_expert_gate_up_and_down_geometry",
+          "route_major_device_activation_abi",
+          "persisted_independent_q4_g64_bodies"
+        ],
+        "excluded_features": [
+          "treating_candidate_space_parity_as_source_model_parity",
+          "dense_weight_rematerialization"
+        ]
+      },
+      "required_controls": [
+        "candidate_cpu_oracle_for_the_exact_packed_bodies",
+        "distinct_route_major_activation_check",
+        "repeated_output_determinism",
+        "source_router_selection_parity_or_explicit_withholding",
+        "source_native_route_binding_to_persisted_q4_bodies",
+        "sealed_source_layer_activation_and_route_control",
+        "source_routed_sum_distortion_measurement",
+        "explicit_non_nr_teacher_dependency_boundary"
+      ],
+      "accounting": [
+        "selected_expert_count",
+        "packed_code_and_scale_bytes",
+        "active_bytes_per_route",
+        "baseline_and_fused_dispatch_count",
+        "gpu_ns",
+        "host_launch_wall_ns",
+        "source_route_overlap",
+        "source_activation_hash",
+        "source_routed_sum_error",
+        "complete_ebpw_boundary"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NOETIC_ROUTED_GATE_UP_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_DOWN_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_MOE_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_ROUTES_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_SOURCE_BRIDGE_CONTROL.json",
+        "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_LAYER_BRIDGE_FUSED_NATIVE.json"
+      ],
+      "status": "PROVEN_SOURCE_LAYER_ACTIVATION_CONTROL__CANDIDATE_COMPONENT_SCOPED",
+      "claim_boundary": "The named Flash discriminator proves a direct Q4/G64 route-major MoE primitive: ten selected gate/up launches and ten route-aware down launches become two device-chained launches with deterministic candidate-body output parity. The sealed layer-0 bridge binds the actual source MLP activation and all ten source-selected routes to persisted Q4/G64 bodies without a source-tensor or source-weight read in candidate execution. On that control, Q4 candidate GPU-to-CPU parity passes while the source-BF16 routed-sum difference is measured at cosine 0.995096, RMSE 0.001571, and max absolute error 0.005515; it has no declared capability threshold. This does not establish source-BF16 output parity, a native weighted-sum kernel, complete EBPW, complete-layer/token performance, or qualified model TPS.",
+      "reopen_if": "A target uses incompatible route-specific activations, non-Q4/G64 body layout, a different group-aligned column geometry, lacks source-route body coverage, cannot seal an exact source activation/route/routed-sum control, or requires a declared capability threshold for its measured source-output distortion."
+    }
+  ],
+  "schema": "hawking.foundry.gravity_method_registry.v2"
 }

@@ -147,11 +147,16 @@ pub enum StreamChunk {
 pub struct GenerationStats {
     pub input_tokens: usize,
     pub output_tokens: usize,
-    /// Decode wall time reported by the runtime, excluding prompt prefill.
-    /// `None` means the provider did not expose this metric.
+    /// Decode wall time reported by the runtime, excluding prompt prefill,
+    /// in monotonic integer nanoseconds. `None` means the provider did not
+    /// expose this metric.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decode_ns: Option<u64>,
+    /// Compatibility projection for older providers and readers. New runtime
+    /// paths should populate `decode_ns` and derive this view from it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub decode_ms: Option<f64>,
-    /// Completed decode forwards represented by `decode_ms`. This is distinct
+    /// Completed decode forwards represented by `decode_ns`. This is distinct
     /// from emitted tokens because token zero can be sampled from prompt prefill.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub completed_decode_forwards: Option<usize>,
@@ -159,6 +164,63 @@ pub struct GenerationStats {
     /// `completed_decode_forwards` when claiming complete-forward TPS.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub decode_tokens_per_second: Option<f32>,
+}
+
+impl GenerationStats {
+    /// Return the exact runtime duration when available, accepting the old
+    /// floating-point milliseconds field only as a read-only compatibility
+    /// fallback.
+    pub fn effective_decode_ns(&self) -> Option<u64> {
+        self.decode_ns
+            .filter(|value| *value > 0)
+            .or_else(|| self.decode_ms.and_then(decode_ms_to_ns))
+    }
+
+    /// Compatibility projection for existing TPS/report code.
+    pub fn effective_decode_ms(&self) -> Option<f64> {
+        self.effective_decode_ns()
+            .map(|nanoseconds| nanoseconds as f64 / 1_000_000.0)
+    }
+}
+
+fn decode_ms_to_ns(milliseconds: f64) -> Option<u64> {
+    if !milliseconds.is_finite() || milliseconds <= 0.0 {
+        return None;
+    }
+    let nanoseconds = milliseconds * 1_000_000.0;
+    (nanoseconds <= u64::MAX as f64).then(|| nanoseconds.round() as u64)
+}
+
+#[cfg(test)]
+mod generation_stats_tests {
+    use super::GenerationStats;
+
+    #[test]
+    fn prefers_exact_nanoseconds_and_derives_legacy_milliseconds() {
+        let stats = GenerationStats {
+            input_tokens: 1,
+            output_tokens: 2,
+            decode_ns: Some(1_234_567),
+            decode_ms: Some(99.0),
+            completed_decode_forwards: Some(2),
+            decode_tokens_per_second: None,
+        };
+        assert_eq!(stats.effective_decode_ns(), Some(1_234_567));
+        assert_eq!(stats.effective_decode_ms(), Some(1.234567));
+    }
+
+    #[test]
+    fn converts_legacy_milliseconds_only_as_a_compatibility_fallback() {
+        let stats = GenerationStats {
+            input_tokens: 0,
+            output_tokens: 0,
+            decode_ns: None,
+            decode_ms: Some(2.5),
+            completed_decode_forwards: None,
+            decode_tokens_per_second: None,
+        };
+        assert_eq!(stats.effective_decode_ns(), Some(2_500_000));
+    }
 }
 
 pub type TokenSink<'a> = &'a mut (dyn FnMut(StreamChunk) -> Result<()> + Send);

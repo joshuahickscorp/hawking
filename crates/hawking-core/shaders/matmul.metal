@@ -261,6 +261,41 @@ kernel void gemv_native_bf16_geo_vec4_tg128(
     if (simd_lane == 0u && row < n_rows) out_logits[row] = acc;
 }
 
+// Tiled HyperConnection up-projection with its immediately consumed low-rank
+// SiLU/scale folded into the activation read.  This preserves the independent
+// tiled output-row geometry of the geo GEMV while removing the device-buffer
+// round trip and launch otherwise spent on `qwen_next_hyperconnection_silu_scale`.
+// Like the geo GEMV, its SIMD reduction association is candidate-only.
+kernel void gemv_native_bf16_geo_vec4_tg128_silu_scale(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float* low_rank     [[buffer(1)]],
+    device float* out_logits         [[buffer(2)]],
+    constant uint& n_rows            [[buffer(3)]],
+    constant uint& n_cols            [[buffer(4)]],
+    constant float& divisor          [[buffer(5)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    const uint row = group_id * 4u + simd_id;
+    float acc = 0.0f;
+    if (row < n_rows && (n_cols & 3u) == 0u) {
+        device const ushort* row_bits =
+            weight_bits + (ulong)row * (ulong)n_cols;
+        for (uint col = simd_lane * 4u; col < n_cols; col += 128u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 raw = *(device const float4*)(low_rank + col) / divisor;
+            const float4 x = raw / (1.0f + exp(-raw));
+            acc += as_type<float>(((uint)packed_w.x) << 16u) * x.x;
+            acc += as_type<float>(((uint)packed_w.y) << 16u) * x.y;
+            acc += as_type<float>(((uint)packed_w.z) << 16u) * x.z;
+            acc += as_type<float>(((uint)packed_w.w) << 16u) * x.w;
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u && row < n_rows) out_logits[row] = acc;
+}
+
 // Two source-BF16 projections followed by exact SwiGLU.  This removes the
 // intermediate gate/up buffers and the standalone activation dispatch while
 // preserving the same left-to-right BF16->f32 accumulation as the scalar

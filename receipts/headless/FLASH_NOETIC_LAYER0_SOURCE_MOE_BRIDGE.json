@@ -1,0 +1,82 @@
+{
+  "claim_boundary": "PASSED source-layer control artifact for a bounded representation experiment. It persists one exact source MLP activation, source-selected route IDs/weights, and source routed-MoE sum after linked layer parity. It is not a standalone NR dependency, an independently runnable model, complete EBPW, Flash TPS, or promotion evidence.",
+  "direct_candidate_execution": {
+    "source_control_is_a_teacher": true,
+    "source_tensor_read_for_candidate_execution": false,
+    "source_weight_read_for_candidate_execution": false,
+    "standalone_nr_dependency": false
+  },
+  "mlp_input": {
+    "bytes": 10240,
+    "dtype": "F32_LE",
+    "elements": 2560,
+    "label": "[V]",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.mlp_input.f32",
+    "sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+    "source": "exact CPU source oracle whose MLP-input device stage passed the linked source-layer receipt"
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "route_selection": {
+    "expert_ids": [
+      411,
+      334,
+      286,
+      152,
+      291,
+      106,
+      421,
+      304,
+      226,
+      331
+    ],
+    "label": "[V]",
+    "router_logits": {
+      "dtype": "F32_LE",
+      "elements": 512,
+      "persisted": false,
+      "sha256": "8137ce080d09c608181efe8c0139065819c3a190a6eae807ac47af5f7eeb19f4"
+    },
+    "selected_weight_sum": 1.0,
+    "selected_weights": [
+      0.28047239780426025,
+      0.16330188512802124,
+      0.08495357632637024,
+      0.0796680673956871,
+      0.0709957629442215,
+      0.06884919106960297,
+      0.06699836254119873,
+      0.06179732084274292,
+      0.061543043702840805,
+      0.06142038106918335
+    ],
+    "source": "exact CPU source oracle whose router and top-k device stages passed the linked source-layer receipt"
+  },
+  "schema": "hawking.flash_source_moe_bridge.v1",
+  "semantic_type": "SourceActivationControl",
+  "source_layer": {
+    "exact_source_graph_parity": true,
+    "input_contract": "FLASH_NEXT_TEXT_BASELINE_BOS_SOURCE_EMBEDDING",
+    "layer": 0,
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "source_layer_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_SOURCE_BRIDGE_CONTROL.json",
+      "schema": "hawking.flash_noetic_complete_layer0_source_bf16.v1",
+      "sha256": "c73d2008cebab74a5b8be0784b200f91668a1a73a79c1b7af5e6d0903bec9a78",
+      "status": "PASSED"
+    }
+  },
+  "source_routed_sum": {
+    "bytes": 10240,
+    "dtype": "F32_LE",
+    "elements": 2560,
+    "label": "[V]",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.routed_sum.f32",
+    "sha256": "7edafcbb1c377b5fee3968e54efb58bce8c474ad4fb769c90f286680af436590",
+    "source": "exact CPU source routed-MoE sum whose device stage passed the linked source-layer receipt"
+  },
+  "status": "PASSED"
+}

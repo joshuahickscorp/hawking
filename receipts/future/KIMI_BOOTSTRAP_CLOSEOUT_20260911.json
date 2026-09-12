@@ -1,0 +1,191 @@
+{
+  "schema": "hawking.kimi.bootstrap_closeout.v1",
+  "generated_at": "2026-09-11T01:20:50Z",
+  "status": "BOOTSTRAP_CLOSEOUT_BLOCKED_BLIND_ENGINEERING_MISSION",
+  "verdict": "OPERATIONAL_ADMISSION_WITHHELD",
+  "historical_verdict_preserved": true,
+  "superseded_for_bounded_operational_use_by": "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+  "parent_objective": "Useful local Hawking operator, reusable unified Gravity methods, and Odyssey with decreasing bespoke cloud supervision.",
+  "next_parent_objective": "Continue Odyssey through HCLI and the unified Gravity function. Keep the developmental local body usable for supervised work while isolated successors improve; spend cloud reasoning on unresolved decisions and measure reuse, intervention, loads, evidence latency, capability, physical cost, and complete representation cost.",
+  "gravity": {
+    "umbrella_canon": "GRAVITY-CANON.md",
+    "migration_map": "GRAVITY-MIGRATION-MAP.md",
+    "status": "CANONIZED",
+    "claim_boundary": "Model behavior, representation, Noetic/NX, runtime, tools, repository, CPU/GPU/ANE, latency, context, accounting, controls, and falsification are operations and evidence under Gravity, not peer product stacks."
+  },
+  "artifact_identities": {
+    "density_r16": {
+      "id": "KIMI_P0_DENSITY_R16",
+      "scope": "layer-10 down-organ",
+      "complete_ebpw_at_scope": 0.1948,
+      "full_graph_capability": "FAIL_WITHHELD",
+      "operational_resident": false
+    },
+    "density_r6": {
+      "id": "KIMI_DENSITY_FRONTIER_R6",
+      "scope": "layer-10 down-organ",
+      "complete_ebpw_at_scope": 0.0989,
+      "full_graph_capability": "NOT_EARNED",
+      "operational_resident": false
+    },
+    "operational_candidate": {
+      "id": "KIMI_P0_OPERATIONAL",
+      "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "source_revision": "398eede0903c",
+      "weight_lineage": "KIMI_BASE unchanged",
+      "representation": "dense MLX snapshot; approximately 17 GiB on disk",
+      "backend": "mlx_vlm.server compatibility provider owned by hawkingd",
+      "hawking_native": false,
+      "full_model_complete_ebpw": null,
+      "mission_gate": "FAIL",
+      "operational_admission": false,
+      "claim_boundary": "This is a frozen developmental execution identity, not a compressed, native, capability-preserving sub-bit body or an Odyssey worker."
+    }
+  },
+  "artifact_hashes_sha256": {
+    "config.json": "854edceb8789f190f37df61389baf06594cec93bfd0a403a1655961aaa228662",
+    "model.safetensors.index.json": "2e35afacf7dbb68e8984b58886d71dc7819ef98e257a8e50d1c97b8f074e17af",
+    "model-00001-of-00004.safetensors": "b82de250d53dbd975720601ccbd2742fd431773088a0be14393f671d265d55c2",
+    "model-00002-of-00004.safetensors": "50e3f6178e10b23bbf73d14cfc55628114df12048b84c4c7730b2c3a8994a251",
+    "model-00003-of-00004.safetensors": "e63b2362698ff546b651d3bfbec04c614b1bd29c621336cf176567858ee11cc5",
+    "model-00004-of-00004.safetensors": "38f541d94e3527e857c5191256eda6428d46a2b658c96bb37e367a5375a3f67e",
+    "tiktoken.model": "b6c497a7469b33ced9c38afb1ad6e47f03f5e5dc05f15930799210ec050c5103",
+    "tokenizer_config.json": "4ed644c6e3d9447fdb36808279330f6cba2f81cb66d805f6e3c33b7379c3bb79"
+  },
+  "live_runtime": {
+    "observed_at": "2026-09-11T01:20:01Z",
+    "hawkingd_pid": 73219,
+    "provider_pid": 73224,
+    "provider_model_path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "openai_base_url": "http://127.0.0.1:8011/v1",
+    "webui": [
+      {
+        "port": 8080,
+        "pid": 73241,
+        "authority": "write",
+        "http_status": 200
+      },
+      {
+        "port": 8081,
+        "pid": 73278,
+        "authority": "independent client session",
+        "http_status": 200
+      }
+    ],
+    "provider_count": 1,
+    "all_persistent_model_and_web_processes_descend_from_hawkingd": true,
+    "selector_models": [
+      "KIMI_P0_OPERATIONAL"
+    ],
+    "selector_source": "Gravity artifact registry only",
+    "ui_observation": "Open WebUI rendered KIMI_P0_OPERATIONAL as the selected and only normal model; the authenticated UI requested /api/models with HTTP 200.",
+    "session_restart_observation": {
+      "session_id": "bootstrap-continuity-a-20260910",
+      "stored_objective_codeword": "QUARTZ-741",
+      "daemon_restarts_since_store": "multiple",
+      "recovered_reply": "QUARTZ-741",
+      "status": "PASS"
+    }
+  },
+  "tool_surface": {
+    "callable_spellings": 111,
+    "always_visible_tools": 21,
+    "serialized_contract_chars": 7052,
+    "all_permitted_spellings_remain_callable": true,
+    "explicit_observation_obligation": "fail closed after one corrective retry",
+    "latest_live_dispatch": "seven real calls in the blind browser loop; mission judgment remained incorrect"
+  },
+  "harness_repairs": [
+    "Streaming completions persist the compact session before SSE is returned.",
+    "Installed shims and WebUI children use Python isolated-path mode so an old worktree cannot shadow the deployed snapshot.",
+    "Remote OpenAI-compatible providers bypass local resident PID adoption and attach without another model load.",
+    "Goal-only Engine missions receive bounded mechanically ranked repository evidence.",
+    "Tool search diversifies matches per file and observation expansion continues the original handle.",
+    "Plural explicit tool obligations are enforced; unsupported prose cannot claim a tool observation.",
+    "Copyable schema examples, placeholder mutations, missing anchors, and invalid focused tests are rejected before file mutation with one bounded recovery.",
+    "A focused test created by the same mutation is admitted at preflight and still required to exist at post-mutation validation."
+  ],
+  "source_hashes_sha256": {
+    "hcli/chat_tools.py": "aecf99e4f481a6269b6650595019baf29cc02a443b286ca9f119f363637473f7",
+    "hcli/tool_registry.py": "862d37ec8366a5fb9f23028fa2860f2c446f04facc2ee6c1d9ffdd224ab54c5f",
+    "hcli/serve.py": "693233522cfefcbd039cb9d734b7e2a893dc0952e9855b231a5d793a51b61367",
+    "hcli/web.py": "a9862f4a7490565ebcea2eee9917c00b242e26a2c11c5176ce929e6c137569ff",
+    "hcli/cli.py": "749a3d1964f17f35b8804b4a1911957e44c12b4d84ef8f84d0d11561f9d28a07",
+    "hcli/runtime.py": "b99d16960ccd0cc04609231555aa9df537890eed5ccb00c4c6b98b4be0bb2ea3",
+    "hcli/engine.py": "b7494622f7c2ee86fac1f154d77b8c4dc1be99417f5bbb3dbc4870a3c4d3cd6e",
+    "hcli/repo_context.py": "443f4edb2ad5e7eb4a7e01186ac6a8ef36264a19f073d3aae2c962869e9d57ad",
+    "workspace/campaign/odyssey/gravity-artifacts.json": "e6e32edb8a4e5cce46df4ae1274c9b730fd9300d9a2a158c5dd04b157a213a75"
+  },
+  "deployment": {
+    "source_git_head": "ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e",
+    "installed_snapshot": "/Users/scammermike/.local/share/hcli/build-20260911-011726",
+    "installed_package_digest_sha256": "7476420f984c3f0ff6ce836a8046c108603044e7eead19866ff5ae24eebaff6a",
+    "source_package_digest_sha256": "7476420f984c3f0ff6ce836a8046c108603044e7eead19866ff5ae24eebaff6a",
+    "rollback_snapshots": [
+      "/Users/scammermike/.local/share/hcli/build-20260911-011604",
+      "/Users/scammermike/.local/share/hcli/build-20260911-011352"
+    ]
+  },
+  "verification": {
+    "focused_integration": "268 passed in 44.53s",
+    "focused_command_scope": "chat tools, Tool Gravity, OpenAI serve, WebUI, install isolation, daemon naming, chat persistence/continuity, boundary behavior, Engine tool loop/schema degradation, repository context/evidence, test admission, and remote provider attachment",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "isolated_worktree_clean_after_failed_missions": true,
+    "broad_suite": "NOT_RERUN_AS_A_SINGLE_AGGREGATE; earlier unrelated failures remain separately classified"
+  },
+  "blind_engineering_mission": {
+    "worktree": "/Users/scammermike/Downloads/hawking/.worktrees/kimi-p0-blind-stream-session",
+    "branch": "codex/kimi-p0-blind-stream-session",
+    "base_head": "ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e",
+    "objective_only": true,
+    "human_answer_or_target_file_leaked": false,
+    "accepted_mutations": 0,
+    "changed_paths": [],
+    "result": "FAIL",
+    "raw_browser_loop": "Tool dispatch was proven, including a seven-call run, but Kimi selected unrelated evidence, misused handles, and did not edit.",
+    "native_engine_loop": "After mechanical orientation selected hcli/serve.py and focused session tests, Kimi copied a schema example, used placeholder paths, proposed malformed JSON, and never produced an accepted grounded mutation.",
+    "latest_failure": "Structured output rejected after three attempts; final reply remained malformed and contained placeholder mutation content.",
+    "failure_class": [
+      "MODEL_LONG_HORIZON_GROUNDING",
+      "MODEL_STRUCTURED_ACTION",
+      "HARNESS_BLOCKERS_REPAIRED"
+    ],
+    "supervisor_interventions_during_each_blind_run": 0,
+    "cloud_harness_repairs_between_runs": 8,
+    "operational_admission": false,
+    "odyssey_worker_admission": false,
+    "reopen_condition": "A materially stronger body, representation-native restoration, or mission policy must produce a parseable evidence-grounded edit and focused proving test from an objective-only brief; independent replay must pass without another model load or protected-gate weakening.",
+    "failure_receipts": [
+      {
+        "path": "/Users/scammermike/Downloads/hawking/.worktrees/kimi-p0-blind-stream-session/.hcli/receipts/1bc63c0d-ed8b-4635-b9b1-87d8f77566d2.json",
+        "sha256": "90f4e78c85a412b89f5c0ae6d572ffe1de91368f56cb930b65d0f42ecd125053"
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/.worktrees/kimi-p0-blind-stream-session/.hcli/receipts/36c4fa73-0986-45e2-83dc-0af2b5030d1f.json",
+        "sha256": "c0429a411340c83f5fb9b4c268c2c3c50d8f56cd7d7fe6338d34585eb4142e06"
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/.worktrees/kimi-p0-blind-stream-session/.hcli/receipts/03e18735-b0ae-4102-b0d5-b5bda6a8dbbb.json",
+        "sha256": "779119feaea392f2fd95e4e29b4049271a4d4f576aa9ea1ea6eb50c6956f201d"
+      }
+    ]
+  },
+  "science_closure": {
+    "refusal_intervention_family": "OPA-OPH sealed as candidate-specific negative, inconsistent, or insufficient science; no promotable learned transformation established.",
+    "serving_contract": "Useful and separately attributable; not learned-weight evidence.",
+    "native_destination": "OPEN; MLX-VLM remains disclosed compatibility provider; llama.cpp remains disabled.",
+    "density_frontier": "OPEN; organ-scope values do not establish full-model capability or complete EBPW.",
+    "tps_frontier": "OPEN; preserve measured raw and partial-direct records separately."
+  },
+  "supporting_receipts": [
+    "receipts/future/KIMI_P0_OPERATIONAL_IDENTITY_20260910.json",
+    "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json",
+    "receipts/future/KIMI_HCLI_WEB_MULTISESSION_ENDPOINT_REPAIR_20260910.json",
+    "receipts/future/KIMI_P0_OPERATIONAL_LIVE_TOOLS_REPAIRED_20260910.json",
+    "receipts/future/KIMI_RAW_BASE_TPS_BASELINE_20260910.json",
+    "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json"
+  ],
+  "handoff": "docs/HAWKING_NEXT_GOAL_CONTINUITY_2026-09-10.md",
+  "claim_boundary": "Practical HCLI access, singleton ownership, Gravity-only discovery, real tools, and restart continuity are earned. Autonomous blind code-writing, compressed operational P0, Hawking-native parity, qualified direct TPS, and Odyssey worker admission are not earned."
+}

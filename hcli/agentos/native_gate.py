@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from hcli.persist import atomic_write_json
+from hcli.latency import now_ns, seconds_from_ns, since_ns
 
 
 SCHEMA = "hcli.agentos.native_gate.v1"
@@ -245,7 +246,7 @@ def _stage(
     name: str,
     *,
     config: Any,
-    started: float,
+    started_ns: int,
     response: Any = None,
     passed: bool = False,
     **extra: Any,
@@ -253,9 +254,13 @@ def _stage(
     result: Dict[str, Any] = {
         "stage": name,
         "status": "PASSED" if passed else "FAILED",
-        "elapsed_s": round(time.monotonic() - started, 3),
+        "timing_unit": "ns",
+        "elapsed_ns": since_ns(started_ns),
         "identity": _identity(config),
     }
+    # Compatibility presentation for older receipt readers.  The measured
+    # value above remains the canonical integer-nanosecond field.
+    result["elapsed_s"] = round(seconds_from_ns(result["elapsed_ns"]) or 0.0, 3)
     if response is not None:
         result["response"] = _response_summary(response)
     result.update(extra)
@@ -482,6 +487,7 @@ def run_native_gate(
         "schema": SCHEMA,
         "status": "RUNNING",
         "qualification": "LIVE_NATIVE_HCLI_LADDER",
+        "timing_unit": "ns",
         "started_at": time.time(),
         "profile_path": str(profile_path),
         "prompt": prompt,
@@ -495,18 +501,19 @@ def run_native_gate(
         "stages": [],
         "errors": [],
     }
+    run_started_ns = now_ns()
 
-    def record(name: str, fn: Any) -> Optional[Tuple[Any, float]]:
-        started = time.monotonic()
+    def record(name: str, fn: Any) -> Optional[Tuple[Any, int]]:
+        started_ns = now_ns()
         try:
             value = fn()
-            return value, started
+            return value, started_ns
         except Exception as exc:  # noqa: BLE001 - the receipt must show the boundary
             report["stages"].append(
                 _stage(
                     name,
                     config=config,
-                    started=started,
+                    started_ns=started_ns,
                     passed=False,
                     error_type=type(exc).__name__,
                     error=str(exc)[:2000],
@@ -517,14 +524,14 @@ def run_native_gate(
 
     direct_record = record("A1_direct_resident", lambda: _direct_resident_call(config, rendered.text, timeout_s))
     if direct_record is not None:
-        direct, direct_started = direct_record
+        direct, direct_started_ns = direct_record
         response = direct["response"]
         text = response.get("generated_text", response.get("text"))
         report["stages"].append(
             _stage(
                 "A1_direct_resident",
                 config=config,
-                started=direct_started,
+                started_ns=direct_started_ns,
                 response=response,
                 passed=isinstance(text, str) and "HAWKING_OK" in text,
                 backend_class="subprocess-resident",
@@ -552,14 +559,14 @@ def run_native_gate(
 
     connector_record = record("A2_hawking_native_backend", run_connector)
     if connector_record is not None:
-        connector_result, connector_started = connector_record
+        connector_result, connector_started_ns = connector_record
         raw = connector_result["raw"]
         text = _text_from_openai(raw)
         report["stages"].append(
             _stage(
                 "A2_hawking_native_backend",
                 config=config,
-                started=connector_started,
+                started_ns=connector_started_ns,
                 response=raw,
                 passed=isinstance(text, str) and "HAWKING_OK" in text,
                 backend_class="HawkingNativeConnector",
@@ -586,7 +593,7 @@ def run_native_gate(
 
     backend_record = record("A3_provider_abstraction", run_backend)
     if backend_record is not None:
-        backend_result, backend_started = backend_record
+        backend_result, backend_started_ns = backend_record
         result = backend_result["result"]
         raw = result.raw if hasattr(result, "raw") else result
         text = result.text if hasattr(result, "text") else _text_from_openai(raw)
@@ -594,7 +601,7 @@ def run_native_gate(
             _stage(
                 "A3_provider_abstraction",
                 config=config,
-                started=backend_started,
+                started_ns=backend_started_ns,
                 response=raw,
                 passed=isinstance(text, str) and "HAWKING_OK" in text,
                 backend_class="NoeticNativeBackend",
@@ -611,7 +618,7 @@ def run_native_gate(
         with _temporary_generation_env(model_tokens):
             plain_record = record("A4_hcli_plain_cognition", lambda: controller.complete_text(prompt))
             if plain_record is not None:
-                plain, plain_started = plain_record
+                plain, plain_started_ns = plain_record
             else:
                 plain = None
             if isinstance(plain, str):
@@ -619,7 +626,7 @@ def run_native_gate(
                     _stage(
                         "A4_hcli_plain_cognition",
                         config=config,
-                        started=plain_started,
+                        started_ns=plain_started_ns,
                         passed="HAWKING_OK" in plain,
                         backend_class="Controller/Engine.complete_text",
                         text_len=len(plain),
@@ -629,7 +636,7 @@ def run_native_gate(
 
             structured_record = record("A5_hcli_structured_cognition", lambda: controller.execute(prompt))
             if structured_record is not None:
-                structured, structured_started = structured_record
+                structured, structured_started_ns = structured_record
             else:
                 structured = None
             if isinstance(structured, dict):
@@ -637,7 +644,7 @@ def run_native_gate(
                     _stage(
                         "A5_hcli_structured_cognition",
                         config=config,
-                        started=structured_started,
+                        started_ns=structured_started_ns,
                         passed=(
                             structured.get("status") == "completed"
                             and structured.get("kind") == "answer"
@@ -680,12 +687,12 @@ def run_native_gate(
 
     cli_record = record("A6_full_hcli_task", run_cli)
     if cli_record is not None:
-        cli_result, cli_started = cli_record
+        cli_result, cli_started_ns = cli_record
         report["stages"].append(
             _stage(
                 "A6_full_hcli_task",
                 config=config,
-                started=cli_started,
+                started_ns=cli_started_ns,
                 passed=cli_result["returncode"] == 0 and "HAWKING_OK" in cli_result["stdout"],
                 backend_class="hcli-command",
                 **cli_result,
@@ -704,6 +711,7 @@ def run_native_gate(
     report["checks"] = {name: name in passed_names for name in sorted(required)}
     report["status"] = "PASSED" if required.issubset(passed_names) else "FAILED"
     report["finished_at"] = time.time()
+    report["elapsed_ns"] = since_ns(run_started_ns)
     payload = causality_payload(report)
     record_native_causality(report, **payload)
     _write_receipt(report, emit, repo)

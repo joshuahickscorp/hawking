@@ -544,7 +544,7 @@ impl DeepSeekV4FullStreamReader {
         root: impl AsRef<Path>,
         verify_mode: DeepSeekV4VerifyMode,
     ) -> Result<Self> {
-        crate::startup_timing::time_ms_result("admit_total", || {
+        crate::startup_timing::time_ns_result("admit_total", || {
             if let Some(reader) = Self::try_admit_from_artifact_index(&root, verify_mode)? {
                 return Ok(reader);
             }
@@ -558,7 +558,7 @@ impl DeepSeekV4FullStreamReader {
         root: impl AsRef<Path>,
         verify_mode: DeepSeekV4VerifyMode,
     ) -> Result<Option<Self>> {
-        crate::startup_timing::time_ms_result("artifact_index_load", || {
+        crate::startup_timing::time_ns_result("artifact_index_load", || {
             let root = root.as_ref();
             match load_artifact_index(root) {
                 DeepSeekV4IndexLoad::Loaded(contents) => {
@@ -588,7 +588,7 @@ impl DeepSeekV4FullStreamReader {
                 },
             );
         }
-        let native_pairs = crate::startup_timing::time_ms_result("native_scale_pairs", || {
+        let native_pairs = crate::startup_timing::time_ns_result("native_scale_pairs", || {
             validate_native_scale_pairs(&contents.tensors)
         })?;
         let admission = match verify_mode {
@@ -629,14 +629,14 @@ impl DeepSeekV4FullStreamReader {
     ) -> Result<Self> {
         let root = canonical_non_symlink_directory(root.as_ref(), "DeepSeek-V4 full artifact")?;
         let manifest_path = checked_regular_path(&root, "manifest.json", "full stream manifest")?;
-        let manifest_raw = crate::startup_timing::time_ms_result("manifest_json_read", || {
+        let manifest_raw = crate::startup_timing::time_ns_result("manifest_json_read", || {
             read_regular_file(&manifest_path, "full stream manifest")
         })?;
         let manifest_file_sha256 = sha256_hex(&manifest_raw);
         let manifest_value =
             parse_and_verify_sealed_json(&manifest_raw, "full stream manifest", "manifest_json")?;
         let manifest: Manifest =
-            crate::startup_timing::time_ms_result("manifest_schema_decode", || {
+            crate::startup_timing::time_ns_result("manifest_schema_decode", || {
                 serde_json::from_value(manifest_value).map_err(|error| {
                     Error::Gravity(format!("DeepSeek-V4 full manifest schema decode: {error}"))
                 })
@@ -651,7 +651,7 @@ impl DeepSeekV4FullStreamReader {
         if manifest.restart_receipt.path != "restart-receipt.json" {
             return Err(gravity("full stream restart receipt path is not canonical"));
         }
-        let restart_raw = crate::startup_timing::time_ms_result("restart_receipt_read", || {
+        let restart_raw = crate::startup_timing::time_ns_result("restart_receipt_read", || {
             read_regular_file(&restart_path, "full stream restart receipt")
         })?;
         let restart_value = parse_and_verify_sealed_json(
@@ -662,10 +662,10 @@ impl DeepSeekV4FullStreamReader {
         validate_restart_receipt(&restart_value, &manifest.restart_receipt.seal_sha256, &root)?;
 
         let source_metadata_sha256 =
-            crate::startup_timing::time_ms_result("metadata_assets", || {
+            crate::startup_timing::time_ns_result("metadata_assets", || {
                 validate_metadata_assets(&root, &manifest.source)
             })?;
-        let index = crate::startup_timing::time_ms_result("source_index_parse", || {
+        let index = crate::startup_timing::time_ns_result("source_index_parse", || {
             load_and_verify_source_index(&root, &manifest.source)
         })?;
         if index.metadata.total_size != manifest.artifact.source_index_total_size_bytes {
@@ -674,22 +674,22 @@ impl DeepSeekV4FullStreamReader {
             ));
         }
 
-        let source_windows = crate::startup_timing::time_ms_result("source_windows", || {
+        let source_windows = crate::startup_timing::time_ns_result("source_windows", || {
             validate_source_windows(&manifest.source)
         })?;
-        let (tensors, chunks) = crate::startup_timing::time_ms_result("tensor_map_build", || {
+        let (tensors, chunks) = crate::startup_timing::time_ns_result("tensor_map_build", || {
             validate_tensors(&manifest, &index, &source_windows)
         })?;
-        crate::startup_timing::time_ms_result("chunk_tree_validate", || {
+        crate::startup_timing::time_ns_result("chunk_tree_validate", || {
             validate_chunk_tree(&root, &chunks)
         })?;
-        let native_pairs = crate::startup_timing::time_ms_result("native_scale_pairs", || {
+        let native_pairs = crate::startup_timing::time_ns_result("native_scale_pairs", || {
             validate_native_scale_pairs(&tensors)
         })?;
         let content_addressed_chunk_sha256 =
             manifest.artifact.content_addressed_chunk_sha256.clone();
         let total_chunk_bytes = chunk_bytes_total(&chunks)?;
-        let admission = crate::startup_timing::time_ms("admission_receipt_parse", || {
+        let admission = crate::startup_timing::time_ns("admission_receipt_parse", || {
             load_admission_if_requested(
                 &root,
                 verify_mode,
@@ -1193,7 +1193,7 @@ impl DeepSeekV4FullStreamReader {
             },
             verifier_version: &seal.verifier_version,
         };
-        match crate::startup_timing::time_ms_result("artifact_index_build", || {
+        match crate::startup_timing::time_ns_result("artifact_index_build", || {
             write_artifact_index(input)
         }) {
             Ok(index) => Some(index),
@@ -1699,12 +1699,12 @@ fn validate_restart_receipt(value: &Value, expected_seal: &str, root: &Path) -> 
     }
     let journal = checked_regular_path(root, "stream-journal.json", "full stream journal")?;
     let ranges = checked_regular_path(root, "stream-ranges.jsonl", "full stream range journal")?;
-    let journal_ok = crate::startup_timing::time_ms_result("stream_journal_hash", || {
+    let journal_ok = crate::startup_timing::time_ns_result("stream_journal_hash", || {
         Ok::<bool, Error>(
             sha256_hex(&read_regular_file(&journal, "full stream journal")?) == journal_sha,
         )
     })?;
-    let ranges_ok = crate::startup_timing::time_ms_result("stream_ranges_jsonl_hash", || {
+    let ranges_ok = crate::startup_timing::time_ns_result("stream_ranges_jsonl_hash", || {
         Ok::<bool, Error>(
             sha256_hex(&read_regular_file(&ranges, "full stream range journal")?) == ranges_sha,
         )
@@ -2322,11 +2322,11 @@ pub(crate) fn map_chunk_readonly(path: &Path, expected_bytes: u64, label: &str) 
 }
 
 fn parse_and_verify_sealed_json(raw: &[u8], label: &str, phase: &str) -> Result<Value> {
-    let mut value: Value = crate::startup_timing::time_ms_result(format!("{phase}_parse"), || {
+    let mut value: Value = crate::startup_timing::time_ns_result(format!("{phase}_parse"), || {
         serde_json::from_slice(raw)
             .map_err(|error| gravity(format!("{label} is not valid JSON: {error}")))
     })?;
-    crate::startup_timing::time_ms_result(format!("{phase}_canonical_seal"), || {
+    crate::startup_timing::time_ns_result(format!("{phase}_canonical_seal"), || {
         let recorded = {
             let object = value
                 .as_object_mut()

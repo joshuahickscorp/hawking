@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -51,10 +52,96 @@ if TYPE_CHECKING:  # the catalog import is deferred so a menu is never
 DEFAULT_PORT = 8011
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_BASE_URL = f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"
+# The default must be an admitted Gravity body.  The former default pointed at
+# the legacy sealed Qwen3.8/Ascension profile, which is archived and no longer
+# belongs on the live operational surface.
+DEFAULT_MODEL = "KIMI_P0_OPERATIONAL"
 #: Small on purpose. If window resolution ever fails again, the effect
 #: is eager compaction that someone notices -- not a plausible constant
 #: that silently replaces the measurement.
 _WINDOW_UNKNOWN = 2048
+
+
+class DaemonDelegationSupervisor:
+    """Own bounded HCLI delegation workers as children of ``hawkingd``.
+
+    A delegated mission is allowed to outlive an ``hcli run`` client, but it
+    must not become an orphaned Python root.  The daemon accepts only a
+    prewritten delegation workspace under this checkout's durable mission
+    root; it does not accept arbitrary argv, cwd, or shell text over HTTP.
+    """
+
+    def __init__(self, repo_root: str | os.PathLike[str]) -> None:
+        self.repo_root = Path(repo_root).resolve()
+        self.workspace_root = (self.repo_root / ".hcli" / "delegations").resolve()
+        self._lock = threading.Lock()
+        self._children: Dict[str, subprocess.Popen[Any]] = {}
+
+    def _resolve_workspace(self, raw: object) -> Path:
+        if not isinstance(raw, str) or not raw.strip():
+            raise ValueError("workspace must be a non-empty path")
+        workspace = Path(raw).expanduser().resolve()
+        try:
+            workspace.relative_to(self.workspace_root)
+        except ValueError as exc:
+            raise PermissionError(
+                f"delegation workspace must be below {self.workspace_root}"
+            ) from exc
+        if not (workspace / ".hcli" / "mission" / "delegation_spec.json").is_file():
+            raise ValueError("workspace has no delegation_spec.json")
+        return workspace
+
+    def _reap(self) -> None:
+        self._children = {
+            key: proc for key, proc in self._children.items()
+            if proc.poll() is None
+        }
+
+    def start(self, raw_workspace: object) -> Dict[str, Any]:
+        workspace = self._resolve_workspace(raw_workspace)
+        key = str(workspace)
+        with self._lock:
+            self._reap()
+            existing = self._children.get(key)
+            if existing is not None:
+                return {"started": False, "pid": existing.pid, "workspace": key,
+                        "owner": "hawkingd"}
+            log = workspace / ".hcli" / "mission" / "delegate_exec.log"
+            log.parent.mkdir(parents=True, exist_ok=True)
+            with log.open("ab") as handle:
+                proc = subprocess.Popen(
+                    [sys.executable, "-m", "hcli", "__delegate_exec", key],
+                    cwd=str(self.repo_root), stdin=subprocess.DEVNULL,
+                    stdout=handle, stderr=handle,
+                    # Intentionally no new session: this stays in the daemon's
+                    # process tree and is reaped during daemon shutdown.
+                    start_new_session=False,
+                )
+            self._children[key] = proc
+            return {"started": True, "pid": proc.pid, "workspace": key,
+                    "owner": "hawkingd"}
+
+    def close(self) -> None:
+        with self._lock:
+            children = list(self._children.values())
+            self._children.clear()
+        for proc in children:
+            if proc.poll() is None:
+                try:
+                    proc.terminate()
+                except OSError:
+                    pass
+        deadline = time.monotonic() + 2.0
+        for proc in children:
+            remaining = max(0.0, deadline - time.monotonic())
+            if proc.poll() is None:
+                try:
+                    proc.wait(timeout=remaining)
+                except subprocess.TimeoutExpired:
+                    try:
+                        proc.kill()
+                    except OSError:
+                        pass
 
 #: Values that mean "do not sample", per parameter. A greedy profile accepts
 #: these and refuses everything else. `True == 1` in Python, so membership is
@@ -145,6 +232,26 @@ def _text_of(result: Any) -> str:
     return ""
 
 
+# These are tokenizer/template control markers, never user-visible answer
+# content. Keep the list explicit: broad markup stripping would hide a model
+# answer or a tool result and make an integration failure look repaired.
+_VISIBLE_PROTOCOL_TOKENS = (
+    "<|im_start|>",
+    "<|im_end|>",
+    "<|endoftext|>",
+    "<|eot_id|>",
+)
+
+
+def visible_text(text: Any) -> str:
+    """Remove only known chat-template markers from a rendered answer."""
+    if not isinstance(text, str):
+        return ""
+    for marker in _VISIBLE_PROTOCOL_TOKENS:
+        text = text.replace(marker, "")
+    return text
+
+
 def trim_repetition_collapse(text: Any, *, min_cycles: int = 6,
                              max_period_tokens: int = 8):
     """Detect a greedy repetition collapse and trim it to the coherent prefix.
@@ -197,7 +304,7 @@ def _content_and_flags(result: Any):
     """Content, finish_reason and degraded flags for one completion, with the
     repetition-collapse guard applied. ONE place, so the stream and non-stream
     paths cannot disagree about what the model actually produced."""
-    text = _text_of(result)
+    text = visible_text(_text_of(result))
     finish = getattr(result, "finish_reason", None) or "stop"
     degraded = list(getattr(result, "degraded", None) or [])
     trimmed, collapsed = trim_repetition_collapse(text)
@@ -238,7 +345,7 @@ def chat_payload(result: Any, identity: str, *, request_id: str) -> Dict[str, An
         "completion_tokens": getattr(result, "completion_tokens", None) or 0,
         "total_tokens": getattr(result, "total_tokens", None) or 0,
     }
-    return {
+    body = {
         "id": request_id,
         "object": "chat.completion",
         "created": int(time.time()),
@@ -256,6 +363,14 @@ def chat_payload(result: Any, identity: str, *, request_id: str) -> Dict[str, An
             "degraded": degraded,
         },
     }
+    raw = getattr(result, "raw", None)
+    if isinstance(raw, dict) and isinstance(raw.get("timings"), dict):
+        # Provider timings are for the final cognition call. Tool-loop work is
+        # accounted separately in hawking.tools_used and is intentionally not
+        # collapsed into a misleading single-token rate.
+        body["timings"] = dict(raw["timings"])
+        body["hawking"]["timings_scope"] = "final_model_call_only"
+    return body
 
 
 def stream_frames(result: Any, identity: str, *, request_id: str):
@@ -299,10 +414,12 @@ class Resident:
     fail; the refusal names the two numbers instead.
     """
 
-    def __init__(self, body: "CatalogBody", backend: Any, *, ready_timeout: float = 900.0):
+    def __init__(self, body: "CatalogBody", backend: Any, *, ready_timeout: float = 900.0,
+                 write: bool = False):
         self.body = body
         self.backend = backend
         self.ready_timeout = ready_timeout
+        self.write_authority = bool(write)
         self.state = "ready"
         self.error: Optional[str] = None
         self._lock = threading.RLock()
@@ -350,13 +467,25 @@ class Resident:
                     f"listed by `hcli use`.")
         return None
 
-    def switch(self, name: str) -> Dict[str, Any]:
+    def switch(self, name: str, *, research: bool = False) -> Dict[str, Any]:
+        """Serially replace the loaded body.
+
+        ``research`` is intentionally an admission door, not a catalog mode:
+        research bodies may be selected by a daemon-local WorkUnit but never
+        appear in the normal OpenAI/Open WebUI selector.  The old provider is
+        always stopped before a new body is spawned because this machine has
+        already demonstrated that concurrent resident loads are destructive.
+        """
         from .catalog import resolve
         with self._lock:
-            target = resolve(name)
+            # Keep the normal resolver call shape stable for existing callers
+            # and lightweight test doubles.  Research is the only path that
+            # needs the expanded ModelLake catalog.
+            target = resolve(name, research=True) if research else resolve(name)
             if target is None:
                 raise LookupError(
-                    f"no body named {name!r}. `hcli use` lists what is available.")
+                    f"no {'research ' if research else ''}body named {name!r}. "
+                    "`hcli use` lists normal admitted bodies.")
             if target.name == self.body.name and self.state == "ready":
                 return {"switched": False, "resident": self.body.name}
             refusal = self.admits(target)
@@ -380,16 +509,46 @@ class Resident:
                 self.body = target
                 self.state = "ready"
                 self.error = None
-                self.qualify_tools()
+                # A research-only ModelLake admission earns only an execution
+                # path.  Running the normal resident tool battery here can
+                # force a large specimen through an unrelated conversational
+                # gate before an activation capture can start, while holding
+                # the resident switch lock.  Its result is intentionally
+                # unqualified until a later explicit body-specific gate.
+                if research:
+                    self.tools_verdict = {
+                        "qualified": False,
+                        "reason": "research body: tool contract not qualified",
+                    }
+                else:
+                    self.qualify_tools()
                 return {"switched": True, "from": previous,
-                        "resident": target.name,
+                        "resident": target.name, "research": bool(research),
                         "tools": dict(self.tools_verdict)}
             except Exception as exc:
-                self.state = "failed"
-                self.error = f"{type(exc).__name__}: {exc}"
+                # A failed research/runtime admission must not strand the
+                # normal Resident after we deliberately serialized the load.
+                # Restore through the same daemon-owned factory; never launch
+                # a second standalone provider as a recovery shortcut.
+                try:
+                    restored = make_backend_for_model(self.body.path)
+                    restored.spawn()
+                    if restored.ready(self.ready_timeout):
+                        self.backend = restored
+                        self.state = "ready"
+                        self.error = (
+                            f"{type(exc).__name__}: {exc}; restored {previous}")
+                    else:
+                        raise RuntimeError("previous body did not become ready")
+                except Exception as restore_exc:
+                    self.state = "failed"
+                    self.error = (
+                        f"{type(exc).__name__}: {exc}; restoration failed: "
+                        f"{type(restore_exc).__name__}: {restore_exc}")
                 raise
 
-    def qualify_tools(self, prefix: Any = None, registry: Any = None) -> Dict[str, Any]:
+    def qualify_tools(self, prefix: Any = None, registry: Any = None,
+                      write: Optional[bool] = None) -> Dict[str, Any]:
         """Can THIS body emit a typed action, under its real conditions?
 
         Same contract the traffic uses: a native body is probed with its own
@@ -400,13 +559,17 @@ class Resident:
             self, "qualify_prefix", None)
         self.qualify_registry = registry if registry is not None else getattr(
             self, "qualify_registry", None)
-        schemas = (openai_schemas(self.qualify_registry)
+        if write is not None:
+            self.write_authority = bool(write)
+        schemas = (openai_schemas(self.qualify_registry,
+                                  write=self.write_authority)
                    if self.native_tools and self.qualify_registry else None)
         prefix_messages = list(self.qualify_prefix or [])
         if not self.native_tools and self.qualify_registry is not None:
             from .chat_tools import prepend_system
             prefix_messages = prepend_system(
-                prefix_messages, system_block(registry=self.qualify_registry))
+                prefix_messages, system_block(registry=self.qualify_registry,
+                                              write=self.write_authority))
 
         def _complete(convo):
             payload: Dict[str, Any] = {"messages": convo, "max_tokens": 96}
@@ -414,7 +577,9 @@ class Resident:
                 payload["tools"] = schemas
             return _text_of(self.backend.complete(payload))
 
-        self.tools_verdict = qualify(_complete, prefix=prefix_messages)
+        self.tools_verdict = qualify(
+            _complete, prefix=prefix_messages, registry=self.qualify_registry,
+            write=self.write_authority)
         return self.tools_verdict
 
     def complete(self, payload: Dict[str, Any], timeout: Optional[float] = None) -> Any:
@@ -447,7 +612,10 @@ class Resident:
 
 def make_handler(backend: Any, identity: str, *, greedy: bool,
                  health: Dict[str, Any], repo: Any = None,
-                 registry: Any = None, stores: Optional[Dict[str, Any]] = None):
+                 registry: Any = None, stores: Optional[Dict[str, Any]] = None,
+                 webui_manager: Any = None,
+                 delegation_supervisor: Any = None,
+                 endpoint_base: Optional[str] = None):
     stores = stores or {}
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -475,6 +643,16 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
         def _identity(self) -> str:
             return getattr(backend, "identity", None) or identity
 
+        def _local_only(self) -> bool:
+            return self.client_address[0] in {"127.0.0.1", "::1"}
+
+        def _json_body(self) -> Dict[str, Any]:
+            length = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(length) or b"{}")
+            if not isinstance(body, dict):
+                raise ValueError("body must be an object")
+            return body
+
         def do_GET(self) -> None:  # noqa: N802
             path = self.path.rstrip("/") or "/"
             if path in ("/v1/models", "/models"):
@@ -486,6 +664,13 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 return self._send(200, models_payload(identity))
             if path in ("/health", "/"):
                 live = dict(health)
+                if webui_manager is not None:
+                    try:
+                        live["client_surfaces"] = webui_manager.snapshot()
+                    except Exception as exc:  # health must remain observable
+                        live["client_surfaces"] = []
+                        live["client_surfaces_error"] = (
+                            f"{type(exc).__name__}: {exc}")
                 if hasattr(backend, "body"):
                     live.update(resident=backend.identity,
                                 model=backend.body.path,
@@ -494,10 +679,13 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                                           else "profile-default"))
                     verdict = getattr(backend, "tools_verdict", None)
                     if verdict is not None and "tools" in live:
-                        from .chat_tools import CHAT_TOOLS
+                        from .chat_tools import prompt_menu_names
                         live["tools"] = {
                             "qualified": bool(verdict.get("qualified")),
-                            "names": sorted(CHAT_TOOLS) if verdict.get("qualified") else [],
+                            "names": (prompt_menu_names(
+                                registry,
+                                write=stores.get("engine") is not None)
+                                      if verdict.get("qualified") else []),
                             "reason": verdict.get("reason"),
                             # The reply that failed. A verdict without the
                             # evidence behind it cannot be argued with -- and
@@ -508,26 +696,88 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     if backend.error:
                         live["error"] = backend.error
                 return self._send(200, live)
+            if path == "/hawkingd/webui":
+                if webui_manager is None:
+                    return self._send(404, {"error": {
+                        "message": "daemon WebUI supervision is unavailable"}})
+                if not self._local_only():
+                    return self._send(403, {"error": {
+                        "message": "WebUI supervision is local-only"}})
+                return self._send(200, {
+                    "owner": "hawkingd",
+                    "client_surfaces": webui_manager.snapshot(),
+                })
             self._send(404, {"error": {"message": f"no route {self.path}"}})
 
         def do_POST(self) -> None:  # noqa: N802
             route = self.path.rstrip("/")
-            if route in ("/v1/switch", "/switch"):
+            if route == "/hawkingd/delegations/start":
+                if delegation_supervisor is None:
+                    return self._send(404, {"error": {
+                        "message": "daemon delegation supervision is unavailable"}})
+                if not self._local_only():
+                    return self._send(403, {"error": {
+                        "message": "delegation supervision is local-only"}})
+                try:
+                    body = self._json_body()
+                    return self._send(200, delegation_supervisor.start(body.get("workspace")))
+                except PermissionError as exc:
+                    return self._send(403, {"error": {"message": str(exc)}})
+                except (ValueError, json.JSONDecodeError) as exc:
+                    return self._send(400, {"error": {"message": str(exc)}})
+                except Exception as exc:
+                    return self._send(502, {"error": {
+                        "message": f"{type(exc).__name__}: {exc}"}})
+            if route in ("/hawkingd/webui", "/hawkingd/webui/stop"):
+                if webui_manager is None:
+                    return self._send(404, {"error": {
+                        "message": "daemon WebUI supervision is unavailable"}})
+                if not self._local_only():
+                    return self._send(403, {"error": {
+                        "message": "WebUI supervision is local-only"}})
+                try:
+                    body = self._json_body()
+                    port = int(body.get("port") or 0)
+                    if route.endswith("/stop"):
+                        stopped = webui_manager.stop(
+                            port,
+                            requester_pid=int(body.get("requester_pid") or 0),
+                        )
+                        return self._send(200 if stopped else 404,
+                                          {"stopped": bool(stopped), "port": port})
+                    if endpoint_base is None:
+                        raise RuntimeError("daemon endpoint identity is unavailable")
+                    child = webui_manager.start(
+                        port, endpoint_base, int(body.get("requester_pid") or 0)
+                    )
+                    return self._send(200, child)
+                except PermissionError as exc:
+                    return self._send(403, {"error": {"message": str(exc)}})
+                except (ValueError, json.JSONDecodeError) as exc:
+                    return self._send(400, {"error": {"message": str(exc)}})
+                except Exception as exc:
+                    return self._send(502, {"error": {
+                        "message": f"{type(exc).__name__}: {exc}"}})
+            if route in ("/v1/switch", "/switch", "/hawkingd/research/switch"):
                 # The control door `hcli use` knocks on. Switching is also
                 # reachable by naming a model in a chat request; this exists so
                 # a person can pay the load cost deliberately instead of
                 # discovering it inside their first message.
-                length = int(self.headers.get("Content-Length") or 0)
                 try:
-                    body = json.loads(self.rfile.read(length) or b"{}")
+                    body = self._json_body()
                 except Exception as exc:
                     return self._send(400, {"error": {"message": f"bad json: {exc}"}})
+                research = route == "/hawkingd/research/switch"
+                if research and not self._local_only():
+                    return self._send(403, {"error": {
+                        "message": "research switching is local-only"}})
                 switch = getattr(backend, "switch", None)
                 if not callable(switch):
                     return self._send(409, {"error": {
                         "message": "this surface serves a single fixed body"}})
                 try:
-                    return self._send(200, switch(str(body.get("model") or "")))
+                    return self._send(200, switch(str(body.get("model") or ""),
+                                                  research=research))
                 except LookupError as exc:
                     return self._send(404, {"error": {"message": str(exc)}})
                 except MemoryError as exc:
@@ -640,6 +890,7 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
             payload.setdefault("model", identity)
             request_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
             trace: list = []
+            tool_contract: Optional[Dict[str, Any]] = None
             live_tools = getattr(backend, "tools_verdict", None)
             tools_ok = bool((live_tools or {}).get("qualified")) if live_tools is not None else True
             try:
@@ -648,25 +899,45 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     # the same one `hcli agentos research-gate` uses, with its
                     # read/research permission set, so a browser session cannot
                     # reach a tool that writes.
-                    from .chat_tools import (builder_menu, openai_schemas,
-                                              prepend_system, run_with_tools,
-                                              system_block)
+                    from .chat_tools import (openai_schemas, prepend_system,
+                                              prompt_menu_names, run_with_tools,
+                                              session_menu, system_block)
 
                     native = bool(getattr(backend, "native_tools", False))
-                    schemas = openai_schemas(
-                        registry, list(builder_menu(
-                            stores.get("engine") is not None))) if native else None
+                    writing = stores.get("engine") is not None
+                    selected_names = prompt_menu_names(registry, write=writing)
+                    schemas = (openai_schemas(registry, selected_names,
+                                              write=writing)
+                               if native else None)
+
+                    last_completion = None
 
                     def _complete(convo):
+                        nonlocal last_completion
                         inner = {**payload, "messages": convo}
                         if schemas:
                             inner["tools"] = schemas
-                        return _text_of(backend.complete(inner))
+                        last_completion = backend.complete(inner)
+                        return _text_of(last_completion)
 
-                    writing = stores.get("engine") is not None
+                    contract_text = system_block(registry=registry, write=writing)
                     with_contract = (messages if native else prepend_system(
-                        messages, system_block(registry=registry,
-                                               write=writing)))
+                        messages, contract_text))
+                    serialized = (json.dumps(schemas, sort_keys=True)
+                                  if schemas is not None else contract_text)
+                    tool_contract = {
+                        "qualified": True,
+                        "offered_count": len(session_menu(registry, write=writing)),
+                        "selected_count": len(selected_names),
+                        "serialized_count": (len(schemas)
+                                              if schemas is not None else len(selected_names)),
+                        "serialized_format": ("openai_tools_argument"
+                                              if native else "textual_json_contract"),
+                        "serialized_chars": len(serialized),
+                        "initial_message_count": len(with_contract),
+                        "tool_loop_entered": True,
+                        "parser": "json_object+xml_function+bounded_narrative",
+                    }
                     # ADMISSION GUARD for every completion INSIDE the tool
                     # loop, not just the one before it. `compact()` above only
                     # ever runs once, on the INCOMING messages -- measured
@@ -687,11 +958,46 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                         engine=stores.get("engine"),
                         max_prompt_chars=int(
                             window_tokens * CONTEXT_SHARE * CHARS_PER_TOKEN))
-                    result = type("R", (), {
+                    # Keep the final provider result when the tool loop was
+                    # used.  The old wrapper retained only `answer`, which
+                    # made a live MLX-VLM body look as if it used zero tokens
+                    # and had no timings even though the child returned both.
+                    # The tool trace is still reported separately; these
+                    # provider fields describe the final cognition call only,
+                    # not the aggregate cost of all tool-loop calls.
+                    result = last_completion or type("R", (), {
                         "text": answer, "finish_reason": "stop", "degraded": [],
                         "prompt_tokens": None, "completion_tokens": None,
                         "total_tokens": None, "raw": {}})()
+                    result.text = answer
+                    result.finish_reason = getattr(result, "finish_reason", None) or "stop"
+                    tool_contract.update({
+                        "actual_invocations": sum(
+                            bool(row.get("dispatched")) for row in trace),
+                        "trace_entries": len(trace),
+                    })
+                    if session is not None:
+                        from .chat_state import record_tool_trace
+                        tool_trace_path = record_tool_trace(
+                            session, trace, tool_contract=tool_contract,
+                            answer=visible_text(answer),
+                            resident=getattr(backend, "identity", identity),
+                        )
                 else:
+                    if registry is not None:
+                        from .chat_tools import session_menu
+                        tool_contract = {
+                            "qualified": tools_ok,
+                            "offered_count": len(session_menu(
+                                registry, write=stores.get("engine") is not None)),
+                            "selected_count": 0,
+                            "serialized_count": 0,
+                            "serialized_format": "withheld_until_qualification",
+                            "serialized_chars": 0,
+                            "tool_loop_entered": False,
+                            "actual_invocations": 0,
+                            "trace_entries": 0,
+                        }
                     result = backend.complete(payload)
             except LookupError as exc:
                 return self._send(404, {"error": {
@@ -706,11 +1012,36 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
             if not body.get("stream"):
                 answered = getattr(backend, "identity", identity)
                 body_out = chat_payload(result, answered, request_id=request_id)
-                if trace:
-                    body_out["hawking"]["tools_used"] = trace
+                # Runtime identity is independent evidence from the daemon,
+                # not a claim generated by the resident body. Expose the
+                # machine-owned state alongside tool trace so liveness
+                # consumers can derive reachability without trusting prose.
+                provider = getattr(getattr(backend, "backend", None),
+                                   "process", None)
+                provider_pid = getattr(provider, "pid", None)
+                body_out["hawking"]["runtime"] = {
+                    "source": "hawkingd:/health",
+                    "status": health.get("status"),
+                    "daemon_pid": (health.get("owner") or {}).get("pid"),
+                    "provider_pid": provider_pid,
+                    "resident": answered,
+                    "model": health.get("model"),
+                    "state": getattr(backend, "state", None),
+                    "repo": health.get("repo"),
+                    "identity_match": answered == health.get("resident"),
+                    "tools_qualified": bool(
+                        (getattr(backend, "tools_verdict", None) or {}).get(
+                            "qualified")),
+                }
+                # Always expose the empty trace too. An absent field made “no
+                # action parsed” indistinguishable from “telemetry was never
+                # wired.” `dispatched` is the mechanical liveness fact.
+                body_out["hawking"]["tools_used"] = trace
+                if tool_contract is not None:
+                    body_out["hawking"]["tool_contract"] = tool_contract
                 if session is not None:
                     from .chat_state import remember_turn
-                    remember_turn(session, messages, _text_of(result),
+                    remember_turn(session, messages, visible_text(_text_of(result)),
                                   knowledge=stores.get("knowledge"))
                     session.save()
                     body_out["hawking"]["session"] = {
@@ -718,9 +1049,22 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                         "active_plan": session.active_plan,
                         "authority": session.authority,
                         "checkpoint": session.last_checkpoint or None}
+                    if locals().get("tool_trace_path"):
+                        body_out["hawking"]["session"]["tool_trace"] = tool_trace_path
                     if locals().get("compaction") is not None and compaction.compacted:
                         body_out["hawking"]["compaction"] = compaction.to_dict()
                 return self._send(200, body_out)
+            # Open WebUI normally uses the streaming path. Persist its durable
+            # session before writing the SSE frames just as the JSON path does;
+            # otherwise every successful browser answer renders and then
+            # disappears from HCLI's objective/plan state on refresh or daemon
+            # restart. The transcript remains the client's; this saves only the
+            # compact session working set.
+            if session is not None:
+                from .chat_state import remember_turn
+                remember_turn(session, messages, visible_text(_text_of(result)),
+                              knowledge=stores.get("knowledge"))
+                session.save()
             # An SSE body has no Content-Length, so under HTTP/1.1 keep-alive a
             # client cannot tell where it ends and waits until it times out --
             # which is exactly what a browser chat looks like when it hangs
@@ -791,7 +1135,9 @@ def _prompt_window(model: str) -> int:
 
 def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
                  ready_timeout: float = 600.0, repo: Any = None,
-                 registry: Any = None, write: bool = False):
+                 registry: Any = None, write: bool = False,
+                 webui_manager: Any = None,
+                 delegation_supervisor: Any = None):
     """Spawn the resident, wait for it, and return (httpd, identity, health)."""
     from .catalog import Body, catalog, resolve
     from .runtime_iface import classify_backend, make_backend_for_model
@@ -808,18 +1154,59 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
 
     backend = make_backend_for_model(body.path)
     backend.spawn()
-    if not backend.ready(ready_timeout):
+    # Own teardown during the load phase too. The normal daemon handler is
+    # installed after build_server returns, but a model can spend minutes in
+    # ready(); TERM in that window previously killed only hawkingd and left its
+    # provider child alive. Convert a load-time signal into a controlled stop,
+    # then restore the caller's handlers before publishing the server.
+    import signal as _signal
+    previous_handlers: Dict[Any, Any] = {}
+
+    def _interrupt_load(_signum, _frame):  # noqa: ANN001
+        try:
+            backend.stop()
+        finally:
+            raise SystemExit(0)
+
+    for _sig in (_signal.SIGTERM, _signal.SIGHUP, _signal.SIGINT):
+        try:
+            previous_handlers[_sig] = _signal.getsignal(_sig)
+            _signal.signal(_sig, _interrupt_load)
+        except (ValueError, OSError):
+            pass
+    try:
+        ready = backend.ready(ready_timeout)
+    finally:
+        for _sig, _handler in previous_handlers.items():
+            try:
+                _signal.signal(_sig, _handler)
+            except (ValueError, OSError):
+                pass
+    if not ready:
+        try:
+            tail = getattr(backend, "log_tail", lambda *_: "(no log)")()
+        finally:
+            try:
+                backend.stop()
+            except Exception:
+                pass
         raise RuntimeError(
             f"the resident did not become ready within {ready_timeout:.0f}s. "
             f"Its log tail is the evidence: "
-            f"{getattr(backend, 'log_tail', lambda *_: '(no log)')()!s:.400}"
+            f"{tail!s:.400}"
         )
-    resident = Resident(body, backend, ready_timeout=ready_timeout)
+    resident = Resident(body, backend, ready_timeout=ready_timeout, write=write)
     identity = resident.identity
     greedy = resident.greedy
     del catalog
     health = {
         "status": "ok",
+        "owner": {
+            "daemon": "hawkingd",
+            "pid": os.getpid(),
+            "single_surface": True,
+            "provider_children": "daemon-owned",
+        },
         "resident": identity,
         "model": body.path,
         "sampling": "greedy-argmax" if greedy else "profile-default",
@@ -827,6 +1214,7 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
                      "SSE shape is provided so browser clients render, not as "
                      "evidence of incremental decode)",
         "endpoints": ["/v1/models", "/v1/chat/completions", "/health"],
+        "client_supervision": "hawkingd-owned Open WebUI children",
         "switchable": True,
         # The body's real window, so compaction triggers on the actual ceiling
         # rather than a constant. resolve() is the repo's existing authority on
@@ -845,16 +1233,17 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
         # must not be handed a tool contract: it answers in prose that sounds
         # like it searched, and a reader cannot tell that from an answer that
         # did. One cheap probe at load, and again after every switch.
-        from .chat_tools import CHAT_TOOLS
+        from .chat_tools import prompt_menu_names
 
         prefix = None
         if repo is not None:
             from .repo_context import inject
             prefix = inject([], repo)
-        verdict = resident.qualify_tools(prefix, registry)
+        verdict = resident.qualify_tools(prefix, registry, write=write)
         health["tools"] = {
             "qualified": bool(verdict.get("qualified")),
-            "names": sorted(CHAT_TOOLS) if verdict.get("qualified") else [],
+            "names": (prompt_menu_names(registry, write=write)
+                      if verdict.get("qualified") else []),
             "reason": verdict.get("reason"),
             "reply_excerpt": verdict.get("reply_excerpt"),
         }
@@ -901,12 +1290,19 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
     httpd = ThreadingHTTPServer(
         (host, port), make_handler(resident, identity, greedy=greedy,
                                    health=health, repo=repo, registry=registry,
-                                   stores=stores))
+                                   stores=stores, webui_manager=webui_manager,
+                                   delegation_supervisor=delegation_supervisor,
+                                   endpoint_base=f"http://{host}:{port}/v1"))
     httpd.backend = resident  # type: ignore[attr-defined]
     return httpd, identity, health
 
 
 def main(argv: Optional[list] = None) -> int:
+    # This process is `hawkingd` in production. Enable its supervised Rust
+    # Gravity discovery and process-observer children; short-lived HCLI clients
+    # keep compatibility fallbacks and never create competing resident state.
+    os.environ.setdefault("HCLI_NATIVE_GRAVITY", "1")
+    os.environ.setdefault("HCLI_NATIVE_PROCESS_SERVER", "1")
     ap = argparse.ArgumentParser(
         prog="hcli serve",
         description="OpenAI-compatible endpoint over the persistent Hawking resident.")
@@ -926,29 +1322,68 @@ def main(argv: Optional[list] = None) -> int:
     a = ap.parse_args(list(argv or []))
     a.model = a.model or a.model_flag
 
-    model = a.model or str(Path(__file__).resolve().parent / "hawking-native.sealed-3.14.json")
+    # One machine, one long-lived Hawking execution surface.  The backend may
+    # own a provider child (MLX-VLM currently does), but a second `serve` on a
+    # different port would still load another body into UMA and was the direct
+    # cause of the recent multi-instance pressure event.  The lease is held by
+    # the daemon process for its entire lifetime; `hcli serve` and
+    # `hawkingd serve` therefore share the same guard.
+    from .hawkingd import DaemonAlreadyRunning, acquire_daemon_lease
+
+    try:
+        _daemon_lease = acquire_daemon_lease(
+            "serve",
+            {"model": a.model, "host": a.host, "port": a.port},
+        )
+    except DaemonAlreadyRunning as exc:
+        print(str(exc), file=sys.stderr)
+        return 17
+
+    model = a.model or DEFAULT_MODEL
     # `ps` should describe the daemon, not the interpreter. The name is
     # deliberately model-neutral -- hawkingd may hold any body over its life --
     # with the current body in brackets for identification. Best-effort: absent
     # setproctitle, the process simply keeps its default name.
-    try:
-        import setproctitle as _spt
-        _label = Path(model).stem if ("/" in model or model.endswith(".json")) else model
-        _spt.setproctitle(f"hawkingd serve :{a.port} [{_label}]")
-    except Exception:
-        pass
+    # On macOS, setproctitle rewrites the useful argv display but also changes
+    # the native process-name field of our dedicated Mach-O launcher back to
+    # generic Python. Preserve the native hawkingd identity in production;
+    # retain the title fallback for source/development launches.
+    if Path(sys.executable).name != "hawkingd":
+        try:
+            import setproctitle as _spt
+            _label = (
+                Path(model).stem
+                if ("/" in model or model.endswith(".json"))
+                else model
+            )
+            _spt.setproctitle(f"hawkingd serve :{a.port} [{_label}]")
+        except Exception:
+            pass
     repo = None
     if not a.no_repo:
-        from .repo_context import RepoContext
+        from .repo_context import RepoContext, prewarm_native_gravity_index
         repo = RepoContext.detect(os.getcwd())
+        if repo is not None:
+            # Do not charge the first model/tool request for a bounded active
+            # code index. The child is still owned by this hawkingd process;
+            # this overlaps its initial build with unavoidable resident
+            # startup and does not add a second daemon authority.
+            prewarm_native_gravity_index(repo.root)
     registry = None
     if not a.no_tools:
         from .chat_tools import build_registry
         root = str(repo.root) if repo is not None else os.getcwd()
-        registry = build_registry(root, root)
+        registry = build_registry(root, root, write=bool(a.write))
+    from .web import OwnedWebUIManager
+    webui_manager = OwnedWebUIManager()
+    delegation_supervisor = DaemonDelegationSupervisor(
+        repo.root if repo is not None else os.getcwd()
+    )
     httpd, identity, health = build_server(
         model, host=a.host, port=a.port, ready_timeout=a.ready_timeout,
-        repo=repo, registry=registry, write=bool(getattr(a, "write", False)))
+        repo=repo, registry=registry, write=bool(getattr(a, "write", False)),
+        webui_manager=webui_manager,
+        delegation_supervisor=delegation_supervisor)
     print(json.dumps({"listening": f"http://{a.host}:{a.port}",
                       "openai_base_url": f"http://{a.host}:{a.port}/v1",
                       **health}), flush=True)
@@ -959,12 +1394,49 @@ def main(argv: Optional[list] = None) -> int:
     # swap-backed state -- swap fell from 9.7 GB to 2.5 GB when they were
     # reaped. Handle the signal so shutdown is shutdown.
     import signal as _signal
+    from .resources import pid_is_alive
+    from .backends import terminate_pid
+    _runtime_stopped = False
 
-    def _shutdown(signum, _frame):  # noqa: ANN001
+    def _stop_runtime() -> None:
+        """Stop the resident and prove its provider child is gone.
+
+        The normal backend stop path owns the child, but a provider can still
+        survive a teardown race and become reparented to launchd. Capture the
+        owned PID before stopping, then apply the same TERM/KILL/reap helper if
+        it remains alive. Never scan by process name: only PIDs reachable from
+        this daemon's backend object are in scope.
+        """
+        nonlocal _runtime_stopped
+        if _runtime_stopped:
+            return
+        _runtime_stopped = True
+        root = getattr(httpd, "backend", None)
+        candidates = [root, getattr(root, "backend", None)]
+        owned_pids: set[int] = set()
+        for candidate in candidates:
+            if candidate is None:
+                continue
+            process = getattr(candidate, "process", None)
+            pid = getattr(candidate, "pid", None)
+            if pid is None and process is not None:
+                pid = getattr(process, "pid", None)
+            if isinstance(pid, int) and pid > 0 and pid != os.getpid():
+                owned_pids.add(pid)
         try:
-            httpd.backend.stop()  # type: ignore[attr-defined]
+            if root is not None:
+                root.stop()
         except Exception:
             pass
+        for pid in owned_pids:
+            try:
+                if pid_is_alive(pid):
+                    terminate_pid(pid, term_timeout=1.0, kill_timeout=1.0)
+            except (OSError, ProcessLookupError):
+                pass
+
+    def _shutdown(signum, _frame):  # noqa: ANN001
+        _stop_runtime()
         raise SystemExit(0)
 
     for _sig in (_signal.SIGTERM, _signal.SIGHUP, _signal.SIGINT):
@@ -977,10 +1449,10 @@ def main(argv: Optional[list] = None) -> int:
     except (KeyboardInterrupt, SystemExit):
         pass
     finally:
-        try:
-            httpd.backend.stop()  # type: ignore[attr-defined]
-        except Exception:
-            pass
+        _stop_runtime()
+        delegation_supervisor.close()
+        webui_manager.close()
+        _daemon_lease.release()
     return 0
 
 

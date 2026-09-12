@@ -15,6 +15,54 @@ daemon**. Roadmap execution stays ahead of speculative daemon qualification:
   return immediately to the roadmap. Do not broaden the daemon architecture
   speculatively.
 
+## One live Hawking surface
+
+The browser/OpenAI surface has the same ownership law as the resident daemon:
+there is one long-lived Hawking execution surface per machine. Start it as:
+
+```bash
+hawkingd serve KIMI_P0_OPERATIONAL --port 8011
+```
+
+`hcli serve` remains a compatibility entry point and routes through the same
+implementation. A machine-wide advisory lease refuses a second surface before
+it loads another model, even when the requested port differs. Hawking-native /
+Noetic is the preferred runtime; MLX/MLX-VLM is transitional only while a
+native loader is missing for a Gravity artifact. llama.cpp is disabled for
+normal runtime selection. Any transitional provider child is created,
+health-checked, and stopped by the owning `hawkingd`; it is not an independent
+Hawking instance.
+
+Multiple Open WebUI clients are allowed. Each invocation chooses a free port
+and a per-client data directory, while all clients reuse the same `hawkingd`
+OpenAI endpoint. The UI children are daemon-owned: `hcli web` is only a
+launcher and exits after the browser surface is ready. This supports a
+user-facing UI and temporary blind HCLI UIs at the same time without leaving
+one Python launcher per session or loading another model.
+
+The invariant is one sovereign **process tree**, not one literal OS PID.
+Provider, WebUI, worker, and future accelerator processes are valid only as
+owned descendants of the singleton `hawkingd` root. This preserves fault
+isolation while keeping lifecycle and duplicate-model authority in one place.
+The frozen KIMI P0 surface is read/research authority; autonomous repository
+mutation remains explicitly withheld by its closeout receipt.
+
+Delegated `hcli run` work follows the same rule. On the current daemon image,
+the client writes the durable delegation specification and asks the local
+`/hawkingd/delegations/start` control surface to launch the worker. The daemon
+accepts only a prepared workspace below its own `.hcli/delegations/` root, owns
+the child without creating a new session, and terminates/reaps it during daemon
+shutdown. If a pre-upgrade daemon lacks that endpoint, a client addressing the
+production `:8011` surface refuses to detach a fallback Python worker; install
+the staged build and use a controlled daemon restart instead.
+
+The ModelLake acquisition watcher is not a resident and is disabled by
+default. Do not restore an independent launchd watcher beside the live body:
+if background acquisition is needed later, it must be admitted as an owned
+daemon child with an explicit memory budget. The current operational selector
+contains only admitted Gravity artifacts; legacy Ascension/Qwen3.8 binaries,
+source, and receipts remain separate historical/reproducibility material.
+
 HCLI now has a durable resident control loop. The resident is split into two
 process roles:
 

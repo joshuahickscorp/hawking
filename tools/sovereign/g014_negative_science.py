@@ -279,6 +279,114 @@ SCARS: list[dict] = [
         "physical_claim": True,
         "source_receipts": ["receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json"],
     },
+    {
+        "causal_question": (
+            "Does refusal-separable state in KIMI_BASE expose a clean, held-out causal "
+            "control surface through the tested writer, routed-expert, residual, subspace, "
+            "or router-logit interventions?"
+        ),
+        "tested_family": "kimi refusal intervention family",
+        "organ": "whole_model",
+        "parent": "KIMI_BASE / Kimi-VL-A3B-Instruct",
+        "level": "MODEL_SPECIFIC",
+        "evidence": (
+            "receipts/future/KIMI_OPERATOR_LIVE_EVIDENCE_20260910.json binds OPA--OPG "
+            "candidate-specifically and records every candidate REJECTED_CAUSAL_NULL: "
+            "OPA/OPB shared-writer refusal_rate_delta=0.0, OPC two-sided writer "
+            "delta=0.0, OPD rank-4 writer delta=0.0, OPE layer-local writer "
+            "delta=-0.015625, and OPF/OPG selected/shared-expert delta=0.0. The "
+            "expanded OPE source records held-out mean AUROC=0.872727 against shuffled "
+            "AUROC=0.410774, establishing separability without a matched-null-superior "
+            "candidate effect. receipts/future/"
+            "KIMI_REFUSAL_LOCALITY_CANDIDATE_OPH_ROUTER_LIVE_20260910.json is the "
+            "completed clean-process router-logit probe: status "
+            "OPH_CAUSAL_NULL_OR_INCONSISTENT, 64/64 rows refused, zero compliant rows, "
+            "causal_sample_sufficient=false, causal_effect_established=false. "
+            "KIMI_BASE remained immutable and no weights or artifact were written."
+        ),
+        "reason_rejected": (
+            "Refusal-related state is strongly decodable in the tested representation, "
+            "but the tested writer, routed-expert, residual, subspace, and router-logit "
+            "interventions did not establish a clean held-out causal control surface. "
+            "OPA--OPG were null or inconsistent against their matched controls; OPH "
+            "completed with no compliant comparison rows and therefore could not "
+            "establish a sufficient causal sample."
+        ),
+        "scope": (
+            "KIMI_BASE / moonshotai Kimi-VL-A3B-Instruct under the recorded OPA--OPH "
+            "batteries, layers, expert selections, folds, and intervention definitions. "
+            "This closes nearby reparameterizations of that tested causal family, "
+            "including another layer, strength, projection-rank, or expert-id sweep. "
+            "It does NOT claim refusal is non-causal, does NOT condemn a materially "
+            "different causal mechanism, and does NOT downgrade the separately measured "
+            "resident HCLI serving contract."
+        ),
+        "reopen_if": (
+            "a materially different causal hypothesis names a distinct mechanism and a "
+            "pre-registered falsifier capable of beating matched nulls on held-out rows. "
+            "A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or "
+            "another projection of the same refusal-separable state is not a reopen "
+            "condition."
+        ),
+        "evidence_tier": "measured_numerical",
+        "physical_claim": False,
+        "source_receipts": [
+            "receipts/future/KIMI_OPERATOR_LIVE_EVIDENCE_20260910.json",
+            "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPE_EXPANDED32_L26_RECLASSIFIED_20260910.json",
+            "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPF_EXPANDED32_L26E23_20260910.json",
+            "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPG_EXPANDED32_L26E23_SHARED_20260910.json",
+            "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPH_ROUTER_LIVE_20260910.json",
+        ],
+    },
+    {
+        "causal_question": (
+            "Can the current KIMI_P0_OPERATIONAL body independently complete an "
+            "objective-only repository mutation and focused proving test through the "
+            "real HCLI contract?"
+        ),
+        "tested_family": "kimi p0 blind autonomous repository writing",
+        "organ": "hcli_agent_loop",
+        "parent": "KIMI_P0_OPERATIONAL / Kimi-VL-A3B-Instruct",
+        "level": "MODEL_SPECIFIC",
+        "evidence": (
+            "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json binds the final "
+            "objective-only run to trace sha256 "
+            "283fd0f445884dd10e3b0c42b83368ded33c01bc7bd625cafe5802054bcdfb5b: "
+            "17 turns, 23 trace entries, real git.status/fs.list/fs.search/fs.read/"
+            "tools.catalog/campaign.state/processes.summary/forensics.snapshot calls, "
+            "one rejected repo.edit, zero accepted mutations, zero changed paths. The "
+            "edit's old_text did not exist and three later turns repeated the rejected "
+            "tool response instead of grounding a repair. Earlier browser and Engine "
+            "runs in KIMI_BOOTSTRAP_CLOSEOUT_20260911.json also produced zero accepted "
+            "mutations after eight general harness repairs."
+        ),
+        "reason_rejected": (
+            "The current body can orient, inspect, research, invoke tools and consume "
+            "evidence, but it did not convert that evidence into a grounded accepted "
+            "mutation plus proving test. Repeated synthetic retry now spends the primary "
+            "campaign on a known body/task boundary rather than useful Odyssey work."
+        ),
+        "scope": (
+            "KIMI_P0_OPERATIONAL with unchanged dense KIMI_BASE weights, the current "
+            "HCLI serving/tool contract, and objective-only autonomous repository-write "
+            "missions. NOT conversational use, read/research tool work, receipt analysis, "
+            "hypothesis generation, experiment planning, or supervised proposals. NOT a "
+            "claim that a stronger descendant or a policy prompted by a real Odyssey "
+            "blocker cannot earn write authority."
+        ),
+        "reopen_if": (
+            "a materially stronger body, representation-native restoration, or mission "
+            "policy learned from a real Odyssey blocker independently produces a relevant "
+            "evidence-grounded edit and focused passing test from an objective-only brief; "
+            "not another retry or prompt tuning pass on this bootstrap body."
+        ),
+        "evidence_tier": "runtime_behavior",
+        "physical_claim": False,
+        "source_receipts": [
+            "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+            "receipts/future/KIMI_BOOTSTRAP_CLOSEOUT_20260911.json",
+        ],
+    },
 ]
 
 

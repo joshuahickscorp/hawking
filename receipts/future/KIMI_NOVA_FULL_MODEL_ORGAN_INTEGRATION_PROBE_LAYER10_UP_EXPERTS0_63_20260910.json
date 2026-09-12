@@ -1,0 +1,462 @@
+{
+  "baseline": {
+    "generation": {
+      "max_run": 1,
+      "median_fourgram_repeat_fraction": 0.03448275862068961,
+      "median_s": 0.447907000023406,
+      "median_unique_token_fraction": 0.71875,
+      "rows": [
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.03448275862068961,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.75
+          },
+          "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+          "text": "  # Mixture-of-experts  A mixture-of-experts layer is a layer that routes tokens to different experts.  ## Routing  The routing",
+          "timing_s": 0.46698054199805483
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.0,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.65625
+          },
+          "prompt": "What is the capital of France, and why did it become the capital?",
+          "text": " The capital of France is Paris, and it became the capital for several reasons. Paris is located in the northern part of France, and it is the largest city",
+          "timing_s": 0.4462195829837583
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.0,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.71875
+          },
+          "prompt": "Write a short Python function that reverses a linked list.",
+          "text": " The function should take the head of the linked list as input and return the new head of the reversed linked list.\n\nHere's the Python code to handle the issue:\n",
+          "timing_s": 0.5174900410347618
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.0,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.71875
+          },
+          "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+          "text": "  # Summary  Bandwidth limits transformer decoding.  # Bandwidth  Bandwidth is the amount of data that can be transmitted over a communication channel in a",
+          "timing_s": 0.45808729203417897
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.31034482758620685,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.59375
+          },
+          "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+          "text": "\n\n\nA farmer has 17 sheep and all but 9 run away. How many are left?\n\nA farmer has 17 sheep and all but 9 run",
+          "timing_s": 0.447907000023406
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.0,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.40625
+          },
+          "prompt": "Describe the difference between a scale and a zero point in quantization.",
+          "text": " 1. 2. 3. 4. 5. 6. 7. 8. 9. 10. 11",
+          "timing_s": 0.4441938329837285
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.03448275862068961,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.71875
+          },
+          "prompt": "List three reasons a neural network might fail to converge.",
+          "text": " (3 marks)\n\nExplain the difference between a feedforward and a recurrent neural network. (3 marks)\n\nWhat is the purpose of the softmax function in a neural",
+          "timing_s": 0.41521858400665224
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.3448275862068966,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.40625
+          },
+          "prompt": "Translate to French: The weather is cold today.",
+          "text": " ( )\nA. The weather is cold today.  \nB. The weather is cold today.  \nC. The weather is cold today.  \nD. The",
+          "timing_s": 0.4123286659596488
+        }
+      ],
+      "wall_s": 3.609159291954711
+    },
+    "nll": {
+      "mean_elapsed_s": 0.2262688335031271,
+      "mean_nll": 1.9897805452346802,
+      "mean_ppl": 10.6902472689006,
+      "rows": [
+        {
+          "elapsed_s": 0.34042833402054384,
+          "nll": 1.0624985694885254,
+          "ppl": 2.8935918048525204
+        },
+        {
+          "elapsed_s": 0.11210933298571035,
+          "nll": 2.917062520980835,
+          "ppl": 18.486902732948682
+        }
+      ]
+    }
+  },
+  "claim_boundary": "Paired one-organ replacement in the real KIMI_BASE MLX graph. The dense model remains present for all unreplaced organs, so this is an integration discriminator, not a complete reduced representation, direct full-model execution, capability qualification, TPS result, NX artifact, or promotion evidence.",
+  "deltas": {
+    "generation_median_s_delta": 0.049649624968878925,
+    "generation_repeat_delta": 0.0,
+    "generation_unique_fraction_delta": -0.03125,
+    "mean_nll_patched_minus_baseline": 0.023666560649871826,
+    "mean_ppl_ratio": 1.0399838723177015
+  },
+  "factor_artifact": {
+    "compressed_file_bytes": 11282755,
+    "container": "compressed_npz_bf16_bit_patterns",
+    "logical_factor_arrays": [
+      "a_0",
+      "a_1",
+      "a_10",
+      "a_11",
+      "a_12",
+      "a_13",
+      "a_14",
+      "a_15",
+      "a_16",
+      "a_17",
+      "a_18",
+      "a_19",
+      "a_2",
+      "a_20",
+      "a_21",
+      "a_22",
+      "a_23",
+      "a_24",
+      "a_25",
+      "a_26",
+      "a_27",
+      "a_28",
+      "a_29",
+      "a_3",
+      "a_30",
+      "a_31",
+      "a_32",
+      "a_33",
+      "a_34",
+      "a_35",
+      "a_36",
+      "a_37",
+      "a_38",
+      "a_39",
+      "a_4",
+      "a_40",
+      "a_41",
+      "a_42",
+      "a_43",
+      "a_44",
+      "a_45",
+      "a_46",
+      "a_47",
+      "a_48",
+      "a_49",
+      "a_5",
+      "a_50",
+      "a_51",
+      "a_52",
+      "a_53",
+      "a_54",
+      "a_55",
+      "a_56",
+      "a_57",
+      "a_58",
+      "a_59",
+      "a_6",
+      "a_60",
+      "a_61",
+      "a_62",
+      "a_63",
+      "a_7",
+      "a_8",
+      "a_9",
+      "b_0",
+      "b_1",
+      "b_10",
+      "b_11",
+      "b_12",
+      "b_13",
+      "b_14",
+      "b_15",
+      "b_16",
+      "b_17",
+      "b_18",
+      "b_19",
+      "b_2",
+      "b_20",
+      "b_21",
+      "b_22",
+      "b_23",
+      "b_24",
+      "b_25",
+      "b_26",
+      "b_27",
+      "b_28",
+      "b_29",
+      "b_3",
+      "b_30",
+      "b_31",
+      "b_32",
+      "b_33",
+      "b_34",
+      "b_35",
+      "b_36",
+      "b_37",
+      "b_38",
+      "b_39",
+      "b_4",
+      "b_40",
+      "b_41",
+      "b_42",
+      "b_43",
+      "b_44",
+      "b_45",
+      "b_46",
+      "b_47",
+      "b_48",
+      "b_49",
+      "b_5",
+      "b_50",
+      "b_51",
+      "b_52",
+      "b_53",
+      "b_54",
+      "b_55",
+      "b_56",
+      "b_57",
+      "b_58",
+      "b_59",
+      "b_6",
+      "b_60",
+      "b_61",
+      "b_62",
+      "b_63",
+      "b_7",
+      "b_8",
+      "b_9"
+    ],
+    "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova_all64/expert_lowrank_r32.npz",
+    "sha256": "16c280b9b3bf09334310006768f279fcb5c2d3414d184347e9d3f85a035dea64"
+  },
+  "generated_at": "2026-09-10T17:35:24.665639+00:00",
+  "guard": {
+    "end": {
+      "compressor_gb": 7.64,
+      "expected_gb": 0.0,
+      "free_gb": 30.89,
+      "headroom_gb": 30.89,
+      "reasons": [],
+      "reclaimable_gb": 27.51,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 3.38,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 36.0
+    },
+    "entry": {
+      "compressor_gb": 7.56,
+      "expected_gb": 32.0,
+      "free_gb": 60.87,
+      "headroom_gb": 28.87,
+      "reasons": [],
+      "reclaimable_gb": 31.63,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.24,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.89
+    },
+    "loaded": {
+      "compressor_gb": 8.17,
+      "expected_gb": 32.0,
+      "free_gb": 31.92,
+      "headroom_gb": -0.08,
+      "reasons": [
+        "expected 32.0 GB leaves -0.1 GB headroom, below 1.5 GB"
+      ],
+      "reclaimable_gb": 31.8,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "STOP",
+      "strictly_free_gb": 0.12,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 20.34
+    },
+    "watch_samples": 4,
+    "watch_worst_state": "OK"
+  },
+  "immutable_base": true,
+  "load": {
+    "elapsed_s": 1.9962880830280483,
+    "runtime": "MLX"
+  },
+  "model_scope": {
+    "full_model_direct_execution": false,
+    "other_weights": "unchanged KIMI_BASE dense/MLX weights",
+    "replaced_organs": 1,
+    "replaced_tensor_family": "layer10 routed up_proj"
+  },
+  "patched": {
+    "generation": {
+      "max_run": 2,
+      "median_fourgram_repeat_fraction": 0.03448275862068961,
+      "median_s": 0.4975566249922849,
+      "median_unique_token_fraction": 0.6875,
+      "rows": [
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.03448275862068961,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.75
+          },
+          "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+          "text": "  # Mixture-of-experts  A mixture-of-experts layer is a layer that routes tokens to different experts.  ## Routing  The routing",
+          "timing_s": 0.5057248749653809
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.0,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.75
+          },
+          "prompt": "What is the capital of France, and why did it become the capital?",
+          "text": " The capital of France is Paris, and it became the capital for several reasons. First, Paris is the largest city in France, with a population of over ",
+          "timing_s": 0.4975566249922849
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.0,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.71875
+          },
+          "prompt": "Write a short Python function that reverses a linked list.",
+          "text": " The function should take the head of the linked list as input and return the new head of the reversed linked list.\n\nHere's the Python code to handle the issue:\n",
+          "timing_s": 0.4932553330436349
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.03448275862068961,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.59375
+          },
+          "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+          "text": "  # Bandwidth, not compute, limits transformer decoding  ## Summary  \u2022 Transformers are compute-bound, not bandwidth-bound. \u2022 Transformers are bandwidth-bound",
+          "timing_s": 0.5088371249730699
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.2068965517241379,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.6875
+          },
+          "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+          "text": " Riddle Answer\nA farmer has 17 sheep and all but 9 run away. How many are left? Riddle Answer\nA farmer has 17",
+          "timing_s": 0.5002666249638423
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.03448275862068961,
+            "max_run": 2,
+            "tokens": 32,
+            "unique_token_fraction": 0.59375
+          },
+          "prompt": "Describe the difference between a scale and a zero point in quantization.",
+          "text": "  1. \u00a0Describe the difference between a scale and a zero point in quantization.  2. \u00a0What is the difference between a continuous",
+          "timing_s": 0.49207804194884375
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.13793103448275867,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.6875
+          },
+          "prompt": "List three reasons a neural network might fail to converge.",
+          "text": " (3 marks)\n\nExplain the difference between a feedforward and a recurrent neural network. (2 marks)\n\nExplain the difference between a supervised and an unsupervised learning",
+          "timing_s": 0.4644643330248073
+        },
+        {
+          "metrics": {
+            "fourgram_repeat_fraction": 0.3448275862068966,
+            "max_run": 1,
+            "tokens": 32,
+            "unique_token_fraction": 0.40625
+          },
+          "prompt": "Translate to French: The weather is cold today.",
+          "text": " ( )\nA. The weather is cold today. \nB. The weather is cold today. \nC. The weather is cold today. \nD. The",
+          "timing_s": 0.4691186250420287
+        }
+      ],
+      "wall_s": 3.9320642499951646
+    },
+    "nll": {
+      "mean_elapsed_s": 0.1388300835096743,
+      "mean_nll": 2.013447105884552,
+      "mean_ppl": 11.11768475074498,
+      "rows": [
+        {
+          "elapsed_s": 0.16288762498879805,
+          "nll": 1.0650018453598022,
+          "ppl": 2.900844337156227
+        },
+        {
+          "elapsed_s": 0.11477254203055054,
+          "nll": 2.9618923664093018,
+          "ppl": 19.334525164333733
+        }
+      ]
+    }
+  },
+  "python": "3.12.6",
+  "schema": "hawking.future.kimi_nova_full_model_organ_integration_probe.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_nova_full_model_organ_integration_probe.py",
+  "selected_variant": {
+    "rank": 32,
+    "tensor_family": "up_proj.weight"
+  },
+  "source_model": "KIMI_BASE",
+  "status": "NOVA_ONE_ORGAN_FULL_GRAPH_PROBE_COMPLETE",
+  "target": {
+    "layer": 10,
+    "module": "language_model.model.layers.10.mlp.switch_mlp.up_proj",
+    "replacement": "independent_expert_lowrank_AeBeT"
+  },
+  "training_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_63_20260910.json",
+  "workload": {
+    "generation_prompts": 8,
+    "max_tokens": 32,
+    "nll_text_count": 2,
+    "sampling": "mlx_lm.generate default"
+  }
+}

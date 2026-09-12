@@ -1,0 +1,784 @@
+{
+  "activation_corpus": {
+    "path": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "rows": {
+      "0": {
+        "heldout": 33,
+        "train": 34
+      },
+      "1": {
+        "heldout": 9,
+        "train": 10
+      },
+      "10": {
+        "heldout": 20,
+        "train": 21
+      },
+      "11": {
+        "heldout": 21,
+        "train": 22
+      },
+      "12": {
+        "heldout": 3,
+        "train": 3
+      },
+      "13": {
+        "heldout": 3,
+        "train": 4
+      },
+      "14": {
+        "heldout": 3,
+        "train": 4
+      },
+      "15": {
+        "heldout": 60,
+        "train": 61
+      },
+      "16": {
+        "heldout": 35,
+        "train": 36
+      },
+      "17": {
+        "heldout": 5,
+        "train": 5
+      },
+      "18": {
+        "heldout": 13,
+        "train": 13
+      },
+      "19": {
+        "heldout": 16,
+        "train": 16
+      },
+      "2": {
+        "heldout": 1,
+        "train": 1
+      },
+      "20": {
+        "heldout": 6,
+        "train": 7
+      },
+      "21": {
+        "heldout": 34,
+        "train": 35
+      },
+      "22": {
+        "heldout": 5,
+        "train": 6
+      },
+      "23": {
+        "heldout": 10,
+        "train": 10
+      },
+      "24": {
+        "heldout": 2,
+        "train": 2
+      },
+      "25": {
+        "heldout": 29,
+        "train": 30
+      },
+      "26": {
+        "heldout": 5,
+        "train": 5
+      },
+      "27": {
+        "heldout": 64,
+        "train": 64
+      },
+      "28": {
+        "heldout": 25,
+        "train": 25
+      },
+      "29": {
+        "heldout": 17,
+        "train": 17
+      },
+      "3": {
+        "heldout": 10,
+        "train": 10
+      },
+      "30": {
+        "heldout": 17,
+        "train": 18
+      },
+      "31": {
+        "heldout": 15,
+        "train": 16
+      },
+      "32": {
+        "heldout": 11,
+        "train": 12
+      },
+      "33": {
+        "heldout": 44,
+        "train": 44
+      },
+      "34": {
+        "heldout": 22,
+        "train": 23
+      },
+      "35": {
+        "heldout": 3,
+        "train": 4
+      },
+      "36": {
+        "heldout": 22,
+        "train": 23
+      },
+      "37": {
+        "heldout": 44,
+        "train": 44
+      },
+      "38": {
+        "heldout": 34,
+        "train": 34
+      },
+      "39": {
+        "heldout": 31,
+        "train": 32
+      },
+      "4": {
+        "heldout": 7,
+        "train": 8
+      },
+      "40": {
+        "heldout": 29,
+        "train": 29
+      },
+      "41": {
+        "heldout": 7,
+        "train": 8
+      },
+      "42": {
+        "heldout": 5,
+        "train": 5
+      },
+      "43": {
+        "heldout": 15,
+        "train": 16
+      },
+      "44": {
+        "heldout": 6,
+        "train": 7
+      },
+      "45": {
+        "heldout": 5,
+        "train": 6
+      },
+      "46": {
+        "heldout": 22,
+        "train": 22
+      },
+      "47": {
+        "heldout": 31,
+        "train": 31
+      },
+      "48": {
+        "heldout": 29,
+        "train": 30
+      },
+      "49": {
+        "heldout": 71,
+        "train": 72
+      },
+      "5": {
+        "heldout": 7,
+        "train": 8
+      },
+      "50": {
+        "heldout": 20,
+        "train": 20
+      },
+      "51": {
+        "heldout": 6,
+        "train": 7
+      },
+      "52": {
+        "heldout": 25,
+        "train": 26
+      },
+      "53": {
+        "heldout": 14,
+        "train": 15
+      },
+      "54": {
+        "heldout": 12,
+        "train": 13
+      },
+      "55": {
+        "heldout": 35,
+        "train": 36
+      },
+      "56": {
+        "heldout": 17,
+        "train": 18
+      },
+      "57": {
+        "heldout": 8,
+        "train": 8
+      },
+      "58": {
+        "heldout": 7,
+        "train": 7
+      },
+      "59": {
+        "heldout": 23,
+        "train": 24
+      },
+      "6": {
+        "heldout": 17,
+        "train": 18
+      },
+      "60": {
+        "heldout": 6,
+        "train": 7
+      },
+      "61": {
+        "heldout": 19,
+        "train": 20
+      },
+      "62": {
+        "heldout": 15,
+        "train": 15
+      },
+      "63": {
+        "heldout": 64,
+        "train": 64
+      },
+      "7": {
+        "heldout": 50,
+        "train": 51
+      },
+      "8": {
+        "heldout": 10,
+        "train": 10
+      },
+      "9": {
+        "heldout": 2,
+        "train": 2
+      }
+    },
+    "sorted_rows": 1256,
+    "topk_pair_rows": 16
+  },
+  "claim_boundary": "Organ-level INT8 direct-routing evidence only; not full-model capability, TPS, NX, or promotion evidence.",
+  "execution": {
+    "dense_parent_materialized": false,
+    "dense_parent_role": "source_and_dequantized_factor_oracles_only",
+    "dtype": "INT8 factors + FP32 scales, BF16 inputs",
+    "kernel": "two-stage gather_mm; B row scales precondition selected inputs and A row scales postcondition outputs",
+    "operator": "y_e = dequant(A_e) @ (dequant(B_e)^T x)",
+    "production_kernel": "organ-level direct consumer; not full-model integrated",
+    "routing_contract": "SwitchGLU/SwitchLinear M=1 sorted and unsorted layouts",
+    "runtime": "MLX"
+  },
+  "factor_artifact": {
+    "compressed_file_bytes": 894194,
+    "container": "compressed_npz_int8_factor_bit_patterns_with_fp32_row_scales",
+    "logical_arrays": [
+      "a_q_0",
+      "a_q_1",
+      "a_q_10",
+      "a_q_11",
+      "a_q_12",
+      "a_q_13",
+      "a_q_14",
+      "a_q_15",
+      "a_q_16",
+      "a_q_17",
+      "a_q_18",
+      "a_q_19",
+      "a_q_2",
+      "a_q_20",
+      "a_q_21",
+      "a_q_22",
+      "a_q_23",
+      "a_q_24",
+      "a_q_25",
+      "a_q_26",
+      "a_q_27",
+      "a_q_28",
+      "a_q_29",
+      "a_q_3",
+      "a_q_30",
+      "a_q_31",
+      "a_q_32",
+      "a_q_33",
+      "a_q_34",
+      "a_q_35",
+      "a_q_36",
+      "a_q_37",
+      "a_q_38",
+      "a_q_39",
+      "a_q_4",
+      "a_q_40",
+      "a_q_41",
+      "a_q_42",
+      "a_q_43",
+      "a_q_44",
+      "a_q_45",
+      "a_q_46",
+      "a_q_47",
+      "a_q_48",
+      "a_q_49",
+      "a_q_5",
+      "a_q_50",
+      "a_q_51",
+      "a_q_52",
+      "a_q_53",
+      "a_q_54",
+      "a_q_55",
+      "a_q_56",
+      "a_q_57",
+      "a_q_58",
+      "a_q_59",
+      "a_q_6",
+      "a_q_60",
+      "a_q_61",
+      "a_q_62",
+      "a_q_63",
+      "a_q_7",
+      "a_q_8",
+      "a_q_9",
+      "a_scale_0",
+      "a_scale_1",
+      "a_scale_10",
+      "a_scale_11",
+      "a_scale_12",
+      "a_scale_13",
+      "a_scale_14",
+      "a_scale_15",
+      "a_scale_16",
+      "a_scale_17",
+      "a_scale_18",
+      "a_scale_19",
+      "a_scale_2",
+      "a_scale_20",
+      "a_scale_21",
+      "a_scale_22",
+      "a_scale_23",
+      "a_scale_24",
+      "a_scale_25",
+      "a_scale_26",
+      "a_scale_27",
+      "a_scale_28",
+      "a_scale_29",
+      "a_scale_3",
+      "a_scale_30",
+      "a_scale_31",
+      "a_scale_32",
+      "a_scale_33",
+      "a_scale_34",
+      "a_scale_35",
+      "a_scale_36",
+      "a_scale_37",
+      "a_scale_38",
+      "a_scale_39",
+      "a_scale_4",
+      "a_scale_40",
+      "a_scale_41",
+      "a_scale_42",
+      "a_scale_43",
+      "a_scale_44",
+      "a_scale_45",
+      "a_scale_46",
+      "a_scale_47",
+      "a_scale_48",
+      "a_scale_49",
+      "a_scale_5",
+      "a_scale_50",
+      "a_scale_51",
+      "a_scale_52",
+      "a_scale_53",
+      "a_scale_54",
+      "a_scale_55",
+      "a_scale_56",
+      "a_scale_57",
+      "a_scale_58",
+      "a_scale_59",
+      "a_scale_6",
+      "a_scale_60",
+      "a_scale_61",
+      "a_scale_62",
+      "a_scale_63",
+      "a_scale_7",
+      "a_scale_8",
+      "a_scale_9",
+      "b_q_0",
+      "b_q_1",
+      "b_q_10",
+      "b_q_11",
+      "b_q_12",
+      "b_q_13",
+      "b_q_14",
+      "b_q_15",
+      "b_q_16",
+      "b_q_17",
+      "b_q_18",
+      "b_q_19",
+      "b_q_2",
+      "b_q_20",
+      "b_q_21",
+      "b_q_22",
+      "b_q_23",
+      "b_q_24",
+      "b_q_25",
+      "b_q_26",
+      "b_q_27",
+      "b_q_28",
+      "b_q_29",
+      "b_q_3",
+      "b_q_30",
+      "b_q_31",
+      "b_q_32",
+      "b_q_33",
+      "b_q_34",
+      "b_q_35",
+      "b_q_36",
+      "b_q_37",
+      "b_q_38",
+      "b_q_39",
+      "b_q_4",
+      "b_q_40",
+      "b_q_41",
+      "b_q_42",
+      "b_q_43",
+      "b_q_44",
+      "b_q_45",
+      "b_q_46",
+      "b_q_47",
+      "b_q_48",
+      "b_q_49",
+      "b_q_5",
+      "b_q_50",
+      "b_q_51",
+      "b_q_52",
+      "b_q_53",
+      "b_q_54",
+      "b_q_55",
+      "b_q_56",
+      "b_q_57",
+      "b_q_58",
+      "b_q_59",
+      "b_q_6",
+      "b_q_60",
+      "b_q_61",
+      "b_q_62",
+      "b_q_63",
+      "b_q_7",
+      "b_q_8",
+      "b_q_9",
+      "b_scale_0",
+      "b_scale_1",
+      "b_scale_10",
+      "b_scale_11",
+      "b_scale_12",
+      "b_scale_13",
+      "b_scale_14",
+      "b_scale_15",
+      "b_scale_16",
+      "b_scale_17",
+      "b_scale_18",
+      "b_scale_19",
+      "b_scale_2",
+      "b_scale_20",
+      "b_scale_21",
+      "b_scale_22",
+      "b_scale_23",
+      "b_scale_24",
+      "b_scale_25",
+      "b_scale_26",
+      "b_scale_27",
+      "b_scale_28",
+      "b_scale_29",
+      "b_scale_3",
+      "b_scale_30",
+      "b_scale_31",
+      "b_scale_32",
+      "b_scale_33",
+      "b_scale_34",
+      "b_scale_35",
+      "b_scale_36",
+      "b_scale_37",
+      "b_scale_38",
+      "b_scale_39",
+      "b_scale_4",
+      "b_scale_40",
+      "b_scale_41",
+      "b_scale_42",
+      "b_scale_43",
+      "b_scale_44",
+      "b_scale_45",
+      "b_scale_46",
+      "b_scale_47",
+      "b_scale_48",
+      "b_scale_49",
+      "b_scale_5",
+      "b_scale_50",
+      "b_scale_51",
+      "b_scale_52",
+      "b_scale_53",
+      "b_scale_54",
+      "b_scale_55",
+      "b_scale_56",
+      "b_scale_57",
+      "b_scale_58",
+      "b_scale_59",
+      "b_scale_6",
+      "b_scale_60",
+      "b_scale_61",
+      "b_scale_62",
+      "b_scale_63",
+      "b_scale_7",
+      "b_scale_8",
+      "b_scale_9"
+    ],
+    "path": "workspace/campaign/odyssey/representations/kimi_int8_expert_lowrank_gate_r1/int8_expert_lowrank_gate_proj_r1.npz",
+    "sha256": "5df459e0c7eb0d26c60ae2c4e532441754cc655b87be6c1150252b89d04141d5"
+  },
+  "generated_at": "2026-09-10T20:58:23.005864+00:00",
+  "immutable_base": true,
+  "schema": "hawking.future.kimi_int8_expert_lowrank_routed_audit.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_int8_expert_lowrank_routed_audit.py",
+  "selected_variant": {
+    "objective": "row_relative",
+    "quantizer": "symmetric_rowwise_int8_fp32_scale",
+    "rank": 1,
+    "tensor_family": "gate_proj.weight"
+  },
+  "selection": {
+    "constraint": "complete_ebpw <= 1.0 and rank == 1",
+    "eligible_variants": [
+      {
+        "objective": "row_relative",
+        "quantizer": "symmetric_rowwise_int8_fp32_scale",
+        "rank": 1,
+        "tensor_family": "gate_proj.weight"
+      }
+    ]
+  },
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "sorted_route": {
+    "indices_shape": [
+      1256
+    ],
+    "input_shape": [
+      1256,
+      1,
+      2048
+    ],
+    "kernel_equivalence": {
+      "direct_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.015625,
+      "max_relative_l2": 0.011526872403919697,
+      "mean_abs_error": 0.00031373181263916194,
+      "mean_cosine": 0.9999959468841553,
+      "mean_relative_l2": 0.003554707858711481,
+      "oracle_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.0050874496810138226,
+      "rows": 1256
+    },
+    "source_approximation": {
+      "direct_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 3.4814453125,
+      "max_relative_l2": 1.011008381843567,
+      "mean_abs_error": 0.19150970876216888,
+      "mean_cosine": 0.5798769593238831,
+      "mean_relative_l2": 0.7944622039794922,
+      "oracle_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.9620263576507568,
+      "rows": 1256
+    },
+    "timing_ms": {
+      "direct_median": 1.1330419802106917,
+      "direct_samples": [
+        3.101666981820017,
+        1.0708749759942293,
+        1.0560830123722553,
+        1.679166976828128,
+        1.1330419802106917
+      ],
+      "factor_oracle_median": 1.5852910000830889,
+      "factor_oracle_samples": [
+        1.7222920432686806,
+        1.5852910000830889,
+        1.5843329601921141,
+        1.4827499981038272,
+        1.6330000362358987
+      ]
+    }
+  },
+  "source_model": "KIMI_BASE",
+  "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "INT8_EXPERT_LOWRANK_ROUTED_AUDIT_PASS",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.8.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.9.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.10.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.11.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.12.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.13.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.14.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.15.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.16.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.17.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.18.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.19.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.20.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.21.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.22.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.23.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.24.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.25.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.26.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.27.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.28.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.29.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.30.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.31.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.32.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.33.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.34.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.35.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.36.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.37.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.38.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.39.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.40.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.41.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.42.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.43.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.44.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.45.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.46.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.47.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.48.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.49.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.50.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.51.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.52.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.53.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.54.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.55.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.56.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.57.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.58.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.59.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.60.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.61.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.62.gate_proj.weight",
+    "language_model.model.layers.10.mlp.experts.63.gate_proj.weight"
+  ],
+  "training_receipt": "receipts/future/KIMI_INT8_RELATIVE_SUBTENTH_R1_FANOUT_LAYER10_GATE_EXPERTS0_63_20260910.json",
+  "unsorted_topk_route": {
+    "indices_shape": [
+      1,
+      16,
+      2
+    ],
+    "input_shape": [
+      1,
+      16,
+      1,
+      2048
+    ],
+    "kernel_equivalence": {
+      "direct_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.0078125,
+      "max_relative_l2": 0.00570418918505311,
+      "mean_abs_error": 0.0002669933019205928,
+      "mean_cosine": 0.9999960660934448,
+      "mean_relative_l2": 0.0035673659294843674,
+      "oracle_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.004854345228523016,
+      "rows": 32
+    },
+    "source_approximation": {
+      "direct_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 1.075927734375,
+      "max_relative_l2": 0.9667969346046448,
+      "mean_abs_error": 0.19348663091659546,
+      "mean_cosine": 0.5103784799575806,
+      "mean_relative_l2": 0.8413836359977722,
+      "oracle_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.9509698152542114,
+      "rows": 32
+    },
+    "timing_ms": {
+      "direct_median": 0.5044579738751054,
+      "direct_samples": [
+        0.5044579738751054,
+        0.5032910266891122,
+        0.8637920254841447,
+        0.7437909953296185,
+        0.4837079904973507
+      ],
+      "factor_oracle_median": 0.3151659620925784,
+      "factor_oracle_samples": [
+        0.32154202926903963,
+        0.3220419748686254,
+        0.3151659620925784,
+        0.2880830434150994,
+        0.24758296785876155
+      ]
+    }
+  }
+}

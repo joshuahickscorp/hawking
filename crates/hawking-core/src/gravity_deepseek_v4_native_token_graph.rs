@@ -3008,7 +3008,7 @@ mod macos {
             )));
         }
         let (reader, admission) = open_admitted_dsv4f_reader(artifact)?;
-        let anchors = crate::startup_timing::time_ms_result("layer_source_anchors", || {
+        let anchors = crate::startup_timing::time_ns_result("layer_source_anchors", || {
             verify_deepseek_v4_layer_source_anchors(&reader)
         })?;
         if anchors.identity().repository != PINNED_REPOSITORY
@@ -3021,7 +3021,7 @@ mod macos {
 
         let mut ledger = ResidentLedger::new(DECLARED_WEIGHT_RESIDENT_BOUND_BYTES);
         let mut graph =
-            crate::startup_timing::time_ms_result("metal_device_library_pipelines", Graph::new)?;
+            crate::startup_timing::time_ns_result("metal_device_library_pipelines", Graph::new)?;
         reset_token_census();
         let init_ms = wall.elapsed().as_millis();
         let body = Instant::now();
@@ -3388,7 +3388,7 @@ mod macos {
             .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
             .is_ok()
         {
-            crate::startup_timing::time_ms_result("first_layer_weight_bind", || {
+            crate::startup_timing::time_ns_result("first_layer_weight_bind", || {
                 profiler.time_bytes_result("host.attn_weight_io", attn_io_bytes as u64, || {
                     par_read_views(reader, &jobs)
                 })

@@ -1,4 +1,4 @@
-"""`hcli use` -- see every Hawking body, and change which one is answering.
+"""`hcli use` -- see admitted Gravity bodies, and change which one is answering.
 
 The switch happens over the SAME connection. Open WebUI reads `/v1/models` for
 its dropdown and sends `model` on every request, so a running browser session
@@ -85,11 +85,13 @@ def main(argv: Optional[list] = None) -> int:
                     help="name or path to switch to; omit to list")
     ap.add_argument("--base", default=DEFAULT_BASE_URL)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--research", action="store_true",
+                    help="include the advanced ModelLake research catalog")
     ap.add_argument("--timeout", type=float, default=1800.0)
     a = ap.parse_args(list(argv or []))
 
     try:
-        bodies = catalog()
+        bodies = catalog(research=a.research)
     except Exception as exc:
         print(f"could not read the catalog: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2

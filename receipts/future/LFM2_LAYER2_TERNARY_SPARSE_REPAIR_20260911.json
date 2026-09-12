@@ -1,0 +1,59 @@
+{
+  "claim_boundary": "One frozen tensor, static relative-L2 only. No activation-aware objective, capability, direct execution, or full-model EBPW claim.",
+  "generated_at": "2026-09-11T07:58:37.711546+00:00",
+  "representation": {
+    "base": "per-row symmetric ternary; packed 2-bit codes with one unused state",
+    "billed": {
+      "decoder_support_bytes": 65536,
+      "metadata_bytes": 128,
+      "residual_index_bytes": 4,
+      "residual_value_bytes": 2,
+      "row_scales_bytes": 2
+    }
+  },
+  "rows": [
+    {
+      "complete_bytes": 855168,
+      "complete_ebpw": 2.1748046875,
+      "relative_l2": 0.8934805989265442,
+      "residual_entries": 0,
+      "residual_fraction": 0.0
+    },
+    {
+      "complete_bytes": 874044,
+      "complete_ebpw": 2.222808837890625,
+      "relative_l2": 0.8892385363578796,
+      "residual_entries": 3146,
+      "residual_fraction": 0.001
+    },
+    {
+      "complete_bytes": 949542,
+      "complete_ebpw": 2.4148101806640625,
+      "relative_l2": 0.8780257701873779,
+      "residual_entries": 15729,
+      "residual_fraction": 0.005
+    },
+    {
+      "complete_bytes": 1043916,
+      "complete_ebpw": 2.654815673828125,
+      "relative_l2": 0.866325318813324,
+      "residual_entries": 31458,
+      "residual_fraction": 0.01
+    },
+    {
+      "complete_bytes": 1232658,
+      "complete_ebpw": 3.1348114013671875,
+      "relative_l2": 0.8455469608306885,
+      "residual_entries": 62915,
+      "residual_fraction": 0.02
+    }
+  ],
+  "schema": "hawking.odyssey.layerwise_sparse_repair.v1",
+  "shape": [
+    1536,
+    2048
+  ],
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+  "status": "STATIC_RATE_DISTORTION_ONLY",
+  "tensor": "model.layers.2.feed_forward.experts.0.w1.weight"
+}

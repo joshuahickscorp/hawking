@@ -221,6 +221,16 @@ pub enum StopReason {
 pub struct GenStats {
     pub prompt_tokens: usize,
     pub completion_tokens: usize,
+    /// Canonical monotonic prefill wall time in integer nanoseconds. A zero
+    /// value means the producer did not expose this measurement.
+    pub prefill_ns: u64,
+    /// Canonical monotonic decode wall time in integer nanoseconds. A zero
+    /// value means the producer did not expose this measurement.
+    pub decode_ns: u64,
+    /// Canonical per-complete-forward decode durations in nanoseconds.
+    pub decode_token_ns: Vec<u64>,
+    /// Compatibility projection for older callers. New producers should set
+    /// the integer nanosecond fields and derive these values.
     pub prefill_ms: f64,
     pub decode_ms: f64,
     /// Individual measured decode-step wall times in milliseconds. Empty for
@@ -288,6 +298,36 @@ pub struct GenStats {
 }
 
 impl GenStats {
+    /// Return the canonical prefill duration, accepting the old floating-point
+    /// milliseconds field only for compatibility with older engines.
+    pub fn prefill_elapsed_ns(&self) -> u64 {
+        (self.prefill_ns > 0)
+            .then_some(self.prefill_ns)
+            .unwrap_or_else(|| duration_ms_to_ns(self.prefill_ms))
+    }
+
+    /// Return the canonical decode duration, accepting the old floating-point
+    /// milliseconds field only for compatibility with older engines.
+    pub fn decode_elapsed_ns(&self) -> u64 {
+        (self.decode_ns > 0)
+            .then_some(self.decode_ns)
+            .unwrap_or_else(|| duration_ms_to_ns(self.decode_ms))
+    }
+
+    /// Return per-forward decode timing in nanoseconds. Historical producers
+    /// are converted at the read boundary and never re-timed.
+    pub fn decode_token_elapsed_ns(&self) -> Vec<u64> {
+        if !self.decode_token_ns.is_empty() {
+            self.decode_token_ns.clone()
+        } else {
+            self.decode_token_ms
+                .iter()
+                .copied()
+                .map(duration_ms_to_ns)
+                .collect()
+        }
+    }
+
     /// Track 0.2 — derived decode throughput (tok/s; 0 when no decode elapsed).
     pub fn dec_tps(&self) -> f64 {
         // A nonzero completed-forward count is authoritative for a
@@ -300,7 +340,10 @@ impl GenStats {
         } else {
             self.completion_tokens
         };
-        (tokens as f64) / (self.decode_ms / 1000.0).max(1e-6)
+        let decode_ns = self.decode_elapsed_ns();
+        (decode_ns > 0 && tokens > 0)
+            .then(|| tokens as f64 * 1_000_000_000.0 / decode_ns as f64)
+            .unwrap_or(0.0)
     }
 
     /// Track 0.2 — derived draft accept rate (0.0 when no drafts proposed).
@@ -319,12 +362,19 @@ impl GenStats {
     /// omitting the heavy `dispatch_samples` vec and raw trace counters. The
     /// matched Llama protocol may include its bounded per-token timing vector.
     pub fn stats_json(&self) -> serde_json::Value {
+        let prefill_ns = self.prefill_elapsed_ns();
+        let decode_ns = self.decode_elapsed_ns();
+        let decode_token_ns = self.decode_token_elapsed_ns();
         serde_json::json!({
             "prompt_tokens": self.prompt_tokens,
             "completion_tokens": self.completion_tokens,
-            "prefill_ms": self.prefill_ms,
-            "decode_ms": self.decode_ms,
-            "decode_token_ms": self.decode_token_ms,
+            "timing_unit": "ns",
+            "prefill_ns": prefill_ns,
+            "decode_ns": decode_ns,
+            "decode_token_ns": decode_token_ns,
+            "prefill_ms": prefill_ns as f64 / 1_000_000.0,
+            "decode_ms": decode_ns as f64 / 1_000_000.0,
+            "decode_token_ms": decode_token_ns.iter().map(|nanoseconds| *nanoseconds as f64 / 1_000_000.0).collect::<Vec<_>>(),
             "dec_tps": self.dec_tps(),
             "dispatches_per_forward": self.dispatches_per_forward,
             "decode_metal_dispatches_total": self.decode_metal_dispatches_total,
@@ -346,6 +396,18 @@ impl GenStats {
             "token_only_path_used": self.token_only_path_used,
             "lm_head_path": self.lm_head_path,
         })
+    }
+}
+
+fn duration_ms_to_ns(milliseconds: f64) -> u64 {
+    if !milliseconds.is_finite() || milliseconds <= 0.0 {
+        return 0;
+    }
+    let nanoseconds = milliseconds * 1_000_000.0;
+    if nanoseconds >= u64::MAX as f64 {
+        u64::MAX
+    } else {
+        nanoseconds.round() as u64
     }
 }
 
@@ -745,6 +807,8 @@ mod gen_stats_observability_tests {
         };
         let j = s.stats_json();
         assert_eq!(j["dec_tps"].as_f64().unwrap().round(), 32.0);
+        assert_eq!(j["timing_unit"], "ns");
+        assert_eq!(j["decode_ns"], 2_000_000_000u64);
         assert_eq!(j["dispatches_per_forward"], 255);
         assert_eq!(j["cpu_reference_fallback_count"], 3);
         assert_eq!(j["readback_bytes"], 256);

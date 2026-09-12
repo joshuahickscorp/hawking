@@ -1480,6 +1480,9 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
             }
+            "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128"
+            }
             "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128"
             }
@@ -2758,6 +2761,7 @@ mod imp {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
                 "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
                 "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128",
                 "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
                 "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
             ] {
@@ -3006,15 +3010,15 @@ mod imp {
                 let load_start = std::time::Instant::now();
                 match device.new_library_with_file(&path) {
                     Ok(library) => {
-                        crate::startup_timing::record_ms(
+                        crate::startup_timing::record_ns(
                             "metal_shader_library_load_metallib_cache_hit",
-                            crate::startup_timing::duration_ms(load_start.elapsed()),
+                            crate::startup_timing::duration_ns(load_start.elapsed()),
                         );
                         return Ok(library);
                     }
                     Err(_err) => {
                         // Corrupt or wrong-GPU metallib: fall through to source.
-                        crate::startup_timing::record_ms(
+                        crate::startup_timing::record_ns(
                             "metal_shader_library_metallib_load_failed_fallback_source",
                             0,
                         );
@@ -3026,9 +3030,9 @@ mod imp {
             ) {
                 let build_start = std::time::Instant::now();
                 if try_build_metallib_with_xcrun(&src, &path, strict_math).is_some() {
-                    crate::startup_timing::record_ms(
+                    crate::startup_timing::record_ns(
                         "metal_shader_library_xcrun_metallib_build",
-                        crate::startup_timing::duration_ms(build_start.elapsed()),
+                        crate::startup_timing::duration_ns(build_start.elapsed()),
                     );
                     if let Ok(library) = device.new_library_with_file(&path) {
                         return Ok(library);
@@ -3048,9 +3052,9 @@ mod imp {
                 if strict_math { "strict-math " } else { "" }
             ))
         })?;
-        crate::startup_timing::record_ms(
+        crate::startup_timing::record_ns(
             "metal_shader_library_compile_from_source",
-            crate::startup_timing::duration_ms(compile_start.elapsed()),
+            crate::startup_timing::duration_ns(compile_start.elapsed()),
         );
         Ok(library)
     }
@@ -3061,7 +3065,7 @@ mod imp {
         }
 
         pub fn new_with_trace(trace_dispatch: bool) -> Result<Self> {
-            crate::startup_timing::time_ms_result("metal_context_new_with_trace", || {
+            crate::startup_timing::time_ns_result("metal_context_new_with_trace", || {
                 // Dummy Metal devices still abort at buffer allocation, so this
                 // must fire before any Metal call. Present and not 0/false/off/no.
                 if std::env::var_os("HAWKING_NO_GPU").is_some()
@@ -3104,7 +3108,7 @@ mod imp {
         /// default compile options; callers must opt in explicitly and must
         /// not treat this as a runtime-wide arithmetic policy.
         pub fn new_with_trace_strict_math(trace_dispatch: bool) -> Result<Self> {
-            crate::startup_timing::time_ms_result(
+            crate::startup_timing::time_ns_result(
                 "metal_context_new_with_trace_strict_math",
                 || {
                     // Same abort-before-Metal gate as new_with_trace.
@@ -3227,9 +3231,9 @@ mod imp {
                 .device
                 .new_compute_pipeline_state_with_function(&f)
                 .map_err(|e| Error::Metal(format!("pipeline `{fn_name}`: {e}")))?;
-            let ms = crate::startup_timing::duration_ms(start.elapsed());
+            let ns = crate::startup_timing::duration_ns(start.elapsed());
             // Aggregate first-create cost; hot path hits cache above.
-            crate::startup_timing::record_ms(format!("metal_pipeline_create:{fn_name}"), ms);
+            crate::startup_timing::record_ns(format!("metal_pipeline_create:{fn_name}"), ns);
             pipes.insert(fn_name.to_string(), p.clone());
             Ok(p)
         }

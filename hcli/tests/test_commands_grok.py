@@ -96,6 +96,47 @@ def _handle_ret(mode):
 
         return statusy
 
+    if mode == "doctor":
+
+        def doctor(self, *args, **kwargs):
+            return {"ok": True, "exit_code": 0, "stdout": "healthy\n", "stderr": ""}
+
+        return doctor
+
+    if mode == "mission":
+
+        def mission(self, mission_file, *args, **kwargs):
+            return {
+                "mode": kwargs.get("mode"),
+                "ok": True,
+                "exit_code": 0,
+                "receipt_path": "receipt.json",
+                "stdout": "planned",
+            }
+
+        return mission
+
+    if mode == "revise":
+
+        def revise(self, task_id, contract, *args, **kwargs):
+            return {"task_id": task_id, "ok": True, "exit_code": 0}
+
+        return revise
+
+    if mode == "verify":
+
+        def verify(self, task_id, *args, **kwargs):
+            return {"task_id": task_id, "ok": True, "hcli_acceptance": False}
+
+        return verify
+
+    if mode == "telemetry":
+
+        def telemetry(self, task_id, *args, **kwargs):
+            return {"task_id": task_id, "observed": False, "reason": "absent"}
+
+        return telemetry
+
     if mode == "report":
 
         def report(self, task_id, *args, **kwargs):
@@ -115,7 +156,12 @@ def record_bridge(methods=None):
         "delegate",
         "audit",
         "consult",
+        "revise",
+        "verify",
+        "mission",
+        "doctor",
         "status",
+        "telemetry",
         "wait",
         "report",
         "cleanup",
@@ -267,6 +313,25 @@ class TestCmdGrok(unittest.TestCase):
         self.assertEqual(calls[4]["args"][0], "tid-3")
         self.assertEqual(calls[5]["args"][0], "tid-4")
         self.assertIn("report-for-tid-3", report)
+
+    def test_extended_grok_surface_is_reachable(self):
+        with record_bridge() as calls:
+            doctor = self.handler.handle("/grok doctor")
+            mission = self.handler.handle("/grok mission mission.md FAST --dry")
+            revise = self.handler.handle(f"/grok revise task-1 {self.contract}")
+            verify = self.handler.handle("/grok verify task-1")
+            telemetry = self.handler.handle("/grok telemetry task-1")
+        methods = [call["method"] for call in calls]
+        self.assertEqual(methods, ["doctor", "mission", "revise", "verify", "telemetry"])
+        self.assertIn("healthy", doctor)
+        self.assertIn("mode=FAST", mission)
+        self.assertIn("ok=True", revise)
+        self.assertIn('"hcli_acceptance": false', verify)
+        self.assertIn('"observed": false', telemetry)
+        mission_call = calls[1]
+        self.assertEqual(mission_call["args"][0], "mission.md")
+        self.assertEqual(mission_call["kwargs"]["mode"], "FAST")
+        self.assertTrue(mission_call["kwargs"]["dry_run"])
 
     def test_existing_commands_still_work(self):
         model = self.handler.handle("/model foo")

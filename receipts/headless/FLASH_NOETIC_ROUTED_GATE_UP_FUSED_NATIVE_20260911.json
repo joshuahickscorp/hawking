@@ -1,0 +1,203 @@
+{
+  "claim_boundary": "PASSED bounded direct Q4/G64 selected-routed gate/up/SwiGLU fusion. It compares the same persisted candidate bodies and activation against ten individual native launches. It is not source-BF16 output parity, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_system_ebpw": null,
+  "dependencies": {
+    "campaign_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+      "schema": "hcli.agentos.flash_noetic_component_campaign.v1",
+      "sha256": "028dc7d5ddafd4e87d5fccbbe37944bb33d9ecf06f31ede717d9b320f35ea842",
+      "status": "PASSED"
+    },
+    "routed_expert_count": 10,
+    "router_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+      "schema": "hawking.flash_noetic_router_selection_native.v1",
+      "sha256": "704369f9980be18afa0daef505407adb15682c7c39c3b8bb0fffa3a705d48db1",
+      "status": "PASSED"
+    }
+  },
+  "determinism": {
+    "output_hashes": [
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec",
+      "54299245945acecf18d47f6c4abfc3778158f0ee873e5f3b26ef09128b1fa0ec"
+    ],
+    "passed": true
+  },
+  "elapsed_s": 0.964064417,
+  "execution": {
+    "baseline_dispatches_per_graph": 10,
+    "columns": 2560,
+    "complete_token_runtime": false,
+    "device_intermediate_no_host_roundtrip": true,
+    "fused_dispatches_per_graph": 1,
+    "model_loaded": false,
+    "operation": "concatenated selected Q4/G64 gate/up bodies -> one native gate_up_swiglu launch",
+    "provider": "apple-metal",
+    "routed_expert_count": 10,
+    "rows_per_route": 640,
+    "selected_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "source_reference_used_for_execution": false
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "baseline_gpu_ns": [
+      156623,
+      156666,
+      155623,
+      155707,
+      156916,
+      156748,
+      155875,
+      155084,
+      155166,
+      101873,
+      91125
+    ],
+    "baseline_gpu_ns_median": 155707,
+    "baseline_host_wall_ns": [
+      2793000,
+      2362000,
+      3580000,
+      2568000,
+      3281000,
+      2344000,
+      2604000,
+      3318000,
+      2653000,
+      3718000,
+      2032000
+    ],
+    "baseline_host_wall_ns_median": 2653000,
+    "fused_gpu_ns": [
+      54041,
+      54084,
+      54334,
+      54250,
+      54500,
+      54625,
+      53459,
+      53334,
+      54000,
+      31584,
+      31166
+    ],
+    "fused_gpu_ns_median": 54041,
+    "fused_host_wall_ns": [
+      294000,
+      305000,
+      298000,
+      301000,
+      265000,
+      285000,
+      291000,
+      284000,
+      295000,
+      211000,
+      252000
+    ],
+    "fused_host_wall_ns_median": 291000,
+    "gpu_speedup": 2.88127532799171,
+    "host_speedup": 9.116838487972508,
+    "measured_runs": 11,
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for the baseline sum and one concatenated candidate launch; host wall is reported separately",
+    "warmup_runs": 3
+  },
+  "input": {
+    "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+    "values": 2560
+  },
+  "model_lake_manifest": {
+    "bytes": 360023286454,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+  },
+  "next_action": "Only compose this row-concatenation primitive if it improves the direct routed-expert graph under the existing candidate-space parity contract; source route/output fidelity remains a separate gate.",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "cosine": 0.9999999999993039,
+    "count": 6400,
+    "finite": true,
+    "max_abs_error": 4.76837158203125e-7,
+    "rmse": 2.782126577140888e-8,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation": {
+    "dense_rematerialization": "forbidden",
+    "family": "independent_q4_g64",
+    "gate_up_codes_bytes": 8192000,
+    "gate_up_scales_bytes": 512000,
+    "source_independent": true,
+    "total_packed_bytes": 17408000
+  },
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_routed_gate_up_fused_native.v1",
+  "semantic_type": "NoeticExecutable",
+  "source_selection_parity": {
+    "candidate_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "candidate_reference_ids_match": true,
+    "expert_ids_exact_match": false,
+    "label": "[V]/[D]",
+    "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+    "source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_native_reference_ids_match": true,
+    "status": "MISMATCH",
+    "top_k_overlap_count": 8,
+    "top_k_overlap_fraction": 0.8
+  },
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED"
+}

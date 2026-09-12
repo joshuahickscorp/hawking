@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import atexit
+import hashlib
 import json
 import os
 import shlex
@@ -9,6 +10,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.parse
 import urllib.request
 import weakref
 from dataclasses import dataclass, field
@@ -41,9 +43,16 @@ from .machine import (
 )
 from .persist import atomic_write_text as _atomic_write
 from .resources import pid_is_alive, process_start_token
+from .resident_ownership import (
+    ResidentHandle,
+    adopt_or_spawn,
+    prove_endpoint_capability,
+    release_ownership,
+)
 
 OWNERSHIP_SCHEMA = "hcli.runtime_pool.v1"
 OWNERSHIP_NAME = "runtime_pool.json"
+RESIDENT_OWNERSHIP_NAME = "resident_ownership.json"
 OVERLAP_SCHEMA = "hcli.model_overlap.v1"
 OVERLAP_NAME = "model_overlap.json"
 # Measured: a real Mission with two independent GPU_DECODE units dispatched
@@ -637,6 +646,8 @@ class RuntimePool:
         self._decode_sema = threading.Semaphore(max(1, self.active_decode_limit))
         self._stopped = False
         self._pool_start_time = process_start_token(os.getpid())
+        self._resident_claimed = False
+        self.resident_adoption_outcome: Optional[str] = None
         _register_live(self)
         self.reap_orphans()
 
@@ -732,6 +743,148 @@ class RuntimePool:
 
     def _ownership_path(self) -> Path:
         return self.workspace / ".hcli" / OWNERSHIP_NAME
+
+    def _resident_ownership_path(self) -> Path:
+        return self.workspace / ".hcli" / RESIDENT_OWNERSHIP_NAME
+
+    def _resident_identity(self) -> Dict[str, str]:
+        """Stable owner identity for the separate resident adoption record."""
+        config = {
+            "model_path": self.model_path,
+            "topology": self.topology,
+            "ctx_size": int(self.ctx_size),
+            "per_request_ctx": int(self.per_request_ctx),
+        }
+        config_text = json.dumps(config, sort_keys=True, separators=(",", ":"))
+        return {
+            "model_hash": hashlib.sha256(self.model_path.encode("utf-8")).hexdigest(),
+            "config_hash": hashlib.sha256(config_text.encode("utf-8")).hexdigest(),
+        }
+
+    def _attach_resident_backend(
+        self, handle: ResidentHandle, *, n_slots: int
+    ) -> Any:
+        """Construct a backend facade for an already-running owned endpoint."""
+        parsed = urllib.parse.urlparse(str(handle.endpoint))
+        if parsed.scheme not in {"http", "https"} or parsed.port is None:
+            raise RuntimeError(
+                "adopted resident endpoint is not an attachable HTTP runtime"
+            )
+        port = int(parsed.port)
+        if self.backend_factory is not None:
+            backend = self.backend_factory(
+                model_path=self.model_path,
+                port=port,
+                n_slots=n_slots,
+                index=0,
+            )
+        else:
+            from .runtime_iface import make_backend_for_model
+
+            backend = make_backend_for_model(
+                self.model_path,
+                port=port,
+                n_slots=n_slots,
+                ctx_size=self.ctx_size,
+                index=0,
+            )
+        # Backends are constructors, not owners. Attach the verified
+        # incarnation without calling spawn(); Runtime.stop will still own and
+        # terminate it after adoption.
+        for name, value in {
+            "port": port,
+            "pid": int(handle.pid),
+            "start_time": str(handle.proc_start),
+            "process": None,
+            "_stopped": False,
+        }.items():
+            if hasattr(backend, name):
+                setattr(backend, name, value)
+        return backend
+
+    def _start_one_with_adoption(
+        self, timeout: float, *, adopt_fn: Callable[..., Any] = adopt_or_spawn
+    ) -> None:
+        """Adopt a proven single resident or spawn one under the same claim."""
+        from .resident_ownership import CompetingOwnerError
+
+        before = host_snapshot()
+        identity = self._resident_identity()
+        spawned: Dict[str, Any] = {}
+
+        def spawn_fn() -> ResidentHandle:
+            backend = self._make_backend(0, 1, allocate_port())
+            self._wait_ready(backend, 0, timeout)
+            self._reconcile_spawned_budget(backend)
+            spawned["backend"] = backend
+            pid = getattr(backend, "pid", None)
+            endpoint_fn = getattr(backend, "endpoint", None)
+            endpoint = endpoint_fn() if callable(endpoint_fn) else ""
+            if not pid or not endpoint:
+                raise RuntimeError("spawned resident lacks pid or endpoint")
+            return ResidentHandle(
+                pid=int(pid),
+                proc_start=str(
+                    getattr(backend, "start_time", None)
+                    or process_start_token(int(pid))
+                    or ""
+                ),
+                endpoint=str(endpoint),
+                model_hash=identity["model_hash"],
+                config_hash=identity["config_hash"],
+                owner_generation=0,
+            )
+
+        def prove(endpoint: str, limit: float) -> bool:
+            # A just-spawned custom/fake backend may have no HTTP server even
+            # though its own ready() is authoritative. Adopted real servers
+            # use the independent one-token endpoint proof.
+            backend = spawned.get("backend")
+            if backend is not None:
+                endpoint_fn = getattr(backend, "endpoint", None)
+                if callable(endpoint_fn) and str(endpoint_fn()) == str(endpoint):
+                    ready = getattr(backend, "ready", None)
+                    return bool(ready(limit)) if callable(ready) else False
+            return bool(prove_endpoint_capability(endpoint, limit))
+
+        try:
+            handle, outcome = adopt_fn(
+                identity,
+                spawn_fn,
+                self._resident_ownership_path(),
+                capability_timeout=timeout,
+                prove_fn=prove,
+            )
+        except CompetingOwnerError:
+            # A live competing owner is a real authority boundary. Do not
+            # reap it or silently launch a second resident.
+            self.refusal_reason = "resident ownership is held by a live competing owner"
+            raise
+        self._resident_claimed = True
+        self.resident_adoption_outcome = str(outcome)
+        backend = spawned.get("backend") or self._attach_resident_backend(
+            handle, n_slots=1
+        )
+        after = host_snapshot()
+        runtime = self._runtime_from_backend(
+            0, backend, slot=0, owns_process=True
+        )
+        # The attached facade has no child Popen handle, so preserve the
+        # verified incarnation explicitly for liveness and termination.
+        runtime.pid = int(handle.pid)
+        runtime.start_time = str(handle.proc_start)
+        runtime.port = int(urllib.parse.urlparse(handle.endpoint).port or 0)
+        runtime.active = True
+        runtime.topology = observe_runtime_topology(runtime, pool=self)
+        self.runtimes.append(runtime)
+        self._record_admission(
+            0,
+            runtime,
+            before,
+            after,
+            kind="resident-adopted" if outcome == "ADOPTED" else "resident-spawned",
+            gpu_charged_bytes=self.mem_gate.gpu_cost_bytes(0, extra=1),
+        )
 
     def _read_ownership(self) -> Optional[Dict[str, Any]]:
         path = self._ownership_path()
@@ -1099,7 +1252,16 @@ class RuntimePool:
         self._apply_context_budget(self._resolve_context_budget(planned))
         timeout = float(os.environ.get("HCLI_READY_TIMEOUT", "300"))
         try:
-            if self.topology == "slot":
+            if planned == 1 and not is_remote_endpoint(self.model_path):
+                # Keep the ownership boundary visibly inside the serving
+                # entrypoint.  The helper owns backend construction, while
+                # this closure makes RuntimePool.start the caller of the
+                # canonical adoption primitive.
+                def adopt_resident(*args: Any, **kwargs: Any) -> Any:
+                    return adopt_or_spawn(*args, **kwargs)
+
+                self._start_one_with_adoption(timeout, adopt_fn=adopt_resident)
+            elif self.topology == "slot":
                 self._start_slot(planned, timeout)
             else:
                 self._start_process(planned, timeout)
@@ -1376,6 +1538,9 @@ class RuntimePool:
                 pass
         else:
             self._clear_ownership()
+            if self._resident_claimed:
+                release_ownership(self._resident_ownership_path())
+                self._resident_claimed = False
         return {"reaped": reaped, "unreaped": unreaped}
 
 
@@ -1391,4 +1556,5 @@ __all__ = [
     "store_observed_overlap",
     "DEFAULT_OVERLAP_ADMIT_CAP",
     "OVERLAP_NAME",
+    "RESIDENT_OWNERSHIP_NAME",
 ]

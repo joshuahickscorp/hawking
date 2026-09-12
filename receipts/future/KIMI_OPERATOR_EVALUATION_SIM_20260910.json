@@ -1,0 +1,178 @@
+{
+  "base_fixture_sha256": "9488fce0eb7c0f2e72530937e35e37634c63cbcca742b47acb2499fc80cc7ae0",
+  "candidate_count": 7,
+  "candidate_matrix": [
+    "OPA",
+    "OPB",
+    "OPC",
+    "OPD",
+    "OPE",
+    "OPF",
+    "OPG"
+  ],
+  "candidates": [
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPA",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "ff7197555169d734cb0e727883ecffaeb5827d958e49e1d2477b1f090792246b",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPA",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": true,
+      "touched_delta_l2": 6.802150012424923,
+      "touched_experts": [],
+      "touched_layers": [
+        0,
+        1
+      ],
+      "touched_tensors": 3,
+      "weights_written": false
+    },
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPB",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "ea7f667a033d42fa39033bd4ca3d7f4bbeac316c58b5b6a727c0131770186596",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPB",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": true,
+      "touched_delta_l2": 6.896590409324595,
+      "touched_experts": [],
+      "touched_layers": [
+        0,
+        1
+      ],
+      "touched_tensors": 3,
+      "weights_written": false
+    },
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPC",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "a3ca5f597c98259580e8fd57cb29ad1b131bd14fc70879eb286ac1b1a0ebeb03",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPC",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": false,
+      "touched_delta_l2": 10.88498901396003,
+      "touched_experts": [],
+      "touched_layers": [
+        0,
+        1
+      ],
+      "touched_tensors": 3,
+      "weights_written": false
+    },
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPD",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "87a41d1c0f7cd08853000ac096e07495edf5639fe754c92d41aba54d64524d6c",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPD",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": true,
+      "touched_delta_l2": 16.300003107779364,
+      "touched_experts": [],
+      "touched_layers": [
+        0,
+        1
+      ],
+      "touched_tensors": 3,
+      "weights_written": false
+    },
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPE",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "ccfebc94cb1c913bf29adb7acb8794a4154911ab8cb8c219bc6bfeeb52d1f66c",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPE",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": true,
+      "touched_delta_l2": 2.233116666414624,
+      "touched_experts": [],
+      "touched_layers": [
+        1
+      ],
+      "touched_tensors": 1,
+      "weights_written": false
+    },
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPF",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "cd48277bc7f79cd8fab21413b40f8a11d417d58df629f062bcb69d4ed17fb9d6",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPF",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": true,
+      "touched_delta_l2": 1.6563542629235644,
+      "touched_experts": [
+        2
+      ],
+      "touched_layers": [
+        0
+      ],
+      "touched_tensors": 1,
+      "weights_written": false
+    },
+    {
+      "base_unchanged": true,
+      "behavioral_claim": "NOT_MEASURED",
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPG",
+      "capability_claim": "NOT_MEASURED",
+      "copied_state_sha256": "f43c4c568f5b07c965ac845e2b9c957f2e58385591c16e993167667f111c5829",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "functional_sim_passed": true,
+      "method": "OPG",
+      "output_changed": true,
+      "physical_claim": "NOT_MEASURED",
+      "promotion": "NOT_PERFORMED",
+      "reversible": true,
+      "touched_delta_l2": 3.8273352439915507,
+      "touched_experts": [
+        2
+      ],
+      "touched_layers": [
+        0
+      ],
+      "touched_tensors": 2,
+      "weights_written": false
+    }
+  ],
+  "claim_boundary": "Functional simulation only. This receipt proves copied-state and provenance behavior for the candidate matrix; it does not establish model behavior, capability, epistemic calibration, authorization, hardware parity, or promotion readiness.",
+  "generated_at": "2026-09-10T22:53:02.707197+00:00",
+  "immutable_base": true,
+  "ranking": null,
+  "recorded_by": "tools/future/kimi_operator_evaluation.py",
+  "schema": "hawking.future.kimi_operator_evaluation.v1",
+  "source_model": "KIMI_BASE",
+  "status": "FUNCTIONAL_SIM_COMPLETE"
+}

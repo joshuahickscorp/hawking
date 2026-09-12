@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.odyssey.flash_next.resource_runtime_preflight.v1",
+  "recorded_at": "2026-09-11T08:22:00Z",
+  "status": "RAW_RUNTIME_WITHHELD_PHYSICAL_BOUNDARY",
+  "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "source_body": {
+    "sealed_directory_bytes_display": "335G",
+    "weight_format": "BF16",
+    "architecture": "qwen4_exp multimodal recurrent MoE",
+    "routed_experts": 512,
+    "experts_per_token": 10
+  },
+  "machine_observation": {
+    "physical_memory_bytes": 103079215104,
+    "physical_memory_display": "96 GiB",
+    "live_resident": "KIMI_P0_OPERATIONAL",
+    "live_resident_provider_rss_display": "17.1 GiB",
+    "swap_claim": "not measured by this preflight"
+  },
+  "runtime_surface": {
+    "hawking_native_qwen4_exp_body": "NOT_PRESENT_IN_CURRENT_HAWKING_SOURCE",
+    "installed_mlx_bridge": "contains qwen4_exp model and MTP support",
+    "mlx_bridge_policy": "research compatibility evidence only; it does not satisfy the Hawking-native execution objective",
+    "llama_cpp": "not an admissible fallback"
+  },
+  "decision": {
+    "raw_co_resident_load_with_p0": "WITHHELD",
+    "reason": "The raw 335G BF16 source alone exceeds 96 GiB physical memory by more than three times, before model/runtime/cache overhead. Loading it would also violate the protected live-P0 resource boundary.",
+    "permitted_current_work": [
+      "header-only and one-organ static anatomy",
+      "streamed CPU representation discriminators",
+      "complete representation accounting",
+      "Hawking-native direct-execution design and small-organ kernel work"
+    ],
+    "not_permitted_to_claim": [
+      "Flash-Next completed forward",
+      "Flash-Next capability",
+      "Flash-Next TPS",
+      "Flash-Next resident admission",
+      "Flash-Next normal HCLI visibility"
+    ]
+  },
+  "reopen_conditions": [
+    "a complete source-to-runtime representation whose measured resident working set fits the machine with declared P0 coexistence policy",
+    "or a separate explicitly authorized replacement-window experiment after cleanly stopping P0",
+    "and a Hawking-owned direct execution path, not a Llama.cpp fallback"
+  ],
+  "next_action": "Deep static Gravity pass: account the body by organ, select within-expert layer/projection candidates using the matched-null law, and derive a complete representation budget before any runtime experiment.",
+  "claim_boundary": "This is a raw-source physical and support preflight. It does not prove that an encoded Flash-Next descendant cannot fit or execute, only that the present raw BF16 source cannot be responsibly co-resident with P0 on this machine."
+}

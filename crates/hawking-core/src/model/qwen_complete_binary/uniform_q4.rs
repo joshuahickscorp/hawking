@@ -322,7 +322,7 @@ pub fn admit_qwen30_uniform_q4_artifact(
     manifest_path: impl AsRef<Path>,
     admission: &Qwen30UniformQ4Admission,
 ) -> Result<CompleteBinaryArtifact> {
-    crate::startup_timing::time_ms_result("admit_uniform_q4_total", || {
+    crate::startup_timing::time_ns_result("admit_uniform_q4_total", || {
         admit_qwen30_uniform_q4_artifact_inner(manifest_path, admission)
     })
 }

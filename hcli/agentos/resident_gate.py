@@ -22,6 +22,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hcli.latency import now_ns, since_ns
 from hcli.persist import atomic_write_json
 
 
@@ -282,11 +283,13 @@ def run_resident_gate(
     timeout_s = max(0.1, float(timeout_s))
     model_tokens = max(1, int(model_tokens))
     profile_path = _profile_path(profile, repo)
+    run_started_ns = now_ns()
     config = HawkingNativeConfig.from_file(str(profile_path))
     report: Dict[str, Any] = {
         "schema": SCHEMA,
         "status": "RUNNING",
         "qualification": "LIVE_RESIDENT_SEQUENTIAL_PROOF",
+        "timing_unit": "ns",
         "started_at": time.time(),
         "workspace": str(work),
         "profile_path": str(profile_path),
@@ -303,6 +306,7 @@ def run_resident_gate(
         report["status"] = "FAILED"
         report["errors"].append({"type": "ConfigurationError", "error": "resident-gate requires a resident profile mode"})
         report["finished_at"] = time.time()
+        report["elapsed_ns"] = since_ns(run_started_ns)
         payload = causality_payload(report)
         record_resident_causality(report, **payload)
         _write_receipt(report, emit, repo)
@@ -330,7 +334,7 @@ def run_resident_gate(
                 sentinel = f"STATE_LEAK_SENTINEL_{uuid.uuid4().hex}"
                 prompt = f"Ignore all prior requests. Reply exactly: ISOLATED_OK. Sentinel: {sentinel}"
                 category = "state_reset_probe"
-            started = time.perf_counter()
+            started_ns = now_ns()
             try:
                 raw = connector.complete_payload(
                     {
@@ -341,13 +345,16 @@ def run_resident_gate(
                     timeout=timeout_s,
                 )
                 summary = _response_summary(raw)
+                request_elapsed_ns = since_ns(started_ns)
                 pid = summary.get("pid")
                 if first_pid is None:
                     first_pid = pid
                 summary.update({
                     "index": index + 1,
                     "category": category,
-                    "elapsed_s": round(time.perf_counter() - started, 3),
+                    "timing_unit": "ns",
+                    "elapsed_ns": request_elapsed_ns,
+                    "elapsed_s": round(request_elapsed_ns / 1_000_000_000.0, 3),
                     "nonempty": bool(summary.get("text_len")),
                 })
                 if sentinel is not None:
@@ -402,6 +409,7 @@ def run_resident_gate(
     }
     report["status"] = "PASSED" if all(report["checks"].values()) else "FAILED"
     report["finished_at"] = time.time()
+    report["elapsed_ns"] = since_ns(run_started_ns)
     payload = causality_payload(report)
     record_resident_causality(report, **payload)
     _write_receipt(report, emit, repo)

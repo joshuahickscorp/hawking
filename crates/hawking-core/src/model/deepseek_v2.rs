@@ -1134,7 +1134,9 @@ impl Engine for DeepSeekV2 {
                 break;
             }
         }
-        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        let prefill_ns = prefill_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.prefill_ns = prefill_ns;
+        stats.prefill_ms = prefill_ns as f64 / 1_000_000.0;
         stats.dispatches_per_forward = self.last_dispatch_count;
         if prefill_aborted {
             sink(StreamEvent::Done {
@@ -1154,6 +1156,7 @@ impl Engine for DeepSeekV2 {
         let mut completed_decode_forwards = 0usize;
         let mut decode_command_buffers_total = 0usize;
         let mut decode_cpu_reference_fallback_total = 0usize;
+        let mut decode_token_ns = Vec::with_capacity(req.max_new_tokens);
         let mut decode_token_ms = Vec::with_capacity(req.max_new_tokens);
 
         if self.speculate_mode == crate::SpeculateMode::ExactShared {
@@ -1323,12 +1326,14 @@ impl Engine for DeepSeekV2 {
                     decode_cpu_reference_fallback_total =
                         decode_cpu_reference_fallback_total.saturating_add(1);
                 }
-                let complete_forward_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                let complete_forward_ns =
+                    step_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
                     break;
                 }
-                decode_token_ms.push(complete_forward_ms);
+                decode_token_ns.push(complete_forward_ns);
+                decode_token_ms.push(complete_forward_ns as f64 / 1_000_000.0);
                 self.sampler.record(next_id);
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 sink(StreamEvent::Token { id: next_id, text });
@@ -1340,8 +1345,11 @@ impl Engine for DeepSeekV2 {
                 last_id = next_id;
             }
         }
-        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        let decode_ns = decode_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.decode_ns = decode_ns;
+        stats.decode_ms = decode_ns as f64 / 1_000_000.0;
         stats.completion_tokens = produced;
+        stats.decode_token_ns = decode_token_ns;
         stats.decode_token_ms = decode_token_ms;
         stats.metal_dispatches = self.last_dispatch_count;
         stats.dispatches_per_forward = self.last_dispatch_count;

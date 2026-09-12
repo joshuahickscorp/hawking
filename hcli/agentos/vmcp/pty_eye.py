@@ -28,6 +28,7 @@ from hcli.agentos.vmcp.receipt import (
     tool_receipt,
     utc_now,
 )
+from hcli.latency import now_ns, since_ns
 
 
 NAME = "pty.eye"
@@ -180,7 +181,7 @@ def _drain(master: int, pid: int, timeout_s: float) -> tuple[bytes, list[dict[st
     events: list[dict[str, Any]] = []
     deadline = time.monotonic() + timeout_s
     status: int | None = None
-    t0 = time.monotonic()
+    t0_ns = now_ns()
     while time.monotonic() < deadline:
         remaining = max(0.0, deadline - time.monotonic())
         readable, _, _ = select.select([master], [], [], min(0.1, remaining))
@@ -194,7 +195,7 @@ def _drain(master: int, pid: int, timeout_s: float) -> tuple[bytes, list[dict[st
             out += chunk
             events.append(
                 {
-                    "t_ms": round((time.monotonic() - t0) * 1000.0, 3),
+                    "t_ns": since_ns(t0_ns),
                     "stream": "pty",
                     "n": len(chunk),
                 }
@@ -220,7 +221,7 @@ def _drain(master: int, pid: int, timeout_s: float) -> tuple[bytes, list[dict[st
                 out += chunk
                 events.append(
                     {
-                        "t_ms": round((time.monotonic() - t0) * 1000.0, 3),
+                        "t_ns": since_ns(t0_ns),
                         "stream": "pty",
                         "n": len(chunk),
                     }
@@ -250,7 +251,7 @@ def capture(
     raw = argv if argv is not None else (command if command is not None else args.get("argv") or args.get("command"))
     argv_l = argv_list(raw)
     started = utc_now()
-    t0 = time.perf_counter()
+    t0_ns = now_ns()
     if not argv_l:
         return {
             "act": "see",
@@ -294,7 +295,7 @@ def capture(
         }
     probed = probe()
     if not probed.get("ok"):
-        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        elapsed_ns = since_ns(t0_ns)
         wake = {
             "schema": "hawking.audit.wake_condition.v1",
             "kind": "PTY_OPEN_DENIED",
@@ -329,7 +330,8 @@ def capture(
             "missing_dependency": wake["missing_dependency"],
             "results": None,
             "items": None,
-            "performance_ms": elapsed_ms,
+            "timing_unit": "ns",
+            "performance_ns": elapsed_ns,
             "execution": "BLOCKED",
             "evidence_tier": "STATIC",
             "gpu_authority": False,
@@ -346,7 +348,7 @@ def capture(
     else:
         pair = _try_posix_openpt_pair()
     if pair is None:
-        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        elapsed_ns = since_ns(t0_ns)
         return {
             "act": "see",
             "organ": "pty",
@@ -359,7 +361,8 @@ def capture(
             "limitations": ["PTY_OPEN_DENIED", "ALLOCATE_RACE"],
             "execution": "BLOCKED",
             "evidence_tier": "STATIC",
-            "performance_ms": elapsed_ms,
+            "timing_unit": "ns",
+            "performance_ns": elapsed_ns,
             "results": None,
             "items": None,
         }
@@ -406,14 +409,14 @@ def capture(
     signaled = os.WTERMSIG(status) if os.WIFSIGNALED(status) else None
     text = output.decode("utf-8", errors="replace")
     ansi = "\x1b[" in text or "\x1b(" in text
-    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+    elapsed_ns = since_ns(t0_ns)
     receipt = tool_receipt(
         tool=NAME,
         version=VERSION,
         invocation=argv_l,
         status="ok" if exit_code == 0 else "error",
         started_at=started,
-        elapsed_ms=elapsed_ms,
+        elapsed_ns=elapsed_ns,
         input_ids=[f"argv:{i}" for i, _ in enumerate(argv_l)],
         input_hashes=[sha256_bytes(a.encode()) for a in argv_l],
         output_ids=["pty.screen"],
@@ -459,7 +462,8 @@ def capture(
         "evidence_tier": "FUNCTIONAL_SIM",
         "gpu_authority": False,
         "network_used": False,
-        "performance_ms": elapsed_ms,
+        "timing_unit": "ns",
+        "performance_ns": elapsed_ns,
         "deep_digest": content_digest(evidence),
         "artifacts": [],
         "evidence": [evidence],

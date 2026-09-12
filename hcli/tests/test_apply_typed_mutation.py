@@ -83,6 +83,21 @@ class TestTheTransaction(unittest.TestCase):
         self.assertEqual(target.read_text(), "def f():\n    return 0\n",
                          "the file changed despite a rejected mutation")
 
+    def test_typed_whole_file_deletion_is_rejected_and_rolled_back(self):
+        target = self.root / "mod.py"
+        original = "".join(f"VALUE_{index} = {index}\n" for index in range(60))
+        target.write_text(original, encoding="utf-8")
+        got = self.engine.apply_typed_mutation([{
+            "op": "replace_file",
+            "path": "mod.py",
+            "new_lines": ["VALUE = 1"],
+        }])
+        self.assertEqual(got["status"], "rejected")
+        self.assertTrue(got["applied"])
+        self.assertTrue(got["rolled_back"])
+        self.assertIn("BLAST_RADIUS_REFUSED", got["reason"])
+        self.assertEqual(target.read_text(), original)
+
     def test_a_failing_test_rolls_the_mutation_back(self):
         # The property that makes a builder safe: the repository is never left
         # half-mutated because a model turn ended badly.

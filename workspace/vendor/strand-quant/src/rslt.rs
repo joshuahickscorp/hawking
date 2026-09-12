@@ -1,4 +1,3 @@
-
 use crate::format::{read_strand_v2_header, PAGE};
 use std::fs;
 use std::io::Write as _;
@@ -15,7 +14,7 @@ pub const RSLT_TRAILER_BYTES: usize = 16;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RsltSection {
     pub version: u8,
-    
+
     pub block_counts: Vec<Vec<u32>>,
 }
 
@@ -33,17 +32,17 @@ pub fn record_decode(section: &mut RsltSection, tensor_idx: usize, n_blocks: usi
 pub fn serialize(section: &RsltSection) -> Vec<u8> {
     let n_tensors = section.block_counts.len();
     let mut o = Vec::new();
-    
+
     o.extend_from_slice(RSLT_MAGIC);
     o.push(RSLT_VERSION);
-    o.extend_from_slice(&[0u8; 3]); 
+    o.extend_from_slice(&[0u8; 3]);
     o.extend_from_slice(&(n_tensors as u32).to_le_bytes());
-    o.extend_from_slice(&[0u8; 20]); 
+    o.extend_from_slice(&[0u8; 20]);
     debug_assert_eq!(o.len(), RSLT_HEADER_BYTES);
-    
+
     for counts in &section.block_counts {
-        o.extend_from_slice(&(counts.len() as u32).to_le_bytes()); 
-        o.extend_from_slice(&0u32.to_le_bytes()); 
+        o.extend_from_slice(&(counts.len() as u32).to_le_bytes());
+        o.extend_from_slice(&0u32.to_le_bytes());
         for &c in counts {
             o.extend_from_slice(&c.to_le_bytes());
         }
@@ -100,7 +99,10 @@ pub fn deserialize(bytes: &[u8]) -> Result<RsltSection, &'static str> {
         return Err("rslt: trailing bytes after the last tensor record");
     }
 
-    Ok(RsltSection { version, block_counts })
+    Ok(RsltSection {
+        version,
+        block_counts,
+    })
 }
 
 pub fn merge(a: &mut RsltSection, b: &RsltSection) {
@@ -130,10 +132,12 @@ fn page_align(x: usize) -> usize {
 
 fn rslt_section_and_trailer(section: &RsltSection, rslt_offset: usize) -> Result<Vec<u8>, String> {
     let body = serialize(section);
-    let rslt_bytes: u32 = body
-        .len()
-        .try_into()
-        .map_err(|_| format!("rslt: section is {} bytes — exceeds the u32 rslt_bytes field", body.len()))?;
+    let rslt_bytes: u32 = body.len().try_into().map_err(|_| {
+        format!(
+            "rslt: section is {} bytes — exceeds the u32 rslt_bytes field",
+            body.len()
+        )
+    })?;
     let mut out = body;
     out.extend_from_slice(&(rslt_offset as u64).to_le_bytes());
     out.extend_from_slice(&rslt_bytes.to_le_bytes());
@@ -141,7 +145,11 @@ fn rslt_section_and_trailer(section: &RsltSection, rslt_offset: usize) -> Result
     Ok(out)
 }
 
-fn parse_rslt_section(buf: &[u8], rslt_offset: usize, rslt_bytes: usize) -> Result<RsltSection, String> {
+fn parse_rslt_section(
+    buf: &[u8],
+    rslt_offset: usize,
+    rslt_bytes: usize,
+) -> Result<RsltSection, String> {
     if rslt_offset % PAGE != 0 {
         return Err(format!("rslt: rslt_offset {rslt_offset} not page-aligned"));
     }
@@ -218,7 +226,12 @@ pub fn append_rslt(path: impl AsRef<Path>, section: &RsltSection) -> Result<(), 
             hdr.tensors.len()
         ));
     }
-    for (i, (counts, desc)) in section.block_counts.iter().zip(hdr.tensors.iter()).enumerate() {
+    for (i, (counts, desc)) in section
+        .block_counts
+        .iter()
+        .zip(hdr.tensors.iter())
+        .enumerate()
+    {
         if counts.len() != desc.n_blocks {
             return Err(format!(
                 "rslt: tensor record {i} ({:?}): block_counts has {} entries, \
@@ -242,7 +255,8 @@ pub fn append_rslt(path: impl AsRef<Path>, section: &RsltSection) -> Result<(), 
         .append(true)
         .open(path)
         .map_err(|e| format!("rslt: open {path:?} for append: {e}"))?;
-    f.write_all(&tail).map_err(|e| format!("rslt: append to {path:?}: {e}"))?;
+    f.write_all(&tail)
+        .map_err(|e| format!("rslt: append to {path:?}: {e}"))?;
     Ok(())
 }
 
@@ -323,10 +337,7 @@ mod tests {
     fn rslt_roundtrip() {
         let section = RsltSection {
             version: RSLT_VERSION,
-            block_counts: vec![
-                vec![0, 5, 100, 999],
-                vec![1, 2, 3],
-            ],
+            block_counts: vec![vec![0, 5, 100, 999], vec![1, 2, 3]],
         };
         let bytes = serialize(&section);
         let back = deserialize(&bytes).expect("deserialize");
@@ -340,18 +351,18 @@ mod tests {
         let _guard = TmpFile(path.clone());
         std::fs::write(&path, &buf).unwrap();
 
-        assert_eq!(read_rslt(&path).unwrap(), None, "plain v2 file must have no RSLT");
+        assert_eq!(
+            read_rslt(&path).unwrap(),
+            None,
+            "plain v2 file must have no RSLT"
+        );
 
         let hdr = crate::format::read_strand_v2_header(&buf).unwrap();
         let section = RsltSection {
             version: RSLT_VERSION,
-            block_counts: hdr
-                .tensors
-                .iter()
-                .map(|t| vec![0u32; t.n_blocks])
-                .collect(),
+            block_counts: hdr.tensors.iter().map(|t| vec![0u32; t.n_blocks]).collect(),
         };
-        
+
         let mut s = section.clone();
         s.block_counts[0][0] = 42;
         s.block_counts[1][0] = 7;
@@ -362,27 +373,29 @@ mod tests {
 
         let trailered = std::fs::read(&path).unwrap();
         assert!(trailered.len() > buf.len());
-        assert_eq!(&trailered[..buf.len()], &buf[..], "append must not touch v2 bytes");
+        assert_eq!(
+            &trailered[..buf.len()],
+            &buf[..],
+            "append must not touch v2 bytes"
+        );
     }
 
     #[test]
     fn rslt_merge() {
         let mut a = RsltSection {
             version: RSLT_VERSION,
-            block_counts: vec![
-                vec![1, 2, u32::MAX - 1],
-                vec![10, 20],
-            ],
+            block_counts: vec![vec![1, 2, u32::MAX - 1], vec![10, 20]],
         };
         let b = RsltSection {
             version: RSLT_VERSION,
-            block_counts: vec![
-                vec![3, 4, 2],       
-                vec![100, 200],      
-            ],
+            block_counts: vec![vec![3, 4, 2], vec![100, 200]],
         };
         merge(&mut a, &b);
-        assert_eq!(a.block_counts[0], vec![4, 6, u32::MAX], "saturating add at MAX");
+        assert_eq!(
+            a.block_counts[0],
+            vec![4, 6, u32::MAX],
+            "saturating add at MAX"
+        );
         assert_eq!(a.block_counts[1], vec![110, 220], "normal add");
     }
 
@@ -390,18 +403,17 @@ mod tests {
     fn rslt_hot_blocks() {
         let section = RsltSection {
             version: RSLT_VERSION,
-            block_counts: vec![
-                vec![0, 50, 100, 1],
-                vec![99, 101, 200],
-                vec![5],
-            ],
+            block_counts: vec![vec![0, 50, 100, 1], vec![99, 101, 200], vec![5]],
         };
         let hot = hot_blocks(&section, 99);
-        
+
         assert_eq!(hot, vec![(0, 2), (1, 1), (1, 2)]);
 
         let hot0 = hot_blocks(&section, 0);
-        assert_eq!(hot0, vec![(0, 1), (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (2, 0)]);
+        assert_eq!(
+            hot0,
+            vec![(0, 1), (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (2, 0)]
+        );
 
         let hot_max = hot_blocks(&section, u32::MAX);
         assert!(hot_max.is_empty());
@@ -425,7 +437,11 @@ mod tests {
 
         let err = append_rslt(&path, &section).unwrap_err();
         assert!(err.contains("already has"), "err was: {err}");
-        assert_eq!(std::fs::read(&path).unwrap(), after_first, "file must be untouched");
+        assert_eq!(
+            std::fs::read(&path).unwrap(),
+            after_first,
+            "file must be untouched"
+        );
     }
 
     #[test]

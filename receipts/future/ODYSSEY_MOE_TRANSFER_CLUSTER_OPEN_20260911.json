@@ -1,0 +1,174 @@
+{
+  "schema": "hawking.odyssey.moe_transfer_cluster_open.v1",
+  "generated_at": "2026-09-11T07:12:28Z",
+  "status": "ACTIVE",
+  "transition": {
+    "from": "KIMI_CLOSEOUT",
+    "from_state": "COMPLETE_BOUNDED",
+    "to": "MOE_TRANSFER_CLUSTER",
+    "authority": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "k0_preserved": "KIMI_P0_OPERATIONAL",
+    "k0_freeze": "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json",
+    "blind_write_scar": "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+    "autonomous_write_reopened": false
+  },
+  "p0_real_workunit": {
+    "session": "p0-odyssey-transition-20260911",
+    "authority": "read",
+    "objective": "Inspect current Odyssey evidence and propose the next MoE transfer cluster, Flash-Next sequencing, and one cheap falsifier.",
+    "http": 200,
+    "wall_s": 26.569,
+    "trace": ".hcli/chat/p0-odyssey-transition-20260911.trace.json",
+    "trace_sha256": "815a186a8a65498875afe47202d4c62fa40d5b842d7f6255da67f3f6c1cecfce",
+    "turns": 2,
+    "actual_tool_invocations": 2,
+    "invocations": [
+      {
+        "tool": "fs.read",
+        "path": "receipts/odyssey.receipt",
+        "result": "FileNotFoundError"
+      },
+      {
+        "tool": "fs.read",
+        "path": "receipts/future/ODYSSEY_MOE_TRANSFER_CLUSTER_OPEN_20260911.json",
+        "result": "PASS_COMPACTED_OBSERVATION"
+      }
+    ],
+    "result": "READ_RECOVERED_AFTER_SUPERVISION_BUT_HANDOFF_FACTUALLY_WRONG",
+    "classification": [
+      "MODEL_TOOL_GROUNDING",
+      "MODEL_FAILURE_RECOVERY",
+      "MODEL_COMPACTED_EVIDENCE_INTERPRETATION"
+    ],
+    "supervisor_interventions": 1,
+    "harness_reopened": false,
+    "campaign_blocked": false,
+    "reason_not_blocked": "Codex independently reached the campaign authority and ran the planned static discriminator; no mutation authority or synthetic gate repair was required."
+  },
+  "active_anchor": {
+    "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+    "role": "compact_simple_moe_transfer_anchor",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+    "config_sha256": "9dd2d0901af58983e5576674a25105caf1e10e6701ad552bb40a7cbe50eb8694",
+    "weight_file_bytes": 47688305784,
+    "model_type": "lfm2_moe",
+    "architecture": "Lfm2MoeForCausalLM",
+    "layers": 40,
+    "experts": 64,
+    "experts_per_token": 4,
+    "hidden_size": 2048,
+    "storage": "per-expert safetensors",
+    "already_resident_in_modellake": true,
+    "new_model_load": false
+  },
+  "cheap_discriminator": {
+    "tool": "tools/future/representational_anatomy.py",
+    "scope": "layer-2 routed expert organ",
+    "wall_s": 17.9,
+    "shards": 1,
+    "tensors": 7610,
+    "experts": 64,
+    "cross_expert": {
+      "w1_ratio": 0.9728,
+      "w1_deficit_pct_from_matched_null": -0.007,
+      "w2_ratio": 0.9735,
+      "w2_deficit_pct_from_matched_null": 0.0,
+      "w3_ratio": 0.9727,
+      "w3_deficit_pct_from_matched_null": 0.0,
+      "verdict": "DEAD"
+    },
+    "within_expert": {
+      "shape": [1536, 2048],
+      "participation": 658.6,
+      "ratio": 0.4288,
+      "rank_90": 631,
+      "null_ratio": 0.687,
+      "deficit_pct_from_matched_null": 37.586,
+      "rank_631_storage_fraction_of_dense": 0.719,
+      "verdict": "REAL_REPRESENTATION_LEVER_CAPABILITY_UNTESTED"
+    },
+    "matched_rate_curve": {
+      "tensor": "model.layers.2.feed_forward.experts.0.w1.weight",
+      "shape": [1536, 2048],
+      "accounting": "BF16 low-rank factors include U, V, FP32 singular values, and 64 bytes of tensor metadata; rowwise quantization includes packed codes, FP16 row scales, and 64 bytes of metadata.",
+      "lowrank_bf16": [
+        {"rank": 14, "complete_bpw": 0.255514, "relative_l2": 0.954595},
+        {"rank": 27, "complete_bpw": 0.492625, "relative_l2": 0.92218},
+        {"rank": 32, "complete_bpw": 0.583822, "relative_l2": 0.91061},
+        {"rank": 55, "complete_bpw": 1.003326, "relative_l2": 0.862194},
+        {"rank": 64, "complete_bpw": 1.16748, "relative_l2": 0.844949}
+      ],
+      "rowwise_scaled_binary": {
+        "complete_bpw": 1.007975,
+        "relative_l2": 0.60414
+      },
+      "verdict": "PURE_BF16_LOWRANK_DOMINATED_NEAR_1_BPW",
+      "scope_boundary": "Static relative-L2 on one expert tensor; no output, capability, direct-kernel, or full-body claim."
+    },
+    "direct_pq_reference": {
+      "runtime": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/bin/python",
+      "torch_threads": 1,
+      "tensor": "model.layers.2.feed_forward.experts.0.w1.weight",
+      "accounting": "Packed codes, BF16 codebooks, FP16 scales where used, 64 metadata bytes, and 65536 bytes scoped direct-decoder support are billed.",
+      "variants": [
+        {"family": "pq_d32_e16", "complete_bpw": 0.458496, "relative_l2": 0.925265, "matvec_relative_l2": 0.931204, "matvec_cosine": 0.365635, "direct_median_ms": 1.487209},
+        {"family": "pq_d64_e16", "complete_bpw": 0.395996, "relative_l2": 0.95349, "matvec_relative_l2": 0.964446, "matvec_cosine": 0.267442, "direct_median_ms": 1.179584},
+        {"family": "scaled_pq_d32_e16", "complete_bpw": 0.958496, "relative_l2": 0.921827, "matvec_relative_l2": 0.928754, "matvec_cosine": 0.370837, "direct_median_ms": 1.978625},
+        {"family": "residual_pq_2stage_d32_e16", "complete_bpw": 0.750163, "relative_l2": 0.862831, "matvec_relative_l2": 0.875962, "matvec_cosine": 0.482521, "direct_median_ms": 2.292458}
+      ],
+      "direct_execution": "PASS_AT_ONE_TENSOR_SCOPE; the direct matvec expands only group-level codebook rows and does not reconstruct the dense parent.",
+      "verdict": "STATIC_RAW_ONE_STAGE_PQ_RATE_DOMINATED; TWO_STAGE_PQ_REPAIR_COMPONENT_ONLY",
+      "scope_boundary": "Static frozen-weight and random-matvec error only; no activation-aware objective, capability, full-organ, TPS, or production-kernel claim."
+    },
+    "runtime_and_architecture_preflight": {
+      "activation_capture_guard": {
+        "expected_gb": 45.0,
+        "status": "PASS",
+        "free_gb": 49.26,
+        "headroom_gb": 4.26,
+        "swap_gb": 0.0,
+        "policy": "Serialize against the P0 provider; this margin is not adequate for a concurrent second model."
+      },
+      "conversion_style_guard": {
+        "expected_gb": 64.0,
+        "status": "STOP",
+        "reason": "expected 64.0 GB leaves -14.7 GB headroom"
+      },
+      "compatible_runtime": {
+        "path": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+        "mlx_lm_present": true,
+        "lfm2_moe_module_present": true,
+        "claim": "Compatibility capability only; not a Hawking-native execution claim."
+      },
+      "hawking_admission": "NOT_YET_ADMITTED: normal Gravity selector intentionally exposes only KIMI_P0_OPERATIONAL; LFM2 has no hawkingd-owned research provider path yet.",
+      "architecture_receipt": "receipts/future/LFM2_ARCHITECTURE_RECOGNITION_20260911.json",
+      "architecture": {
+        "tensor_names": 7610,
+        "recognized": ["embed", "gqa_attention", "mlp_down", "mlp_gate_up", "moe_expert", "moe_router", "recurrent_state", "rmsnorm"],
+        "novel_or_unrecognized": ["feed_forward.expert_bias", "conv.conv.weight"],
+        "classification": "STATIC_STREAMABLE",
+        "loaded_weights": false
+      }
+    }
+  },
+  "decisions": {
+    "kill_for_lfm2": [
+      "cross-expert shared basis",
+      "common-plus-delta",
+      "expert clustering as a primary linear sharing lever"
+      ,
+      "pure BF16 low-rank as the primary <=1 BPW substrate",
+      "static raw one-stage PQ as the primary <=0.5 BPW substrate"
+    ],
+    "continue_for_lfm2": [
+      "activation-aware binary/ternary or vector-coded residual substrate",
+      "within-expert low-rank only as a candidate repair component",
+      "two-stage PQ only as a candidate repair component",
+      "nonuniform sparse salient repair",
+      "direct routed execution only after representation evidence"
+    ],
+    "next_action": "Execute workspace/campaign/odyssey/LFM2_RUNTIME_ADMISSION_WORKUNIT.md, which serializes LFM2 activation capture through hawkingd ownership and restores P0. Run a bounded layer-2 output-aware binary/ternary or vector-code plus sparse-repair discriminator only after that capture validates route/conv/expert-bias handling.",
+    "flash_next": "Qwen--Qwen3.8-Flash-Next@34567a4712bc remains the explicit PRIMARY_PULSAR_RESIDENT_STAR_CANDIDATE and next campaign phase after the compact transfer review; it is not an ordinary cluster specimen."
+  },
+  "claim_boundary": "This opens the MoE transfer cluster and records one static LFM2 organ discriminator. It does not establish LFM2 capability, complete-model EBPW, direct execution, TPS, a promoted artifact, or a universal MoE law."
+}

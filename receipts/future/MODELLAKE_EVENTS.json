@@ -5,7 +5,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-08T18:28:15Z",
+  "recorded_at": "2026-09-12T03:43:20Z",
   "recorded_by": "tools/future/modellake_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -15,7 +15,7 @@
  "detection": {
   "authority": "a lake manifest with resolved_sha and bytes",
   "complete_unsealed_do_not_emit": true,
-  "n_complete_unsealed": 1,
+  "n_complete_unsealed": 0,
   "n_sealed_on_disk": 55,
   "n_sealed_registry": 55,
   "not_authority": "a watcher download_exit or already_complete claim, a lifecycle label, or a human saying the model is ready",
@@ -87,7 +87,7 @@
     "model_type": "Dream",
     "num_hidden_layers": 28
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.27,
@@ -543,7 +543,7 @@
     "model_type": "illada",
     "num_hidden_layers": 32
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.54,
@@ -999,7 +999,7 @@
     "model_type": "smolvlm",
     "num_hidden_layers": 24
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.93,
@@ -1455,7 +1455,7 @@
     "model_type": "lfm2_moe",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 10.23,
@@ -1911,7 +1911,7 @@
     "model_type": "lfm2",
     "num_hidden_layers": 16
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.5,
@@ -2369,7 +2369,7 @@
     "model_type": "lfm2",
     "num_hidden_layers": 30
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.16,
@@ -3283,7 +3283,7 @@
     "model_type": "qwen3",
     "num_hidden_layers": 28
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.33,
@@ -3743,7 +3743,7 @@
     "model_type": "qwen3",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 6.34,
@@ -4667,7 +4667,7 @@
     "model_type": "qwen3",
     "num_hidden_layers": 36
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.73,
@@ -5127,7 +5127,7 @@
     "model_type": "qwen3_moe",
     "num_hidden_layers": 48
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 13.1,
@@ -5591,7 +5591,7 @@
     "model_type": "qwen3",
     "num_hidden_layers": 28
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.26,
@@ -6507,7 +6507,7 @@
     "model_type": "qwen3_vl",
     "num_hidden_layers": 36
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.76,
@@ -6974,12 +6974,10 @@
     "warm_load_seconds": 32.68
    },
    "family": {
-    "is_novel_architecture": false,
+    "is_novel_architecture": true,
     "model_type": "qwen4_exp",
-    "n_siblings": 1,
-    "sibling_ids": [
-     "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b"
-    ]
+    "n_siblings": 0,
+    "sibling_ids": []
    },
    "lifecycle": "FINGERPRINTED",
    "model_type": "qwen4_exp",
@@ -7142,13 +7140,13 @@
      "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
      "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
      "classification": null,
-     "content_hash": "8cb7f63abb5ff5b3521eff9a9dc1bfabb70a6da043e0ac3adf75871ff6ff04b7",
+     "content_hash": "a8028d06caa55cb04c9f47d857ed36ff7f9b59d7683e7149fba86d694a75aa80",
      "dependencies": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
       "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
      ],
-     "description": "Evaluate the role of sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc: architecture qwen4_exp is the role signal. 1 sealed/complete specimen(s) already share model_type=qwen4_exp: windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "description": "Evaluate the role of sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc: architecture qwen4_exp is the role signal. no other specimen on the lake shares model_type=qwen4_exp - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
@@ -7421,7 +7419,7 @@
     "model_type": "rwkv7",
     "num_hidden_layers": 61
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 5.69,
@@ -7874,7 +7872,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 27.07,
@@ -8263,7 +8261,7 @@
     "model_type": "jamba",
     "num_hidden_layers": 28
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.37,
@@ -8719,7 +8717,7 @@
     "model_type": "olmo3",
     "num_hidden_layers": 32
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.13,
@@ -9175,7 +9173,7 @@
     "model_type": "modernbert",
     "num_hidden_layers": 28
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.34,
@@ -9629,7 +9627,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 17.64,
@@ -10016,7 +10014,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 2.95,
@@ -10405,7 +10403,7 @@
     "model_type": "starcoder2",
     "num_hidden_layers": 32
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.08,
@@ -10858,7 +10856,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.93,
@@ -11715,7 +11713,7 @@
     "model_type": "depth_anything",
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.29,
@@ -12171,7 +12169,7 @@
     "model_type": "musicgen",
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 2.99,
@@ -12627,7 +12625,7 @@
     "model_type": "sam2_video",
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.19,
@@ -13083,7 +13081,7 @@
     "model_type": "vjepa2",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.89,
@@ -13539,7 +13537,7 @@
     "model_type": "t5",
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.67,
@@ -13995,7 +13993,7 @@
     "model_type": "timesfm",
     "num_hidden_layers": 50
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.43,
@@ -14451,7 +14449,7 @@
     "model_type": "granitemoehybrid",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.37,
@@ -14909,7 +14907,7 @@
     "model_type": "granitemoehybrid",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 2.98,
@@ -15364,7 +15362,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.38,
@@ -15751,7 +15749,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.0,
@@ -16140,7 +16138,7 @@
     "model_type": "phi3",
     "num_hidden_layers": 32
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.65,
@@ -16598,7 +16596,7 @@
     "model_type": "phi4mm",
     "num_hidden_layers": 32
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 2.76,
@@ -17054,7 +17052,7 @@
     "model_type": "phi3",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 6.29,
@@ -17512,7 +17510,7 @@
     "model_type": "bitnet",
     "num_hidden_layers": 30
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 1.04,
@@ -17970,7 +17968,7 @@
     "model_type": "bitnet",
     "num_hidden_layers": 30
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.25,
@@ -18428,7 +18426,7 @@
     "model_type": "mistral3",
     "num_hidden_layers": 40
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 20.61,
@@ -20252,7 +20250,7 @@
     "model_type": "llava_llama",
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.85,
@@ -20708,7 +20706,7 @@
     "model_type": "whisper",
     "num_hidden_layers": 32
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.35,
@@ -21162,7 +21160,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.64,
@@ -21549,7 +21547,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.64,
@@ -21935,7 +21933,7 @@
     "model_type": null,
     "num_hidden_layers": null
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 3.04,
@@ -22324,7 +22322,7 @@
     "model_type": "inkling_mm_model",
     "num_hidden_layers": 42
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 114.1,
@@ -23236,7 +23234,7 @@
     "model_type": "llama",
     "num_hidden_layers": 18
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 0.72,
@@ -24148,7 +24146,7 @@
     "model_type": "glm5_next",
     "num_hidden_layers": 45
    },
-   "claimed_complete_in_log_tail": true,
+   "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
    "economics": {
     "cold_load_minutes": 70.43,
@@ -24605,8 +24603,8 @@
   "a_claim_is_not_a_seal": "download_exit and already_complete mean the watcher thinks bytes landed. Schedulable material requires the manifest.",
   "claims_without_seal": [],
   "n_claims_without_seal": 0,
-  "n_completion_claims": 47,
-  "n_parseable_events": 1344
+  "n_completion_claims": 2,
+  "n_parseable_events": 143
  },
  "n_emitted_specimens": 55,
  "n_emitted_units": 330,
@@ -24615,7 +24613,7 @@
  "obligation": "G101",
  "question": "When a model seals, does anything happen without a human noticing?",
  "schema": "hawking.future.modellake_events.v1",
- "seal_sha256": "23c46aad4ded17ad9716606b88ec95855cc0c3c43918b1d8f12390b348ac6cb4",
+ "seal_sha256": "33d18567855d4ce208d5b10106a3ed8c5b1c753223c7ac70f2e4357b130ec91d",
  "seal_triggers": [
   "fingerprint",
   "role evaluation",

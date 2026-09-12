@@ -1,0 +1,658 @@
+{
+  "activation_corpus": {
+    "path": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "rows": {
+      "0": {
+        "heldout": 33,
+        "train": 34
+      },
+      "1": {
+        "heldout": 9,
+        "train": 10
+      },
+      "10": {
+        "heldout": 20,
+        "train": 21
+      },
+      "11": {
+        "heldout": 21,
+        "train": 22
+      },
+      "12": {
+        "heldout": 3,
+        "train": 3
+      },
+      "13": {
+        "heldout": 3,
+        "train": 4
+      },
+      "14": {
+        "heldout": 3,
+        "train": 4
+      },
+      "15": {
+        "heldout": 60,
+        "train": 61
+      },
+      "16": {
+        "heldout": 35,
+        "train": 36
+      },
+      "17": {
+        "heldout": 5,
+        "train": 5
+      },
+      "18": {
+        "heldout": 13,
+        "train": 13
+      },
+      "19": {
+        "heldout": 16,
+        "train": 16
+      },
+      "2": {
+        "heldout": 1,
+        "train": 1
+      },
+      "20": {
+        "heldout": 6,
+        "train": 7
+      },
+      "21": {
+        "heldout": 34,
+        "train": 35
+      },
+      "22": {
+        "heldout": 5,
+        "train": 6
+      },
+      "23": {
+        "heldout": 10,
+        "train": 10
+      },
+      "24": {
+        "heldout": 2,
+        "train": 2
+      },
+      "25": {
+        "heldout": 29,
+        "train": 30
+      },
+      "26": {
+        "heldout": 5,
+        "train": 5
+      },
+      "27": {
+        "heldout": 64,
+        "train": 64
+      },
+      "28": {
+        "heldout": 25,
+        "train": 25
+      },
+      "29": {
+        "heldout": 17,
+        "train": 17
+      },
+      "3": {
+        "heldout": 10,
+        "train": 10
+      },
+      "30": {
+        "heldout": 17,
+        "train": 18
+      },
+      "31": {
+        "heldout": 15,
+        "train": 16
+      },
+      "32": {
+        "heldout": 11,
+        "train": 12
+      },
+      "33": {
+        "heldout": 44,
+        "train": 44
+      },
+      "34": {
+        "heldout": 22,
+        "train": 23
+      },
+      "35": {
+        "heldout": 3,
+        "train": 4
+      },
+      "36": {
+        "heldout": 22,
+        "train": 23
+      },
+      "37": {
+        "heldout": 44,
+        "train": 44
+      },
+      "38": {
+        "heldout": 34,
+        "train": 34
+      },
+      "39": {
+        "heldout": 31,
+        "train": 32
+      },
+      "4": {
+        "heldout": 7,
+        "train": 8
+      },
+      "40": {
+        "heldout": 29,
+        "train": 29
+      },
+      "41": {
+        "heldout": 7,
+        "train": 8
+      },
+      "42": {
+        "heldout": 5,
+        "train": 5
+      },
+      "43": {
+        "heldout": 15,
+        "train": 16
+      },
+      "44": {
+        "heldout": 6,
+        "train": 7
+      },
+      "45": {
+        "heldout": 5,
+        "train": 6
+      },
+      "46": {
+        "heldout": 22,
+        "train": 22
+      },
+      "47": {
+        "heldout": 31,
+        "train": 31
+      },
+      "48": {
+        "heldout": 29,
+        "train": 30
+      },
+      "49": {
+        "heldout": 71,
+        "train": 72
+      },
+      "5": {
+        "heldout": 7,
+        "train": 8
+      },
+      "50": {
+        "heldout": 20,
+        "train": 20
+      },
+      "51": {
+        "heldout": 6,
+        "train": 7
+      },
+      "52": {
+        "heldout": 25,
+        "train": 26
+      },
+      "53": {
+        "heldout": 14,
+        "train": 15
+      },
+      "54": {
+        "heldout": 12,
+        "train": 13
+      },
+      "55": {
+        "heldout": 35,
+        "train": 36
+      },
+      "56": {
+        "heldout": 17,
+        "train": 18
+      },
+      "57": {
+        "heldout": 8,
+        "train": 8
+      },
+      "58": {
+        "heldout": 7,
+        "train": 7
+      },
+      "59": {
+        "heldout": 23,
+        "train": 24
+      },
+      "6": {
+        "heldout": 17,
+        "train": 18
+      },
+      "60": {
+        "heldout": 6,
+        "train": 7
+      },
+      "61": {
+        "heldout": 19,
+        "train": 20
+      },
+      "62": {
+        "heldout": 15,
+        "train": 15
+      },
+      "63": {
+        "heldout": 64,
+        "train": 64
+      },
+      "7": {
+        "heldout": 50,
+        "train": 51
+      },
+      "8": {
+        "heldout": 10,
+        "train": 10
+      },
+      "9": {
+        "heldout": 2,
+        "train": 2
+      }
+    },
+    "sorted_rows": 1256,
+    "topk_pair_rows": 16
+  },
+  "claim_boundary": "Independent MLX replay of a saved BF16 per-expert low-rank artifact through both SwitchGLU routed layouts. Kernel equivalence and source approximation are separate measurements. This is organ-level evidence only, not full-model capability, end-to-end TPS, NX, or promotion evidence.",
+  "execution": {
+    "dense_parent_materialized": false,
+    "dense_parent_role": "source_and_factor_oracles_only",
+    "dtype": "BF16 factors, BF16 inputs, BF16 routed oracle",
+    "operator": "A_e(B_e^T x)",
+    "production_kernel": "validated organ-level direct consumer; not integrated into KIMI model",
+    "routing_contract": "SwitchGLU/SwitchLinear gather_mm-compatible M=1 layouts",
+    "runtime": "MLX"
+  },
+  "factor_artifact": {
+    "compressed_file_bytes": 11282755,
+    "container": "compressed_npz_bf16_bit_patterns",
+    "logical_factor_arrays": [
+      "a_0",
+      "a_1",
+      "a_10",
+      "a_11",
+      "a_12",
+      "a_13",
+      "a_14",
+      "a_15",
+      "a_16",
+      "a_17",
+      "a_18",
+      "a_19",
+      "a_2",
+      "a_20",
+      "a_21",
+      "a_22",
+      "a_23",
+      "a_24",
+      "a_25",
+      "a_26",
+      "a_27",
+      "a_28",
+      "a_29",
+      "a_3",
+      "a_30",
+      "a_31",
+      "a_32",
+      "a_33",
+      "a_34",
+      "a_35",
+      "a_36",
+      "a_37",
+      "a_38",
+      "a_39",
+      "a_4",
+      "a_40",
+      "a_41",
+      "a_42",
+      "a_43",
+      "a_44",
+      "a_45",
+      "a_46",
+      "a_47",
+      "a_48",
+      "a_49",
+      "a_5",
+      "a_50",
+      "a_51",
+      "a_52",
+      "a_53",
+      "a_54",
+      "a_55",
+      "a_56",
+      "a_57",
+      "a_58",
+      "a_59",
+      "a_6",
+      "a_60",
+      "a_61",
+      "a_62",
+      "a_63",
+      "a_7",
+      "a_8",
+      "a_9",
+      "b_0",
+      "b_1",
+      "b_10",
+      "b_11",
+      "b_12",
+      "b_13",
+      "b_14",
+      "b_15",
+      "b_16",
+      "b_17",
+      "b_18",
+      "b_19",
+      "b_2",
+      "b_20",
+      "b_21",
+      "b_22",
+      "b_23",
+      "b_24",
+      "b_25",
+      "b_26",
+      "b_27",
+      "b_28",
+      "b_29",
+      "b_3",
+      "b_30",
+      "b_31",
+      "b_32",
+      "b_33",
+      "b_34",
+      "b_35",
+      "b_36",
+      "b_37",
+      "b_38",
+      "b_39",
+      "b_4",
+      "b_40",
+      "b_41",
+      "b_42",
+      "b_43",
+      "b_44",
+      "b_45",
+      "b_46",
+      "b_47",
+      "b_48",
+      "b_49",
+      "b_5",
+      "b_50",
+      "b_51",
+      "b_52",
+      "b_53",
+      "b_54",
+      "b_55",
+      "b_56",
+      "b_57",
+      "b_58",
+      "b_59",
+      "b_6",
+      "b_60",
+      "b_61",
+      "b_62",
+      "b_63",
+      "b_7",
+      "b_8",
+      "b_9"
+    ],
+    "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova_all64/expert_lowrank_r32.npz",
+    "sha256": "16c280b9b3bf09334310006768f279fcb5c2d3414d184347e9d3f85a035dea64"
+  },
+  "generated_at": "2026-09-10T17:31:18.717799+00:00",
+  "immutable_base": true,
+  "schema": "hawking.future.kimi_expert_lowrank_routed_audit.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_expert_lowrank_routed_audit.py",
+  "selected_variant": {
+    "rank": 32,
+    "tensor_family": "up_proj.weight"
+  },
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "sorted_route": {
+    "indices_shape": [
+      1256
+    ],
+    "input_shape": [
+      1256,
+      1,
+      2048
+    ],
+    "kernel_equivalence": {
+      "direct_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.0078125,
+      "max_relative_l2": 0.004648125730454922,
+      "mean_abs_error": 0.00031828548526391387,
+      "mean_cosine": 0.9999961256980896,
+      "mean_relative_l2": 0.0028186868876218796,
+      "oracle_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.0033712026197463274,
+      "rows": 1256
+    },
+    "source_approximation": {
+      "direct_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 1.3701171875,
+      "max_relative_l2": 1.0921285152435303,
+      "mean_abs_error": 0.1340959370136261,
+      "mean_cosine": 0.7234522104263306,
+      "mean_relative_l2": 0.6461517214775085,
+      "oracle_shape": [
+        1256,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.9511163234710693,
+      "rows": 1256
+    },
+    "timing_ms": {
+      "direct_median": 1.457959006074816,
+      "direct_samples": [
+        1.6594160115346313,
+        1.4962090062908828,
+        1.4490829780697823,
+        1.4179999707266688,
+        1.457959006074816
+      ],
+      "factor_oracle_median": 1.5641250065527856,
+      "factor_oracle_samples": [
+        2.1700839861296117,
+        1.9100409699603915,
+        1.5022089937701821,
+        1.4657080173492432,
+        1.5641250065527856
+      ],
+      "source_oracle_median": 1.4969580224715173,
+      "source_oracle_samples": [
+        1.7510830075480044,
+        1.4653750113211572,
+        1.6213749768212438,
+        1.4895829954184592,
+        1.4969580224715173
+      ]
+    }
+  },
+  "source_model": "KIMI_BASE",
+  "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "EXPERT_LOWRANK_ROUTED_AUDIT_PASS",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.8.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.9.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.10.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.11.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.12.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.13.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.14.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.15.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.16.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.17.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.18.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.19.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.20.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.21.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.22.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.23.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.24.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.25.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.26.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.27.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.28.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.29.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.30.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.31.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.32.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.33.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.34.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.35.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.36.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.37.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.38.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.39.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.40.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.41.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.42.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.43.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.44.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.45.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.46.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.47.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.48.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.49.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.50.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.51.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.52.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.53.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.54.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.55.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.56.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.57.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.58.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.59.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.60.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.61.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.62.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.63.up_proj.weight"
+  ],
+  "training_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_63_20260910.json",
+  "unsorted_topk_route": {
+    "indices_shape": [
+      1,
+      16,
+      2
+    ],
+    "input_shape": [
+      1,
+      16,
+      1,
+      2048
+    ],
+    "kernel_equivalence": {
+      "direct_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.00390625,
+      "max_relative_l2": 0.0032536038197577,
+      "mean_abs_error": 0.0002811170998029411,
+      "mean_cosine": 0.9999961853027344,
+      "mean_relative_l2": 0.002803628332912922,
+      "oracle_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.003188858972862363,
+      "rows": 32
+    },
+    "source_approximation": {
+      "direct_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.9833984375,
+      "max_relative_l2": 1.0172431468963623,
+      "mean_abs_error": 0.14393089711666107,
+      "mean_cosine": 0.6374408006668091,
+      "mean_relative_l2": 0.7009567618370056,
+      "oracle_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.9619846940040588,
+      "rows": 32
+    },
+    "timing_ms": {
+      "direct_median": 0.5344169912859797,
+      "direct_samples": [
+        0.7522089872509241,
+        0.5344169912859797,
+        0.5526250461116433,
+        0.5286669475026429,
+        0.5258340388536453
+      ],
+      "factor_oracle_median": 0.29870797879993916,
+      "factor_oracle_samples": [
+        0.29512500623241067,
+        0.3024999750778079,
+        0.29870797879993916,
+        0.30754198087379336,
+        0.2963750157505274
+      ],
+      "source_oracle_median": 0.28804101748391986,
+      "source_oracle_samples": [
+        0.29495800845324993,
+        0.28804101748391986,
+        0.28737500542774796,
+        0.32762496266514063,
+        0.28558302437886596
+      ]
+    }
+  }
+}

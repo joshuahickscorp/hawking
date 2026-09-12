@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.flash.repeated_accepted_decode.runner_readiness.v1",
+  "status": "IMPLEMENTED__CLEAN_GPU_LANE_REQUIRED",
+  "objective": "Close the Flash-Next repeated accepted stateful decode gate with the smallest source-bound continuation path.",
+  "implementation": {
+    "executor": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+    "runner": "tools/odyssey/flash_repeated_accepted_decode.py",
+    "source_identity": {
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "runner_sha256": "35cd5bbe145eac5ec5d0d50b0a27553355efcb8354c735e4b60c2f6d42ee0b19",
+      "executor_sha256": "cdabac6a31de4dfa2fb519ac4df044cd655c8b7b38a62e8490d9cabfc0f5c998"
+    },
+    "reference_contract": "each caller-supplied continuation token is independently compared with the terminal argmax of its preceding exact 48-layer state",
+    "persistence_contract": "one verification session initializes at the prompt boundary once; linear recurrence and full-attention KV state persist through every checked continuation token",
+    "state_census": [
+      "linear persistent conv/recurrent bytes",
+      "full-attention key/value cache bytes",
+      "growth bytes per additional token",
+      "session token slots",
+      "per-segment source weight bytes (with cumulative counters retained separately)",
+      "source weight bytes per verification-session token"
+    ],
+    "failure_diagnosis": "reference-token rejection, reset/re-prefill assertion, missing state census, or non-green executor status remains explicit"
+  },
+  "verification": {
+    "compile": "cargo check -p hawking-core --example flash_stateful_complete_token_session",
+    "release_build": "cargo build --release -p hawking-core --example flash_stateful_complete_token_session; Finished release profile in 1m52s; build only, no model load or GPU work",
+    "tests": "python3 -m pytest -q tools/odyssey/test_flash_repeated_accepted_decode.py tools/odyssey/test_flash_stateful_gate.py; includes rejection of a receipt from a wrong pinned source revision",
+    "result": "4 passed",
+    "dry_run": "tools/odyssey/flash_repeated_accepted_decode.py --dry-run",
+    "live_preflight": "BLOCKED_CLEAN_GPU_LANE because the live hawkingd-owned KIMI mlx_vlm provider is resident; no Flash GPU process was launched"
+  },
+  "next_action": "When the KIMI GPU lane is deliberately quiesced, run tools/odyssey/flash_repeated_accepted_decode.py without --allow-busy-gpu. On success, immediately run clean repeated timing and state/dispatch/bytes-token census.",
+  "claim_boundary": "No multi-token Flash run has occurred yet. This receipt proves source implementation, compile/test/dry-run behavior, and the precise clean-lane blocker only; it makes no repeated decode, TPS, capability, EBPW, direct execution, or residency claim."
+}

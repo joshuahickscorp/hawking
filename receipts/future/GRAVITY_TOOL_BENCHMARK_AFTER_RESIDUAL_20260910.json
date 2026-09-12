@@ -1,0 +1,104 @@
+{
+  "claim_boundary": "This is a baseline for comparison. It does not claim a speedup, capability parity, or semantic equivalence for any future reduction.",
+  "generated_at": "2026-09-10T09:27:10.224077+00:00",
+  "next_measurement": "Run the same receipt after one typed-family migration and compare first-tool correctness, invalid-call recovery, tokens, latency, compile cost, and retained tests.",
+  "schema": "hawking.gravity.tool_benchmark.v1",
+  "source": {
+    "bytes": 219471,
+    "lines": 4603,
+    "path": "hcli/tool_registry.py"
+  },
+  "status": "CURRENT_PARITY_CACHE_INDEX_PROMPT",
+  "surface": {
+    "all_catalog_json_bytes": 76863,
+    "compact_prompt_catalog_chars": {
+      "authorized defensive security": 1274,
+      "campaign": 1274,
+      "filesystem": 1274,
+      "gravity": 1400
+    },
+    "compact_prompt_reduction_percent": {
+      "authorized defensive security": 70.03,
+      "campaign": 70.03,
+      "filesystem": 70.03,
+      "gravity": 67.07
+    },
+    "compatibility_aliases": 66,
+    "discoverable_catalog_json_bytes": 38773,
+    "discoverable_model_facing_tools": 43,
+    "focused_catalog_json_bytes": {
+      "authorized defensive security": 9565,
+      "campaign": 5491,
+      "filesystem": 11078,
+      "gravity": 4327
+    },
+    "full_prompt_catalog_chars": 4251,
+    "registered_callable_spellings": 109
+  },
+  "timing": {
+    "compact_prompt_catalog": {
+      "authorized defensive security": {
+        "max_s": 6.0874997870996594e-05,
+        "median_s": 5.060400872025639e-05,
+        "min_s": 4.941702354699373e-05
+      },
+      "campaign": {
+        "max_s": 5.066601443104446e-05,
+        "median_s": 4.887548857368529e-05,
+        "min_s": 4.862499190494418e-05
+      },
+      "filesystem": {
+        "max_s": 5.233401316218078e-05,
+        "median_s": 4.9458001740276814e-05,
+        "min_s": 4.916699253953993e-05
+      },
+      "gravity": {
+        "max_s": 5.2916002459824085e-05,
+        "median_s": 5.110350321047008e-05,
+        "min_s": 5.070798215456307e-05
+      }
+    },
+    "discover": {
+      "max_s": 2.025000867433846e-05,
+      "median_s": 1.6061996575444937e-05,
+      "min_s": 1.5792000340297818e-05
+    },
+    "focused_discover": {
+      "authorized defensive security": {
+        "max_s": 8.266698569059372e-05,
+        "median_s": 6.204150849953294e-05,
+        "min_s": 6.108297384344041e-05
+      },
+      "campaign": {
+        "max_s": 8.500006515532732e-06,
+        "median_s": 7.416500011458993e-06,
+        "min_s": 7.2499969974160194e-06
+      },
+      "filesystem": {
+        "max_s": 1.6749982023611665e-05,
+        "median_s": 1.0812989785335958e-05,
+        "min_s": 1.0584015399217606e-05
+      },
+      "gravity": {
+        "max_s": 8.041999535635114e-06,
+        "median_s": 7.2499969974160194e-06,
+        "min_s": 7.041991921141744e-06
+      }
+    },
+    "registry_build": {
+      "max_s": 0.000895500008482486,
+      "median_s": 0.0007572920003440231,
+      "min_s": 0.0007017080206423998
+    },
+    "tool_registry_compile": {
+      "max_s": 0.021507291996385902,
+      "median_s": 0.018528334010625258,
+      "min_s": 0.01837041598628275
+    },
+    "unknown_tool_recovery": {
+      "max_s": 2.2916996385902166e-05,
+      "median_s": 2.9170041671022773e-06,
+      "min_s": 2.8339854907244444e-06
+    }
+  }
+}

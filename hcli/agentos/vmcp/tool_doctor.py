@@ -13,7 +13,6 @@ import shutil
 import stat
 import subprocess
 import sys
-import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -28,6 +27,7 @@ from hcli.agentos.vmcp.receipt import (
     tool_receipt,
     utc_now,
 )
+from hcli.latency import now_ns, since_ns
 
 
 NAME = "tool.doctor"
@@ -122,7 +122,7 @@ def profile(
     raw = argv if argv is not None else (command if command is not None else args.get("argv") or args.get("command") or args.get("tool"))
     argv_l = argv_list(raw)
     started = utc_now()
-    t0 = time.perf_counter()
+    t0_ns = now_ns()
     if not argv_l:
         return {
             "act": "check",
@@ -138,13 +138,13 @@ def profile(
         }
     refused = network_tool_refused(argv_l) or dangerous_command(argv_l)
     if refused:
-        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        elapsed_ns = since_ns(t0_ns)
         receipt = tool_receipt(
             tool=basename_of(argv_l) or NAME,
             invocation=argv_l,
             status="refused",
             started_at=started,
-            elapsed_ms=elapsed_ms,
+            elapsed_ns=elapsed_ns,
             limitations=[refused],
             verifier="hcli.agentos.vmcp.tool_doctor.profile",
         )
@@ -167,13 +167,13 @@ def profile(
         }
     resolved, absence = _resolve(argv_l)
     if absence:
-        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        elapsed_ns = since_ns(t0_ns)
         receipt = tool_receipt(
             tool=basename_of(argv_l) or NAME,
             invocation=argv_l,
             status="absent",
             started_at=started,
-            elapsed_ms=elapsed_ms,
+            elapsed_ns=elapsed_ns,
             limitations=[absence],
             verifier="hcli.agentos.vmcp.tool_doctor.profile",
         )
@@ -217,7 +217,7 @@ def profile(
         proc = None
         timed_out = False
         exception = f"{type(exc).__name__}:{exc.errno}"
-    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+    elapsed_ns = since_ns(t0_ns)
     limitations: list[str] = []
     stdout = b""
     stderr = b""
@@ -248,7 +248,7 @@ def profile(
         invocation=resolved,
         status=status,
         started_at=started,
-        elapsed_ms=elapsed_ms,
+        elapsed_ns=elapsed_ns,
         input_ids=[f"argv:{i}" for i, _ in enumerate(resolved)],
         input_hashes=[sha256_bytes(a.encode()) for a in resolved],
         output_ids=["stdout", "stderr"],
@@ -296,14 +296,15 @@ def profile(
         "evidence_tier": "FUNCTIONAL_SIM",
         "gpu_authority": False,
         "network_used": False,
-        "performance_ms": elapsed_ms,
+        "timing_unit": "ns",
+        "performance_ns": elapsed_ns,
         "deep_digest": content_digest(evidence),
         "artifacts": [],
         "evidence": [evidence],
         "residuals": limitations,
         "next_actions": [] if ok else ["inspect tool_receipt.limitations"],
         "note": (
-            "real local subprocess on this host; elapsed_ms is wall clock of "
+            "real local subprocess on this host; performance_ns is wall clock of "
             "the child, not a GPU measurement and not HARDWARE_MEASURED"
         ),
     }

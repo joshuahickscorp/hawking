@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.hawkingd.single_supervisor_receipt.v1",
+  "recorded_at": "2026-09-10T22:13:28Z",
+  "scope": "local Hawking runtime ownership",
+  "policy": {
+    "canonical_entrypoint": "hawkingd serve",
+    "installed_shim": "/Users/scammermike/.local/bin/hawkingd",
+    "installed_snapshot": "/Users/scammermike/.local/share/hcli/build-20260910-221205/hcli",
+    "one_long_lived_execution_surface": true,
+    "second_surface_behavior": "refuse before model loading",
+    "provider_children": "allowed only when spawned, tracked, and stopped by hawkingd",
+    "unrelated_host_processes": "outside Hawking ownership scope"
+  },
+  "live": {
+    "supervisor": {
+      "pid": 21611,
+      "process_title": "hawkingd serve :8011 [KIMI_P0_OPERATIONAL]",
+      "port": 8011,
+      "lease": "/Users/scammermike/.hcli/hawkingd.lock"
+    },
+    "owned_provider_child": {
+      "pid": 21615,
+      "provider": "mlx_vlm.server",
+      "model": "KIMI_P0_OPERATIONAL",
+      "parent_pid": 21611,
+      "expected": true
+    },
+    "unowned_hawking_model_servers": [],
+    "ascension_qwen38_live_processes": [],
+    "modellake_watcher_launchd": "unloaded and disabled by default",
+    "swap_used_bytes": 0,
+    "models_endpoint": ["KIMI_P0_OPERATIONAL"],
+    "tools_qualified": true,
+    "tool_name_count": 52,
+    "client_surfaces": {
+      "open_webui": {
+        "pid": 21668,
+        "port": 8080,
+        "endpoint": "http://127.0.0.1:8011/v1",
+        "role": "client_only; daemon-owned child sharing the hawkingd endpoint",
+        "arena_model_enabled": false,
+        "arena_model_count": 0,
+        "data_dir": "/Users/scammermike/.hcli/web/webui-8080/data",
+        "parent_pid": 21611
+      },
+      "open_webui_blind": {
+        "pid": 21912,
+        "port": 8081,
+        "endpoint": "http://127.0.0.1:8011/v1",
+        "role": "client_only; temporary blind HCLI surface sharing hawkingd",
+        "arena_model_enabled": false,
+        "arena_model_count": 0,
+        "data_dir": "/Users/scammermike/.hcli/web/webui-8081/data",
+        "parent_pid": 21611
+      }
+    }
+  },
+  "cleanup": {
+    "compiled_ascension_qwen38_artifacts_removed_from_build_dir": 49,
+    "compiled_bytes_moved_to_recoverable_trash": 224262464,
+    "trash_path": "/Users/scammermike/.Trash/hawking-ascension-qwen38-20260910",
+    "source_code_preserved": true,
+    "scientific_receipts_preserved": true,
+    "external_model_lake_sources_untouched": true
+  },
+  "claim_boundary": "The provider is a daemon-owned child, not a second independent Hawking service PID. Open WebUI is a client-only process on its own UI port and does not load a model. This receipt does not claim ownership of unrelated Python applications on the host."
+}

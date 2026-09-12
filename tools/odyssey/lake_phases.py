@@ -7,10 +7,11 @@ stat-only walk of the live lake, never a hand-maintained list) so a test can
 catch the doc going stale the moment the lake's real composition drifts from
 what it claims.
 
-Tier boundaries and the "top 3" deferral are the operator's 2026-09-05
-policy (encoded here, not re-litigated): tiers are named by GiB (2**30),
-matching how the operator's own figures were derived (`du`-style binary
-units, confirmed by matching the given top-3 sizes to within 0.1 GiB).
+Tier boundaries and the original "top 3" deferral are the operator's
+2026-09-05 policy (encoded here, not re-litigated). A deferred specimen that
+has since left the live lake is not counted as a resident deferred body.
+Tiers are named by GiB (2**30), matching how the operator's own figures were
+derived (`du`-style binary units).
 """
 from __future__ import annotations
 
@@ -28,8 +29,10 @@ SEQ_READ_BPS = 118_000_000  # 118 MB/s sequential, measured against this USB vol
 # Tier upper bounds in GiB: A_tiny <=8, B_mid <=40, C_large <=80, D_giant >80.
 TIERS = (("A_tiny", 8 * GIB), ("B_mid", 40 * GIB), ("C_large", 80 * GIB), ("D_giant", None))
 
-# Operator decision 2026-09-05: the top 3 by size are deferred from
-# execution-class Odyssey work (not dropped -- stay in the static census).
+# Operator decision 2026-09-05: these three named bodies are deferred from
+# execution-class Odyssey work while resident. The abliterated Flash-Next body
+# has since left the live lake; the pristine Flash-Next source is a different
+# slug and remains governed by the explicit Pulsar priority schedule.
 DEFERRED_GIANTS = frozenset({
     "moonshotai/Kimi-K3",
     "thinkingmachines/Inkling-Small",

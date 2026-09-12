@@ -23,7 +23,8 @@ pub struct HcliTurnResult {
     pub completion: String,
     /// Raw metrics from the model runtime. Optional fields mean the runtime did
     /// not expose them; callers must not derive a complete-forward TPS without
-    /// both `decode_ms` and `completed_decode_forwards`.
+    /// both `decode_ns` (or a legacy `decode_ms` fallback) and
+    /// `completed_decode_forwards`.
     pub generation_stats: hide_core::runtime::GenerationStats,
     pub complete_forward_tps: Option<f64>,
     /// Metadata-only receipt for an explicit local evidence selection. This is
@@ -398,11 +399,11 @@ impl BackendHost {
             )
             .await?;
         let complete_forward_tps = match (
-            outcome.generation_stats.decode_ms,
+            outcome.generation_stats.effective_decode_ns(),
             outcome.generation_stats.completed_decode_forwards,
         ) {
-            (Some(decode_ms), Some(forwards)) if decode_ms > 0.0 && forwards > 0 => {
-                Some(forwards as f64 / (decode_ms / 1_000.0))
+            (Some(decode_ns), Some(forwards)) if forwards > 0 => {
+                Some(forwards as f64 * 1_000_000_000.0 / decode_ns as f64)
             }
             _ => None,
         };

@@ -101,6 +101,7 @@ fn usage() -> &'static str {
        hcli source show (--ref OREF | --hash BLAKE3) [--workspace PATH] [--json]\n\
        hcli source context --attach OREF_OR_BLAKE3 [--attach OREF_OR_BLAKE3]... [--workspace PATH] [--json]\n\
        hcli processes [--workspace PATH] [--no-footprint] [--json]\n\
+       hcli processes-server --workspace PATH\n\
        hcli bench --prompt TEXT --model-url URL [--warmup N] [--runs N]\n\
                   [--max-output-tokens N] [--receipt PATH]\n\
        hcli bridge jsonl [--workspace PATH] [--model-url URL]\n\
@@ -300,6 +301,116 @@ fn cmd_processes(options: &Options) -> Result<Value> {
     ))
 }
 
+/// Short-lived diagnostic snapshots avoid paying for a fresh `ps` process on
+/// every UI poll. Safety-sensitive orphan detection and reaping intentionally
+/// bypass this cache and inspect the host afresh.
+const PROCESS_INSPECT_CACHE_TTL: Duration = Duration::from_millis(250);
+
+struct CachedProcessReport {
+    sampled: Instant,
+    report: hide_backend::HostProcessReport,
+}
+
+#[derive(Default)]
+struct ProcessInspectCache {
+    no_footprint: Option<CachedProcessReport>,
+    footprint: Option<CachedProcessReport>,
+}
+
+impl ProcessInspectCache {
+    fn inspect(&mut self, footprint: bool) -> (hide_backend::HostProcessReport, u128, bool) {
+        let slot = if footprint {
+            &mut self.footprint
+        } else {
+            &mut self.no_footprint
+        };
+        if let Some(cached) = slot.as_ref() {
+            let age = cached.sampled.elapsed();
+            if age <= PROCESS_INSPECT_CACHE_TTL {
+                return (cached.report.clone(), age.as_nanos(), true);
+            }
+        }
+        let report = hide_backend::inspect_host_processes(footprint);
+        *slot = Some(CachedProcessReport {
+            sampled: Instant::now(),
+            report: report.clone(),
+        });
+        (report, 0, false)
+    }
+}
+
+/// Keep the canonical Rust process inspector resident for HCLI daemon-owned
+/// observers. The request protocol is intentionally narrower than the full
+/// CLI: it exposes the existing read/reap operations without creating a
+/// second classifier or signal policy.
+fn cmd_processes_server(options: &Options) -> Result<()> {
+    let root = workspace(options)?;
+    let stdin = io::stdin();
+    let mut stdout = io::stdout().lock();
+    let mut cache = ProcessInspectCache::default();
+    for line in stdin.lock().lines() {
+        let line = line?;
+        let response = match serde_json::from_str::<Value>(&line) {
+            Ok(request) => match request.get("op").and_then(Value::as_str).unwrap_or("") {
+                "inspect" => {
+                    let footprint = request
+                        .get("footprint")
+                        .and_then(Value::as_bool)
+                        .unwrap_or(true);
+                    let (report, age_ns, cache_hit) = cache.inspect(footprint);
+                    let mut value = serde_json::to_value(report)?;
+                    if let Some(object) = value.as_object_mut() {
+                        object.insert(
+                            "sampling".into(),
+                            json!({
+                                "cache_hit": cache_hit,
+                                "age_ns": age_ns,
+                                "max_age_ns": PROCESS_INSPECT_CACHE_TTL.as_nanos(),
+                                "timing_unit": "ns",
+                                "safety": "diagnostic_snapshot_only",
+                            }),
+                        );
+                    }
+                    command_envelope("processes", value)
+                }
+                "orphaned" => command_envelope(
+                    "processes.orphaned",
+                    json!({
+                        "orphaned": hide_backend::orphaned_host_processes(&root),
+                    }),
+                ),
+                "reap" => {
+                    let dry_run = request
+                        .get("dry_run")
+                        .and_then(Value::as_bool)
+                        .unwrap_or(false);
+                    command_envelope(
+                        "processes.reap",
+                        serde_json::to_value(hide_backend::reap_host_processes(&root, dry_run))?,
+                    )
+                }
+                "shutdown" => {
+                    writeln!(
+                        stdout,
+                        "{}",
+                        json!({"ok": true, "schema": "hcli.processes-server.shutdown.v1"})
+                    )?;
+                    stdout.flush()?;
+                    return Ok(());
+                }
+                _ => json!({
+                    "ok": false,
+                    "error": "processes-server op must be inspect, orphaned, reap, or shutdown"
+                }),
+            },
+            Err(error) => json!({"ok": false, "error": format!("invalid JSON: {error}")}),
+        };
+        writeln!(stdout, "{}", serde_json::to_string(&response)?)?;
+        stdout.flush()?;
+    }
+    Ok(())
+}
+
 fn emit(value: Value, compact: bool) -> Result<()> {
     if compact {
         println!("{}", serde_json::to_string(&value)?);
@@ -401,7 +512,7 @@ async fn cmd_capabilities(options: &Options) -> Result<Value> {
                 "source_ingest_to_context": "opt-in bounded local derivative selection only; no implicit session carry-forward, URL fetch, or unlimited storage",
                 "write_swarm_isolation": false,
                 "deepseek_v4_gravity": "an explicit --model-url may expose a live V4 diagnostic; HCLI never promotes that into a full-model, numeric-parity, Metal, or TPS claim",
-                "tps": "only claimed when runtime supplies completed_decode_forwards and decode_ms",
+                "tps": "only claimed when runtime supplies completed_decode_forwards and decode_ns",
             },
         }),
     ))
@@ -489,7 +600,7 @@ async fn cmd_run(options: &Options) -> Result<Value> {
             "workspace": root,
             "model_url": endpoint,
             "turn": turn,
-            "tps_note": "complete_forward_tps is null unless the runtime exposed both completed_decode_forwards and decode_ms",
+            "tps_note": "complete_forward_tps is null unless the runtime exposed both completed_decode_forwards and decode_ns",
         }),
     ))
 }
@@ -827,7 +938,10 @@ async fn cmd_bench(options: &Options) -> Result<Value> {
     for _ in 0..runs {
         samples.push(one_bench_call(&provider, &prompt, max_output_tokens).await?);
     }
-    let total_wall_ms: f64 = samples.iter().map(|sample| sample.wall_ms).sum();
+    let total_wall_ns: u64 = samples
+        .iter()
+        .fold(0u64, |total, sample| total.saturating_add(sample.wall_ns));
+    let total_wall_ms = total_wall_ns as f64 / 1_000_000.0;
     let total_output_tokens: usize = samples.iter().map(|sample| sample.output_tokens).sum();
     let total_forwards: usize = samples
         .iter()
@@ -837,27 +951,28 @@ async fn cmd_bench(options: &Options) -> Result<Value> {
         .iter()
         .filter(|sample| {
             sample
-                .decode_ms
+                .decode_ns
                 .zip(sample.completed_decode_forwards)
-                .is_some_and(|(ms, forwards)| ms > 0.0 && forwards > 0)
+                .is_some_and(|(nanoseconds, forwards)| nanoseconds > 0 && forwards > 0)
         })
         .collect();
-    let total_decode_ms: f64 = complete_metric_samples
+    let total_decode_ns: u64 = complete_metric_samples
         .iter()
-        .filter_map(|sample| sample.decode_ms)
-        .sum();
+        .filter_map(|sample| sample.decode_ns)
+        .fold(0u64, |total, nanoseconds| total.saturating_add(nanoseconds));
     let complete_forward_tps = (complete_metric_samples.len() == samples.len()
-        && total_decode_ms > 0.0
+        && total_decode_ns > 0
         && total_forwards > 0)
-        .then(|| total_forwards as f64 / (total_decode_ms / 1_000.0));
+        .then(|| total_forwards as f64 * 1_000_000_000.0 / total_decode_ns as f64);
     let per_sample_complete_tps: Vec<f64> = samples
         .iter()
         .filter_map(|sample| {
             sample
-                .decode_ms
+                .decode_ns
                 .zip(sample.completed_decode_forwards)
-                .and_then(|(ms, forwards)| {
-                    (ms > 0.0 && forwards > 0).then(|| forwards as f64 / (ms / 1_000.0))
+                .and_then(|(nanoseconds, forwards)| {
+                    (nanoseconds > 0 && forwards > 0)
+                        .then(|| forwards as f64 * 1_000_000_000.0 / nanoseconds as f64)
                 })
         })
         .collect();
@@ -865,8 +980,8 @@ async fn cmd_bench(options: &Options) -> Result<Value> {
         .iter()
         .filter_map(|sample| sample.decode_tokens_per_second.map(f64::from))
         .collect();
-    let e2e_emitted_token_tps = (total_wall_ms > 0.0 && total_output_tokens > 0)
-        .then(|| total_output_tokens as f64 / (total_wall_ms / 1_000.0));
+    let e2e_emitted_token_tps = (total_wall_ns > 0 && total_output_tokens > 0)
+        .then(|| total_output_tokens as f64 * 1_000_000_000.0 / total_wall_ns as f64);
     let mut receipt = json!({
         "schema": "hcli.model_benchmark.v1",
         "status": "completed",
@@ -879,17 +994,24 @@ async fn cmd_bench(options: &Options) -> Result<Value> {
         },
         "aggregate": {
             "output_tokens": total_output_tokens,
+            "timing_unit": "ns",
+            "wall_ns": total_wall_ns,
             "wall_ms": total_wall_ms,
             "e2e_emitted_token_tps": e2e_emitted_token_tps,
             "completed_decode_forwards": total_forwards,
-            "decode_ms": if complete_metric_samples.is_empty() { None } else { Some(total_decode_ms) },
+            "decode_ns": if complete_metric_samples.is_empty() { None } else { Some(total_decode_ns) },
+            "decode_ms": if complete_metric_samples.is_empty() {
+                None
+            } else {
+                Some(total_decode_ns as f64 / 1_000_000.0)
+            },
             "complete_forward_tps": complete_forward_tps,
             "complete_forward_tps_quantiles": quantiles(&per_sample_complete_tps),
             "runtime_reported_decode_token_tps_quantiles": quantiles(&runtime_reported_decode_tps),
             "tps_authority": if complete_forward_tps.is_some() {
-                "sum(completed_decode_forwards) / sum(decode_ms), from real runtime requests"
+                "sum(completed_decode_forwards) * 1e9 / sum(decode_ns), from real runtime requests"
             } else {
-                "complete-forward TPS unavailable: every measured request must expose both completed_decode_forwards and decode_ms"
+                "complete-forward TPS unavailable: every measured request must expose both completed_decode_forwards and decode_ns"
             },
             "wall_time_note": "e2e_emitted_token_tps includes request, scheduler, prefill, decode, and streaming overhead; it is not a kernel decode-TPS claim",
         },
@@ -984,18 +1106,20 @@ fn bridge_runtime_url(request_url: Option<&str>, options: &Options) -> Option<St
 }
 
 fn bridge_decode_telemetry(stats: &hide_core::runtime::GenerationStats) -> DecodeTelemetry {
-    let (decode_ms, completed_decode_forwards, decode_forwards_per_second) =
-        match (stats.decode_ms, stats.completed_decode_forwards) {
-            (Some(milliseconds), Some(forwards)) if milliseconds > 0.0 && forwards > 0 => (
-                Some(milliseconds),
+    let (decode_ns, decode_ms, completed_decode_forwards, decode_forwards_per_second) =
+        match (stats.effective_decode_ns(), stats.completed_decode_forwards) {
+            (Some(nanoseconds), Some(forwards)) if forwards > 0 => (
+                Some(nanoseconds),
+                Some(nanoseconds as f64 / 1_000_000.0),
                 Some(forwards as u64),
-                Some(forwards as f64 * 1_000.0 / milliseconds),
+                Some(forwards as f64 * 1_000_000_000.0 / nanoseconds as f64),
             ),
-            _ => (None, None, None),
+            _ => (None, None, None, None),
         };
     DecodeTelemetry {
         input_tokens: Some(stats.input_tokens as u64),
         output_tokens: Some(stats.output_tokens as u64),
+        decode_ns,
         decode_ms,
         completed_decode_forwards,
         decode_forwards_per_second,
@@ -1080,7 +1204,7 @@ async fn bridge_direct_generate(
         .zip(stats.completed_decode_forwards)
         .is_some_and(|(milliseconds, forwards)| milliseconds > 0.0 && forwards > 0)
     {
-        warnings.push("The runtime omitted completed_decode_forwards and/or decode_ms, so no complete-forward TPS is reported.".to_string());
+        warnings.push("The runtime omitted completed_decode_forwards and/or decode_ns, so no complete-forward TPS is reported.".to_string());
     }
     Ok(GenerateResponse {
         status: OperationStatus::Completed,
@@ -1151,7 +1275,7 @@ async fn bridge_generate(
         );
     }
     if turn.complete_forward_tps.is_none() {
-        warnings.push("The runtime omitted completed_decode_forwards and/or decode_ms, so no complete-forward TPS is reported.".to_string());
+        warnings.push("The runtime omitted completed_decode_forwards and/or decode_ns, so no complete-forward TPS is reported.".to_string());
     }
     Ok(GenerateResponse {
         status: OperationStatus::Completed,
@@ -1170,6 +1294,8 @@ async fn bridge_generate(
 
 fn bridge_agent_realization(receipt: &Value) -> AgentRealization {
     let get_u64 = |pointer: &str| receipt.pointer(pointer).and_then(Value::as_u64);
+    let wall_elapsed_ns =
+        get_u64("/wall_elapsed_ns").or_else(|| get_u64("/wall_elapsed_ms")?.checked_mul(1_000_000));
     AgentRealization {
         transitions: get_u64("/agent/transitions_executed"),
         model_calls: get_u64("/agent/model_metrics/recorded_call_count"),
@@ -1177,7 +1303,9 @@ fn bridge_agent_realization(receipt: &Value) -> AgentRealization {
         subagents_total: get_u64("/agent/agent_topology/actual_subagents_total"),
         input_tokens: get_u64("/agent/model_metrics/recorded_input_tokens"),
         output_tokens: get_u64("/agent/model_metrics/recorded_output_tokens"),
-        wall_elapsed_ms: get_u64("/wall_elapsed_ms"),
+        wall_elapsed_ns,
+        wall_elapsed_ms: get_u64("/wall_elapsed_ms")
+            .or_else(|| wall_elapsed_ns.map(|ns| ns / 1_000_000)),
     }
 }
 
@@ -1615,9 +1743,12 @@ async fn cmd_bridge(subcommand: Option<&str>, options: &Options) -> Result<()> {
 
 #[derive(Debug, serde::Serialize)]
 struct BenchSample {
+    timing_unit: &'static str,
+    wall_ns: u64,
     wall_ms: f64,
     input_tokens: usize,
     output_tokens: usize,
+    decode_ns: Option<u64>,
     decode_ms: Option<f64>,
     completed_decode_forwards: Option<usize>,
     decode_tokens_per_second: Option<f32>,
@@ -1648,11 +1779,15 @@ async fn one_bench_call(
         Ok(())
     };
     let stats = provider.generate(request, &mut sink).await?;
+    let wall_ns = started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
     Ok(BenchSample {
-        wall_ms: started.elapsed().as_secs_f64() * 1_000.0,
+        timing_unit: "ns",
+        wall_ns,
+        wall_ms: wall_ns as f64 / 1_000_000.0,
         input_tokens: stats.input_tokens,
         output_tokens: stats.output_tokens,
-        decode_ms: stats.decode_ms,
+        decode_ns: stats.effective_decode_ns(),
+        decode_ms: stats.effective_decode_ms(),
         completed_decode_forwards: stats.completed_decode_forwards,
         decode_tokens_per_second: stats.decode_tokens_per_second,
         emitted_utf8_bytes,
@@ -2762,6 +2897,9 @@ async fn main() -> Result<()> {
     }
     if command == "repl" {
         return cmd_repl(&options).await;
+    }
+    if command == "processes-server" {
+        return cmd_processes_server(&options);
     }
     if command == "bridge" {
         return cmd_bridge(subcommand, &options).await;

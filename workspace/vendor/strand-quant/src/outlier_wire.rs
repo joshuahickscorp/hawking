@@ -1,4 +1,3 @@
-
 use std::fs;
 use std::io::Write as _;
 use std::path::Path;
@@ -40,13 +39,12 @@ pub const OUTL_RECORD_FIXED_BYTES: usize = 24;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OutlierWire {
-    
     pub omax_bits: u32,
-    
+
     pub entries: Vec<(u32, i32)>,
-    
+
     pub idx_bits: u32,
-    
+
     pub val_bits: u32,
 }
 
@@ -60,7 +58,6 @@ pub fn idx_bits_for(n: usize) -> u32 {
 }
 
 impl OutlierWire {
-    
     pub fn from_selection(
         n_total: usize,
         idx: Vec<usize>,
@@ -69,8 +66,7 @@ impl OutlierWire {
         val_bits: u32,
     ) -> Self {
         debug_assert_eq!(idx.len(), codes.len());
-        let mut entries: Vec<(u32, i32)> =
-            idx.into_iter().map(|i| i as u32).zip(codes).collect();
+        let mut entries: Vec<(u32, i32)> = idx.into_iter().map(|i| i as u32).zip(codes).collect();
         entries.sort_unstable_by_key(|&(i, _)| i);
         OutlierWire {
             omax_bits: omax.to_bits(),
@@ -136,11 +132,10 @@ pub struct OutlSection {
 }
 
 impl OutlSection {
-    
     pub fn n_with_channel(&self) -> usize {
         self.tensors.iter().filter(|t| t.is_some()).count()
     }
-    
+
     pub fn total_entries(&self) -> usize {
         self.tensors
             .iter()
@@ -180,10 +175,16 @@ fn outl_section_bytes(
             }
             Some(w) => {
                 if w.idx_bits == 0 || w.idx_bits > 32 {
-                    return Err(format!("outl: tensor record {i}: idx_bits {} out of range", w.idx_bits));
+                    return Err(format!(
+                        "outl: tensor record {i}: idx_bits {} out of range",
+                        w.idx_bits
+                    ));
                 }
                 if !(2..=16).contains(&w.val_bits) {
-                    return Err(format!("outl: tensor record {i}: val_bits {} out of range", w.val_bits));
+                    return Err(format!(
+                        "outl: tensor record {i}: val_bits {} out of range",
+                        w.val_bits
+                    ));
                 }
                 let levels = (1i64 << (w.val_bits - 1)) - 1;
                 let mut prev: Option<u32> = None;
@@ -269,7 +270,10 @@ pub fn append_outl(path: impl AsRef<Path>, wires: &[Option<OutlierWire>]) -> Res
 /// C2F entropy coder instead of bit-packing them inline (`OUTL_FLAG_POS_RANS`).
 /// Container-only: `read_outl_bytes` reconstructs byte-identical `entries`, so the
 /// decode/MAC/SPRV path is unchanged — only the on-disk position footprint shrinks.
-pub fn append_outl_c2f(path: impl AsRef<Path>, wires: &[Option<OutlierWire>]) -> Result<(), String> {
+pub fn append_outl_c2f(
+    path: impl AsRef<Path>,
+    wires: &[Option<OutlierWire>],
+) -> Result<(), String> {
     append_outl_inner(path, wires, true)
 }
 
@@ -311,14 +315,16 @@ fn append_outl_inner(
     }
     let totals: Vec<usize> = hdr.tensors.iter().map(|t| t.total).collect();
     let section = outl_section_bytes(wires, &totals, pos_rans)?;
-    let outl_bytes: u32 = section
-        .len()
-        .try_into()
-        .map_err(|_| format!("outl: section is {} bytes — exceeds the u32 field", section.len()))?;
+    let outl_bytes: u32 = section.len().try_into().map_err(|_| {
+        format!(
+            "outl: section is {} bytes — exceeds the u32 field",
+            section.len()
+        )
+    })?;
 
     let outl_offset = page_align(buf.len());
     let lead_pad = outl_offset - buf.len();
-    
+
     let end = page_align(outl_offset + section.len() + OUTL_TRAILER_BYTES);
     let tail_pad = end - OUTL_TRAILER_BYTES - outl_offset - section.len();
 
@@ -334,7 +340,8 @@ fn append_outl_inner(
         .append(true)
         .open(path)
         .map_err(|e| format!("outl: open {path:?} for append: {e}"))?;
-    f.write_all(&tail).map_err(|e| format!("outl: append to {path:?}: {e}"))?;
+    f.write_all(&tail)
+        .map_err(|e| format!("outl: append to {path:?}: {e}"))?;
     Ok(())
 }
 
@@ -347,7 +354,7 @@ fn parse_outl_section(
     if outl_offset % PAGE != 0 {
         return Err(format!("outl: outl_offset {outl_offset} not page-aligned"));
     }
-    
+
     let min_end = outl_offset
         .checked_add(outl_bytes)
         .and_then(|x| x.checked_add(OUTL_TRAILER_BYTES))
@@ -361,7 +368,7 @@ fn parse_outl_section(
     if outl_bytes < OUTL_HEADER_BYTES {
         return Err("outl: section shorter than the 32-byte header".into());
     }
-    
+
     if buf[outl_offset + outl_bytes..trailer_end - OUTL_TRAILER_BYTES]
         .iter()
         .any(|&b| b != 0)
@@ -397,7 +404,10 @@ fn parse_outl_section(
 
     let mut p = OUTL_HEADER_BYTES;
     let take = |p: &mut usize, n: usize| -> Result<&[u8], String> {
-        let end = p.checked_add(n).filter(|&e| e <= s.len()).ok_or("outl: section truncated")?;
+        let end = p
+            .checked_add(n)
+            .filter(|&e| e <= s.len())
+            .ok_or("outl: section truncated")?;
         let sl = &s[*p..end];
         *p = end;
         Ok(sl)
@@ -431,10 +441,14 @@ fn parse_outl_section(
                 ));
             }
         } else if idx_bits == 0 || idx_bits > 32 {
-            return Err(format!("outl: tensor record {i}: idx_bits {idx_bits} out of range"));
+            return Err(format!(
+                "outl: tensor record {i}: idx_bits {idx_bits} out of range"
+            ));
         }
         if !(2..=16).contains(&val_bits) {
-            return Err(format!("outl: tensor record {i}: val_bits {val_bits} out of range"));
+            return Err(format!(
+                "outl: tensor record {i}: val_bits {val_bits} out of range"
+            ));
         }
         if count > desc.total {
             return Err(format!(
@@ -443,7 +457,11 @@ fn parse_outl_section(
             ));
         }
 
-        let effective_idx_bits = if pos_rans { idx_bits_for(desc.total) } else { idx_bits };
+        let effective_idx_bits = if pos_rans {
+            idx_bits_for(desc.total)
+        } else {
+            idx_bits
+        };
         let entries = if pos_rans {
             // value-only packed codes, then a gap-coded position rANS stream
             let val_bytes = (count * val_bits as usize).div_ceil(8);
@@ -544,14 +562,17 @@ fn parse_outl_section(
         }));
     }
     if p != outl_bytes {
-        return Err(format!("outl: {} trailing bytes after the last record", outl_bytes - p));
+        return Err(format!(
+            "outl: {} trailing bytes after the last record",
+            outl_bytes - p
+        ));
     }
     Ok(OutlSection { tensors })
 }
 
 pub fn read_outl_bytes(buf: &[u8], strict: bool) -> Result<Option<OutlSection>, String> {
     let mut end = buf.len();
-    
+
     for _ in 0..4 {
         if end < OUTL_TRAILER_BYTES {
             return Ok(None);
@@ -669,12 +690,12 @@ mod tests {
         vec![
             Some(OutlierWire::from_selection(
                 1024,
-                vec![700, 3, 511],          
+                vec![700, 3, 511],
                 vec![-127, 5, 127],
                 0.3125f32,
                 8,
             )),
-            None, 
+            None,
         ]
     }
 
@@ -685,24 +706,36 @@ mod tests {
         let _guard = TmpFile(path.clone());
         std::fs::write(&path, &buf).unwrap();
 
-        assert_eq!(read_outl(&path).unwrap(), None, "plain v2 must read as absent");
+        assert_eq!(
+            read_outl(&path).unwrap(),
+            None,
+            "plain v2 must read as absent"
+        );
 
         let wires = sample_wires();
         append_outl(&path, &wires).expect("append outl");
 
         let back = read_outl(&path).unwrap().expect("section found");
-        
+
         let w0 = back.tensors[0].as_ref().unwrap();
         assert_eq!(w0.entries, vec![(3, 5), (511, 127), (700, -127)]);
-        assert_eq!(w0.idx_bits, 10); 
+        assert_eq!(w0.idx_bits, 10);
         assert_eq!(w0.val_bits, 8);
         assert_eq!(w0.omax_bits, 0.3125f32.to_bits());
         assert!(back.tensors[1].is_none());
         assert_eq!(back.tensors, wires);
 
         let trailered = std::fs::read(&path).unwrap();
-        assert_eq!(&trailered[..buf.len()], &buf[..], "append must not touch v2 bytes");
-        assert_eq!(trailered.len() % PAGE, 0, "OUTL end must be page-aligned (stacking)");
+        assert_eq!(
+            &trailered[..buf.len()],
+            &buf[..],
+            "append must not touch v2 bytes"
+        );
+        assert_eq!(
+            trailered.len() % PAGE,
+            0,
+            "OUTL end must be page-aligned (stacking)"
+        );
         let h0 = crate::format::read_strand_v2_header(&buf).unwrap();
         let h1 = crate::format::read_strand_v2_header(&trailered).unwrap();
         assert_eq!(h0.tensors.len(), h1.tensors.len());
@@ -751,7 +784,11 @@ mod tests {
         let coff = u64::from_le_bytes(ct[0..8].try_into().unwrap()) as usize;
         let lflags = u32::from_le_bytes(legacy_bytes[loff + 12..loff + 16].try_into().unwrap());
         let cflags = u32::from_le_bytes(c2f_bytes[coff + 12..coff + 16].try_into().unwrap());
-        assert_eq!(lflags & OUTL_FLAG_POS_RANS, 0, "legacy must NOT set POS_RANS");
+        assert_eq!(
+            lflags & OUTL_FLAG_POS_RANS,
+            0,
+            "legacy must NOT set POS_RANS"
+        );
         assert_ne!(cflags & OUTL_FLAG_POS_RANS, 0, "c2f MUST set POS_RANS");
 
         // SPRV must still seal+verify over a POS_RANS archive (decode unchanged).
@@ -772,7 +809,7 @@ mod tests {
 
         let outl_1 = read_outl(&path).unwrap().expect("outl under sprv");
         let sprv_1 = read_sprv(&path).unwrap().expect("sprv outermost");
-        
+
         let sprv_2 = read_sprv(&path).unwrap().expect("sprv outermost");
         let outl_2 = read_outl(&path).unwrap().expect("outl under sprv");
         assert_eq!(outl_1, outl_2);
@@ -794,16 +831,19 @@ mod tests {
         std::fs::write(&path, &buf).unwrap();
 
         assert!(append_outl(&path, &sample_wires()[..1]).is_err());
-        
+
         let mut w = sample_wires();
         w[0].as_mut().unwrap().entries.push((5000, 1));
-        w[0].as_mut().unwrap().entries.sort_unstable_by_key(|&(i, _)| i);
+        w[0].as_mut()
+            .unwrap()
+            .entries
+            .sort_unstable_by_key(|&(i, _)| i);
         assert!(append_outl(&path, &w).is_err());
-        
+
         let mut w = sample_wires();
         w[0].as_mut().unwrap().entries[0].1 = 200;
         assert!(append_outl(&path, &w).is_err());
-        
+
         assert_eq!(std::fs::read(&path).unwrap(), buf);
     }
 
@@ -848,7 +888,6 @@ mod tests {
         let mut codes = Vec::new();
         let mut want = Vec::new();
         for (i, &g) in gts.iter().enumerate() {
-            
             let v = (g / omax * levels).round() / levels * omax;
             let code = (g / omax * levels).round() as i32;
             idx.push(i);
@@ -857,13 +896,16 @@ mod tests {
         }
         let w = OutlierWire::from_selection(4096, idx, codes, omax, ob);
         let got: Vec<u32> = w.dequant_vals().map(|(_, v)| v.to_bits()).collect();
-        assert_eq!(got, want, "dequant must be byte-identical to the recon path");
+        assert_eq!(
+            got, want,
+            "dequant must be byte-identical to the recon path"
+        );
     }
 
     #[test]
     fn wire_bytes_matches_delta_billing() {
         let w = OutlierWire::from_selection(1024, vec![1, 2, 3], vec![1, -1, 7], 1.0, 8);
-        
+
         assert_eq!(w.wire_bytes(), 19);
     }
 

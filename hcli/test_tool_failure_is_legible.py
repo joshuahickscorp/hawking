@@ -136,6 +136,27 @@ def test_fs_list_does_not_recurse_unless_asked(tmp_path):
     assert "sub/deep.py" in deep, "recursive:true must still recurse"
 
 
+def test_fs_list_is_metadata_only_and_self_describing(tmp_path):
+    """Discovery names a file; reading its body remains an explicit action."""
+    from hcli.tool_registry import _list_files
+
+    secret_body = "BODY_THAT_MUST_REQUIRE_FS_READ"
+    (tmp_path / "evidence.json").write_text(secret_body, encoding="utf-8")
+    ctx = ToolContext(workspace=tmp_path, repo_root=tmp_path)
+
+    out = _list_files(ctx, {})
+    row = next(item for item in out["files"] if item["path"] == "evidence.json")
+    assert row == {
+        "path": "evidence.json",
+        "filename": "evidence.json",
+        "type": "file",
+        "kind": "file",
+        "size": len(secret_body),
+        "bytes": len(secret_body),
+    }
+    assert secret_body not in repr(out)
+
+
 def test_a_full_result_stops_the_walk(tmp_path):
     """The cap must end the work, not just trim the output."""
     from hcli.tool_registry import _list_files

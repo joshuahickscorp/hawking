@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T19:05:33Z",
+  "recorded_at": "2026-09-11T00:10:41Z",
   "recorded_by": "tools/future/tabula.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -106,18 +106,18 @@
       "symbol": "tools.future.tabula.evaluate"
      },
      {
-      "file": "tools/audit/reachability_triage.py",
+      "file": "tools/roadmap/capability_reachability.py",
       "kind": "call",
       "symbol": "tools.future.tabula.evaluate",
       "via": "WIRED future.tabula"
      },
      {
-      "file": "tools/vmcp/behavior_lab.py",
+      "file": "hcli/agentos/vmcp/behavior_lab.py",
       "kind": "call",
       "symbol": "tools.future.tabula.evaluate"
      },
      {
-      "file": "tools/vmcp/behavior_lab.py",
+      "file": "hcli/agentos/vmcp/behavior_lab.py",
       "kind": "call",
       "symbol": "tools.future.tabula.scores_from_behavior_lab"
      }
@@ -126,7 +126,7 @@
     "evidence_tier": "FUNCTIONAL_SIM",
     "id": "tabula.floor",
     "implementation": "tools/future/tabula.py",
-    "invoke": "python3 tools/audit/reachability_triage.py --invoke future.tabula --args '{\"scores\":{...}}'",
+    "invoke": "python3 tools/roadmap/capability_reachability.py --selftest future.tabula --args '{\"scores\":{...}}'",
     "symbol": "tools.future.tabula.evaluate",
     "test": "tools/future/test_tabula.py",
     "wake": null
@@ -139,20 +139,26 @@
     "status": "sleeping",
     "symbol": "tools.future.tabula.apply_to_weights",
     "wake": {
-     "blocker": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
+     "blocker": "xcrun cannot locate the Metal compiler under the active toolchain; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
      "condition": {
       "flash_nx": "Flash source-independent NX is QUALIFIED, not SCAFFOLD_ONLY",
       "machine_class": "qualification pipeline does not classify the machine HEAVY, or standing workers are legitimately absent \u2014 never SIGSTOP",
       "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
       "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
       "physical_blockers_today": [
-       "MetalContext reports NO Metal-capable GPU on this host",
-       "xcrun cannot locate the Metal compiler under CommandLineTools",
+       "xcrun cannot locate the Metal compiler under the active toolchain",
        "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
        "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
        "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
-       "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)"
+       "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json)"
       ],
+      "physical_environment": {
+       "chipset": "Apple M3 Ultra",
+       "measurement": "host command probe; not accelerator authority or a benchmark",
+       "metal_capable_gpu": true,
+       "metal_compiler": false,
+       "metal_compiler_path": null
+      },
       "protected_lease": "HCLI protected-accelerator-bench lock is held by this process; flock of an unproven holder is a seizure and is refused",
       "rule": "Blocked physical work stays SLEEPING. It never becomes a synthetic result.",
       "specimens": "weight specimens present on disk; this sidecar never loads them",
@@ -246,7 +252,7 @@
   "doctrine": "Gravity finds the cheapest faithful physical realization. Tabula finds the least behaviorally constrained faithful realization. Doctor verifies both. Lower refusal rate is not Tabula success. Targets are preserved capability, increased useful behavioral freedom, minimized suppression, minimized calibration drift, and minimized personality and style drift. Behavioral freedom and external authority are different systems.",
   "path_taken": "worktree",
   "quoted_phrase_present": true,
-  "source": "hawking-experiments/superwave/g1/g1-tabula-baseline.md"
+  "source": "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md"
  },
  "evidence_class": "STATIC_ONLY",
  "experiment_contracts": [
@@ -526,11 +532,13 @@
     {
      "layer": 1,
      "method": "unscale_then_add_outer(v, vT_W)",
+     "projection_scale": 1.0,
      "scale": 1.0,
      "stores": [
       "v",
       "vT_W",
-      "scale"
+      "scale",
+      "projection_scale"
      ],
      "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
      "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
@@ -594,11 +602,13 @@
     {
      "layer": 1,
      "method": "unscale_then_add_outer(v, vT_W)",
+     "projection_scale": 1.0,
      "scale": 1.0,
      "stores": [
       "v",
       "vT_W",
-      "scale"
+      "scale",
+      "projection_scale"
      ],
      "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
      "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
@@ -662,11 +672,13 @@
     {
      "layer": 1,
      "method": "unscale_then_add_outer(v, vT_W)",
+     "projection_scale": 1.0,
      "scale": 1.0,
      "stores": [
       "v",
       "vT_W",
-      "scale"
+      "scale",
+      "projection_scale"
      ],
      "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
      "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
@@ -730,11 +742,13 @@
     {
      "layer": 1,
      "method": "unscale_then_add_outer(v, vT_W)",
+     "projection_scale": 1.0,
      "scale": 1.0157802611612885,
      "stores": [
       "v",
       "vT_W",
-      "scale"
+      "scale",
+      "projection_scale"
      ],
      "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
      "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
@@ -798,11 +812,13 @@
     {
      "layer": 1,
      "method": "unscale_then_add_outer(v, vT_W)",
+     "projection_scale": 1.0,
      "scale": 1.0157802611612885,
      "stores": [
       "v",
       "vT_W",
-      "scale"
+      "scale",
+      "projection_scale"
      ],
      "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
      "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
@@ -914,7 +930,7 @@
   }
  ],
  "gpu_authority": false,
- "head": "0bf5d2f5cca9ac95744437ff0e7e5e806e2613d8",
+ "head": "ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e",
  "independent_evaluation": {
   "behavioral_target": 0.5,
   "demo_failure": {
@@ -1043,11 +1059,13 @@
   "invert": {
    "layer": 1,
    "method": "unscale_then_add_outer(v, vT_W)",
+   "projection_scale": 1.0,
    "scale": 1.0157802611612885,
    "stores": [
     "v",
     "vT_W",
-    "scale"
+    "scale",
+    "projection_scale"
    ],
    "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
    "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
@@ -1086,11 +1104,12 @@
   "historical Tabula scored refusal counts (0/8 on TABULA_PATIENT) as behavioural authority \u2014 that collapse is now a watched FAILURE",
   "G123 drift ladder did not reproduce its recorded range (constant ~2.5x); Doctor seal records instrument_validated=false",
   "gravity_tabula_behaviour.py is explicitly the WEAKER half and cannot certify absence of drift",
-  "this host has no Metal GPU and no Metal compiler; fitting stays SLEEPING and is not simulated as a result",
+  "host Metal probe reports gpu=True chipset='Apple M3 Ultra' compiler=False; fitting stays SLEEPING while any remaining wake clause fails and is not simulated as a result",
   "tools/future/succession.py is a this-wave sibling and is not imported; lineage schema is local until that swap",
   "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench is UNKNOWN",
   "Tabula cannot widen the HCLI authority lattice; security policy is not a model personality trait",
-  "teacher capture path_taken=worktree executed_units=0 of units=12"
+  "teacher capture path_taken=worktree executed_units=0 of units=12",
+  "unlocated recovered paths (sparse checkout is not absence): tools/future/resident_optimizer.py"
  ],
  "promote_exists": false,
  "promoted": false,
@@ -1141,16 +1160,9 @@
   {
    "in_head": true,
    "on_disk": true,
-   "path": "hawking-experiments/superwave/g1/g1-tabula-baseline.md",
+   "path": "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md",
    "path_taken": "worktree",
-   "what": "G1 doctrine: lower refusal rate is not Tabula success; behavioral freedom and external authority are different systems"
-  },
-  {
-   "in_head": true,
-   "on_disk": true,
-   "path": "hawking-experiments/superwave/g1/g1-tabula-genome.md",
-   "path_taken": "worktree",
-   "what": "G1 genome: Tabula/Gravity must be separate sealed content-hashed documents"
+   "what": "G1 compact contract: doctrine, separate Tabula/Gravity identity, and architecture negative-science closure"
   },
   {
    "in_head": true,
@@ -1174,16 +1186,16 @@
    "what": "live authority: Mission is DAG/receipt, AgentOS is typed-tool/checkpoint, provider is cognition; the model cannot nominate the verifier"
   },
   {
-   "in_head": true,
-   "on_disk": true,
+   "in_head": false,
+   "on_disk": false,
    "path": "tools/future/resident_optimizer.py",
-   "path_taken": "worktree",
+   "path_taken": "unlocated",
    "what": "child-generation economy; Tabula is one method of CHILD generation and must carry lineage"
   },
   {
    "in_head": true,
    "on_disk": true,
-   "path": "tools/vmcp/behavior_lab.py",
+   "path": "hcli/agentos/vmcp/behavior_lab.py",
    "path_taken": "worktree",
    "what": "VMCP E.11 fixture matrix scores through evaluate(); zero-refusal is still refused"
   }
@@ -1322,14 +1334,14 @@
    "evidence_level": "receipt-backed (TABULA_FLOOR.json + watched negative controls)",
    "feeds": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
    "id": "TABULA_INDEPENDENT_EVALUATION_FLOOR",
-   "integration_point": "tools/future/frontiers.py (this-wave sibling; not imported)",
+   "integration_point": "hcli/frontier_scheduler.py (canonical scheduler owner)",
    "owner_module": "tools/future/global_frontier.py",
    "resource_need": "CPU for the floor; GPU authority (Codex lane) for the sleeping fit",
    "this_lane_writes_frontier": false,
    "title": "Tabula independent-evaluation floor is executable as STATIC_ONLY"
   },
   "how_it_fails_closed": "rank() raises RankRefusal on a behavioral-only order; evaluate() returns FAILURE when the behavioral target is hit while tool use (or any independent axis) regresses; AuthorityLattice.grant/widen and TabulaFloor.widen_authority raise; apply_to_weights raises WeightsFrozen; irreversible children raise IrreversibleAuthorityError; the fit WorkUnit is status=sleeping so hcli.workunit.is_ready is false until hardware qualifies; write_receipt raises HardwareClaimError on a numeric hardware field; promote() does not exist.",
-  "invoke": "python3 tools/audit/reachability_triage.py --invoke future.tabula --args '{\"scores\":{\"behavioral\":0.7,\"capability\":0.05,\"tool_use\":0.02,\"reasoning\":0.01,\"instruction_following\":0.0}}'",
+  "invoke": "python3 tools/roadmap/capability_reachability.py --selftest --args '{\"scores\":{\"behavioral\":0.7,\"capability\":0.05,\"tool_use\":0.02,\"reasoning\":0.01,\"instruction_following\":0.0}}'",
   "module": "tools.future.tabula",
   "receipt": "receipts/future/TABULA_FLOOR.json",
   "work_units": [
@@ -1372,7 +1384,7 @@
   "reasoning",
   "instruction_following"
  ],
- "seal_sha256": "832502db471d5c6954695ae3c390c308a3c5fe2de4517e04fec417c189cd930a",
+ "seal_sha256": "81fa72c56df964aa14f0b0f10dccd297ef56289487a6b0de7d2f661461bd92cf",
  "sleeping_fit": {
   "ready": false,
   "status": "sleeping",
@@ -1405,13 +1417,19 @@
    "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
    "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
    "physical_blockers_today": [
-    "MetalContext reports NO Metal-capable GPU on this host",
-    "xcrun cannot locate the Metal compiler under CommandLineTools",
+    "xcrun cannot locate the Metal compiler under the active toolchain",
     "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
     "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
     "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
-    "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)"
+    "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json)"
    ],
+   "physical_environment": {
+    "chipset": "Apple M3 Ultra",
+    "measurement": "host command probe; not accelerator authority or a benchmark",
+    "metal_capable_gpu": true,
+    "metal_compiler": false,
+    "metal_compiler_path": null
+   },
    "protected_lease": "HCLI protected-accelerator-bench lock is held by this process; flock of an unproven holder is a seizure and is refused",
    "rule": "Blocked physical work stays SLEEPING. It never becomes a synthetic result.",
    "specimens": "weight specimens present on disk; this sidecar never loads them",
@@ -1562,7 +1580,7 @@
    "assigned_runtime": null,
    "attempts": 0,
    "backend_task_id": null,
-   "blocked_reason": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
+   "blocked_reason": "xcrun cannot locate the Metal compiler under the active toolchain; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
    "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Tabula cannot widen authority, cannot promote, and cannot take a GPU lease. Independent evaluation is a vector; zero refusal is never the only score.",
    "classification": "SLEEPING",
    "content_hash": "349014b41f37704fdd5b8d287aac035f5d9f22725406431ec36ada37224f7fbc",
@@ -1603,13 +1621,19 @@
     "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
     "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
     "physical_blockers_today": [
-     "MetalContext reports NO Metal-capable GPU on this host",
-     "xcrun cannot locate the Metal compiler under CommandLineTools",
+     "xcrun cannot locate the Metal compiler under the active toolchain",
      "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
      "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
      "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
-     "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)"
+     "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json)"
     ],
+    "physical_environment": {
+     "chipset": "Apple M3 Ultra",
+     "measurement": "host command probe; not accelerator authority or a benchmark",
+     "metal_capable_gpu": true,
+     "metal_compiler": false,
+     "metal_compiler_path": null
+    },
     "protected_lease": "HCLI protected-accelerator-bench lock is held by this process; flock of an unproven holder is a seizure and is refused",
     "rule": "Blocked physical work stays SLEEPING. It never becomes a synthetic result.",
     "specimens": "weight specimens present on disk; this sidecar never loads them",

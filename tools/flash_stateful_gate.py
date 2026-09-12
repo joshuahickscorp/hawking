@@ -28,6 +28,22 @@ FILES = [
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=pathlib.Path, required=True)
+    ap.add_argument(
+        "--session",
+        type=pathlib.Path,
+        help=(
+            "explicit complete-session receipt to audit; defaults to the canonical "
+            "accepted-session receipt selection"
+        ),
+    )
+    ap.add_argument(
+        "--timing",
+        type=pathlib.Path,
+        help=(
+            "explicit timing/census receipt paired with --session; defaults to the "
+            "canonical repeated-decode timing receipt"
+        ),
+    )
     a = ap.parse_args()
     text = "\n".join(p.read_text() for p in FILES)
     checks = {
@@ -37,6 +53,8 @@ def main() -> int:
         "persistent_linear_recurrence": ("reset_states", "recurrent_state"),
         "persistent_terminal_executor": ("TerminalExecutor", "source_index_reused", "lm_head_reused"),
         "terminal_probe_only": ("FIRST_COMPLETE_TOKEN_TERMINAL_PROBE", "terminal::run_with"),
+        "repeated_reference_contract": ("--prompt-length", "reference_checks", "source_reset_or_reprefill"),
+        "state_memory_census": ("persistent_state_bytes", "growth_bytes_per_additional_token"),
     }
     observed = {name: {needle: needle in text for needle in needles}
                 for name, needles in checks.items()}
@@ -76,19 +94,37 @@ def main() -> int:
             bridge_payload = json.loads(bridge_path.read_text())
         except (OSError, json.JSONDecodeError):
             bridge_payload = None
-    session_path = next(
-        (candidate for candidate in (
-            ROOT / "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-            ROOT / "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
-        ) if candidate.is_file()),
-        ROOT / "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
-    )
+    # Prefer an actual repeated/session receipt only when it has reached an
+    # accepted state.  Historical failed candidate probes may share the same
+    # filename and must not erase the later one-token acceptance evidence.
+    repeated_session_path = ROOT / "receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.json"
+    session_path = ROOT / "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
     session_payload = None
-    if session_path.is_file():
+    accepted_fallback_path = ROOT / "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
+    accepted_fallback_payload = None
+    candidates = ([a.session] if a.session is not None else
+                  [repeated_session_path, session_path, accepted_fallback_path])
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        if not candidate.is_absolute():
+            candidate = ROOT / candidate
+        if not candidate.is_file():
+            continue
         try:
-            session_payload = json.loads(session_path.read_text())
+            payload = json.loads(candidate.read_text())
         except (OSError, json.JSONDecodeError):
-            session_payload = None
+            continue
+        status = payload.get("status") if isinstance(payload, dict) else None
+        if candidate == accepted_fallback_path:
+            accepted_fallback_payload = payload
+        if status in {"PASSED_STATEFUL_REPEATED_ACCEPTED_DECODE", "PASSED_STATEFUL_COMPLETE_TOKEN_SESSION"}:
+            session_path = candidate
+            session_payload = payload
+            break
+    if session_payload is None and accepted_fallback_payload is not None:
+        session_path = accepted_fallback_path
+        session_payload = accepted_fallback_payload
     session_status = session_payload.get("status") if isinstance(session_payload, dict) else None
     session_accepted = int(session_payload.get("accepted_generation_tokens", 0)) if isinstance(session_payload, dict) else 0
     executor_path = ROOT / "receipts/headless/FLASH_TERMINAL_EXECUTOR_COMPILE.json"
@@ -98,9 +134,76 @@ def main() -> int:
             executor_payload = json.loads(executor_path.read_text())
         except (OSError, json.JSONDecodeError):
             executor_payload = None
-    if session_status == "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED":
-        token_boundary = {"stage": "token_acceptance_loop", "status": "ONE_TOKEN_ACCEPTED",
-                          "evidence": "the complete 48-layer stateful oracle produced the tokenizer-bound terminal argmax as one accepted generated token; continuation state, repeated decode and protected TPS remain open"}
+    repeated_checks = (session_payload.get("terminal", {}).get("reference_checks", [])
+                       if isinstance(session_payload, dict) else [])
+    execution = session_payload.get("execution", {}) if isinstance(session_payload, dict) else {}
+    repeated_state_valid = (
+        session_status == "PASSED_STATEFUL_REPEATED_ACCEPTED_DECODE"
+        and session_accepted >= 2
+        and isinstance(repeated_checks, list)
+        and len(repeated_checks) >= 2
+        and all(isinstance(item, dict)
+                and item.get("accepted") is True
+                and item.get("predicted_token_id") == item.get("expected_token_id")
+                for item in repeated_checks)
+        and execution.get("source_reset_or_reprefill") is False
+        and isinstance(execution.get("state_memory"), dict)
+        and int(execution["state_memory"].get("total_persistent_bytes", 0)) > 0
+        and int(execution["state_memory"].get("growth_bytes_per_additional_token", 0)) > 0
+    )
+    timing_path = a.timing or (ROOT / "receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.TIMING_CENSUS.json")
+    if not timing_path.is_absolute():
+        timing_path = ROOT / timing_path
+    timing_payload = None
+    if timing_path.is_file():
+        try:
+            timing_payload = json.loads(timing_path.read_text())
+        except (OSError, json.JSONDecodeError):
+            timing_payload = None
+    timing_totals = timing_payload.get("totals", {}) if isinstance(timing_payload, dict) else {}
+    repeated_timing = (timing_payload.get("repeated_decode_timing", {})
+                       if isinstance(timing_payload, dict) else {})
+    timing_valid = (
+        repeated_state_valid
+        and isinstance(timing_payload, dict)
+        and timing_payload.get("status") == "MEASURED_REPEATED_ACCEPTED_SOURCE_BOUND_ONE_PASS"
+        and timing_payload.get("process_boundary") == "one native process"
+        and int(timing_totals.get("elapsed_wall_ns", 0)) > 0
+        and int(timing_totals.get("source_payload_bytes_read", 0)) > 0
+        and int(timing_totals.get("dispatches", 0)) > 0
+        and repeated_timing.get("steady_decode_tps") is None
+    )
+    route_safe_compact_valid = (
+        timing_valid
+        and execution.get("expert_bank_mode") == "route_union_compact_teacher_bound"
+    )
+    if route_safe_compact_valid:
+        token_boundary = {
+            "stage": "persistent_compact_runtime_instrumentation",
+            "status": "NEXT_REQUIRED",
+            "evidence": (
+                "a bounded teacher-bound compact expert-bank session reproduced every "
+                "recorded route and both accepted continuation tokens. The next missing "
+                "physical evidence is persistent compact-bank reuse with separated "
+                "source/index/upload/pipeline/wait/state timers before warmed decode timing."
+            ),
+        }
+    elif timing_valid:
+        token_boundary = {
+            "stage": "route_safe_active_expert_execution",
+            "status": "NEXT_REQUIRED",
+            "evidence": (
+                "the accepted stateful session now has a clean source-bound one-pass "
+                "timing/census. Dense expert-bank source/load and host-seam ceremony "
+                "dominate; steady TPS remains intentionally unmeasured."
+            ),
+        }
+    elif repeated_state_valid:
+        token_boundary = {"stage": "clean_repeated_timing", "status": "NEXT_REQUIRED",
+                          "evidence": "a source-bound session accepted at least two continuation tokens, independently checked each preceding terminal argmax, retained state without re-prefill, and emitted a state-memory census. Clean repeated timing is now the next physical gate."}
+    elif session_status == "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED":
+        token_boundary = {"stage": "repeated_accepted_decode", "status": "NEXT_REQUIRED",
+                          "evidence": "the complete 48-layer stateful oracle already produced one tokenizer-bound accepted token. The next missing evidence is feeding that accepted token through persistent continuation state for at least one more accepted decode step under a protected physical lane."}
     elif session_status == "PASSED_STATEFUL_COMPLETE_TOKEN_SESSION":
         token_boundary = {"stage": "token_acceptance_loop", "status": "ONE_TOKEN_ACCEPTED",
                           "evidence": "the complete 48-layer stateful session accepted one tokenizer-bound candidate; repeated accepted decode steps and protected TPS remain open"}
@@ -113,15 +216,23 @@ def main() -> int:
     blockers = [
         token_boundary,
         {"stage": "full_attention_state", "status": "ORGAN_QUALIFIED" if attention_organ_qualified else "MISSING",
-         "evidence": ("the newest stateful attention receipt proves two-position persistent KV slots, the full-attention MLP epilogue, and source parity; complete 48-layer per-layer KV integration remains absent"
+         "evidence": ("the stateful attention organs and accepted complete session establish bounded full-attention KV traversal. What remains is a repeatable accepted-token continuation loop with persistent session state, not initial full-attention liveness."
                       if attention_organ_qualified else
                       "flash_full_attention_layer3.rs has no persistent KV cache")},
         {"stage": "linear_recurrence_state", "status": "ORGAN_AND_PREFIX_QUALIFIED",
-         "evidence": "FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json proves recurrent state across layers 0..2 and two token steps; complete 48-layer executor still does not expose the session"},
+         "evidence": "FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json proves recurrent state across layers 0..2 and two token steps; the complete session has now passed one token, while repeated accepted-token continuation remains the next scoped requirement."},
     ]
     doc = {
         "schema": "hawking.flash.stateful_tps_gate.v1",
-        "status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY",
+        "status": ("PENDING_WARMED_DIRECT_DECODE_INSTRUMENTATION"
+                   if route_safe_compact_valid
+                   else "PENDING_CLEAN_REPEATED_TIMING"
+                   if repeated_state_valid and not timing_valid
+                   else "PENDING_ROUTE_SAFE_ACTIVE_EXPERT_EXECUTION"
+                   if timing_valid
+                   else "PENDING_REPEATED_ACCEPTED_DECODE"
+                   if session_status in {"PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED", "PASSED_STATEFUL_COMPLETE_TOKEN_SESSION"}
+                   else "BLOCKED_FIRST_PHYSICAL_BOUNDARY"),
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source_files": [{"path": str(p), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
                          for p in FILES],
@@ -156,6 +267,21 @@ def main() -> int:
         "first_physical_failure_boundary": blockers[0],
         "blockers": blockers,
         "accepted_tokens": session_accepted,
+        "repeated_reference_checks": repeated_checks if isinstance(repeated_checks, list) else [],
+        "repeated_state_valid": repeated_state_valid,
+        "clean_repeated_timing": {
+            "receipt": str(timing_path),
+            "sha256": hashlib.sha256(timing_path.read_bytes()).hexdigest()
+            if timing_payload else None,
+            "status": timing_payload.get("status") if timing_payload else "MISSING",
+            "valid": timing_valid,
+            "steady_decode_tps": repeated_timing.get("steady_decode_tps")
+            if isinstance(repeated_timing, dict) else None,
+        },
+        "route_safe_compact_execution": {
+            "valid": route_safe_compact_valid,
+            "expert_bank_mode": execution.get("expert_bank_mode"),
+        },
         "accepted_tps": None,
         "complete_system_ebpw": None,
         "bench": {
@@ -166,8 +292,16 @@ def main() -> int:
             "rule": "S032 §3 -- no performance claim; state is UNKNOWN",
             "provenance": "source audit only; no synthetic token loop was timed",
         },
-        "claim_boundary": "No accepted multi-token TPS or EBPW claim. The complete stateful session receipt, when present, is bounded to its recorded candidate result; repeated accepted decode, capability, EBPW and residency remain open.",
-        "next_action": "Continue from the complete-session receipt with a predicted candidate, then measure repeated accepted decode steps with deterministic tokenizer and terminal checks.",
+        "claim_boundary": "No accepted multi-token TPS or EBPW claim. A route-union compact session, when present, is bounded to its teacher trace and recorded continuation tokens; future-route coverage, capability, EBPW and residency remain open.",
+        "next_action": ("Instrument persistent compact-bank reuse, including source/index/upload/pipeline/wait/state/receipt timers, then run a protected warmed repeated-decode measurement without reloading the compact banks."
+                        if route_safe_compact_valid
+                        else "Trace the exact bounded route union, then replace dense expert-bank materialization with route-safe compact banks while preserving the repeated accepted-token contract; only then time a warmed decode loop."
+                        if timing_valid
+                        else "Run clean repeated timing, then record a state/dispatch/bytes-per-token census before selecting the highest-value physical or representation optimization."
+                        if repeated_state_valid
+                        else "Extend the accepted source-bound session by feeding the accepted token's continuation state through at least one further deterministic decode step, then measure repeated accepted decode under a protected clean GPU lane."
+                        if session_status in {"PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED", "PASSED_STATEFUL_COMPLETE_TOKEN_SESSION"}
+                        else "Continue from the complete-session receipt with a predicted candidate, then measure repeated accepted decode steps with deterministic tokenizer and terminal checks."),
     }
     doc["seal_sha256"] = hashlib.sha256(json.dumps(doc, sort_keys=True).encode()).hexdigest()
     a.out.parent.mkdir(parents=True, exist_ok=True)

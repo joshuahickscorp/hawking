@@ -1,0 +1,88 @@
+{
+  "schema": "hawking.kimi_p0_live_tools_repaired.v1",
+  "date": "2026-09-10",
+  "artifact_id": "KIMI_P0_OPERATIONAL",
+  "source_model": "KIMI_BASE",
+  "weight_lineage": "KIMI_BASE unchanged",
+  "endpoint": "http://127.0.0.1:8011/v1",
+  "runtime": {
+    "owner": "hawkingd",
+    "resident": "KIMI_P0_OPERATIONAL",
+    "provider": "MLX-VLM transitional provider, daemon-owned",
+    "webui": "daemon-owned Open WebUI client",
+    "llama_cpp": "disabled",
+    "ascension_qwen38": "not running"
+  },
+  "blind_read_only_probe": {
+    "status": "CORE_LIVENESS_PASS",
+    "prompt": "blind repository root, current objective, recent KIMI/Hawking receipt, and one concrete receipt fact",
+    "tools": [
+      {
+        "name": "fs.list",
+        "dispatched": true,
+        "ok": true,
+        "evidence": "repository root returned by the tool"
+      },
+      {
+        "name": "campaign.state",
+        "dispatched": true,
+        "ok": true,
+        "evidence": "current objective and recent evidence paths returned"
+      },
+      {
+        "name": "receipt.read",
+        "dispatched": true,
+        "ok": true,
+        "path": "receipts/future/G034_ODYSSEY_LEDGER.json",
+        "evidence": "receipt document returned and a concrete anatomy fact was reported"
+      }
+    ],
+    "tool_contract": {
+      "qualified": true,
+      "offered_count": 111,
+      "selected_count": 52,
+      "serialized_count": 52,
+      "serialized_format": "textual_json_contract",
+      "actual_invocations": 3,
+      "trace_entries": 3
+    },
+    "protocol_tokens_visible": false,
+    "model_identity": "response identity matched daemon health identity",
+    "learned_weight_change": false
+  },
+  "runtime_evidence": {
+    "health_status": "ok",
+    "daemon_pid": 49691,
+    "provider_pid": 49696,
+    "webui_pid": 49770,
+    "resident_state": "ready",
+    "tools_qualified": true,
+    "repo_root": "/Users/scammermike/Downloads/hawking",
+    "process_roles": [
+      "hawkingd",
+      "resident-provider",
+      "web-ui"
+    ],
+    "process_count": 3,
+    "swapins": 0,
+    "swapouts": 0
+  },
+  "repairs": [
+    "file-aware truncated-search fallback",
+    "bounded returned-observation excerpts in tool traces",
+    "repository-relative path recovery guidance",
+    "one bounded recovery turn after a failed observation",
+    "compact action/args and dotted operation parsing",
+    "nested compact read-tag and search-line argument coercion",
+    "daemon-sourced runtime evidence in chat responses",
+    "Rust process classification for hawkingd and daemon-owned children"
+  ],
+  "verification": {
+    "focused_python_tests": "100 passed",
+    "focused_rust_process_inspector_tests": "4 passed",
+    "promotion": "withheld",
+    "blind_real_write_mission": "not accepted; no edit was attempted",
+    "prior_failed_receipt_preserved": "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json"
+  },
+  "claim_boundary": "This receipt proves read-only tool reachability and evidence return through the resident serving path. It does not promote KIMI_P0_OPERATIONAL, repair learned weights, or claim a verified write mission."
+}

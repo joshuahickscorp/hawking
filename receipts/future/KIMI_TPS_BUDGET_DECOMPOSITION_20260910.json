@@ -1,0 +1,274 @@
+{
+  "canonical_reference": {
+    "claim": "canonical raw KIMI_BASE timing only; not a qualified capability or promotion result",
+    "raw_steady_decode_tps_context_medians": [
+      86.91719199781267,
+      83.38581965862952,
+      85.38968210971538
+    ],
+    "raw_steady_decode_tps_mean_across_context_medians": 85.23089792205252,
+    "raw_tps_ladder": [
+      {
+        "reached": false,
+        "required_speedup_from_current": 1.1732834269967973,
+        "target_tps": 100.0,
+        "token_budget_ms": 10.0
+      },
+      {
+        "reached": false,
+        "required_speedup_from_current": 1.759925140495196,
+        "target_tps": 150.0,
+        "token_budget_ms": 6.666666666666667
+      },
+      {
+        "reached": false,
+        "required_speedup_from_current": 2.9332085674919934,
+        "target_tps": 250.0,
+        "token_budget_ms": 4.0
+      },
+      {
+        "reached": false,
+        "required_speedup_from_current": 4.106491994488791,
+        "target_tps": 350.0,
+        "token_budget_ms": 2.857142857142857
+      },
+      {
+        "reached": false,
+        "required_speedup_from_current": 5.866417134983987,
+        "target_tps": 500.0,
+        "token_budget_ms": 2.0
+      }
+    ]
+  },
+  "claim_boundary": "Derived bookkeeping over the canonical paired benchmark. It reports the measured raw steady decode record and paired direct-organ wall-clock penalty, but does not infer an internal bottleneck, whole-model active bandwidth, capability preservation, full-model complete EBPW, resident adoption, Odyssey admission, or promotion.",
+  "generated_at": "2026-09-10T19:45:33.775431+00:00",
+  "latency_budget": {
+    "next_measurement": "matched full-model native counters or instrumented custom kernels, with no microkernel substitution",
+    "not_separable_with_current_receipt": [
+      "GPU model compute",
+      "routing/expert gather",
+      "representation decode",
+      "attention/MLA/DeltaNet state",
+      "sampling",
+      "dispatch/synchronization"
+    ],
+    "observable": [
+      "first_yield_ms",
+      "steady_decode_ms",
+      "completion_end_to_end_ms",
+      "prefill_forward_ms"
+    ],
+    "token_budget_targets_ms": {
+      "100": 10.0,
+      "150": 6.666666666666667,
+      "250": 4.0,
+      "350": 2.857142857142857,
+      "500": 2.0
+    }
+  },
+  "measurement_contract": {
+    "batch": 1,
+    "concurrency": 1,
+    "contexts": [
+      0,
+      64,
+      256
+    ],
+    "cpu_gpu_assignment": "Device(gpu, 0)",
+    "generation": "mlx_lm.generate_step; first_yield includes first decode, steady excludes it",
+    "max_tokens": 64,
+    "microkernel_claim": false,
+    "prefill": "full model forward on prompt without KV-cache reuse; reported separately",
+    "reps_per_context": 2,
+    "sampling": "generate_step default greedy",
+    "warmup_excluded": true
+  },
+  "paired_contexts": [
+    {
+      "context_repeats": 0,
+      "direct_organ_steady_penalty": {
+        "interpretation": "paired wall-clock delta; not assigned to one internal term",
+        "ms_per_steady_token": 2.525180889134635,
+        "relative_wall_penalty": 0.21945727188605257
+      },
+      "patched": {
+        "completion_end_to_end_tps_median": 64.92091211394458,
+        "completion_tokens_median": 64.0,
+        "context_repeats": 0,
+        "first_yield_ms_median": 101.86504200100899,
+        "observable_terms_ms_per_token": {
+          "completion_end_to_end": null,
+          "prefill_forward_per_prompt_token": 4.004559374880046,
+          "steady_decode": 14.031661706255926
+        },
+        "prefill_forward_tps_median": 249.7153650623522,
+        "prefill_ms_median": 80.09118749760091,
+        "prompt_tokens_median": 20.0,
+        "steady_decode_ms_median": 883.9946874941234,
+        "steady_decode_tps_median": 71.27180645574143,
+        "total_generation_ms_median": null,
+        "unseparated_terms": [
+          "model_compute_gpu",
+          "routing_and_expert_gather",
+          "representation_decode",
+          "attention_or_recurrent_state",
+          "sampling",
+          "dispatch_and_synchronization"
+        ]
+      },
+      "raw": {
+        "completion_end_to_end_tps_median": 77.9381876287143,
+        "completion_tokens_median": 64.0,
+        "context_repeats": 0,
+        "first_yield_ms_median": 96.33016702719033,
+        "observable_terms_ms_per_token": {
+          "completion_end_to_end": null,
+          "prefill_forward_per_prompt_token": 3.944240625423845,
+          "steady_decode": 11.506480817121291
+        },
+        "prefill_forward_tps_median": 253.53445425680042,
+        "prefill_ms_median": 78.8848125084769,
+        "prompt_tokens_median": 20.0,
+        "steady_decode_ms_median": 724.9082914786413,
+        "steady_decode_tps_median": 86.91719199781267,
+        "total_generation_ms_median": null,
+        "unseparated_terms": [
+          "model_compute_gpu",
+          "routing_and_expert_gather",
+          "representation_decode",
+          "attention_or_recurrent_state",
+          "sampling",
+          "dispatch_and_synchronization"
+        ]
+      }
+    },
+    {
+      "context_repeats": 64,
+      "direct_organ_steady_penalty": {
+        "interpretation": "paired wall-clock delta; not assigned to one internal term",
+        "ms_per_steady_token": 2.634356484382547,
+        "relative_wall_penalty": 0.21964617616923077
+      },
+      "patched": {
+        "completion_end_to_end_tps_median": 58.4410570729661,
+        "completion_tokens_median": 64.0,
+        "context_repeats": 64,
+        "first_yield_ms_median": 173.58214547857642,
+        "observable_terms_ms_per_token": {
+          "completion_end_to_end": null,
+          "prefill_forward_per_prompt_token": 0.7471815070119809,
+          "steady_decode": 14.627993388641034
+        },
+        "prefill_forward_tps_median": 1338.3631569676804,
+        "prefill_ms_median": 158.40247948653996,
+        "prompt_tokens_median": 212.0,
+        "steady_decode_ms_median": 921.5635834843852,
+        "steady_decode_tps_median": 68.36461373399231,
+        "total_generation_ms_median": null,
+        "unseparated_terms": [
+          "model_compute_gpu",
+          "routing_and_expert_gather",
+          "representation_decode",
+          "attention_or_recurrent_state",
+          "sampling",
+          "dispatch_and_synchronization"
+        ]
+      },
+      "raw": {
+        "completion_end_to_end_tps_median": 69.82403870910069,
+        "completion_tokens_median": 64.0,
+        "context_repeats": 64,
+        "first_yield_ms_median": 161.05302100186236,
+        "observable_terms_ms_per_token": {
+          "completion_end_to_end": null,
+          "prefill_forward_per_prompt_token": 0.7210870683610545,
+          "steady_decode": 11.993636904258487
+        },
+        "prefill_forward_tps_median": 1386.796338877156,
+        "prefill_ms_median": 152.87045849254355,
+        "prompt_tokens_median": 212.0,
+        "steady_decode_ms_median": 755.5991249682847,
+        "steady_decode_tps_median": 83.38581965862952,
+        "total_generation_ms_median": null,
+        "unseparated_terms": [
+          "model_compute_gpu",
+          "routing_and_expert_gather",
+          "representation_decode",
+          "attention_or_recurrent_state",
+          "sampling",
+          "dispatch_and_synchronization"
+        ]
+      }
+    },
+    {
+      "context_repeats": 256,
+      "direct_organ_steady_penalty": {
+        "interpretation": "paired wall-clock delta; not assigned to one internal term",
+        "ms_per_steady_token": 2.5452506665643018,
+        "relative_wall_penalty": 0.21733808848449176
+      },
+      "patched": {
+        "completion_end_to_end_tps_median": 50.5766962967472,
+        "completion_tokens_median": 64.0,
+        "context_repeats": 256,
+        "first_yield_ms_median": 367.28116651647724,
+        "observable_terms_ms_per_token": {
+          "completion_end_to_end": null,
+          "prefill_forward_per_prompt_token": 0.4651282525365477,
+          "steady_decode": 14.256270508104492
+        },
+        "prefill_forward_tps_median": 2149.9453709598465,
+        "prefill_ms_median": 366.5210629987996,
+        "prompt_tokens_median": 788.0,
+        "steady_decode_ms_median": 898.145042010583,
+        "steady_decode_tps_median": 70.14464122628527,
+        "total_generation_ms_median": null,
+        "unseparated_terms": [
+          "model_compute_gpu",
+          "routing_and_expert_gather",
+          "representation_decode",
+          "attention_or_recurrent_state",
+          "sampling",
+          "dispatch_and_synchronization"
+        ]
+      },
+      "raw": {
+        "completion_end_to_end_tps_median": 59.89206778679582,
+        "completion_tokens_median": 64.0,
+        "context_repeats": 256,
+        "first_yield_ms_median": 330.7954579940997,
+        "observable_terms_ms_per_token": {
+          "completion_end_to_end": null,
+          "prefill_forward_per_prompt_token": 0.4397605488275953,
+          "steady_decode": 11.71101984154019
+        },
+        "prefill_forward_tps_median": 2274.0329921371595,
+        "prefill_ms_median": 346.5313124761451,
+        "prompt_tokens_median": 788.0,
+        "steady_decode_ms_median": 737.794250017032,
+        "steady_decode_tps_median": 85.38968210971538,
+        "total_generation_ms_median": null,
+        "unseparated_terms": [
+          "model_compute_gpu",
+          "routing_and_expert_gather",
+          "representation_decode",
+          "attention_or_recurrent_state",
+          "sampling",
+          "dispatch_and_synchronization"
+        ]
+      }
+    }
+  ],
+  "representation_accounting": {
+    "active_bytes_scope": "selected gate/up/down factor rows only; the rest of the model remains dense",
+    "active_factor_bytes_per_token_top_k2": 1582464,
+    "effective_active_factor_gib_per_steady_token": 0.0014737844467163086,
+    "note": "This is not whole-model bytes/token and cannot be converted into whole-model bandwidth without full graph coverage."
+  },
+  "schema": "hawking.future.kimi_tps_budget_decomposition.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_budget_decomposition.py",
+  "source_model": "KIMI_BASE",
+  "source_receipt": "/Users/scammermike/Downloads/hawking/receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+  "source_status": "CANONICAL_TPS_BENCHMARK_COMPLETE",
+  "status": "DERIVED_FROM_CANONICAL_TIMING"
+}

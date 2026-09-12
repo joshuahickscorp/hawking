@@ -447,6 +447,44 @@ def compact(messages: List[Dict[str, str]], session: Any, *,
 # --- crossing a process boundary -------------------------------------------
 
 CHECKPOINT_SCHEMA = "hcli.chat.checkpoint.v1"
+TRACE_SCHEMA = "hcli.chat.tool-trace.v1"
+
+
+def record_tool_trace(session: Any, trace: List[Dict[str, Any]], *,
+                      tool_contract: Optional[Dict[str, Any]] = None,
+                      answer: str = "", resident: str = "") -> str:
+    """Persist one browser turn's calls, observations and final result.
+
+    Streaming clients cannot carry Hawking's response metadata, so keeping the
+    trace only in the non-stream JSON envelope made the normal OpenWebUI path
+    unauditable. Large observations already point to content-addressed pastes;
+    this record keeps the complete bounded observation and those pointers.
+    """
+    path = (Path(session.workspace) / ".hcli" / "chat"
+            / f"{session.id}.trace.json")
+    final_text = str(answer or "")
+    record = {
+        "schema": TRACE_SCHEMA,
+        "session": session.id,
+        "workspace": str(session.workspace),
+        "resident": resident or getattr(session, "resident", ""),
+        "turn": int(getattr(session, "turns", 0)),
+        "written_at": time.time(),
+        "tool_contract": dict(tool_contract or {}),
+        "trace": list(trace),
+        "final": {
+            "text": final_text,
+            "chars": len(final_text),
+            "sha256": hashlib.sha256(
+                final_text.encode("utf-8", "replace")).hexdigest(),
+        },
+    }
+    atomic_write_json(path, record)
+    evidence = list(getattr(session, "evidence", []) or [])
+    if str(path) not in evidence:
+        evidence.append(str(path))
+        session.evidence = evidence[-16:]
+    return str(path)
 
 
 def checkpoint(session: Any, *, next_action: str = "",

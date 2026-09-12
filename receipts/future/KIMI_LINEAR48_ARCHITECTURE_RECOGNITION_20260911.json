@@ -1,0 +1,195 @@
+{
+ "repo": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+ "revision": "local",
+ "architectures": [
+  "KimiLinearForCausalLM"
+ ],
+ "model_type": "kimi_linear",
+ "n_tensors": 20493,
+ "n_unmatched": 126,
+ "organs": [
+  {
+   "organ": "embed",
+   "status": "KNOWN",
+   "n_tensors": 1,
+   "n_layers": 0,
+   "confidence": 0.32,
+   "example": [
+    "model.embed_tokens.weight"
+   ]
+  },
+  {
+   "organ": "latent_attention",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 115,
+   "n_layers": 27,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.11.self_attn.kv_a_layernorm.weight",
+    "model.layers.11.self_attn.kv_a_proj_with_mqa.weight"
+   ]
+  },
+  {
+   "organ": "lm_head",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 1,
+   "n_layers": 0,
+   "confidence": 0.32,
+   "example": [
+    "lm_head.weight"
+   ]
+  },
+  {
+   "organ": "mlp_down",
+   "status": "KNOWN",
+   "n_tensors": 1,
+   "n_layers": 1,
+   "confidence": 0.552,
+   "example": [
+    "model.layers.0.mlp.down_proj.weight"
+   ]
+  },
+  {
+   "organ": "mlp_gate_up",
+   "status": "KNOWN",
+   "n_tensors": 2,
+   "n_layers": 1,
+   "confidence": 0.554,
+   "example": [
+    "model.layers.0.mlp.gate_proj.weight",
+    "model.layers.0.mlp.up_proj.weight"
+   ]
+  },
+  {
+   "organ": "moe_expert",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 19968,
+   "n_layers": 26,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.1.block_sparse_moe.experts.0.w1.weight",
+    "model.layers.1.block_sparse_moe.experts.0.w2.weight"
+   ]
+  },
+  {
+   "organ": "moe_router",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 26,
+   "n_layers": 26,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.1.block_sparse_moe.gate.weight",
+    "model.layers.10.block_sparse_moe.gate.weight"
+   ]
+  },
+  {
+   "organ": "recurrent_state",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 100,
+   "n_layers": 20,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.0.self_attn.A_log",
+    "model.layers.0.self_attn.dt_bias"
+   ]
+  },
+  {
+   "organ": "rmsnorm",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 75,
+   "n_layers": 27,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.0.input_layernorm.weight",
+    "model.layers.0.post_attention_layernorm.weight"
+   ]
+  },
+  {
+   "organ": "shared_expert",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 78,
+   "n_layers": 26,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.1.block_sparse_moe.shared_experts.down_proj.weight",
+    "model.layers.1.block_sparse_moe.shared_experts.gate_proj.weight"
+   ]
+  }
+ ],
+ "unrecognized": [
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.block_sparse_moe.gate.e_score_correction_bias",
+   "n_tensors": 26,
+   "confidence": 0.5
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.b_proj.weight",
+   "n_tensors": 20,
+   "confidence": 0.45
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.f_a_proj.weight",
+   "n_tensors": 20,
+   "confidence": 0.45
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.f_b_proj.weight",
+   "n_tensors": 20,
+   "confidence": 0.45
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.g_a_proj.weight",
+   "n_tensors": 20,
+   "confidence": 0.45
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.g_b_proj.weight",
+   "n_tensors": 20,
+   "confidence": 0.45
+  }
+ ],
+ "folded_organ": {
+  "from": "gqa_attention",
+  "into": "latent_attention",
+  "n_tensors": 94,
+  "why": "latent-attention markers present; the remaining q/o projections are part of that organ, not a separate GQA organ"
+ },
+ "novelty": {
+  "novel_organs": [
+   "latent_attention",
+   "lm_head",
+   "moe_expert",
+   "moe_router",
+   "recurrent_state",
+   "rmsnorm",
+   "shared_expert"
+  ],
+  "novel_axes": [
+   "attention",
+   "routing",
+   "state"
+  ],
+  "n_unrecognized_clusters": 6,
+  "new_scale_regime": 27,
+  "transfer_test_value": 0.4
+ },
+ "analysis_wall_s": 0.038,
+ "loaded_weights": false,
+ "classification": "STATIC_STREAMABLE",
+ "schema": "hawking.headless.architecture_recognizer.local_snapshot.v1",
+ "source": "local_safetensors_headers",
+ "did_not_load_weights": true,
+ "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471"
+}

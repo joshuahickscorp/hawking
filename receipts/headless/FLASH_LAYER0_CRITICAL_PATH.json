@@ -1,10 +1,10 @@
 {
   "claim_boundary": "no vague runtime-overhead bucket; un-attributed per-dispatch GPU ownership remains explicitly unmeasured when trace mode is off",
   "integrated_graph_gpu_ns": [
-    41078541
+    19676749
   ],
   "integrated_graph_host_ns": [
-    199499792
+    103683541
   ],
   "layer": 0,
   "owners": [
@@ -33,19 +33,19 @@
       "owner": "recurrence"
     },
     {
-      "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + out_proj",
+      "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + gemv_native_bf16_hyperconnection_combine",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "attention"
     },
     {
-      "kernels": "gemv_native_bf16_seq + moe_topk_gate",
+      "kernels": "gemv_native_bf16_dual_seq + moe_topk_gate",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "routing"
     },
     {
-      "kernels": "qwen_next_bf16_expert_gate_up_swiglu + qwen_next_bf16_expert_down",
+      "kernels": "qwen_next_bf16_expert_gate_up_swiglu + qwen_next_bf16_expert_down + qwen_next_moe_weighted_sum_add_shared_sigmoid_hc",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "selected experts"
@@ -57,7 +57,7 @@
       "owner": "shared expert"
     },
     {
-      "kernels": "qwen_next_hyperconnection_combine",
+      "kernels": "qwen_next_moe_weighted_sum_add_shared_sigmoid_hc",
       "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
       "ns": null,
       "owner": "residual"
@@ -84,14 +84,5 @@
   "promotion_allowed": false,
   "schema": "hawking.flash_layer0_critical_path.v1",
   "source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
-  "status": "PASSED",
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
-  }
+  "status": "PASSED"
 }

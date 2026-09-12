@@ -1008,6 +1008,34 @@ mod macos {
         let mlp_block_logits = context.new_buffer_checked(STREAMS * 4)?;
         let final_state = context.new_buffer_checked(HC_ELEMENTS * 4)?;
         let device_prepare_ns = device_prepare_started.elapsed().as_nanos() as u64;
+        // The diagnostic oracle and source metadata above own their snapshots.
+        // The direct fast path below must not keep a second host copy of the
+        // immutable full-attention bank after the Metal upload succeeds.
+        drop((
+            hc_norm,
+            hc_down,
+            hc_up,
+            hc_block,
+            q_proj,
+            k_proj,
+            v_proj,
+            q_norm,
+            k_norm,
+            o_proj,
+            router,
+            expert_gate_up_weight,
+            expert_down_weight,
+            shared_gate,
+            shared_up,
+            shared_down,
+            shared_scalar,
+            mlp_norm,
+            mlp_down,
+            mlp_up,
+            mlp_block,
+            route_lut_host,
+            selected_routes,
+        ));
 
         let forward_started = Instant::now();
         let fused_qkv_gqa = env::var("HAWKING_FLASH_QKV_GQA_FUSED")
@@ -1552,7 +1580,7 @@ mod macos {
                 "tensors": source_tensors,
                 "geometry": {"hidden": HIDDEN, "query_heads": QUERY_HEADS, "kv_heads": KV_HEADS, "head_dim": HEAD_DIM, "rotary_dim": ROTARY_DIM, "rope_theta": ROPE_THETA}},
             "parity": {"hyperconnection_norm": norm_metrics, "attention_input": input_metrics, "q_projection": q_metrics, "k_projection": k_metrics, "v_projection": v_metrics, "query_norm_rope": query_metrics, "key_norm_rope": key_metrics, "causal_attention": attention_metrics, "sigmoid_gate": gated_metrics, "output": output_metrics, "attention_block_logits": block_metrics, "post_attention_hyperconnection": post_metrics, "mlp_hyperconnection_norm": mlp_norm_metrics, "mlp_input": mlp_input_metrics, "router_logits": router_metrics, "route_ids": {"expected": expected_route_ids, "observed": route_ids_observed, "match": route_ids_match}, "route_weights": route_weight_metrics, "routed_sum": routed_sum_metrics, "shared_gated_output": shared_metrics, "moe_output": moe_metrics, "mlp_block_logits": mlp_block_metrics, "final_hyperconnection": final_metrics},
-            "execution": {"device": device, "provider": "apple_metal", "native_source_bf16": true, "dispatches": timing.dispatches, "command_buffers": timing.command_buffers, "gpu_ns": timing.gpu_ns, "wall_ns": forward_wall_ns, "fallback_count": 0, "position": 0, "attention_gate": if args.fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !args.fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "route_accumulation": if fused_route_accumulate { "fused_compact_gate_up_shared_down_direct_hc" } else { "materialized_routed_outputs_then_weighted_sum_hc" }, "routed_output_materialized": !fused_route_accumulate, "shared_gate_up_fused": fused_route_accumulate, "compact_moe_load_geometry": if fused_route_accumulate && fused_moe_vec4 { "exact_order_vec4_candidate" } else if fused_route_accumulate { "scalar_authority" } else { "not_applicable" }, "mlp_hyperconnection": "fused_into_moe_epilogue"},
+            "execution": {"device": device, "provider": "apple_metal", "native_source_bf16": true, "immutable_weight_ownership": "device_only_after_source_upload", "host_source_weights_retained_during_forward": false, "dispatches": timing.dispatches, "command_buffers": timing.command_buffers, "gpu_ns": timing.gpu_ns, "wall_ns": forward_wall_ns, "fallback_count": 0, "position": 0, "attention_gate": if args.fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !args.fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "route_accumulation": if fused_route_accumulate { "fused_compact_gate_up_shared_down_direct_hc" } else { "materialized_routed_outputs_then_weighted_sum_hc" }, "routed_output_materialized": !fused_route_accumulate, "shared_gate_up_fused": fused_route_accumulate, "compact_moe_load_geometry": if fused_route_accumulate && fused_moe_vec4 { "exact_order_vec4_candidate" } else if fused_route_accumulate { "scalar_authority" } else { "not_applicable" }, "mlp_hyperconnection": "fused_into_moe_epilogue"},
             "timing": {"root_canonicalize_ns": root_canonicalize_ns, "manifest_ns": manifest_ns, "config_ns": config_ns, "index_context_ns": index_context_ns, "input_load_ns": input_load_ns, "source_load_ns": source_load_ns, "source_payload_bytes_read": source_payload_bytes_read, "source_cache_policy": source_cache_policy(), "oracle_ns": oracle_ns, "device_prepare_ns": device_prepare_ns, "encode_ns": encode_ns, "command_wait_ns": command_wait_ns, "gpu_ns": timing.gpu_ns, "forward_wall_ns": forward_wall_ns, "parity_ns": parity_ns, "state_write_ns": state_write_ns, "receipt_write_ns": Value::Null, "total_before_receipt_ns": total_before_receipt_ns, "decomposition": "source_open/index/config/input + source payload + CPU oracle + device preparation + command encoding/wait + parity reads/metrics + state serialization + receipt write"},
             "claim_boundary": format!("This proves only the layer-{} source-BF16 full-attention plus routed/shared MoE organ through its second HyperConnection combine for the explicitly identified single-token state. It does not prove later layers, complete token, tokenizer, decoding, TPS, EBPW, or resident promotion.", args.layer),
             "promotion_allowed": false,
@@ -1708,6 +1736,8 @@ mod macos {
                 bytes,
             )
         };
+        let source_payload_bytes_before = index.bytes_read_total();
+        let source_load_started = Instant::now();
         let hc_norm = tensor(&index, layer_tensor_name(layer, HC_NORM), &[HC_ELEMENTS])?;
         let hc_down = tensor(
             &index,
@@ -1832,6 +1862,8 @@ mod macos {
             layer_tensor_name(layer, HC_MLP_BLOCK),
             &[STREAMS, HC_ELEMENTS],
         )?;
+        let source_load_ns = source_load_started.elapsed().as_nanos() as u64;
+        let oracle_started = Instant::now();
         let expected_norm = grouped_hc_norm(&first_base, &f32_vec(&hc_norm));
         let expected_input = hc_read_mix(&expected_norm, &hc_down.bytes, &hc_up.bytes);
         let expected_q = matvec(&q_proj.bytes, QUERY_DIM * 2, HIDDEN, &expected_input);
@@ -1897,8 +1929,10 @@ mod macos {
             &expected_moe_output,
             &expected_mlp_block_logits,
         );
+        let oracle_ns = oracle_started.elapsed().as_nanos() as u64;
 
         let device = context.device_name();
+        let device_prepare_started = Instant::now();
         let hc_norm_buf = context.new_buffer_with_bytes_checked(&hc_norm.bytes)?;
         let hc_down_buf = context.new_buffer_with_bytes_checked(&hc_down.bytes)?;
         let hc_up_buf = context.new_buffer_with_bytes_checked(&hc_up.bytes)?;
@@ -1966,6 +2000,37 @@ mod macos {
         let moe_output = context.new_buffer_checked(HIDDEN * 4)?;
         let mlp_block_logits = context.new_buffer_checked(STREAMS * 4)?;
         let final_state = context.new_buffer_checked(HC_ELEMENTS * 4)?;
+        let device_prepare_ns = device_prepare_started.elapsed().as_nanos() as u64;
+        // The source tensors have completed their only valid authority role:
+        // construction of the device bank and the first-step CPU oracle above.
+        // Keeping them through every stateful token would duplicate immutable
+        // full-attention weights on host and Metal for no execution benefit.
+        // The active path below references only device buffers.
+        drop((
+            hc_norm,
+            hc_down,
+            hc_up,
+            q_proj,
+            k_proj,
+            v_proj,
+            q_norm,
+            k_norm,
+            o_proj,
+            hc_block,
+            router,
+            expert_gate_up_weight,
+            expert_down_weight,
+            shared_gate,
+            shared_up,
+            shared_down,
+            shared_scalar,
+            mlp_norm,
+            mlp_down,
+            mlp_up,
+            mlp_block,
+            route_lut_host,
+            selected_routes,
+        ));
         let mut final_states: Vec<Vec<f32>> = Vec::with_capacity(token_ids.len());
         let rows = token_ids.iter().enumerate().map(|(step, &token_id)| -> Result<Value, Box<dyn Error>> {
             let (base, embedding_sha, embedding_bytes) = if let Some(states) = input_states {
@@ -1977,6 +2042,7 @@ mod macos {
             };
             MetalContext::write_buffer_bytes(&input_buf, &f32_bytes(&base));
             let started = Instant::now();
+            let encode_started = Instant::now();
             let mut tcb = TokenCommandBuffer::new(&context);
             qwen_next_hyperconnection_input_fused_with_block_tcb(
                 &mut tcb, &input_buf, &hc_norm_buf, &hc_down_buf, &hc_up_buf,
@@ -2085,8 +2151,12 @@ mod macos {
                 )?;
             }
             let dispatches = tcb.dispatch_count();
+            let encode_ns = encode_started.elapsed().as_nanos() as u64;
+            let command_wait_started = Instant::now();
             let timing = tcb.commit_and_wait_timed()?;
+            let command_wait_ns = command_wait_started.elapsed().as_nanos() as u64;
             let wall_ns = started.elapsed().as_nanos() as u64;
+            let snapshot_started = Instant::now();
             let query_observed = device_f32(&query_out, QUERY_DIM);
             let attention_observed = if fused_attention_gate {
                 device_f32(&gated_out, QUERY_DIM)
@@ -2099,7 +2169,8 @@ mod macos {
             final_states.push(final_observed.clone());
             let parity = if step == 0 { Some(json!({"query": metrics(&expected_query, &query_observed), "final_state": metrics(&expected_final_state, &final_observed)})) } else { None };
             let route_ids_observed = u32_values(&route_ids, TOP_K);
-            Ok(json!({"step": step, "token_id": token_id, "embedding_sha256": embedding_sha, "embedding_bytes": embedding_bytes, "sequence_length": step + 1, "dispatches": dispatches, "gpu_ns": timing.gpu_ns, "wall_ns": wall_ns, "key_slot_sha256": sha256(&f32_bytes(slot)), "attention_observed_kind": if fused_attention_gate { "gated_attention" } else { "raw_attention" }, "attention_sha256": sha256(&f32_bytes(&attention_observed)), "final_state_sha256": sha256(&f32_bytes(&final_observed)), "route_ids": route_ids_observed, "finite": final_observed.iter().all(|v| v.is_finite()), "first_step_parity": parity}))
+            let state_snapshot_ns = snapshot_started.elapsed().as_nanos() as u64;
+            Ok(json!({"step": step, "token_id": token_id, "embedding_sha256": embedding_sha, "embedding_bytes": embedding_bytes, "sequence_length": step + 1, "dispatches": dispatches, "gpu_ns": timing.gpu_ns, "wall_ns": wall_ns, "encode_ns": encode_ns, "command_wait_ns": command_wait_ns, "state_snapshot_ns": state_snapshot_ns, "key_slot_sha256": sha256(&f32_bytes(slot)), "attention_observed_kind": if fused_attention_gate { "gated_attention" } else { "raw_attention" }, "attention_sha256": sha256(&f32_bytes(&attention_observed)), "final_state_sha256": sha256(&f32_bytes(&final_observed)), "route_ids": route_ids_observed, "finite": final_observed.iter().all(|v| v.is_finite()), "first_step_parity": parity}))
         }).collect::<Result<Vec<_>, _>>()?;
         let distinct_slots = rows
             .windows(2)
@@ -2113,7 +2184,7 @@ mod macos {
             "schema": "hawking.flash.stateful_attention_organ_probe.v1",
             "status": if distinct_slots { "PASSED_STATEFUL_KV_ORGAN" } else { "BLOCKED_KV_SLOT_NOT_DISTINCT" },
             "model": REPO, "pinned_revision": REVISION, "layer": layer, "token_ids": token_ids,
-            "execution": {"device": device, "provider": "apple_metal", "process_boundary": "one native process", "context_reused": true, "weights_reused": true, "kv_cache_reused": true, "kv_cache_slots": token_ids.len(), "full_attention_mlp_epilogue": true, "mlp_hyperconnection": "fused_into_moe_epilogue", "attention_gate": if fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "compact_moe_load_geometry": if route_lut_host.is_some() && fused_moe_vec4 { "exact_order_vec4_candidate" } else if route_lut_host.is_some() { "scalar_authority" } else { "not_applicable" }, "input_kind": input_kind, "expert_bank_mode": if route_lut_host.is_some() { "route_union_compact" } else { "dense" }, "compact_expert_count": compact_experts, "source_payload_bytes_read": index.bytes_read_total(), "first_input_sha256": first_sha, "first_input_bytes": first_bytes},
+            "execution": {"device": device, "provider": "apple_metal", "process_boundary": "one native process", "context_reused": true, "weights_reused": true, "immutable_weight_ownership": "device_only_after_source_upload", "host_source_weights_retained_during_token_loop": false, "kv_cache_reused": true, "kv_cache_slots": token_ids.len(), "state_memory": {"key_cache_bytes": token_ids.len() * KV_DIM * std::mem::size_of::<f32>(), "value_cache_bytes": token_ids.len() * KV_DIM * std::mem::size_of::<f32>(), "persistent_kv_bytes": token_ids.len() * KV_DIM * 2 * std::mem::size_of::<f32>(), "growth_bytes_per_token": KV_DIM * 2 * std::mem::size_of::<f32>()}, "full_attention_mlp_epilogue": true, "mlp_hyperconnection": "fused_into_moe_epilogue", "attention_gate": if fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "compact_moe_load_geometry": if route_lut.is_some() && fused_moe_vec4 { "exact_order_vec4_candidate" } else if route_lut.is_some() { "scalar_authority" } else { "not_applicable" }, "input_kind": input_kind, "expert_bank_mode": if route_lut.is_some() { "route_union_compact" } else { "dense" }, "compact_expert_count": compact_experts, "source_payload_bytes_read": index.bytes_read_total().saturating_sub(source_payload_bytes_before), "source_payload_bytes_read_cumulative": index.bytes_read_total(), "first_input_sha256": first_sha, "first_input_bytes": first_bytes, "timing": {"source_load_ns": source_load_ns, "oracle_ns": oracle_ns, "device_prepare_ns": device_prepare_ns, "decomposition": "source tensor reads + CPU oracle + Metal buffer preparation + per-token encode/wait/snapshot"}},
             "steps": rows, "distinct_kv_slots": distinct_slots, "stateful_final_state": true, "accepted_generation_tokens": 0, "accepted_tps": Value::Null, "complete_system_ebpw": Value::Null, "promotion_allowed": false,
             "bench": {"state": "UNKNOWN", "recorded_at": format!("unix-ms:{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis()), "recorded_by": "flash_stateful_attention_probe", "machine": device, "rule": "S032 §3 -- stateful organ timing; quiescence unknown"},
             "claim_boundary": if input_states.is_some() { "This proves a cross-species seam from stateful linear-prefix outputs through a persistent full-attention KV organ and its HyperConnection/routed/shared-MoE MLP epilogue, with distinct KV slots and first-step final-state parity. It does not prove device-only cross-module handoff, 48-layer token acceptance, complete-model TPS, EBPW, or resident promotion." } else { "This proves persistent multi-position KV cache writes and the full-attention HyperConnection/routed/shared-MoE MLP epilogue, with first-step final-state parity. It does not prove cross-species state handoff, full-model token acceptance, complete-model TPS, EBPW, or resident promotion." },
@@ -2127,6 +2198,396 @@ mod macos {
         println!("{}", serde_json::to_string_pretty(&doc)?);
         Ok(final_states)
     }
+
+    /// A device-owned full-attention organ that can advance one token at a
+    /// time without re-reading or re-uploading immutable weights.  It is the
+    /// full-attention counterpart to `StatefulLinearLayer`: the caller owns
+    /// the cross-organ schedule while this type owns its KV state and all
+    /// Metal banks.  The public step result intentionally retains a host
+    /// diagnostic snapshot for the current session seam; that snapshot is not
+    /// an immutable-weight fallback and is not part of the device state.
+    pub(crate) struct StatefulFullAttentionLayer {
+        layer: usize,
+        weight_buffers: Vec<PinnedBuffer>,
+        graph_buffers: Vec<PinnedBuffer>,
+        route_lut: Option<PinnedBuffer>,
+        compact_experts: usize,
+        max_tokens: usize,
+        fused_attention_gate: bool,
+        fused_qkv_gqa: bool,
+        fused_router_topk: bool,
+        fused_hc_router: bool,
+        source_load_ns: u64,
+        device_prepare_ns: u64,
+        graph_prepare_ns: u64,
+        source_payload_bytes: u64,
+        device_weight_bytes: u64,
+    }
+
+    // Immutable full-attention bank layout.  Keeping the index mapping local
+    // prevents a second per-model registry while preserving a compact generic
+    // buffer container for the resident owner.
+    const W_HC_NORM: usize = 0;
+    const W_HC_DOWN: usize = 1;
+    const W_HC_UP: usize = 2;
+    const W_Q: usize = 3;
+    const W_K: usize = 4;
+    const W_V: usize = 5;
+    const W_Q_NORM: usize = 6;
+    const W_K_NORM: usize = 7;
+    const W_O: usize = 8;
+    const W_HC_BLOCK: usize = 9;
+    const W_ROUTER: usize = 10;
+    const W_EXPERT_GATE_UP: usize = 11;
+    const W_EXPERT_DOWN: usize = 12;
+    const W_SHARED_GATE: usize = 13;
+    const W_SHARED_UP: usize = 14;
+    const W_SHARED_DOWN: usize = 15;
+    const W_SHARED_SCALAR: usize = 16;
+    const W_MLP_NORM: usize = 17;
+    const W_MLP_DOWN: usize = 18;
+    const W_MLP_UP: usize = 19;
+    const W_MLP_BLOCK: usize = 20;
+
+    // Mutable per-layer device graph layout.
+    const G_INPUT: usize = 0;
+    const G_NORMALIZED: usize = 1;
+    const G_LOW: usize = 2;
+    const G_LOW_ACTIVATION: usize = 3;
+    const G_GATE: usize = 4;
+    const G_ATTN_INPUT: usize = 5;
+    const G_Q_OUT: usize = 6;
+    const G_K_OUT: usize = 7;
+    const G_V_OUT: usize = 8;
+    const G_QUERY_OUT: usize = 9;
+    const G_KEY_CACHE: usize = 10;
+    const G_VALUE_CACHE: usize = 11;
+    const G_ATTENTION_OUT: usize = 12;
+    const G_GATED_OUT: usize = 13;
+    const G_OUTPUT: usize = 14;
+    const G_ATTN_BLOCK_LOGITS: usize = 15;
+    const G_POST_ATTN_STATE: usize = 16;
+    const G_MLP_NORMALIZED: usize = 17;
+    const G_MLP_LOW: usize = 18;
+    const G_MLP_LOW_ACTIVATION: usize = 19;
+    const G_MLP_GATE: usize = 20;
+    const G_MLP_INPUT: usize = 21;
+    const G_ROUTER_LOGITS: usize = 22;
+    const G_ROUTE_IDS: usize = 23;
+    const G_ROUTE_WEIGHTS: usize = 24;
+    const G_ROUTED_ACTIVATION: usize = 25;
+    const G_ROUTED_OUTPUTS: usize = 26;
+    const G_ROUTED_SUM: usize = 27;
+    const G_SHARED_ACTIVATION: usize = 28;
+    const G_SHARED_OUTPUT: usize = 29;
+    const G_SHARED_SCALAR_OUTPUT: usize = 30;
+    const G_SHARED_GATED_OUTPUT: usize = 31;
+    const G_MOE_OUTPUT: usize = 32;
+    const G_MLP_BLOCK_LOGITS: usize = 33;
+    const G_FINAL_STATE: usize = 34;
+
+    fn resident_env_on(name: &str) -> bool {
+        env::var(name)
+            .map(|value| matches!(value.trim().to_ascii_lowercase().as_str(), "1" | "true" | "on" | "yes"))
+            .unwrap_or(false)
+    }
+
+    impl StatefulFullAttentionLayer {
+        /// Construct exactly one Flash full-attention organ.  `route_union`
+        /// is an optional teacher-proven compact bank; passing `None` loads
+        /// the complete dense expert bank.  In either case no source tensor
+        /// remains owned after the upload has completed.
+        pub(crate) fn new_device_only(
+            index: &SourceBf16Index,
+            context: &MetalContext,
+            layer: usize,
+            max_tokens: usize,
+            route_union: Option<&[u32]>,
+        ) -> Result<Self, Box<dyn Error>> {
+            if max_tokens == 0 {
+                return Err("resident full-attention bank requires at least one token slot".into());
+            }
+            let source_before = index.bytes_read_total();
+            let source_started = Instant::now();
+            let hc_norm = tensor(index, layer_tensor_name(layer, HC_NORM), &[HC_ELEMENTS])?;
+            let hc_down = tensor(index, layer_tensor_name(layer, HC_DOWN), &[HC_LOWRANK, HC_ELEMENTS])?;
+            let hc_up = tensor(index, layer_tensor_name(layer, HC_UP), &[HC_ELEMENTS, HC_LOWRANK])?;
+            let q_proj = tensor(index, layer_tensor_name(layer, Q_PROJ), &[QUERY_DIM * 2, HIDDEN])?;
+            let k_proj = tensor(index, layer_tensor_name(layer, K_PROJ), &[KV_DIM, HIDDEN])?;
+            let v_proj = tensor(index, layer_tensor_name(layer, V_PROJ), &[KV_DIM, HIDDEN])?;
+            let q_norm = tensor(index, layer_tensor_name(layer, Q_NORM), &[HEAD_DIM])?;
+            let k_norm = tensor(index, layer_tensor_name(layer, K_NORM), &[HEAD_DIM])?;
+            let o_proj = tensor(index, layer_tensor_name(layer, O_PROJ), &[HIDDEN, QUERY_DIM])?;
+            let hc_block = tensor(index, layer_tensor_name(layer, HC_BLOCK), &[STREAMS, HC_ELEMENTS])?;
+            let router = tensor(index, layer_tensor_name(layer, ROUTER), &[EXPERTS, HIDDEN])?;
+            let selected_routes = route_union.map(|routes| {
+                let mut selected = routes.to_vec();
+                selected.sort_unstable();
+                selected.dedup();
+                selected
+            });
+            if let Some(selected) = selected_routes.as_ref() {
+                if selected.is_empty() || selected.len() > EXPERTS || selected.iter().any(|&expert| expert as usize >= EXPERTS) {
+                    return Err("invalid resident full-attention route union".into());
+                }
+            }
+            let route_lut_host = selected_routes.as_ref().map(|selected| {
+                let mut lut = vec![u32::MAX; EXPERTS];
+                for (slot, &expert) in selected.iter().enumerate() {
+                    lut[expert as usize] = slot as u32;
+                }
+                lut
+            });
+            let expert_gate_up = if let Some(routes) = selected_routes.as_ref() {
+                tensor_rows(index, layer_tensor_name(layer, EXPERT_GATE_UP), &[EXPERTS, 2 * INTERMEDIATE, HIDDEN], routes)?
+            } else {
+                tensor(index, layer_tensor_name(layer, EXPERT_GATE_UP), &[EXPERTS, 2 * INTERMEDIATE, HIDDEN])?
+            };
+            let expert_down = if let Some(routes) = selected_routes.as_ref() {
+                tensor_rows(index, layer_tensor_name(layer, EXPERT_DOWN), &[EXPERTS, HIDDEN, INTERMEDIATE], routes)?
+            } else {
+                tensor(index, layer_tensor_name(layer, EXPERT_DOWN), &[EXPERTS, HIDDEN, INTERMEDIATE])?
+            };
+            let shared_gate = tensor(index, layer_tensor_name(layer, SHARED_GATE), &[INTERMEDIATE, HIDDEN])?;
+            let shared_up = tensor(index, layer_tensor_name(layer, SHARED_UP), &[INTERMEDIATE, HIDDEN])?;
+            let shared_down = tensor(index, layer_tensor_name(layer, SHARED_DOWN), &[HIDDEN, INTERMEDIATE])?;
+            let shared_scalar = tensor(index, layer_tensor_name(layer, SHARED_SCALAR), &[1, HIDDEN])?;
+            let mlp_norm = tensor(index, layer_tensor_name(layer, HC_MLP_NORM), &[HC_ELEMENTS])?;
+            let mlp_down = tensor(index, layer_tensor_name(layer, HC_MLP_DOWN), &[HC_LOWRANK, HC_ELEMENTS])?;
+            let mlp_up = tensor(index, layer_tensor_name(layer, HC_MLP_UP), &[HC_ELEMENTS, HC_LOWRANK])?;
+            let mlp_block = tensor(index, layer_tensor_name(layer, HC_MLP_BLOCK), &[STREAMS, HC_ELEMENTS])?;
+            let source_load_ns = source_started.elapsed().as_nanos() as u64;
+            let source_payload_bytes = index.bytes_read_total().saturating_sub(source_before);
+
+            let upload_started = Instant::now();
+            let q_norm_bytes = f32_bytes(&f32_vec(&q_norm));
+            let k_norm_bytes = f32_bytes(&f32_vec(&k_norm));
+            let mut weight_buffers = Vec::with_capacity(21);
+            for bytes in [
+                &hc_norm.bytes, &hc_down.bytes, &hc_up.bytes, &q_proj.bytes, &k_proj.bytes,
+                &v_proj.bytes, &q_norm_bytes, &k_norm_bytes, &o_proj.bytes, &hc_block.bytes,
+                &router.bytes, &expert_gate_up.bytes, &expert_down.bytes, &shared_gate.bytes,
+                &shared_up.bytes, &shared_down.bytes, &shared_scalar.bytes, &mlp_norm.bytes,
+                &mlp_down.bytes, &mlp_up.bytes, &mlp_block.bytes,
+            ] {
+                weight_buffers.push(context.new_buffer_with_bytes_checked(bytes)?);
+            }
+            let route_lut = route_lut_host
+                .as_ref()
+                .map(|lut| context.new_buffer_with_bytes_checked(&u32_bytes(lut)))
+                .transpose()?;
+            let device_weight_bytes = [
+                hc_norm.bytes.len(), hc_down.bytes.len(), hc_up.bytes.len(), q_proj.bytes.len(),
+                k_proj.bytes.len(), v_proj.bytes.len(), q_norm_bytes.len(), k_norm_bytes.len(),
+                o_proj.bytes.len(), hc_block.bytes.len(), router.bytes.len(), expert_gate_up.bytes.len(),
+                expert_down.bytes.len(), shared_gate.bytes.len(), shared_up.bytes.len(), shared_down.bytes.len(),
+                shared_scalar.bytes.len(), mlp_norm.bytes.len(), mlp_down.bytes.len(), mlp_up.bytes.len(),
+                mlp_block.bytes.len(), route_lut_host.as_ref().map(|lut| lut.len() * std::mem::size_of::<u32>()).unwrap_or(0),
+            ].into_iter().sum::<usize>() as u64;
+            let device_prepare_ns = upload_started.elapsed().as_nanos() as u64;
+            // Explicitly end all source ownership before allocating the token
+            // graph.  The resident step below cannot reach these tensors.
+            drop((hc_norm, hc_down, hc_up, q_proj, k_proj, v_proj, q_norm, k_norm, o_proj, hc_block,
+                router, expert_gate_up, expert_down, shared_gate, shared_up, shared_down, shared_scalar,
+                mlp_norm, mlp_down, mlp_up, mlp_block, route_lut_host, selected_routes));
+
+            let graph_started = Instant::now();
+            let graph_sizes = [
+                HC_ELEMENTS * 4, HC_ELEMENTS * 4, HC_LOWRANK * 4, HC_LOWRANK * 4, HC_ELEMENTS * 4,
+                HIDDEN * 4, QUERY_DIM * 2 * 4, KV_DIM * 4, KV_DIM * 4, QUERY_DIM * 4,
+                max_tokens * KV_DIM * 4, max_tokens * KV_DIM * 4, QUERY_DIM * 4, QUERY_DIM * 4,
+                HIDDEN * 4, STREAMS * 4, HC_ELEMENTS * 4, HC_ELEMENTS * 4, HC_LOWRANK * 4,
+                HC_LOWRANK * 4, HC_ELEMENTS * 4, HIDDEN * 4, EXPERTS * 4, TOP_K * 4, TOP_K * 4,
+                TOP_K * INTERMEDIATE * 4, TOP_K * HIDDEN * 4, HIDDEN * 4, INTERMEDIATE * 4,
+                HIDDEN * 4, 4, HIDDEN * 4, HIDDEN * 4, STREAMS * 4, HC_ELEMENTS * 4,
+            ];
+            let mut graph_buffers = Vec::with_capacity(graph_sizes.len());
+            for bytes in graph_sizes {
+                graph_buffers.push(context.new_buffer_checked(bytes)?);
+            }
+            let graph_prepare_ns = graph_started.elapsed().as_nanos() as u64;
+            Ok(Self {
+                layer,
+                weight_buffers,
+                graph_buffers,
+                route_lut,
+                compact_experts: route_union.map(|routes| routes.iter().copied().collect::<std::collections::BTreeSet<_>>().len()).unwrap_or(EXPERTS),
+                max_tokens,
+                fused_attention_gate: resident_env_on("HAWKING_FLASH_FUSE_ATTENTION_GATE"),
+                fused_qkv_gqa: resident_env_on("HAWKING_FLASH_QKV_GQA_FUSED"),
+                fused_router_topk: resident_env_on("HAWKING_FLASH_ROUTER_TOPK_FUSED"),
+                fused_hc_router: resident_env_on("HAWKING_FLASH_HC_ROUTER_FUSED"),
+                source_load_ns,
+                device_prepare_ns,
+                graph_prepare_ns,
+                source_payload_bytes,
+                device_weight_bytes,
+            })
+        }
+
+        /// Advance this organ at one token position using its persistent KV
+        /// buffers and already uploaded immutable weights.
+        fn step_impl(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            token_id: usize,
+            diagnostics: bool,
+        ) -> Result<(PinnedBuffer, u64, u64, usize, Option<Vec<f32>>, Option<Value>), Box<dyn Error>> {
+            if host_base.is_some() == device_base.is_some() || step >= self.max_tokens {
+                return Err(format!("resident full-attention layer-{} requires exactly one input owner and a valid token slot", self.layer).into());
+            }
+            if host_base.is_some_and(|base| base.len() != HC_ELEMENTS) {
+                return Err(format!("resident full-attention layer-{} host input has invalid width", self.layer).into());
+            }
+            let w = &self.weight_buffers;
+            let g = &self.graph_buffers;
+            if let Some(base) = host_base {
+                MetalContext::write_buffer_bytes(&g[G_INPUT], &f32_bytes(base));
+            }
+            let started = Instant::now();
+            let encode_started = Instant::now();
+            let mut tcb = TokenCommandBuffer::new(context);
+            if let Some(previous) = device_base {
+                tcb.copy_buffer_bytes(previous, 0, &g[G_INPUT], 0, (HC_ELEMENTS * 4) as u64)?;
+            }
+            qwen_next_hyperconnection_input_fused_with_block_tcb(&mut tcb, &g[G_INPUT], &w[W_HC_NORM], &w[W_HC_DOWN], &w[W_HC_UP], &g[G_NORMALIZED], &g[G_LOW], &g[G_LOW_ACTIVATION], &g[G_GATE], &g[G_ATTN_INPUT], &w[W_HC_BLOCK], &g[G_ATTN_BLOCK_LOGITS], HIDDEN, STREAMS, HC_LOWRANK, EPS, STREAMS as f32)?;
+            if self.fused_qkv_gqa {
+                qwen_next_bf16_qkv_gqa_rope_cache_tcb(&mut tcb, &w[W_Q], &w[W_K], &w[W_V], &g[G_ATTN_INPUT], &w[W_Q_NORM], &w[W_K_NORM], &g[G_Q_OUT], &g[G_K_OUT], &g[G_V_OUT], &g[G_QUERY_OUT], &g[G_KEY_CACHE], &g[G_VALUE_CACHE], step, QUERY_HEADS, KV_HEADS, HEAD_DIM, ROTARY_DIM, HIDDEN, ROPE_THETA, EPS)?;
+            } else {
+                native_bf16_triple_seq_tcb(&mut tcb, &w[W_Q], &w[W_K], &w[W_V], &g[G_ATTN_INPUT], &g[G_Q_OUT], &g[G_K_OUT], &g[G_V_OUT], QUERY_DIM * 2, KV_DIM, KV_DIM, HIDDEN)?;
+                tcb.dispatch_threads("qwen80_gqa_qk_norm_rope_cache_f32", (QUERY_HEADS as u32, 1, 1), (QUERY_HEADS as u32, 1, 1), |enc| {
+                    enc.set_buffer(0, Some(&g[G_Q_OUT]), 0); enc.set_buffer(1, Some(&g[G_K_OUT]), 0); enc.set_buffer(2, Some(&g[G_V_OUT]), 0); enc.set_buffer(3, Some(&w[W_Q_NORM]), 0); enc.set_buffer(4, Some(&w[W_K_NORM]), 0); enc.set_buffer(5, Some(&g[G_QUERY_OUT]), 0); enc.set_buffer(6, Some(&g[G_KEY_CACHE]), 0); enc.set_buffer(7, Some(&g[G_VALUE_CACHE]), 0);
+                    enc.set_u32(8, step as u32); enc.set_u32(9, QUERY_HEADS as u32); enc.set_u32(10, KV_HEADS as u32); enc.set_u32(11, HEAD_DIM as u32); enc.set_u32(12, ROTARY_DIM as u32); enc.set_f32(13, ROPE_THETA); enc.set_f32(14, EPS);
+                })?;
+            }
+            if self.fused_attention_gate {
+                mha_decode_f32_qwen38_gated_tcb(&mut tcb, &g[G_QUERY_OUT], &g[G_KEY_CACHE], 0, &g[G_VALUE_CACHE], 0, &g[G_GATED_OUT], &g[G_Q_OUT], step + 1, HEAD_DIM, QUERY_HEADS, KV_HEADS)?;
+            } else {
+                mha_decode_f32_tcb(&mut tcb, &g[G_QUERY_OUT], &g[G_KEY_CACHE], 0, &g[G_VALUE_CACHE], 0, &g[G_ATTENTION_OUT], step + 1, HEAD_DIM, QUERY_HEADS, KV_HEADS)?;
+                tcb.dispatch_threads("qwen80_attention_apply_sigmoid_gate", (QUERY_DIM as u32, 1, 1), (256, 1, 1), |enc| {
+                    enc.set_buffer(0, Some(&g[G_ATTENTION_OUT]), 0); enc.set_buffer(1, Some(&g[G_Q_OUT]), 0); enc.set_buffer(2, Some(&g[G_GATED_OUT]), 0); enc.set_u32(3, QUERY_DIM as u32); enc.set_u32(4, HEAD_DIM as u32);
+                })?;
+            }
+            native_bf16_gemv_hyperconnection_combine_tcb(&mut tcb, &w[W_O], &g[G_GATED_OUT], &g[G_INPUT], &g[G_ATTN_BLOCK_LOGITS], &g[G_OUTPUT], &g[G_POST_ATTN_STATE], HIDDEN, QUERY_DIM, STREAMS, STREAMS as f32)?;
+            if self.fused_hc_router {
+                qwen_next_hyperconnection_input_fused_with_block_router_topk_tcb(&mut tcb, &g[G_POST_ATTN_STATE], &w[W_MLP_NORM], &w[W_MLP_DOWN], &w[W_MLP_UP], &g[G_MLP_NORMALIZED], &g[G_MLP_LOW], &g[G_MLP_LOW_ACTIVATION], &g[G_MLP_GATE], &g[G_MLP_INPUT], &w[W_MLP_BLOCK], &g[G_MLP_BLOCK_LOGITS], &w[W_ROUTER], &w[W_SHARED_SCALAR], &g[G_ROUTER_LOGITS], &g[G_SHARED_SCALAR_OUTPUT], &g[G_ROUTE_IDS], &g[G_ROUTE_WEIGHTS], HIDDEN, STREAMS, HC_LOWRANK, EXPERTS, TOP_K, EPS, STREAMS as f32, true)?;
+            } else {
+                qwen_next_hyperconnection_input_fused_with_block_tcb(&mut tcb, &g[G_POST_ATTN_STATE], &w[W_MLP_NORM], &w[W_MLP_DOWN], &w[W_MLP_UP], &g[G_MLP_NORMALIZED], &g[G_MLP_LOW], &g[G_MLP_LOW_ACTIVATION], &g[G_MLP_GATE], &g[G_MLP_INPUT], &w[W_MLP_BLOCK], &g[G_MLP_BLOCK_LOGITS], HIDDEN, STREAMS, HC_LOWRANK, EPS, STREAMS as f32)?;
+            }
+            if !self.fused_hc_router && self.fused_router_topk {
+                qwen_next_bf16_router_topk_shared_tcb(&mut tcb, &w[W_ROUTER], &w[W_SHARED_SCALAR], &g[G_MLP_INPUT], &g[G_ROUTER_LOGITS], &g[G_SHARED_SCALAR_OUTPUT], &g[G_ROUTE_IDS], &g[G_ROUTE_WEIGHTS], EXPERTS, TOP_K, HIDDEN, true)?;
+            } else if !self.fused_hc_router {
+                native_bf16_dual_seq_tcb(&mut tcb, &w[W_ROUTER], &w[W_SHARED_SCALAR], &g[G_MLP_INPUT], &g[G_ROUTER_LOGITS], &g[G_SHARED_SCALAR_OUTPUT], EXPERTS, 1, HIDDEN)?;
+                moe_topk_gate_tcb_ex(&mut tcb, &g[G_ROUTER_LOGITS], &g[G_ROUTE_IDS], &g[G_ROUTE_WEIGHTS], EXPERTS, TOP_K, true)?;
+            }
+            if let Some(route_lut) = self.route_lut.as_ref() {
+                qwen_next_bf16_compact_expert_gate_up_shared_swiglu_tcb(&mut tcb, &w[W_EXPERT_GATE_UP], &g[G_ROUTE_IDS], route_lut, &g[G_MLP_INPUT], &g[G_ROUTED_ACTIVATION], &w[W_SHARED_GATE], &w[W_SHARED_UP], &g[G_SHARED_ACTIVATION], self.compact_experts, TOP_K, INTERMEDIATE, HIDDEN, EXPERTS)?;
+                qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb(&mut tcb, &w[W_EXPERT_DOWN], &g[G_ROUTE_IDS], route_lut, &g[G_ROUTED_ACTIVATION], &g[G_ROUTE_WEIGHTS], &w[W_SHARED_DOWN], &g[G_SHARED_ACTIVATION], &g[G_SHARED_SCALAR_OUTPUT], &g[G_ROUTED_SUM], &g[G_SHARED_OUTPUT], &g[G_SHARED_GATED_OUTPUT], &g[G_MOE_OUTPUT], &g[G_POST_ATTN_STATE], &g[G_MLP_BLOCK_LOGITS], &g[G_FINAL_STATE], self.compact_experts, TOP_K, INTERMEDIATE, HIDDEN, EXPERTS, STREAMS, STREAMS as f32)?;
+            } else {
+                qwen_next_bf16_expert_gate_up_swiglu_tcb(&mut tcb, &w[W_EXPERT_GATE_UP], &g[G_ROUTE_IDS], &g[G_MLP_INPUT], &g[G_ROUTED_ACTIVATION], EXPERTS, TOP_K, INTERMEDIATE, HIDDEN)?;
+                qwen_next_bf16_expert_down_tcb(&mut tcb, &w[W_EXPERT_DOWN], &g[G_ROUTE_IDS], &g[G_ROUTED_ACTIVATION], &g[G_ROUTED_OUTPUTS], EXPERTS, TOP_K, INTERMEDIATE, HIDDEN)?;
+                native_bf16_swiglu_seq_tcb(&mut tcb, &w[W_SHARED_GATE], &w[W_SHARED_UP], &g[G_MLP_INPUT], &g[G_SHARED_ACTIVATION], INTERMEDIATE, HIDDEN)?;
+                native_bf16_gemv_seq_tcb(&mut tcb, &w[W_SHARED_DOWN], &g[G_SHARED_ACTIVATION], &g[G_SHARED_OUTPUT], HIDDEN, INTERMEDIATE)?;
+                qwen_next_moe_weighted_sum_add_shared_sigmoid_hc_tcb(&mut tcb, &g[G_ROUTED_OUTPUTS], &g[G_ROUTE_WEIGHTS], &g[G_SHARED_OUTPUT], &g[G_SHARED_SCALAR_OUTPUT], &g[G_ROUTED_SUM], &g[G_SHARED_GATED_OUTPUT], &g[G_MOE_OUTPUT], &g[G_POST_ATTN_STATE], &g[G_MLP_BLOCK_LOGITS], &g[G_FINAL_STATE], HIDDEN, TOP_K, STREAMS, STREAMS as f32)?;
+            }
+            let dispatches = tcb.dispatch_count();
+            let encode_ns = encode_started.elapsed().as_nanos() as u64;
+            let wait_started = Instant::now();
+            let timing = tcb.commit_and_wait_timed()?;
+            let command_wait_ns = wait_started.elapsed().as_nanos() as u64;
+            let wall_ns = started.elapsed().as_nanos() as u64;
+            if diagnostics {
+                let final_state = device_f32(&g[G_FINAL_STATE], HC_ELEMENTS);
+                if final_state.iter().any(|value| !value.is_finite()) {
+                    return Err(format!("resident full-attention layer-{} produced non-finite state", self.layer).into());
+                }
+                let route_ids = u32_values(&g[G_ROUTE_IDS], TOP_K);
+                let row = json!({
+                    "step": step,
+                    "token_id": token_id,
+                    "dispatches": dispatches,
+                    "gpu_ns": timing.gpu_ns,
+                    "wall_ns": wall_ns,
+                    "encode_ns": encode_ns,
+                    "command_wait_ns": command_wait_ns,
+                    "route_ids": route_ids,
+                    "final_state_sha256": sha256(&f32_bytes(&final_state)),
+                    "finite": true,
+                    "source_weights_retained": false,
+                });
+                Ok((g[G_FINAL_STATE].clone(), timing.gpu_ns.unwrap_or(0), wall_ns, dispatches, Some(final_state), Some(row)))
+            } else {
+                Ok((g[G_FINAL_STATE].clone(), timing.gpu_ns.unwrap_or(0), wall_ns, dispatches, None, None))
+            }
+        }
+
+        /// Diagnostic step: host state and route evidence remain available to
+        /// the bounded exact control but are deliberately outside warm timing.
+        pub(crate) fn step(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            token_id: usize,
+        ) -> Result<(PinnedBuffer, Vec<f32>, Value), Box<dyn Error>> {
+            let (output, _, _, _, state, row) =
+                self.step_impl(context, host_base, device_base, step, token_id, true)?;
+            Ok((output, state.ok_or("diagnostic full-attention step omitted state")?, row.ok_or("diagnostic full-attention step omitted row")?))
+        }
+
+        /// Timed resident step: no activation snapshot, route readback, or
+        /// JSON construction occurs after the command buffer completes.
+        pub(crate) fn step_fast(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            token_id: usize,
+        ) -> Result<(PinnedBuffer, u64, u64, usize), Box<dyn Error>> {
+            let (output, gpu_ns, wall_ns, dispatches, _, _) =
+                self.step_impl(context, host_base, device_base, step, token_id, false)?;
+            Ok((output, gpu_ns, wall_ns, dispatches))
+        }
+
+        /// Reset the only persistent attention state. Scratch graph buffers
+        /// are overwritten on the next step; KV slots must be cleared before
+        /// replaying the same bounded sequence from token zero.
+        pub(crate) fn reset_state(&mut self) {
+            let bytes = self.max_tokens * KV_DIM * std::mem::size_of::<f32>();
+            let zero = vec![0_u8; bytes];
+            MetalContext::write_buffer_bytes(&self.graph_buffers[G_KEY_CACHE], &zero);
+            MetalContext::write_buffer_bytes(&self.graph_buffers[G_VALUE_CACHE], &zero);
+        }
+
+        pub(crate) const fn persistent_state_growth_bytes_per_token() -> usize {
+            KV_DIM * 2 * std::mem::size_of::<f32>()
+        }
+
+        pub(crate) fn persistent_state_bytes(&self) -> usize {
+            self.max_tokens * Self::persistent_state_growth_bytes_per_token()
+        }
+
+        pub(crate) const fn host_weights_retained(&self) -> bool {
+            false
+        }
+
+        pub(crate) const fn prepare_timing_ns(&self) -> (u64, u64, u64) {
+            (self.source_load_ns, self.device_prepare_ns, self.graph_prepare_ns)
+        }
+
+        pub(crate) const fn source_payload_bytes(&self) -> u64 {
+            self.source_payload_bytes
+        }
+
+        pub(crate) const fn device_weight_bytes(&self) -> u64 {
+            self.device_weight_bytes
+        }
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -2136,6 +2597,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(target_os = "macos")]
 pub(crate) use macos::Args;
+#[cfg(target_os = "macos")]
+pub(crate) use macos::StatefulFullAttentionLayer;
 #[cfg(target_os = "macos")]
 pub(crate) fn run_layer(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     macos::run_layer(args)
@@ -2194,4 +2657,26 @@ pub(crate) fn run_stateful_attention_probe_from_states_with_outputs(
     out: std::path::PathBuf,
 ) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
     macos::run_stateful_attention_probe_with_inputs(root, layer, token_ids, Some(input_states), out)
+}
+
+/// Teacher-bound compact variant for the complete-session control.  The caller
+/// supplies a union already observed in a dense session and remains
+/// responsible for checking each token's exact route IDs after this returns.
+#[cfg(target_os = "macos")]
+pub(crate) fn run_stateful_attention_probe_from_states_route_union_with_outputs(
+    root: std::path::PathBuf,
+    layer: usize,
+    token_ids: &[usize],
+    input_states: &[Vec<f32>],
+    route_ids: Vec<u32>,
+    out: std::path::PathBuf,
+) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
+    macos::run_stateful_attention_probe_with_inputs_mode(
+        root,
+        layer,
+        token_ids,
+        Some(input_states),
+        out,
+        Some(route_ids),
+    )
 }

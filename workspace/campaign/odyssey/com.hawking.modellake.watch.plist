@@ -7,9 +7,9 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/scammermike/Downloads/hawking</string>
 	<key>RunAtLoad</key>
-	<true/>
+	<false/>
 	<key>KeepAlive</key>
-	<true/>
+	<false/>
 	<key>ProcessType</key>
 	<string>Background</string>
 	<key>Nice</key>

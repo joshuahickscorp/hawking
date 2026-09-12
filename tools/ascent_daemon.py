@@ -579,7 +579,7 @@ GENESIS_PROPOSE_MAX_NEW_TOKENS = 512
 # this many model decodes before yielding to AgentOS and protected work.
 MAX_RESIDENT_PROPOSALS_PER_PASS = 1
 GENESIS_SYSTEM_CONTRACT = (
-    REPO / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
+    REPO / "docs" / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
 )
 
 

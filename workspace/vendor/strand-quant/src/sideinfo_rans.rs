@@ -81,12 +81,7 @@ fn enc_put(x: &mut u32, out: &mut Vec<u8>, start: u32, freq: u32) {
 }
 
 #[inline]
-fn dec_get(
-    x: &mut u32,
-    data: &[u8],
-    pos: &mut usize,
-    cum: &[u32],
-) -> usize {
+fn dec_get(x: &mut u32, data: &[u8], pos: &mut usize, cum: &[u32]) -> usize {
     let slot = *x & SCALE_MASK;
     let symbol = cdf_find(cum, slot);
     let start = cum[symbol];
@@ -216,7 +211,10 @@ impl Model {
         counts2.push(esc_c);
 
         let cum = normalize_to_cum(&counts2);
-        Model { symbols: symbols2, cum }
+        Model {
+            symbols: symbols2,
+            cum,
+        }
     }
 
     /// Look up the model slot for a raw (pre-zig-zag) value, or the ESC slot.
@@ -253,7 +251,9 @@ impl Model {
     pub fn deserialize(data: &[u8], pos: &mut usize) -> Result<Model, String> {
         let n = read_u32(data, pos)? as usize;
         if n < 1 || n > MAX_MODEL_SYMBOLS + 1 {
-            return Err(format!("sideinfo_rans: model symbol count {n} out of range"));
+            return Err(format!(
+                "sideinfo_rans: model symbol count {n} out of range"
+            ));
         }
         let mut symbols = Vec::with_capacity(n);
         let mut freqs = Vec::with_capacity(n);
@@ -508,13 +508,17 @@ pub fn decode_stream(data: &[u8], pos: &mut usize) -> Result<Vec<i64>, String> {
 
     let esc_len = read_u32(data, pos)? as usize;
     let esc_end = *pos + esc_len;
-    let esc_blob = data.get(*pos..esc_end).ok_or("sideinfo_rans: esc blob truncated")?;
+    let esc_blob = data
+        .get(*pos..esc_end)
+        .ok_or("sideinfo_rans: esc blob truncated")?;
     *pos = esc_end;
     let mut esc_pos = 0usize;
 
     let payload_len = read_u32(data, pos)? as usize;
     let payload_end = *pos + payload_len;
-    let payload = data.get(*pos..payload_end).ok_or("sideinfo_rans: payload truncated")?;
+    let payload = data
+        .get(*pos..payload_end)
+        .ok_or("sideinfo_rans: payload truncated")?;
     *pos = payload_end;
     if payload.len() < 4 {
         if n == 0 {
@@ -647,14 +651,34 @@ mod tests {
 
     #[test]
     fn zigzag_is_bijective() {
-        for v in [0i64, 1, -1, 2, -2, i32::MAX as i64, i32::MIN as i64, i64::MAX, i64::MIN] {
+        for v in [
+            0i64,
+            1,
+            -1,
+            2,
+            -2,
+            i32::MAX as i64,
+            i32::MIN as i64,
+            i64::MAX,
+            i64::MIN,
+        ] {
             assert_eq!(unzigzag(zigzag(v)), v, "zigzag failed for {v}");
         }
     }
 
     #[test]
     fn varint_round_trips() {
-        let vals = [0u64, 1, 127, 128, 300, 16_383, 16_384, u32::MAX as u64, u64::MAX];
+        let vals = [
+            0u64,
+            1,
+            127,
+            128,
+            300,
+            16_383,
+            16_384,
+            u32::MAX as u64,
+            u64::MAX,
+        ];
         let mut buf = Vec::new();
         for &v in &vals {
             write_varint(&mut buf, v);
@@ -696,8 +720,15 @@ mod tests {
 
     #[test]
     fn negative_and_large_values() {
-        let raw: Vec<i64> =
-            vec![i32::MIN as i64, i32::MAX as i64, 0, -1, 1, -1_000_000, 1_000_000];
+        let raw: Vec<i64> = vec![
+            i32::MIN as i64,
+            i32::MAX as i64,
+            0,
+            -1,
+            1,
+            -1_000_000,
+            1_000_000,
+        ];
         round_trip_raw(&raw);
     }
 

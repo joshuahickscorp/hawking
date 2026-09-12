@@ -13,6 +13,7 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 use std::process::Command;
+use std::sync::OnceLock;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct HostProcess {
@@ -67,7 +68,28 @@ pub struct ReapFailure {
 fn role_for(command: &str) -> Option<Role> {
     // Order is part of the contract: a downloader must beat a generic Python
     // process, and only a resident executable may claim resident-body.
-    const ROLES: &[(&str, &str, &str, bool, &str)] = &[
+    const ROLE_DEFS: &[(&str, &str, &str, bool, &str)] = &[
+        (
+            r"(?:^|/)(?:hawkingd|hcli)(?:\s+-P\s+-m\s+hcli\.hawkingd)?\s+serve\b",
+            "hawkingd",
+            "ESSENTIAL_PERSISTENT",
+            false,
+            "the canonical Hawking surface owner; it supervises the resident and its children",
+        ),
+        (
+            r"\b(?:mlx_vlm|mlx_lm)\.server\b",
+            "resident-provider",
+            "ESSENTIAL_PERSISTENT",
+            false,
+            "the daemon-owned model provider child; it is not an independent Hawking launch",
+        ),
+        (
+            r"\bopen-webui\s+serve\b",
+            "web-ui",
+            "ESSENTIAL_EPHEMERAL",
+            true,
+            "a daemon-owned client surface sharing the canonical Hawking endpoint",
+        ),
         (
             r"hcli\.agentos\.resident\b.*--supervise",
             "resident-supervisor",
@@ -118,16 +140,26 @@ fn role_for(command: &str) -> Option<Role> {
             "one bounded WorkUnit slice; the mission requeues it",
         ),
     ];
-    ROLES
-        .iter()
-        .find_map(|(pattern, name, class, safe, purpose)| {
-            Regex::new(pattern).ok()?.is_match(command).then_some(Role {
-                name,
-                class,
-                safe_to_stop: *safe,
-                purpose,
+    static ROLE_PATTERNS: OnceLock<Vec<(Regex, Role)>> = OnceLock::new();
+    let patterns = ROLE_PATTERNS.get_or_init(|| {
+        ROLE_DEFS
+            .iter()
+            .map(|(pattern, name, class, safe, purpose)| {
+                (
+                    Regex::new(pattern).expect("process role pattern is valid"),
+                    Role {
+                        name,
+                        class,
+                        safe_to_stop: *safe,
+                        purpose,
+                    },
+                )
             })
-        })
+            .collect()
+    });
+    patterns
+        .iter()
+        .find_map(|(pattern, role)| pattern.is_match(command).then_some(*role))
 }
 
 fn body_for(command: &str) -> Option<String> {
@@ -151,35 +183,52 @@ fn body_for(command: &str) -> Option<String> {
         if *word == "download" && index > 0 && words[index - 1] == "hf" {
             return words.get(index + 1).map(|value| (*value).to_string());
         }
+        if *word == "--model" {
+            return words
+                .get(index + 1)
+                .and_then(|value| value.rsplit('/').next())
+                .filter(|value| !value.is_empty())
+                .map(str::to_string);
+        }
     }
     None
 }
 
-fn footprint_bytes(pid: u32) -> Option<u64> {
-    let output = Command::new("footprint")
-        .args(["-p", &pid.to_string()])
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
+fn parse_footprint_bytes(text: &str) -> BTreeMap<u32, u64> {
+    let mut values = BTreeMap::new();
+    let mut current_pid = None;
+    for line in text.lines() {
+        if let (Some(start), Some(end)) = (line.find('['), line.find(']')) {
+            if start < end {
+                current_pid = line[start + 1..end].parse::<u32>().ok();
+            }
+        }
+        let mut fields = line.split_whitespace();
+        if fields.next() != Some("phys_footprint:") {
+            continue;
+        }
+        let Some(pid) = current_pid else { continue };
+        let Some(bytes) = fields.next().and_then(|value| value.parse::<u64>().ok()) else {
+            continue;
+        };
+        values.insert(pid, bytes);
     }
-    let text = String::from_utf8_lossy(&output.stdout);
-    let marker = "phys_footprint:";
-    let value = text
-        .split(marker)
-        .nth(1)?
-        .split_whitespace()
-        .collect::<Vec<_>>();
-    let number = value.first()?.parse::<f64>().ok()?;
-    let multiplier = match value.get(1)?.to_ascii_uppercase().as_str() {
-        "B" => 1.0,
-        "KB" => 1024.0,
-        "MB" => 1024.0 * 1024.0,
-        "GB" => 1024.0 * 1024.0 * 1024.0,
-        "TB" => 1024.0 * 1024.0 * 1024.0 * 1024.0,
-        _ => return None,
+    values
+}
+
+fn footprint_bytes_many(pids: &[u32]) -> BTreeMap<u32, u64> {
+    if pids.is_empty() {
+        return BTreeMap::new();
+    }
+    let mut command = Command::new("footprint");
+    for pid in pids {
+        command.args(["-p", &pid.to_string()]);
+    }
+    let output = match command.args(["-f", "bytes", "--noCategories"]).output() {
+        Ok(output) if output.status.success() => output,
+        _ => return BTreeMap::new(),
     };
-    Some((number * multiplier) as u64)
+    parse_footprint_bytes(&String::from_utf8_lossy(&output.stdout))
 }
 
 fn ps_rows() -> Vec<(u32, u32, u64, f64, String, String)> {
@@ -214,11 +263,23 @@ fn ps_rows() -> Vec<(u32, u32, u64, f64, String, String)> {
 }
 
 pub fn inspect(footprint: bool) -> HostProcessReport {
-    let mut processes = ps_rows()
+    let rows = ps_rows();
+    let footprint_by_pid = if footprint {
+        let pids = rows
+            .iter()
+            .filter_map(|(pid, _, _, _, _, command)| role_for(command).map(|_| *pid))
+            .collect::<Vec<_>>();
+        footprint_bytes_many(&pids)
+    } else {
+        BTreeMap::new()
+    };
+    let mut processes = rows
         .into_iter()
         .filter_map(|(pid, ppid, rss_kb, cpu_percent, elapsed, command)| {
             let role = role_for(&command)?;
-            let measured = footprint.then(|| footprint_bytes(pid)).flatten();
+            let measured = footprint
+                .then(|| footprint_by_pid.get(&pid).copied())
+                .flatten();
             let (rss_bytes, memory_source) = measured
                 .map(|bytes| (bytes, "phys_footprint"))
                 .unwrap_or((rss_kb.saturating_mul(1024), "rss"));
@@ -287,7 +348,9 @@ fn claimed_worker_pids(workspace: &Path) -> BTreeSet<u32> {
 }
 
 fn is_orphaned(process: &HostProcess, claimed: &BTreeSet<u32>) -> bool {
-    process.role == "resident-body" && process.ppid == 1 && !claimed.contains(&process.pid)
+    matches!(process.role, "resident-body" | "resident-provider")
+        && process.ppid == 1
+        && !claimed.contains(&process.pid)
 }
 
 pub fn orphaned(workspace: &Path) -> Vec<HostProcess> {
@@ -358,6 +421,43 @@ mod tests {
             "resident-body"
         );
         assert_eq!(role_for("/usr/bin/python3 -m pip install requests"), None);
+        assert_eq!(
+            role_for("hawkingd serve :8011 [KIMI_P0_OPERATIONAL]")
+                .unwrap()
+                .name,
+            "hawkingd"
+        );
+        assert_eq!(
+            role_for(
+                "/opt/hcli/current/hawkingd -P -m hcli.hawkingd serve \
+                 --model KIMI_P0_OPERATIONAL --port 8011"
+            )
+            .unwrap()
+            .name,
+            "hawkingd"
+        );
+        assert_eq!(
+            role_for("/opt/mlx-vlm/bin/python /usr/local/bin/mlx_vlm.server --model /models/kimi")
+                .unwrap()
+                .name,
+            "resident-provider"
+        );
+        assert_eq!(
+            role_for("/opt/mlx/bin/python /usr/local/bin/mlx_lm.server --model /models/kimi")
+                .unwrap()
+                .name,
+            "resident-provider"
+        );
+        assert_eq!(
+            role_for("/opt/open-webui/bin/open-webui serve --port 8080")
+                .unwrap()
+                .name,
+            "web-ui"
+        );
+        assert_eq!(
+            body_for("/opt/mlx-vlm/bin/python mlx_vlm.server --model /models/kimi-vl-a3b-q8"),
+            Some("kimi-vl-a3b-q8".into())
+        );
     }
 
     #[test]
@@ -377,6 +477,26 @@ mod tests {
         assert_eq!(
             body_for("/bin/resident --artifact-root /x/sealed-3.14 --tokenizer t"),
             None
+        );
+    }
+
+    #[test]
+    fn footprint_parser_keeps_pid_boundaries() {
+        let output = "======================================================================\n\
+hawkingd [101]: Footprint: 2 MB (16384 bytes per page)\n\
+======================================================================\n\
+Auxiliary data:\n\
+    phys_footprint: 2097152 B\n\
+======================================================================\n\
+hawkingd [202]: Footprint: 3 MB (16384 bytes per page)\n\
+======================================================================\n\
+Auxiliary data:\n\
+    phys_footprint: 3145728 B\n\
+======================================================================\n\
+Summary Footprint: 5242880 B\n";
+        assert_eq!(
+            parse_footprint_bytes(output),
+            BTreeMap::from([(101, 2_097_152), (202, 3_145_728)])
         );
     }
 
@@ -407,6 +527,28 @@ mod tests {
             body: Some("sealed-3.14".into()),
         };
         assert!(!is_orphaned(&process, &BTreeSet::from([4242])));
+        assert!(is_orphaned(&process, &BTreeSet::new()));
+    }
+
+    #[test]
+    fn orphan_filter_reaps_a_provider_only_after_it_loses_hawkingd() {
+        let mut process = HostProcess {
+            pid: 4343,
+            ppid: 2121,
+            rss_bytes: 8 * 1024 * 1024 * 1024,
+            rss_gib: 8.0,
+            memory_source: "rss",
+            cpu_percent: 1.0,
+            elapsed: "1:00".into(),
+            role: "resident-provider",
+            process_class: "ESSENTIAL_PERSISTENT",
+            safe_to_stop: false,
+            purpose: "p",
+            command: "/opt/mlx/bin/python mlx_lm.server --model /models/kimi".into(),
+            body: Some("kimi".into()),
+        };
+        assert!(!is_orphaned(&process, &BTreeSet::new()));
+        process.ppid = 1;
         assert!(is_orphaned(&process, &BTreeSet::new()));
     }
 }

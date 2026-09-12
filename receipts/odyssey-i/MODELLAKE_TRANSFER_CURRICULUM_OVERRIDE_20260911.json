@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.odyssey.modellake_transfer_curriculum_override.v1",
+  "recorded_at": "2026-09-11T23:43:47Z",
+  "status": "SEALED_SCHEDULING_AUTHORITY_UPDATE",
+  "directive_source": "/Users/scammermike/.codex/attachments/d1c7d4c8-7e1a-4d4c-b26d-4b36b5825cb1/pasted-text.txt",
+  "authority": {
+    "path": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "sha256": "d2ddb9b48adbf520dd6ce8efba06a8041a1cf61358c5f2d9bac7b68a6b9e6d7b",
+    "active_phase_preserved": "FLASH_NEXT_PULSAR_PASS",
+    "processing_policy": "DYNAMIC_TRANSFER_VALUE_FIRST",
+    "priority_formula": "transferability * expected_novelty * strategic_value / expected_cost",
+    "adjacency_novelty_mix": "80/20 rolling target",
+    "strict_size_ordering": "NOT_USED_FOR_ODYSSEY_PROCESSING",
+    "retirement_order": "UNCHANGED_AND_SEPARATE_FROM_PROCESSING_ORDER"
+  },
+  "v41_acquisition": {
+    "target": "deepseek-ai--DeepSeek-V4.1-Flash@dba1be0a40aa",
+    "expected_selected_bytes": 510313353565,
+    "admission_policy": "ANY_VALID_ACTIVE_PHASE_ON_CAPACITY_GATE",
+    "phase_gate_observation": "PASS_DURING_FLASH_NEXT_PULSAR_PASS",
+    "capacity_gate_observation": "BLOCKED_TIER2_BUDGET",
+    "tier2_used_bytes": 4352674967552,
+    "tier2_budget_bytes": 3500000000000,
+    "free_hdd_bytes": 451817222144,
+    "projected_tier2_used_bytes": 4862988321117,
+    "projected_free_bytes_after_target_and_reserves": -114218066170,
+    "minimum_additional_budget_clearance_bytes": 1362988321117,
+    "minimum_additional_physical_free_bytes": 214218066170,
+    "trigger": "Start automatically at the first live safe capacity crossing; do not wait for a later campaign phase or fixed deletion count."
+  },
+  "safety": {
+    "deletion_armed": false,
+    "automatic_deletion": false,
+    "deletion_performed_by_this_update": false,
+    "keep_allowlist_changed": false,
+    "rolling_safety_lead": 2,
+    "sealed_specimen_paths_moved": false,
+    "reason_no_physical_relayout": "Content-addressed specimen paths and manifests remain stable; the reorganization is authoritative scheduling metadata, not directory churn."
+  },
+  "implementation": {
+    "watcher": "tools/odyssey/modellake_watch.py",
+    "watcher_sha256": "5f1d35d9790a92f390dda1bfb597d9900cb413d349381367887742b59305cc64",
+    "tests": "tools/odyssey/test_modellake_watch.py",
+    "tests_sha256": "e5c4ae9bc86424173bda658db0c82fa6ae1f671b4442efdcfac832f54a879acf",
+    "capacity_recheck_seconds_while_target_waits": 60,
+    "launchd_service": "com.hawking.modellake.watch"
+  },
+  "verification": [
+    {
+      "command": "python3 -m json.tool workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 -m pytest -q tools/odyssey/test_modellake_watch.py",
+      "result": "31 passed in 3.58s"
+    },
+    {
+      "command": "direct authority_target_phase_gate and authority_capacity_gate probe",
+      "result": "phase eligible in FLASH_NEXT_PULSAR_PASS; capacity blocked by tier2 budget"
+    },
+    {
+      "command": "launchctl bootstrap/kickstart com.hawking.modellake.watch and inspect modellake-watch.jsonl",
+      "result": "PASS: service running; live authority_admission_blocked event recorded for V4.1 with reason tier2_budget"
+    }
+  ],
+  "claim_boundary": "This update changes Odyssey ordering and V4.1 admission timing only. It does not authorize deletion, infer campaign completion, move sealed bodies, or claim V4.1 runtime compatibility."
+}

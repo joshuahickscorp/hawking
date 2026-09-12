@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.flash.compact_residency_preflight.v1",
+  "status": "ADMISSIBLE_CONSERVATIVE_COMPACT_RESIDENT_EXPERIMENT",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "teacher_bound_only": true,
+  "observed_system": {
+    "physical_bytes": 103079215104,
+    "memory_free_percent": 88,
+    "observed_available_bytes_hint": 90709709291,
+    "swap_used_mb": 8.62
+  },
+  "budget": {
+    "compact_source_weight_bytes": 31908769536,
+    "conservative_host_plus_metal_weight_bytes": 63817539072,
+    "persistent_state_bytes": 118013952,
+    "reserved_headroom_bytes": 8589934592,
+    "required_bytes": 72525487616
+  },
+  "claim_boundary": "A preflight admission is not a successful resident allocation, source aliasing proof, warm decode measurement, TPS, capability, EBPW, or promotion result.",
+  "next": "Allocate only the exact teacher-bound compact bank under one Flash process, record actual process/UMA state after allocation, and fail closed before any second model provider is started."
+}

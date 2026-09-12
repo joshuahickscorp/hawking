@@ -1,0 +1,61 @@
+{
+  "claim_boundary": "One selected source expert and BF16 factor accounting only. No residual, codebook, routing, activation/capability, direct execution, full-body EBPW, runtime, or TPS claim.",
+  "generated_at": "2026-09-11T08:16:25.501987+00:00",
+  "matrix_shape": [
+    1280,
+    2560
+  ],
+  "next_gate": "Use only a held-out output/capability-aware routed-expert experiment to decide whether any static rank is worth protecting.",
+  "rows": [
+    {
+      "complete_scoped_ebpw": 1.2003125,
+      "factor_bytes": 491520,
+      "metadata_bytes": 128,
+      "rank": 64,
+      "relative_frobenius_error": 0.8941882105357215
+    },
+    {
+      "complete_scoped_ebpw": 2.4003125,
+      "factor_bytes": 983040,
+      "metadata_bytes": 128,
+      "rank": 128,
+      "relative_frobenius_error": 0.8084534345988749
+    },
+    {
+      "complete_scoped_ebpw": 4.8003125,
+      "factor_bytes": 1966080,
+      "metadata_bytes": 128,
+      "rank": 256,
+      "relative_frobenius_error": 0.6661378847057898
+    },
+    {
+      "complete_scoped_ebpw": 9.6003125,
+      "factor_bytes": 3932160,
+      "metadata_bytes": 128,
+      "rank": 512,
+      "relative_frobenius_error": 0.44658478446015676
+    },
+    {
+      "complete_scoped_ebpw": 13.2565625,
+      "factor_bytes": 5429760,
+      "metadata_bytes": 128,
+      "rank": 707,
+      "relative_frobenius_error": 0.31577597500315296
+    }
+  ],
+  "schema": "hawking.odyssey.stacked_expert_lowrank_screen.v1",
+  "source": {
+    "dtype": "BF16",
+    "expert": 0,
+    "payload_bytes_read": 6553600,
+    "source_file": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00004-of-00131.safetensors",
+    "stacked_shape": [
+      512,
+      1280,
+      2560
+    ]
+  },
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "status": "STATIC_RATE_DISTORTION_ONLY",
+  "tensor": "model.language_model.layers.1.mlp.experts.gate_up_proj"
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "hawking.odyssey.flash_next.ane_megakernel_model_card.v1",
+  "status": "PLAN_ONLY__ACTIVE_SECONDARY_LANE",
+  "recorded_at": "2026-09-11T17:31:32Z",
+  "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "metadata_seal": "metadata:c8dddd5c3b6736dcec2a85b5712a577424d994e6e27b14359a77aca4701c535c",
+    "seal_scope": "config_and_safetensors_index_metadata_only__not_weight_identity"
+  },
+  "recognition": {
+    "metadata_confidence": "high",
+    "physical_graph_fingerprint": "39f580f62c8d80f083ac56d064ae5a266945784cc744bcd6cbc89af13f321580",
+    "present_organs": [
+      "embedding",
+      "attention",
+      "moe_router",
+      "moe_experts",
+      "shared_expert",
+      "normalization",
+      "ngram_or_lookup",
+      "mtp_or_auxiliary_head",
+      "output_head",
+      "recurrent_or_deltanet"
+    ],
+    "shape_law": "Only hidden-size-derived or generic lookup shapes are populated. Attention and recurrent-state geometry remains explicitly unresolved without model-specific tensor anatomy."
+  },
+  "physical_contract": {
+    "schema": "hcli.physical_graph.mega_kernel.v1",
+    "stages": ["LOAD", "DECODE", "ROUTE", "PROJECT", "ACCUMULATE", "STATE_UPDATE", "SAMPLE"],
+    "backend_slots": ["cpu", "gpu", "ane", "remote"],
+    "selection_authority": "measured_complete_useful_work_after_capability_gate",
+    "fusion_policy": "fuse_only_after_source_parity_and_complete_work_measurement",
+    "not_a_single_vendor_kernel_claim": true
+  },
+  "ane_provider": {
+    "available": true,
+    "plan_ready": true,
+    "atlas_ready": false,
+    "public_api_only": true,
+    "private_interface_control": "forbidden"
+  },
+  "matched_backend_matrix": {
+    "scope": "exact Flash-Next metadata seal, present organs, declared representation, and model-derived shape where available",
+    "backends": ["CPU", "GPU", "ANE"],
+    "present_organs": 9,
+    "cpu": "MODEL_SCOPED_RUN_REQUIRED__UNMEASURED",
+    "gpu": "MODEL_SCOPED_RUN_REQUIRED__UNMEASURED",
+    "ane": "PUBLIC_API_PLAN_EVIDENCE_ONLY__UNMEASURED",
+    "law": "Generic machine bandwidth and a result from another model, organ, shape, representation, or source seal are not substitutes for this matrix."
+  },
+  "bounded_cpu_gpu_diagnostic": {
+    "source_receipt": "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_NATIVE_PARITY.json",
+    "source_receipt_sha256": "9d3a037cbe3f2485e78f3bcedda81cd97cad47dcb44867b7e0f8ec0d1d82cdd5",
+    "scope": "exact source-BF16 layer-0 linear-attention plus routed/shared MoE graph on one BOS embedding",
+    "source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "cpu_source_oracle_ns": 115779584,
+    "metal_graph_gpu_ns": 21983499,
+    "metal_graph_host_wall_ns": 290295541,
+    "source_parity_passed": true,
+    "device_intermediate_host_roundtrips": 0,
+    "fallback_count": 0,
+    "state": "DIAGNOSTIC_PARITY_TIMING_ONLY",
+    "selection_eligible": false,
+    "reason": "This is one bounded layer graph, not a sustained matched CPU/GPU A/B or a complete accepted token. It cannot fill a backend-matrix promotion cell."
+  },
+  "native_lowering_registry": {
+    "owner": "crates/hawking-core/src/mega_kernel.rs",
+    "known_entry": "qwen3b_metal_pass_through_poc",
+    "applicability": "NOT_APPLICABLE_TO_FLASH_NEXT",
+    "reason": "The existing Qwen2.5-3B-style f16 Metal proof of concept has a fixed dense shape contract and remains pass-through; it is neither a Flash lowering nor a promotable model executor."
+  },
+  "promotion": {
+    "status": "WITHHELD",
+    "blockers": [
+      "measured_ane_atlas_not_ready",
+      "no_model_specific_protected_complete_work"
+    ],
+    "required": [
+      "model-scoped public Core ML placement for the exact organ",
+      "matched CPU/GPU/ANE controls with transfer, synchronization, residency, and fallback accounting",
+      "source-parity and independent capability evidence",
+      "protected complete-token wall-time result"
+    ]
+  },
+  "claim_boundary": "This is a metadata-only model card and a physical-lowering contract. It does not claim Flash-Next CPU, GPU, or ANE compilation, placement, execution, latency, throughput, energy, capability, direct execution, full-body EBPW, or resident admission."
+}

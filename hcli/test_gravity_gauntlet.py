@@ -68,6 +68,9 @@ def test_magnitude_destroyed_negative_control_fails_even_with_direction(tmp_path
     )
     obs = state["iterations"][0]["observation"]
     assert obs["magnitude_adequacy"]["verdict"] == "REJECTED_MAGNITUDE_DESTROYED"
+    assert obs["wall_ns"] == 250_000_000
+    assert state["cost"]["wall_ns"] == 250_000_000
+    assert state["cost"]["timing_unit"] == "ns"
     assert state["terminal"]["disposition"] == BUDGET_EXHAUSTED
 
 

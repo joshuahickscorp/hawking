@@ -1,6 +1,6 @@
 """Runtime backends. The pool talks only to this interface.
 
-LlamaServerBackend and MlxServerBackend both implement RuntimeBackend.
+LlamaServerBackend, MlxServerBackend, and MlxVlmServerBackend implement RuntimeBackend.
 mlx_lm.server keeps chat_template_kwargs (the 44x reasoning budget) and
 prefix cache (~25 s/call) and has NO response_format / grammar. supports()
 is honest so a caller degrades rather than send a field the backend will
@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .context_budget import resolve as resolve_context_budget
+from .process_identity import branded_python_entrypoint
 from .resources import pid_is_alive, process_start_token
 
 
@@ -155,6 +156,20 @@ def mlx_server_binary() -> str:
     raise RuntimeError("mlx_lm.server not found on PATH")
 
 
+def mlx_vlm_server_binary() -> str:
+    """Locate the MLX-VLM server used by multimodal KIMI artifacts."""
+    explicit = os.environ.get("HCLI_MLX_VLM_SERVER")
+    if explicit:
+        return explicit
+    binary = shutil.which("mlx_vlm.server")
+    if binary:
+        return binary
+    fallback = os.path.expanduser("~/.local/bin/mlx_vlm.server")
+    if os.path.isfile(fallback) and os.access(fallback, os.X_OK):
+        return fallback
+    raise RuntimeError("mlx_vlm.server not found on PATH")
+
+
 def mlx_help_text(binary: Optional[str] = None) -> str:
     path = binary or mlx_server_binary()
     cached = _HELP.get(path)
@@ -243,6 +258,30 @@ def is_mlx_model_dir(path: str) -> bool:
         if lower.endswith(".safetensors") or lower == "model.safetensors.index.json":
             return True
     return False
+
+
+def is_mlx_vlm_model_dir(path: str) -> bool:
+    """True for an MLX directory whose config requires the VLM server.
+
+    KIMI-VL is a safetensors directory, but it is not a text-only mlx-lm
+    model. Keeping this predicate structural makes backend selection a fact
+    about the artifact rather than a KIMI-specific name check.
+    """
+    if not is_mlx_model_dir(path):
+        return False
+    try:
+        with open(os.path.join(path, "config.json"), "r", encoding="utf-8") as handle:
+            config = json.load(handle)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return False
+    if not isinstance(config, dict):
+        return False
+    model_type = str(config.get("model_type") or "").lower()
+    architectures = config.get("architectures")
+    return model_type in {"kimi_vl", "vision_language"} or (
+        isinstance(architectures, list)
+        and any("conditionalgeneration" in str(item).lower() for item in architectures)
+    )
 
 
 def mlx_quantisation_label(model_path: str) -> str:
@@ -1683,7 +1722,7 @@ class LlamaServerBackend(RuntimeBackend):
         use_port = int(port if port is not None else (self.port or 0))
         slots = max(1, int(n_slots if n_slots is not None else self.n_slots))
         cmd = [
-            self._bin(),
+            *branded_python_entrypoint(self._bin(), "provider"),
             "--model",
             self.model_path,
             "--port",
@@ -2019,7 +2058,7 @@ class MlxServerBackend(RuntimeBackend):
         prompt_conc = max(1, int(self.prompt_concurrency))
         args_json = json.dumps(self.chat_template_args, separators=(",", ":"))
         cmd = [
-            self._bin(),
+            *branded_python_entrypoint(self._bin(), "provider"),
             "--model",
             self.model_path,
             "--host",
@@ -2194,6 +2233,78 @@ class MlxServerBackend(RuntimeBackend):
                 pass
             self._log_handle = None
         return report
+
+
+class MlxVlmServerBackend(MlxServerBackend):
+    """MLX-VLM transport for multimodal safetensors artifacts.
+
+    ``mlx_lm.server`` can report a healthy HTTP process while its generation
+    thread rejects KIMI-VL's KV-b projection weights. MLX-VLM owns the loader
+    for this artifact family and exposes the same OpenAI completion shape, so
+    the HCLI resident can keep one backend contract while choosing the loader
+    from the model's config.
+    """
+
+    def _bin(self) -> str:
+        return self._binary or mlx_vlm_server_binary()
+
+    def identity(self) -> Dict[str, Any]:
+        row = super().identity()
+        row.update({
+            "provider": "mlx_vlm",
+            "backend": "mlx_vlm_server",
+            "served_model": self.model_path,
+        })
+        return row
+
+    def command(
+        self, port: Optional[int] = None, n_slots: Optional[int] = None
+    ) -> List[str]:
+        del n_slots  # MLX-VLM uses its own request scheduler.
+        use_port = int(port if port is not None else (self.port or 0))
+        cmd = [
+            *branded_python_entrypoint(self._bin(), "provider"),
+            "--model",
+            self.model_path,
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(use_port),
+            "--max-tokens",
+            str(self.max_tokens),
+            "--model-discovery",
+            "served",
+            "--trust-remote-code",
+            "--log-progress-interval",
+            "0",
+        ]
+        if self.prefill_step_size is not None:
+            cmd.extend(["--prefill-step-size", str(self.prefill_step_size)])
+        return cmd
+
+    def _bind_local_model(self, prepared: Dict[str, Any]) -> None:
+        # MLX-VLM treats an unknown model string as a Hugging Face id and may
+        # go to the network. The child was launched with the local path, so
+        # always bind the OpenAI request to that served local identity.
+        prepared["model"] = self.model_path
+
+    def complete(
+        self, payload: Dict[str, Any], timeout: Optional[float] = None
+    ) -> CompletionResult:
+        prepared, degraded = self._prepare_payload(payload)
+        self._bind_local_model(prepared)
+        limit = float(
+            timeout
+            if timeout is not None
+            else os.environ.get("HCLI_MODEL_TIMEOUT", "1800")
+        )
+        data = _post_json(
+            f"{self.endpoint()}/v1/chat/completions",
+            prepared,
+            limit,
+            "mlx_vlm.server",
+        )
+        return self._parse_response(data, degraded)
 
 
 class OpenAICompatibleBackend(RuntimeBackend):

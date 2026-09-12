@@ -178,7 +178,13 @@ fn read_outl_sees_through_sprv_but_chain_order_is_load_bearing() {
     std::fs::write(&path, &buf).unwrap();
 
     let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
+        Some(OutlierWire::from_selection(
+            1024,
+            vec![7, 600],
+            vec![-100, 42],
+            0.5,
+            8,
+        )),
         None,
     ];
     append_outl(&path, &wires).expect("append outl");
@@ -186,7 +192,9 @@ fn read_outl_sees_through_sprv_but_chain_order_is_load_bearing() {
 
     let buf2 = std::fs::read(&path).unwrap();
     // OUTL is found beneath SPRV.
-    let outl = read_outl_bytes(&buf2, true).unwrap().expect("outl beneath sprv");
+    let outl = read_outl_bytes(&buf2, true)
+        .unwrap()
+        .expect("outl beneath sprv");
     assert_eq!(outl.tensors, wires);
     // SPRV is the outermost section.
     assert!(read_sprv_bytes(&buf2, true).unwrap().is_some());
@@ -232,7 +240,13 @@ fn sdsc_restack_preserves_outl_and_sprv_visibility() {
     std::fs::write(&path, &buf).unwrap();
 
     let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
+        Some(OutlierWire::from_selection(
+            1024,
+            vec![7, 600],
+            vec![-100, 42],
+            0.5,
+            8,
+        )),
         None,
     ];
     append_outl(&path, &wires).expect("append outl");
@@ -240,15 +254,28 @@ fn sdsc_restack_preserves_outl_and_sprv_visibility() {
     append_sdsc(&path).expect("append sdsc (restack)");
 
     let buf2 = std::fs::read(&path).unwrap();
-    assert!(read_sdsc_bytes(&buf2, true).unwrap().is_some(), "sdsc innermost");
+    assert!(
+        read_sdsc_bytes(&buf2, true).unwrap().is_some(),
+        "sdsc innermost"
+    );
     assert_eq!(
-        read_outl_bytes(&buf2, true).unwrap().expect("outl after restack").tensors,
+        read_outl_bytes(&buf2, true)
+            .unwrap()
+            .expect("outl after restack")
+            .tensors,
         wires,
         "OUTL must remain visible (read_outl steps over SPRV) after the SDSC restack"
     );
-    assert!(read_sprv_bytes(&buf2, true).unwrap().is_some(), "sprv outermost");
+    assert!(
+        read_sprv_bytes(&buf2, true).unwrap().is_some(),
+        "sprv outermost"
+    );
     // v2 core bytes are untouched by the whole stack.
-    assert_eq!(&buf2[..buf.len()], &buf[..], "v2 prefix must be byte-stable under the chain");
+    assert_eq!(
+        &buf2[..buf.len()],
+        &buf[..],
+        "v2 prefix must be byte-stable under the chain"
+    );
 }
 
 // ===========================================================================
@@ -270,7 +297,13 @@ fn v2_core_readers_ignore_every_trailer_in_the_chain() {
 
     // Stack OUTL then SPRV (the common deploy chain).
     let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
+        Some(OutlierWire::from_selection(
+            1024,
+            vec![7, 600],
+            vec![-100, 42],
+            0.5,
+            8,
+        )),
         None,
     ];
     append_outl(&path, &wires).expect("append outl");
@@ -292,7 +325,10 @@ fn v2_core_readers_ignore_every_trailer_in_the_chain() {
     }
     assert_eq!(full2.len(), base_full.len());
     for (a, b) in full2.iter().zip(base_full.iter()) {
-        assert_eq!(a.base.enc.bits, b.base.enc.bits, "payload must survive trailers");
+        assert_eq!(
+            a.base.enc.bits, b.base.enc.bits,
+            "payload must survive trailers"
+        );
         assert_eq!(a.base.enc.blocks, b.base.enc.blocks);
     }
 }
@@ -313,21 +349,41 @@ fn outl_refuses_double_and_refuses_behind_sprv_seal() {
     std::fs::write(&path, &buf).unwrap();
 
     let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
+        Some(OutlierWire::from_selection(
+            1024,
+            vec![7, 600],
+            vec![-100, 42],
+            0.5,
+            8,
+        )),
         None,
     ];
     append_outl(&path, &wires).expect("first outl");
     // double-append of OUTL is rejected, file untouched
     let before = std::fs::read(&path).unwrap();
-    assert!(append_outl(&path, &wires).is_err(), "double OUTL must be rejected");
-    assert_eq!(std::fs::read(&path).unwrap(), before, "rejected append must not mutate file");
+    assert!(
+        append_outl(&path, &wires).is_err(),
+        "double OUTL must be rejected"
+    );
+    assert_eq!(
+        std::fs::read(&path).unwrap(),
+        before,
+        "rejected append must not mutate file"
+    );
 
     // seal with SPRV, then OUTL-behind-SPRV must be rejected with the SPRV-order msg
     append_sprv_computed(&path, false).expect("append sprv");
     let sealed = std::fs::read(&path).unwrap();
     let err = append_outl(&path, &wires).unwrap_err();
-    assert!(err.contains("BEFORE SPRV"), "OUTL behind SPRV must name the order rule: {err}");
-    assert_eq!(std::fs::read(&path).unwrap(), sealed, "rejected append must not mutate sealed file");
+    assert!(
+        err.contains("BEFORE SPRV"),
+        "OUTL behind SPRV must name the order rule: {err}"
+    );
+    assert_eq!(
+        std::fs::read(&path).unwrap(),
+        sealed,
+        "rejected append must not mutate sealed file"
+    );
 }
 
 #[test]
@@ -339,8 +395,15 @@ fn rslt_refuses_double_append() {
     append_rslt(&path, &rslt_for(&buf)).expect("first rslt");
     let after_first = std::fs::read(&path).unwrap();
     let err = append_rslt(&path, &rslt_for(&buf)).unwrap_err();
-    assert!(err.contains("already has"), "double RSLT must be rejected: {err}");
-    assert_eq!(std::fs::read(&path).unwrap(), after_first, "file untouched after rejected append");
+    assert!(
+        err.contains("already has"),
+        "double RSLT must be rejected: {err}"
+    );
+    assert_eq!(
+        std::fs::read(&path).unwrap(),
+        after_first,
+        "file untouched after rejected append"
+    );
 }
 
 // ===========================================================================
@@ -358,5 +421,8 @@ fn rslt_raw_codec_round_trips_as_c2_baseline() {
     };
     let bytes = rslt::serialize(&section);
     let back = rslt::deserialize(&bytes).expect("deserialize");
-    assert_eq!(back, section, "fixed-width RSLT round-trip is the C2 swap-in oracle");
+    assert_eq!(
+        back, section,
+        "fixed-width RSLT round-trip is the C2 swap-in oracle"
+    );
 }

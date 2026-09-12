@@ -90,7 +90,11 @@ fn assert_roundtrip(raw: &[i64]) -> Vec<u8> {
     let mut pos = 0usize;
     let back = decode_stream(&enc, &mut pos).expect("decode of a self-produced section");
     assert_eq!(back, raw, "round-trip mismatch");
-    assert_eq!(pos, enc.len(), "decoder must consume the whole section exactly");
+    assert_eq!(
+        pos,
+        enc.len(),
+        "decoder must consume the whole section exactly"
+    );
 
     // (4) decode determinism / statelessness: many independent decodes agree
     for _ in 0..8 {
@@ -108,8 +112,15 @@ fn assert_roundtrip(raw: &[i64]) -> Vec<u8> {
         buf.extend_from_slice(&enc);
         let mut p = off;
         let emb = decode_stream(&buf, &mut p).expect("decode from offset");
-        assert_eq!(emb, raw, "decode depends on absolute buffer position (off={off})");
-        assert_eq!(p - off, enc.len(), "consumed length changed with offset (off={off})");
+        assert_eq!(
+            emb, raw,
+            "decode depends on absolute buffer position (off={off})"
+        );
+        assert_eq!(
+            p - off,
+            enc.len(),
+            "consumed length changed with offset (off={off})"
+        );
     }
 
     enc
@@ -184,7 +195,11 @@ fn exhaustive_binary_streams_longer() {
             covered += 1;
         }
     }
-    assert_eq!(covered, (1u64 << 17) - 1, "binary enumeration coverage drifted");
+    assert_eq!(
+        covered,
+        (1u64 << 17) - 1,
+        "binary enumeration coverage drifted"
+    );
     eprintln!("[sideinfo_rans] exhaustive binary streams len 0..=16: {covered} streams");
 }
 
@@ -282,7 +297,8 @@ fn golden_vectors_both_directions() {
         // encode is bit-frozen
         let got = encode_stream(raw);
         assert_eq!(
-            got, want,
+            got,
+            want,
             "ENCODE golden drift for '{name}': bytes changed — \
              a cross-device divergence or an intended codec change.\n got={}\nwant={}",
             got.iter().map(|b| format!("{b:02x}")).collect::<String>(),
@@ -295,7 +311,10 @@ fn golden_vectors_both_directions() {
         assert_eq!(back, *raw, "DECODE golden drift for '{name}'");
         assert_eq!(pos, want.len(), "golden '{name}' not fully consumed");
     }
-    eprintln!("[sideinfo_rans] {} cross-platform golden vectors frozen (both directions)", GOLDENS.len());
+    eprintln!(
+        "[sideinfo_rans] {} cross-platform golden vectors frozen (both directions)",
+        GOLDENS.len()
+    );
 }
 
 /// Golden vectors for the two public convenience wrappers — these pin the exact
@@ -304,8 +323,13 @@ fn golden_vectors_both_directions() {
 #[test]
 fn golden_scale_q_and_positions() {
     let scale_q: [i32; 10] = [0, 1, -1, 100, 100, 100, -50, 0, 1, 1];
-    let want = unhex("0a0000000600000000a20b01d10502771163d105c801741100d10500000000060000006a04d543eb49");
-    assert_eq!(encode_scale_q(&scale_q), want, "scale_q encode golden drift");
+    let want =
+        unhex("0a0000000600000000a20b01d10502771163d105c801741100d10500000000060000006a04d543eb49");
+    assert_eq!(
+        encode_scale_q(&scale_q),
+        want,
+        "scale_q encode golden drift"
+    );
     let mut pos = 0usize;
     assert_eq!(decode_scale_q(&want, &mut pos).unwrap(), scale_q);
     assert_eq!(pos, want.len());
@@ -313,7 +337,11 @@ fn golden_scale_q_and_positions() {
     let positions: [u32; 7] = [3, 7, 8, 100, 101, 5000, 1_000_000];
     let want =
         unhex("0700000007000000020010060008080008b8010008c64c0008f0ba790008000008000000000600000081d00004a800");
-    assert_eq!(encode_positions(&positions), want, "positions encode golden drift");
+    assert_eq!(
+        encode_positions(&positions),
+        want,
+        "positions encode golden drift"
+    );
     let mut pos = 0usize;
     assert_eq!(decode_positions(&want, &mut pos).unwrap(), positions);
     assert_eq!(pos, want.len());
@@ -350,7 +378,10 @@ fn model_serialize_is_a_fixpoint() {
         let mut pos = 0usize;
         let back = Model::deserialize(&buf, &mut pos).expect("model deserialize");
         assert_eq!(pos, buf.len(), "model not fully consumed (trial {trial})");
-        assert_eq!(back, model, "model serialize/deserialize not the identity (trial {trial})");
+        assert_eq!(
+            back, model,
+            "model serialize/deserialize not the identity (trial {trial})"
+        );
 
         // re-serialize the rebuilt model: must be byte-identical (fixpoint).
         let mut buf2 = Vec::new();
@@ -374,8 +405,8 @@ fn property_random_streams_roundtrip() {
         let regime = splitmix64(&mut s) % 4;
         let raw: Vec<i64> = (0..n)
             .map(|_| match regime {
-                0 => 0,                                              // all-equal
-                1 => (splitmix64(&mut s) % 3) as i64 - 1,           // tiny alphabet
+                0 => 0,                                   // all-equal
+                1 => (splitmix64(&mut s) % 3) as i64 - 1, // tiny alphabet
                 2 => {
                     // bell curve ~ scale_q
                     let mut acc = 0i64;
@@ -421,12 +452,20 @@ fn exhaustive_gap_transform_inverts() {
             if mask.count_ones() as usize != k {
                 continue;
             }
-            let positions: Vec<u32> =
-                universe.iter().copied().enumerate().filter(|(i, _)| (mask >> i) & 1 == 1).map(|(_, v)| v).collect();
+            let positions: Vec<u32> = universe
+                .iter()
+                .copied()
+                .enumerate()
+                .filter(|(i, _)| (mask >> i) & 1 == 1)
+                .map(|(_, v)| v)
+                .collect();
             // positions are ascending by construction.
             let gaps = positions_to_gaps(&positions);
             let back = gaps_to_positions(&gaps).expect("gaps invert");
-            assert_eq!(back, positions, "gap transform not invertible for {positions:?}");
+            assert_eq!(
+                back, positions,
+                "gap transform not invertible for {positions:?}"
+            );
 
             // full codec round-trip too
             let enc = encode_positions(&positions);
@@ -437,17 +476,31 @@ fn exhaustive_gap_transform_inverts() {
             covered += 1;
         }
     }
-    eprintln!("[sideinfo_rans] exhaustive gap-transform inverts over {covered} ascending position sets");
+    eprintln!(
+        "[sideinfo_rans] exhaustive gap-transform inverts over {covered} ascending position sets"
+    );
 }
 
 #[test]
 fn corrupt_gaps_are_rejected_not_panicked() {
     // Non-ascending or overflowing reconstructions must be a clean Err, never a
     // panic and never a silent wrong decode (a corrupt stream must not pass).
-    assert!(gaps_to_positions(&[5, 0]).is_err(), "zero gap (duplicate position) must error");
-    assert!(gaps_to_positions(&[5, -3]).is_err(), "negative gap (descending) must error");
-    assert!(gaps_to_positions(&[-1]).is_err(), "negative first position must error");
-    assert!(gaps_to_positions(&[i64::MAX, 1]).is_err(), "overflow past u32 must error");
+    assert!(
+        gaps_to_positions(&[5, 0]).is_err(),
+        "zero gap (duplicate position) must error"
+    );
+    assert!(
+        gaps_to_positions(&[5, -3]).is_err(),
+        "negative gap (descending) must error"
+    );
+    assert!(
+        gaps_to_positions(&[-1]).is_err(),
+        "negative first position must error"
+    );
+    assert!(
+        gaps_to_positions(&[i64::MAX, 1]).is_err(),
+        "overflow past u32 must error"
+    );
     // valid one still works
     assert_eq!(gaps_to_positions(&[3, 4, 1]).unwrap(), vec![3, 7, 8]);
 }
@@ -473,17 +526,25 @@ fn every_truncation_is_total() {
             decode_stream(&enc[..cut], &mut pos)
         }));
         assert!(r.is_ok(), "decode panicked on truncation to {cut} bytes");
-        assert!(pos <= cut, "decode read past the truncated end ({pos} > {cut})");
+        assert!(
+            pos <= cut,
+            "decode read past the truncated end ({pos} > {cut})"
+        );
         // The only Ok on a strict truncation is the empty stream when the header
         // declared n==0; our stream declares n=400, so any short cut is an Err.
         if cut < enc.len() {
             if let Ok(Ok(v)) = &r {
-                assert!(v.is_empty() || v.len() == raw.len(),
-                    "truncated decode produced a partial-but-nonempty wrong stream at cut={cut}");
+                assert!(
+                    v.is_empty() || v.len() == raw.len(),
+                    "truncated decode produced a partial-but-nonempty wrong stream at cut={cut}"
+                );
             }
         }
     }
-    eprintln!("[sideinfo_rans] all {} truncations of a 400-symbol section are total (no panic)", enc.len() + 1);
+    eprintln!(
+        "[sideinfo_rans] all {} truncations of a 400-symbol section are total (no panic)",
+        enc.len() + 1
+    );
 }
 
 #[test]
@@ -501,7 +562,10 @@ fn every_single_byte_flip_is_total() {
             let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 decode_stream(&bad, &mut pos)
             }));
-            assert!(r.is_ok(), "decode panicked on single-byte flip at {i} (xor {delta})");
+            assert!(
+                r.is_ok(),
+                "decode panicked on single-byte flip at {i} (xor {delta})"
+            );
             assert!(pos <= bad.len(), "decode over-read on flip at {i}");
             // If it decodes, it must produce the declared symbol count or error —
             // never an unbounded / partial-garbage Vec beyond what n allows.
@@ -531,7 +595,9 @@ fn random_byte_soup_never_panics() {
         assert!(r.is_ok(), "decode panicked on random byte soup: {buf:?}");
         assert!(pos <= buf.len(), "over-read on random soup");
     }
-    eprintln!("[sideinfo_rans] 20000 random byte-soup buffers: decode is total (no panic, bounded read)");
+    eprintln!(
+        "[sideinfo_rans] 20000 random byte-soup buffers: decode is total (no panic, bounded read)"
+    );
 }
 
 // ===========================================================================
@@ -544,8 +610,23 @@ fn random_byte_soup_never_panics() {
 fn zigzag_bijective_over_boundaries_and_sweep() {
     // exact boundaries
     for v in [
-        0i64, 1, -1, 2, -2, 63, -64, 64, -65, 127, -128,
-        i32::MIN as i64, i32::MAX as i64, i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1,
+        0i64,
+        1,
+        -1,
+        2,
+        -2,
+        63,
+        -64,
+        64,
+        -65,
+        127,
+        -128,
+        i32::MIN as i64,
+        i32::MAX as i64,
+        i64::MIN,
+        i64::MAX,
+        i64::MIN + 1,
+        i64::MAX - 1,
     ] {
         assert_eq!(unzigzag(zigzag(v)), v, "zigzag not bijective at {v}");
     }

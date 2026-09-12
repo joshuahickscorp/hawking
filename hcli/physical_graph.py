@@ -35,6 +35,21 @@ NR_PRIMITIVES = (
     "STATE_UPDATE",
 )
 
+# The MegaKernel is a shared lowering/execution spine, not a promise that one
+# vendor kernel can fuse every model.  Backend-native implementations occupy
+# these stable stages and the model supplies the organ/representation/state
+# contract at compile time.
+MEGA_KERNEL_SCHEMA = "hcli.physical_graph.mega_kernel.v1"
+MEGA_KERNEL_STAGES = (
+    "LOAD",
+    "DECODE",
+    "ROUTE",
+    "PROJECT",
+    "ACCUMULATE",
+    "STATE_UPDATE",
+    "SAMPLE",
+)
+
 
 def _copy(value: Any) -> Any:
     try:
@@ -68,6 +83,122 @@ def _same_target(value: Any, target: str) -> bool:
     if source == "flash" and "flash" in right:
         return True
     return bool(left and right and (left == right or left in right or right in left))
+
+
+def _decode_state_layout(slots: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Build the portable continuation contract from model-scoped organs.
+
+    This mirrors the Rust-owned MegaKernel vocabulary for compatibility when
+    the resident native service is unavailable.  It names state only; exact
+    dimensions, bytes, residency, and device allocations remain lowering
+    evidence and must never be inferred from the architecture label alone.
+    """
+
+    regions: List[Dict[str, str]] = [{
+        "region_id": "runtime.route_cache",
+        "kind": "route_cache",
+        "owner": "runtime",
+        "residency": "unresolved",
+        "persistence": "accepted_decode_session",
+    }]
+    for slot in slots:
+        organ_id = str(slot["organ_id"])
+        operation = str(slot.get("operation") or "").lower()
+        state = str(slot.get("state") or "").lower()
+        identity = organ_id.lower()
+        if (operation == "state_update" or "recurrent" in state
+                or "recurrent" in identity or "deltanet" in identity):
+            regions.append({
+                "region_id": f"{organ_id}.recurrent",
+                "kind": "recurrent_state",
+                "owner": organ_id,
+                "residency": "unresolved",
+                "persistence": "accepted_decode_session",
+            })
+        if (operation == "sdpa" or "kv" in state
+                or (("attention" in identity or "attn" in identity)
+                    and "linear_attention" not in identity
+                    and "deltanet" not in identity)):
+            regions.append({
+                "region_id": f"{organ_id}.kv",
+                "kind": "kv_cache",
+                "owner": organ_id,
+                "residency": "unresolved",
+                "persistence": "accepted_decode_session",
+            })
+    unique = {row["region_id"]: row for row in regions}
+    return {
+        "position": 0,
+        "regions": [unique[key] for key in sorted(unique)],
+        "continuation_rule": (
+            "advance_position_only_after_state_update_and_accepted_token;"
+            "retain_all_regions_across_steps"
+        ),
+        "replay_is_not_decode": True,
+    }
+
+
+def _mega_kernel_plan(
+    model_id: str,
+    organs: Iterable[Any],
+    provider_payload: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Return the deterministic, provider-neutral execution spine.
+
+    This plan is the place where per-model CPU/GPU/ANE characterization joins
+    the common runtime.  It contains no device result and cannot promote a
+    backend.  That separation lets a future Rust/Metal/ANE lowering share the
+    same contract without creating one model-specific kernel framework per
+    accelerator.
+    """
+
+    slots: List[Dict[str, Any]] = []
+    for index, organ in enumerate(organs):
+        if not isinstance(organ, Mapping):
+            continue
+        slots.append(
+            {
+                "organ_id": str(organ.get("id") or organ.get("name") or f"organ-{index}"),
+                "operation": str(
+                    organ.get("operation")
+                    or organ.get("operator")
+                    or organ.get("kind")
+                    or "unknown"
+                ),
+                "representation": organ.get("representation") or "model_declared",
+                "state": organ.get("state") or "model_declared",
+                "route": organ.get("route") or "dynamic_if_applicable",
+            }
+        )
+    slots.sort(key=lambda row: row["organ_id"])
+    has_ane = provider_payload.get("kind") == "ANEProvider"
+    return {
+        "schema": MEGA_KERNEL_SCHEMA,
+        "role": "shared_physical_execution_spine",
+        "model_id": model_id,
+        "stages": list(MEGA_KERNEL_STAGES),
+        "backend_slots": ["cpu", "gpu", "ane", "remote"],
+        "organ_slots": slots,
+        "dynamic_slots": [
+            "token",
+            "position",
+            "route",
+            "representation",
+            "state_layout",
+            "sampling",
+        ],
+        "per_model_characterization": {
+            "required": True,
+            "owner": "ANEProvider/PhysicalGraph plus CPU/GPU measurements",
+            "ane_lane_present": has_ane,
+            "selection": "measured_complete_useful_work_after_capability_gate",
+        },
+        "fusion_policy": "fuse_only_after_source_parity_and_complete_work_measurement",
+        "persistent_state": ["weights_or_representation", "route_cache", "kv_or_recurrent_state"],
+        "decode_state_layout": _decode_state_layout(slots),
+        "not_a_single_vendor_kernel_claim": True,
+        "qualification": "PLAN_ONLY",
+    }
 
 
 def apply_architecture_atlas(
@@ -426,6 +557,7 @@ def compile_physical_graph(
     candidate_devices = list(devices or ("cpu", "gpu", "fpga", "remote"))
     if provider_payload.get("kind") == "ANEProvider" and "ane" not in candidate_devices:
         candidate_devices.insert(2, "ane")
+    mega_kernel = _mega_kernel_plan(model_id, organs, provider_payload)
     graph = PhysicalGraph(
         model_id=model_id,
         computation=computation,
@@ -435,6 +567,7 @@ def compile_physical_graph(
             "native_representation_verified": False,
             "gravity_candidates": [],
             "nr_primitives": list(NR_PRIMITIVES),
+            "mega_kernel": _copy(mega_kernel),
             "physical_scoring": {
                 "schema": SCORING_SCHEMA,
                 "dimensions": [
@@ -465,6 +598,13 @@ def compile_physical_graph(
                 "status": "CANDIDATE_ONLY",
                 "selection_authority": "measured complete useful work",
             } if provider_payload.get("kind") == "ANEProvider" else None,
+            "mega_kernel": {
+                "schema": MEGA_KERNEL_SCHEMA,
+                "status": "PLAN_ONLY",
+                "selected_backend": None,
+                "backend_slots": list(mega_kernel["backend_slots"]),
+                "selection_authority": "measured complete useful work after capability gate",
+            },
         },
         synchronization=[{"kind": "runtime_boundary", "status": "unresolved"}],
         evidence=list(architecture.get("evidence") or []),
@@ -496,6 +636,7 @@ def compile_physical_graph(
                 "synchronization",
                 "interference",
             ],
+            "mega_kernel": _copy(mega_kernel),
         },
     )
     result = graph.to_dict()
@@ -511,6 +652,8 @@ def compile_physical_graph(
 
 __all__ = [
     "DIAGNOSTIC_BENCHMARK_CLASSES",
+    "MEGA_KERNEL_SCHEMA",
+    "MEGA_KERNEL_STAGES",
     "NR_PRIMITIVES",
     "PhysicalGraph",
     "PROTECTED_BENCHMARK_CLASSES",

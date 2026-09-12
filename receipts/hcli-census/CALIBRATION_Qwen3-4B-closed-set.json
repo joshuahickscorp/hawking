@@ -1,0 +1,106 @@
+{
+ "agent": "Qwen3-4B-closed-set",
+ "passed": false,
+ "results": [
+  {
+   "specimen": "Dream-org--Dream-v0-Instruct-7B",
+   "passed": false,
+   "why": "architecture_family='DENSE_DECODER' lacks any of ['diffusion_lm']; execution_class='AUTOREGRESSIVE_DECODE_WITH_KV' lacks any of ['iterative_denoising']",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "dominant_organs": [
+     "model.layers.<L>.self_attn",
+     "model.layers.<L>.mlp",
+     "model.layers.<L>.input_layernorm",
+     "model.layers.<L>.post_attention_layernorm"
+    ],
+    "state_or_kv": "KV cache",
+    "likely_bottleneck": "forward pass bandwidth",
+    "relevant_laws": [
+     "a config exposing mask_token_id, or an architecture ending ForMaskedLM, is NOT autoregressive",
+     "ForCausalLM in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name. Trust mask/diffusion signals and the model_type over the class suffix when they disagree",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate"
+    ],
+    "disposition": "CEPHEID CANDIDATE",
+    "next_experiment": "measure actual decode latency under varying context lengths"
+   }
+  },
+  {
+   "specimen": "GSAI-ML--iLLaDA-8B-Base",
+   "passed": false,
+   "why": "architecture_family='DENSE_DECODER' lacks any of ['diffusion_lm']; execution_class='AUTOREGRESSIVE_DECODE_WITH_KV' lacks any of ['iterative_denoising']",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "dominant_organs": [
+     "model.layers.<L>.self_attn.q_proj.weight",
+     "model.layers.<L>.self_attn.k_proj.weight",
+     "model.layers.<L>.self_attn.v_proj.weight",
+     "model.layers.<L>.self_attn.o_proj.weight",
+     "model.layers.<L>.mlp.gate_proj.weight",
+     "model.layers.<L>.mlp.up_proj.weight",
+     "model.layers.<L>.mlp.down_proj.weight",
+     "model.layers.<L>.input_layernorm.weight",
+     "model.layers.<L>.post_attention_layernorm.weight"
+    ],
+    "state_or_kv": "KV",
+    "likely_bottleneck": "KV cache growth during decode",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive",
+     "ForCausalLM in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name. Trust mask/diffusion signals and the model_type over the class suffix when they disagree",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate"
+    ],
+    "disposition": "CEPHEID CANDIDATE",
+    "next_experiment": "measure decode latency under varying context lengths"
+   }
+  },
+  {
+   "specimen": "microsoft--bitnet-b1.58-2B-4T",
+   "passed": true,
+   "why": "",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "dominant_organs": [
+     "model.layers.<L>.mlp.down_proj.weight",
+     "model.layers.<L>.mlp.gate_proj.weight",
+     "model.layers.<L>.mlp.up_proj.weight"
+    ],
+    "state_or_kv": "KV",
+    "likely_bottleneck": "matrix params (0.8493 B)",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive",
+     "ForCausalLM in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name. Trust mask/diffusion signals and the model_type over the class suffix when they disagree",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate"
+    ],
+    "disposition": "CEPHEID CANDIDATE",
+    "next_experiment": "measure actual decode latency under varying context lengths"
+   }
+  },
+  {
+   "specimen": "answerdotai--ModernBERT-large",
+   "passed": true,
+   "why": "",
+   "verdict": {
+    "architecture_family": "BIDIRECTIONAL_ENCODER",
+    "execution_class": "BIDIRECTIONAL_ENCODER_PASS",
+    "dominant_organs": [
+     "model.layers.<L>.attn.Wqkv.weight",
+     "model.layers.<L>.mlp.Wi.weight",
+     "model.layers.<L>.mlp.Wo.weight",
+     "model.layers.<L>.attn_norm.weight",
+     "model.layers.<L>.mlp_norm.weight"
+    ],
+    "state_or_kv": "NONE",
+    "likely_bottleneck": "matrix_params",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive. Masked/denoising objectives mean the execution class is iterative denoising or a bidirectional encoder pass, never decode.",
+     "Trust mask/diffusion signals and the model_type over the class suffix when they disagree."
+    ],
+    "disposition": "CEPHEID CANDIDATE",
+    "next_experiment": "verify mask_token_id in config signals"
+   }
+  }
+ ]
+}

@@ -25,11 +25,13 @@
    "gpu_resident_state": "resident_state",
    "hadamard_lattice_q3_group128": "hadamard_lattice",
    "inter_expert_redundancy": "cross_expert_structure",
+   "kimi_refusal_intervention_family": "kimi_refusal_intervention",
    "kronecker": "kronecker",
    "kronecker_factorisation": "kronecker",
    "kronecker_factorization": "kronecker",
    "large_expert_cache": "large_expert_cache",
    "layer_zero_is_a_different_source": "layer0_separate_source",
+   "learned_weight_refusal_intervention": "kimi_refusal_intervention",
    "lm_head_below_q8": "lm_head_precision",
    "low_rank_residual": "low_rank",
    "ns_cross_expert_and_cross_layer_tying": "cross_expert_structure",
@@ -48,6 +50,8 @@
    "qn_state_merging": "state_merging",
    "raw_weight_pq_vq": "raw_weight_pq_vq",
    "raw_weight_pq_vq_at_one_bit": "raw_weight_pq_vq",
+   "refusal_behavior_projection": "kimi_refusal_intervention",
+   "refusal_intervention_family": "kimi_refusal_intervention",
    "resident_state": "resident_state",
    "router_distill": "router_distill",
    "row_norm_stratification_premise": "row_norm_stratification",
@@ -73,6 +77,10 @@
    "metal": "metal"
   },
   "model_rules": [
+   {
+    "canon": "kimi-vl-a3b-instruct",
+    "pattern": "kimi[_ .-]?base|kimi[-_. ]?vl[-_. ]?a3b"
+   },
    {
     "canon": "qwen3-235b-a22b",
     "pattern": "qwen3[-_. ]?235b"
@@ -153,29 +161,17 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T05:37:27Z",
+  "recorded_at": "2026-09-11T07:02:23Z",
   "recorded_by": "tools/future/negative_index.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "main",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "coverage": {
   "by_hypothesis_family": [
    {
-    "family": "0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
-    "n": 1
-   },
-   {
     "family": "20_h_dsv4f_determined_teacher_x_capture_g007_route_1",
-    "n": 1
-   },
-   {
-    "family": "4_layer_residual_probe_extrapolated_to_48_layers_as_a_go",
-    "n": 1
-   },
-   {
-    "family": "535_647_gb_s_reuse_band_as_the_decode_ceiling",
     "n": 1
    },
    {
@@ -196,10 +192,6 @@
    },
    {
     "family": "add_separately_measured_stage_wins_and_call_the_sum_a_token",
-    "n": 1
-   },
-   {
-    "family": "adding_stage_wins_isolated_organ_products_and_calling_the_sum_a_token",
     "n": 1
    },
    {
@@ -275,10 +267,6 @@
     "n": 1
    },
    {
-    "family": "cb_encoder_dispatch_topology_collapse_as_the_token_lever",
-    "n": 1
-   },
-   {
     "family": "collapse_command_buffer_encoder_dispatch_topology_to_win_complete_token_wall",
     "n": 1
    },
@@ -292,10 +280,6 @@
    },
    {
     "family": "compress_routed_experts_to_move_fs_weight_or_token_time_the_density_campaign_on_the_9",
-    "n": 1
-   },
-   {
-    "family": "compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
     "n": 1
    },
    {
@@ -319,39 +303,19 @@
     "n": 1
    },
    {
-    "family": "cpu_gpu_pipeline_host_encode_icb_as_tps",
-    "n": 1
-   },
-   {
     "family": "cpu_gpu_pipelining",
     "n": 1
    },
    {
-    "family": "cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq",
-    "n": 1
-   },
-   {
     "family": "cross_expert_structure",
-    "n": 9
+    "n": 8
    },
    {
     "family": "cross_layer_weight_delta",
     "n": 1
    },
    {
-    "family": "crushing_routed_experts_to_move_q80_token_time",
-    "n": 1
-   },
-   {
     "family": "decode_micro_opt_a5_a6",
-    "n": 1
-   },
-   {
-    "family": "density_costs_speed_5_9_rice_reconstruction_penalty",
-    "n": 1
-   },
-   {
-    "family": "determined_20_h_dsv4f_teacher_x_capture",
     "n": 1
    },
    {
@@ -367,15 +331,7 @@
     "n": 1
    },
    {
-    "family": "dram_row_interleave_gray_lut_code_permutation_as_the_token_lever",
-    "n": 1
-   },
-   {
     "family": "dram_row_interleaving_or_expert_co_route_permutation_as_the_token_lever",
-    "n": 1
-   },
-   {
-    "family": "dsv4f_as_a_live_density_velocity_vehicle",
     "n": 1
    },
    {
@@ -451,19 +407,7 @@
     "n": 1
    },
    {
-    "family": "gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
-    "n": 1
-   },
-   {
-    "family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
-    "n": 1
-   },
-   {
     "family": "generated_block",
-    "n": 1
-   },
-   {
-    "family": "giant_json_capture_index",
     "n": 1
    },
    {
@@ -481,10 +425,6 @@
    {
     "family": "hadamard_lattice",
     "n": 44
-   },
-   {
-    "family": "hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_attention",
-    "n": 1
    },
    {
     "family": "host_per_dispatch_overhead",
@@ -515,8 +455,16 @@
     "n": 1
    },
    {
+    "family": "kimi_p0_blind_autonomous_repository_writing",
+    "n": 1
+   },
+   {
+    "family": "kimi_refusal_intervention",
+    "n": 1
+   },
+   {
     "family": "kronecker",
-    "n": 4
+    "n": 3
    },
    {
     "family": "kv_working_set_eviction",
@@ -540,19 +488,15 @@
    },
    {
     "family": "lm_head_precision",
-    "n": 4
-   },
-   {
-    "family": "low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
-    "n": 1
+    "n": 3
    },
    {
     "family": "low_rank",
-    "n": 54
+    "n": 53
    },
    {
     "family": "megakernel",
-    "n": 2
+    "n": 1
    },
    {
     "family": "mixed_prec_rtn",
@@ -647,15 +591,7 @@
     "n": 1
    },
    {
-    "family": "organ_cosine_0_86_0_90_as_a_capability_certificate",
-    "n": 1
-   },
-   {
     "family": "per_organ_representation_gating_without_expert_atomic_enforcement",
-    "n": 1
-   },
-   {
-    "family": "persistent_8_gib_expert_arena_previous_token_route_prefetch",
     "n": 1
    },
    {
@@ -711,10 +647,6 @@
     "n": 1
    },
    {
-    "family": "q30_static_1_5_as_a_template",
-    "n": 1
-   },
-   {
     "family": "q3_k_sub_q4_byte_cut",
     "n": 1
    },
@@ -728,22 +660,6 @@
    },
    {
     "family": "q5_0_simd_shuffle",
-    "n": 1
-   },
-   {
-    "family": "q80_403_ms_2_479_tok_s_as_a_legal_paired_gpu_baseline",
-    "n": 1
-   },
-   {
-    "family": "q80_is_host_bound_or_q80_is_bandwidth_bound_without_naming_the_vehicle",
-    "n": 1
-   },
-   {
-    "family": "q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
-    "n": 1
-   },
-   {
-    "family": "q80_uniform_q4_group64_as_a_target_family_member",
     "n": 1
    },
    {
@@ -791,15 +707,7 @@
     "n": 1
    },
    {
-    "family": "qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
-    "n": 1
-   },
-   {
     "family": "raw_weight_pq_vq_at_one_bit_pq_vq_coding_of_the_raw_weights_as_the_route_to_one_bit_or_below",
-    "n": 1
-   },
-   {
-    "family": "raw_weight_pq_vq_uniform_sub_bit_ternary_vs_vq_as_the_route_under_1_bit",
     "n": 1
    },
    {
@@ -820,6 +728,10 @@
    },
    {
     "family": "receipts_ascent_2026_08_18_phase_b_hybrid_refuted_json",
+    "n": 1
+   },
+   {
+    "family": "receipts_future_deltanet_generated_transition_json",
     "n": 1
    },
    {
@@ -849,10 +761,6 @@
    {
     "family": "residual_codebook",
     "n": 20
-   },
-   {
-    "family": "rice_q1_serial_bitstream_expand_on_the_per_token_path",
-    "n": 1
    },
    {
     "family": "router_distill",
@@ -887,10 +795,6 @@
     "n": 1
    },
    {
-    "family": "shader_compile_route_id_readback_sha_per_token_as_the_live_wall",
-    "n": 1
-   },
-   {
     "family": "shared_basis",
     "n": 3
    },
@@ -912,22 +816,14 @@
    },
    {
     "family": "spec_decode",
-    "n": 4
+    "n": 3
    },
    {
     "family": "spec_exactshared_as_is",
     "n": 1
    },
    {
-    "family": "storage_complete_physical_bpw_as_the_bytes_decode_moves",
-    "n": 1
-   },
-   {
     "family": "structural_elimination_heads",
-    "n": 1
-   },
-   {
-    "family": "sub_100_fs_weight_on_this_box_with_any_existing_q80_pack",
     "n": 1
    },
    {
@@ -948,7 +844,7 @@
    },
    {
     "family": "synthetic_activation",
-    "n": 4
+    "n": 2
    },
    {
     "family": "ternary",
@@ -984,10 +880,6 @@
    },
    {
     "family": "treating_equal_us_dispatch_as_equal_headroom",
-    "n": 1
-   },
-   {
-    "family": "underdetermined_fit_rows_rank_or_rows_dim",
     "n": 1
    },
    {
@@ -1045,24 +937,12 @@
    {
     "family": "widening_the_calibration_corpus_to_fix_under_fitted_organs",
     "n": 1
-   },
-   {
-    "family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0_json_hcli_coherence",
-    "n": 1
-   },
-   {
-    "family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0_json_hcli_coherence",
-    "n": 1
-   },
-   {
-    "family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e_json_hcli_coherence",
-    "n": 1
    }
   ],
   "by_model": [
    {
     "model": "deepseek-v4-flash",
-    "n": 24
+    "n": 19
    },
    {
     "model": "glm-5.2",
@@ -1073,7 +953,7 @@
     "n": 20
    },
    {
-    "model": "qwen14",
+    "model": "kimi-vl-a3b-instruct",
     "n": 2
    },
    {
@@ -1082,36 +962,22 @@
    },
    {
     "model": "qwen3-30b-a3b",
-    "n": 127
+    "n": 122
    },
    {
     "model": "qwen3-80b",
-    "n": 381
+    "n": 363
    },
    {
     "model": "qwen3.8-27b",
-    "n": 65
+    "n": 56
    },
    {
     "model": "unrecorded",
-    "n": 88
+    "n": 75
    }
   ],
   "by_source": [
-   {
-    "n_parsed": 40,
-    "n_scars": 40,
-    "n_unparsed": 0,
-    "origin": "disk",
-    "path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
-   },
-   {
-    "n_parsed": 0,
-    "n_scars": 1,
-    "n_unparsed": 1,
-    "origin": "disk",
-    "path": "lab/operators/ascension_graveyard.py"
-   },
    {
     "n_parsed": 1,
     "n_scars": 1,
@@ -1176,9 +1042,9 @@
     "path": "receipts/future/CAMPAIGN_SCARS.json"
    },
    {
-    "n_parsed": 0,
+    "n_parsed": 1,
     "n_scars": 1,
-    "n_unparsed": 1,
+    "n_unparsed": 0,
     "origin": "disk",
     "path": "receipts/future/DELTANET_GENERATED_TRANSITION.json"
    },
@@ -1239,8 +1105,8 @@
     "path": "receipts/future/MLP_STRUCTURED_OPERATOR.json"
    },
    {
-    "n_parsed": 4,
-    "n_scars": 4,
+    "n_parsed": 6,
+    "n_scars": 6,
     "n_unparsed": 0,
     "origin": "disk",
     "path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json"
@@ -1288,11 +1154,32 @@
     "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
    },
    {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/odyssey-i/O00X_ORGAN_GATE_THRESHOLD_REFUTED_LFM2.json"
+   },
+   {
     "n_parsed": 1,
     "n_scars": 1,
     "n_unparsed": 0,
     "origin": "disk",
     "path": "receipts/sovereign/G014_negative_science.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "research/lab/operators/ascension_graveyard.py"
    },
    {
     "n_parsed": 14,
@@ -1307,13 +1194,6 @@
     "n_unparsed": 0,
     "origin": "disk",
     "path": "tools/headless/negative_science.py"
-   },
-   {
-    "n_parsed": 0,
-    "n_scars": 1,
-    "n_unparsed": 1,
-    "origin": "disk",
-    "path": "tools/headless/noetic_negative_science.py"
    },
    {
     "n_parsed": 0,
@@ -1372,46 +1252,11 @@
     "path": "workspace/campaign/records/ascension-sandbox/knowledge-plane/ASCENSION_NEGATIVE_SCIENCE.jsonl"
    },
    {
-    "n_parsed": 0,
-    "n_scars": 1,
-    "n_unparsed": 1,
-    "origin": "disk",
-    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/.ASCENSION_NEGATIVE_SCIENCE.jsonl.lock"
-   },
-   {
     "n_parsed": 256,
     "n_scars": 256,
     "n_unparsed": 0,
     "origin": "disk",
     "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl"
-   },
-   {
-    "n_parsed": 1,
-    "n_scars": 1,
-    "n_unparsed": 0,
-    "origin": "disk",
-    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json"
-   },
-   {
-    "n_parsed": 1,
-    "n_scars": 1,
-    "n_unparsed": 0,
-    "origin": "disk",
-    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0.json"
-   },
-   {
-    "n_parsed": 1,
-    "n_scars": 1,
-    "n_unparsed": 0,
-    "origin": "disk",
-    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json"
-   },
-   {
-    "n_parsed": 0,
-    "n_scars": 1,
-    "n_unparsed": 1,
-    "origin": "disk",
-    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/.NEGATIVE_SCIENCE.jsonl.lock"
    },
    {
     "n_parsed": 157,
@@ -1426,13 +1271,6 @@
     "n_unparsed": 0,
     "origin": "disk",
     "path": "workspace/docs/guides/dead_levers.md"
-   },
-   {
-    "n_parsed": 0,
-    "n_scars": 1,
-    "n_unparsed": 1,
-    "origin": "disk",
-    "path": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md"
    }
   ],
   "does_not_cover": [
@@ -1444,11 +1282,11 @@
    "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
    "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
   ],
-  "n_parsed": 684,
-  "n_refuse_eligible": 591,
-  "n_scars": 699,
-  "n_sources": 48,
-  "n_unparsed": 15
+  "n_parsed": 644,
+  "n_refuse_eligible": 558,
+  "n_scars": 656,
+  "n_sources": 42,
+  "n_unparsed": 12
  },
  "evidence_class": "STATIC_ONLY",
  "gaps_closed": [
@@ -1461,7 +1299,7 @@
   "Sparse-checkout ingest via git show HEAD:<path> so missing-on-disk is not treated as missing-in-git."
  ],
  "gpu_authority": false,
- "head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
+ "head": "ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e",
  "how_to_use": {
   "proposal_keys": [
    "model",
@@ -1484,7 +1322,7 @@
   "representation": "canonical codec family (binary, q4, shared_basis, kronecker, \u2026)"
  },
  "negative_findings": [
-  "tools/headless/negative_science.py QWEN entries are not in the v1 NOETIC receipt; they are extracted from the Python catalog so they are not lost. Rebuilding the Codex receipt was out of scope.",
+  "tools/headless/negative_science.py QWEN entries are retained in the v2 receipt; the index extracts them from the canonical generator catalog so they are not lost.",
   ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl is not in git HEAD; cited by noetic as HCLI tactic fingerprints, not representation science.",
   "The dual-gravity JSONL duplicates many qwen80/evolution JSONL records (same record_id). Both sources are kept; they are not merged.",
   "No FAMILY or GENERAL_PHYSICAL promotion was performed. Counts of distinct parents per family are visible in coverage.by_model but are not a promotion.",
@@ -1497,12 +1335,6 @@
    "gap": "query is organ/technique substring only; no representation/family keys; no refuse_if_dead; writes receipts/headless (Codex surface)",
    "path": "tools/headless/negative_science.py",
    "role": "nine-field failure store, prior_failures(organ, technique), three-level promotion gate"
-  },
-  {
-   "adequate": "no",
-   "gap": "hand catalog, not a keyed retrieval API a generator can call before proposing",
-   "path": "tools/headless/noetic_negative_science.py",
-   "role": "32-entry archaeology catalog + sweep; writes receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
   },
   {
    "adequate": "no",
@@ -1519,7 +1351,7 @@
   {
    "adequate": "no",
    "gap": "empty of the campaign corpus; not wired to generators",
-   "path": "lab/operators/ascension_graveyard.py",
+   "path": "research/lab/operators/ascension_graveyard.py",
    "role": "in-memory Graveyard with FailureClass taxonomy and bury/revive semantics"
   },
   {
@@ -1536,1094 +1368,6 @@
   }
  ],
  "scars": [
-  {
-   "claim_refuted": "Real gap after occupancy ~2.75\u00d7, not 230\u00d7. Even MLX ~2.3 GB/s isolated on that shape. Qwen3.8-sized ~50 MiB isolated median 182 GB/s is the right comparator.",
-   "failure_mechanism": "0.59 MiB organ vs 64 MiB DRAM-row probe as a \u201c230\u00d7 occupancy gap\u201d",
-   "hypothesis_family": "0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3.8-27b",
-   "models": [
-    "qwen3.8-27b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate",
-    "up"
-   ],
-   "original_id": "0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Never as a Q80 slogan.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "CATEGORY_ERROR."
-  },
-  {
-   "claim_refuted": "0.3429 \u00d7 1.277^44 = 16211 at L48 from a span [0,4] whose growth ratios are 1.733, 1.229, 0.978; does not beat shuffled-weight null; 395/2048 ranks clamped.",
-   "failure_mechanism": "4-layer residual probe extrapolated to 48 layers as a GO",
-   "hypothesis_family": "4_layer_residual_probe_extrapolated_to_48_layers_as_a_go",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate"
-   ],
-   "original_id": "4_layer_residual_probe_extrapolated_to_48_layers_as_a_go",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Full-depth or tiled residual probe that separates from a stated null **and** a generation run.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#4_layer_residual_probe_extrapolated_to_48_layers_as_a_go",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS."
-  },
-  {
-   "claim_refuted": "Reuse 64 MiB \u00d7 4096: 535.9\u2013637.5 GB/s, flagged `not_the_decode_ceiling=true`. Unique-once 1024 MiB: 301.6. Unique-once 512 MiB: 411.51. Token-shape 98-CB 10-of-512: 319.7\u2013363.2. Published peak 819 is not a measured decode bound.",
-   "failure_mechanism": "535\u2013647 GB/s reuse band as the decode ceiling",
-   "hypothesis_family": "535_647_gb_s_reuse_band_as_the_decode_ceiling",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "routed_experts",
-   "organs": [
-    "routed_experts"
-   ],
-   "original_id": "535_647_gb_s_reuse_band_as_the_decode_ceiling",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Never as a batch=1 decode ceiling. Valid only for a working set that actually stays hot.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#535_647_gb_s_reuse_band_as_the_decode_ceiling",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "CATEGORY_ERROR."
-  },
-  {
-   "claim_refuted": "Input distribution decides which family wins. Qwen3.8 descent and reconstruction-is-free both required `not_synthetic=true` / \u201cexplicitly not synthetic\u201d. Attention-density probe: `used_synthetic_or_gaussian=false`.",
-   "failure_mechanism": "Activation-aware vs synthetic evaluation trap",
-   "hypothesis_family": "synthetic_activation",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3.8-27b",
-   "models": [
-    "qwen3.8-27b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "activation_aware_vs_synthetic_evaluation_trap",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Real teacher-forced / captured-BF16 X. Down_proj on post-SwiGLU X, not layer hidden (NS-012).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#activation_aware_vs_synthetic_evaluation_trap",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS. Same mechanism as #4, first-class graveyard class."
-  },
-  {
-   "claim_refuted": "dsv-admission-identity cut its metric 2.9\u00d7 and moved the token by nothing. q80-decode-kernels 192 ms = 480 isolated organs, not a token.",
-   "failure_mechanism": "Adding stage wins / isolated organ products and calling the sum a token",
-   "hypothesis_family": "adding_stage_wins_isolated_organ_products_and_calling_the_sum_a_token",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate"
-   ],
-   "original_id": "adding_stage_wins_isolated_organ_products_and_calling_the_sum_a_token",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Compose on one binary. Remeasure the complete token.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#adding_stage_wins_isolated_organ_products_and_calling_the_sum_a_token",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS."
-  },
-  {
-   "claim_refuted": "Q80 fuse-to-51 CBs: REGRESSED 516 vs 307 ms, bit-identical. DSV4F encoders 731\u219243, attention GPU did not move. Expert-wave: fewer drains, +71% token. Resident state: 2573 vs 2525 ms (\u22121.9%, noise).",
-   "failure_mechanism": "CB / encoder / dispatch topology collapse as the token lever",
-   "hypothesis_family": "cb_encoder_dispatch_topology_collapse_as_the_token_lever",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "deepseek-v4-flash",
-   "models": [
-    "deepseek-v4-flash",
-    "qwen3-80b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "cb_encoder_dispatch_topology_collapse_as_the_token_lever",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "A topology change that also changes occupancy or removes GPU-idle host I/O, scored on **warm paired** complete-token wall, not a cold median. Resident state is scaffolding, not a milestone.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#cb_encoder_dispatch_topology_collapse_as_the_token_lever",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as the primary lever."
-  },
-  {
-   "claim_refuted": "MEASURED (recorded as prior-campaign fact): X captured from a 0.7966 gibberish baseline; every score ranked the wrong trajectory. Same-class: mixed-floor / Q4-runtime \u201c0.135% efficiency\u201d (NS-003); 403 ms Q80 \u201cbaseline\u201d that was a dirty single-run (NS-035); stale-baseline SIMD 2\u00d7/8\u201345\u00d7 that became 2.5\u00d7 slower after reconstruction (91.28 vs 36.53 ms).",
-   "failure_mechanism": "Compression scored on the wrong baseline ranks the wrong trajectory",
-   "hypothesis_family": "compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention"
-   ],
-   "original_id": "compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Fit only against the named source (Qwen3.8 BF16, Q80 BF16, DSV4F official mixed). A lane result is valid only against the HEAD it was measured on; rebase + remeasure if a concurrent lane invalidated the baseline.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS."
-  },
-  {
-   "claim_refuted": "Greedy already one TCB. CPU encode 0.51% wall. CPU decode 0.06 tps, steals bus.",
-   "failure_mechanism": "CPU+GPU pipeline / host encode / ICB as tps",
-   "hypothesis_family": "cpu_gpu_pipeline_host_encode_icb_as_tps",
-   "keys_filled": 2,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "cpu_gpu_pipeline_host_encode_icb_as_tps",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Non-greedy CPU-heavy sample, or encode >1 ms/tok.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#cpu_gpu_pipeline_host_encode_icb_as_tps",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "Type-1 DEAD."
-  },
-  {
-   "claim_refuted": "AMX can't eat Q4_K. ANE 4\u20137\u00d7 slower. ICB encode 0.27% of GPU. Prefetcher WILLNEED \u221229%. Multi-CQ: kernels already \u22652\u00d7 saturated. MTLHeap 8.5% slower than shared.",
-   "failure_mechanism": "Cross-engine / host-dispatch families on M3 UMA (AMX, ANE, ICB, prefetcher, multi-CQ, \u2026)",
-   "hypothesis_family": "cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention",
-    "deltanet"
-   ],
-   "original_id": "cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "New GPU generation or a workload that is no longer GPU-saturated decode.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "Type-1 DEAD."
-  },
-  {
-   "claim_refuted": "Attention 73% of per-token bytes; attention+lm_head 86\u201388%; routed experts 9%.",
-   "failure_mechanism": "Crushing routed experts to move Q80 token time",
-   "hypothesis_family": "crushing_routed_experts_to_move_q80_token_time",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "routed_experts",
-   "organs": [
-    "routed_experts"
-   ],
-   "original_id": "crushing_routed_experts_to_move_q80_token_time",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Only if routing changes so a much larger expert fraction is actually read per token.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#crushing_routed_experts_to_move_q80_token_time",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as a velocity lever."
-  },
-  {
-   "claim_refuted": "Original (NS-006): mixed 2.57 vs Q4 15.2 GB/s = 5.9\u00d7 slower/byte; token 1171 vs 225 ms. Correction (`Q80_RECONSTRUCTION_WON`): in-register tiles 867.0 \u2192 36.6 ms gpu_matvec (23.7\u00d7); isolated Q4 serial on the same shape is ~2.5 GB/s, same as mixed. Qwen3.8 (`QWEN38_RECONSTRUCTION_IS_FREE`): 33 codecs at tpr64 land 15,124\u201315,541 ns vs f32 control 15,125 ns; 32/33 recon-excess = 0. Same codecs at tg256 ~26,500 ns \u2014 launch geometry, not codec. Descent screen that used 5.9\u00d7 is n...",
-   "failure_mechanism": "\u201cDensity costs speed\u201d / 5.9\u00d7 rice reconstruction penalty",
-   "hypothesis_family": "density_costs_speed_5_9_rice_reconstruction_penalty",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3.8-27b",
-   "models": [
-    "qwen3.8-27b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "density_costs_speed_5_9_rice_reconstruction_penalty",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Do not cite 5.9\u00d7. Codec choice on Qwen3.8 at tpr64 is quality-constrained, not recon-time-constrained. Reopen a recon-cost claim only on a **named launch geometry** with GPU timestamps, same-vehicle, real X.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#density_costs_speed_5_9_rice_reconstruction_penalty",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "SUPERSEDED. Was a kernel-geometry artifact, then wrongly transferred to Qwen3.8."
-  },
-  {
-   "claim_refuted": "Cannot close G007. Daemon exclude list.",
-   "failure_mechanism": "Determined ~20 h DSV4F teacher-X capture",
-   "hypothesis_family": "determined_20_h_dsv4f_teacher_x_capture",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "deepseek-v4-flash",
-   "models": [
-    "deepseek-v4-flash"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention"
-   ],
-   "original_id": "determined_20_h_dsv4f_teacher_x_capture",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Human authorisation, or a cheaper layer-tiled discard-X design (new premise).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#determined_20_h_dsv4f_teacher_x_capture",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "DEAUTHORISED."
-  },
-  {
-   "claim_refuted": "Q4 and binary LOST. Co-route greedy 170.29 \u2192 164.28 (1.037\u00d7), weak. Switching-activity GPU 299000 vs 299333 ns, same speed.",
-   "failure_mechanism": "DRAM-row interleave / Gray/LUT code permutation as the token lever",
-   "hypothesis_family": "dram_row_interleave_gray_lut_code_permutation_as_the_token_lever",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "deltanet",
-   "organs": [
-    "deltanet"
-   ],
-   "original_id": "dram_row_interleave_gray_lut_code_permutation_as_the_token_lever",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Pack-time colocated triplet blob (named, different). Energy claim needs measured joules.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#dram_row_interleave_gray_lut_code_permutation_as_the_token_lever",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS."
-  },
-  {
-   "claim_refuted": "10.280 GB unique bytes/token \u00f7 411.51 GB/s = 24.98 ms floor = 40.03 TPS roof, **below** the 20 ms / 50 TPS gate. `runtime_ready=false`.",
-   "failure_mechanism": "DSV4F as a live density/velocity vehicle",
-   "hypothesis_family": "dsv4f_as_a_live_density_velocity_vehicle",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "deepseek-v4-flash",
-   "models": [
-    "deepseek-v4-flash"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate"
-   ],
-   "original_id": "dsv4f_as_a_live_density_velocity_vehicle",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "A reseal to \u22647.042 GB/token (ESTIMATED 17.11 ms / 58.44 TPS) plus a local execution adapter. Human-authorised. Not a G1 Qwen3.8 action.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#dsv4f_as_a_live_density_velocity_vehicle",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "SEALED. Weights deleted."
-  },
-  {
-   "claim_refuted": "Merge: best survivor rel-err 0.885/0.993/0.995. Distill: no student beat masking 0.0784. Kronecker: DEAD L\u22651 (top component 0.27% energy); LIVE on L0 (0.0301 vs 0.2252). 88-token calib: 63.6% route-split stable, 26.1% cells never route.",
-   "failure_mechanism": "Expert merge / router distill / Kronecker-at-depth / 88-token calibration",
-   "hypothesis_family": "kronecker",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "routed_experts",
-   "organs": [
-    "routed_experts",
-    "router"
-   ],
-   "original_id": "expert_merge_router_distill_kronecker_at_depth_88_token_calibration",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Merge: best-single-survivor held-out rel-err \u2264 0.5. Distill: large survivor-restricted oracle gap **and** a student that generalizes. Kronecker: non-flat Van Loan spectrum (check L0 separately). Calib: \u22651000 tokens.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#expert_merge_router_distill_kronecker_at_depth_88_token_calibration",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS on the parents they were measured on."
-  },
-  {
-   "claim_refuted": "(A) 0.04% remaining wall. (C) MEASURED 1413 vs 828 ms/token = 0.59\u00d7 / +71%.",
-   "failure_mechanism": "Full-layer / MoE megakernel as the tps lever",
-   "hypothesis_family": "megakernel",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "router",
-   "organs": [
-    "router"
-   ],
-   "original_id": "full_layer_moe_megakernel_as_the_tps_lever",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "(A) new cross-TG sync primitive. (B) not a kill to reopen \u2014 it was never a complete kernel. (C) profile the fused wave and show it does not serialize previously overlapped matvecs; then a warm paired complete-token A/B. Do not retry \u201cfewer drains \u21d2 faster token\u201d.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#full_layer_moe_megakernel_as_the_tps_lever",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS on two independent grounds. (A) MoE megakernel-deeper: remaining hand-off is 0.04% wall (RECORDED). (B) Qwen-3B megakernel is a pass-through POC, not a measured token path. (C) fused expert-wave collapse is a measured 71% regression."
-  },
-  {
-   "claim_refuted": "G014 rank 11: 10-of-512 gather vs sequential = 0 ns. Right axis is reuse vs no-reuse.",
-   "failure_mechanism": "Gather-vs-sequential as the Q80/Qwen3.8 bandwidth explanation",
-   "hypothesis_family": "gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b",
-    "qwen3.8-27b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Never.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS."
-  },
-  {
-   "claim_refuted": "MEASURED 406.2 GB/s vs honest unique-once ceiling 411.51 GB/s = 98.7%. Rung record 36.987 ms GPU / 38.217 ms wall / 26.17 tok/s. Decode micro-opt A5/A6: NO-CHANGE, \u201cGEMV at memory-model optimum\u201d (RECORDED). f16-x into predec GEMV: x = 0.026% of traffic, \u22120.07% (RECORDED Type-1). Unfused attn GEMV: +1.315% tps, below 3% gate, +11.1% dispatches (MEASURED). Qwen14 predec-then-GEMV: \u221229.94% tps, +42.75% wall, +3.041 GB resident (MEASURED).",
-   "failure_mechanism": "GEMV / kernel-micro-opt axis on Qwen3.8",
-   "hypothesis_family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen14",
-   "models": [
-    "qwen14",
-    "qwen3.8-27b"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention"
-   ],
-   "original_id": "gemv_kernel_micro_opt_axis_on_qwen3_8",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Never as a decode ceiling argument against 98.7%. Reopen kernel work only if the genome is no longer unique-once GEMV (new launch geometry, or a representation-specific kernel whose measured GB/s on this box is shown against a same-shape unique-once control). Do not reopen A5/A6 uint4/TG sweeps. Do not reopen f16-x into predec GEMV. Do not reopen unfused attn GEMV without a new resident attention grammar that also restores unrelated-prompt parity. Do not reopen predec-tabl...",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#gemv_kernel_micro_opt_axis_on_qwen3_8",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "CLOSED on the current unique-once Q4 GEMV genome. Qwen3.8 is at the honest decode ceiling."
-  },
-  {
-   "claim_refuted": "1.38 GB `capture-result.json` was an iteration wall.",
-   "failure_mechanism": "Giant JSON capture index",
-   "hypothesis_family": "giant_json_capture_index",
-   "keys_filled": 2,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "giant_json_capture_index",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Layer-tile, fit, discard X.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#giant_json_capture_index",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS."
-  },
-  {
-   "claim_refuted": "Attention cannot be cheaply compressed below uniform-Q4 at the 0.99 bar. Binary max cos 0.946 (typical 0.75\u20130.88). Rice residual max 0.958 (typical 0.82\u20130.91). SVD r=512 typical 0.83\u20130.89; 0 clears of 0.99 at ranks that beat Q4 BPW. Q3 on attention: out_proj 0.953 / 0.968, in_proj 0.975\u20130.980.",
-   "failure_mechanism": "HGRAVB01 / HGRAVR02 / HGRAVS01 (and the Q80 mixed gate/up/down bundle) on Qwen3.8 attention",
-   "hypothesis_family": "hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_attention",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b",
-    "qwen3.8-27b"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention",
-    "down",
-    "gate",
-    "up"
-   ],
-   "original_id": "hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_atte",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "A **new** attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 **and** a multi-prompt generate identity gate. Do not transfer the expert MLP bundle to Q/K/V/O or DeltaNet.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_atte",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS for Q4-equivalent quality."
-  },
-  {
-   "claim_refuted": "Q80 greedy flips vs BF16: Q4 11\u201313, Q3 37, Q2/binary ~100, SVD r256 349. Cosine 0.99 is not token identity (Q80 Q3 top-1 0.875 vs Q4 0.9427). lm_head is 14.7% of per-token bytes but ~1.25 ms GPU.",
-   "failure_mechanism": "lm_head below Q8 (Q80) / Q3 lm_head as a silent policy",
-   "hypothesis_family": "lm_head_precision",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate",
-    "lm_head"
-   ],
-   "original_id": "lm_head_below_q8_q80_q3_lm_head_as_a_silent_policy",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Two-pass Q3 draft \u2192 top-32 \u2192 gather exact rows \u2192 rescore, and only if generated ids equal authority full-eval ids on **more than one** prompt.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#lm_head_below_q8_q80_q3_lm_head_as_a_silent_policy",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as a silent overlay."
-  },
-  {
-   "claim_refuted": "Qwen14 predec tables: +3.041 GB resident, \u221229.94% tps (MEASURED). NS-018: caching decoded W restores the footprint the representation exists to remove (48\u00d7512 decoded = 288 GiB vs packed 11.05 GiB). NS-019: Q80 down_proj already does `y=L@(R@x)`; re-opening reconstruct-W does not move the token. mixed-2p0 earlier incoherence went through mixed\u2192float\u2192Q4, which the native reader later removed so the collapse could be attributed to the artifact.",
-   "failure_mechanism": "low-BPW \u2192 materialize W / expand to Q4/float \u2192 generic GEMV",
-   "hypothesis_family": "low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen14",
-   "models": [
-    "qwen14",
-    "qwen3-80b"
-   ],
-   "organ": "down",
-   "organs": [
-    "down"
-   ],
-   "original_id": "low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "A representation-specific kernel that consumes codes in-register, **or** a complete-token measurement proving expansion is still a net win. Isolated organ microbench is not that measurement (NS-034).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS unless complete-token measurement says otherwise."
-  },
-  {
-   "claim_refuted": "Constant-mean null 0.898. Q80 0.8604 bar sits **below** that null. mixed-1p5 then generated coherent text with down_proj holdout cosine 0.7684 \u2014 so the bar is also not a hard cliff (NS-016). 12-token single-prompt is a smoke test, not lm_head certification.",
-   "failure_mechanism": "Organ cosine ~0.86\u20130.90 as a capability certificate",
-   "hypothesis_family": "organ_cosine_0_86_0_90_as_a_capability_certificate",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate"
-   ],
-   "original_id": "organ_cosine_0_86_0_90_as_a_capability_certificate",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Beat a stated null **and** pass generation on more than one prompt. lm_head / embed / sampling: multi-prompt id-identity, not 12 tokens.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#organ_cosine_0_86_0_90_as_a_capability_certificate",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as a GO."
-  },
-  {
-   "claim_refuted": "Arena spreads overlap, no clean speedup, 12/12 bit-identical. Prefetch cannot see the (layer, expert) pairs that actually miss.",
-   "failure_mechanism": "Persistent 8 GiB expert arena / previous-token route prefetch",
-   "hypothesis_family": "persistent_8_gib_expert_arena_previous_token_route_prefetch",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "routed_experts",
-   "organs": [
-    "routed_experts",
-    "router"
-   ],
-   "original_id": "persistent_8_gib_expert_arena_previous_token_route_prefetch",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Whole-catalog admission-time prebind (different mechanism). Corpus-level hot-set prebind (different mechanism).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#persistent_8_gib_expert_arena_previous_token_route_prefetch",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as complete-token wins."
-  },
-  {
-   "claim_refuted": "Coherence FAILED. Bits reachable, capability not. Capture bodies deleted 2026-08-15.",
-   "failure_mechanism": "Q30 static \u22641.5 as a template",
-   "hypothesis_family": "q30_static_1_5_as_a_template",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-30b-a3b",
-   "models": [
-    "qwen3-30b-a3b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate"
-   ],
-   "original_id": "q30_static_1_5_as_a_template",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "New codec family **and** a generation gate. Not a copy of the Q30 static pack.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q30_static_1_5_as_a_template",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as a template."
-  },
-  {
-   "claim_refuted": "Q3_K: 22\u201324% peak, slower \u00b5s than Q4 despite fewer bytes (RECORDED Type-1). QTIP Metal: more ALU than dead Q3 + serial state (RECORDED Type-1 proxy). Learned codebook: random LUT gather punished on Apple GPU. Low-rank residual: SVD energy low; ASVD also dead; doctor atlas LoRA plateau, rank-64 SVD 0.114\u21920.104 at +4.6 bpw.",
-   "failure_mechanism": "Q3_K / QTIP Metal / learned codebook / low-rank residual as dense-tps",
-   "hypothesis_family": "low_rank",
-   "keys_filled": 2,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "q3_k_qtip_metal_learned_codebook_low_rank_residual_as_dense_tps",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Footprint-only for Q3_K. QTIP: lane-independent layout + \u226555% peak oracle. Low-rank: residual **measured** low-rank on this parent, or a model trained low-rank. Learned: lookup-free (QTIP-class) only.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q3_k_qtip_metal_learned_codebook_low_rank_residual_as_dense_tps",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "AXIS CLOSED for tps."
-  },
-  {
-   "claim_refuted": "Single 11-token CPU-wall decode, no paired reps, no GPU timestamps, 1637 fallbacks. Ledger GPU median 175.04 ms, wall 571.51 ms.",
-   "failure_mechanism": "Q80 403 ms / 2.479 tok/s as a legal paired GPU baseline",
-   "hypothesis_family": "q80_403_ms_2_479_tok_s_as_a_legal_paired_gpu_baseline",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate",
-    "routed_experts"
-   ],
-   "original_id": "q80_403_ms_2_479_tok_s_as_a_legal_paired_gpu_baseline",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Paired, 0-fallback, GPU-timestamped, named vehicle.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q80_403_ms_2_479_tok_s_as_a_legal_paired_gpu_baseline",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "CATEGORY_ERROR."
-  },
-  {
-   "claim_refuted": "Q4 vehicle: GPU 125 / 225 ms, 15.2 GB/s, 21\u201327\u00d7 off 320\u2013411 control. Mixed vehicle (pre-recon): gpu_matvec 863 / 1171 ms, 2.57 GB/s. Post-recon: gpu_matvec 36.6 / 301 ms.",
-   "failure_mechanism": "\u201cQ80 is host-bound\u201d or \u201cQ80 is bandwidth-bound\u201d without naming the vehicle",
-   "hypothesis_family": "q80_is_host_bound_or_q80_is_bandwidth_bound_without_naming_the_vehicle",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "q80_is_host_bound_or_q80_is_bandwidth_bound_without_naming_the_vehicle",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Always name the vehicle and the genome.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q80_is_host_bound_or_q80_is_bandwidth_bound_without_naming_the_vehicle",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "CATEGORY_ERROR."
-  },
-  {
-   "claim_refuted": "Tournament 26.2 / 100 vs Qwen3.8 49.6. Artifact self-declares `coherence_class=DEGRADED`. Storage 0.6462 BPW is 2.518 **active** BPW (NS-001/002).",
-   "failure_mechanism": "Q80 mixed-1p5-v1 / mixed-sub655 as Genesis vehicles",
-   "hypothesis_family": "q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b",
-    "qwen3.8-27b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Odyssey reconstruction only. Do not resurrect the Q80 campaign as a G1 vehicle. Steal the science in \u00a7\u201cSteal, do not resurrect\u201d.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "SEALED. Weights deleted. Science retained."
-  },
-  {
-   "claim_refuted": "complete_physical_bpw 4.259241. Exceeds 1.5 ceiling. Tensors deleted. Correctness oracle only.",
-   "failure_mechanism": "Q80 uniform-Q4 group64 as a target / family member",
-   "hypothesis_family": "q80_uniform_q4_group64_as_a_target_family_member",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate",
-    "up"
-   ],
-   "original_id": "q80_uniform_q4_group64_as_a_target_family_member",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Never as a campaign target. Leave the source.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q80_uniform_q4_group64_as_a_target_family_member",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "DEAUTHORISED."
-  },
-  {
-   "claim_refuted": "mixed-sub15: INCOHERENT, 0 fallbacks, two-token cycle `220/264` (\u201c a\u201d). Packer PROJECTED 79.44 TPS / 12.588 ms \u2014 not measured. mixed-2p0: INCOHERENT native, `[198]\u00d715` then `[8]`, 0 fallbacks, 0 dense-W. Q4 4.2527 oracle on the same prompt emits `<think>`. Floor with **current codecs** lies between 2.0856 and 4.2527 BPW.",
-   "failure_mechanism": "Qwen3.8 mixed-sub15 (~1.29 BPW) and mixed-2p0 (2.0856 BPW) as coherent artifacts",
-   "hypothesis_family": "qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3.8-27b",
-   "models": [
-    "qwen3.8-27b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "A different recipe (especially a new attention codec; MLP is already 0.848 BPW). Re-test generate natively (no mixed\u2192float\u2192Q4). The interval (2.0856, 4.2527) is untested \u2014 a coherent point there is a new measurement, not a retry of these two packs.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS those two recipes. Floor bracketed, not located."
-  },
-  {
-   "claim_refuted": "F1 real forward: A1_1p0 at 1.0075 BPW collapsed 6/6 (symKL 7.6\u201310.9, argmax 0.0). Uniform and treated artifacts collapsed. Ternary dominated by VQ at every matched rate. Entropy coding of Lloyd PQ indices: 0.0\u20130.7%, not 10\u201325%.",
-   "failure_mechanism": "Raw-weight PQ/VQ / uniform sub-bit / ternary-vs-VQ as the route under 1 bit",
-   "hypothesis_family": "raw_weight_pq_vq_uniform_sub_bit_ternary_vs_vq_as_the_route_under_1_bit",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate",
-    "router"
-   ],
-   "original_id": "raw_weight_pq_vq_uniform_sub_bit_ternary_vs_vq_as_the_route_under_1_bit",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Never on raw frozen weights. A method that **changes the source** (QAT, distill, compressibility training) is a different lever.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#raw_weight_pq_vq_uniform_sub_bit_ternary_vs_vq_as_the_route_under_1_bit",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS those families on frozen weights."
-  },
-  {
-   "claim_refuted": "15.597 ms / organ serial. Bind-time expand + CSR apply is the token path.",
-   "failure_mechanism": "rice_q1 serial bitstream expand on the per-token path",
-   "hypothesis_family": "rice_q1_serial_bitstream_expand_on_the_per_token_path",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention"
-   ],
-   "original_id": "rice_q1_serial_bitstream_expand_on_the_per_token_path",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Never as a per-token kernel. Bind-time expand stays. In-register rice at tpr64 is a different genome (#20).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#rice_q1_serial_bitstream_expand_on_the_per_token_path",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as a per-token kernel."
-  },
-  {
-   "claim_refuted": "Compile ~24 ms on Q30 startup. DSV4F route-id ~0.1 ms total. SHA/stat/parse on immutable blobs is the repeating pattern (Q80 late-token bind 90\u2013245 ms).",
-   "failure_mechanism": "Shader compile / route-id readback / SHA-per-token as the live wall",
-   "hypothesis_family": "shader_compile_route_id_readback_sha_per_token_as_the_live_wall",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "deepseek-v4-flash",
-   "models": [
-    "deepseek-v4-flash",
-    "qwen3-30b-a3b",
-    "qwen3-80b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "shader_compile_route_id_readback_sha_per_token_as_the_live_wall",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Compile may appear in a cold-start admission claim. Route-id only if a new graph makes it a tens-of-ms blocking wait. Identity belongs at admission.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#shader_compile_route_id_readback_sha_per_token_as_the_live_wall",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as the primary current wall."
-  },
-  {
-   "claim_refuted": "Q80 L10 n=96: gate pairwise cos mean 0.00414279, p95 0.007685; up mean \u22125.97e-5; top-32 subspace overlap 0.0204. Foundry F0: mean pairwise 1e-4. F1 row-normalized gate 0.00166 vs 0.00168.",
-   "failure_mechanism": "Shared cross-expert basis / shared codebook",
-   "hypothesis_family": "cross_expert_structure",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "mlp",
-   "organs": [
-    "mlp"
-   ],
-   "original_id": "shared_cross_expert_basis_shared_codebook",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Q80: never. Other parent: measure pairwise cosine on **that** parent; reopen only if mean \u2273 0.10 (foundry) / \u2273 0.05 (NS-010 DSV4F note). Do not transfer the 0.004 figure to DSV4F (register attribution correction).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#shared_cross_expert_basis_shared_codebook",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS on Q80 and on earlier MoE parents. Not settled on DSV4F."
-  },
-  {
-   "claim_refuted": "ExactShared: RECORDED 0.11 vs 18 tps, serial verify. EAGLE-3: RECORDED \u03c4=0.877 \u226a 2.5; on-device 0.40\u00d7 / 0.30\u00d7 / 0.21\u00d7 vs base; free n-gram beats trained. Code comment: low acceptance makes ExactShared slower than normal decode. llama.cpp MTP: issue score 18, title only, no Hawking number.",
-   "failure_mechanism": "Speculative decode as a Metal tps win (as-is)",
-   "hypothesis_family": "spec_decode",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "gate",
-   "organs": [
-    "gate"
-   ],
-   "original_id": "speculative_decode_as_a_metal_tps_win_as_is",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "ExactShared: batched verify **or** a 10\u201320 ms draft. EAGLE-3: oracle \u03c4 \u2265 2.5 first, then on-device. MTP: a Hawking complete-token A/B on this box with 0 fallbacks; do not import the GitHub title as a measured number. Spec remains allowed only if accepted-tokens/sec rises and P95 does not regress (`spec_decode_gate.json`).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#speculative_decode_as_a_metal_tps_win_as_is",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS for the shipped ExactShared path and for EAGLE-3 trained heads. External llama.cpp MTP-on-Metal is a known regression class, not a Hawking generate receipt."
-  },
-  {
-   "claim_refuted": "Q80 mixed-sub655: storage 0.6462 vs active 2.518 (~4\u00d7). mixed-1p5: 1.4444 vs 4.98. Batch=1 reads 10 of 512 experts. Qwen3.8 is dense \u2014 storage \u2248 active except the embed table (one row gathered).",
-   "failure_mechanism": "Storage / complete_physical BPW as the bytes decode moves",
-   "hypothesis_family": "storage_complete_physical_bpw_as_the_bytes_decode_moves",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b",
-    "qwen3.8-27b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "storage_complete_physical_bpw_as_the_bytes_decode_moves",
-   "parse_status": "PARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "Never as a substitute for active BPW. On Qwen3.8, exclude the embed table from the active budget; include lm_head (greedy reads it).",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#storage_complete_physical_bpw_as_the_bytes_decode_moves",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "CATEGORY_ERROR."
-  },
-  {
-   "claim_refuted": "Active BPW 2.518 (sub655) / 4.98 (1p5). Floor 765\u2013985 fs at 320\u2013411 GB/s. Unity 819 still 384 fs. Need active BPW 0.256\u20130.329.",
-   "failure_mechanism": "Sub-100 fs/weight on this box with any existing Q80 pack",
-   "hypothesis_family": "sub_100_fs_weight_on_this_box_with_any_existing_q80_pack",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-80b",
-   "models": [
-    "qwen3-80b"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention"
-   ],
-   "original_id": "sub_100_fs_weight_on_this_box_with_any_existing_q80_pack",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "New pack that actually moves attention + lm_head into that active-BPW band, or a unique-once control in the real 98-CB / 10-of-512 shape measured above ~411 GB/s.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#sub_100_fs_weight_on_this_box_with_any_existing_q80_pack",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "UNREACHABLE."
-  },
-  {
-   "claim_refuted": "GLM: six families first negative under Gaussian. On real teacher-capsule X the ranking inverted; null moved 0.126 \u2192 0.651; activation-aware then 0.755 cosine at 0.167 BPW on 12/12 experts. Top 16 activation directions carried 88.9% of variance. Dead-levers Colab row (older, Gaussian-era): four families 0.116\u20130.157 cos @ 0.75 BPW, none beat null 0.898 \u2014 treat as the artifact this later receipt reversed.",
-   "failure_mechanism": "Sub-bit results scored on Gaussian / synthetic X",
-   "hypothesis_family": "synthetic_activation",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "attention",
-   "organs": [
-    "attention",
-    "routed_experts"
-   ],
-   "original_id": "sub_bit_results_scored_on_gaussian_synthetic_x",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Never as a promotion or ranking path. Synthetic X is a kernel numeric fixture only. Reopen a family only on real teacher-forced (or captured BF16) X from the named source, with a stated null, and a generation gate.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#sub_bit_results_scored_on_gaussian_synthetic_x",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS as a promotion or ranking path. Those \u201cnegatives\u201d were proxy artifacts."
-  },
-  {
-   "claim_refuted": "Q80 25k capture: p10=34, p50=258 rows vs 2048 dim; 24326/24576 gate/up underdetermined. Prior run median 92 rows, every score garbage. DSV4F writer defaults 16 or 64 rows vs dim 4096.",
-   "failure_mechanism": "Underdetermined fit (rows < rank or rows < dim)",
-   "hypothesis_family": "underdetermined_fit_rows_rank_or_rows_dim",
-   "keys_filled": 3,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "deepseek-v4-flash",
-   "models": [
-    "deepseek-v4-flash",
-    "qwen3-80b"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "underdetermined_fit_rows_rank_or_rows_dim",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "Re-score only when `n_fit \u2265 claimed rank` (full-dim: `n_fit \u2265 dim`), rank not clamped to `n_fit`.",
-   "representation": "unrecorded",
-   "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#underdetermined_fit_rows_rank_or_rows_dim",
-   "source_origin": "disk",
-   "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
-   "unparsed_reason": "",
-   "verdict": "KILLS the score, not necessarily the codec."
-  },
-  {
-   "claim_refuted": "unrecorded",
-   "failure_mechanism": "unrecorded",
-   "hypothesis_family": "unrecorded",
-   "keys_filled": 0,
-   "level": "UNRECORDED",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "lab/operators/ascension_graveyard.py#UNPARSED",
-   "parse_status": "UNPARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "lab/operators/ascension_graveyard.py#UNPARSED",
-   "source_origin": "disk",
-   "source_path": "lab/operators/ascension_graveyard.py",
-   "unparsed_reason": "python implementation (catalog lives in its receipt; not re-extracted)",
-   "verdict": "unrecorded"
-  },
   {
    "claim_refuted": "Qwen80 L10 n_experts=96. gate_proj: pairwise_cosine_mean=0.004142791032791138 k50=44/96; up_proj: pairwise_cosine_mean=-5.968913319520652e-05 k50=45/96 \u2014 experts do not share a global template (near-orthogonal).",
    "failure_mechanism": "trivial global expert sharing / shared expert template",
@@ -3993,30 +2737,35 @@
    "verdict": "FALSIFIED"
   },
   {
-   "claim_refuted": "unrecorded",
-   "failure_mechanism": "unrecorded",
-   "hypothesis_family": "unrecorded",
-   "keys_filled": 0,
-   "level": "UNRECORDED",
+   "claim_refuted": "DIAGNOSTIC_RELATIVE sidecar. No generate gate and no GPU lease. The byte model is the recorded generated_transition_coefficients candidate scored through executable_economics; it is not re-derived. The generator is y = diag_l T2 (T1 x + e_l) consumed as two skinny GEMVs (TiledProjection). Materializing W and running ordinary GEMV is REJECTED_DENSE_REMAT (removed == added). Multi-step S/h divergence is the authority; a one-step cosine is not a verdict. Held-out is by prompt...",
+   "failure_mechanism": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+   "hypothesis_family": "receipts_future_deltanet_generated_transition_json",
+   "keys_filled": 3,
+   "level": "MODEL_SPECIFIC",
    "machine": "unrecorded",
    "model": "unrecorded",
    "models": [
     "unrecorded"
    ],
-   "organ": "unrecorded",
+   "organ": "attention",
    "organs": [
-    "unrecorded"
+    "attention",
+    "deltanet",
+    "embed",
+    "gate",
+    "routed_experts",
+    "up"
    ],
-   "original_id": "receipts/future/DELTANET_GENERATED_TRANSITION.json#UNPARSED",
-   "parse_status": "UNPARSED",
+   "original_id": "deltanet_generated_transition",
+   "parse_status": "PARSED",
    "refuse_eligible": false,
    "reopen_condition": "unrecorded",
    "representation": "unrecorded",
-   "scar_id": "receipts/future/DELTANET_GENERATED_TRANSITION.json#UNPARSED",
+   "scar_id": "receipts/future/DELTANET_GENERATED_TRANSITION.json#deltanet_generated_transition",
    "source_origin": "disk",
    "source_path": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
-   "unparsed_reason": "no keyed scar entries recognized",
-   "verdict": "unrecorded"
+   "unparsed_reason": "",
+   "verdict": "{\"authority\": \"multi_step_state_and_output\", \"checkpoints\": [1, 4, 16, 64, 256], \"crossings\": {\"0.01\": 1, \"0.03\": 1, \"0.1\": 1}, \"held_out_split\": \"hold\", \"max_step\": 256, \"mechanism\": \"The shared rank-256 map T2 T1 does not emit this layer's qkvz coefficients. The residual in q/k/v is integrated by the rank-1 Householder (I - beta k k^T) plus the write beta k v^T, so S diverges at step 1 rather than after a long horizon. A one-step cosine is not a stay of execution. Weight..."
   },
   {
    "claim_refuted": "any representation that stores fewer bytes at the cost of more decode FMA per weight byte",
@@ -4483,6 +3232,58 @@
    "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MONARCH",
    "source_origin": "disk",
    "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "Can the current KIMI_P0_OPERATIONAL body independently complete an objective-only repository mutation and focused proving test through the real HCLI contract?",
+   "failure_mechanism": "The current body can orient, inspect, research, invoke tools and consume evidence, but it did not convert that evidence into a grounded accepted mutation plus proving test. Repeated synthetic retry now spends the primary campaign on a known body/task boundary rather than useful Odyssey work.",
+   "hypothesis_family": "kimi_p0_blind_autonomous_repository_writing",
+   "keys_filled": 3,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "kimi-vl-a3b-instruct",
+   "models": [
+    "kimi-vl-a3b-instruct"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "kimi p0 blind autonomous repository writing",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a materially stronger body, representation-native restoration, or mission policy learned from a real Odyssey blocker independently produces a relevant evidence-grounded edit and focused passing test from an objective-only brief; not another retry or prompt tuning pass on this bootstrap body.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#kimi p0 blind autonomous repository writing",
+   "source_origin": "disk",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "Does refusal-separable state in KIMI_BASE expose a clean, held-out causal control surface through the tested writer, routed-expert, residual, subspace, or router-logit interventions?",
+   "failure_mechanism": "Refusal-related state is strongly decodable in the tested representation, but the tested writer, routed-expert, residual, subspace, and router-logit interventions did not establish a clean held-out causal control surface. OPA--OPG were null or inconsistent against their matched controls; OPH completed with no compliant comparison rows and therefore could not establish a sufficient causal sample.",
+   "hypothesis_family": "kimi_refusal_intervention",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "kimi-vl-a3b-instruct",
+   "models": [
+    "kimi-vl-a3b-instruct"
+   ],
+   "organ": "whole_model",
+   "organs": [
+    "whole_model"
+   ],
+   "original_id": "kimi refusal intervention family",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a materially different causal hypothesis names a distinct mechanism and a pre-registered falsifier capable of beating matched nulls on held-out rows. A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or another projection of the same refusal-separable state is not a reopen condition.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#kimi refusal intervention family",
+   "source_origin": "disk",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
    "verdict": "MEASURED_NEGATIVE"
   },
@@ -5876,6 +4677,32 @@
   },
   {
    "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/odyssey-i/O00X_ORGAN_GATE_THRESHOLD_REFUTED_LFM2.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/odyssey-i/O00X_ORGAN_GATE_THRESHOLD_REFUTED_LFM2.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/odyssey-i/O00X_ORGAN_GATE_THRESHOLD_REFUTED_LFM2.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
    "failure_mechanism": "receipts/sovereign/G014_negative_science.json",
    "hypothesis_family": "receipts_sovereign_g014_negative_science_json",
    "keys_filled": 2,
@@ -5899,6 +4726,58 @@
    "source_path": "receipts/sovereign/G014_negative_science.json",
    "unparsed_reason": "",
    "verdict": "MEASURED"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md",
+   "unparsed_reason": "markdown had no parseable tables",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "research/lab/operators/ascension_graveyard.py#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "research/lab/operators/ascension_graveyard.py#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "research/lab/operators/ascension_graveyard.py",
+   "unparsed_reason": "python implementation (catalog lives in its receipt; not re-extracted)",
+   "verdict": "unrecorded"
   },
   {
    "claim_refuted": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
@@ -6515,32 +5394,6 @@
    "source_path": "tools/headless/negative_science.py",
    "unparsed_reason": "",
    "verdict": "NEGATIVE"
-  },
-  {
-   "claim_refuted": "unrecorded",
-   "failure_mechanism": "unrecorded",
-   "hypothesis_family": "unrecorded",
-   "keys_filled": 0,
-   "level": "UNRECORDED",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "tools/headless/noetic_negative_science.py#UNPARSED",
-   "parse_status": "UNPARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "tools/headless/noetic_negative_science.py#UNPARSED",
-   "source_origin": "disk",
-   "source_path": "tools/headless/noetic_negative_science.py",
-   "unparsed_reason": "python implementation (catalog lives in its receipt; not re-extracted)",
-   "verdict": "unrecorded"
   },
   {
    "claim_refuted": "unrecorded",
@@ -7743,32 +6596,6 @@
    "source_path": "workspace/campaign/records/ascension-sandbox/knowledge-plane/ASCENSION_NEGATIVE_SCIENCE.jsonl",
    "unparsed_reason": "",
    "verdict": "a warm admission receipt measured at 14.65 s -> 4.5 s on the baseline path had ZERO effect on the HGRAVS candidate path; 71 ms of a 37,099 ms wall was accounted for and no admit_* phase appeared at all"
-  },
-  {
-   "claim_refuted": "unrecorded",
-   "failure_mechanism": "unrecorded",
-   "hypothesis_family": "unrecorded",
-   "keys_filled": 0,
-   "level": "UNRECORDED",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/.ASCENSION_NEGATIVE_SCIENCE.jsonl.lock#UNPARSED",
-   "parse_status": "UNPARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/.ASCENSION_NEGATIVE_SCIENCE.jsonl.lock#UNPARSED",
-   "source_origin": "disk",
-   "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/.ASCENSION_NEGATIVE_SCIENCE.jsonl.lock",
-   "unparsed_reason": "empty or lock file",
-   "verdict": "unrecorded"
   },
   {
    "claim_refuted": "BOS control parity did not extend to either exact source-template prompt-token path",
@@ -14427,110 +13254,6 @@
    "verdict": "BURIED"
   },
   {
-   "claim_refuted": "{\"negative_result_is_not_hcli_tps_tg_or_tournament_qualification\": true, \"reopens_only_for_a_material_runtime_endpoint_kernel_or_binding_change\": true}",
-   "failure_mechanism": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json hcli_coherence",
-   "hypothesis_family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0_json_hcli_coherence",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-30b-a3b",
-   "models": [
-    "qwen3-30b-a3b"
-   ],
-   "organ": "whole_model",
-   "organs": [
-    "whole_model"
-   ],
-   "original_id": "qwen30_hcli_coherence_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json#qwen30_hcli_coherence_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0",
-   "source_origin": "disk",
-   "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json",
-   "unparsed_reason": "",
-   "verdict": "BLOCKED_HCLI_PROMPT_DEPENDENT_COHERENCE_NOT_EARNED"
-  },
-  {
-   "claim_refuted": "{\"negative_result_is_not_hcli_tps_tg_or_tournament_qualification\": true, \"reopens_only_for_a_material_runtime_endpoint_kernel_or_binding_change\": true}",
-   "failure_mechanism": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0.json hcli_coherence",
-   "hypothesis_family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0_json_hcli_coherence",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-30b-a3b",
-   "models": [
-    "qwen3-30b-a3b"
-   ],
-   "organ": "whole_model",
-   "organs": [
-    "whole_model"
-   ],
-   "original_id": "qwen30_hcli_coherence_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0.json#qwen30_hcli_coherence_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0",
-   "source_origin": "disk",
-   "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0.json",
-   "unparsed_reason": "",
-   "verdict": "BLOCKED_HCLI_PROMPT_DEPENDENT_COHERENCE_NOT_EARNED"
-  },
-  {
-   "claim_refuted": "{\"negative_result_is_not_hcli_tps_tg_or_tournament_qualification\": true, \"reopens_only_for_a_material_runtime_endpoint_kernel_or_binding_change\": true}",
-   "failure_mechanism": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json hcli_coherence",
-   "hypothesis_family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e_json_hcli_coherence",
-   "keys_filled": 4,
-   "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
-   "model": "qwen3-30b-a3b",
-   "models": [
-    "qwen3-30b-a3b"
-   ],
-   "organ": "whole_model",
-   "organs": [
-    "whole_model"
-   ],
-   "original_id": "qwen30_hcli_coherence_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e",
-   "parse_status": "PARSED",
-   "refuse_eligible": true,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json#qwen30_hcli_coherence_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e",
-   "source_origin": "disk",
-   "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json",
-   "unparsed_reason": "",
-   "verdict": "BLOCKED_HCLI_PROMPT_DEPENDENT_COHERENCE_NOT_EARNED"
-  },
-  {
-   "claim_refuted": "unrecorded",
-   "failure_mechanism": "unrecorded",
-   "hypothesis_family": "unrecorded",
-   "keys_filled": 0,
-   "level": "UNRECORDED",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/.NEGATIVE_SCIENCE.jsonl.lock#UNPARSED",
-   "parse_status": "UNPARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/.NEGATIVE_SCIENCE.jsonl.lock#UNPARSED",
-   "source_origin": "disk",
-   "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/.NEGATIVE_SCIENCE.jsonl.lock",
-   "unparsed_reason": "empty or lock file",
-   "verdict": "unrecorded"
-  },
-  {
    "claim_refuted": "component_sensitive_organ_gate_failed",
    "failure_mechanism": "uniform_q3_group64",
    "hypothesis_family": "uniform_q3",
@@ -19809,35 +18532,9 @@
    "source_path": "workspace/docs/guides/dead_levers.md",
    "unparsed_reason": "",
    "verdict": "DEAD T1"
-  },
-  {
-   "claim_refuted": "unrecorded",
-   "failure_mechanism": "unrecorded",
-   "hypothesis_family": "unrecorded",
-   "keys_filled": 0,
-   "level": "UNRECORDED",
-   "machine": "unrecorded",
-   "model": "unrecorded",
-   "models": [
-    "unrecorded"
-   ],
-   "organ": "unrecorded",
-   "organs": [
-    "unrecorded"
-   ],
-   "original_id": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md#UNPARSED",
-   "parse_status": "UNPARSED",
-   "refuse_eligible": false,
-   "reopen_condition": "unrecorded",
-   "representation": "unrecorded",
-   "scar_id": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md#UNPARSED",
-   "source_origin": "disk",
-   "source_path": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md",
-   "unparsed_reason": "markdown had no parseable tables",
-   "verdict": "unrecorded"
   }
  ],
  "schema": "hawking.future.negative_index.v1",
- "seal_sha256": "f466a85ac47ca0bb30077d0bdfd6537d3c544f5c6319dd56980187a3ae229910",
+ "seal_sha256": "4f57b934d77a4be69051a39aaaa8a97a2c33e5084f80f111b72b33bf22593f5c",
  "version": 1
 }

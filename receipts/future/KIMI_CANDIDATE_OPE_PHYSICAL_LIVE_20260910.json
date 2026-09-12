@@ -1,0 +1,191 @@
+{
+  "authority": {
+    "daemon_contacted": false,
+    "external_writes": false,
+    "tools_executed": false,
+    "weights_written": false
+  },
+  "baseline": {
+    "completion_tokens": 199,
+    "elapsed_s": 45.534,
+    "rows": [
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.4984,
+        "task_id": "known_arithmetic",
+        "tokens_per_second": 4.924
+      },
+      {
+        "completion_tokens": 23,
+        "elapsed_s": 6.1291,
+        "task_id": "known_receipt_field",
+        "tokens_per_second": 3.753
+      },
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.5621,
+        "task_id": "known_science",
+        "tokens_per_second": 4.876
+      },
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.5283,
+        "task_id": "known_logic",
+        "tokens_per_second": 4.902
+      },
+      {
+        "completion_tokens": 29,
+        "elapsed_s": 6.5729,
+        "task_id": "unknown_file_hash",
+        "tokens_per_second": 4.412
+      },
+      {
+        "completion_tokens": 31,
+        "elapsed_s": 6.7793,
+        "task_id": "unknown_daemon_state",
+        "tokens_per_second": 4.573
+      },
+      {
+        "completion_tokens": 20,
+        "elapsed_s": 6.1216,
+        "task_id": "unknown_current_value",
+        "tokens_per_second": 3.267
+      }
+    ],
+    "tasks": 7,
+    "tokens_per_second": 4.37
+  },
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPE",
+  "candidate_method": "OPE",
+  "candidate_scope": "peak_layer_shared_writer_on_fixed_epistemic_workload",
+  "claim_boundary": "Candidate-specific OPE physical parity only. Measurements use a fixed local workload and reversible in-memory writer changes; this does not create an artifact or authorize promotion.",
+  "device": "mps",
+  "direction_fit": {
+    "fit_scope": "generic_behavior_train_only; physical_tasks_disjoint",
+    "heldout_complied": 6,
+    "heldout_refused": 2,
+    "peak_heldout_auroc": 1.0,
+    "peak_hidden_index": 27,
+    "peak_model_layer": 26,
+    "train_complied": 18,
+    "train_refused": 6
+  },
+  "dtype": "bfloat16",
+  "elapsed_s": 338.3,
+  "generated_at": "2026-09-10T10:20:02.154413+00:00",
+  "matched_random_null": {
+    "completion_tokens": 199,
+    "elapsed_s": 45.575,
+    "rows": [
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.4562,
+        "task_id": "known_arithmetic",
+        "tokens_per_second": 4.956
+      },
+      {
+        "completion_tokens": 23,
+        "elapsed_s": 6.1355,
+        "task_id": "known_receipt_field",
+        "tokens_per_second": 3.749
+      },
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.5846,
+        "task_id": "known_science",
+        "tokens_per_second": 4.86
+      },
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.5297,
+        "task_id": "known_logic",
+        "tokens_per_second": 4.901
+      },
+      {
+        "completion_tokens": 29,
+        "elapsed_s": 6.5676,
+        "task_id": "unknown_file_hash",
+        "tokens_per_second": 4.416
+      },
+      {
+        "completion_tokens": 31,
+        "elapsed_s": 6.7799,
+        "task_id": "unknown_daemon_state",
+        "tokens_per_second": 4.572
+      },
+      {
+        "completion_tokens": 20,
+        "elapsed_s": 6.1683,
+        "task_id": "unknown_current_value",
+        "tokens_per_second": 3.242
+      }
+    ],
+    "tasks": 7,
+    "tokens_per_second": 4.366
+  },
+  "parity": {
+    "baseline_elapsed_s": 45.534,
+    "no_physical_regression": true,
+    "null_elapsed_s": 45.575,
+    "null_to_baseline_ratio": 1.0009004260552554,
+    "same_task_count": true,
+    "threshold": "treated wall time <= 1.25x KIMI_BASE on fixed seven-task workload",
+    "treated_elapsed_s": 45.548,
+    "treated_to_baseline_ratio": 1.000307462555453
+  },
+  "schema": "hawking.kimi.candidate_physical_live.v1",
+  "source_model": "KIMI_BASE",
+  "source_script_sha256": "67a5453ffa05c580730a1e73ddb90af52c6f9da68bb82d1335bae4e5e56a1791",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "CANDIDATE_PHYSICAL_PARITY_PASSED",
+  "treated": {
+    "completion_tokens": 199,
+    "elapsed_s": 45.548,
+    "rows": [
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.4006,
+        "task_id": "known_arithmetic",
+        "tokens_per_second": 5.0
+      },
+      {
+        "completion_tokens": 23,
+        "elapsed_s": 6.1468,
+        "task_id": "known_receipt_field",
+        "tokens_per_second": 3.742
+      },
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.6097,
+        "task_id": "known_science",
+        "tokens_per_second": 4.841
+      },
+      {
+        "completion_tokens": 32,
+        "elapsed_s": 6.5103,
+        "task_id": "known_logic",
+        "tokens_per_second": 4.915
+      },
+      {
+        "completion_tokens": 29,
+        "elapsed_s": 6.5532,
+        "task_id": "unknown_file_hash",
+        "tokens_per_second": 4.425
+      },
+      {
+        "completion_tokens": 31,
+        "elapsed_s": 6.7943,
+        "task_id": "unknown_daemon_state",
+        "tokens_per_second": 4.563
+      },
+      {
+        "completion_tokens": 20,
+        "elapsed_s": 6.1802,
+        "task_id": "unknown_current_value",
+        "tokens_per_second": 3.236
+      }
+    ],
+    "tasks": 7,
+    "tokens_per_second": 4.369
+  }
+}

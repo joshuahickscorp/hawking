@@ -1,0 +1,235 @@
+{
+  "claim_boundary": "PASSED bounded direct Q4/G64 routed-MoE execution on a sealed exact source-layer MLP activation and the exact source-selected route set. Candidate Q4 GPU output matches its same-body CPU oracle; source-BF16 routed-sum distortion is measured separately and remains unqualified. No source tensor or source weight is read by direct candidate execution, and the source control is a teacher rather than an NR dependency. This is not source-BF16 output parity, a native weighted-sum kernel, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_system_ebpw": null,
+  "dependencies": {
+    "campaign_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+      "schema": "hcli.agentos.flash_noetic_component_campaign.v1",
+      "sha256": "028dc7d5ddafd4e87d5fccbbe37944bb33d9ecf06f31ede717d9b320f35ea842",
+      "status": "PASSED"
+    },
+    "routed_expert_count": 10,
+    "router_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+      "schema": "hawking.flash_noetic_router_selection_native.v1",
+      "sha256": "704369f9980be18afa0daef505407adb15682c7c39c3b8bb0fffa3a705d48db1",
+      "status": "PASSED"
+    },
+    "source_layer_bridge": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+      "schema": "hawking.flash_source_moe_bridge.v1",
+      "sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f",
+      "status": "PASSED"
+    }
+  },
+  "determinism": {
+    "output_hashes": [
+      "f6c7e77386826cf3cbee7b5696968e81e4b6b367d4b57bd04954efc9f3720b5a",
+      "f6c7e77386826cf3cbee7b5696968e81e4b6b367d4b57bd04954efc9f3720b5a",
+      "f6c7e77386826cf3cbee7b5696968e81e4b6b367d4b57bd04954efc9f3720b5a"
+    ],
+    "passed": true
+  },
+  "elapsed_s": 0.249617125,
+  "execution": {
+    "baseline_dispatches_per_graph": 20,
+    "complete_token_runtime": false,
+    "device_intermediate_no_host_roundtrip": true,
+    "fused_dispatches_per_graph": 2,
+    "gate_up_rows_per_route": 640,
+    "hidden_rows_per_route": 2560,
+    "input_columns": 2560,
+    "model_loaded": false,
+    "operation": "concatenated selected Q4/G64 gate/up bodies -> device-resident route-major SwiGLU activations -> route-aware selected Q4/G64 down bodies",
+    "provider": "apple-metal",
+    "routed_expert_count": 10,
+    "selected_expert_ids": [
+      411,
+      334,
+      286,
+      152,
+      291,
+      106,
+      421,
+      304,
+      226,
+      331
+    ],
+    "source_layer_activation": true,
+    "source_reference_used_for_execution": true,
+    "source_tensor_read_for_direct_execution": false,
+    "source_weight_read_for_direct_execution": false
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "baseline_gpu_ns": [
+      308748,
+      308043,
+      310250
+    ],
+    "baseline_gpu_ns_median": 308748,
+    "baseline_host_wall_ns": [
+      6094000,
+      6712000,
+      6127000
+    ],
+    "baseline_host_wall_ns_median": 6127000,
+    "fused_down_gpu_ns": [
+      52125,
+      52250,
+      53416
+    ],
+    "fused_down_gpu_ns_median": 52250,
+    "fused_gate_up_gpu_ns": [
+      53666,
+      53916,
+      54209
+    ],
+    "fused_gate_up_gpu_ns_median": 53916,
+    "fused_gpu_ns": [
+      105791,
+      106166,
+      107625
+    ],
+    "fused_gpu_ns_median": 106166,
+    "fused_host_wall_ns": [
+      585000,
+      617000,
+      618000
+    ],
+    "fused_host_wall_ns_median": 617000,
+    "gpu_speedup": 2.9081626886197087,
+    "host_speedup": 9.93030794165316,
+    "measured_runs": 3,
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for twenty independent direct-Q4 launches and two device-chained fused launches; host wall is reported separately",
+    "warmup_runs": 1
+  },
+  "input": {
+    "authority": {
+      "bridge": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "schema": "hawking.flash_source_moe_bridge.v1",
+        "sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f",
+        "status": "PASSED"
+      },
+      "kind": "sealed_source_layer_mlp_input",
+      "label": "[V]",
+      "source_tensor_read_for_direct_execution": false,
+      "source_weight_read_for_direct_execution": false
+    },
+    "sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+    "values": 2560
+  },
+  "model_lake_manifest": {
+    "bytes": 360023286454,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+  },
+  "next_action": "Treat the measured source-BF16 routed-sum distortion as the representation-fidelity result; make any retained weighted-sum execution native only after the full layer control identifies it as a physical bottleneck. Do not call this bounded result a standalone NR or complete Flash speedup.",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "cosine": 0.9999999999996115,
+    "count": 25600,
+    "finite": true,
+    "max_abs_error": 4.470348358154297e-7,
+    "rmse": 3.739108674533498e-8,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation": {
+    "dense_rematerialization": "forbidden",
+    "down_codes_bytes": 8192000,
+    "down_scales_bytes": 512000,
+    "family": "independent_q4_g64",
+    "gate_up_codes_bytes": 8192000,
+    "gate_up_scales_bytes": 512000,
+    "source_independent": true,
+    "total_packed_bytes": 26112000
+  },
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "route_authority": {
+    "bridge": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+      "schema": "hawking.flash_source_moe_bridge.v1",
+      "sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f",
+      "status": "PASSED"
+    },
+    "claim_boundary": "The persisted source control supplies an activation and route teacher only. Candidate execution reads Q4/G64 bodies and the sealed control bytes, not source weights; this bridge is not a standalone NR dependency.",
+    "direct_body_weight_family": "independent_q4_g64",
+    "mode": "sealed_source_layer_activation_and_routes",
+    "source_layer_activation_authority": true,
+    "source_layer_activation_equivalence": "BOUND_TO_PASSED_EXACT_SOURCE_LAYER_CONTROL",
+    "source_route_authority": true,
+    "source_tensor_read_for_direct_execution": false,
+    "source_weight_read_for_direct_execution": false
+  },
+  "schema": "hawking.flash_noetic_routed_moe_fused_native.v1",
+  "semantic_type": "NoeticExecutable",
+  "source_bf16_routed_sum_comparison": {
+    "candidate": "route-weighted host-side diagnostic reduction of observed direct-Q4 route-major outputs after the Metal fence",
+    "candidate_routed_sum_sha256": "3295df8a0b500d9940e7585e3f06d407fe5d9ad090dd93af2bdcdd352aee4282",
+    "claim_boundary": "This makes representation distortion visible on the actual source-layer activation and correct source route set. The current route-weighted sum is a post-fence diagnostic reduction, not yet a native weighted-sum kernel or full MoE/layer/token capability result.",
+    "comparison": {
+      "cosine": 0.9950961734219215,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 0.00551472045481205,
+      "rmse": 0.0015707757302093207,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": false
+    },
+    "reference": "sealed exact source-BF16 routed sum from the source-layer bridge",
+    "source_bf16_output_parity": "NOT_QUALIFIED",
+    "status": "MEASURED__NO_CAPABILITY_THRESHOLD_DECLARED"
+  },
+  "source_selection_parity": {
+    "candidate_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "candidate_reference_ids_match": true,
+    "expert_ids_exact_match": false,
+    "label": "[V]/[D]",
+    "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+    "source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_native_reference_ids_match": true,
+    "status": "MISMATCH",
+    "top_k_overlap_count": 8,
+    "top_k_overlap_fraction": 0.8
+  },
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED"
+}

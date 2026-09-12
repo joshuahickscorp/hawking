@@ -1,0 +1,289 @@
+{
+  "claim_boundary": "Real measurements from the MLX-VLM runtime child launched by the live HCLI KIMI_P0_OPERATIONAL surface. This is dense KIMI_BASE-lineage deployment timing, not a reduced Noetic representation, not a capability-preservation receipt, not a qualified KIMI TPS milestone, and not promotion or Odyssey admission evidence.",
+  "contexts": [
+    {
+      "context_repeats": 0,
+      "rows": [
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 274.36096417276485,
+          "predicted_n": 20,
+          "prompt_ms": 108.16874995362015,
+          "prompt_n": 35,
+          "rep": 0,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1069",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:15 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 72.89666757187082,
+          "server_prompt_tps": 323.56849843422486,
+          "wall_ms": 482.819999975618
+        },
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 267.7961842058913,
+          "predicted_n": 20,
+          "prompt_ms": 106.55837605008857,
+          "prompt_n": 35,
+          "rep": 1,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1068",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:16 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 74.68366309739233,
+          "server_prompt_tps": 328.45845908488684,
+          "wall_ms": 473.7428340013139
+        },
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 264.09815788563145,
+          "predicted_n": 20,
+          "prompt_ms": 106.57312499824911,
+          "prompt_n": 35,
+          "rep": 2,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1067",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:16 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 75.72941878928616,
+          "server_prompt_tps": 328.4130028144996,
+          "wall_ms": 469.6219160105102
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 20.0,
+        "decode_ms_median": 267.7961842058913,
+        "decode_tps": 74.68366309739233,
+        "end_to_end_tps": 42.21699741835996,
+        "prefill_ms_median": 106.57312499824911,
+        "prefill_tps": 328.4130028144996,
+        "prompt_tokens_median": 35.0,
+        "rep_count": 3,
+        "wall_ms_median": 473.7428340013139
+      },
+      "valid_rep_count": 3
+    },
+    {
+      "context_repeats": 64,
+      "rows": [
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 213.73071043441695,
+          "predicted_n": 16,
+          "prompt_ms": 183.93291695974767,
+          "prompt_n": 227,
+          "rep": 0,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1050",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:16 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 74.86055685436737,
+          "server_prompt_tps": 1234.1455991244745,
+          "wall_ms": 499.55516698537394
+        },
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 214.4267552221815,
+          "predicted_n": 16,
+          "prompt_ms": 171.55000002821907,
+          "prompt_n": 227,
+          "rep": 1,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1051",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:17 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 74.61755406139201,
+          "server_prompt_tps": 1323.2293789720763,
+          "wall_ms": 485.57045799680054
+        },
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 215.75515524794656,
+          "predicted_n": 16,
+          "prompt_ms": 174.14695903426036,
+          "prompt_n": 227,
+          "rep": 2,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1050",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:17 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 74.15813532526138,
+          "server_prompt_tps": 1303.496778001973,
+          "wall_ms": 490.13716698391363
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 16.0,
+        "decode_ms_median": 214.4267552221815,
+        "decode_tps": 74.61755406139201,
+        "end_to_end_tps": 32.64392312555461,
+        "prefill_ms_median": 174.14695903426036,
+        "prefill_tps": 1303.496778001973,
+        "prompt_tokens_median": 227.0,
+        "rep_count": 3,
+        "wall_ms_median": 490.13716698391363
+      },
+      "valid_rep_count": 3
+    },
+    {
+      "context_repeats": 256,
+      "rows": [
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 180.266169438255,
+          "predicted_n": 13,
+          "prompt_ms": 360.5258759926073,
+          "prompt_n": 803,
+          "rep": 0,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1023",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:18 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 72.11558353134461,
+          "server_prompt_tps": 2227.3019871019346,
+          "wall_ms": 641.9267910532653
+        },
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 180.33401316885528,
+          "predicted_n": 13,
+          "prompt_ms": 363.69104095501825,
+          "prompt_n": 803,
+          "rep": 1,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1025",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:18 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 72.08845281908901,
+          "server_prompt_tps": 2207.918011649113,
+          "wall_ms": 648.0922499904409
+        },
+        {
+          "peak_memory_gib": 34.374573959,
+          "predicted_ms": 184.0666381516106,
+          "predicted_n": 13,
+          "prompt_ms": 359.46900001727045,
+          "prompt_n": 803,
+          "rep": 2,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1026",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:43:19 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 70.62659551206808,
+          "server_prompt_tps": 2233.8504849136375,
+          "wall_ms": 644.4298339774832
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 13.0,
+        "decode_ms_median": 180.33401316885528,
+        "decode_tps": 72.08845281908901,
+        "end_to_end_tps": 20.172871140621695,
+        "prefill_ms_median": 360.5258759926073,
+        "prefill_tps": 2227.3019871019346,
+        "prompt_tokens_median": 803.0,
+        "rep_count": 3,
+        "wall_ms_median": 644.4298339774832
+      },
+      "valid_rep_count": 3
+    }
+  ],
+  "elapsed_s": 5.456,
+  "generated_at": "2026-09-10T20:43:20.976070+00:00",
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.13"
+  },
+  "measurement_contract": {
+    "concurrency": 1,
+    "context_repeats": [
+      0,
+      64,
+      256
+    ],
+    "endpoint": "/chat/completions",
+    "max_tokens": 32,
+    "path": "live mlx_vlm HTTP server timings plus client wall time",
+    "hcli_surface": "KIMI_P0_OPERATIONAL on http://127.0.0.1:8014; child endpoint is used for provider timings without the tool-loop wrapper",
+    "prefill_and_decode_separate": true,
+    "reps_per_context": 3,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "warmup_excluded": true
+  },
+  "model": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+  "raw_kimi_base_equivalence": false,
+  "schema": "hawking.future.kimi_tps_live_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_live_baseline.py",
+  "server": {
+    "headers": {
+      "connection": "close",
+      "content-length": "207",
+      "content-type": "application/json",
+      "date": "Thu, 10 Sep 2026 20:43:15 GMT",
+      "server": "mlx_vlm/0.7.0"
+    },
+    "models": {
+      "data": [
+        {
+          "created": 1789072995,
+          "id": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+          "object": "model"
+        }
+      ],
+      "object": "list"
+    },
+    "url": "http://127.0.0.1:56954"
+  },
+  "source_model": "KIMI_P0_OPERATIONAL_DENSE_KIMI_BASE_LINEAGE",
+  "status": "P0_RUNTIME_BASELINE_COMPLETE_NOT_KIMI_QUALIFIED",
+  "replicate_receipts": [
+    "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_REPEAT2_20260910.json"
+  ],
+  "replicate_context_median_decode_tps": [
+    73.81919639634056,
+    72.18291139785278,
+    70.83541297395267
+  ],
+  "cross_run_context_median_decode_tps": 73.00105389709667,
+  "repeat_consistency": {
+    "first_run_context_median_decode_tps": [
+      74.68366309739233,
+      74.61755406139201,
+      72.08845281908901
+    ],
+    "second_run_context_median_decode_tps": [
+      73.81919639634056,
+      72.18291139785278,
+      70.83541297395267
+    ],
+    "interpretation": "Two immediate 3-repetition runs on the same child are directionally consistent; the conservative current P0 deployment baseline is the cross-run context median, not the earlier faster sample."
+  }
+}

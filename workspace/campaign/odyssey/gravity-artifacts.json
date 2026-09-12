@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.gravity.admitted_artifact_registry.v1",
+  "status": "ACTIVE",
+  "policy": {
+    "normal_selector": "gravity_only",
+    "research_selector": "gravity_plus_modellake",
+    "raw_modellake_default": false,
+    "promotion_gates_unchanged": true,
+    "note": "A registry entry makes an execution identity visible; it does not convert an unqualified descendant into a promoted model.",
+    "archived_from_normal_selector": [
+      {
+        "id": "sealed-3.14",
+        "reason": "legacy Qwen3.8/Ascension runtime is not part of the single-body operational surface",
+        "profile": "hcli/hawking-native.sealed-3.14.json",
+        "receipts_preserved": true
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "KIMI_P0_OPERATIONAL",
+      "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "kind": "mlx",
+      "status": "FROZEN_OPERATIONAL_DEVELOPMENTAL",
+      "role": "bounded local conversational, read/research, scientific-assistant resident",
+      "weight_lineage": "KIMI_BASE unchanged",
+      "representation": "dense KIMI_BASE MLX snapshot; no reduced-weight claim",
+      "capability": "KIMI_BASE qualified 4/4 bounded WorkUnit battery",
+      "hcli": "resident Engine contract 16/16; 0 effective refusals; deployment-path evidence",
+      "destructive_controls": "independent HCLI controls 6/6",
+      "epistemic": "KIMI_BASE calibration 7/7",
+      "physical": "canonical raw KIMI_BASE steady decode ~85.4 TPS across context medians",
+      "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+      "receipts": [
+        "receipts/future/KIMI_WORKUNIT_CAPABILITY_LIVE_RETRY2_20260910.json",
+        "receipts/future/KIMI_HCLI_ENGINE_LIVE_RETRY3_20260910.json",
+        "receipts/future/KIMI_HCLI_BOUNDARY_CONTROLS_20260910.json",
+        "receipts/future/KIMI_EPISTEMIC_LIVE_20260910.json",
+        "receipts/future/KIMI_RAW_BASE_TPS_BASELINE_20260910.json",
+        "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json",
+        "receipts/future/KIMI_BOOTSTRAP_CLOSEOUT_20260911.json",
+        "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+        "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json"
+      ],
+      "authority": {
+        "admitted": [
+          "local conversation",
+          "read/research HCLI work",
+          "repository and ModelLake investigation",
+          "tool-using scientific assistance",
+          "receipt/evidence consumption",
+          "hypothesis and experiment planning",
+          "supervised proposal generation"
+        ],
+        "withheld": [
+          "autonomous repository writing",
+          "self-certifying development",
+          "unsupervised mutation authority",
+          "autonomous Odyssey writing",
+          "autonomous self-improvement promotion"
+        ]
+      },
+      "mission_gate": "BLIND_AUTONOMOUS_WRITE_WITHHELD_20260911",
+      "admission_note": "Frozen and admitted at its earned bounded capability boundary. Read/research/tool-assistant operation is GREEN. Autonomous mutation remains WITHHELD after objective-only browser and Engine trials produced no independently verified edit; this is not an unresolved prerequisite to using P0."
+    }
+  ]
+}

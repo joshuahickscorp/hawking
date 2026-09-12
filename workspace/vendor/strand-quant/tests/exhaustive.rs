@@ -1,4 +1,3 @@
-
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::{decode_lean, decode_tensor_fixed};
 use strand_quant::encode::{pack_sub_scales, BlockMeta, EncodedTensor};
@@ -17,7 +16,9 @@ fn ref_read_bits(bytes: &[u8], start_bit: usize, nbits: u32) -> usize {
 }
 
 fn ref_unpack6(bytes: &[u8], n: usize) -> Vec<u8> {
-    (0..n).map(|i| ref_read_bits(bytes, i * 6, 6) as u8).collect()
+    (0..n)
+        .map(|i| ref_read_bits(bytes, i * 6, 6) as u8)
+        .collect()
 }
 
 fn ref_decode(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
@@ -26,14 +27,17 @@ fn ref_decode(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32>
     let mask = (1usize << l) - 1;
     let imask = (1usize << k) - 1;
     let mut out = Vec::with_capacity(enc.total);
-    let mut cursor = 0usize; 
+    let mut cursor = 0usize;
 
     for blk in &enc.blocks {
         let n = blk.n as usize;
         let n_sub = n.div_ceil(32);
         let scodes = ref_unpack6(&blk.sub_scales, n_sub);
-        let mcodes: Vec<u8> =
-            if enc.has_affine_min { ref_unpack6(&blk.mins, n_sub) } else { Vec::new() };
+        let mcodes: Vec<u8> = if enc.has_affine_min {
+            ref_unpack6(&blk.mins, n_sub)
+        } else {
+            Vec::new()
+        };
 
         let mut state = if enc.tail_biting && n * k as usize >= l as usize {
             let mut s = 0usize;
@@ -61,7 +65,11 @@ fn ref_decode(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32>
                     0i32
                 } else {
                     let base = (blk.min_base_q.unsigned_abs()) as i64;
-                    let s = if c & 0x20 != 0 { base * mag } else { -(base * mag) };
+                    let s = if c & 0x20 != 0 {
+                        base * mag
+                    } else {
+                        -(base * mag)
+                    };
                     (s / 31) as i32
                 }
             } else {
@@ -96,7 +104,7 @@ fn make_tensor(
     scale_qs: &[i32],
     sub_codes: &[Vec<u8>],
     tail_biting: bool,
-    affine: Option<(&[i32], &[Vec<u8>])>, 
+    affine: Option<(&[i32], &[Vec<u8>])>,
 ) -> EncodedTensor {
     let all_syms: Vec<usize> = block_syms.iter().flatten().copied().collect();
     let bits = pack_symbols(&all_syms, k);
@@ -134,7 +142,10 @@ fn assert_three_way(enc: &EncodedTensor, cfg: &TrellisConfig, ctx: &str) {
     let lean = decode_lean(enc, cfg);
     let fixed = decode_tensor_fixed(enc, cfg);
     assert_eq!(lean, reference, "decode_lean != spec reference [{ctx}]");
-    assert_eq!(fixed, reference, "decode_tensor_fixed != spec reference [{ctx}]");
+    assert_eq!(
+        fixed, reference,
+        "decode_tensor_fixed != spec reference [{ctx}]"
+    );
 }
 
 const SCALES: [i32; 8] = [1 << 16, 4096, -(1 << 16), 1, -1, 0, i32::MAX, i32::MIN];
@@ -144,32 +155,41 @@ fn exhaustive_state_stream_equivalence() {
     let mut covered = 0u64;
     for (l, k) in [(4u32, 2u32), (4, 3), (5, 2), (5, 3)] {
         let cfg = TrellisConfig::new(l, k, 256);
-        assert_eq!((cfg.l_bits, cfg.k_bits), (l, k), "config clamped unexpectedly");
+        assert_eq!(
+            (cfg.l_bits, cfg.k_bits),
+            (l, k),
+            "config clamped unexpectedly"
+        );
         let n_states = 1usize << l;
-        let n_max = 12 / k as usize; 
+        let n_max = 12 / k as usize;
         let mut tier = 0u64;
         for n in 1..=n_max {
             let n_streams = 1usize << (n * k as usize);
             for init in 0..n_states {
                 for stream in 0..n_streams {
-                    let syms: Vec<usize> =
-                        (0..n).map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1)).collect();
+                    let syms: Vec<usize> = (0..n)
+                        .map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1))
+                        .collect();
                     let scale = SCALES[(init + stream) % SCALES.len()];
                     let enc = make_tensor(
                         &[syms],
                         k,
                         &[init as u32],
                         &[scale],
-                        &[vec![63u8]], 
+                        &[vec![63u8]],
                         false,
                         None,
                     );
-                    assert_three_way(&enc, &cfg, &format!("L={l} k={k} n={n} init={init} stream={stream}"));
+                    assert_three_way(
+                        &enc,
+                        &cfg,
+                        &format!("L={l} k={k} n={n} init={init} stream={stream}"),
+                    );
                     tier += 1;
                 }
             }
         }
-        
+
         let expect: u64 = (1..=n_max)
             .map(|n| (n_states as u64) * (1u64 << (n * k as usize)))
             .sum();
@@ -177,7 +197,7 @@ fn exhaustive_state_stream_equivalence() {
         covered += tier;
     }
     eprintln!("exhaustive (state x stream), non-tail-biting: {covered} tensors");
-    
+
     assert_eq!(covered, 87_360 + 74_880 + 174_720 + 149_760);
 }
 
@@ -191,11 +211,15 @@ fn exhaustive_state_stream_equivalence_tail_biting() {
         for n in 1..=n_max {
             let n_streams = 1usize << (n * k as usize);
             let nk = n * k as usize;
-            let states: Vec<usize> =
-                if nk >= l as usize { vec![0, n_states - 1] } else { (0..n_states).collect() };
+            let states: Vec<usize> = if nk >= l as usize {
+                vec![0, n_states - 1]
+            } else {
+                (0..n_states).collect()
+            };
             for stream in 0..n_streams {
-                let syms: Vec<usize> =
-                    (0..n).map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1)).collect();
+                let syms: Vec<usize> = (0..n)
+                    .map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1))
+                    .collect();
                 let mut first: Option<Vec<i32>> = None;
                 for &init in &states {
                     let scale = SCALES[(stream + n) % SCALES.len()];
@@ -208,9 +232,13 @@ fn exhaustive_state_stream_equivalence_tail_biting() {
                         true,
                         None,
                     );
-                    assert_three_way(&enc, &cfg, &format!("TB L={l} k={k} n={n} init={init} stream={stream}"));
+                    assert_three_way(
+                        &enc,
+                        &cfg,
+                        &format!("TB L={l} k={k} n={n} init={init} stream={stream}"),
+                    );
                     covered += 1;
-                    
+
                     if nk >= l as usize {
                         let out = decode_lean(&enc, &cfg);
                         match &first {
@@ -234,12 +262,13 @@ fn exhaustive_sub_scale_codes() {
     for (l, k) in [(4u32, 2u32), (5, 3)] {
         let cfg = TrellisConfig::new(l, k, 256);
         let n = 33usize;
-        
-        let syms: Vec<usize> =
-            (0..n).map(|i| (i.wrapping_mul(2654435761) >> 7) & ((1 << k) - 1)).collect();
+
+        let syms: Vec<usize> = (0..n)
+            .map(|i| (i.wrapping_mul(2654435761) >> 7) & ((1 << k) - 1))
+            .collect();
         for c0 in 0u8..64 {
             for c1 in 0u8..64 {
-                let scale = SCALES[(c0 as usize * 64 + c1 as usize) % 4]; 
+                let scale = SCALES[(c0 as usize * 64 + c1 as usize) % 4];
                 let enc = make_tensor(
                     std::slice::from_ref(&syms),
                     k,
@@ -301,9 +330,7 @@ fn boundary_geometries_three_way() {
                     let mut minc: Vec<Vec<u8>> = Vec::new();
                     for (b, &n) in lens.iter().enumerate() {
                         let syms: Vec<usize> = (0..n)
-                            .map(|i| {
-                                ((i + b * 977).wrapping_mul(2654435761) >> 9) & ((1 << k) - 1)
-                            })
+                            .map(|i| ((i + b * 977).wrapping_mul(2654435761) >> 9) & ((1 << k) - 1))
                             .collect();
                         block_syms.push(syms);
                         inits.push(((b * 7 + tail_len) % (1 << l)) as u32);
@@ -313,13 +340,18 @@ fn boundary_geometries_three_way() {
                         bases.push([0i32, 4096, 1 << 18][b % 3]);
                         minc.push((0..ns).map(|s| ((s * 23 + b * 5) % 64) as u8).collect());
                     }
-                    let aff = if affine { Some((&bases[..], &minc[..])) } else { None };
-                    let enc =
-                        make_tensor(&block_syms, k, &inits, &scales, &subc, tail, aff);
+                    let aff = if affine {
+                        Some((&bases[..], &minc[..]))
+                    } else {
+                        None
+                    };
+                    let enc = make_tensor(&block_syms, k, &inits, &scales, &subc, tail, aff);
                     assert_three_way(
                         &enc,
                         &cfg,
-                        &format!("geom L={l} k={k} tail={tail} affine={affine} tail_len={tail_len}"),
+                        &format!(
+                            "geom L={l} k={k} tail={tail} affine={affine} tail_len={tail_len}"
+                        ),
                     );
                     covered += 1;
                 }
@@ -337,11 +369,23 @@ fn f32_wrapper_is_exact_q12() {
     let n = 100usize;
     let syms: Vec<usize> = (0..n).map(|i| (i * 5 + 3) & 0x7).collect();
     for &scale in &SCALES {
-        let enc = make_tensor(std::slice::from_ref(&syms), 3, &[17], &[scale], &[vec![63, 40, 1, 63]], false, None);
+        let enc = make_tensor(
+            std::slice::from_ref(&syms),
+            3,
+            &[17],
+            &[scale],
+            &[vec![63, 40, 1, 63]],
+            false,
+            None,
+        );
         let fixed = decode_tensor_fixed(&enc, &cfg);
         let f = decode_tensor(&enc, &cfg);
         for (a, b) in fixed.iter().zip(f.iter()) {
-            assert_eq!(*b, (*a as f32) * (1.0 / 4096.0), "f32 wrapper drift at scale={scale}");
+            assert_eq!(
+                *b,
+                (*a as f32) * (1.0 / 4096.0),
+                "f32 wrapper drift at scale={scale}"
+            );
         }
     }
 }

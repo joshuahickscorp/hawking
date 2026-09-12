@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 from hcli.agentos.benchmark_boundary import classify_window
+from hcli.latency import now_ns, seconds_from_ns, since_ns
 from hcli.persist import atomic_write_json
 
 
@@ -238,7 +239,7 @@ def _run_one_request(
     from hcli.hawking_native import HawkingNativeConnector
 
     connector = HawkingNativeConnector(config)
-    started = time.perf_counter()
+    started_ns = now_ns()
     raw: Optional[Dict[str, Any]] = None
     error: Optional[Dict[str, str]] = None
     try:
@@ -255,7 +256,7 @@ def _run_one_request(
         error = {"type": type(exc).__name__, "message": str(exc)[:1600]}
     finally:
         connector.stop()
-    elapsed_ns = int((time.perf_counter() - started) * 1_000_000_000)
+    elapsed_ns = since_ns(started_ns)
     hawking = raw.get("hawking") if isinstance(raw, Mapping) else {}
     hawking = hawking if isinstance(hawking, Mapping) else {}
     health = hawking.get("resident_health")
@@ -394,7 +395,8 @@ def run_accelerator_regression(
     profile_path = _profile_path(repo, profile)
     from hcli.hawking_native import HawkingNativeConfig
 
-    started = time.time()
+    started_at = time.time()
+    started_ns = now_ns()
     report: Dict[str, Any] = {
         "schema": SCHEMA,
         "status": "RUNNING",
@@ -402,7 +404,9 @@ def run_accelerator_regression(
         "qualification_label": "CURRENT_RUNTIME_REGRESSION_AUDITED_NO_PERFORMANCE_QUALIFICATION",
         "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
         "NOT_FOR_PROMOTION": True,
-        "started_at": started,
+        "started_at": started_at,
+        "run_started_ns": started_ns,
+        "timing_unit": "ns",
         "repo_root": str(repo),
         "profile_path": str(profile_path),
         "experiment_contract": {
@@ -554,7 +558,8 @@ def run_accelerator_regression(
                 **boundary,
             }
     report["finished_at"] = time.time()
-    report["elapsed_s"] = round(report["finished_at"] - started, 3)
+    report["elapsed_ns"] = since_ns(started_ns)
+    report["elapsed_s"] = round(seconds_from_ns(report["elapsed_ns"]) or 0.0, 3)
     _write(report, str(emit) if emit is not None else None, repo)
     return report
 

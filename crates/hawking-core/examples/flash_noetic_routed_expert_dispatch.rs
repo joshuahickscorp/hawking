@@ -70,6 +70,8 @@ mod macos {
     const KERNEL_NAME: &str = "qwen_uniform_q4_group64_matvec";
     const GATE_UP_KERNEL_NAME: &str =
         "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
+    const ROUTED_DOWN_KERNEL_NAME: &str =
+        "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128";
     const REFERENCE_MULTIPLIER: usize = 71;
     const REFERENCE_MODULUS: usize = 509;
     const REFERENCE_OFFSET: f32 = 254.0;
@@ -113,6 +115,8 @@ mod macos {
     const MOE_ADD_SHARED_KERNEL_NAME: &str = "qwen_next_moe_add_shared";
     const ROUTED_TOP_K: usize = 10;
     const ROUTED_EXPERT_COUNT: usize = 512;
+    const SOURCE_MOE_BRIDGE_SCHEMA: &str = "hawking.flash_source_moe_bridge.v1";
+    const SOURCE_LAYER_SCHEMA: &str = "hawking.flash_noetic_complete_layer0_source_bf16.v1";
     const MANIFEST_PATH: &str =
         "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json";
 
@@ -128,6 +132,18 @@ mod macos {
         shared_expert_composition: bool,
         shared_residual_composition: bool,
         exact_hyperconnection_composition: bool,
+        fused_routed_gate_up: bool,
+        fused_routed_down: bool,
+        fused_routed_moe: bool,
+        /// Use the independently observed source-native route choice as the
+        /// authority for a bounded direct-Q4 fusion.  This never permits a
+        /// source weight read: the selected bodies remain persisted Q4/G64
+        /// candidates and source output parity remains a separate gate.
+        source_authoritative_routes: bool,
+        /// Sealed exact-source layer activation/route/routed-sum control.  It
+        /// may only be used by the composed routed-MoE discriminator and is
+        /// never an NR closure dependency.
+        source_layer_bridge: Option<PathBuf>,
     }
 
     struct PackedBody {
@@ -150,6 +166,16 @@ mod macos {
         body_sha256: String,
         elements: usize,
         bytes: Vec<u8>,
+    }
+
+    struct SourceMoeBridge {
+        path: PathBuf,
+        receipt: Value,
+        receipt_sha256: String,
+        mlp_input: Vec<f32>,
+        source_routed_sum: Vec<f32>,
+        route_ids: Vec<usize>,
+        route_weights: Vec<f32>,
     }
 
     struct LoadedBody {
@@ -300,6 +326,11 @@ mod macos {
             shared_expert_composition: false,
             shared_residual_composition: false,
             exact_hyperconnection_composition: false,
+            fused_routed_gate_up: false,
+            fused_routed_down: false,
+            fused_routed_moe: false,
+            source_authoritative_routes: false,
+            source_layer_bridge: None,
         };
         let mut values = env::args().skip(1);
         while let Some(flag) = values.next() {
@@ -323,13 +354,25 @@ mod macos {
                 "--exact-hyperconnection-composition" => {
                     args.exact_hyperconnection_composition = true
                 }
+                "--fused-routed-gate-up" => args.fused_routed_gate_up = true,
+                "--fused-routed-down" => args.fused_routed_down = true,
+                "--fused-routed-moe" => args.fused_routed_moe = true,
+                "--source-authoritative-routes" => args.source_authoritative_routes = true,
+                "--source-layer-bridge" => {
+                    args.source_layer_bridge = Some(PathBuf::from(
+                        values.next().ok_or("missing --source-layer-bridge")?,
+                    ))
+                }
                 "--help" | "-h" => {
                     println!(
                         "usage: flash_noetic_routed_expert_dispatch [--root DIR] \
                          [--router-receipt FILE] [--campaign-receipt FILE] \
                          [--warmup N] [--reps N] [--out FILE] [--gate-up-swiglu] \
                          [--expert-composition] [--shared-expert-composition] \
-                         [--shared-residual-composition] [--exact-hyperconnection-composition]"
+                         [--shared-residual-composition] [--exact-hyperconnection-composition] \
+                         [--fused-routed-gate-up] [--fused-routed-down] \
+                         [--fused-routed-moe] [--source-authoritative-routes] \
+                         [--source-layer-bridge FILE]"
                     );
                     std::process::exit(0);
                 }
@@ -342,12 +385,31 @@ mod macos {
         if args.reps == 0 || args.reps > 128 {
             return Err("--reps must be in 1..=128".into());
         }
+        if args.source_authoritative_routes
+            && !(args.fused_routed_gate_up || args.fused_routed_down || args.fused_routed_moe)
+        {
+            return Err(
+                "--source-authoritative-routes requires a fused direct-Q4 routed discriminator"
+                    .into(),
+            );
+        }
+        if args.source_layer_bridge.is_some()
+            && !(args.fused_routed_moe && args.source_authoritative_routes)
+        {
+            return Err(
+                "--source-layer-bridge requires --fused-routed-moe and --source-authoritative-routes"
+                    .into(),
+            );
+        }
         if [
             args.gate_up_swiglu,
             args.expert_composition,
             args.shared_expert_composition,
             args.shared_residual_composition,
             args.exact_hyperconnection_composition,
+            args.fused_routed_gate_up,
+            args.fused_routed_down,
+            args.fused_routed_moe,
         ]
         .into_iter()
         .filter(|enabled| *enabled)
@@ -355,20 +417,48 @@ mod macos {
             > 1
         {
             return Err(
-                "--gate-up-swiglu, --expert-composition, --shared-expert-composition, --shared-residual-composition, and --exact-hyperconnection-composition are mutually exclusive"
+                "--gate-up-swiglu, --expert-composition, --shared-expert-composition, --shared-residual-composition, --exact-hyperconnection-composition, --fused-routed-gate-up, --fused-routed-down, and --fused-routed-moe are mutually exclusive"
                     .into(),
             );
         }
         let default_out =
             repo.join("receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json");
         if args.out == default_out {
-            if args.shared_residual_composition {
+            if args.source_layer_bridge.is_some() {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_LAYER_BRIDGE_FUSED_NATIVE.json",
+                );
+            } else if args.source_authoritative_routes && args.fused_routed_gate_up {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_GATE_UP_SOURCE_ROUTES_FUSED_NATIVE.json",
+                );
+            } else if args.source_authoritative_routes && args.fused_routed_down {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_DOWN_SOURCE_ROUTES_FUSED_NATIVE.json",
+                );
+            } else if args.source_authoritative_routes && args.fused_routed_moe {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_ROUTES_FUSED_NATIVE.json",
+                );
+            } else if args.shared_residual_composition {
                 args.out = repo.join(
                     "receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
                 );
             } else if args.exact_hyperconnection_composition {
                 args.out =
                     repo.join("receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json");
+            } else if args.fused_routed_gate_up {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_GATE_UP_FUSED_NATIVE.json",
+                );
+            } else if args.fused_routed_down {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_DOWN_FUSED_NATIVE.json",
+                );
+            } else if args.fused_routed_moe {
+                args.out = repo.join(
+                    "receipts/headless/FLASH_NOETIC_ROUTED_MOE_FUSED_NATIVE.json",
+                );
             } else if args.shared_expert_composition {
                 args.out = repo
                     .join("receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json");
@@ -417,6 +507,177 @@ mod macos {
             .collect()
     }
 
+    fn referenced_path(receipt_path: &Path, reference: &Value, name: &str) -> Result<PathBuf, Box<dyn Error>> {
+        let raw = reference
+            .get("path")
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("source MoE bridge {name} has no path"))?;
+        let path = PathBuf::from(raw);
+        Ok(if path.is_absolute() {
+            path
+        } else {
+            receipt_path
+                .parent()
+                .ok_or("source MoE bridge receipt has no parent directory")?
+                .join(path)
+        })
+    }
+
+    fn read_bridge_f32(
+        bridge_path: &Path,
+        reference: &Value,
+        name: &str,
+        expected_elements: usize,
+    ) -> Result<Vec<f32>, Box<dyn Error>> {
+        if reference.get("dtype").and_then(Value::as_str) != Some("F32_LE")
+            || usize_field(reference, "elements")? != expected_elements
+        {
+            return Err(format!("source MoE bridge {name} has the wrong typed geometry").into());
+        }
+        let expected_bytes = expected_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or("source MoE bridge byte count overflowed")?;
+        if usize_field(reference, "bytes")? != expected_bytes {
+            return Err(format!("source MoE bridge {name} has the wrong byte count").into());
+        }
+        let expected_sha256 = string_field(reference, "sha256")?;
+        let path = referenced_path(bridge_path, reference, name)?;
+        let bytes = fs::read(&path)?;
+        if bytes.len() != expected_bytes || sha256_bytes(&bytes) != expected_sha256 {
+            return Err(format!("source MoE bridge {name} payload does not match its receipt").into());
+        }
+        let values = bytes
+            .chunks_exact(std::mem::size_of::<f32>())
+            .map(|bytes| f32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+            .collect::<Vec<_>>();
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err(format!("source MoE bridge {name} contains non-finite values").into());
+        }
+        Ok(values)
+    }
+
+    fn validate_source_moe_bridge(path: &Path) -> Result<SourceMoeBridge, Box<dyn Error>> {
+        let canonical_path = path.canonicalize()?;
+        let (receipt, receipt_sha256) = read_json(&canonical_path)?;
+        if string_field(&receipt, "schema")? != SOURCE_MOE_BRIDGE_SCHEMA
+            || string_field(&receipt, "status")? != "PASSED"
+            || string_field(&receipt, "repo")? != REPO_ID
+            || string_field(&receipt, "pinned_revision")? != PINNED_REVISION
+            || string_field(&receipt, "nomenclature_version")? != NOMENCLATURE_VERSION
+        {
+            return Err("source MoE bridge is not a passed pinned source-control artifact".into());
+        }
+        let source_layer = receipt
+            .get("source_layer")
+            .ok_or("source MoE bridge has no source layer identity")?;
+        if usize_field(source_layer, "layer")? != 0
+            || source_layer
+                .get("exact_source_graph_parity")
+                .and_then(Value::as_bool)
+                != Some(true)
+        {
+            return Err("source MoE bridge is not bound to an exact layer-0 source graph".into());
+        }
+        let source_receipt_ref = source_layer
+            .get("source_layer_receipt")
+            .ok_or("source MoE bridge has no linked source-layer receipt")?;
+        if string_field(source_receipt_ref, "schema")? != SOURCE_LAYER_SCHEMA
+            || string_field(source_receipt_ref, "status")? != "PASSED"
+        {
+            return Err("source MoE bridge linked receipt does not declare passed source parity".into());
+        }
+        let source_receipt_path = referenced_path(&canonical_path, source_receipt_ref, "source_layer_receipt")?;
+        let (source_receipt, source_receipt_sha256) = read_json(&source_receipt_path)?;
+        if source_receipt_sha256 != string_field(source_receipt_ref, "sha256")?
+            || string_field(&source_receipt, "schema")? != SOURCE_LAYER_SCHEMA
+            || string_field(&source_receipt, "status")? != "PASSED"
+            || source_receipt
+                .get("parity")
+                .and_then(|value| value.get("passed"))
+                .and_then(Value::as_bool)
+                != Some(true)
+            || source_receipt
+                .get("source")
+                .and_then(|value| value.get("layer_index"))
+                .and_then(Value::as_u64)
+                != Some(0)
+        {
+            return Err("source MoE bridge linked source-layer receipt failed validation".into());
+        }
+        let mlp_input = read_bridge_f32(
+            &canonical_path,
+            receipt.get("mlp_input").ok_or("source MoE bridge has no MLP input")?,
+            "mlp_input",
+            HYPER_STATE_HIDDEN,
+        )?;
+        let source_routed_sum = read_bridge_f32(
+            &canonical_path,
+            receipt
+                .get("source_routed_sum")
+                .ok_or("source MoE bridge has no source routed sum")?,
+            "source_routed_sum",
+            HYPER_STATE_HIDDEN,
+        )?;
+        let route_selection = receipt
+            .get("route_selection")
+            .ok_or("source MoE bridge has no route selection")?;
+        let (route_ids, route_weights) = parse_router_selection(route_selection, "source MoE bridge")?;
+        if route_ids.len() != ROUTED_TOP_K
+            || (route_weights.iter().copied().sum::<f32>() - 1.0).abs() > 2.0e-3
+        {
+            return Err("source MoE bridge route selection is not a normalized top-k control".into());
+        }
+        let source_route_ids = source_receipt
+            .get("parity")
+            .and_then(|value| value.get("route_ids_expected"))
+            .and_then(Value::as_array)
+            .ok_or("linked source-layer receipt has no expected route IDs")?
+            .iter()
+            .map(|value| {
+                value
+                    .as_u64()
+                    .and_then(|value| usize::try_from(value).ok())
+                    .ok_or_else(|| "linked source-layer route IDs are malformed".into())
+            })
+            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        if source_route_ids != route_ids {
+            return Err("source MoE bridge route IDs disagree with its linked exact source receipt".into());
+        }
+        Ok(SourceMoeBridge {
+            path: canonical_path,
+            receipt,
+            receipt_sha256,
+            mlp_input,
+            source_routed_sum,
+            route_ids,
+            route_weights,
+        })
+    }
+
+    fn weighted_routed_sum(
+        route_outputs: &[f32],
+        route_weights: &[f32],
+        rows_per_route: usize,
+    ) -> Result<Vec<f32>, Box<dyn Error>> {
+        if route_weights.is_empty()
+            || route_outputs.len()
+                != route_weights
+                    .len()
+                    .checked_mul(rows_per_route)
+                    .ok_or("route-major output length overflowed")?
+        {
+            return Err("route-major candidate output does not match source route weights".into());
+        }
+        let mut sum = vec![0.0f32; rows_per_route];
+        for (route, weight) in route_weights.iter().enumerate() {
+            let start = route * rows_per_route;
+            for (destination, source) in sum.iter_mut().zip(&route_outputs[start..start + rows_per_route]) {
+                *destination += weight * source;
+            }
+        }
+        Ok(sum)
+    }
+
     fn validate_manifest(root: &Path) -> Result<Value, Box<dyn Error>> {
         let manifest_path = Path::new(MANIFEST_PATH);
         let (manifest, digest) = read_json(manifest_path)?;
@@ -443,6 +704,143 @@ mod macos {
             "bytes": manifest.get("bytes"),
             "label": "[V]",
         }))
+    }
+
+    /// Parse a bounded top-k route selection without granting it authority
+    /// over the underlying representation.  The direct fused kernels consume
+    /// persisted Q4/G64 bodies only; this helper exists so a source-observed
+    /// route can be tested without quietly switching the execution weights
+    /// back to BF16.
+    fn parse_router_selection(
+        selection: &Value,
+        selection_name: &str,
+    ) -> Result<(Vec<usize>, Vec<f32>), Box<dyn Error>> {
+        let ids = selection
+            .get("expert_ids")
+            .and_then(Value::as_array)
+            .ok_or_else(|| format!("router receipt has no {selection_name} expert ids"))?
+            .iter()
+            .map(|value| {
+                value
+                    .as_u64()
+                    .and_then(|number| usize::try_from(number).ok())
+                    .ok_or_else(|| {
+                        format!("router receipt contains an invalid {selection_name} expert id")
+                            .into()
+                    })
+            })
+            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        let weights = selection
+            .get("selected_weights")
+            .and_then(Value::as_array)
+            .ok_or_else(|| format!("router receipt has no {selection_name} weights"))?
+            .iter()
+            .map(|value| {
+                value
+                    .as_f64()
+                    .map(|number| number as f32)
+                    .filter(|number| number.is_finite() && *number >= 0.0)
+                    .ok_or_else(|| {
+                        format!("router receipt contains an invalid {selection_name} weight").into()
+                    })
+            })
+            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        if ids.is_empty()
+            || ids.len() != weights.len()
+            || ids.len() > 64
+            || ids.iter().any(|expert| *expert >= ROUTED_EXPERT_COUNT)
+            || ids
+                .iter()
+                .enumerate()
+                .any(|(index, expert)| ids[..index].contains(expert))
+        {
+            return Err(format!("router receipt {selection_name} shape is outside bounded dispatch limits").into());
+        }
+        Ok((ids, weights))
+    }
+
+    /// Resolve the route authority for the direct fused discriminators.
+    ///
+    /// A source-native route is allowed to select among already persisted Q4
+    /// bodies.  It cannot read source tensors, substitute source weights, or
+    /// turn candidate-space parity into source-output parity.  Keeping this
+    /// distinction in one canonical helper makes future model gates inherit
+    /// the same evidence boundary rather than recreate a one-off wrapper.
+    fn resolve_fused_route_selection(
+        router: &Value,
+        candidate_ids: Vec<usize>,
+        candidate_weights: Vec<f32>,
+        source_authoritative_routes: bool,
+    ) -> Result<(Vec<usize>, Vec<f32>, Value), Box<dyn Error>> {
+        let source_selection = router
+            .get("source_native_selection")
+            .cloned()
+            .unwrap_or(Value::Null);
+        let source_selection_parity = router
+            .get("source_selection_parity")
+            .cloned()
+            .unwrap_or(Value::Null);
+        let route_input_contract = router.get("input").cloned().unwrap_or(Value::Null);
+        if !source_authoritative_routes {
+            return Ok((
+                candidate_ids.clone(),
+                candidate_weights,
+                json!({
+                    "mode": "candidate_q4_selection",
+                    "source_route_authority": false,
+                    "candidate_selection_expert_ids": candidate_ids,
+                    "source_selection": source_selection,
+                    "source_selection_parity": source_selection_parity,
+                    "route_input_contract": route_input_contract,
+                    "source_layer_activation_equivalence": "NOT_ESTABLISHED",
+                    "source_tensor_read_for_direct_execution": false,
+                    "source_weight_read_for_direct_execution": false,
+                    "direct_body_weight_family": "independent_q4_g64",
+                }),
+            ));
+        }
+        if router
+            .get("native_source_authority_execution_observed")
+            .and_then(Value::as_bool)
+            != Some(true)
+        {
+            return Err("router receipt has no observed source-native route authority".into());
+        }
+        if source_selection_parity
+            .get("source_native_reference_ids_match")
+            .and_then(Value::as_bool)
+            != Some(true)
+        {
+            return Err("router receipt does not bind source-native selected ids to its reference".into());
+        }
+        let (source_ids, source_weights) =
+            parse_router_selection(&source_selection, "source-native selection")?;
+        if source_ids.len() != ROUTED_TOP_K {
+            return Err(format!(
+                "source-native selection must contain exactly {ROUTED_TOP_K} experts"
+            )
+            .into());
+        }
+        Ok((
+            source_ids.clone(),
+            source_weights,
+            json!({
+                "mode": "source_native_selection",
+                "source_route_authority": true,
+                "source_selection_is_independently_observed": true,
+                "candidate_selection_expert_ids": candidate_ids,
+                "source_selection_expert_ids": source_ids,
+                "source_selection": source_selection,
+                "source_selection_parity": source_selection_parity,
+                "route_input_contract": route_input_contract,
+                "source_layer_activation_equivalence": "NOT_ESTABLISHED",
+                "source_tensor_read_for_direct_execution": false,
+                "source_weight_read_for_direct_execution": false,
+                "direct_body_weight_family": "independent_q4_g64",
+                "source_output_parity": "NOT_TESTED",
+                "claim_boundary": "Source-native evidence selects persisted Q4/G64 route bodies only. It does not load source weights or establish source-BF16 output parity.",
+            }),
+        ))
     }
 
     fn validate_router(
@@ -482,41 +880,7 @@ mod macos {
         let selection = receipt
             .get("selection")
             .ok_or("router receipt has no selection")?;
-        let ids = selection
-            .get("expert_ids")
-            .and_then(Value::as_array)
-            .ok_or("router receipt has no selection expert ids")?
-            .iter()
-            .map(|value| {
-                value
-                    .as_u64()
-                    .and_then(|number| usize::try_from(number).ok())
-                    .ok_or_else(|| "router receipt contains an invalid expert id".into())
-            })
-            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
-        let weights = selection
-            .get("selected_weights")
-            .and_then(Value::as_array)
-            .ok_or("router receipt has no selected weights")?
-            .iter()
-            .map(|value| {
-                value
-                    .as_f64()
-                    .map(|number| number as f32)
-                    .filter(|number| number.is_finite() && *number >= 0.0)
-                    .ok_or_else(|| "router receipt contains an invalid selected weight".into())
-            })
-            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
-        if ids.is_empty()
-            || ids.len() != weights.len()
-            || ids.len() > 64
-            || ids.iter().any(|expert| *expert >= ROUTED_EXPERT_COUNT)
-        {
-            return Err("router receipt selection shape is outside bounded dispatch limits".into());
-        }
-        if ids.windows(2).any(|pair| pair[0] == pair[1]) {
-            return Err("router receipt contains duplicate selected experts".into());
-        }
+        let (ids, weights) = parse_router_selection(selection, "candidate selection")?;
         Ok((receipt, digest, ids, weights))
     }
 
@@ -1072,6 +1436,23 @@ mod macos {
             .collect()
     }
 
+    /// Route-major deterministic inputs make a fused down-projection test
+    /// prove that every row reads the activation for its own selected expert,
+    /// rather than accidentally reusing the first route's activation.
+    fn deterministic_route_inputs(routes: usize, columns: usize) -> Vec<f32> {
+        (0..routes)
+            .flat_map(|route| {
+                (0..columns).map(move |column| {
+                    let sequence = route
+                        .saturating_mul(97)
+                        .saturating_add(column.saturating_mul(REFERENCE_MULTIPLIER));
+                    ((sequence % REFERENCE_MODULUS) as f32 - REFERENCE_OFFSET)
+                        / REFERENCE_MODULUS as f32
+                })
+            })
+            .collect()
+    }
+
     fn cpu_matvec(body: &PackedBody, input: &[f32]) -> Vec<f32> {
         let groups_per_row = body.columns / GROUP_SIZE;
         let mut output = vec![0.0f32; body.rows];
@@ -1151,9 +1532,36 @@ mod macos {
         input: &Buffer,
         output: &Buffer,
     ) -> Result<MetalDispatchTiming, Box<dyn Error>> {
-        let rows = gate.rows as u32;
-        let columns = gate.columns as u32;
-        let groups = (gate.columns / GROUP_SIZE) as u32;
+        dispatch_gate_up_swiglu_geometry(
+            context,
+            gate_codes,
+            gate_scales,
+            up_codes,
+            up_scales,
+            input,
+            output,
+            gate.rows,
+            gate.columns,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn dispatch_gate_up_swiglu_geometry(
+        context: &MetalContext,
+        gate_codes: &Buffer,
+        gate_scales: &Buffer,
+        up_codes: &Buffer,
+        up_scales: &Buffer,
+        input: &Buffer,
+        output: &Buffer,
+        rows: usize,
+        columns: usize,
+    ) -> Result<MetalDispatchTiming, Box<dyn Error>> {
+        let rows = u32::try_from(rows)?;
+        let columns = u32::try_from(columns)?;
+        let groups = columns
+            .checked_div(u32::try_from(GROUP_SIZE)?)
+            .ok_or("Q4/G64 gate/up columns cannot be zero")?;
         let threadgroup = 128u32;
         let grid = rows
             .div_ceil(2)
@@ -1173,6 +1581,48 @@ mod macos {
                 encoder.set_bytes(6, 4, &rows as *const u32 as *const _);
                 encoder.set_bytes(7, 4, &columns as *const u32 as *const _);
                 encoder.set_bytes(8, 4, &groups as *const u32 as *const _);
+            },
+        )?)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn dispatch_routed_down_geometry(
+        context: &MetalContext,
+        codes: &Buffer,
+        scales: &Buffer,
+        route_inputs: &Buffer,
+        route_outputs: &Buffer,
+        routes: usize,
+        rows_per_route: usize,
+        columns: usize,
+    ) -> Result<MetalDispatchTiming, Box<dyn Error>> {
+        let routes = u32::try_from(routes)?;
+        let rows_per_route = u32::try_from(rows_per_route)?;
+        let columns = u32::try_from(columns)?;
+        let groups = columns
+            .checked_div(u32::try_from(GROUP_SIZE)?)
+            .ok_or("Q4/G64 routed-down columns cannot be zero")?;
+        let total_rows = routes
+            .checked_mul(rows_per_route)
+            .ok_or("Q4/G64 routed-down row count overflowed")?;
+        let threadgroup = 128u32;
+        let grid = total_rows
+            .div_ceil(2)
+            .saturating_mul(threadgroup)
+            .max(threadgroup);
+        Ok(context.dispatch_threads_timed(
+            ROUTED_DOWN_KERNEL_NAME,
+            (grid, 1, 1),
+            (threadgroup, 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(codes), 0);
+                encoder.set_buffer(1, Some(scales), 0);
+                encoder.set_buffer(2, Some(route_inputs), 0);
+                encoder.set_buffer(3, Some(route_outputs), 0);
+                encoder.set_bytes(4, 4, &routes as *const u32 as *const _);
+                encoder.set_bytes(5, 4, &rows_per_route as *const u32 as *const _);
+                encoder.set_bytes(6, 4, &columns as *const u32 as *const _);
+                encoder.set_bytes(7, 4, &groups as *const u32 as *const _);
             },
         )?)
     }
@@ -1318,6 +1768,18 @@ mod macos {
                 encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
                 encoder.set_bytes(4, 4, &streams as *const u32 as *const _);
                 encoder.set_bytes(5, 4, &eps as *const f32 as *const _);
+                // qwen_next_hyperconnection_grouped_rmsnorm reduces one
+                // stream per threadgroup through `threadgroup float* scratch`.
+                // The canonical TokenCommandBuffer wrapper allocates this
+                // explicitly; this older direct Noetic component dispatch
+                // must obey the identical physical contract.  Without it
+                // Metal leaves the reduction storage undefined and a direct
+                // Q4 component trial can fail before its representation is
+                // ever exercised.
+                encoder.set_threadgroup_memory_length(
+                    0,
+                    (threadgroup as u64) * std::mem::size_of::<f32>() as u64,
+                );
             },
         )?)
     }
@@ -2697,6 +3159,837 @@ mod macos {
             "promotion_allowed": false,
             "claim_boundary": "PASSED bounded native source-independent dispatch of the selected persisted routed-expert Q4/G64 body windows with a host-side selected-weight gather. This is not full expert activation, fused route/gather, complete-model loading, complete-token runtime, Flash TPS, or EBPW evidence; source-selection mismatch remains explicit.",
             "next_action": "extend from bounded routed body windows to independently validated gate/up activation and native expert composition; do not measure or claim complete-token Flash TPS/EBPW until the full protected graph is capability-qualified",
+            "elapsed_s": started.elapsed().as_secs_f64(),
+        }))
+    }
+
+    /// Cheap physical discriminator for the direct Noetic routed-expert path.
+    ///
+    /// Each selected Q4 gate/up body has identical row/column geometry and
+    /// consumes the same routed activation.  The historical component runner
+    /// launched one Metal command per expert.  Concatenating the independent
+    /// row-major bodies lets the already-qualified gate/up/SwiGLU kernel cover
+    /// every selected route in one launch without changing a code, scale, or
+    /// arithmetic association within a row.  This remains a candidate-space
+    /// representation result; it deliberately does not claim source-BF16
+    /// output parity, whole-layer execution, or token TPS.
+    fn run_fused_routed_gate_up(args: &Args) -> Result<Value, Box<dyn Error>> {
+        let started = Instant::now();
+        let repo = repository_root();
+        let root = args.root.canonicalize()?;
+        let manifest = validate_manifest(&root)?;
+        let (router, router_sha256, candidate_ids, candidate_weights) =
+            validate_router(&args.router_receipt)?;
+        let (selected_ids, _selected_weights, route_authority) = resolve_fused_route_selection(
+            &router,
+            candidate_ids,
+            candidate_weights,
+            args.source_authoritative_routes,
+        )?;
+        let (campaign, campaign_sha256) = validate_campaign(&args.campaign_receipt)?;
+        let routed_specs = validate_routed_expert_specs(&repo, &selected_ids)?;
+        let first = routed_specs
+            .first()
+            .ok_or("fused routed gate/up requires at least one selected expert")?;
+        let rows_per_route = first.gate.rows;
+        let columns = first.gate.columns;
+        if routed_specs.iter().any(|spec| {
+            spec.gate.rows != rows_per_route
+                || spec.gate.columns != columns
+                || spec.up.rows != rows_per_route
+                || spec.up.columns != columns
+        }) {
+            return Err("selected Q4 routed gate/up bodies do not share one geometry".into());
+        }
+        let total_rows = rows_per_route
+            .checked_mul(routed_specs.len())
+            .ok_or("fused routed gate/up row count overflowed")?;
+        let input = deterministic_input(columns);
+        let input_hash = sha256_bytes(&f32_bytes(&input));
+        let expected = routed_specs
+            .iter()
+            .flat_map(|spec| cpu_gate_up_swiglu(&spec.gate, &spec.up, &input))
+            .collect::<Vec<_>>();
+
+        let mut gate_codes_bytes = Vec::new();
+        let mut gate_scales_bytes = Vec::new();
+        let mut up_codes_bytes = Vec::new();
+        let mut up_scales_bytes = Vec::new();
+        for spec in &routed_specs {
+            gate_codes_bytes.extend_from_slice(&spec.gate.codes);
+            gate_scales_bytes.extend_from_slice(&spec.gate.scales);
+            up_codes_bytes.extend_from_slice(&spec.up.codes);
+            up_scales_bytes.extend_from_slice(&spec.up.scales);
+        }
+        let context = MetalContext::new_with_trace(true)?;
+        let gate_codes = context.new_buffer_with_bytes_checked(&gate_codes_bytes)?;
+        let gate_scales = context.new_buffer_with_bytes_checked(&gate_scales_bytes)?;
+        let up_codes = context.new_buffer_with_bytes_checked(&up_codes_bytes)?;
+        let up_scales = context.new_buffer_with_bytes_checked(&up_scales_bytes)?;
+        let input_buffer = context.new_buffer_with_bytes_checked(&f32_bytes(&input))?;
+        let fused_output = context.new_buffer_checked(expected.len() * std::mem::size_of::<f32>())?;
+        let individual_codes = routed_specs
+            .iter()
+            .map(|spec| context.new_buffer_with_bytes_checked(&spec.gate.codes))
+            .collect::<Result<Vec<_>, _>>()?;
+        let individual_scales = routed_specs
+            .iter()
+            .map(|spec| context.new_buffer_with_bytes_checked(&spec.gate.scales))
+            .collect::<Result<Vec<_>, _>>()?;
+        let individual_up_codes = routed_specs
+            .iter()
+            .map(|spec| context.new_buffer_with_bytes_checked(&spec.up.codes))
+            .collect::<Result<Vec<_>, _>>()?;
+        let individual_up_scales = routed_specs
+            .iter()
+            .map(|spec| context.new_buffer_with_bytes_checked(&spec.up.scales))
+            .collect::<Result<Vec<_>, _>>()?;
+        let individual_outputs = (0..routed_specs.len())
+            .map(|_| context.new_buffer_checked(rows_per_route * std::mem::size_of::<f32>()))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let run_baseline = || -> Result<(u64, u64), Box<dyn Error>> {
+            let mut gpu = 0u64;
+            let mut host = 0u64;
+            for (index, spec) in routed_specs.iter().enumerate() {
+                let timing = dispatch_gate_up_swiglu(
+                    &context,
+                    &spec.gate,
+                    &individual_codes[index],
+                    &individual_scales[index],
+                    &individual_up_codes[index],
+                    &individual_up_scales[index],
+                    &input_buffer,
+                    &individual_outputs[index],
+                )?;
+                gpu = gpu.saturating_add(gpu_ns(timing)?);
+                host = host.saturating_add(timing.host_wall_us.saturating_mul(1000));
+            }
+            Ok((gpu, host))
+        };
+        let run_fused = || -> Result<MetalDispatchTiming, Box<dyn Error>> {
+            dispatch_gate_up_swiglu_geometry(
+                &context,
+                &gate_codes,
+                &gate_scales,
+                &up_codes,
+                &up_scales,
+                &input_buffer,
+                &fused_output,
+                total_rows,
+                columns,
+            )
+        };
+
+        for _ in 0..args.warmup {
+            let _ = run_baseline()?;
+            let _ = gpu_ns(run_fused()?)?;
+        }
+        let mut baseline_gpu_ns = Vec::with_capacity(args.reps);
+        let mut baseline_host_ns = Vec::with_capacity(args.reps);
+        let mut fused_gpu_ns = Vec::with_capacity(args.reps);
+        let mut fused_host_ns = Vec::with_capacity(args.reps);
+        let mut output_hashes = Vec::with_capacity(args.reps);
+        let mut parity = json!({});
+        for _ in 0..args.reps {
+            let (baseline_gpu, baseline_host) = run_baseline()?;
+            baseline_gpu_ns.push(baseline_gpu);
+            baseline_host_ns.push(baseline_host);
+            let timing = run_fused()?;
+            fused_gpu_ns.push(gpu_ns(timing)?);
+            fused_host_ns.push(timing.host_wall_us.saturating_mul(1000));
+            let observed = read_f32(&fused_output, expected.len());
+            parity = output_metrics(&expected, &observed);
+            if parity.get("finite").and_then(Value::as_bool) != Some(true)
+                || parity.get("within_tolerance").and_then(Value::as_bool) != Some(true)
+            {
+                return Err(format!("fused routed Q4 gate/up parity failed: {parity}").into());
+            }
+            output_hashes.push(sha256_bytes(&f32_bytes_for_hash(&observed)));
+        }
+        if output_hashes.windows(2).any(|pair| pair[0] != pair[1]) {
+            return Err("fused routed Q4 gate/up output changed across repetitions".into());
+        }
+        let median = |values: &[u64]| -> u64 {
+            let mut sorted = values.to_vec();
+            sorted.sort_unstable();
+            sorted[sorted.len() / 2]
+        };
+        let baseline_gpu_median = median(&baseline_gpu_ns);
+        let fused_gpu_median = median(&fused_gpu_ns);
+        let baseline_host_median = median(&baseline_host_ns);
+        let fused_host_median = median(&fused_host_ns);
+        let source_selection = router
+            .get("source_selection_parity")
+            .cloned()
+            .unwrap_or(Value::Null);
+        Ok(json!({
+            "schema": "hawking.flash_noetic_routed_gate_up_fused_native.v1",
+            "semantic_type": "NoeticExecutable",
+            "compiler_stage": "HawkingAccelerator",
+            "status": "PASSED",
+            "repo": REPO_ID,
+            "pinned_revision": PINNED_REVISION,
+            "nomenclature_version": NOMENCLATURE_VERSION,
+            "root": root,
+            "model_lake_manifest": manifest,
+            "dependencies": {
+                "router_receipt": component_ref(&args.router_receipt, &router, Some(&router_sha256)),
+                "campaign_receipt": component_ref(&args.campaign_receipt, &campaign, Some(&campaign_sha256)),
+                "routed_expert_count": routed_specs.len(),
+            },
+            "representation": {
+                "family": "independent_q4_g64",
+                "source_independent": true,
+                "dense_rematerialization": "forbidden",
+                "gate_up_codes_bytes": gate_codes_bytes.len(),
+                "gate_up_scales_bytes": gate_scales_bytes.len(),
+                "total_packed_bytes": gate_codes_bytes.len() + gate_scales_bytes.len() + up_codes_bytes.len() + up_scales_bytes.len(),
+            },
+            "execution": {
+                "provider": "apple-metal",
+                "operation": "concatenated selected Q4/G64 gate/up bodies -> one native gate_up_swiglu launch",
+                "selected_expert_ids": selected_ids,
+                "routed_expert_count": routed_specs.len(),
+                "rows_per_route": rows_per_route,
+                "columns": columns,
+                "baseline_dispatches_per_graph": routed_specs.len(),
+                "fused_dispatches_per_graph": 1,
+                "device_intermediate_no_host_roundtrip": true,
+                "source_reference_used_for_execution": args.source_authoritative_routes,
+                "source_tensor_read_for_direct_execution": false,
+                "source_weight_read_for_direct_execution": false,
+                "source_layer_activation": false,
+                "model_loaded": false,
+                "complete_token_runtime": false,
+            },
+            "parity": parity,
+            "determinism": {"output_hashes": output_hashes, "passed": true},
+            "gpu_timing": {
+                "warmup_runs": args.warmup,
+                "measured_runs": args.reps,
+                "baseline_gpu_ns": baseline_gpu_ns,
+                "baseline_gpu_ns_median": baseline_gpu_median,
+                "fused_gpu_ns": fused_gpu_ns,
+                "fused_gpu_ns_median": fused_gpu_median,
+                "baseline_host_wall_ns": baseline_host_ns,
+                "baseline_host_wall_ns_median": baseline_host_median,
+                "fused_host_wall_ns": fused_host_ns,
+                "fused_host_wall_ns_median": fused_host_median,
+                "gpu_speedup": baseline_gpu_median as f64 / fused_gpu_median as f64,
+                "host_speedup": baseline_host_median as f64 / fused_host_median as f64,
+                "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for the baseline sum and one concatenated candidate launch; host wall is reported separately",
+            },
+            "input": {"values": input.len(), "deterministic_sha256": input_hash},
+            "route_authority": route_authority,
+            "source_selection_parity": source_selection,
+            "whole_model_capability": "NOT_TESTED",
+            "complete_system_ebpw": Value::Null,
+            "flash_tps": Value::Null,
+            "promotion_allowed": false,
+            "claim_boundary": "PASSED bounded direct Q4/G64 selected-routed gate/up/SwiGLU fusion on the router receipt's deterministic probe input. It compares the same persisted candidate bodies and activation against ten individual native launches. When source-authoritative routes are enabled, source-native route evidence selects those persisted Q4 bodies only; no source tensor is read for direct execution and no equivalence to a source-layer activation is established. It is not source-BF16 output parity, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence.",
+            "next_action": "Only compose this row-concatenation primitive if it improves the direct routed-expert graph under the existing candidate-space parity contract; source route/output fidelity remains a separate gate.",
+            "elapsed_s": started.elapsed().as_secs_f64(),
+        }))
+    }
+
+    /// Direct physical discriminator for the route-major Noetic down path.
+    ///
+    /// Every selected down body has the same Q4/G64 geometry, but unlike the
+    /// gate/up projections each one consumes its own activation.  This mode
+    /// packs the persisted bodies and their route-major activations, then
+    /// compares ten independent native dispatches with one route-aware native
+    /// dispatch.  It is deliberately bounded to candidate-space arithmetic:
+    /// no source BF16 weight is read and no dense body is materialized.
+    fn run_fused_routed_down(args: &Args) -> Result<Value, Box<dyn Error>> {
+        let started = Instant::now();
+        let repo = repository_root();
+        let root = args.root.canonicalize()?;
+        let manifest = validate_manifest(&root)?;
+        let (router, router_sha256, candidate_ids, candidate_weights) =
+            validate_router(&args.router_receipt)?;
+        let (selected_ids, _selected_weights, route_authority) = resolve_fused_route_selection(
+            &router,
+            candidate_ids,
+            candidate_weights,
+            args.source_authoritative_routes,
+        )?;
+        let (campaign, campaign_sha256) = validate_campaign(&args.campaign_receipt)?;
+        let routed_specs = validate_routed_expert_specs(&repo, &selected_ids)?;
+        let first = routed_specs
+            .first()
+            .ok_or("fused routed down requires at least one selected expert")?;
+        let rows_per_route = first.down.rows;
+        let columns = first.down.columns;
+        if routed_specs.iter().any(|spec| {
+            spec.down.rows != rows_per_route || spec.down.columns != columns
+        }) {
+            return Err("selected Q4 routed down bodies do not share one geometry".into());
+        }
+        let total_rows = rows_per_route
+            .checked_mul(routed_specs.len())
+            .ok_or("fused routed down row count overflowed")?;
+        let route_inputs = deterministic_route_inputs(routed_specs.len(), columns);
+        let route_inputs_hash = sha256_bytes(&f32_bytes(&route_inputs));
+        let mut expected = Vec::with_capacity(total_rows);
+        for (route, spec) in routed_specs.iter().enumerate() {
+            let start = route
+                .checked_mul(columns)
+                .ok_or("routed-down input offset overflowed")?;
+            let end = start
+                .checked_add(columns)
+                .ok_or("routed-down input end overflowed")?;
+            expected.extend(cpu_matvec(&spec.down, &route_inputs[start..end]));
+        }
+
+        let mut codes_bytes = Vec::new();
+        let mut scales_bytes = Vec::new();
+        for spec in &routed_specs {
+            codes_bytes.extend_from_slice(&spec.down.codes);
+            scales_bytes.extend_from_slice(&spec.down.scales);
+        }
+        let context = MetalContext::new_with_trace(true)?;
+        let codes = context.new_buffer_with_bytes_checked(&codes_bytes)?;
+        let scales = context.new_buffer_with_bytes_checked(&scales_bytes)?;
+        let route_inputs_buffer = context.new_buffer_with_bytes_checked(&f32_bytes(&route_inputs))?;
+        let fused_output = context.new_buffer_checked(expected.len() * std::mem::size_of::<f32>())?;
+        let mut individual_codes = Vec::with_capacity(routed_specs.len());
+        let mut individual_scales = Vec::with_capacity(routed_specs.len());
+        let mut individual_inputs = Vec::with_capacity(routed_specs.len());
+        let mut individual_outputs = Vec::with_capacity(routed_specs.len());
+        for (route, spec) in routed_specs.iter().enumerate() {
+            let start = route
+                .checked_mul(columns)
+                .ok_or("routed-down input buffer offset overflowed")?;
+            let end = start
+                .checked_add(columns)
+                .ok_or("routed-down input buffer end overflowed")?;
+            individual_codes.push(context.new_buffer_with_bytes_checked(&spec.down.codes)?);
+            individual_scales.push(context.new_buffer_with_bytes_checked(&spec.down.scales)?);
+            individual_inputs.push(
+                context.new_buffer_with_bytes_checked(&f32_bytes(&route_inputs[start..end]))?,
+            );
+            individual_outputs.push(
+                context.new_buffer_checked(rows_per_route * std::mem::size_of::<f32>())?,
+            );
+        }
+
+        let run_baseline = || -> Result<(u64, u64), Box<dyn Error>> {
+            let mut gpu = 0u64;
+            let mut host = 0u64;
+            for route in 0..routed_specs.len() {
+                let timing = dispatch_routed_down_geometry(
+                    &context,
+                    &individual_codes[route],
+                    &individual_scales[route],
+                    &individual_inputs[route],
+                    &individual_outputs[route],
+                    1,
+                    rows_per_route,
+                    columns,
+                )?;
+                gpu = gpu.saturating_add(gpu_ns(timing)?);
+                host = host.saturating_add(timing.host_wall_us.saturating_mul(1000));
+            }
+            Ok((gpu, host))
+        };
+        let run_fused = || -> Result<MetalDispatchTiming, Box<dyn Error>> {
+            dispatch_routed_down_geometry(
+                &context,
+                &codes,
+                &scales,
+                &route_inputs_buffer,
+                &fused_output,
+                routed_specs.len(),
+                rows_per_route,
+                columns,
+            )
+        };
+
+        for _ in 0..args.warmup {
+            let _ = run_baseline()?;
+            let _ = gpu_ns(run_fused()?)?;
+        }
+        let mut baseline_gpu_ns = Vec::with_capacity(args.reps);
+        let mut baseline_host_ns = Vec::with_capacity(args.reps);
+        let mut fused_gpu_ns = Vec::with_capacity(args.reps);
+        let mut fused_host_ns = Vec::with_capacity(args.reps);
+        let mut output_hashes = Vec::with_capacity(args.reps);
+        let mut parity = json!({});
+        for _ in 0..args.reps {
+            let (baseline_gpu, baseline_host) = run_baseline()?;
+            baseline_gpu_ns.push(baseline_gpu);
+            baseline_host_ns.push(baseline_host);
+            let timing = run_fused()?;
+            fused_gpu_ns.push(gpu_ns(timing)?);
+            fused_host_ns.push(timing.host_wall_us.saturating_mul(1000));
+            let observed = read_f32(&fused_output, expected.len());
+            parity = output_metrics(&expected, &observed);
+            if parity.get("finite").and_then(Value::as_bool) != Some(true)
+                || parity.get("within_tolerance").and_then(Value::as_bool) != Some(true)
+            {
+                return Err(format!("fused routed Q4 down parity failed: {parity}").into());
+            }
+            output_hashes.push(sha256_bytes(&f32_bytes_for_hash(&observed)));
+        }
+        if output_hashes.windows(2).any(|pair| pair[0] != pair[1]) {
+            return Err("fused routed Q4 down output changed across repetitions".into());
+        }
+        let median = |values: &[u64]| -> u64 {
+            let mut sorted = values.to_vec();
+            sorted.sort_unstable();
+            sorted[sorted.len() / 2]
+        };
+        let baseline_gpu_median = median(&baseline_gpu_ns);
+        let fused_gpu_median = median(&fused_gpu_ns);
+        let baseline_host_median = median(&baseline_host_ns);
+        let fused_host_median = median(&fused_host_ns);
+        let source_selection = router
+            .get("source_selection_parity")
+            .cloned()
+            .unwrap_or(Value::Null);
+        Ok(json!({
+            "schema": "hawking.flash_noetic_routed_down_fused_native.v1",
+            "semantic_type": "NoeticExecutable",
+            "compiler_stage": "HawkingAccelerator",
+            "status": "PASSED",
+            "repo": REPO_ID,
+            "pinned_revision": PINNED_REVISION,
+            "nomenclature_version": NOMENCLATURE_VERSION,
+            "root": root,
+            "model_lake_manifest": manifest,
+            "dependencies": {
+                "router_receipt": component_ref(&args.router_receipt, &router, Some(&router_sha256)),
+                "campaign_receipt": component_ref(&args.campaign_receipt, &campaign, Some(&campaign_sha256)),
+                "routed_expert_count": routed_specs.len(),
+            },
+            "representation": {
+                "family": "independent_q4_g64",
+                "source_independent": true,
+                "dense_rematerialization": "forbidden",
+                "down_codes_bytes": codes_bytes.len(),
+                "down_scales_bytes": scales_bytes.len(),
+                "total_packed_bytes": codes_bytes.len() + scales_bytes.len(),
+            },
+            "execution": {
+                "provider": "apple-metal",
+                "operation": "route-major selected Q4/G64 down bodies plus route-major activations -> one native routed-down launch",
+                "selected_expert_ids": selected_ids,
+                "routed_expert_count": routed_specs.len(),
+                "rows_per_route": rows_per_route,
+                "columns": columns,
+                "baseline_dispatches_per_graph": routed_specs.len(),
+                "fused_dispatches_per_graph": 1,
+                "device_intermediate_no_host_roundtrip": true,
+                "source_reference_used_for_execution": args.source_authoritative_routes,
+                "source_tensor_read_for_direct_execution": false,
+                "source_weight_read_for_direct_execution": false,
+                "source_layer_activation": false,
+                "model_loaded": false,
+                "complete_token_runtime": false,
+            },
+            "input": {
+                "layout": "route-major",
+                "route_count": routed_specs.len(),
+                "values": route_inputs.len(),
+                "deterministic_sha256": route_inputs_hash,
+            },
+            "parity": parity,
+            "determinism": {"output_hashes": output_hashes, "passed": true},
+            "gpu_timing": {
+                "warmup_runs": args.warmup,
+                "measured_runs": args.reps,
+                "baseline_gpu_ns": baseline_gpu_ns,
+                "baseline_gpu_ns_median": baseline_gpu_median,
+                "fused_gpu_ns": fused_gpu_ns,
+                "fused_gpu_ns_median": fused_gpu_median,
+                "baseline_host_wall_ns": baseline_host_ns,
+                "baseline_host_wall_ns_median": baseline_host_median,
+                "fused_host_wall_ns": fused_host_ns,
+                "fused_host_wall_ns_median": fused_host_median,
+                "gpu_speedup": baseline_gpu_median as f64 / fused_gpu_median as f64,
+                "host_speedup": baseline_host_median as f64 / fused_host_median as f64,
+                "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for the sum of independent route-aware native launches and one route-aware fused launch; host wall is reported separately",
+            },
+            "route_authority": route_authority,
+            "source_selection_parity": source_selection,
+            "whole_model_capability": "NOT_TESTED",
+            "complete_system_ebpw": Value::Null,
+            "flash_tps": Value::Null,
+            "promotion_allowed": false,
+            "claim_boundary": "PASSED bounded direct Q4/G64 selected-routed down fusion on deterministic route-major probe activations. It compares the same persisted candidate down bodies with distinct route-major activations against ten independent route-aware native launches. When source-authoritative routes are enabled, source-native route evidence selects those persisted Q4 bodies only; no source tensor is read for direct execution and no equivalence to a source-layer activation is established. It is not source-BF16 output parity, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence.",
+            "next_action": "Compose the gate/up and route-aware down fusions through the device-resident 640-value activations, then require candidate-space graph parity before treating their dispatch reductions as one routed-MoE primitive. Source route/output fidelity remains a separate gate.",
+            "elapsed_s": started.elapsed().as_secs_f64(),
+        }))
+    }
+
+    /// Compose the independently verified route-major gate/up and down
+    /// fusions.  The intermediate activation stays in one device buffer; this
+    /// is the bounded direct Noetic routed-MoE primitive used to decide whether
+    /// its launch reduction is worth carrying into a larger graph.
+    fn run_fused_routed_moe(args: &Args) -> Result<Value, Box<dyn Error>> {
+        let started = Instant::now();
+        let repo = repository_root();
+        let root = args.root.canonicalize()?;
+        let manifest = validate_manifest(&root)?;
+        let (router, router_sha256, candidate_ids, candidate_weights) =
+            validate_router(&args.router_receipt)?;
+        let source_bridge = args
+            .source_layer_bridge
+            .as_deref()
+            .map(validate_source_moe_bridge)
+            .transpose()?;
+        let (selected_ids, selected_weights, route_authority) =
+            if let Some(bridge) = source_bridge.as_ref() {
+                (
+                    bridge.route_ids.clone(),
+                    bridge.route_weights.clone(),
+                    json!({
+                        "mode": "sealed_source_layer_activation_and_routes",
+                        "source_route_authority": true,
+                        "source_layer_activation_authority": true,
+                        "source_layer_activation_equivalence": "BOUND_TO_PASSED_EXACT_SOURCE_LAYER_CONTROL",
+                        "bridge": component_ref(&bridge.path, &bridge.receipt, Some(&bridge.receipt_sha256)),
+                        "source_tensor_read_for_direct_execution": false,
+                        "source_weight_read_for_direct_execution": false,
+                        "direct_body_weight_family": "independent_q4_g64",
+                        "claim_boundary": "The persisted source control supplies an activation and route teacher only. Candidate execution reads Q4/G64 bodies and the sealed control bytes, not source weights; this bridge is not a standalone NR dependency.",
+                    }),
+                )
+            } else {
+                resolve_fused_route_selection(
+                    &router,
+                    candidate_ids,
+                    candidate_weights,
+                    args.source_authoritative_routes,
+                )?
+            };
+        let (campaign, campaign_sha256) = validate_campaign(&args.campaign_receipt)?;
+        let routed_specs = validate_routed_expert_specs(&repo, &selected_ids)?;
+        let first = routed_specs
+            .first()
+            .ok_or("fused routed MoE requires at least one selected expert")?;
+        let gate_rows = first.gate.rows;
+        let hidden = first.down.rows;
+        let input_columns = first.gate.columns;
+        let down_columns = first.down.columns;
+        if routed_specs.iter().any(|spec| {
+            spec.gate.rows != gate_rows
+                || spec.gate.columns != input_columns
+                || spec.up.rows != gate_rows
+                || spec.up.columns != input_columns
+                || spec.down.rows != hidden
+                || spec.down.columns != down_columns
+        }) {
+            return Err("selected Q4 routed MoE bodies do not share one geometry".into());
+        }
+        if gate_rows != down_columns {
+            return Err("routed gate/up activation width does not match routed down columns".into());
+        }
+        let routes = routed_specs.len();
+        let gate_total_rows = gate_rows
+            .checked_mul(routes)
+            .ok_or("fused routed MoE gate/up row count overflowed")?;
+        let down_total_rows = hidden
+            .checked_mul(routes)
+            .ok_or("fused routed MoE down row count overflowed")?;
+        let (input, input_authority) = if let Some(bridge) = source_bridge.as_ref() {
+            if bridge.mlp_input.len() != input_columns {
+                return Err("source MoE bridge MLP activation does not match Q4 body columns".into());
+            }
+            (
+                bridge.mlp_input.clone(),
+                json!({
+                    "kind": "sealed_source_layer_mlp_input",
+                    "bridge": component_ref(&bridge.path, &bridge.receipt, Some(&bridge.receipt_sha256)),
+                    "source_tensor_read_for_direct_execution": false,
+                    "source_weight_read_for_direct_execution": false,
+                    "label": "[V]",
+                }),
+            )
+        } else {
+            (
+                deterministic_input(input_columns),
+                json!({
+                    "kind": "deterministic_probe",
+                    "definition": "((index * 17) mod 251 - 125) / 251",
+                }),
+            )
+        };
+        let input_hash = sha256_bytes(&f32_bytes(&input));
+        let expected_gate_up = routed_specs
+            .iter()
+            .flat_map(|spec| cpu_gate_up_swiglu(&spec.gate, &spec.up, &input))
+            .collect::<Vec<_>>();
+        let mut expected_output = Vec::with_capacity(down_total_rows);
+        for (route, spec) in routed_specs.iter().enumerate() {
+            let start = route
+                .checked_mul(gate_rows)
+                .ok_or("fused routed MoE gate/up offset overflowed")?;
+            let end = start
+                .checked_add(gate_rows)
+                .ok_or("fused routed MoE gate/up end overflowed")?;
+            expected_output.extend(cpu_matvec(&spec.down, &expected_gate_up[start..end]));
+        }
+
+        let mut gate_codes_bytes = Vec::new();
+        let mut gate_scales_bytes = Vec::new();
+        let mut up_codes_bytes = Vec::new();
+        let mut up_scales_bytes = Vec::new();
+        let mut down_codes_bytes = Vec::new();
+        let mut down_scales_bytes = Vec::new();
+        for spec in &routed_specs {
+            gate_codes_bytes.extend_from_slice(&spec.gate.codes);
+            gate_scales_bytes.extend_from_slice(&spec.gate.scales);
+            up_codes_bytes.extend_from_slice(&spec.up.codes);
+            up_scales_bytes.extend_from_slice(&spec.up.scales);
+            down_codes_bytes.extend_from_slice(&spec.down.codes);
+            down_scales_bytes.extend_from_slice(&spec.down.scales);
+        }
+        let context = MetalContext::new_with_trace(true)?;
+        let gate_codes = context.new_buffer_with_bytes_checked(&gate_codes_bytes)?;
+        let gate_scales = context.new_buffer_with_bytes_checked(&gate_scales_bytes)?;
+        let up_codes = context.new_buffer_with_bytes_checked(&up_codes_bytes)?;
+        let up_scales = context.new_buffer_with_bytes_checked(&up_scales_bytes)?;
+        let down_codes = context.new_buffer_with_bytes_checked(&down_codes_bytes)?;
+        let down_scales = context.new_buffer_with_bytes_checked(&down_scales_bytes)?;
+        let input_buffer = context.new_buffer_with_bytes_checked(&f32_bytes(&input))?;
+        let fused_gate_up_output =
+            context.new_buffer_checked(gate_total_rows * std::mem::size_of::<f32>())?;
+        let fused_output =
+            context.new_buffer_checked(expected_output.len() * std::mem::size_of::<f32>())?;
+        let mut individual_gate_codes = Vec::with_capacity(routes);
+        let mut individual_gate_scales = Vec::with_capacity(routes);
+        let mut individual_up_codes = Vec::with_capacity(routes);
+        let mut individual_up_scales = Vec::with_capacity(routes);
+        let mut individual_down_codes = Vec::with_capacity(routes);
+        let mut individual_down_scales = Vec::with_capacity(routes);
+        let mut individual_gate_up_outputs = Vec::with_capacity(routes);
+        let mut individual_down_outputs = Vec::with_capacity(routes);
+        for spec in &routed_specs {
+            individual_gate_codes.push(context.new_buffer_with_bytes_checked(&spec.gate.codes)?);
+            individual_gate_scales
+                .push(context.new_buffer_with_bytes_checked(&spec.gate.scales)?);
+            individual_up_codes.push(context.new_buffer_with_bytes_checked(&spec.up.codes)?);
+            individual_up_scales.push(context.new_buffer_with_bytes_checked(&spec.up.scales)?);
+            individual_down_codes.push(context.new_buffer_with_bytes_checked(&spec.down.codes)?);
+            individual_down_scales
+                .push(context.new_buffer_with_bytes_checked(&spec.down.scales)?);
+            individual_gate_up_outputs.push(
+                context.new_buffer_checked(gate_rows * std::mem::size_of::<f32>())?,
+            );
+            individual_down_outputs.push(
+                context.new_buffer_checked(hidden * std::mem::size_of::<f32>())?,
+            );
+        }
+
+        let run_baseline = || -> Result<(u64, u64), Box<dyn Error>> {
+            let mut gpu = 0u64;
+            let mut host = 0u64;
+            for route in 0..routes {
+                let gate_up = dispatch_gate_up_swiglu_geometry(
+                    &context,
+                    &individual_gate_codes[route],
+                    &individual_gate_scales[route],
+                    &individual_up_codes[route],
+                    &individual_up_scales[route],
+                    &input_buffer,
+                    &individual_gate_up_outputs[route],
+                    gate_rows,
+                    input_columns,
+                )?;
+                gpu = gpu.saturating_add(gpu_ns(gate_up)?);
+                host = host.saturating_add(gate_up.host_wall_us.saturating_mul(1000));
+                let down = dispatch_routed_down_geometry(
+                    &context,
+                    &individual_down_codes[route],
+                    &individual_down_scales[route],
+                    &individual_gate_up_outputs[route],
+                    &individual_down_outputs[route],
+                    1,
+                    hidden,
+                    down_columns,
+                )?;
+                gpu = gpu.saturating_add(gpu_ns(down)?);
+                host = host.saturating_add(down.host_wall_us.saturating_mul(1000));
+            }
+            Ok((gpu, host))
+        };
+        let run_fused = || -> Result<(MetalDispatchTiming, MetalDispatchTiming), Box<dyn Error>> {
+            let gate_up = dispatch_gate_up_swiglu_geometry(
+                &context,
+                &gate_codes,
+                &gate_scales,
+                &up_codes,
+                &up_scales,
+                &input_buffer,
+                &fused_gate_up_output,
+                gate_total_rows,
+                input_columns,
+            )?;
+            let down = dispatch_routed_down_geometry(
+                &context,
+                &down_codes,
+                &down_scales,
+                &fused_gate_up_output,
+                &fused_output,
+                routes,
+                hidden,
+                down_columns,
+            )?;
+            Ok((gate_up, down))
+        };
+
+        for _ in 0..args.warmup {
+            let _ = run_baseline()?;
+            let (gate_up, down) = run_fused()?;
+            let _ = gpu_ns(gate_up)?.saturating_add(gpu_ns(down)?);
+        }
+        let mut baseline_gpu_ns = Vec::with_capacity(args.reps);
+        let mut baseline_host_ns = Vec::with_capacity(args.reps);
+        let mut fused_gate_up_gpu_ns = Vec::with_capacity(args.reps);
+        let mut fused_down_gpu_ns = Vec::with_capacity(args.reps);
+        let mut fused_gpu_ns = Vec::with_capacity(args.reps);
+        let mut fused_host_ns = Vec::with_capacity(args.reps);
+        let mut output_hashes = Vec::with_capacity(args.reps);
+        let mut parity = json!({});
+        let mut source_routed_sum_comparison = Value::Null;
+        for _ in 0..args.reps {
+            let (baseline_gpu, baseline_host) = run_baseline()?;
+            baseline_gpu_ns.push(baseline_gpu);
+            baseline_host_ns.push(baseline_host);
+            let (gate_up, down) = run_fused()?;
+            let gate_up_gpu = gpu_ns(gate_up)?;
+            let down_gpu = gpu_ns(down)?;
+            fused_gate_up_gpu_ns.push(gate_up_gpu);
+            fused_down_gpu_ns.push(down_gpu);
+            fused_gpu_ns.push(gate_up_gpu.saturating_add(down_gpu));
+            fused_host_ns.push(
+                gate_up
+                    .host_wall_us
+                    .saturating_add(down.host_wall_us)
+                    .saturating_mul(1000),
+            );
+            let observed = read_f32(&fused_output, expected_output.len());
+            parity = output_metrics(&expected_output, &observed);
+            if parity.get("finite").and_then(Value::as_bool) != Some(true)
+                || parity.get("within_tolerance").and_then(Value::as_bool) != Some(true)
+            {
+                return Err(format!("fused routed Q4 MoE parity failed: {parity}").into());
+            }
+            if let Some(bridge) = source_bridge.as_ref() {
+                let candidate_routed_sum =
+                    weighted_routed_sum(&observed, &selected_weights, hidden)?;
+                let candidate_routed_sum_sha256 =
+                    sha256_bytes(&f32_bytes_for_hash(&candidate_routed_sum));
+                source_routed_sum_comparison = json!({
+                    "status": "MEASURED__NO_CAPABILITY_THRESHOLD_DECLARED",
+                    "reference": "sealed exact source-BF16 routed sum from the source-layer bridge",
+                    "candidate": "route-weighted host-side diagnostic reduction of observed direct-Q4 route-major outputs after the Metal fence",
+                    "comparison": output_metrics(&bridge.source_routed_sum, &candidate_routed_sum),
+                    "candidate_routed_sum_sha256": candidate_routed_sum_sha256,
+                    "source_bf16_output_parity": "NOT_QUALIFIED",
+                    "claim_boundary": "This makes representation distortion visible on the actual source-layer activation and correct source route set. The current route-weighted sum is a post-fence diagnostic reduction, not yet a native weighted-sum kernel or full MoE/layer/token capability result.",
+                });
+            }
+            output_hashes.push(sha256_bytes(&f32_bytes_for_hash(&observed)));
+        }
+        if output_hashes.windows(2).any(|pair| pair[0] != pair[1]) {
+            return Err("fused routed Q4 MoE output changed across repetitions".into());
+        }
+        let median = |values: &[u64]| -> u64 {
+            let mut sorted = values.to_vec();
+            sorted.sort_unstable();
+            sorted[sorted.len() / 2]
+        };
+        let baseline_gpu_median = median(&baseline_gpu_ns);
+        let fused_gpu_median = median(&fused_gpu_ns);
+        let baseline_host_median = median(&baseline_host_ns);
+        let fused_host_median = median(&fused_host_ns);
+        let source_selection = router
+            .get("source_selection_parity")
+            .cloned()
+            .unwrap_or(Value::Null);
+        let source_bridge_dependency = source_bridge
+            .as_ref()
+            .map(|bridge| component_ref(&bridge.path, &bridge.receipt, Some(&bridge.receipt_sha256)))
+            .unwrap_or(Value::Null);
+        let source_bridge_active = source_bridge.is_some();
+        Ok(json!({
+            "schema": "hawking.flash_noetic_routed_moe_fused_native.v1",
+            "semantic_type": "NoeticExecutable",
+            "compiler_stage": "HawkingAccelerator",
+            "status": "PASSED",
+            "repo": REPO_ID,
+            "pinned_revision": PINNED_REVISION,
+            "nomenclature_version": NOMENCLATURE_VERSION,
+            "root": root,
+            "model_lake_manifest": manifest,
+            "dependencies": {
+                "router_receipt": component_ref(&args.router_receipt, &router, Some(&router_sha256)),
+                "campaign_receipt": component_ref(&args.campaign_receipt, &campaign, Some(&campaign_sha256)),
+                "source_layer_bridge": source_bridge_dependency,
+                "routed_expert_count": routes,
+            },
+            "representation": {
+                "family": "independent_q4_g64",
+                "source_independent": true,
+                "dense_rematerialization": "forbidden",
+                "gate_up_codes_bytes": gate_codes_bytes.len(),
+                "gate_up_scales_bytes": gate_scales_bytes.len(),
+                "down_codes_bytes": down_codes_bytes.len(),
+                "down_scales_bytes": down_scales_bytes.len(),
+                "total_packed_bytes": gate_codes_bytes.len() + gate_scales_bytes.len() + up_codes_bytes.len() + up_scales_bytes.len() + down_codes_bytes.len() + down_scales_bytes.len(),
+            },
+            "execution": {
+                "provider": "apple-metal",
+                "operation": "concatenated selected Q4/G64 gate/up bodies -> device-resident route-major SwiGLU activations -> route-aware selected Q4/G64 down bodies",
+                "selected_expert_ids": selected_ids,
+                "routed_expert_count": routes,
+                "gate_up_rows_per_route": gate_rows,
+                "hidden_rows_per_route": hidden,
+                "input_columns": input_columns,
+                "baseline_dispatches_per_graph": routes * 2,
+                "fused_dispatches_per_graph": 2,
+                "device_intermediate_no_host_roundtrip": true,
+                "source_reference_used_for_execution": args.source_authoritative_routes,
+                "source_tensor_read_for_direct_execution": false,
+                "source_weight_read_for_direct_execution": false,
+                "source_layer_activation": source_bridge_active,
+                "model_loaded": false,
+                "complete_token_runtime": false,
+            },
+            "input": {"values": input.len(), "sha256": input_hash, "authority": input_authority},
+            "parity": parity,
+            "source_bf16_routed_sum_comparison": source_routed_sum_comparison,
+            "determinism": {"output_hashes": output_hashes, "passed": true},
+            "gpu_timing": {
+                "warmup_runs": args.warmup,
+                "measured_runs": args.reps,
+                "baseline_gpu_ns": baseline_gpu_ns,
+                "baseline_gpu_ns_median": baseline_gpu_median,
+                "fused_gate_up_gpu_ns": fused_gate_up_gpu_ns,
+                "fused_gate_up_gpu_ns_median": median(&fused_gate_up_gpu_ns),
+                "fused_down_gpu_ns": fused_down_gpu_ns,
+                "fused_down_gpu_ns_median": median(&fused_down_gpu_ns),
+                "fused_gpu_ns": fused_gpu_ns,
+                "fused_gpu_ns_median": fused_gpu_median,
+                "baseline_host_wall_ns": baseline_host_ns,
+                "baseline_host_wall_ns_median": baseline_host_median,
+                "fused_host_wall_ns": fused_host_ns,
+                "fused_host_wall_ns_median": fused_host_median,
+                "gpu_speedup": baseline_gpu_median as f64 / fused_gpu_median as f64,
+                "host_speedup": baseline_host_median as f64 / fused_host_median as f64,
+                "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for twenty independent direct-Q4 launches and two device-chained fused launches; host wall is reported separately",
+            },
+            "route_authority": route_authority,
+            "source_selection_parity": source_selection,
+            "whole_model_capability": "NOT_TESTED",
+            "complete_system_ebpw": Value::Null,
+            "flash_tps": Value::Null,
+            "promotion_allowed": false,
+            "claim_boundary": if source_bridge_active { "PASSED bounded direct Q4/G64 routed-MoE execution on a sealed exact source-layer MLP activation and the exact source-selected route set. Candidate Q4 GPU output matches its same-body CPU oracle; source-BF16 routed-sum distortion is measured separately and remains unqualified. No source tensor or source weight is read by direct candidate execution, and the source control is a teacher rather than an NR dependency. This is not source-BF16 output parity, a native weighted-sum kernel, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence." } else { "PASSED bounded direct Q4/G64 selected-routed MoE fusion on the router receipt's deterministic probe input. Candidate gate/up/SwiGLU outputs remain device-resident and feed route-aware candidate down bodies; output parity is checked only against the same persisted candidate bodies. When source-authoritative routes are enabled, source-native route evidence selects those persisted Q4 bodies only; no source tensor is read for direct execution and no equivalence to a source-layer activation is established. It is not source-BF16 output parity, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence." },
+            "next_action": if source_bridge_active { "Treat the measured source-BF16 routed-sum distortion as the representation-fidelity result; make any retained weighted-sum execution native only after the full layer control identifies it as a physical bottleneck. Do not call this bounded result a standalone NR or complete Flash speedup." } else { "Use this source-route-aware direct-Q4 primitive as an isolated layer control with a real source activation and source-output comparator. Do not call the bounded host launch reduction a whole-model speedup unless a composed body retains its route/terminal contract and improves wall time." },
             "elapsed_s": started.elapsed().as_secs_f64(),
         }))
     }
@@ -4604,6 +5897,12 @@ mod macos {
         let destination = args.out.clone();
         let report = match if args.exact_hyperconnection_composition {
             run_exact_hyperconnection_composition(&args)
+        } else if args.fused_routed_gate_up {
+            run_fused_routed_gate_up(&args)
+        } else if args.fused_routed_down {
+            run_fused_routed_down(&args)
+        } else if args.fused_routed_moe {
+            run_fused_routed_moe(&args)
         } else if args.shared_residual_composition {
             run_shared_residual_composition(&args)
         } else if args.shared_expert_composition {

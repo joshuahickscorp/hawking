@@ -57,6 +57,10 @@ convolution, gather/scatter, top-k, and a fused projection gate). The bundled
 fixture has also been used as a generic public-plan sanity check: the profile
 may therefore be `PLAN_READY` for its single `ios16.mul` operation, which is
 CPU-preferred while supporting CPU and Neural Engine. It is not Flash-shaped.
+The current-host revalidation is
+`receipts/headless/ANE_PUBLIC_FIXTURE_REVALIDATION_20260911.json`: it saw CPU,
+GPU, and Neural Engine; its one fixture operation was still CPU-preferred, and
+its 48,995--108,957 ns warm `prediction()` samples are explicitly fixture-only.
 The Command Line Tools Python package still cannot author the Flash atlas blob,
 so Flash compilation, placement, latency, energy, and parity remain
 `NOT_MEASURED` rather than being inferred from graph syntax.
@@ -64,6 +68,40 @@ so Flash compilation, placement, latency, energy, and parity remain
 The platform scoreboard is a small derived view over these and the current
 Flash/Qwen receipts. It carries benchmark state and keeps absent complete-work
 metrics unknown; it is not itself an ANE measurement or a promotion receipt.
+
+## Odyssey per-model lane and MegaKernel
+
+ANE remains an open secondary Odyssey lane. The durable per-model queue is
+`workspace/campaign/odyssey/ANE_MODEL_CHARACTERIZATION.json`, with its protocol
+in `ANE_MODEL_CHARACTERIZATION_WORKUNIT.md`. KIMI P0 and Flash-Next have
+separate organ rows; a plan, shape, or placement result for one model never
+becomes a generic result for another. CPU, GPU/Metal, ANE, and relevant
+concurrent controls are matched per model, and all physical timing is recorded
+in integer nanoseconds.
+
+The provider-neutral PhysicalGraph now exposes a MegaKernel execution spine:
+
+```text
+LOAD -> DECODE -> ROUTE -> PROJECT -> ACCUMULATE -> STATE_UPDATE -> SAMPLE
+```
+
+This is a shared model-aware lowering contract, not a claim that one monolithic
+vendor kernel exists. Backend-native implementations can occupy individual
+stages while the model supplies its organ, representation, route, and state
+layout. Fusion and backend selection remain subordinate to source parity,
+capability, transfer/synchronization accounting, and protected complete-token
+wall time. Until those are present, Metal remains the primary Flash route and
+ANE remains `CANDIDATE_ONLY`.
+
+`architecture.inspect` now emits this same model-specific work card for every
+metadata-recognized specimen. It records only present organs, conservative
+metadata-supported probe shapes, a metadata-only source seal, and the required
+matched CPU/GPU/ANE controls. Each recognized model now exposes a per-organ
+backend matrix: CPU and GPU begin as explicit model-scoped unmeasured
+controls, while ANE carries only its public-API placement facts until a real
+run exists. It does not load weights or turn metadata into execution
+evidence. Flash-Next's first card is
+`receipts/future/FLASH_NEXT_ANE_MEGAKERNEL_MODEL_CARD_20260911.json`.
 
 ## GPU critical-path candidate
 

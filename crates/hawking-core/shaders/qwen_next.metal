@@ -1233,6 +1233,78 @@ kernel void qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4(
         (gate_acc / (1.0f + exp(-gate_acc))) * up_acc;
 }
 
+// Candidate physical variant of the compact routed/shared gate-up organ.
+// One SIMD group owns an (expert-route, intermediate-row) pair and reduces
+// the hidden dimension cooperatively.  This trades the source scalar
+// accumulation association for much higher parallelism; it is therefore
+// opt-in and must pass the separate Flash candidate/state contract before it
+// can leave the physical-laboratory path.
+#pragma clang fp contract(off)
+kernel void qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32(
+    device const ushort* gate_up_weights        [[buffer(0)]],
+    device const uint* route_ids                [[buffer(1)]],
+    device const uint* route_lut                 [[buffer(2)]],
+    device const float* input                   [[buffer(3)]],
+    device float* routed_output                 [[buffer(4)]],
+    device const ushort* shared_gate_weights    [[buffer(5)]],
+    device const ushort* shared_up_weights      [[buffer(6)]],
+    device float* shared_output                 [[buffer(7)]],
+    constant uint& compact_experts              [[buffer(8)]],
+    constant uint& top_k                        [[buffer(9)]],
+    constant uint& intermediate                 [[buffer(10)]],
+    constant uint& hidden                       [[buffer(11)]],
+    constant uint& source_experts               [[buffer(12)]],
+    uint group_id                               [[threadgroup_position_in_grid]],
+    uint lane_id                                [[thread_index_in_simdgroup]])
+{
+    const uint route = group_id / intermediate;
+    const uint row = group_id - route * intermediate;
+    if (route > top_k || row >= intermediate) return;
+
+    device const ushort* gate = nullptr;
+    device const ushort* up = nullptr;
+    device float* destination = nullptr;
+    uint destination_offset = 0u;
+    if (route == top_k) {
+        const ulong base = (ulong)row * (ulong)hidden;
+        gate = shared_gate_weights + base;
+        up = shared_up_weights + base;
+        destination = shared_output;
+        destination_offset = row;
+    } else {
+        const uint expert = route_ids[route];
+        if (expert >= source_experts) {
+            if (lane_id == 0u) routed_output[route * intermediate + row] = 0.0f;
+            return;
+        }
+        const uint slot = route_lut[expert];
+        if (slot >= compact_experts) {
+            if (lane_id == 0u) routed_output[route * intermediate + row] = 0.0f;
+            return;
+        }
+        const ulong expert_stride = (ulong)(2u * intermediate) * (ulong)hidden;
+        const ulong base = (ulong)slot * expert_stride + (ulong)row * (ulong)hidden;
+        gate = gate_up_weights + base;
+        up = gate + (ulong)intermediate * (ulong)hidden;
+        destination = routed_output;
+        destination_offset = route * intermediate + row;
+    }
+
+    float gate_acc = 0.0f;
+    float up_acc = 0.0f;
+    for (uint column = lane_id; column < hidden; column += 32u) {
+        const float x = input[column];
+        gate_acc = gate_acc + qwen_next_source_bf16_value(gate[column]) * x;
+        up_acc = up_acc + qwen_next_source_bf16_value(up[column]) * x;
+    }
+    const float gate_total = simd_sum(gate_acc);
+    const float up_total = simd_sum(up_acc);
+    if (lane_id == 0u) {
+        destination[destination_offset] =
+            (gate_total / (1.0f + exp(-gate_total))) * up_total;
+    }
+}
+
 #pragma clang fp contract(off)
 kernel void qwen_next_bf16_compact_expert_down(
     device const ushort* down_weights [[buffer(0)]],

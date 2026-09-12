@@ -1,0 +1,186 @@
+{
+ "schema": "hawking.future.organ_byte_anatomy.v1",
+ "obligation": "KSB001",
+ "steer": "S013",
+ "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+ "closure": {
+  "file_bytes": 360000192888,
+  "safetensors_header_bytes": 229760,
+  "tensor_payload_bytes": 359999963128,
+  "accounted_bytes": 360000192888,
+  "residual_bytes": 0,
+  "closes_exactly": true
+ },
+ "unclassified_tensors": [],
+ "organs": {
+  "routed_experts": {
+   "tower": "language",
+   "bytes": 241591910400,
+   "params": 120795955200,
+   "tensors": 96,
+   "dtypes": {
+    "BF16": 120795955200
+   },
+   "bytes_pct": 67.1089
+  },
+  "positional_local_embedding": {
+   "tower": "language",
+   "bytes": 102466171160,
+   "params": 51233085475,
+   "tensors": 137,
+   "dtypes": {
+    "I64": 35,
+    "BF16": 51233085440
+   },
+   "bytes_pct": 28.4628
+  },
+  "mtp_routed_experts": {
+   "tower": "language",
+   "bytes": 5033164800,
+   "params": 2516582400,
+   "tensors": 2,
+   "dtypes": {
+    "BF16": 2516582400
+   },
+   "bytes_pct": 1.3981
+  },
+  "recurrent_state": {
+   "tower": "language",
+   "bytes": 4173020928,
+   "params": 2086510464,
+   "tensors": 324,
+   "dtypes": {
+    "BF16": 2086510464
+   },
+   "bytes_pct": 1.1592
+  },
+  "qsa_attention": {
+   "tower": "language",
+   "bytes": 1337609728,
+   "params": 668804864,
+   "tensors": 117,
+   "dtypes": {
+    "BF16": 668804864
+   },
+   "bytes_pct": 0.3716
+  },
+  "hyper_connection": {
+   "tower": "language",
+   "bytes": 1320796160,
+   "params": 660398080,
+   "tensors": 398,
+   "dtypes": {
+    "BF16": 660398080
+   },
+   "bytes_pct": 0.3669
+  },
+  "embeddings": {
+   "tower": "language",
+   "bytes": 1271398400,
+   "params": 635699200,
+   "tensors": 1,
+   "dtypes": {
+    "BF16": 635699200
+   },
+   "bytes_pct": 0.3532
+  },
+  "lm_head": {
+   "tower": "language",
+   "bytes": 1271398400,
+   "params": 635699200,
+   "tensors": 1,
+   "dtypes": {
+    "BF16": 635699200
+   },
+   "bytes_pct": 0.3532
+  },
+  "vision": {
+   "tower": "vision",
+   "bytes": 897862112,
+   "params": 448931056,
+   "tensors": 333,
+   "dtypes": {
+    "BF16": 448931056
+   },
+   "bytes_pct": 0.2494
+  },
+  "shared_experts": {
+   "tower": "language",
+   "bytes": 471859200,
+   "params": 235929600,
+   "tensors": 144,
+   "dtypes": {
+    "BF16": 235929600
+   },
+   "bytes_pct": 0.1311
+  },
+  "router": {
+   "tower": "language",
+   "bytes": 128450560,
+   "params": 64225280,
+   "tensors": 49,
+   "dtypes": {
+    "BF16": 64225280
+   },
+   "bytes_pct": 0.0357
+  },
+  "mtp_head": {
+   "tower": "language",
+   "bytes": 26240000,
+   "params": 13120000,
+   "tensors": 4,
+   "dtypes": {
+    "BF16": 13120000
+   },
+   "bytes_pct": 0.0073
+  },
+  "mtp_shared_experts": {
+   "tower": "language",
+   "bytes": 9830400,
+   "params": 4915200,
+   "tensors": 3,
+   "dtypes": {
+    "BF16": 4915200
+   },
+   "bytes_pct": 0.0027
+  },
+  "shared_expert_router": {
+   "tower": "language",
+   "bytes": 245760,
+   "params": 122880,
+   "tensors": 48,
+   "dtypes": {
+    "BF16": 122880
+   },
+   "bytes_pct": 0.0001
+  },
+  "mtp_shared_expert_router": {
+   "tower": "language",
+   "bytes": 5120,
+   "params": 2560,
+   "tensors": 1,
+   "dtypes": {
+    "BF16": 2560
+   },
+   "bytes_pct": 0.0
+  }
+ },
+ "objects": {
+  "FULL": {
+   "bytes": 360000192888,
+   "params": 179999981459,
+   "note": "everything in the checkpoint, vision included; header charged"
+  },
+  "LANGUAGE": {
+   "bytes": 359102101016,
+   "params": 179551050403,
+   "source_bits_per_weight": 16.0,
+   "note": "language tower only -- vision tower and its projector removed from BOTH numerator and denominator"
+  },
+  "VISION_EXCLUDED": {
+   "bytes": 897862112,
+   "params": 448931056,
+   "source_bits_per_weight": 16.0
+  }
+ }
+}

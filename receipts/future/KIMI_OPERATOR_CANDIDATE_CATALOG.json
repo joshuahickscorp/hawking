@@ -1,0 +1,99 @@
+{
+  "schema": "hawking.future.kimi_operator_candidate_catalog.v1",
+  "status": "CATALOG_ONLY",
+  "owner": "tools.future.tabula",
+  "generator": "tools.future.kimi_operator_candidates.py",
+  "source_model": "KIMI_BASE",
+  "immutable_base": true,
+  "target_scope": "Declared per live run; exact layers/organs/expert ids belong in the apply receipt.",
+  "default_strength": 1.0,
+  "calibration_data_class": "heldout_refused_vs_complied",
+  "code_commit": "WORKTREE_UNCOMMITTED",
+  "weights_written": false,
+  "promotion": "NOT_PERFORMED",
+  "artifact_hash": null,
+  "evaluation_receipt": null,
+  "claim_boundary": "Static candidate catalog only. No Kimi weights were loaded or changed; no refusal, capability, HCLI, hardware, or promotion result is asserted.",
+  "candidates": [
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPA",
+      "method": "OPA",
+      "transformation": "conventional rank-1 output-space projection",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": false,
+      "reversible": true
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPB",
+      "method": "OPB",
+      "transformation": "rank-1 output-space projection with Frobenius norm restoration",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": true,
+      "reversible": true
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPC",
+      "method": "OPC",
+      "transformation": "two-sided output/input projection where both directions are declared",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": true,
+      "reversible": false,
+      "requires_input_direction": true
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPD",
+      "method": "OPD",
+      "transformation": "rank-k causal refusal-subspace projection",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": true,
+      "reversible": true,
+      "subspace_rank": 4
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPE",
+      "method": "OPE",
+      "transformation": "rank-1 projection at declared layer-local scope",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": false,
+      "reversible": true
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPF",
+      "method": "OPF",
+      "transformation": "rank-1 projection on explicitly selected routed experts",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": false,
+      "reversible": true,
+      "requires_selected_experts": true
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPG",
+      "method": "OPG",
+      "transformation": "shared-expert plus explicitly selected routed-expert projection",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied",
+      "norm_preserve": true,
+      "reversible": true,
+      "requires_selected_experts": true
+    },
+    {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+      "method": "OPH",
+      "transformation": "prefill-only router-logit projection with exact DeepSeek group/top-k recomputation",
+      "strength": 1.0,
+      "calibration_data_class": "heldout_refused_vs_complied_router_logits",
+      "scope": "outer-train-selected-router-layer-final-prefill-token",
+      "matched_null": "random_router_direction_per_fold",
+      "in_memory_only": true,
+      "weights_written": false,
+      "requires_direct_execution_validation": true
+    }
+  ],
+  "next_gate": "Run held-out separation and paired causal intervention on a Torch-enabled Kimi runtime before applying any candidate to a copied KIMI_BASE artifact."
+}

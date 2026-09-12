@@ -251,16 +251,48 @@ def stage(slug, dest=None):
 
 
 def retire(slug):
-    """Relegate tier-2 bytes. Reversible: the manifest keeps the reacquisition recipe."""
+    """Relegate tier-2 bytes and archive the recipe with the retired body.
+
+    A live manifest describes a live specimen. Leaving it in ``manifests/``
+    after retirement made the index report a false orphaned manifest and could
+    make a later scheduler treat the retired body as resident. The recipe is
+    retained under ``manifests/retired/`` so the operation remains reversible.
+    """
     p = guard_protected(TIER2 / slug)
     man = MANIFESTS / f"{slug}.json"
     if not man.exists():
         return {"retired": False, "why": "no manifest — refusing to delete an unrecorded specimen"}
+    if not p.is_dir():
+        return {"retired": False, "why": f"specimen is not resident: {p}"}
+    retired_manifests = MANIFESTS / "retired"
+    retired_man = retired_manifests / f"{slug}.json"
+    if retired_man.exists():
+        return {"retired": False, "why": f"retired manifest already exists: {retired_man}"}
+    try:
+        manifest = json.loads(man.read_text())
+    except (OSError, ValueError) as exc:
+        return {"retired": False, "why": f"invalid manifest — refusing to delete: {exc}"}
+    reacquisition = manifest.get("reacquisition") if isinstance(manifest, dict) else None
+    if not isinstance(reacquisition, str) or not reacquisition.strip():
+        return {"retired": False,
+                "why": "manifest has no reacquisition recipe — refusing to delete"}
     freed = du(p)
-    if p.exists():
+    retired_manifests.mkdir(parents=True, exist_ok=True)
+    os.replace(man, retired_man)
+    try:
         shutil.rmtree(p)
+    except OSError as exc:
+        # Restore the live recipe if the body could not be removed. Never leave
+        # a resident specimen unrecorded merely because a cleanup failed.
+        try:
+            os.replace(retired_man, man)
+        except OSError:
+            return {"retired": False,
+                    "why": f"body removal failed and manifest restore failed: {exc}"}
+        return {"retired": False, "why": f"body removal failed: {exc}"}
     return {"retired": True, "slug": slug, "bytes_freed": freed,
-            "reacquisition": json.loads(man.read_text())["reacquisition"]}
+            "manifest": str(retired_man),
+            "reacquisition": reacquisition}
 
 
 def resident_slugs():

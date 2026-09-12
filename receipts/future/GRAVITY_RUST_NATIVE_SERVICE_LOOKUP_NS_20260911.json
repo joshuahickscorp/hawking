@@ -1,0 +1,66 @@
+{
+  "schema": "hawking.gravity.rust.native-service-lookup.v1",
+  "status": "ACCEPTED",
+  "recorded_at": "2026-09-11T16:43:52Z",
+  "machine": "Apple M3 Ultra",
+  "scope": "resident native rank_content_paths adapter lookup; same checkout, one persistent hawking-gravityd child, eight fresh sequential probes, 100 warm requests per probe",
+  "timing_unit": "ns",
+  "operation": {
+    "terms": [
+      "repository",
+      "context",
+      "stream",
+      "handling",
+      "hcli",
+      "serve",
+      "gravity",
+      "daemon"
+    ],
+    "scope_prefix": null,
+    "test_focus": false,
+    "max_results": 4,
+    "result_paths": [
+      ".aider.chat.history.md",
+      "docs/GRAVITY_RUST_REPATRIATION.md",
+      "visionmcp/artifacts/world-engine/dependency-census.json",
+      "crates/hawking-core/src/kernels/mod.rs"
+    ],
+    "generation": 1,
+    "files_seen": 1727,
+    "terms_used": 8
+  },
+  "control": {
+    "lookup": "previous per-request path: positive binary revalidation plus process-global creation-lock acquisition before using the already-live service",
+    "median_of_run_medians_ns": 104291,
+    "p95_median_of_runs_ns": 112125
+  },
+  "candidate": {
+    "lookup": "read-mostly resident service dictionary lookup; binary discovery and creation lock are paid only on first creation or explicit prewarm recovery",
+    "median_of_run_medians_ns": 24781,
+    "p95_median_of_runs_ns": 27416
+  },
+  "reduction": {
+    "median_percent": 76.24,
+    "p95_percent": 75.55
+  },
+  "parity": {
+    "result_paths_unchanged": true,
+    "generation_unchanged": true,
+    "native_request_contract_unchanged": true,
+    "dead_child_fallback_preserved": true,
+    "prewarm_dead_child_recovery_preserved": true,
+    "focused_tests": "56 passed, 0 failed"
+  },
+  "native_gate_timing": {
+    "producer": "hcli/agentos/native_gate.py",
+    "canonical_fields": [
+      "timing_unit",
+      "elapsed_ns"
+    ],
+    "compatibility_fields": [
+      "elapsed_s"
+    ],
+    "clock": "time.perf_counter_ns via hcli.latency"
+  },
+  "claim_boundary": "This is a control-plane repository-ranking and adapter lookup reduction only. It does not claim model speed, tool-body latency, end-to-end HCLI TPS, capability, or Odyssey readiness."
+}

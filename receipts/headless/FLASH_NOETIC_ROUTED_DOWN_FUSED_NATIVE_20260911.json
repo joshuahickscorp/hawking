@@ -1,0 +1,205 @@
+{
+  "claim_boundary": "PASSED bounded direct Q4/G64 selected-routed down fusion. It compares the same persisted candidate down bodies with distinct route-major activations against ten independent route-aware native launches. It is not source-BF16 output parity, a complete MoE/layer/token graph, complete EBPW, Flash TPS, or promotion evidence.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_system_ebpw": null,
+  "dependencies": {
+    "campaign_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+      "schema": "hcli.agentos.flash_noetic_component_campaign.v1",
+      "sha256": "028dc7d5ddafd4e87d5fccbbe37944bb33d9ecf06f31ede717d9b320f35ea842",
+      "status": "PASSED"
+    },
+    "routed_expert_count": 10,
+    "router_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+      "schema": "hawking.flash_noetic_router_selection_native.v1",
+      "sha256": "704369f9980be18afa0daef505407adb15682c7c39c3b8bb0fffa3a705d48db1",
+      "status": "PASSED"
+    }
+  },
+  "determinism": {
+    "output_hashes": [
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413",
+      "1b9dd6c23b2d69b8dc5bc2868a55bd7adaadbb7bdfa71858033576aa6a816413"
+    ],
+    "passed": true
+  },
+  "elapsed_s": 2.6185885840000003,
+  "execution": {
+    "baseline_dispatches_per_graph": 10,
+    "columns": 640,
+    "complete_token_runtime": false,
+    "device_intermediate_no_host_roundtrip": true,
+    "fused_dispatches_per_graph": 1,
+    "model_loaded": false,
+    "operation": "route-major selected Q4/G64 down bodies plus route-major activations -> one native routed-down launch",
+    "provider": "apple-metal",
+    "routed_expert_count": 10,
+    "rows_per_route": 2560,
+    "selected_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "source_reference_used_for_execution": false
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "baseline_gpu_ns": [
+      153500,
+      153582,
+      151957,
+      154541,
+      151998,
+      152668,
+      153373,
+      153332,
+      152377,
+      152375,
+      153373
+    ],
+    "baseline_gpu_ns_median": 153332,
+    "baseline_host_wall_ns": [
+      3851000,
+      2731000,
+      2829000,
+      6016000,
+      4070000,
+      3935000,
+      2747000,
+      3001000,
+      3452000,
+      3835000,
+      2768000
+    ],
+    "baseline_host_wall_ns_median": 3452000,
+    "fused_gpu_ns": [
+      52959,
+      51375,
+      52625,
+      52541,
+      52375,
+      52291,
+      52334,
+      52541,
+      51750,
+      52250,
+      52000
+    ],
+    "fused_gpu_ns_median": 52334,
+    "fused_host_wall_ns": [
+      317000,
+      309000,
+      297000,
+      285000,
+      326000,
+      279000,
+      313000,
+      263000,
+      317000,
+      920000,
+      464000
+    ],
+    "fused_host_wall_ns_median": 313000,
+    "gpu_speedup": 2.929873504796117,
+    "host_speedup": 11.028753993610223,
+    "measured_runs": 11,
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for the sum of independent route-aware native launches and one route-aware fused launch; host wall is reported separately",
+    "warmup_runs": 3
+  },
+  "input": {
+    "deterministic_sha256": "1e6b08ec96ffe17dbb868c64128dd869fcafc51e907417e849f67902f971d8fd",
+    "layout": "route-major",
+    "route_count": 10,
+    "values": 6400
+  },
+  "model_lake_manifest": {
+    "bytes": 360023286454,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+  },
+  "next_action": "Compose the gate/up and route-aware down fusions through the device-resident 640-value activations, then require candidate-space graph parity before treating their dispatch reductions as one routed-MoE primitive. Source route/output fidelity remains a separate gate.",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "cosine": 0.9999999999998845,
+    "count": 25600,
+    "finite": true,
+    "max_abs_error": 3.5762786865234375e-7,
+    "rmse": 3.9124730287359753e-8,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation": {
+    "dense_rematerialization": "forbidden",
+    "down_codes_bytes": 8192000,
+    "down_scales_bytes": 512000,
+    "family": "independent_q4_g64",
+    "source_independent": true,
+    "total_packed_bytes": 8704000
+  },
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_routed_down_fused_native.v1",
+  "semantic_type": "NoeticExecutable",
+  "source_selection_parity": {
+    "candidate_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "candidate_reference_ids_match": true,
+    "expert_ids_exact_match": false,
+    "label": "[V]/[D]",
+    "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+    "source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_native_reference_ids_match": true,
+    "status": "MISMATCH",
+    "top_k_overlap_count": 8,
+    "top_k_overlap_fraction": 0.8
+  },
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED"
+}

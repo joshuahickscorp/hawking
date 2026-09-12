@@ -41,6 +41,9 @@ import pathlib
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 import uuid
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -394,6 +397,39 @@ def run(
 
 
 def _spawn_executor(workspace: Path) -> Optional[int]:
+    """Ask the live Hawking daemon to own production delegation workers.
+
+    A resident endpoint on :8011 is the production Hawking surface.  Falling
+    back to a detached client-owned Python process there would recreate the
+    very orphan-provider pattern the daemon exists to eliminate.  Older
+    daemon images therefore leave the mission queued until a controlled
+    restart installs the supervision endpoint.  Non-daemon/development
+    endpoints retain the historical direct launch for compatibility.
+    """
+    spec, _ = _read_json(spec_path(workspace))
+    endpoint = str((spec or {}).get("endpoint") or "") if isinstance(spec, dict) else ""
+    parsed = urllib.parse.urlsplit(endpoint)
+    host = (parsed.hostname or "").lower()
+    daemon_surface = host in {"127.0.0.1", "localhost", "::1"} and parsed.port == 8011
+    if daemon_surface:
+        base = urllib.parse.urlunsplit((parsed.scheme or "http", parsed.netloc, "", "", ""))
+        request = urllib.request.Request(
+            base.rstrip("/") + "/hawkingd/delegations/start",
+            data=json.dumps({"workspace": str(workspace.resolve())}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=3.0) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            pid = payload.get("pid") if isinstance(payload, dict) else None
+            if isinstance(pid, int) and pid > 0:
+                return pid
+            return None
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, ValueError):
+            # Fail closed for the live daemon surface.  A later controlled
+            # daemon restart will expose the endpoint and adopt this mission;
+            # silently detaching it from hcli would violate process ownership.
+            return None
     repo = Path(__file__).resolve().parent.parent
     log = mission_dir(workspace) / "delegate_exec.log"
     log.parent.mkdir(parents=True, exist_ok=True)

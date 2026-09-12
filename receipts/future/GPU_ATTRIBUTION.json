@@ -1,13 +1,13 @@
 {
- "at": "2026-09-09T19:19:51Z",
- "window_note": "before Kimi load retry",
+ "at": "2026-09-09T21:51:40Z",
+ "window_note": "",
  "hawking_processes": [
   {
    "pid": 98085,
    "ppid": 98083,
-   "etime": "23:21",
+   "etime": "02:55:10",
    "cpu": 0.0,
-   "rss_gib": 0.75,
+   "rss_gib": 0.12,
    "command": "hawkingd serve :8011 [hawking-native.sealed-3.14]          ",
    "owner": "hawking",
    "role": "serve wrapper, not a compute owner",
@@ -21,27 +21,27 @@
   {
    "pid": 98088,
    "ppid": 98085,
-   "etime": "23:21",
-   "cpu": 1.3,
-   "rss_gib": 11.52,
+   "etime": "02:55:10",
+   "cpu": 1.1,
+   "rss_gib": 0.34,
    "command": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident --artifact-root /Users/scammermike/noetic/NOETIC_PARENT_A --tokenizer /Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json --max-seq-len 8192 --resident-identity sealed-3.14",
    "owner": "hawking",
    "role": "sealed-3.14 resident (Rust, Metal)",
    "cpu_samples": [
-    1.3,
-    1.3,
-    1.3
+    1.2,
+    1.1,
+    1.1
    ],
-   "verdict": "LOADED BUT IDLE -- holds weights, is not computing"
+   "verdict": "IDLE, HOLDS NOTHING"
   }
  ],
  "foreign_model_servers": [
   {
    "pid": 3551,
    "ppid": 3491,
-   "etime": "02-00:26:36",
+   "etime": "02-02:58:25",
    "cpu": 0.0,
-   "rss_gib": 0.02,
+   "rss_gib": 0.01,
    "command": "/Applications/Ollama.app/Contents/Resources/ollama serve",
    "owner": "foreign",
    "role": "Ollama stack, separate runtime",
@@ -55,9 +55,9 @@
   {
    "pid": 15230,
    "ppid": 1,
-   "etime": "04:39:52",
+   "etime": "07:11:41",
    "cpu": 0.0,
-   "rss_gib": 0.08,
+   "rss_gib": 0.01,
    "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp8a4008ep/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}",
    "owner": "foreign",
    "role": "MLX stack, separate runtime",

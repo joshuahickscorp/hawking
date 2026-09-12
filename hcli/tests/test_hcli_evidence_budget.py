@@ -53,6 +53,23 @@ class EvidenceAdmissionTests(unittest.TestCase):
                 ["README.md"],
             )
 
+    def test_goal_only_mission_receives_mechanically_discovered_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "hcli").mkdir()
+            (root / "hcli" / "session_transport.py").write_text(
+                "OpenAI-compatible streaming browser chat persists session "
+                "state across refresh and restart.\n",
+                encoding="utf-8",
+            )
+            engine = self.make_engine(root)
+            evidence = engine._gather_evidence(
+                "Determine whether OpenAI-compatible streaming browser chat "
+                "preserves durable session state across refresh or restart."
+            )
+            self.assertTrue(evidence)
+            self.assertEqual(evidence[0]["path"], "hcli/session_transport.py")
+
     def test_explicit_task_document_can_expand_nested_reference(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

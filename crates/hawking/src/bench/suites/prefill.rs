@@ -12,8 +12,8 @@ pub fn run(opts: &BenchOptions) -> Result<serde_json::Value> {
     // honesty we'd pull from a fixed corpus, but that lands with the
     // wax suite where reproducibility matters most.
     let prompt = "the quick brown fox jumps over the lazy dog. ".repeat(80);
-    let mut prefill_ms = Vec::new();
-    let mut ttft_ms = Vec::new();
+    let mut prefill_ns = Vec::new();
+    let mut ttft_ns = Vec::new();
     for _ in 0..opts.trials {
         let req = GenerateRequest {
             prompt: prompt.clone(),
@@ -29,29 +29,36 @@ pub fn run(opts: &BenchOptions) -> Result<serde_json::Value> {
             json_mode: false,
         };
         let start = Instant::now();
-        let mut first_token: Option<f64> = None;
+        let mut first_token: Option<u64> = None;
         let mut sink = |ev: StreamEvent| {
             if matches!(ev, StreamEvent::Token { .. }) && first_token.is_none() {
-                first_token = Some(start.elapsed().as_secs_f64() * 1000.0);
+                first_token = Some(start.elapsed().as_nanos().min(u64::MAX as u128) as u64);
             }
         };
         let stats = engine
             .generate(req, &mut sink)
             .map_err(|e| anyhow::anyhow!("{e}"))?;
-        prefill_ms.push(stats.prefill_ms);
-        ttft_ms.push(first_token.unwrap_or(stats.prefill_ms));
+        prefill_ns.push(stats.prefill_elapsed_ns());
+        ttft_ns.push(first_token.unwrap_or(stats.prefill_elapsed_ns()));
     }
-    let median = |xs: &mut Vec<f64>| {
-        xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let median = |xs: &mut Vec<u64>| {
+        xs.sort_unstable();
         xs[xs.len() / 2]
     };
-    let p_med = median(&mut prefill_ms.clone());
-    let t_med = median(&mut ttft_ms.clone());
+    let p_med_ns = median(&mut prefill_ns.clone());
+    let t_med_ns = median(&mut ttft_ns.clone());
+    let p_med = p_med_ns as f64 / 1_000_000.0;
+    let t_med = t_med_ns as f64 / 1_000_000.0;
     let prompt_tokens_estimate = 1024usize;
     Ok(serde_json::json!({
+        "timing_unit": "ns",
+        "prefill_ns_median": p_med_ns,
+        "ttft_ns_median": t_med_ns,
         "prefill_ms_median": p_med,
         "ttft_ms_median": t_med,
         "prefill_tps_estimate": (prompt_tokens_estimate as f64) / (p_med / 1000.0).max(1e-9),
-        "trials": prefill_ms,
+        "trials_ns": prefill_ns,
+        "trials_ms": prefill_ns.iter().map(|nanoseconds| *nanoseconds as f64 / 1_000_000.0).collect::<Vec<_>>(),
+        "trials": prefill_ns.iter().map(|nanoseconds| *nanoseconds as f64 / 1_000_000.0).collect::<Vec<_>>(),
     }))
 }

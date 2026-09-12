@@ -1,4 +1,4 @@
-"""ONE Runtime interface: MLX first-class, llama.cpp science, no Q5_K required."""
+"""ONE Runtime interface: Hawking-native first, MLX transitional, llama banned."""
 from __future__ import annotations
 
 import inspect
@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 
-from hcli.backends import MlxServerBackend, NoeticNativeBackend
+from hcli.backends import MlxServerBackend, MlxVlmServerBackend, NoeticNativeBackend
 from hcli.genomes import RuntimeGenome
 from hcli.machine import MachineGenome
 from hcli.models import discover_models, resolve_model
@@ -20,6 +20,7 @@ from hcli.runtime_iface import (
     archived_q5k_gguf_path,
     artifact_present,
     classify_backend,
+    llamacpp_allowed,
     make_backend_for_model,
     q5k_gguf_required,
     runtime_interface_census,
@@ -43,6 +44,19 @@ def _fake_mlx_dir(root: Path) -> str:
     return str(root)
 
 
+def _fake_mlx_vlm_dir(root: Path) -> str:
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "config.json").write_text(
+        json.dumps({
+            "model_type": "kimi_vl",
+            "architectures": ["KimiVLForConditionalGeneration"],
+        }),
+        encoding="utf-8",
+    )
+    (root / "model.safetensors").write_bytes(b"x" * 64)
+    return str(root)
+
+
 class TestClassifyAndFactory(unittest.TestCase):
     def test_default_without_path_is_mlx_not_llamacpp(self):
         self.assertEqual(classify_backend(None), "mlx")
@@ -51,6 +65,7 @@ class TestClassifyAndFactory(unittest.TestCase):
     def test_missing_q5k_is_classified_by_suffix_but_not_required(self):
         path = str(archived_q5k_gguf_path())
         self.assertEqual(classify_backend(path), "llamacpp")
+        self.assertFalse(llamacpp_allowed())
         self.assertFalse(artifact_present(path) and q5k_gguf_required())
         self.assertFalse(q5k_gguf_required())
 
@@ -62,11 +77,26 @@ class TestClassifyAndFactory(unittest.TestCase):
             self.assertIsInstance(backend, MlxServerBackend)
             self.assertIsNone(backend.process)
 
+    def test_kimi_vl_dir_selects_mlx_vlm_backend_without_spawning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = _fake_mlx_vlm_dir(Path(tmp) / "kimi-vl")
+            self.assertEqual(classify_backend(model), "mlx")
+            backend = make_backend_for_model(model, port=9, n_slots=2)
+            self.assertIsInstance(backend, MlxVlmServerBackend)
+            self.assertIsNone(backend.process)
+            command = backend.command(port=9)
+            self.assertEqual(Path(command[0]).name, "hawkingd")
+            self.assertEqual(Path(command[1]).name, "mlx_vlm.server")
+            self.assertEqual(
+                Path(command[command.index("--model") + 1]).resolve(),
+                Path(model).resolve(),
+            )
+            self.assertNotIn("--decode-concurrency", command)
+
     def test_gguf_suffix_selects_llama_without_opening_missing_file(self):
         path = "/nonexistent/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf"
-        backend = make_backend_for_model(path, port=9, n_slots=1, ctx_size=128)
-        ident = backend.identity()
-        self.assertEqual(ident["backend"], "llama_server")
+        with self.assertRaisesRegex(RuntimeError, "llama.cpp is disabled"):
+            make_backend_for_model(path, port=9, n_slots=1, ctx_size=128)
         self.assertFalse(os.path.isfile(path))
 
     def test_env_override_noetic(self):
@@ -143,7 +173,14 @@ class TestPoolPicksMlxForMlxDir(unittest.TestCase):
                 repo_root=tmp,
             )
             backend = pool._make_backend(0, 1, 9999)
-            self.assertIsInstance(backend, MlxServerBackend)
+            try:
+                self.assertIsInstance(backend, MlxServerBackend)
+            finally:
+                # `_make_backend` spawns the fake server as part of the pool
+                # contract.  This test must not leave an unowned MLX child on
+                # the host while asserting backend selection policy.
+                backend.stop()
+                pool.stop()
 
     def test_start_missing_gguf_raises_without_requiring_q5k_name(self):
         with tempfile.TemporaryDirectory() as tmp:

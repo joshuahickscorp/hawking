@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Union
 
+from .latency import now_ns, since_ns
 from .report_compiler import compile_backend_report
 
 
@@ -144,21 +145,21 @@ class WorkUnitExecutor:
             return fn(wu, context)
         label = str(getattr(wu, "tool", "") or backend_name)
         unit_id = getattr(wu, "id", None)
-        started = time.time()
+        started_ns = now_ns()
         emit("tool_call_started", {"tool": label, "backend": backend_name, "unit_id": unit_id})
         try:
             result = fn(wu, context)
         except Exception as exc:
             emit("tool_call_finished", {
                 "tool": label, "backend": backend_name, "unit_id": unit_id,
-                "ok": False, "elapsed_s": round(time.time() - started, 3),
+                "ok": False, "elapsed_ns": since_ns(started_ns),
                 "error": f"{type(exc).__name__}: {exc}",
             })
             raise
         ok = bool(((result or {}).get("validation") or {}).get("ok", True))
         emit("tool_call_finished", {
             "tool": label, "backend": backend_name, "unit_id": unit_id,
-            "ok": ok, "elapsed_s": round(time.time() - started, 3),
+            "ok": ok, "elapsed_ns": since_ns(started_ns),
         })
         return result
 

@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -257,6 +258,56 @@ def package_digest(pkg: Union[str, Path]) -> str:
     return h.hexdigest()
 
 
+def _file_digest(path: Path) -> str:
+    """Return the content address for one deployable native artifact."""
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def native_gravityd_binary(source_package: Union[str, Path]) -> Optional[Path]:
+    """Find a deliberately built Gravity daemon beside a source checkout.
+
+    Installation is not allowed to quietly invoke Cargo: package construction
+    must remain reproducible and bounded.  A caller builds the exact native
+    artifact it wants to ship, then this function packages that artifact with
+    the Python control plane.  The direct-root location is the immutable
+    snapshot layout used after installation; the remaining locations are the
+    normal source-checkout build outputs.
+    """
+    source_root = Path(source_package).resolve().parent
+    explicit = os.environ.get("HCLI_GRAVITYD_BIN")
+    candidates = [Path(explicit).expanduser()] if explicit else []
+    candidates.extend((
+        source_root / "hawking-gravityd",
+        source_root / "workspace" / "ops" / "build" / "rust" / "release" / "hawking-gravityd",
+        source_root / "workspace" / "ops" / "build" / "rust" / "debug" / "hawking-gravityd",
+        source_root / "target" / "release" / "hawking-gravityd",
+        source_root / "target" / "debug" / "hawking-gravityd",
+    ))
+    return next((path for path in candidates if path.is_file() and os.access(path, os.X_OK)), None)
+
+
+def native_hcli_binary(source_package: Union[str, Path]) -> Optional[Path]:
+    """Find the Rust HCLI authority to bundle with an installed snapshot.
+
+    The Python compatibility skin may be launched from any directory.  A
+    deployed snapshot therefore needs to carry the exact process-authority
+    binary it was built and verified with; relying on the caller's checkout
+    makes production behavior depend on the current working directory.  As
+    with ``native_gravityd_binary``, installation never invokes Cargo.
+    """
+    source_root = Path(source_package).resolve().parent
+    explicit = os.environ.get("HCLI_NATIVE_HCLI") or os.environ.get("HCLI_RUST_BIN")
+    candidates = [Path(explicit).expanduser()] if explicit else []
+    candidates.extend((
+        source_root / "hcli-rust",
+        source_root / "workspace" / "ops" / "build" / "rust" / "release" / "hcli",
+        source_root / "workspace" / "ops" / "build" / "rust" / "debug" / "hcli",
+        source_root / "target" / "release" / "hcli",
+        source_root / "target" / "debug" / "hcli",
+    ))
+    return next((path for path in candidates if path.is_file() and os.access(path, os.X_OK)), None)
+
+
 def warn_if_stale() -> None:
     """One line when the running stamped copy no longer matches its source.
 
@@ -314,9 +365,39 @@ def install_shims(home: Optional[str] = None) -> int:
         dest_pkg,
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
     )
+    native = native_gravityd_binary(src)
+    native_stamp = {"status": "unavailable"}
+    if native is not None:
+        deployed_native = dest_root / "hawking-gravityd"
+        shutil.copy2(native, deployed_native)
+        deployed_native.chmod(deployed_native.stat().st_mode | 0o111)
+        native_stamp = {
+            "status": "bundled",
+            "source": str(native),
+            "digest": _file_digest(native),
+            "path": deployed_native.name,
+        }
+    native_hcli = native_hcli_binary(src)
+    native_hcli_stamp = {"status": "unavailable"}
+    if native_hcli is not None:
+        deployed_native_hcli = dest_root / "hcli-rust"
+        shutil.copy2(native_hcli, deployed_native_hcli)
+        deployed_native_hcli.chmod(deployed_native_hcli.stat().st_mode | 0o111)
+        native_hcli_stamp = {
+            "status": "bundled",
+            "source": str(native_hcli),
+            "digest": _file_digest(native_hcli),
+            "path": deployed_native_hcli.name,
+        }
     (dest_root / INSTALL_STAMP).write_text(
         json.dumps(
-            {"source": str(src), "digest": package_digest(src), "installed": stamp},
+            {
+                "source": str(src),
+                "digest": package_digest(src),
+                "installed": stamp,
+                "native_gravityd": native_stamp,
+                "native_hcli": native_hcli_stamp,
+            },
             indent=2,
         )
         + "\n",
@@ -348,13 +429,63 @@ def install_shims(home: Optional[str] = None) -> int:
         print(f"reaped {reaped} old snapshot(s), kept {KEEP_BUILDS}")
 
     python = _shim_python()
+    # The daemon's Python host is deliberately a native executable named
+    # hawkingd. Rewriting argv with setproctitle makes ps useful, but Activity
+    # Monitor reads the Mach-O process name and otherwise calls the root
+    # Python. Keep the versioned alias inside the immutable deployed snapshot
+    # so upgrades are atomic with the current symlink.
+    daemon_python = dest_root / DAEMON_SHIM
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    standalone = sorted(
+        (
+            home_path
+            / ".local"
+            / "share"
+            / "uv"
+            / "python"
+        ).glob(f"cpython-{version}*-macos-*-none/bin/python{version}"),
+        reverse=True,
+    )
+    # The python.org macOS Framework launcher re-execs through Python.app,
+    # losing the native hard-link name. Prefer an already-installed standalone
+    # uv runtime of the same ABI for the lightweight daemon host. HCLI itself
+    # remains the stamped package in PYTHONPATH; this does not move authority
+    # into Open WebUI or an MLX environment.
+    daemon_host = standalone[0] if standalone else Path(python).resolve()
+    match = re.fullmatch(r"python(?P<version>\d+\.\d+)", daemon_host.name)
+    if match:
+        library = (
+            daemon_host.parent.parent
+            / "lib"
+            / f"libpython{match.group('version')}.dylib"
+        )
+        local_library = share / "lib" / library.name
+        if library.is_file():
+            local_library.parent.mkdir(parents=True, exist_ok=True)
+            if local_library.exists() or local_library.is_symlink():
+                if local_library.resolve() != library.resolve():
+                    raise RuntimeError(
+                        f"Refusing to replace unrelated daemon library {local_library}"
+                    )
+            else:
+                local_library.symlink_to(library)
+    try:
+        os.link(daemon_host.resolve(), daemon_python)
+    except OSError:
+        shutil.copy2(daemon_host.resolve(), daemon_python)
 
     def _script(module: str) -> str:
+        executable = '"$BASE/hawkingd"' if module == "hcli.hawkingd" else f'"{python}"'
         return (
             "#!/bin/sh\n"
             'BASE="$HOME/.local/share/hcli/current"\n'
             'export PYTHONPATH="$BASE${PYTHONPATH:+:$PYTHONPATH}"\n'
-            f'exec "{python}" -m {module} "$@"\n'
+            f'export HCLI_GRAVITY_REGISTRY="{src.parent / "workspace/campaign/odyssey/gravity-artifacts.json"}"\n'
+            # Python normally puts the current working directory ahead of
+            # PYTHONPATH. Without -P, invoking the installed shim from any
+            # Hawking checkout imports that checkout's hcli package and
+            # silently bypasses the stamped deployment/rollback target.
+            f"exec {executable} -P -m {module} \"$@\"\n"
         )
 
     bin_dir = home_path / ".local" / "bin"
@@ -372,6 +503,8 @@ def install_shims(home: Optional[str] = None) -> int:
         path.chmod(0o755)
         print(f"installed {path}")
     print(f"package {dest_pkg}")
+    print(f"native gravityd {native_stamp['status']}")
+    print(f"native hcli {native_hcli_stamp['status']}")
     print(f"python {python}")
     return 0
 

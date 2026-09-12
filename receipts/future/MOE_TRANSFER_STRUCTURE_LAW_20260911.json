@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.odyssey.moe_transfer_structure_law.v1",
+  "recorded_at": "2026-09-11T08:08:00Z",
+  "status": "SCOPED_CROSS_SPECIMEN_LAW",
+  "evidence": [
+    "receipts/future/LFM2_MOE_DEPTH_STATIC_LAW_20260911.json",
+    "receipts/future/KIMI_LINEAR48_LAYER1_STATIC_ANATOMY_20260911.json",
+    "receipts/future/GLM45_AIR_LAYER1_STATIC_ANATOMY_20260911.json"
+  ],
+  "law": "Across the tested LFM2 (64 experts), Kimi-Linear (256 experts), and GLM4 (128 experts) routed MoE organs, cross-expert sharing does not outperform matched nulls. Within-expert low-rank structure is architecture- and layer-conditional rather than a universal MoE property.",
+  "operational_effect": ["Do not spend body-wide budget on cross-expert shared bases, common-plus-delta, or clustering without a new causal hypothesis.", "Run within-expert low-rank discriminators only after anatomy establishes a matched-null deficit above the published threshold.", "Use nonlinear/generated/router-conditioned hypotheses for anatomy-negative bodies such as tested Kimi-Linear."],
+  "reopen_condition": "A materially different MoE anatomy or an output-aware causal discriminator must show cross-expert sharing superiority over its matched null; a lower raw ratio alone is insufficient.",
+  "claim_boundary": "Three static specimens are evidence for a scoped scheduling law, not a universal claim about all MoE models or a capability-preservation result."
+}

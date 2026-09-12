@@ -1,0 +1,832 @@
+{
+  "claim_boundary": "This dossier begins machine-wide characterization. It does not claim an SoC roof, ANE runtime throughput, KIMI CPU/GPU superiority, 100 TPS, 500 TPS, or promotion.",
+  "cpu_workload_probes": {
+    "claim_boundary": "Small CPU primitive measurements only; not a KIMI TPS result and not a CPU roofline.",
+    "evidence_tier": "HARDWARE_MEASURED",
+    "sort_int32": {
+      "elements": 1048576,
+      "median_ms": 10.013416002038866,
+      "reps": 5,
+      "samples_ms": [
+        10.02454198896885,
+        9.991416009142995,
+        10.013416002038866,
+        10.102499974891543,
+        9.994041989557445
+      ]
+    },
+    "vector_add_f32": {
+      "bytes_moved_per_rep": 100663296,
+      "elements": 8388608,
+      "median_gb_s": 118.80016080916492,
+      "median_ms": 0.847332994453609,
+      "reps": 5,
+      "samples_ms": [
+        0.8556659449823201,
+        0.8583749877288938,
+        0.8466659928672016,
+        0.8465000428259373,
+        0.847332994453609
+      ]
+    }
+  },
+  "domains": {
+    "ane": "MachineGenome supported-interface/presence characterization only; no ANE KIMI workload claim",
+    "cpu": "HARDWARE_MEASURED primitive probes plus MachineGenome identity",
+    "gpu": "MachineGenome bounded triad probe; KIMI TPS remains separate canonical evidence",
+    "storage": "MachineGenome bounded read-only CorpDrive and local mount characterization",
+    "unified_memory": "MachineGenome capacity/pressure observations and resource guard"
+  },
+  "generated_at": "2026-09-10T19:25:36.729698+00:00",
+  "gpu_attribution": {
+    "MEASURABLE_WITHOUT_PRIVILEGE": [
+      "which model servers exist and who owns them",
+      "resident memory held by each",
+      "%CPU over an interval, which separates LOADED-AND-IDLE from ACTIVE",
+      "whether a foreign server has any model loaded or any client attached"
+    ],
+    "NOT_MEASURABLE_WITHOUT_PRIVILEGE": [
+      "per-process GPU residency and utilization (sudo powermetrics only)",
+      "GPU power draw",
+      "dispatch counts and command-buffer occupancy from outside the process"
+    ],
+    "THE_RULE": "A saturated GPU proves SOMETHING is computing. Hawking Accelerator evidence requires naming the owning process, its runtime, its representation, and that the plan was SELECTED AND LOWERED by Hawking. Absent that, report UNATTRIBUTED.",
+    "at": "2026-09-10T19:25:36Z",
+    "foreign_model_servers": [
+      {
+        "command": "/Applications/Ollama.app/Contents/Resources/ollama serve",
+        "cpu": 0.0,
+        "cpu_samples": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "etime": "03-00:32:33",
+        "owner": "foreign",
+        "pid": 3551,
+        "ppid": 3491,
+        "role": "Ollama stack, separate runtime",
+        "rss_gib": 0.02,
+        "verdict": "IDLE, HOLDS NOTHING"
+      },
+      {
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp8a4008ep/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}",
+        "cpu": 0.0,
+        "cpu_samples": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "etime": "01-04:45:49",
+        "owner": "foreign",
+        "pid": 15230,
+        "ppid": 1,
+        "role": "MLX stack, separate runtime",
+        "rss_gib": 0.0,
+        "verdict": "IDLE, HOLDS NOTHING"
+      }
+    ],
+    "hawking_processes": [],
+    "window_note": "KIMI P0 / physical-gravity machine takeover characterization"
+  },
+  "kimi_physical_anchor": {
+    "canonical_tps_receipt": "/Users/scammermike/Downloads/hawking/receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+    "canonical_tps_status": "CANONICAL_TPS_BENCHMARK_COMPLETE",
+    "p0_freeze_receipt": "/Users/scammermike/Downloads/hawking/receipts/future/KIMI_P0_DENSITY_FREEZE_20260910.json",
+    "p0_freeze_status": "FROZEN_P0_DENSITY_SNAPSHOT_OPERATIONAL_ADMISSION_WITHHELD",
+    "raw_steady_decode_tps": 86.91719199781267
+  },
+  "machine": {
+    "genome": {
+      "arch": "arm64",
+      "backend_maturity": {
+        "ane_0": "PROFILED",
+        "cpu_0": "MEASURED",
+        "egpu_0": "DECLARED",
+        "fpga_hbm_0": "DECLARED",
+        "gpu_uma_0": "MEASURED",
+        "network": "PRESENT",
+        "nvidia_dgx_0": "DECLARED",
+        "storage": "MEASURED",
+        "u50dd_0": "DECLARED",
+        "uma_0": "PRESENT"
+      },
+      "cpu_cores": 28,
+      "domains": {
+        "ane_0": {
+          "claim_boundary": "Public MLComputePlan operation support and preferred placement, plus ioreg presence. No TOPS, no energy, no Flash residency claim. Requested compute units are not placement.",
+          "evidence_tier": "HARDWARE_MEASURED",
+          "ioreg": {
+            "evidence_tier": "HARDWARE_MEASURED",
+            "ioreg_class": "H11ANEIn",
+            "ioreg_mentions": 10,
+            "note": "presence only; ioreg is not a performance number",
+            "present": true
+          },
+          "kind": "ANE",
+          "lab_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+          "maturity": "PROFILED",
+          "mlcomputeplan": {
+            "api": "MLComputePlan.load(contentsOf:configuration:)",
+            "compile_api": "not_needed",
+            "compiled_model": "/tmp/ane_fp16.mlmodelc",
+            "model_structure": "MLProgram",
+            "operations": [
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 0,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": 0.006521777139506273,
+                "function": "main",
+                "index": 1,
+                "operator": "ios17.cast",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              },
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 2,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 3,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": 0.984310979551148,
+                "function": "main",
+                "index": 4,
+                "operator": "ios17.linear",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              },
+              {
+                "estimated_cost_weight": 0.002645466169839436,
+                "function": "main",
+                "index": 5,
+                "operator": "ios16.relu",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              },
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 6,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": 0.006521777139506273,
+                "function": "main",
+                "index": 7,
+                "operator": "ios17.cast",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              }
+            ],
+            "status": "PLANNED"
+          },
+          "name": "ane_0",
+          "neural_engine_present": true,
+          "placement": {
+            "ane_preferred_this_run": false,
+            "api": "MLComputePlan.load(contentsOf:configuration:)",
+            "evidence_class": "PUBLIC_API_OBSERVED",
+            "operations": [
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 0,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": 0.006521777139506273,
+                "function": "main",
+                "index": 1,
+                "operator": "ios17.cast",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              },
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 2,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 3,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": 0.984310979551148,
+                "function": "main",
+                "index": 4,
+                "operator": "ios17.linear",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              },
+              {
+                "estimated_cost_weight": 0.002645466169839436,
+                "function": "main",
+                "index": 5,
+                "operator": "ios16.relu",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              },
+              {
+                "estimated_cost_weight": null,
+                "function": "main",
+                "index": 6,
+                "operator": "const",
+                "placement_status": "UNKNOWN",
+                "preferred": null,
+                "supported": []
+              },
+              {
+                "estimated_cost_weight": 0.006521777139506273,
+                "function": "main",
+                "index": 7,
+                "operator": "ios17.cast",
+                "placement_status": "PLANNED",
+                "preferred": "CPU",
+                "supported": [
+                  "CPU",
+                  "GPU",
+                  "NEURAL_ENGINE"
+                ]
+              }
+            ],
+            "preferred_devices_observed": [
+              null,
+              "CPU",
+              null,
+              null,
+              "CPU",
+              "CPU",
+              null,
+              "CPU"
+            ],
+            "status": "PLANNED"
+          },
+          "predict": null,
+          "present": true,
+          "supported_compute_devices": [
+            "NEURAL_ENGINE",
+            "GPU",
+            "CPU"
+          ]
+        },
+        "cpu_0": {
+          "arch": "arm64",
+          "cores": 28,
+          "efficiency_cores": 8,
+          "evidence_tier": "HARDWARE_MEASURED",
+          "kind": "CPU",
+          "maturity": "MEASURED",
+          "name": "cpu_0",
+          "perf_cores": 20,
+          "present": true,
+          "soc": "Apple M3 Ultra"
+        },
+        "egpu_0": {
+          "evidence_tier": "STATIC",
+          "kind": "EXTERNAL_ACCELERATOR",
+          "maturity": "DECLARED",
+          "name": "egpu_0",
+          "note": "Anything about an eGPU on this machine is a model, never a measurement",
+          "performance": "UNKNOWN",
+          "physical": false,
+          "present": false,
+          "product_family": "EGPU",
+          "reason": "no eGPU enclosure is attached to this host. The Apple SoC GPU is not an eGPU.",
+          "wake_condition": "EGPU_PRESENT"
+        },
+        "fpga_hbm_0": {
+          "evidence_tier": "STATIC",
+          "kind": "FPGA",
+          "maturity": "DECLARED",
+          "name": "fpga_hbm_0",
+          "note": "COST_MODEL interconnect knobs live in fusion_bridge; nothing here is a measurement",
+          "performance": "UNKNOWN",
+          "physical": false,
+          "present": false,
+          "product": null,
+          "reason": "no FPGA is attached to this host; fpga_hbm_0 is the same declared domain name fusion_bridge already uses. A future board fills this record; it does not require a schema change.",
+          "wake_condition": "U50_PRESENT"
+        },
+        "gpu_uma_0": {
+          "evidence_tier": "HARDWARE_MEASURED",
+          "gpu_cores": 60,
+          "kind": "GPU",
+          "maturity": "MEASURED",
+          "measured_bandwidth": {
+            "bytes_moved_per_rep": 805306368,
+            "elements": 67108864,
+            "evidence_tier": "HARDWARE_MEASURED",
+            "full_range_spread_pct": 14.76,
+            "iqr_spread_pct": 3.03,
+            "is_theoretical_roof": false,
+            "median_gb_s": 572.71,
+            "note": "one access pattern on one dtype; not the SoC roof and not a workload-reachable roof",
+            "pattern": "triad c = a + b, f32",
+            "q1_gb_s": 564.17,
+            "q3_gb_s": 581.27,
+            "reliable": true,
+            "reps": 30,
+            "warmup": 8
+          },
+          "name": "gpu_uma_0",
+          "note": "gpu_uma_0 is the host GPU domain name fusion_bridge already uses",
+          "present": true
+        },
+        "network": {
+          "evidence_tier": "STATIC",
+          "interfaces": [
+            "lo0",
+            "gif0",
+            "stf0",
+            "anpi0",
+            "anpi5",
+            "anpi1",
+            "anpi4",
+            "anpi2",
+            "anpi3",
+            "en0",
+            "en8",
+            "en9",
+            "en10",
+            "en11",
+            "en12",
+            "en13",
+            "en2",
+            "en3",
+            "en4",
+            "en5",
+            "en6",
+            "en7",
+            "utun0",
+            "ap1",
+            "en1",
+            "bridge0",
+            "awdl0",
+            "llw0",
+            "utun1",
+            "utun2",
+            "utun3",
+            "utun4",
+            "nan0"
+          ],
+          "kind": "NETWORK",
+          "maturity": "PRESENT",
+          "name": "network",
+          "present": true,
+          "wan_throughput": {
+            "evidence_tier": "STATIC",
+            "reason": "live hf download workers write to /Volumes/corpdrive; a WAN sample would be contended and could disturb them",
+            "status": "BLOCKED"
+          }
+        },
+        "nvidia_dgx_0": {
+          "evidence_tier": "STATIC",
+          "kind": "EXTERNAL_ACCELERATOR",
+          "maturity": "DECLARED",
+          "name": "nvidia_dgx_0",
+          "note": "Anything about DGX/FPGA/eGPU on this machine is a model, never a measurement",
+          "performance": "UNKNOWN",
+          "physical": false,
+          "present": false,
+          "product_family": "NVIDIA_DGX",
+          "reason": "no DGX, no discrete NVIDIA GPU, no eGPU on this host. The domain is declared so a future DGX slots in without a schema change.",
+          "wake_condition": "DGX_PRESENT"
+        },
+        "storage": {
+          "corpdrive": {
+            "mounted": true,
+            "probe": "read-only sequential + statvfs + metadata",
+            "wrote": false
+          },
+          "evidence_tier": "HARDWARE_MEASURED",
+          "kind": "STORAGE",
+          "laws": [
+            {
+              "evidence_tier": "STATIC",
+              "law_id": "STORAGE-CHANGES-SCIENCE-ECONOMICS",
+              "scope": "ARCHITECTURE",
+              "statement": "ModelLake and Odyssey already showed that the storage tier (HDD lake vs SSD stage vs UMA resident) changes what science is affordable. The genome therefore carries mounts, capacity, observed sequential rate, metadata behaviour and cache characteristics, not just SoC identity."
+            }
+          ],
+          "maturity": "MEASURED",
+          "mounts": [
+            {
+              "capacity": {
+                "capacity_bytes": 994662584320,
+                "evidence_tier": "HARDWARE_MEASURED",
+                "free_bytes": 203944415232,
+                "frsize": 4096
+              },
+              "device": "/dev/disk3s1s1",
+              "evidence_tier": "STATIC",
+              "exists": true,
+              "fstype": "apfs",
+              "metadata": {
+                "evidence_tier": "HARDWARE_MEASURED",
+                "listdir_s": 0.0,
+                "n_stat": 22,
+                "note": "metadata sample of the directory itself, not a recursive walk",
+                "path": "/",
+                "stat_s": 0.0001
+              },
+              "mount": "/",
+              "options": [
+                "sealed",
+                "local",
+                "read-only",
+                "journaled"
+              ],
+              "read_only": true,
+              "sequential": {
+                "evidence_tier": "STATIC",
+                "reason": "/ is read-only; no write probe, no disposable file",
+                "status": "BLOCKED"
+              }
+            },
+            {
+              "capacity": {
+                "capacity_bytes": 994662584320,
+                "evidence_tier": "HARDWARE_MEASURED",
+                "free_bytes": 203944415232,
+                "frsize": 4096
+              },
+              "device": "/dev/disk3s5",
+              "evidence_tier": "STATIC",
+              "exists": true,
+              "fstype": "apfs",
+              "metadata": {
+                "evidence_tier": "HARDWARE_MEASURED",
+                "listdir_s": 0.0,
+                "n_stat": 21,
+                "note": "metadata sample of the directory itself, not a recursive walk",
+                "path": "/System/Volumes/Data",
+                "stat_s": 0.0001
+              },
+              "mount": "/System/Volumes/Data",
+              "options": [
+                "local",
+                "journaled",
+                "nobrowse",
+                "protect",
+                "root data"
+              ],
+              "read_only": false,
+              "sequential": {
+                "bytes": 67108864,
+                "dir": "/tmp",
+                "evidence_tier": "HARDWARE_MEASURED",
+                "note": "tempfile created under a writable mount and unlinked; not a roof",
+                "read": {
+                  "bytes_sampled": 67108864,
+                  "cache_speedup": 1.29,
+                  "cold_gb_s": 19.737,
+                  "cold_s": 0.0034,
+                  "evidence_tier": "HARDWARE_MEASURED",
+                  "note": "bounded sequential read of an existing file; not a disk roof",
+                  "path": "/tmp/genome-seq-n3ev8bq6",
+                  "reason": "sample elapsed 0.0034s; a sub-5ms window is not a rate",
+                  "reliable": false,
+                  "status": "UNRELIABLE",
+                  "warm_gb_s": 25.382,
+                  "warm_s": 0.0026
+                },
+                "write_gb_s": 8.035,
+                "write_s": 0.0084
+              }
+            },
+            {
+              "capacity": {
+                "capacity_bytes": 5000771321856,
+                "evidence_tier": "HARDWARE_MEASURED",
+                "free_bytes": 91792486400,
+                "frsize": 4096
+              },
+              "device": "/dev/disk5s1",
+              "evidence_tier": "STATIC",
+              "exists": true,
+              "fstype": "apfs",
+              "metadata": {
+                "evidence_tier": "HARDWARE_MEASURED",
+                "listdir_s": 0.0,
+                "n_stat": 11,
+                "note": "metadata sample of the directory itself, not a recursive walk",
+                "path": "/Volumes/corpdrive",
+                "stat_s": 0.0
+              },
+              "mount": "/Volumes/corpdrive",
+              "options": [
+                "local",
+                "nodev",
+                "nosuid",
+                "journaled",
+                "noowners"
+              ],
+              "random": {
+                "block": 4096,
+                "bytes": 131072,
+                "evidence_tier": "HARDWARE_MEASURED",
+                "iops": 51.3,
+                "n": 32,
+                "note": "scattered 4KiB reads of an existing file; not a random-IOPS roof",
+                "path": "/Volumes/corpdrive/legal-scans-2026-08-23.tar.zst",
+                "s": 0.6238
+              },
+              "read_only": false,
+              "sequential": {
+                "bytes_sampled": 67108864,
+                "cache_speedup": 1.22,
+                "cold_gb_s": 18.994,
+                "cold_s": 0.0035,
+                "evidence_tier": "HARDWARE_MEASURED",
+                "note": "bounded sequential read of an existing file; not a disk roof",
+                "path": "/Volumes/corpdrive/legal-scans-2026-08-23.tar.zst",
+                "reason": "sample elapsed 0.0035s; a sub-5ms window is not a rate",
+                "reliable": false,
+                "status": "UNRELIABLE",
+                "warm_gb_s": 23.126,
+                "warm_s": 0.0029
+              },
+              "write_probe": {
+                "evidence_tier": "STATIC",
+                "reason": "READ-ONLY on this mount; live downloads / protected volume",
+                "status": "BLOCKED"
+              }
+            },
+            {
+              "capacity": {
+                "capacity_bytes": 994662584320,
+                "evidence_tier": "HARDWARE_MEASURED",
+                "free_bytes": 203944407040,
+                "frsize": 4096
+              },
+              "device": null,
+              "evidence_tier": "STATIC",
+              "exists": true,
+              "fstype": null,
+              "metadata": {
+                "evidence_tier": "HARDWARE_MEASURED",
+                "listdir_s": 0.0003,
+                "n_stat": 32,
+                "note": "metadata sample of the directory itself, not a recursive walk",
+                "path": "/tmp",
+                "stat_s": 0.0001
+              },
+              "mount": "/tmp",
+              "options": [],
+              "read_only": false,
+              "sequential": {
+                "bytes": 67108864,
+                "dir": "/tmp",
+                "evidence_tier": "HARDWARE_MEASURED",
+                "note": "tempfile created under a writable mount and unlinked; not a roof",
+                "read": {
+                  "bytes_sampled": 67108864,
+                  "cache_speedup": 1.3,
+                  "cold_gb_s": 20.789,
+                  "cold_s": 0.0032,
+                  "evidence_tier": "HARDWARE_MEASURED",
+                  "note": "bounded sequential read of an existing file; not a disk roof",
+                  "path": "/tmp/genome-seq-481gu3o6",
+                  "reason": "sample elapsed 0.0032s; a sub-5ms window is not a rate",
+                  "reliable": false,
+                  "status": "UNRELIABLE",
+                  "warm_gb_s": 27.101,
+                  "warm_s": 0.0025
+                },
+                "write_gb_s": 7.946,
+                "write_s": 0.0084
+              }
+            }
+          ],
+          "name": "storage",
+          "present": true
+        },
+        "u50dd_0": {
+          "brochure_lives_in": "tools.future.hwir.u50_family_profile",
+          "evidence_tier": "STATIC",
+          "expected_sku": "A-U50DD-P00G-ES3-G",
+          "kind": "FPGA",
+          "maturity": "DECLARED",
+          "name": "u50dd_0",
+          "note": "Anything about U50DD on this machine is a model, never a measurement",
+          "performance": "UNKNOWN",
+          "physical": false,
+          "present": false,
+          "product": "Alveo U50DD",
+          "reason": "no U50/U50DD is attached to this host. Expected SKU is a planning name, not a local census. Vendor-literature LUT/DSP/HBM figures live in hwir.u50_family_profile('u50dd') and are STATIC, not HARDWARE_MEASURED.",
+          "wake_condition": "U50_PRESENT"
+        },
+        "uma_0": {
+          "capacity_bytes": 103079215104,
+          "capacity_evidence_tier": "HARDWARE_MEASURED",
+          "evidence_tier": "STATIC",
+          "internal_coherency": "HARDWARE_UMA",
+          "kind": "UMA",
+          "laws": [
+            {
+              "evidence_tier": "STATIC",
+              "law_id": "UMA-COPY-ELISION",
+              "note": "topology fact, not a speedup number; it does not transfer to a discrete-GPU machine",
+              "scope": "MACHINE_LOCAL",
+              "statement": "On this unified-memory SoC, CUDA-era host-to-device and device-to-host copies are structurally avoidable. There is no separate device memory."
+            }
+          ],
+          "maturity": "PRESENT",
+          "name": "uma_0",
+          "present": true
+        }
+      },
+      "efficiency_cores": 8,
+      "evidence_tiers_used": [
+        "HARDWARE_MEASURED",
+        "STATIC"
+      ],
+      "generated_at": "2026-09-10T19:25:24Z",
+      "genome_digest": "43aa4f8db59804fb5b5c72aaac9680a37666564241ba7a6ec6299ca91a30d67f",
+      "gpu_cores": 60,
+      "knowledge_level": "INSTANCE",
+      "laws": [
+        {
+          "evidence_tier": "STATIC",
+          "law_id": "UMA-COPY-ELISION",
+          "note": "topology fact, not a speedup number; it does not transfer to a discrete-GPU machine",
+          "scope": "MACHINE_LOCAL",
+          "statement": "On this unified-memory SoC, CUDA-era host-to-device and device-to-host copies are structurally avoidable. There is no separate device memory."
+        },
+        {
+          "evidence_tier": "STATIC",
+          "law_id": "STORAGE-CHANGES-SCIENCE-ECONOMICS",
+          "scope": "ARCHITECTURE",
+          "statement": "ModelLake and Odyssey already showed that the storage tier (HDD lake vs SSD stage vs UMA resident) changes what science is affordable. The genome therefore carries mounts, capacity, observed sequential rate, metadata behaviour and cache characteristics, not just SoC identity."
+        }
+      ],
+      "measured_bandwidth": {
+        "bytes_moved_per_rep": 805306368,
+        "elements": 67108864,
+        "evidence_tier": "HARDWARE_MEASURED",
+        "full_range_spread_pct": 14.76,
+        "iqr_spread_pct": 3.03,
+        "is_theoretical_roof": false,
+        "median_gb_s": 572.71,
+        "note": "one access pattern on one dtype; not the SoC roof and not a workload-reachable roof",
+        "pattern": "triad c = a + b, f32",
+        "q1_gb_s": 564.17,
+        "q3_gb_s": 581.27,
+        "reliable": true,
+        "reps": 30,
+        "warmup": 8
+      },
+      "measurement_conditions": {
+        "contended": true,
+        "note": "live HCLI daemon, ModelLake watcher, and local KIMI derivative server; bounded characterization only"
+      },
+      "memory_bytes": 103079215104,
+      "note": "domains is an open dict keyed by name. FPGA / DGX / eGPU / a future M-series fill a record via declare_domain(); they do not require a schema bump. This M3 Ultra is the first real profile of that shape.",
+      "open_domain_schema": true,
+      "os": "Darwin 27.0.0",
+      "os_product": "27.0",
+      "perf_cores": 20,
+      "schema": "hawking.accelerator.machine_genome.v2",
+      "soc": "Apple M3 Ultra",
+      "sustained_behaviour": {
+        "reason": "microbenchmark only; the steer requires sustained evidence to be distinguished from a microbenchmark and this is the latter",
+        "status": "ABSENT"
+      },
+      "thermal_envelope": {
+        "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here",
+        "status": "ABSENT"
+      },
+      "toolchain": {
+        "metal_compiler": {
+          "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT",
+          "status": "ABSENT"
+        },
+        "mlx": "0.32.1",
+        "python": "3.12.6"
+      }
+    },
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.6"
+  },
+  "next_work": [
+    "run matched CPU/GPU KIMI decode placement experiments under the canonical protocol",
+    "attribute token latency into weights, routing, representation decode, attention/state, dispatch, and sampling",
+    "extend supported Core ML/ANE organ probes only where a complete-token workload can be measured",
+    "keep 100 and 500 TPS claims closed until end-to-end sustained decode receipts pass"
+  ],
+  "resource_guard": {
+    "cpu_probe_end": {
+      "compressor_gb": 7.58,
+      "expected_gb": 1.0,
+      "free_gb": 60.02,
+      "headroom_gb": 59.02,
+      "reasons": [],
+      "reclaimable_gb": 31.97,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 28.05,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.9
+    },
+    "entry": {
+      "compressor_gb": 7.58,
+      "expected_gb": 1.0,
+      "free_gb": 60.14,
+      "headroom_gb": 59.14,
+      "reasons": [],
+      "reclaimable_gb": 31.97,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 28.17,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.9
+    }
+  },
+  "schema": "hawking.future.kimi_compute_takeover_dossier.v1",
+  "status": "MACHINE_WIDE_COMPUTE_CHARACTERIZATION_COMPLETE",
+  "summary": {
+    "ane_maturity": "PROFILED",
+    "cpu_maturity": "MEASURED",
+    "cpu_vector_add_median_gb_s": 118.80016080916492,
+    "gpu_attribution_foreign_model_servers": 2,
+    "gpu_attribution_hawking_processes": 0,
+    "gpu_triad_iqr_spread_pct": 3.03,
+    "gpu_triad_median_gb_s": 572.71,
+    "storage_maturity": "MEASURED",
+    "uma_maturity": "PRESENT"
+  }
+}

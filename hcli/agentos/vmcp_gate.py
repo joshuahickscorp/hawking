@@ -190,7 +190,7 @@ def _row(name: str, result: ToolResult) -> Dict[str, Any]:
             for item in (value.get("results") or [])[:8]
             if isinstance(item, dict)
         ]
-    elif name == "filesystem.read":
+    elif name in {"fs", "fs.read", "filesystem.read"}:
         row["path"] = value.get("path")
         row["bytes"] = value.get("bytes")
         row["sha256"] = value.get("sha256")
@@ -285,7 +285,10 @@ def run_vmcp_gate(
     # backwards: the gate should pass with the foreign package absent, and a
     # gate that still demanded it would fail the very state we want.
     api_file = repo / "hcli" / "perception" / "tools.py"
-    local = call("filesystem.read", {"path": str(api_file), "max_bytes": 64 * 1024})
+    # The canonical `fs` family is the model-facing owner.  Keep the
+    # filesystem.read alias callable for compatibility, but production code
+    # should stop paying the alias-selection tax.
+    local = call("fs", {"op": "read", "path": str(api_file), "max_bytes": 64 * 1024})
     local_validated = bool(
         local
         and local.ok

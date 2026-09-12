@@ -1,0 +1,51 @@
+{
+  "artifact_created": false,
+  "battery": {
+    "kind": "builtin",
+    "name": "KIMI_REFUSAL_BATTERY_BUILTIN_V1",
+    "sha256": null
+  },
+  "behavior_counts": null,
+  "candidate_causal_interventions": {
+    "KIMI_OPERATOR_CANDIDATE_OPH": {
+      "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+      "candidate_method": "OPH",
+      "causal_effect_established": false,
+      "causal_sample_sufficient": false,
+      "crossfit_consistent": false,
+      "device_preflight": {
+        "owner": "hawkingd",
+        "owner_pid": 21611,
+        "reason": "The live hawkingd resident owns the MPS/model surface. OPH did not load KIMI, create a second provider, or begin an intervention.",
+        "reopen_when": "A controlled clean MPS window is available and the daemon/provider has been quiesced with its handle and rollback preserved.",
+        "resident": "KIMI_P0_OPERATIONAL",
+        "status": "OPH_DEVICE_BUSY"
+      },
+      "operator_kind": "crossfit_router_logit_projection",
+      "status": "OPH_DEVICE_BUSY"
+    }
+  },
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+  "candidate_method": "OPH",
+  "claim_boundary": "Preflight-only result. No behavior, separability, causality, capability, authorization, or promotion claim is made.",
+  "device": "mps",
+  "device_preflight": {
+    "owner": "hawkingd",
+    "owner_pid": 21611,
+    "reason": "The live hawkingd resident owns the MPS/model surface. OPH did not load KIMI, create a second provider, or begin an intervention.",
+    "reopen_when": "A controlled clean MPS window is available and the daemon/provider has been quiesced with its handle and rollback preserved.",
+    "resident": "KIMI_P0_OPERATIONAL",
+    "status": "OPH_DEVICE_BUSY"
+  },
+  "dtype": "bfloat16",
+  "elapsed_seconds": 0.022,
+  "generated_at": "2026-09-10T22:27:19.833907+00:00",
+  "recorded_by": "tools/future/kimi_router_operator_live.py",
+  "routing": {},
+  "schema": "hawking.kimi.router_operator_live.v1",
+  "source_model": "KIMI_BASE",
+  "source_script_sha256": "86266c2ebda9993f41f78b248497ac89446ef711a74b5c5e199235b8e6774e79",
+  "specimen": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+  "status": "OPH_DEVICE_BUSY",
+  "weights_written": false
+}

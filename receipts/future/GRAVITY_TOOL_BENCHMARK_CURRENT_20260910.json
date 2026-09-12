@@ -1,0 +1,69 @@
+{
+  "claim_boundary": "This is a baseline for comparison. It does not claim a speedup, capability parity, or semantic equivalence for any future reduction.",
+  "generated_at": "2026-09-10T07:29:20.213521+00:00",
+  "next_measurement": "Run the same receipt after one typed-family migration and compare first-tool correctness, invalid-call recovery, tokens, latency, compile cost, and retained tests.",
+  "schema": "hawking.gravity.tool_benchmark.v1",
+  "source": {
+    "bytes": 217365,
+    "lines": 4551,
+    "path": "hcli/tool_registry.py"
+  },
+  "status": "CURRENT_PARITY",
+  "surface": {
+    "all_catalog_json_bytes": 76863,
+    "compatibility_aliases": 66,
+    "discoverable_catalog_json_bytes": 38773,
+    "discoverable_model_facing_tools": 43,
+    "focused_catalog_json_bytes": {
+      "authorized defensive security": 9565,
+      "campaign": 5491,
+      "filesystem": 11078,
+      "gravity": 4327
+    },
+    "registered_callable_spellings": 109
+  },
+  "timing": {
+    "discover": {
+      "max_s": 4.633297794498503e-05,
+      "median_s": 4.135450581088662e-05,
+      "min_s": 4.049998824484646e-05
+    },
+    "focused_discover": {
+      "authorized defensive security": {
+        "max_s": 0.00010558398207649589,
+        "median_s": 8.179149881470948e-05,
+        "min_s": 8.045800495892763e-05
+      },
+      "campaign": {
+        "max_s": 2.2000021999701858e-05,
+        "median_s": 2.018800296355039e-05,
+        "min_s": 1.954101026058197e-05
+      },
+      "filesystem": {
+        "max_s": 3.312499029561877e-05,
+        "median_s": 2.452101034577936e-05,
+        "min_s": 2.358300844207406e-05
+      },
+      "gravity": {
+        "max_s": 2.445801510475576e-05,
+        "median_s": 2.0020990632474422e-05,
+        "min_s": 1.979200169444084e-05
+      }
+    },
+    "registry_build": {
+      "max_s": 0.0008942919957917184,
+      "median_s": 0.0008753750007599592,
+      "min_s": 0.0007721669971942902
+    },
+    "tool_registry_compile": {
+      "max_s": 0.022336250025546178,
+      "median_s": 0.020821208017878234,
+      "min_s": 0.020113915990805253
+    },
+    "unknown_tool_recovery": {
+      "max_s": 2.1917017875239253e-05,
+      "median_s": 3.2919924706220627e-06,
+      "min_s": 3.1249946914613247e-06
+    }
+  }
+}

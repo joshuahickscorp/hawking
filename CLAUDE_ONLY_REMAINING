@@ -1,0 +1,18 @@
+# Claude-only remaining capability
+
+Initial Exodus pass: **no high-value Hawking capability was proven to require
+Claude.** Persistent objectives, bounded missions, steering, receipts, local
+daemon ownership, worktree discipline, verification, and Grok delegation all
+have Codex/HCLI/Hawking-native paths.
+
+The following low-priority convenience remains provider-specific and is not a
+migration blocker:
+
+| Capability | Why it remains | Replacement / decision |
+|---|---|---|
+| Claude lifecycle hook events (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `SubagentStop`, `Stop`) and exact slash-command UI ergonomics | The source uses Claude's hook protocol and this pass did not install a Codex hook plugin or reproduce the UI command palette one-for-one | Keep deterministic behavior in HCLI/repository tests. Use Codex `AGENTS.md`, native tasks, skills, hooks when specifically needed, or HCLI commands. `NEEDS_REDESIGN`, low importance. |
+| The live Blender MCP extension observed in Claude's process list | It is an external Claude extension, not a durable Hawking project configuration, and no Hawking workflow in the inspected source proved dependent on it | Use Codex Computer Use/browser surfaces or an explicit Blender integration when a real task requires it. `CLAUDE_ONLY`, low importance, authentication/source path unresolved. |
+
+This file is intentionally explicit rather than claiming literal zero for
+unverified external conveniences. Re-evaluate it when a real Hawking task
+requires Blender or lifecycle-hook semantics.

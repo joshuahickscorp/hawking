@@ -290,6 +290,37 @@ class TestArgvConstruction(_BridgeTest):
         self.assertIn("--background", argv)
         self.assertEqual(handle.task_id, "consult-20260101-000000")
 
+    def test_revise_flags_and_mutation_lock(self):
+        calls = []
+        order = []
+
+        @contextmanager
+        def lock():
+            order.append("enter")
+            yield
+            order.append("exit")
+
+        with self._patch_run(stdout="revision complete\n", collector=calls):
+            out = self.bridge.revise(
+                "revise-20260101-000000",
+                VALID_CONTRACT,
+                mutation_lock=lock,
+            )
+        argv, _ = calls[0]
+        self.assertEqual(argv[:4], [FAKE_BIN, "revise", "--id", "revise-20260101-000000"])
+        self.assertTrue(Path(argv[argv.index("--contract") + 1]).is_file())
+        self.assertEqual(order, ["enter", "exit"])
+        self.assertTrue(out["ok"])
+        self.assertTrue(out["mutation_serialized"])
+
+    def test_verify_preserves_structured_provider_receipt_without_accepting_it(self):
+        provider = {"status": "verified", "checks": [{"name": "tests", "ok": True}]}
+        with self._patch_run(stdout=json.dumps(provider)):
+            out = self.bridge.verify("verify-20260101-000000")
+        self.assertEqual(out["provider_receipt"], provider)
+        self.assertTrue(out["ok"])
+        self.assertFalse(out["hcli_acceptance"])
+
 
 class TestReceipts(_BridgeTest):
     def test_delegate_and_audit_write_receipts(self):
@@ -320,6 +351,64 @@ class TestReceipts(_BridgeTest):
         areceipt = json.loads(apath.read_text())
         self.assertEqual(areceipt["mode"], "audit")
         self.assertEqual(areceipt["command_run"], audit.command_run)
+
+    def test_v2_mission_records_exact_plan_and_receipt(self):
+        mission = self.root / "mission.md"
+        mission.write_text("## inspect\nread-only evidence\n", encoding="utf-8")
+        calls = []
+        with self._patch_run(stdout="plan: inspect\n", collector=calls):
+            out = self.bridge.mission(mission, mode="fast", dry_run=True)
+        argv, kwargs = calls[0]
+        self.assertEqual(argv[0], FAKE_BIN)
+        self.assertEqual(argv[1], str(mission.resolve()))
+        self.assertEqual(argv[argv.index("--mode") + 1], "FAST")
+        self.assertIn("--dry", argv)
+        self.assertNotIn("GROK_DRYRUN", kwargs["env"])
+        receipt = json.loads(Path(out["receipt_path"]).read_text(encoding="utf-8"))
+        self.assertEqual(receipt["schema"], "hcli.grok_mission.v1")
+        self.assertTrue(receipt["dry_run"])
+        self.assertTrue(
+            any("verification" in item.lower() for item in receipt["limitations"])
+        )
+        self.assertTrue(
+            any("independently" in item.lower() for item in receipt["limitations"])
+        )
+
+    def test_v2_mission_rejects_file_outside_workspace(self):
+        with tempfile.TemporaryDirectory() as outside:
+            path = Path(outside) / "mission.md"
+            path.write_text("## outside\n", encoding="utf-8")
+            with self.assertRaises(GrokContractError):
+                self.bridge.mission(path, dry_run=True)
+
+    def test_telemetry_absence_is_explicit(self):
+        out = self.bridge.telemetry("missing-20260101-000000")
+        self.assertFalse(out["observed"])
+        self.assertIn("absent", out["reason"])
+
+    def test_telemetry_reads_receipt_task_dir(self):
+        task_id = "tele-20260101-000000"
+        task_dir = self.root / "provider-task"
+        task_dir.mkdir()
+        (task_dir / "telemetry.json").write_text(
+            json.dumps({"retries": 2, "mode": "power"}), encoding="utf-8"
+        )
+        receipt = self.bridge.receipt_path(task_id)
+        receipt.parent.mkdir(parents=True, exist_ok=True)
+        receipt.write_text(json.dumps({"task_dir": str(task_dir)}), encoding="utf-8")
+        out = self.bridge.telemetry(task_id)
+        self.assertTrue(out["observed"])
+        self.assertEqual(out["telemetry"]["retries"], 2)
+
+
+class TestProviderHealth(_BridgeTest):
+    def test_doctor_preserves_output(self):
+        calls = []
+        with self._patch_run(stdout="grok version: 4.6\n", collector=calls):
+            out = self.bridge.doctor()
+        self.assertEqual(calls[0][0], [FAKE_BIN, "doctor"])
+        self.assertTrue(out["ok"])
+        self.assertIn("4.6", out["stdout"])
 
 
 class TestReceiptCompletenessAndSuccess(_BridgeTest):

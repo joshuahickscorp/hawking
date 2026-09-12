@@ -1876,7 +1876,9 @@ impl Engine for QwenDense {
                 break;
             }
         }
-        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        let prefill_ns = prefill_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.prefill_ns = prefill_ns;
+        stats.prefill_ms = prefill_ns as f64 / 1_000_000.0;
 
         // CRITICAL ordering — mirror the GPU arena KV into `self.kv` BEFORE
         // either cache store. On the TCB prefill path the per-token K/V live
@@ -1964,6 +1966,7 @@ impl Engine for QwenDense {
         // Preserve an individual complete-forward timing for each emitted token.
         // Aggregate decode throughput hides tail stalls, and the TG harness must
         // never infer p50/p95/p99 from a run-wide average.
+        let mut decode_token_ns = Vec::with_capacity(req.max_new_tokens);
         let mut decode_token_ms = Vec::with_capacity(req.max_new_tokens);
 
         // P1f: full-Metal TCB path, DEFAULT-ON for greedy (temp==0). The GPU
@@ -2567,12 +2570,14 @@ impl Engine for QwenDense {
                     decode_cpu_reference_fallback_total =
                         decode_cpu_reference_fallback_total.saturating_add(1);
                 }
-                let complete_forward_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                let complete_forward_ns =
+                    step_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
                     break;
                 }
-                decode_token_ms.push(complete_forward_ms);
+                decode_token_ns.push(complete_forward_ns);
+                decode_token_ms.push(complete_forward_ns as f64 / 1_000_000.0);
                 self.sampler.record(next_id);
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 let json_done = if let Some(c) = json_constraint.as_mut() {
@@ -2642,8 +2647,11 @@ impl Engine for QwenDense {
             }
             last_id = next_id;
         }
-        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        let decode_ns = decode_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.decode_ns = decode_ns;
+        stats.decode_ms = decode_ns as f64 / 1_000_000.0;
         stats.completion_tokens = produced;
+        stats.decode_token_ns = decode_token_ns;
         stats.decode_token_ms = decode_token_ms;
         stats.dispatch_samples = self
             .metal_ctx

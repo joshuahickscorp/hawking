@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.kimi.loader_tabula_selftest.v1",
+  "recorded_at": "2026-09-10T22:52:19Z",
+  "status": "VERIFIED_CPU_SELFTESTS",
+  "tests": {
+    "native_loader": {
+      "command": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/bin/python tools/future/dsv3_native_loader.py --selftest",
+      "result": "PASS",
+      "summary": "fused layout [E, 2*inter, hidden], GATE first, independently verified against silu(xG)*(xU)D",
+      "torch": "2.14.0",
+      "mps_available_observed": true,
+      "source_sha256": "8e2156ce8d974176eb60d9514863e17fa9bcf7288e34f6390eb85e93d138cb11"
+    },
+    "tabula": {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 tools/future/tabula.py --selftest",
+      "result": "PASS",
+      "receipt": "receipts/future/TABULA_FLOOR.json",
+      "receipt_sha256": "ab0bde70e3d8025adb69aa368ef84ec326f4f5aeaf8a671e9a88e5bfb6928b34",
+      "source_sha256": "2132814b96db3c36f243ec0bc66651a4379729cbf4a23ebaa09229be9be32bcc"
+    },
+    "operator_test_suite": {
+      "result": "PASS",
+      "passed": 77,
+      "skipped": 0,
+      "scope": "candidate registration, functional simulation, held-out/evidence gates, live preflight, router coverage, promotion bridge"
+    }
+  },
+  "device_policy": {
+    "weights_loaded": false,
+    "mps_lease_acquired": false,
+    "live_kimi_resident_disturbed": false,
+    "claim": "CPU/static machinery verification only"
+  },
+  "operator_frontier": {
+    "live_candidate_promotion": "WITHHELD",
+    "oph": "DEFERRED_DEVICE_BUSY_WHILE_HAWKINGD_OWNS_MPS",
+    "next_required_evidence": "clean-process candidate-specific held-out and causal evaluation after the live resident can be quiesced under the existing gates"
+  },
+  "claim_boundary": "This receipt verifies structural loader, Tabula, and operator-gate machinery only. It does not claim a learned causal operator, changed KIMI behavior, capability preservation, native Kimi execution, or promotion."
+}

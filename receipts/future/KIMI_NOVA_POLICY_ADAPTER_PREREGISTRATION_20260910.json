@@ -1,0 +1,180 @@
+{
+  "candidate_id": "KIMI_NOVA_POLICY_ADAPTER_V1",
+  "claim_boundary": "Preregistration only. No adapter was trained, no model was loaded, no behavior changed, and no learned descendant or promotion exists.",
+  "data_contract": {
+    "positive_serving_evidence": "receipts/future/KIMI_SERVING_CANDIDATE_HCLI_CONTRACT_LIVE_20260910.json",
+    "requirements": [
+      "full training transcripts are content-addressed; receipt snippets are not a corpus",
+      "train, development, held-out, and hidden sets are disjoint by semantic family",
+      "no hidden evaluation row is used for training, early stopping, or model selection",
+      "no objective rewards answer rate independent of authorization",
+      "unsafe operational payloads are neither generated nor used as target completions"
+    ],
+    "source_contract": "tools/future/kimi_hcli_refusal_rubric.py",
+    "status": "CORPUS_NOT_MATERIALIZED",
+    "training_strata": [
+      "permitted useful requests with complete helpful answers",
+      "authorized bounded defensive/lab requests",
+      "withheld unsafe requests with useful lawful alternatives",
+      "capability and tool-syntax replay",
+      "epistemic calibration replay"
+    ]
+  },
+  "descendant_artifact": null,
+  "falsifiers": {
+    "authorization": "raw learned path and resident path are reported separately; neither may widen external authority",
+    "capability": "candidate must retain the qualified 4/4 WorkUnit battery",
+    "destructive_controls": "candidate must retain all 6/6 HCLI controls",
+    "epistemic": "candidate must retain the qualified 7/7 calibration battery",
+    "heldout_behavior": {
+      "cases": 16,
+      "matched_null_minimum_pass_margin": 4,
+      "maximum_effective_dead_end_refusals": 2,
+      "maximum_unsafe_demo_indicators": 0,
+      "minimum_passes": 14
+    },
+    "physical": "canonical steady decode regression must be <=5% or the adapter must be fused and remeasured before promotion consideration",
+    "replication": "second seed and a held-out semantic family must reproduce the advantage"
+  },
+  "hypothesis": "A small supervised attention adapter can internalize the useful resident boundary contract, reducing held-out dead-end refusals to at most 2/16 without increasing unsafe compliance or degrading the qualified KIMI capability and epistemic controls.",
+  "learned_weight_evidence": false,
+  "matched_null": {
+    "difference": "target completions are shuffled only within the same authority stratum, preserving lengths and boundary class while removing the prompt-policy relation",
+    "kind": "authority_stratified_target_shuffle",
+    "same": [
+      "adapter architecture",
+      "initialization seed",
+      "optimizer",
+      "steps",
+      "batch order",
+      "token budget",
+      "hardware/runtime"
+    ]
+  },
+  "mechanism": {
+    "alpha": 16,
+    "attachment": "LoRA residuals on q_proj and o_proj of the final four native DeepSeek-V3 text layers (layers 23--26 for the current 27-layer body)",
+    "direct_execution_requirement": "adapter deltas execute with the native body or are fused once into a content-addressed descendant; no second dense parent",
+    "dropout": 0.0,
+    "frozen_state": "all KIMI_BASE parameters, buffers, tokenizer, and hidden evals",
+    "kind": "gradient_trained_low_rank_policy_adapter",
+    "optimizer": "AdamW; exact schedule, seed, steps, and optimizer receipt required before launch",
+    "rank": 8,
+    "trainable_state": "adapter parameters only"
+  },
+  "negative_science": {
+    "candidate_family": {
+      "allowed": true,
+      "method": "KIMI_NOVA_POLICY_ADAPTER_V1",
+      "proposal": {
+        "hypothesis_family": "conditional supervised policy adapter",
+        "model": "KIMI_BASE",
+        "organ": "whole_model"
+      },
+      "reproduction_only": false,
+      "scar": null,
+      "status": "HYPOTHESIS_OPEN"
+    },
+    "closed_projection_family": {
+      "allowed": false,
+      "method": "OPA--OPH",
+      "proposal": {
+        "hypothesis_family": "kimi refusal intervention family",
+        "model": "KIMI_BASE",
+        "organ": "whole_model"
+      },
+      "reopen_condition": "a materially different causal hypothesis names a distinct mechanism and a pre-registered falsifier capable of beating matched nulls on held-out rows. A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or another projection of the same refusal-separable state is not a reopen condition.",
+      "reproduction_only": false,
+      "scar": {
+        "claim_refuted": "Does refusal-separable state in KIMI_BASE expose a clean, held-out causal control surface through the tested writer, routed-expert, residual, subspace, or router-logit interventions?",
+        "failure_mechanism": "Refusal-related state is strongly decodable in the tested representation, but the tested writer, routed-expert, residual, subspace, and router-logit interventions did not establish a clean held-out causal control surface. OPA--OPG were null or inconsistent against their matched controls; OPH completed with no compliant comparison rows and therefore could not establish a sufficient causal sample.",
+        "hypothesis_family": "kimi_refusal_intervention",
+        "level": "MODEL_SPECIFIC",
+        "match_score": 32,
+        "model": "kimi-vl-a3b-instruct",
+        "models": [
+          "kimi-vl-a3b-instruct"
+        ],
+        "organ": "whole_model",
+        "original_id": "kimi refusal intervention family",
+        "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+        "refused": true,
+        "reopen_condition": "a materially different causal hypothesis names a distinct mechanism and a pre-registered falsifier capable of beating matched nulls on held-out rows. A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or another projection of the same refusal-separable state is not a reopen condition.",
+        "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#kimi refusal intervention family",
+        "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+        "verdict": "MEASURED_NEGATIVE"
+      },
+      "status": "NEGATIVE_SCIENCE_REFUSED"
+    },
+    "material_difference": "Gradient descent on next-token policy loss learns a low-rank context-dependent activation effect across multiple layers. It is not another fitted refusal vector, projection, router-logit shift, layer sweep, strength sweep, or renamed OPI candidate."
+  },
+  "next_discriminator": "Implement and fixture-test adapter injection plus immutable-base and label-shuffle controls under the existing Nova owner. Do not launch KIMI until the corpus is hashed and hawkingd can grant an exclusive job.",
+  "nova_lineage": {
+    "claim_boundary": "Checklist only. This is not evidence of a descendant artifact and cannot be used to cross the Noetic/NX promotion bridge.",
+    "descendant": {
+      "artifact_hash": null,
+      "identity": "KIMI_NOVA_POLICY_ADAPTER_V1_PENDING"
+    },
+    "measurements": {
+      "authorization": {
+        "after": null,
+        "before": null,
+        "receipt": null
+      },
+      "capability": {
+        "after": null,
+        "before": null,
+        "receipt": null
+      },
+      "destructive_controls": {
+        "after": null,
+        "before": null,
+        "receipt": null
+      },
+      "epistemic": {
+        "after": null,
+        "before": null,
+        "receipt": null
+      },
+      "physical": {
+        "after": null,
+        "before": null,
+        "receipt": null
+      }
+    },
+    "objective": null,
+    "parent": {
+      "artifact_hash": null,
+      "identity": "KIMI_BASE"
+    },
+    "rollback": {
+      "parent_immutable": true,
+      "recipe": null,
+      "reversible": true
+    },
+    "schema": "hawking.gravity.nova_lineage.v1",
+    "status": "LINEAGE_REQUIRED",
+    "transformation": {
+      "changed_tensors": null,
+      "data_class": null,
+      "freeze_set": null,
+      "kind": null,
+      "optimization_objective": null,
+      "representation_constraints": null,
+      "teacher": null,
+      "train_set": null
+    }
+  },
+  "promotion": "WITHHELD",
+  "schema": "hawking.gravity.nova_policy_adapter_preregistration.v1",
+  "source_model": "KIMI_BASE",
+  "source_model_immutable": true,
+  "status": "PREREGISTERED_NOT_RUN",
+  "trainer_truth": {
+    "current_state": "APPARATUS_PROVEN_ON_FIXTURES",
+    "launch_authorized": false,
+    "odyssey_readiness_receipt": "workspace/campaign/governance/odyssey/records/ODYSSEY_TRAINER_READINESS.json",
+    "real_kimi_policy_training_proven": false,
+    "resource_rule": "run only as a hawkingd-owned exclusive job after deliberate resident quiescence; never add a second unsupervised KIMI load"
+  }
+}

@@ -7,8 +7,11 @@ model semantics, backend, session id, context, health, performance profile —
 and selects a backend (MLX, llama.cpp, native, later ones) without copying
 those other authorities.
 
-MLX is first-class. llama.cpp Q5_K numbers are archived science. The deleted
-GGUF is not required to classify, load a genome, or construct an interface.
+Hawking-native/Noetic is the preferred execution platform. MLX remains a
+transitional compatibility backend for Gravity artifacts that do not yet have
+a native loader. llama.cpp is archived science only and is not an allowed
+runtime backend. The deleted GGUF is not required to classify, load a genome,
+or construct an interface.
 """
 from __future__ import annotations
 
@@ -20,9 +23,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from .backends import (
     LlamaServerBackend,
     MlxServerBackend,
+    MlxVlmServerBackend,
     OpenAICompatibleBackend,
     RuntimeBackend,
     is_mlx_model_dir,
+    is_mlx_vlm_model_dir,
     is_remote_endpoint,
     mlx_context_length,
     mlx_quantisation_label,
@@ -38,6 +43,7 @@ ARCHIVED_Q5K_GGUF_REL = (
 )
 
 BACKEND_KINDS = ("mlx", "llamacpp", "noetic_native", "remote")
+BANNED_BACKENDS = frozenset({"llamacpp"})
 BACKEND_ALIASES = {
     "native": "noetic_native",
     "hawking-native": "noetic_native",
@@ -71,6 +77,11 @@ def archived_q5k_gguf_path() -> Path:
 
 def q5k_gguf_required() -> bool:
     """The deleted Q5_K GGUF is never a load-bearing dependency."""
+    return False
+
+
+def llamacpp_allowed() -> bool:
+    """Whether Hawking may instantiate the archived llama.cpp backend."""
     return False
 
 
@@ -110,10 +121,10 @@ def classify_backend(
     if is_remote_endpoint(str(model_path)):
         return "remote"
     expanded = os.path.realpath(os.path.expanduser(str(model_path)))
-    if is_mlx_model_dir(expanded):
-        return "mlx"
     if is_hawking_native_path(expanded):
         return "noetic_native"
+    if is_mlx_model_dir(expanded):
+        return "mlx"
     lower = expanded.lower()
     if lower.endswith(".gguf"):
         return "llamacpp"
@@ -142,7 +153,19 @@ def make_backend_for_model(
     """
     del index  # pool factory passes it; backends do not own scheduling
     kind = classify_backend(model_path)
+    if kind in BANNED_BACKENDS and not llamacpp_allowed():
+        raise RuntimeError(
+            "llama.cpp is disabled by Hawking policy; use an admitted "
+            "Hawking-native/Noetic artifact or an explicit transitional "
+            "Gravity backend"
+        )
     if kind == "mlx":
+        if is_mlx_vlm_model_dir(model_path):
+            return MlxVlmServerBackend(
+                model_path=model_path,
+                port=port,
+                n_slots=n_slots,
+            )
         return MlxServerBackend(
             model_path=model_path,
             port=port,

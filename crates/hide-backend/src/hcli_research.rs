@@ -77,6 +77,7 @@ pub async fn run_hcli_research(
     let mut receipt = json!({
         "schema": HCLI_RESEARCH_RECEIPT_SCHEMA,
         "started_ms": started_ms,
+        "timing_unit": "ns",
         "topic": {
             "text": config.topic,
             "blake3": blake3::hash(config.topic.as_bytes()).to_hex().to_string(),
@@ -110,8 +111,7 @@ pub async fn run_hcli_research(
 
     let Some(model_url) = model_url else {
         receipt["status"] = json!("blocked_no_model_url");
-        receipt["finished_ms"] = json!(now_ms());
-        receipt["wall_elapsed_ms"] = json!(started.elapsed().as_millis() as u64);
+        finish_timing(&mut receipt, &started);
         seal(&mut receipt)?;
         return Ok(HcliResearchResult {
             complete: false,
@@ -190,8 +190,7 @@ pub async fn run_hcli_research(
                 "checkpoint_journal": journal_path,
                 "run_summary_ledger": "workspace .hide/research-runs.jsonl",
             });
-            receipt["finished_ms"] = json!(now_ms());
-            receipt["wall_elapsed_ms"] = json!(started.elapsed().as_millis() as u64);
+            finish_timing(&mut receipt, &started);
             seal(&mut receipt)?;
             Ok(HcliResearchResult {
                 complete: matches!(run.state, hawking_research::ResearchState::Complete),
@@ -201,8 +200,7 @@ pub async fn run_hcli_research(
         Err(error) => {
             receipt["status"] = json!("failed");
             receipt["failure"] = json!(error.to_string());
-            receipt["finished_ms"] = json!(now_ms());
-            receipt["wall_elapsed_ms"] = json!(started.elapsed().as_millis() as u64);
+            finish_timing(&mut receipt, &started);
             seal(&mut receipt)?;
             Ok(HcliResearchResult {
                 complete: false,
@@ -210,6 +208,17 @@ pub async fn run_hcli_research(
             })
         }
     }
+}
+
+/// Finish one research receipt with a single monotonic duration sample.
+/// `wall_elapsed_ms` remains a derived compatibility projection for older
+/// readers; it is never sampled independently.
+fn finish_timing(receipt: &mut Value, started: &Instant) {
+    let elapsed_ns = started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+    receipt["finished_ms"] = json!(now_ms());
+    receipt["timing_unit"] = json!("ns");
+    receipt["wall_elapsed_ns"] = json!(elapsed_ns);
+    receipt["wall_elapsed_ms"] = json!(elapsed_ns / 1_000_000);
 }
 
 fn seal(receipt: &mut Value) -> Result<()> {
@@ -257,6 +266,17 @@ mod tests {
                 .and_then(Value::as_str)
                 .map(str::len),
             Some(64)
+        );
+        let elapsed_ns = result
+            .receipt
+            .get("wall_elapsed_ns")
+            .and_then(Value::as_u64)
+            .expect("research wall timing is nanosecond-native");
+        assert!(elapsed_ns > 0);
+        assert_eq!(result.receipt["timing_unit"], "ns");
+        assert_eq!(
+            result.receipt["wall_elapsed_ms"],
+            Value::from(elapsed_ns / 1_000_000)
         );
     }
 }
