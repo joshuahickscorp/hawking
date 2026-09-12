@@ -112,11 +112,12 @@ remain separate fields.
 
 ## Preserved live working-tree frontier
 
-At closeout, `main` has five uncommitted files written after the final Flash
+At closeout, `main` has six uncommitted files written after the final Flash
 commit:
 
 ```text
 receipts/future/MODELLAKE_EVENTS.json
+receipts/headless/FLASH_NR_ACCOUNTING_BASELINE_20260911.nr.json
 tools/flash_complete_nr.py
 tools/foundry/GRAVITY_METHOD_REGISTRY.json
 tools/foundry/tests/test_query_gravity_methods.py
