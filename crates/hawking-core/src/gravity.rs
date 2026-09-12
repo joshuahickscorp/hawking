@@ -1,4 +1,5 @@
 //! Runtime + Metal PQ; container/PQ/AAP in artifact.
+pub mod execution;
 pub use crate::artifact::{
     activation_aware_sections, parse_activation_aware_header, parse_pq_header,
     parse_residual_pq_header, pq_matvec, pq_matvec_f64_authority, pq_row, pq_sections,

@@ -16,6 +16,11 @@
 //!   executors that share the same sparse kernel ABI;
 //! - no Engine, HCLI, exact-storage parity receipt, or TPS claim is made.
 
+use crate::gravity::execution::{
+    validate_region, Access, Backend, BackendProgram, NumericalPolicy, Operation, Ownership,
+    RegionBoundary, RegionCandidate, SelectedSchedule, SemanticGraph, StageAnnotation, StateEffect,
+    StateLifetime, ValidatedRegion, Visibility,
+};
 use crate::gravity_deepseek_v4::DeepSeekV4FullStreamReader;
 use crate::gravity_deepseek_v4_layer_plan::{
     DeepSeekV4LayerDeviceCatalog, DeepSeekV4LayerDevicePlan, DeepSeekV4MhcControlExpStrategy,
@@ -25,6 +30,7 @@ use crate::gravity_deepseek_v4_layer_source_anchors::{
     DeepSeekV4LayerSourceAnchors,
 };
 use crate::{Error, Result};
+use std::collections::BTreeSet;
 
 /// Production growing-KV sparse-attention kernel for ratio-zero layers.
 pub const DSV4F_RATIO0_GROWING_KV_SPARSE_ATTENTION_KERNEL: &str =
@@ -138,6 +144,9 @@ pub struct DeepSeekV4Ratio0GrowingKvDispatchParams {
 pub struct DeepSeekV4Ratio0AttentionDeviceExecutor {
     pub plan: DeepSeekV4Ratio0AttentionDevicePlan,
     pub growing_kv: DeepSeekV4Ratio0GrowingKvDispatchParams,
+    /// Semantically checked Gravity boundary and selected Metal schedule.
+    /// This is structural plan evidence, not a claim that Metal executed it.
+    pub execution_region: ValidatedRegion,
 }
 
 impl DeepSeekV4Ratio0AttentionDeviceExecutor {
@@ -162,7 +171,15 @@ impl DeepSeekV4Ratio0AttentionDeviceExecutor {
                 "ratio-0 growing-KV dispatch parameters are inconsistent",
             ));
         }
-        Ok(Self { plan, growing_kv })
+        let execution_region =
+            ratio0_attention_execution_region(layer, token_position).map_err(|error| {
+                attention_plan_error(format!("execution region {}: {error}", error.code()))
+            })?;
+        Ok(Self {
+            plan,
+            growing_kv,
+            execution_region,
+        })
     }
 
     pub fn layer(&self) -> usize {
@@ -176,6 +193,171 @@ impl DeepSeekV4Ratio0AttentionDeviceExecutor {
     pub fn sparse_attention_kernel(&self) -> &'static str {
         self.growing_kv.sparse_attention_kernel
     }
+}
+
+fn ratio0_attention_execution_region(
+    layer: usize,
+    token_position: usize,
+) -> std::result::Result<ValidatedRegion, crate::gravity::execution::ValidationError> {
+    fn names(values: &[&str]) -> BTreeSet<String> {
+        values.iter().map(|value| (*value).to_owned()).collect()
+    }
+
+    fn operation(
+        id: &str,
+        semantic_kind: &str,
+        stages: &[StageAnnotation],
+        inputs: &[&str],
+        outputs: &[&str],
+        numerical_policy: &NumericalPolicy,
+    ) -> Operation {
+        Operation {
+            id: id.to_owned(),
+            semantic_kind: semantic_kind.to_owned(),
+            stages: stages.iter().copied().collect(),
+            inputs: names(inputs),
+            outputs: names(outputs),
+            control_dependencies: BTreeSet::new(),
+            state_effects: Vec::new(),
+            randomness_state: None,
+            numerical_policy: numerical_policy.clone(),
+            supported_backends: BTreeSet::from([Backend::Metal]),
+            scratch_bytes: 0,
+        }
+    }
+
+    let graph_id = format!("deepseek_v4.layer{layer}.position{token_position}.ratio0_attention");
+    let region_id = format!("{graph_id}.region");
+    let numerical_policy = NumericalPolicy::Tolerated {
+        contract_id: "DEEPSEEK_V4_NUMERIC_PARITY_V2_1".to_owned(),
+    };
+    let state_resource = format!("deepseek_v4.layer{layer}.kv_cache");
+    let state_alias = format!("deepseek_v4.layer{layer}.kv_cache_alias");
+
+    let mut kv_state_update = operation(
+        "kv_state_update",
+        "KV_CACHE_APPEND",
+        &[
+            StageAnnotation::StateUpdate,
+            StageAnnotation::AutoregressiveDecode,
+        ],
+        &["kv.projected"],
+        &["kv.current"],
+        &numerical_policy,
+    );
+    let kv_state_effect = StateEffect {
+        resource: state_resource.clone(),
+        access: Access::ReadWrite,
+        alias_group: Some(state_alias.clone()),
+        ownership: Ownership::Exclusive,
+        lifetime: StateLifetime::Session,
+        loop_carried: true,
+        visibility: Visibility::Device,
+    };
+    kv_state_update.state_effects.push(kv_state_effect.clone());
+
+    let graph = SemanticGraph {
+        graph_id: graph_id.clone(),
+        operations: vec![
+            operation(
+                "attention_norm",
+                "RMS_NORM",
+                &[StageAnnotation::Project],
+                &["layer.input"],
+                &["attention.normalized"],
+                &numerical_policy,
+            ),
+            operation(
+                "q_project",
+                "QUERY_PROJECTION",
+                &[StageAnnotation::Project],
+                &["attention.normalized"],
+                &["q.projected"],
+                &numerical_policy,
+            ),
+            operation(
+                "kv_project",
+                "KEY_VALUE_PROJECTION",
+                &[StageAnnotation::Project],
+                &["attention.normalized"],
+                &["kv.projected"],
+                &numerical_policy,
+            ),
+            kv_state_update,
+            operation(
+                "sparse_attention",
+                "SPARSE_CAUSAL_ATTENTION",
+                &[
+                    StageAnnotation::Accumulate,
+                    StageAnnotation::AutoregressiveDecode,
+                ],
+                &["q.projected", "kv.current"],
+                &["attention.accumulated"],
+                &numerical_policy,
+            ),
+            operation(
+                "output_project",
+                "OUTPUT_PROJECTION",
+                &[StageAnnotation::Project],
+                &["attention.accumulated"],
+                &["layer.attention.output"],
+                &numerical_policy,
+            ),
+        ],
+        external_inputs: names(&["layer.input"]),
+        graph_outputs: names(&["layer.attention.output"]),
+    };
+
+    let operation_ids = names(&[
+        "attention_norm",
+        "q_project",
+        "kv_project",
+        "kv_state_update",
+        "sparse_attention",
+        "output_project",
+    ]);
+    let region = RegionCandidate {
+        region_id: region_id.clone(),
+        operation_ids,
+        boundary: RegionBoundary {
+            inputs: names(&["layer.input"]),
+            outputs: names(&["layer.attention.output"]),
+            state_reads: BTreeSet::from([state_resource.clone()]),
+            state_writes: BTreeSet::from([state_resource]),
+            alias_groups: BTreeSet::from([state_alias]),
+            state_effects: BTreeSet::from([kv_state_effect]),
+            ..RegionBoundary::default()
+        },
+        backend: Backend::Metal,
+        numerical_policy,
+        available_scratch_bytes: 0,
+    };
+    let schedule = SelectedSchedule {
+        region_id,
+        programs: vec![
+            BackendProgram {
+                program_id: "projection_program".to_owned(),
+                backend: Backend::Metal,
+                operation_ids: names(&["attention_norm", "q_project", "kv_project"]),
+            },
+            BackendProgram {
+                program_id: "kv_state_program".to_owned(),
+                backend: Backend::Metal,
+                operation_ids: names(&["kv_state_update"]),
+            },
+            BackendProgram {
+                program_id: "attention_program".to_owned(),
+                backend: Backend::Metal,
+                operation_ids: names(&["sparse_attention"]),
+            },
+            BackendProgram {
+                program_id: "output_program".to_owned(),
+                backend: Backend::Metal,
+                operation_ids: names(&["output_project"]),
+            },
+        ],
+    };
+    validate_region(&graph, region, schedule)
 }
 
 fn resolve_tensor_names(
@@ -288,5 +470,33 @@ mod tests {
             assert!(params.valid_kv_count <= params.cache_capacity);
             assert!(params.max_score_slots >= params.valid_kv_count);
         }
+    }
+
+    #[test]
+    fn ratio_zero_template_uses_validated_stateful_region() {
+        let set = |values: &[&str]| {
+            values
+                .iter()
+                .map(|value| (*value).to_owned())
+                .collect::<BTreeSet<_>>()
+        };
+        let validated = ratio0_attention_execution_region(1, 7).unwrap();
+        assert_eq!(validated.schema, crate::gravity::execution::SCHEMA);
+        assert_eq!(validated.qualification, "STRUCTURALLY_VALIDATED_PLAN_ONLY");
+        assert_eq!(validated.region.backend, Backend::Metal);
+        assert_eq!(validated.region.boundary.inputs, set(&["layer.input"]));
+        assert_eq!(
+            validated.region.boundary.outputs,
+            set(&["layer.attention.output"])
+        );
+        assert_eq!(
+            validated.region.boundary.state_reads,
+            set(&["deepseek_v4.layer1.kv_cache"])
+        );
+        assert_eq!(
+            validated.region.boundary.state_writes,
+            set(&["deepseek_v4.layer1.kv_cache"])
+        );
+        assert_eq!(validated.schedule.programs.len(), 4);
     }
 }
