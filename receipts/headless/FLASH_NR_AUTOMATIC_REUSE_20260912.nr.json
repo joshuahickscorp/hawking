@@ -1,0 +1,521 @@
+{
+  "nr_version": "1.0.0",
+  "nr_kind": "hawking.nos.noetic_representation",
+  "artifact_kind": "NR",
+  "schema": "hawking.flash.complete_nr.automatic-gravity-reuse-20260912",
+  "generation": "automatic-gravity-reuse-20260912",
+  "status": "OPEN_COMPLETE_FAMILY_ACCOUNTING_BASELINE__NOT_FOR_PROMOTION",
+  "semantic_provenance": {
+    "parent_model": "Qwen/Qwen3.8-Flash-Next",
+    "parent_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "parameter_count": 179999981564,
+    "source_parameter_bytes_indexed": 359999963128,
+    "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "census_sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d",
+    "doctor_nr_sha256": "727d9ad25a261ea13c46cd8877e36168b0a6e13aa2b19be1fab03f9ce6dfe8fa",
+    "doctor_bank_screen_sha256": "0135684bfb3debd0e6e294e43e17eff2cd3c7c255511c8953a840d913f99457d",
+    "doctor_ngram_screen_sha256": "43e2b619d2b592f6799c9e52084736490bdf8e33ad4a3dba7ebbfe800fb96617",
+    "ngram_lookup_oracle_sha256": "0ec2e29bea64123b7a5d32cd33a153d6c35c9eed58aae7fc909a62e76c9a994a",
+    "routed_lowrank_activation_screen_sha256": "677d6a84ffd292f178dfbb6a5b0445187990d2f2161dec0303a78f17c44d29b9",
+    "ngram_pq_screen_sha256": "33b53d39e238520bf647ff9d31c5d457a5d3a773246436685bcf72d44e4260b3",
+    "ngram_access_trace_sha256": "38e9e690e00fade6a5c99ef223fc15ae7e1071058953eda0348e18db33ad88c5"
+  },
+  "representation": {
+    "scope": "complete 48-layer Flash model",
+    "parts": [
+      {
+        "family": "embedding_lm_head",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "complete terminal control exists",
+        "source_control_bytes": 2564759064
+      },
+      {
+        "family": "ngram_embedding",
+        "representation": "factorized_lookup_candidate",
+        "runtime_required": true,
+        "qualification": "128-shard global row layout and source-algorithm accepted-token addresses are bound; static global-PQ rate screen is negative, while PLE output fidelity and native compact lookup remain open",
+        "source_control_bytes": 102400491520
+      },
+      {
+        "family": "norm",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 376320
+      },
+      {
+        "family": "linear_attention_hyperconnection",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "48-layer source parity and stateful organ/prefix evidence",
+        "source_control_bytes": 4820291328
+      },
+      {
+        "family": "full_attention",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "all full-attention source organs and KV organ evidence",
+        "source_control_bytes": 1337609728
+      },
+      {
+        "family": "mlp_hyperconnection",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 1311502048
+      },
+      {
+        "family": "shared_expert",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 481940480
+      },
+      {
+        "family": "routed_experts",
+        "representation": "route_conditioned_compact_candidate",
+        "runtime_required": true,
+        "qualification": "compact routed-bank exact parity on verified layers; dynamic complete-bank storage not yet qualified",
+        "source_control_bytes": 246625075200
+      },
+      {
+        "family": "other",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 457917440
+      }
+    ],
+    "family_source_bytes": {
+      "routed_experts": 246625075200,
+      "ngram_embedding": 102400491520,
+      "linear_attention_hyperconnection": 4820291328,
+      "embedding_lm_head": 2564759064,
+      "full_attention": 1337609728,
+      "mlp_hyperconnection": 1311502048,
+      "shared_expert": 481940480,
+      "other": 457917440,
+      "norm": 376320
+    },
+    "accounting": {
+      "canonical_rust_contract": "crates/hawking-core/src/gravity_manifest.rs:NoeticRepresentationManifest::totals + rate_budget",
+      "flash_adapter": "tools/flash_complete_nr.py",
+      "source_control": {
+        "status": "EXACT_SOURCE_BF16_STORAGE_CONTROL__NOT_NR_CLOSURE",
+        "persistent_bytes": 359999963128,
+        "logical_weights": 179999981564,
+        "complete_ebpw": 16.0,
+        "complete_ebpw_ppm": 16000000,
+        "source_dependency": "pinned BF16 source shards remain outside this NR"
+      },
+      "nr_candidate": {
+        "status": "OPEN__NO_COMPLETE_EBPW_CLAIM",
+        "closure_status": "OPEN",
+        "complete_persistent_bytes": null,
+        "complete_ebpw": null,
+        "active_bytes_per_token": null,
+        "mutable_state_bytes": null,
+        "scratch_bytes": null,
+        "direct_execution": "PARTIAL_COMPONENT_ONLY",
+        "source_independent": false,
+        "external_dependencies": [
+          "pinned BF16 source-family bodies",
+          "unqualified dynamic routed-expert bank representation",
+          "unqualified n-gram representation and lookup path",
+          "unmeasured source PLE output/hidden-state control for selective repair",
+          "unmeasured complete direct runtime state",
+          "unmeasured complete direct scratch working set"
+        ],
+        "reason": "The document identifies every organ family but does not yet contain a closed direct body for all of them."
+      },
+      "whole_body_target_budgets": [
+        {
+          "target_complete_ebpw": "0.5",
+          "target_complete_ebpw_ppm": 500000,
+          "target_persistent_bytes_ceiling": 11249998848,
+          "source_control_bytes_over_budget": 348749964280,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": false,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 275602440,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 12634,
+          "finding": "Keeping the non-routed/non-ngram tail at BF16 is arithmetically possible but leaves the dominant routed-expert and n-gram families only the stated residual budget. This is a pressure signal, not a claim that such a local rate preserves capability."
+        }
+      ]
+    },
+    "candidate_variants": [
+      {
+        "name": "external_source_bf16_control",
+        "source_control_ebpw": 16.0,
+        "nr_complete_ebpw": null,
+        "runnable_nr": false,
+        "capability_status": "source-control-only"
+      },
+      {
+        "name": "route_conditioned_compact_experts_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "not-yet-qualified",
+        "open": "dynamic expert-bank representation and accepted-token accounting",
+        "bank_screen": "cross-expert sharing hypothesis is weak in sampled real weights; pursue active-route storage, not unconditional shared basis"
+      },
+      {
+        "name": "ngram_factorized_lookup_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "not-yet-qualified",
+        "open": "source PLE output/activation control, lookup representation fidelity, and native compact lookup",
+        "lookup_oracle_status": "REAL_ROW_PACKED_LOOKUP_ORACLE",
+        "access_trace": {
+          "status": "SOURCE_ALGORITHM_BOUND_TOKEN_ACCESS_TRACE__NOT_PLE_OUTPUT_PARITY",
+          "sequence_binding": "STATEFUL_ACCEPTED_TOKEN_SEQUENCE_RECEIPT",
+          "token_count": 7,
+          "lookup_events": 112,
+          "lookup_events_per_token": 16,
+          "unique_source_rows": 112,
+          "unique_source_bytes": 35840,
+          "source_bytes_referenced_across_events": 35840,
+          "boundary": "ADDRESS_AND_SOURCE_ROW_BINDING_ONLY__NOT_PLE_OUTPUT_OR_CAPABILITY"
+        }
+      },
+      {
+        "name": "ngram_uniform_q4_g32_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "stage-a-only",
+        "nominal_bpw": 4.5,
+        "sample_cosine": 0.9952799081802368,
+        "open": "activation/output sensitivity and native compact lookup"
+      },
+      {
+        "name": "ngram_packed_q4_g32_lookup_v1",
+        "complete_bits_per_weight": 5.0,
+        "runtime_ready": false,
+        "capability_status": "row-oracle-only",
+        "sample_rows": 384,
+        "mean_lookup_ns": 26809.989583333332,
+        "open": "native lookup kernel, activation sensitivity, collision semantics, and complete-token impact"
+      },
+      {
+        "name": "ngram_packed_q3_g32_lookup_v1",
+        "complete_bits_per_weight": 4.0,
+        "runtime_ready": false,
+        "capability_status": "row-oracle-only",
+        "sample_rows": 384,
+        "mean_lookup_ns": 26809.989583333332,
+        "open": "native lookup kernel, activation sensitivity, collision semantics, and complete-token impact"
+      },
+      {
+        "name": "routed_expert_lowrank_sparse_activation_repair_v1",
+        "scope": "one exact layer-0 source-selected gate/up expert control",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_ACTIVATION_NEGATIVE__NOT_ESCALATED",
+        "target_summary": [
+          {
+            "target_scoped_ebpw": 0.1,
+            "best_candidate": null,
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.25,
+            "best_candidate": {
+              "rank": 2,
+              "residual_fraction": 0.001,
+              "complete_scoped_ebpw": 0.2458154296875,
+              "weight_relative_l2": 0.9902553558349609,
+              "source_activation_relative_l2": 0.7989962697029114,
+              "source_activation_cosine": 0.6128243207931519
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.5,
+            "best_candidate": {
+              "rank": 4,
+              "residual_fraction": 0.005,
+              "complete_scoped_ebpw": 0.4753125,
+              "weight_relative_l2": 0.9764975309371948,
+              "source_activation_relative_l2": 0.6974374055862427,
+              "source_activation_cosine": 0.7184029221534729
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.75,
+            "best_candidate": {
+              "rank": 4,
+              "residual_fraction": 0.01,
+              "complete_scoped_ebpw": 0.7153125,
+              "weight_relative_l2": 0.9668192863464355,
+              "source_activation_relative_l2": 0.6428569555282593,
+              "source_activation_cosine": 0.766952633857727
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 1.0,
+            "best_candidate": {
+              "rank": 16,
+              "residual_fraction": 0.01,
+              "complete_scoped_ebpw": 0.9403125,
+              "weight_relative_l2": 0.9474741816520691,
+              "source_activation_relative_l2": 0.6203136444091797,
+              "source_activation_cosine": 0.7843809127807617
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          }
+        ],
+        "open": "A new composition needs multiple source/held-out activations or learned repair; do not escalate pure BF16 low-rank plus sparse correction from this control."
+      },
+      {
+        "name": "ngram_shared_product_quantization_v1",
+        "scope": "128-shard deterministic train/held-out row screen",
+        "runtime_ready": false,
+        "capability_status": "HELDOUT_STATIC_NEGATIVE__NOT_ESCALATED",
+        "target_summary": [
+          {
+            "best_candidate": {
+              "cardinality": 8,
+              "heldout_global_relative_l2": 0.9646316766738892,
+              "heldout_mean_row_cosine": 0.26972371339797974,
+              "projected_complete_table_ebpw": 0.09376065994883225,
+              "subdimension": 32
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.1
+          },
+          {
+            "best_candidate": {
+              "cardinality": 8,
+              "heldout_global_relative_l2": 0.9264289736747742,
+              "heldout_mean_row_cosine": 0.380463570356369,
+              "projected_complete_table_ebpw": 0.18751065994883226,
+              "subdimension": 16
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.25
+          },
+          {
+            "best_candidate": {
+              "cardinality": 8,
+              "heldout_global_relative_l2": 0.8472569584846497,
+              "heldout_mean_row_cosine": 0.535033106803894,
+              "projected_complete_table_ebpw": 0.37501065994883226,
+              "subdimension": 8
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.5
+          },
+          {
+            "best_candidate": {
+              "cardinality": 32,
+              "heldout_global_relative_l2": 0.7368595004081726,
+              "heldout_mean_row_cosine": 0.6808103919029236,
+              "projected_complete_table_ebpw": 0.6250118599430723,
+              "subdimension": 8
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.75
+          },
+          {
+            "best_candidate": {
+              "cardinality": 32,
+              "heldout_global_relative_l2": 0.7368595004081726,
+              "heldout_mean_row_cosine": 0.6808103919029236,
+              "projected_complete_table_ebpw": 0.6250118599430723,
+              "subdimension": 8
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 1.0
+          }
+        ],
+        "open": "The source-algorithm address trace is now bound, but a source PLE output/hidden-state control is still required before testing selective hot-row repair or a learned/generative table representation; do not materialize uniform global PQ from this screen."
+      }
+    ],
+    "portable_identity": {
+      "census": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+      "doctor": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json",
+      "routed_lowrank_activation_screen": "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json",
+      "ngram_pq_screen": "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json",
+      "ngram_access_trace": "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
+    }
+  },
+  "kernel_requirements": [
+    {
+      "requires": "source_bf16_gemv_family",
+      "applies_to": "exact fallback organs"
+    },
+    {
+      "requires": "grouped_absmax_decoder",
+      "applies_to": "future compact routed-expert candidates only"
+    },
+    {
+      "requires": "route_conditioned_expert_selection",
+      "applies_to": "routed expert family"
+    },
+    {
+      "requires": "gated_delta_recurrence",
+      "applies_to": "linear-attention state"
+    },
+    {
+      "requires": "causal_attention_kv_state",
+      "applies_to": "full-attention state"
+    }
+  ],
+  "promotion": {
+    "allowed": false,
+    "blockers": [
+      "closed direct runtime",
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite"
+    ]
+  },
+  "evidence": {
+    "state": "STATIC_ACCOUNTING_ONLY",
+    "recorded_at": "2026-09-12T04:09:11Z",
+    "recorded_by": "tools/flash_complete_nr.py representation composition",
+    "rule": "S032 \u00a73 -- NR composition carries no physical timing claim"
+  },
+  "negative_science": [
+    {
+      "receipt": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN.json",
+      "finding": 0.003477525221917917,
+      "law": "do not assume routed experts share a low-dimensional basis; sampled gate-up expert cosine was near zero"
+    },
+    {
+      "receipt": "receipts/headless/FLASH_DOCTOR_NGRAM_SCREEN.json",
+      "finding": 0.0013096139929922714,
+      "law": "do not assume n-gram shards share a low-dimensional basis; shard-row similarity was near zero"
+    },
+    {
+      "receipt": "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json",
+      "finding": [
+        {
+          "target_scoped_ebpw": 0.1,
+          "best_candidate": null,
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.25,
+          "best_candidate": {
+            "rank": 2,
+            "residual_fraction": 0.001,
+            "complete_scoped_ebpw": 0.2458154296875,
+            "weight_relative_l2": 0.9902553558349609,
+            "source_activation_relative_l2": 0.7989962697029114,
+            "source_activation_cosine": 0.6128243207931519
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.5,
+          "best_candidate": {
+            "rank": 4,
+            "residual_fraction": 0.005,
+            "complete_scoped_ebpw": 0.4753125,
+            "weight_relative_l2": 0.9764975309371948,
+            "source_activation_relative_l2": 0.6974374055862427,
+            "source_activation_cosine": 0.7184029221534729
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.75,
+          "best_candidate": {
+            "rank": 4,
+            "residual_fraction": 0.01,
+            "complete_scoped_ebpw": 0.7153125,
+            "weight_relative_l2": 0.9668192863464355,
+            "source_activation_relative_l2": 0.6428569555282593,
+            "source_activation_cosine": 0.766952633857727
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 1.0,
+          "best_candidate": {
+            "rank": 16,
+            "residual_fraction": 0.01,
+            "complete_scoped_ebpw": 0.9403125,
+            "weight_relative_l2": 0.9474741816520691,
+            "source_activation_relative_l2": 0.6203136444091797,
+            "source_activation_cosine": 0.7843809127807617
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        }
+      ],
+      "law": "On the sealed source-selected E411 gate/up control, pure BF16 low-rank plus sparse correction remained high-error at sub-1 scoped rates; do not escalate this substrate without a materially different repair hypothesis."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json",
+      "finding": [
+        {
+          "best_candidate": {
+            "cardinality": 8,
+            "heldout_global_relative_l2": 0.9646316766738892,
+            "heldout_mean_row_cosine": 0.26972371339797974,
+            "projected_complete_table_ebpw": 0.09376065994883225,
+            "subdimension": 32
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.1
+        },
+        {
+          "best_candidate": {
+            "cardinality": 8,
+            "heldout_global_relative_l2": 0.9264289736747742,
+            "heldout_mean_row_cosine": 0.380463570356369,
+            "projected_complete_table_ebpw": 0.18751065994883226,
+            "subdimension": 16
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.25
+        },
+        {
+          "best_candidate": {
+            "cardinality": 8,
+            "heldout_global_relative_l2": 0.8472569584846497,
+            "heldout_mean_row_cosine": 0.535033106803894,
+            "projected_complete_table_ebpw": 0.37501065994883226,
+            "subdimension": 8
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.5
+        },
+        {
+          "best_candidate": {
+            "cardinality": 32,
+            "heldout_global_relative_l2": 0.7368595004081726,
+            "heldout_mean_row_cosine": 0.6808103919029236,
+            "projected_complete_table_ebpw": 0.6250118599430723,
+            "subdimension": 8
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.75
+        },
+        {
+          "best_candidate": {
+            "cardinality": 32,
+            "heldout_global_relative_l2": 0.7368595004081726,
+            "heldout_mean_row_cosine": 0.6808103919029236,
+            "projected_complete_table_ebpw": 0.6250118599430723,
+            "subdimension": 8
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 1.0
+        }
+      ],
+      "law": "Shared product quantization can meet sub-bit projected n-gram table budgets arithmetically, but its held-out row distortion is high at the tested rates; the bound token-to-row trace permits future selective-repair controls, but not a PLE-output or capability claim."
+    }
+  ],
+  "claim_boundary": "This is a complete source-family inventory plus an open-NR accounting baseline. The exact 16.0 EBPW figure belongs only to external source BF16 storage; this receipt claims no complete NR EBPW, closed standalone runnable NR, accepted-token TPS, or capability preservation.",
+  "next": "Use the source-bound routed-MoE bridge and direct packed substrate as controls. The n-gram address trace is now closed; obtain a source PLE output/hidden-state control before testing selective hot-row repair or a learned/generative lookup representation. Replace only Pareto survivors, close every dependency before reporting complete EBPW, and build NX only when a machine specialization earns it.",
+  "seal_sha256": "e7656b5ee393bf7bfe76ebbe4a995fde1df4c1e76ce08904d7626d04d95a8fb7"
+}

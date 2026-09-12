@@ -1,0 +1,154 @@
+{
+  "cheap_falsifier": {
+    "passed": true,
+    "required_inputs": [
+      "receipts/headless/FLASH_ORGAN_CENSUS.json",
+      "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json"
+    ]
+  },
+  "claim_boundary": "The contract proves how Hawking charges a representation and refuses an open NR runnable claim. The Flash receipt is a source-control and target-budget baseline only; it does not establish a compact full-body representation, capability, direct full-body execution, or TPS.",
+  "invocation": {
+    "argv": [
+      "/Users/scammermike/Downloads/hawking/.worktrees/hawking-core-integration/tools/flash_complete_nr.py",
+      "--target-ebpw",
+      "0.5",
+      "--generation",
+      "automatic-gravity-reuse-20260912",
+      "--out",
+      "receipts/headless/FLASH_NR_AUTOMATIC_REUSE_20260912.nr.json"
+    ],
+    "returncode": 0
+  },
+  "invoked": true,
+  "laws": [
+    {
+      "id": "L-complete-representation-accounting",
+      "statement": "Every persistent representation part and external dependency is billed against the original logical-weight denominator; an open dependency withholds runnable-NR and complete-EBPW claims."
+    }
+  ],
+  "method_assessment": [
+    {
+      "applicable": true,
+      "id": "M-closed-nr-rate-accounting",
+      "reasons": []
+    },
+    {
+      "applicable": false,
+      "id": "M-stateful-repeated-accepted-decode",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'execution_state'",
+        "missing architecture tags: autoregressive_decoder",
+        "missing required features: persistent_model_state, source_bound_reference_contract"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-teacher-route-union-compact-experts",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'moe_representation'",
+        "missing architecture tags: moe, routed_experts",
+        "missing required features: expert_row_addressability, teacher_oracle_for_route_control"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-device-only-immutable-weight-release",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'physical_residency'",
+        "missing architecture tags: autoregressive_decoder, metal",
+        "missing required features: device_weight_upload, reconstructible_or_pinned_source, resident_device_buffers"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-device-state-handoff",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'physical_execution'",
+        "missing architecture tags: metal, multi_organ_decoder",
+        "missing required features: compatible_device_buffer_abi, device_to_device_state_transition"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-activation-rate-distortion",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'representation_discriminator'",
+        "missing architecture tags: moe, routed_experts, source_activation_control",
+        "missing required features: addressable_expert_matrix, declared_scoped_accounting, sealed_source_activation, source_receipt_hash_binding"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-sharded-lookup-heldout-pq-screen",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'representation_discriminator'",
+        "missing architecture tags: lookup_table, sharded_lookup",
+        "missing required features: deterministic_disjoint_row_sampling, indexed_or_addressable_sharded_2d_tensors, shared_codebook_candidate"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-bound-ple-access-trace",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'architecture_contract'",
+        "missing architecture tags: hashed_ngram, sharded_lookup, stateful_decoder",
+        "missing required features: addressable_concatenated_lookup_checkpoint, bounded_token_sequence_or_explicit_control, persistent_token_context, versioned_reference_algorithm"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-route-major-packed-q4-routed-moe",
+      "reasons": [
+        "objective_family='representation_accounting' does not match 'physical_execution'",
+        "missing architecture tags: metal, moe, routed_experts, uniform_q4_group64",
+        "missing required features: compatible_selected_expert_gate_up_and_down_geometry, persisted_independent_q4_g64_bodies, route_major_device_activation_abi"
+      ]
+    }
+  ],
+  "new_evidence": {
+    "path": "receipts/headless/FLASH_NR_AUTOMATIC_REUSE_20260912.nr.json",
+    "sha256": "0d1c63b2ff4c640d0fd6d8cb6989350590d298a20775604a9be675a0ef8d5432",
+    "status": "OPEN_COMPLETE_FAMILY_ACCOUNTING_BASELINE__NOT_FOR_PROMOTION"
+  },
+  "observation": {
+    "architecture_tags": [
+      "portable_nr",
+      "flash_qwen4_exp"
+    ],
+    "artifact_id": "FLASH_QWEN4_EXP",
+    "candidate_levers": [
+      "raw_weight_pq_vq_at_one_bit"
+    ],
+    "features": [
+      "logical_weight_denominator",
+      "declared_persistent_parts"
+    ],
+    "invocation": {
+      "generation": "automatic-gravity-reuse-20260912",
+      "target_ebpw": "0.5"
+    },
+    "objective_family": "representation_accounting",
+    "schema": "hawking.gravity.observed_traits.v1"
+  },
+  "recorded_at": "2026-09-12T04:09:11Z",
+  "scars": [
+    {
+      "id": "raw_weight_pq_vq_at_one_bit",
+      "killed_by": "qwen3-235b:F1 real forward, 6 prompts, 94 layers, healthy parent control (ppl 1.61 to 39.33): A1_1p0 at complete 1.0075 BPW collapsed 6/6 (symKL 7.6 to 10.9, argmax agreement 0.0) and R2_subhalf at complete 0.4930 BPW collapsed 6/6 (symKL 9.3 to 13.5, argmax agreement 0.0)",
+      "lever": "PQ/VQ coding of the RAW weights as the route to one bit or below",
+      "parent": "qwen3-235b:F1",
+      "reopen_condition": "never on raw weights. A method that changes the source is not this lever and is not blocked by this entry",
+      "verdict": "the raw-weight PQ/VQ family is dead at about one bit. This kills THAT FAMILY, not the sub-bit program: the correct response is a method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing), never a higher rate"
+    }
+  ],
+  "schema": "hawking.gravity.method_reuse.v1",
+  "selected_adapter": "flash-complete-nr-accounting-v1",
+  "selected_method": "M-closed-nr-rate-accounting",
+  "status": "EXECUTED_VERIFIED",
+  "verification": {
+    "problems": [],
+    "seal_matches": true,
+    "valid": true,
+    "verifier": "tools/nr_container.py:validate"
+  }
+}

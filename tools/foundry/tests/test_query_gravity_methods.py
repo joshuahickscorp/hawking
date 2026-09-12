@@ -54,3 +54,62 @@ def test_metal_decoder_query_finds_residency_method():
         "M-stateful-repeated-accepted-decode",
         "M-device-only-immutable-weight-release",
     }
+
+
+def _accounting_observation(**overrides):
+    observation = {
+        "schema": registry.OBSERVATION_SCHEMA,
+        "artifact_id": "FLASH_QWEN4_EXP",
+        "objective_family": "representation_accounting",
+        "architecture_tags": ["portable_nr", "flash_qwen4_exp"],
+        "features": ["logical_weight_denominator", "declared_persistent_parts"],
+        "candidate_levers": ["raw_weight_pq_vq_at_one_bit"],
+        "invocation": {"target_ebpw": "0.5", "generation": "test-auto-reuse-v1"},
+    }
+    observation.update(overrides)
+    return observation
+
+
+def test_automatic_reuse_executes_and_verifies_compatible_flash_accounting(tmp_path):
+    receipt = tmp_path / "reuse.json"
+    artifact = tmp_path / "candidate.nr.json"
+    result = registry.reuse_method(
+        _accounting_observation(), receipt_path=receipt, artifact_path=artifact
+    )
+    assert result["status"] == "EXECUTED_VERIFIED"
+    assert result["selected_method"] == "M-closed-nr-rate-accounting"
+    assert result["cheap_falsifier"]["passed"] is True
+    assert result["verification"] == {
+        "verifier": "tools/nr_container.py:validate",
+        "valid": True,
+        "problems": [],
+        "seal_matches": True,
+    }
+    assert result["scars"][0]["id"] == "raw_weight_pq_vq_at_one_bit"
+    assert artifact.is_file() and receipt.is_file()
+
+
+def test_automatic_reuse_refuses_excluded_feature_without_invocation(tmp_path):
+    receipt = tmp_path / "refusal.json"
+    artifact = tmp_path / "must-not-exist.nr.json"
+    result = registry.reuse_method(
+        _accounting_observation(
+            features=[
+                "logical_weight_denominator",
+                "declared_persistent_parts",
+                "payload_only_accounting",
+            ]
+        ),
+        receipt_path=receipt,
+        artifact_path=artifact,
+    )
+    assert result["status"] == "REFUSED"
+    assert result["invoked"] is False
+    assert "no applicable method" in result["refusal"]
+    decision = next(
+        row for row in result["method_assessment"]
+        if row["id"] == "M-closed-nr-rate-accounting"
+    )
+    assert decision["reasons"] == ["excluded features present: payload_only_accounting"]
+    assert receipt.is_file()
+    assert not artifact.exists()

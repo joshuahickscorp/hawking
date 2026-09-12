@@ -389,6 +389,28 @@
         "receipts/headless/FLASH_ORGAN_CENSUS.json"
       ],
       "status": "PROVEN_ACCOUNTING_CONTRACT__FLASH_OPEN_BASELINE",
+      "laws": [
+        {
+          "id": "L-complete-representation-accounting",
+          "statement": "Every persistent representation part and external dependency is billed against the original logical-weight denominator; an open dependency withholds runnable-NR and complete-EBPW claims."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-complete-nr-accounting-v1",
+            "architecture_tags": [
+              "flash_qwen4_exp"
+            ],
+            "runner": "tools/flash_complete_nr.py",
+            "required_inputs": [
+              "receipts/headless/FLASH_ORGAN_CENSUS.json",
+              "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json"
+            ],
+            "verifier": "tools/nr_container.py:validate"
+          }
+        ]
+      },
       "claim_boundary": "The contract proves how Hawking charges a representation and refuses an open NR runnable claim. The Flash receipt is a source-control and target-budget baseline only; it does not establish a compact full-body representation, capability, direct full-body execution, or TPS.",
       "reopen_if": "A representation needs a previously unmodelled persistent decoder/state class, or a target architecture uses a non-scalar denominator that cannot be mapped to original logical weights."
     },

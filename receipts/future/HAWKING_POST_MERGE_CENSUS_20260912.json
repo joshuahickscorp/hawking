@@ -1,0 +1,108 @@
+{
+  "active_files": 2538,
+  "archived_LOC": 76,
+  "by_language": {
+    "lean": 22,
+    "markdown": 69317,
+    "python": 561642,
+    "rust": 454034,
+    "shader": 48320,
+    "shell": 3656,
+    "typescript": 71004
+  },
+  "by_subsystem": {
+    "hawking": 405007,
+    "hide": 165189,
+    "laboratory": 328235,
+    "shared": 309564
+  },
+  "combined_active_monorepo_LOC": 1207995,
+  "commit": "ac81444f177915a2f50888893f502408b52d0584",
+  "generated_LOC": 0,
+  "hawking_active_LOC": 405007,
+  "hide_active_LOC": 165189,
+  "inline_or_path_test_LOC": 197474,
+  "laboratory_LOC": 328235,
+  "policy": {
+    "counts": "physical lines of tracked source files",
+    "excluded_buckets": [
+      "vendored",
+      "generated",
+      "archived",
+      "build"
+    ],
+    "include_untracked_active_source": false,
+    "included_paths": "tracked active source extensions in LANGS",
+    "languages": [
+      "lean",
+      "markdown",
+      "python",
+      "rust",
+      "shader",
+      "shell",
+      "typescript"
+    ],
+    "minimum_product_paths": "hcli non-test Python plus crates/*/src and crates/*/shaders, excluding examples, benches and tests",
+    "no_gaming": "physical lines only; comment stripping, line packing, minification, extension renaming and moving code out of the tree change nothing",
+    "test_excluding_rule": "exclude test/bench paths and complete Rust items carrying cfg(test)"
+  },
+  "product_LOC": 522651,
+  "product_by_language": {
+    "markdown": 9,
+    "python": 93396,
+    "rust": 381550,
+    "shader": 47696
+  },
+  "product_files": 664,
+  "product_rust_python_composition": {
+    "denominator_LOC": 474946,
+    "python_LOC": 93396,
+    "rust_LOC": 381550,
+    "rust_percent": 80.335449,
+    "scope": "minimum-product Rust and Python physical lines selected by is_product"
+  },
+  "rev": "WORKING_TREE",
+  "runtime_LOC": 1064103,
+  "rust_python_composition": {
+    "denominator_LOC": 1015676,
+    "python_LOC": 561642,
+    "rust_LOC": 454034,
+    "rust_percent": 44.702641,
+    "scope": "all active tracked first-party Rust and Python physical lines"
+  },
+  "schema": "hawking.loc.authority.v1",
+  "shared_contract_LOC": 309564,
+  "test_LOC": 143892,
+  "test_excluding_product_LOC": 469279,
+  "test_excluding_product_by_language": {
+    "markdown": 9,
+    "python": 93396,
+    "rust": 328178,
+    "shader": 47696
+  },
+  "test_excluding_product_rust_python_composition": {
+    "denominator_LOC": 421574,
+    "python_LOC": 93396,
+    "rust_LOC": 328178,
+    "rust_percent": 77.845882,
+    "scope": "minimum-product runtime lines after path tests and inline cfg(test) Rust items are excluded"
+  },
+  "test_excluding_runtime_LOC": 1010521,
+  "test_excluding_runtime_by_language": {
+    "lean": 22,
+    "markdown": 69305,
+    "python": 448473,
+    "rust": 369789,
+    "shader": 48320,
+    "shell": 3608,
+    "typescript": 71004
+  },
+  "test_excluding_runtime_rust_python_composition": {
+    "denominator_LOC": 818262,
+    "python_LOC": 448473,
+    "rust_LOC": 369789,
+    "rust_percent": 45.192005,
+    "scope": "active first-party runtime lines after path tests and inline cfg(test) Rust items are excluded"
+  },
+  "vendored_LOC": 50284
+}
