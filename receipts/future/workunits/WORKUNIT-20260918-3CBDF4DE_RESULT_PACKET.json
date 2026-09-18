@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "2c660bd1dbbfee1872ef529e27a81d9fb206b6e623a7eed33a8484d7c7b461f5",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:07:59.823221+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:07:59.823238+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:07:59.827769+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\": [{\"tool\": \"fs.read\", \"invocation_id\": \"tool-c7ca4159-126b-4bec-b7f3-bfcb67d0fa11\", \"path\": \"hawking/perception/tools.py\", \"sha256\": \"3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106\", \"bytes\": 11820, \"total_",
+      "outcome": "CONTINUE",
+      "reply_chars": 4355,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\": [{\"tool\": \"fs.read\", \"invocation_id\": \"tool-c7ca4159-126b-4bec-b7f3-bfcb67d0fa11\", \"path\": \"hawking/perception/tools.py\", \"sha256\": \"3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106\", \"bytes\": 11820, \"total_lines\": 237, \"range_read\": \"1-180\", \"truncated\": true, \"shown_bytes\": 4000, \"mutation\": \"read_only\", \"ok\": true}, {\"fact\": \"Module docstring states nine local perception tools are explicitly allowlisted; observe classifies by magic bytes without a graphics stack; verify binds evidence to a subject path as well as a digest so replaying identical bytes at a different path remains visible; everything else is refused by a typed allowlist rather than exposed as an unbounded tool surface.\"}, {\"fact\": \"TOOL_NAMES tuple enumerates ten entries: system.doctor, project.status, vision.capabilities, vision.observe, vision.query, vision.verify, vision.progress, vision.list_artifacts, vision.get_artifact, document.extract (docstring says nine; the tuple lists ten names).\"}, {\"fact\": \"ADAPTERS = {\\\"file.local\\\"}; ADAPTER_VERSION = \\\"1\\\"; imports include Host, ProjectStore, sha256_file, utc_now, MAX_SOURCE_BYTES, extraction_digest.\"}, {\"fact\": \"_classify(path) lazily imports hawking.perception.file_eye.classify_bytes and reads at most 8_000_000 bytes; on import failure returns {\\\"kind\\\": \\\"unclassified\\\", \\\"why\\\": ...} rather than raising.\"}, {\"fact\": \"_open(projects_root, project_path) resolves the path and raises ValueError if the resolved path escapes the projects root; opens existing project.db or creates a ProjectStore.\"}, {\"fact\": \"register(host) defines host.tool handlers: system.doctor (offline health report, network_forbidden true, reports python/platform/projects_root/adapters/tools/implementation/checked_at), vision.capabilities (profile, tools, adapters, implementation, not_implemented map, dependencies {pillow:false, opencv:false, numpy:false}), project.status, vision.list_artifacts (limit clamped to 1..10_000).\"}, {\"fact\": \"vision.capabilities not_implemented declares vision.verify(receipt_path) acceptance-receipt audit trail is not ported, and browser/3d/worldir adapters are PARKED until a Hawking-owned implementation earns a typed allowlist entry.\"}, {\"limitation\": \"Read was truncated at 4000 of 9161 bytes (43.7%); lines beyond the shown content and lines 181-237 were not observed. No conclusion is drawn about unshown content.\"}], \"sources\": [{\"type\": \"hawking_tool_result\", \"tool\": \"fs.read\", \"invocation_id\": \"tool-c7ca4159-126b-4bec-b7f3-bfcb67d0fa11\", \"path\": \"hawking/perception/tools.py\", \"sha256\": \"3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106\", \"observed_at\": 1789711663.467356, \"provenance\": \"hawking.tool_registry\"}], \"recommendations\": [{\"action\": \"read_remaining_range\", \"detail\": \"Read hawking/perception/tools.py lines 181-237 to observe the remaining tool handlers (vision.observe, vision.query, vision.verify, vision.progress, vision.get_artifact, document.extract) before any coverage claim.\", \"tool_family\": \"fs.read\"}, {\"action\": \"reconcile_tool_count\", \"detail\": \"Docstring says nine tools while TOOL_NAMES lists ten; confirm intended count against the allowlist contract.\", \"tool_family\": \"fs.read\"}, {\"action\": \"cross_check_allowlist\", \"detail\": \"Verify the typed allowlist enforcement site that refuses non-allowlisted tools, since tools.py only declares names.\", \"tool_family\": \"fs.search\"}], \"unresolved_questions\": [\"What handlers are defined in lines 181-237 and do they match the declared TOOL_NAMES?\", \"Is the docstring 'nine tools' or the ten-entry TOOL_NAMES tuple authoritative for the P5_PERCEPTION_ARSENAL allowlist?\", \"Where is the typed allowlist that refuses non-allowlisted tools enforced?\", \"Does vision.verify bind subject path plus digest as the docstring claims, and where is that implemented?\"], \"child_worker_ids\": [], \"status\": \"COMPLETE\", \"terminal_status\": \"COMPLETE\", \"next_action\": \"Read hawking/perception/tools.py lines 181-237 to complete the bounded ",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-831343bb5e884d9d",
+  "worker_id": "hawking-worker-a514f01bf0964841",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-3CBDF4DE"
+}

@@ -1,19 +1,18 @@
 # Odyssey 48h schedule — phase arithmetic, checkable against the live lake
 
-Machine: M3 Ultra, 96 GiB unified. Resident body: ~11 GiB. Lake: 56 specimens
+Machine: M3 Ultra, 96 GiB unified. Resident body: ~11 GiB. Lake: 55 specimens
 on `/Volumes/corpdrive/hawking-modellake`, USB, 118 MB/s sequential.
 
 Units: tier boundaries and sizes below are **GiB (2^30 bytes)**, not decimal
-GB — that is what the operator's own figures turn out to be (the 3
-deferred-giant sizes match the live lake to within 0.1 GiB in binary units,
-0.9 GiB gap in each in decimal GB). I/O time uses **118,000,000 bytes/s**
+GB — that is what the operator's own figures turn out to be. I/O time uses
+**118,000,000 bytes/s**
 (decimal, standard USB throughput convention) against the exact byte count,
 not a rounded GiB figure.
 
 ## Where these numbers come from
 
 Every table below is the live output of `python3 tools/odyssey/lake_phases.py`,
-taken 2026-09-05. That script is the source of truth, not this document —
+taken 2026-09-11. That script is the source of truth, not this document —
 `tools/odyssey/test_lake_phases.py` re-runs it and fails the moment the two
 disagree by more than 3%. If the lake has moved on since, **trust the script,
 regenerate this file, and re-run the test** — do not hand-edit the numbers
@@ -21,15 +20,14 @@ below into place. The exact snapshot behind this plan is embedded verbatim
 in the "Checked snapshot" section at the bottom.
 
 Note on the operator-supplied MEASURED FACTS in the task brief: this plan's
-tier *counts* (21 / 19 / 5 / 11) and the top-3 deferred sizes match those
-facts exactly once read as GiB. The per-tier *byte* totals differ from the
+tier *counts* originally matched the task brief. The per-tier *byte* totals differ from the
 brief by up to ~13% (A_tiny: 68.4 GiB measured here vs. 79 GiB stated) —
 consistent with `du`-style block-rounding on many small files, or the lake
 having shifted a few specimens' bytes since the brief was written. Either
 way, that gap is exactly why this plan is generated from a script and
 checked by a test instead of typed once and trusted forever.
 
-## Phase 0 — static census, all 56, header-only
+## Phase 0 — static census, all 55, header-only
 
 Reads `config.json` + safetensors headers only (no weight bytes): ~127 KB
 per shard header × 764 shards ≈ 97 MB total, across the whole 4.3 TiB lake.
@@ -63,19 +61,19 @@ resident body leaves under 9 GiB of headroom on a 96 GiB machine for KV
 cache, activations, and OS — plausible, not comfortable. Flagged, not ruled
 out.
 
-## Phase 3 — tier D_giant, minus the 3 deferred giants
+## Phase 3 — tier D_giant, minus the 2 resident deferred giants
 
-Operator decision 2026-09-05 (encoded as policy, not re-litigated): the top
-3 by size — `moonshotai/Kimi-K3` (1453.8 GiB), `thinkingmachines/Inkling-Small`
-(495.4 GiB), `windowsxp811203/Qwen3.8-Flash-Next-Abliterated` (335.3 GiB) —
-are deferred from execution-class Odyssey work. They stay in the phase-0
-static census and remain eligible for a later pass; they are excluded only
-from phases 1-3 below.
+Operator decision 2026-09-05 named three deferred bodies. Two remain resident:
+`moonshotai/Kimi-K3` (1453.8 GiB) and `thinkingmachines/Inkling-Small`
+(495.4 GiB). The abliterated Flash-Next body is no longer in the live lake;
+the pristine `Qwen/Qwen3.8-Flash-Next` is a distinct resident governed by the
+explicit Pulsar priority schedule. Only the two resident deferred bodies are
+excluded below.
 
 | tier                    | n  | bytes             | size        |
 |-------------------------|----|-------------------|-------------|
-| D_giant (all)           | 11 | 3,987,905,281,873 | 3,714.0 GiB |
-| deferred (top 3)        |  3 | 2,452,967,097,651 | 2,284.5 GiB |
+| D_giant (all)           | 10 | 3,627,881,836,782 | 3,378.7 GiB |
+| deferred (resident 2)   |  2 | 2,092,943,652,560 | 1,949.3 GiB |
 | **D_giant minus deferred** | **8** | **1,534,938,184,222** | **1,429.5 GiB** |
 
 I/O time at 118 MB/s for the remaining 8: **3.613 h**. By the clock, this
@@ -121,14 +119,14 @@ finalists. No fixed byte total for the same reason.
 | II (survivors)        | unknown  | cannot be scheduled until phase 1-3 receipts exist |
 | III (finalists)       | unknown  | cannot be scheduled until II's receipt exists |
 
-Total I/O across the whole 4.3 TiB lake, everything included, is 11.09 h —
+Total I/O across the live 4.0 TiB lake, everything included, is 10.25 h —
 under a quarter of the 48h window. **I/O was never going to be the
 bottleneck.** The real gates are: G011 streaming (blocks all of tier D,
 not just the deferred 3, from ever executing on this machine as-is), and
 the survivor counts out of phases 1-3 (which bound how big II and III even
 are).
 
-## Checked snapshot (2026-09-05)
+## Checked snapshot (2026-09-11)
 
 The exact numbers every table above was built from, as emitted by
 `python3 tools/odyssey/lake_phases.py`. `tools/odyssey/test_lake_phases.py`
@@ -137,16 +135,16 @@ field — that test is what keeps this document from silently going stale.
 
 ```json
 {
-  "n_specimens": 56,
-  "total_bytes": 4712689941824,
+  "n_specimens": 55,
+  "total_bytes": 4352666496733,
   "tiers": {
     "A_tiny": {"n": 21, "bytes": 73456681480},
     "B_mid": {"n": 19, "bytes": 337064183935},
     "C_large": {"n": 5, "bytes": 314263794536},
-    "D_giant": {"n": 11, "bytes": 3987905281873}
+    "D_giant": {"n": 10, "bytes": 3627881836782}
   },
-  "deferred_n": 3,
-  "deferred_bytes": 2452967097651,
+  "deferred_n": 2,
+  "deferred_bytes": 2092943652560,
   "phase1_n": 40,
   "phase1_bytes": 410520865415,
   "phase1_hours": 0.9663862180202448,
@@ -156,6 +154,6 @@ field — that test is what keeps this document from silently going stale.
   "phase3_n": 8,
   "phase3_bytes": 1534938184222,
   "phase3_hours": 3.613319642707156,
-  "total_hours": 11.093902876233521
+  "total_hours": 10.246390058222692
 }
 ```

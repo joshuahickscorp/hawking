@@ -1,0 +1,69 @@
+{
+  "schema": "hawking.future.kimi_p1_route4_fused_frontier.v1",
+  "generated_at": "2026-09-13T06:20:00-04:00",
+  "status": "STAGING_MEASURED_NOT_QUALIFIED",
+  "objective": "Measure the best disposable P1 resident available without interrupting KIMI_P0_OPERATIONAL or KIMI-U001.",
+  "protected_control": {
+    "artifact": "KIMI_P0_OPERATIONAL",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "daemon_pid": 20162,
+    "provider_pid": 20173,
+    "endpoint": "http://127.0.0.1:8014",
+    "workunit": "KIMI-U001",
+    "p0_replaced": false,
+    "flash_lease_touched": false
+  },
+  "candidate": {
+    "id": "KIMI_P2_ROUTE4_STAGING",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+    "revision": "89babe1efae390ca37f7cedcf7ac98d54d1e84bc5dca5c760358958862c62b6e",
+    "complete_array_bytes": 10658598112,
+    "recipe": "P0 q8 non-routed organs plus q4/group64 routed switch_mlp only",
+    "quantized_module_counts": {"q4": 78, "q8": 191},
+    "promotion": "withheld"
+  },
+  "overlay": {
+    "path": "/tmp/hawking-kimi-p1-fused/sitecustomize.py",
+    "mechanisms": [
+      "persistent packed routed gate/up buffers",
+      "compiled q4 gather_qmm gate/up plus down consumer",
+      "packed q8 MLA q_proj plus kv_a projection",
+      "packed shared gate/up consumer"
+    ],
+    "source_artifact_mutated": false,
+    "resident_process_stopped_after_measurement": true
+  },
+  "measurements": {
+    "short_control": {
+      "workload": "live mlx_vlm HTTP, single stream, max_tokens=512, generated lengths 16-27",
+      "decode_tps_by_context": {
+        "context_0": 149.87581231933964,
+        "context_64": 145.9028651718367,
+        "context_256": 99.45658050910664
+      },
+      "receipt": "receipts/future/KIMI_P1_P2ROUTE4_FUSED_FINAL_TPS_20260913.json"
+    },
+    "long_control": {
+      "workload": "single stream, 486 generated tokens, numbered-list control",
+      "decode_tps_samples": [74.9, 92.9, 106.0, 75.8, 74.9],
+      "median_decode_tps": 75.8,
+      "interpretation": "co-resident measurements; U001 remained active on P0"
+    },
+    "parity_boundary": "No whole-model capability qualification. The P0 fused route oracle had exact small q8/q4 sorted/unsorted parity; this P2 result remains an experimental derivative."
+  },
+  "rejected_variants": {
+    "route_sorting": "slower and unstable; short controls approximately 36-102 TPS",
+    "attention_requant_q4": "slower; short controls approximately 39-105 TPS",
+    "shared_requant_q4": "not a sustained win; long controls remained below 110 TPS",
+    "mixed_4_8_body": "approximately 24-31 TPS on the same fused probe"
+  },
+  "classification": {
+    "150_tps": "NOT_EARNED",
+    "100_tps": "NOT_SUSTAINED_ON_LONG_CONTROL",
+    "200_tps": "REQUIRES_BODY_CHANGE_AND_NATIVE_ROUTE_MAJOR_CONSUMER",
+    "clean_room_arbitrage": "80 TPS under contention may become roughly 90-110 in a clean resident, but a new resident is not automatically faster and this evidence does not support 150-200."
+  },
+  "next_frontier": "Only a real Rust/Metal route-major q4/group64 consumer with persistent buffers, selection/attention launch reduction, and held-out capability checks merits reopening the Kimi performance tranche. Otherwise return the GPU to source-bound Flash/Pulsar work.",
+  "claim_boundary": "Disposable resident evidence only; not Kimi qualification, not Pulsar admission, not a clean-room result, and not permission to restart or replace P0."
+}

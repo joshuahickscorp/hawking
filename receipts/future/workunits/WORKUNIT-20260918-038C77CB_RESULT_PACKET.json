@@ -1,0 +1,203 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 10,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.read",
+      "fs.search",
+      "receipt.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "5b68792b570b21ef00168b020e749f0a958cb23b6a760e0aabcb4f2685066d9a",
+  "evidence": [
+    {
+      "at": "2026-09-18T04:05:27.613213+00:00",
+      "calls_used": 3,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:05:27.613232+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:05:27.622873+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"obs-1\",\"summary\":\"Auto refill seam live at revision hawking-auto-aggressive-v2-kimi-deepseek-12 (daemon pid 57119, waiting_for_native_runtime): serialized refill decisions, admits only durable graph-runnable entries,",
+      "outcome": "CONTINUE",
+      "reply_chars": 5992,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T04:07:48.807270+00:00",
+      "calls_used": 11,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "hawking.worker.status",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:07:48.807281+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:07:48.808841+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"obs-1\",\"kind\":\"digest_binding\",\"detail\":\"Parent objective HAWKING_MASTER_LONG_HAUL_V2 bound by path+digest a2fb33c6...8b27 in packet PACKET-44492AC18C21. The .md is outside AgentOS read roots (PermissionError on fs.r",
+      "outcome": "CONTINUE",
+      "reply_chars": 5930,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T04:15:25.106202+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:15:25.106220+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:15:25.115741+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"campaign_state (invocation tool-4cf799f5, observed_at 1789704484): authoritative parent civilization/sovereign-goal.txt (mtime 1789411627); continuation checkpoint GOAL-F4F72EFC0A/t14 on hawking/remote_cognition.p",
+      "outcome": "CONTINUE",
+      "reply_chars": 5984,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T04:18:20.409124+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:18:20.409134+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:18:20.412517+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"auto_refill_seam_live\",\"detail\":\"Auto refill control plane implemented and source-verified: serialized refill decisions across concurrent terminal owners; admits only durable graph-runnable queue entries;",
+      "outcome": "CONTINUE",
+      "reply_chars": 5936,
+      "tool_less_continue_streak": 4,
+      "tool_signal": "theater",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-18T04:21:07.812444+00:00",
+      "calls_used": 10,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:21:07.812465+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:21:07.814653+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"auto_refill_seam_live\",\"detail\":\"Seam verified in source and receipt. hawking/auto_orchestration.py::_refill_runnable_frontier_locked (sha256 d0ffa63a..., lines 740-980) serializes decisions under .hawkin",
+      "outcome": "CONTINUE",
+      "reply_chars": 5635,
+      "tool_less_continue_streak": 5,
+      "tool_signal": "none",
+      "turn": 5
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"auto_refill_seam_live\",\"detail\":\"Seam verified in source and receipt. hawking/auto_orchestration.py::_refill_runnable_frontier_locked (sha256 d0ffa63a..., lines 740-980) serializes decisions under .hawking/auto/refill-state.json, admits only when Goal status==RUNNING, reconciles via reconcile_goal_frontier(persist=True), computes slots from efficient_concurrency minus active_workunit_ids, and filters goal.auto_refill_queue against graph_runnable_frontier, active writer-scope conflicts, and terminal tranches (blocked_tranches/frontier_outcomes). It never invents objectives, retries terminal tranches, or promotes provider output. Receipt HAWKING_MASTER_LONG_HAUL_V2_AUTO_REFILL_20260918.json: LOCAL_AUTO_REFILL_CONTROL_PLANE, compile/diff passed, 19 focused tests passed, live auto_revision=hawking-auto-aggressive-v2-kimi-deepseek-12, daemon_pid 57119, waiting_for_native_runtime.\"},{\"id\":\"O2\",\"kind\":\"capacity_15_5_activated\",\"detail\":\"HAWKING_MASTER_LONG_HAUL_V2_FRONTIER_CAPACITY_ACTIVATION_20260918.json: ACTIVE_SOURCE_POLICY_ROUTE_HEALTHY, live_configured_remote_workers=15, live_configured_premium_workers=5 (base 12/4 x burst 1.25), daemon pid 98601 at 127.0.0.1:8014, route health HTTP 200, tool_call_qualified=true on moonshotai/kimi-k3. Boundary held: 15/5 is the admission envelope only; dispatch still needs durable runnable contracts, provider health, budget, disjoint scopes. Supersedes the pre-restart FRONTIER_CAPACITY receipt (live 12/4, pending activation).\"},{\"id\":\"O3\",\"kind\":\"queue_empty_is_graph_truth\",\"detail\":\"The AUTO_REFILL receipt's next_evidence states the current V2 graph has no runnable entries after P12/P13 outcomes. Empty admission is correct seam behavior against the canonical graph, not a seam defect or capacity shortfall. No tranche is claimed accepted here.\"},{\"id\":\"O4\",\"kind\":\"bottleneck_dependency_blocked\",\"detail\":\"campaign_state: nx_disposition is the only depth axis with ZERO measurements (26 OWED, 30 REFUSED); 31 priors live. But the P3 receipt's bounded_follow_on is explicitly NOT_QUEUED: P10_NX sits behind P9_DARKMATTER_CORE in the canonical V2 graph and no node may be invented from provider prose. An nx_disposition entry today would fail the graph_runnable_frontier filter the seam enforces.\"},{\"id\":\"O5\",\"kind\":\"objective_digest_unchanged\",\"detail\":\"Bound objective digest (GOAL-A52AB48501 / WORKUNIT-20260918-038C77CB t5) matches the receipts read; compact supervisor contract applies: propose only graph-justified durable entries, invent no phase, mutate nothing.\"}],\"sources\":[\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_AUTO_REFILL_20260918.json (sha256 22113303...)\",\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_FRONTIER_CAPACITY_ACTIVATION_20260918.json (sha256 7ba592f1...)\",\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_FRONTIER_CAPACITY_20260918.json (sha256 86304796...)\",\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_P1_CONTROL_PLANE_ACCEPTANCE_20260918.json (sha256 c218b866...)\",\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_P3_MEMORY_ARTIFACT_SOURCE_ACCEPTANCE_20260918.json (sha256 5a5f2ee8...)\",\"hawking/auto_orchestration.py lines 740-980 (sha256 d0ffa63a...)\",\"campaign_state assembly at observed_at 1789705105 (bottleneck nx_disposition; 31 priors)\"],\"recommendations\":[{\"id\":\"R1\",\"type\":\"queue_remains_empty\",\"state\":\"NOT_QUEUED\",\"reason\":\"No durable queue entry is currently justified. The sole unmeasured axis (nx_disposition) is gated behind P9_DARKMATTER_CORE; the seam would reject such an entry at the graph_runnable_frontier filter. Inventing a phase or promoting provider prose is prohibited.\",\"required_capabilities\":[],\"writer_scopes\":[],\"model_route\":null,\"focused_tests\":[],\"falsifiers\":[\"A canonical graph update marks P9_DARKMATTER_CORE terminal-complete and places P10_NX (or another tranche) into graph_runnable_frontier\",\"A future terminal child leaves a durable, dependency-valid, scope-disjoint auto_refill_queue entry, which the seam should then admit automati",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-1537cf1b3653440d",
+  "worker_id": "hawking-worker-6b4d266de5984443",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-038C77CB"
+}

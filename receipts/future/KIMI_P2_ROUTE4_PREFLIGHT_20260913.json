@@ -1,0 +1,80 @@
+{
+  "schema": "hawking.future.kimi_p2_route4_preflight.v1",
+  "generated_at": "2026-09-13T09:20:00-04:00",
+  "status": "P2_RUNTIME_MEASURED_BELOW_P0_PRESERVE_EXPERIMENTAL",
+  "objective": "Build a P0-derived P2 that keeps P0's q8 recipe for every non-routed organ and changes only the 64-way routed SwitchGLU banks to direct q4/group64.",
+  "control": {
+    "artifact_id": "KIMI_P0_OPERATIONAL",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "quantization": "all executable MLX linear modules q8 affine/group64",
+    "steady_decode_tps": {
+      "operational_cross_context_median": 73.00105389709667,
+      "raw_direct_median": 85.38968210971538
+    },
+    "immutable": true
+  },
+  "hypothesis": {
+    "mechanism": "P0 q8 everywhere plus q4 only for routed switch_mlp gate/up/down projection banks",
+    "preserved": ["attention/MLA", "dense MLP", "shared experts", "router", "embeddings/lm_head", "vision modules"],
+    "direct_consumer": "existing mlx_vlm QuantizedSwitchLinear -> mx.gather_qmm",
+    "dense_rematerialization": false,
+    "why": "P1's built-in mixed_4_8 q4'd most attention and shared projections and was slower; this isolates the Gravity-relevant routed expert traffic without changing P0's other operators."
+  },
+  "static_accounting": {
+    "control_complete_array_bytes": 17856023776,
+    "p2_estimated_complete_array_bytes": 10658598112,
+    "estimated_resident_reduction": 0.402606,
+    "routed_switch_weight_bytes_q8": 14394851328,
+    "routed_switch_weight_bytes_q4_estimate": 7197425664,
+    "active_traffic_claim": "not yet measured; only selected six routed experts per token receive the q4 change",
+    "claim_boundary": "Header substitution estimate; no capability, runtime, or TPS claim."
+  },
+  "candidate": {
+    "id": "KIMI_P2_ROUTE4_STAGING",
+    "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+    "new_artifact_path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+    "artifact_revision": "89babe1efae390ca37f7cedcf7ac98d54d1e84bc5dca5c760358958862c62b6e",
+    "complete_array_bytes_verified": 10658598112,
+    "quantized_module_counts": {"q4": 78, "q8": 191},
+    "conversion_device": "cpu",
+    "quant_predicate": "q4/group64 iff path contains switch_mlp and module has to_quantized; q8/group64 for all other executable modules; multimodal modules skipped",
+    "promotion": "withheld until exact revision, runtime, and capability evidence"
+  },
+  "conversion": {
+    "status": "PASS_CPU_ONLY",
+    "gpu_used": false,
+    "p0_touched": false,
+    "revision_basis": "SHA-256 over ordered selected shard filenames plus full bytes, model.safetensors.index.json, and config.json; NUL separators",
+    "claim_boundary": "Artifact identity and byte accounting are verified; runtime throughput and capability remain unqualified."
+  },
+  "protected_boundary": {
+    "p0_endpoint": "http://127.0.0.1:8014",
+    "p0_provider_pid": 20173,
+    "workunit_id": "KIMI-U001",
+    "workunit_owner_pid": 60730,
+    "flash_lease_touched": false,
+    "p0_restart": false
+  },
+  "runtime_measurement": {
+    "receipt": "receipts/future/KIMI_P2_ROUTE4_TPS_20260913.json",
+    "endpoint": "http://127.0.0.1:8025",
+    "daemon_pid": 84083,
+    "provider_pid": "stopped_with_daemon",
+    "decode_tps_by_context": {
+      "context_0": 33.57248101452885,
+      "context_64": 71.1236668090184,
+      "context_256": 77.0804879405267
+    },
+    "decode_tps_median": 71.1236668090184,
+    "target_150": "FAIL",
+    "claim_boundary": "P2 is a direct MLX staging measurement; not capability, promotion, or a complete native worker claim."
+  },
+  "disposition": {
+    "promotion": "REJECT_FOR_150_TARGET",
+    "artifact": "PRESERVE_EXPERIMENTAL",
+    "reason": "Changing only routed SwitchGLU banks to q4/group64 reduced bytes but slowed decode to 33.6-77.1 TPS, so q4 gather_qmm is not the missing 2x path on this runtime.",
+    "next_frontier": "Test route-aware launch/dispatch collapse on the unchanged P0 q8 body; do not broaden the quantization recipe."
+  },
+  "next_safe_action": "Keep P0 on 8014. Test one reversible route-execution optimization under a separate staging process, then measure with the same long decode harness."
+}

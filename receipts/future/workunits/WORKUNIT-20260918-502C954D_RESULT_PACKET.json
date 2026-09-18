@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "5e01d57d22cf53f49f4a94a33e7dddb09cd65188833e36fdb5a362bf48892f79",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:43:13.287305+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:43:13.287323+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:43:13.290154+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/share_bridge.py defines ShareError as a RuntimeError carrying an integer HTTP status, defaulting to 404.\",\"hawking/share_bridge.py declares tunnel-related schemas: TUNNEL_SCHEMA, TUNNEL_EVENT_SCHEMA, and TUNNEL_FRA",
+      "outcome": "CONTINUE",
+      "reply_chars": 1929,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/share_bridge.py defines ShareError as a RuntimeError carrying an integer HTTP status, defaulting to 404.\",\"hawking/share_bridge.py declares tunnel-related schemas: TUNNEL_SCHEMA, TUNNEL_EVENT_SCHEMA, and TUNNEL_FRAME_SCHEMA.\",\"hawking/share_bridge.py defines TUNNEL_OPERATION_PERMISSIONS mapping list_chats/list_models/retrieve_result to read, stream_prompt to prompt, and scoped_build to build.\",\"The read of hawking/share_bridge.py was truncated: only 4000 of 49705 bytes were shown, so the tunnel status mapping and handler ownership were not observed in this pass.\",\"No HTTP handler code from hawking/serve.py or /hawking/web/tunnel was observed in this pass.\"],\"sources\":[\"/Users/scammermike/Downloads/hawking/hawking/share_bridge.py (sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46, truncated at 4000/49705 bytes)\"],\"recommendations\":[\"Inspect hawking/serve.py for /s/<share>/tunnel/* and /hawking/web/tunnel handler definitions and their returned HTTP statuses.\",\"Inspect the remaining portions of hawking/share_bridge.py for tunnel pair/reconnect/request/disconnect status mapping and ShareError propagation.\",\"Run the admitted focused tests: hawking/tests/test_share_bridge.py, hawking/tests/test_web_live_contract.py, and hawking/tests/test_serve_openai_surface.py.\",\"If a focused RED is found, add the smallest regression test covering the observed status mismatch before any repair.\"],\"unresolved_questions\":[\"What are the exact handler owners for /s/<share>/tunnel/* and /hawking/web/tunnel?\",\"Do successful pair/reconnect/request/disconnect responses return HTTP 200?\",\"Does host invite remain the documented resource-creation status?\",\"Do failures preserve ShareError statuses through the tunnel handlers?\",\"Is there a focused RED requiring repair, or is the current wire-status contract already correct?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-48e6cd8fef774c73",
+  "worker_id": "hawking-worker-10f061da7ecc4e32",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-502C954D"
+}

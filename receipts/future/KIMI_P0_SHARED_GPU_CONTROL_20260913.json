@@ -1,0 +1,218 @@
+{
+  "claim_boundary": "Real measurements from the already-live local KIMI-derived q8 server. These are not raw KIMI_BASE weights, not a reduced Noetic representation, not a capability-preservation receipt, not a qualified KIMI TPS milestone, and not promotion or Odyssey admission evidence.",
+  "contexts": [
+    {
+      "context_repeats": 0,
+      "rows": [
+        {
+          "peak_memory_gib": 20.999605426,
+          "predicted_ms": 1014.3418637712603,
+          "predicted_n": 101,
+          "prompt_ms": 1594.1191239980983,
+          "prompt_n": 4181,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "7895",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:08:15 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 99.57195262008437,
+          "server_prompt_tps": 2622.76509770106,
+          "wall_ms": 23896.823041985044
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 101.0,
+        "decode_ms_median": 1014.3418637712603,
+        "decode_tps": 99.57195262008437,
+        "end_to_end_tps": 4.226503239470371,
+        "prefill_ms_median": 1594.1191239980983,
+        "prefill_tps": 2622.76509770106,
+        "prompt_tokens_median": 4181.0,
+        "rep_count": 1,
+        "wall_ms_median": 23896.823041985044
+      },
+      "valid_rep_count": 1
+    },
+    {
+      "context_repeats": 64,
+      "rows": [
+        {
+          "peak_memory_gib": 20.999605426,
+          "predicted_ms": 649.540339324276,
+          "predicted_n": 60,
+          "prompt_ms": 1930.4928740020841,
+          "prompt_n": 5086,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "11877",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:08:44 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 92.37301575821859,
+          "server_prompt_tps": 2634.560359425864,
+          "wall_ms": 29329.475750011625
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 60.0,
+        "decode_ms_median": 649.540339324276,
+        "decode_tps": 92.37301575821859,
+        "end_to_end_tps": 2.0457235755390624,
+        "prefill_ms_median": 1930.4928740020841,
+        "prefill_tps": 2634.560359425864,
+        "prompt_tokens_median": 5086.0,
+        "rep_count": 1,
+        "wall_ms_median": 29329.475750011625
+      },
+      "valid_rep_count": 1
+    },
+    {
+      "context_repeats": 256,
+      "rows": [
+        {
+          "peak_memory_gib": 20.999605426,
+          "predicted_ms": 5094.568997067481,
+          "predicted_n": 512,
+          "prompt_ms": 1227.3888330091722,
+          "prompt_n": 3392,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "3956",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:08:56 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 100.49917869297987,
+          "server_prompt_tps": 2763.590403282292,
+          "wall_ms": 11552.79149999842
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 512.0,
+        "decode_ms_median": 5094.568997067481,
+        "decode_tps": 100.49917869297987,
+        "end_to_end_tps": 44.31829311557038,
+        "prefill_ms_median": 1227.3888330091722,
+        "prefill_tps": 2763.590403282292,
+        "prompt_tokens_median": 3392.0,
+        "rep_count": 1,
+        "wall_ms_median": 11552.79149999842
+      },
+      "valid_rep_count": 1
+    }
+  ],
+  "elapsed_s": 72.545,
+  "generated_at": "2026-09-13T09:08:56.115480+00:00",
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6"
+  },
+  "measurement_contract": {
+    "concurrency": 1,
+    "context_repeats": [
+      0,
+      64,
+      256
+    ],
+    "endpoint": "/chat/completions",
+    "max_tokens": 512,
+    "path": "live mlx_vlm HTTP server timings plus client wall time",
+    "prefill_and_decode_separate": true,
+    "reps_per_context": 1,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "warmup_excluded": true
+  },
+  "model": "KIMI_P0_OPERATIONAL",
+  "raw_kimi_base_equivalence": false,
+  "schema": "hawking.future.kimi_tps_live_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_live_baseline.py",
+  "server": {
+    "headers": {
+      "access-control-allow-origin": "*",
+      "content-length": "2795",
+      "content-type": "application/json",
+      "date": "Sun, 13 Sep 2026 09:07:43 GMT",
+      "server": "BaseHTTP/0.6 Python/3.14.6"
+    },
+    "models": {
+      "data": [
+        {
+          "created": 0,
+          "hawking": {
+            "admitted": true,
+            "artifact": {
+              "admission_note": "Frozen and admitted at its earned bounded capability boundary. Read/research/tool-assistant operation is GREEN. Autonomous mutation remains WITHHELD after objective-only browser and Engine trials produced no independently verified edit; this is not an unresolved prerequisite to using P0.",
+              "authority": {
+                "admitted": [
+                  "local conversation",
+                  "read/research HCLI work",
+                  "repository and ModelLake investigation",
+                  "tool-using scientific assistance",
+                  "receipt/evidence consumption",
+                  "hypothesis and experiment planning",
+                  "supervised proposal generation"
+                ],
+                "withheld": [
+                  "autonomous repository writing",
+                  "self-certifying development",
+                  "unsupervised mutation authority",
+                  "autonomous Odyssey writing",
+                  "autonomous self-improvement promotion"
+                ]
+              },
+              "capability": "KIMI_BASE qualified 4/4 bounded WorkUnit battery",
+              "destructive_controls": "independent HCLI controls 6/6",
+              "epistemic": "KIMI_BASE calibration 7/7",
+              "hcli": "resident Engine contract 16/16; 0 effective refusals; deployment-path evidence",
+              "mission_gate": "BLIND_AUTONOMOUS_WRITE_WITHHELD_20260911",
+              "physical": "canonical raw KIMI_BASE steady decode ~85.4 TPS across context medians",
+              "receipts": [
+                "receipts/future/KIMI_WORKUNIT_CAPABILITY_LIVE_RETRY2_20260910.json",
+                "receipts/future/KIMI_HCLI_ENGINE_LIVE_RETRY3_20260910.json",
+                "receipts/future/KIMI_HCLI_BOUNDARY_CONTROLS_20260910.json",
+                "receipts/future/KIMI_EPISTEMIC_LIVE_20260910.json",
+                "receipts/future/KIMI_RAW_BASE_TPS_BASELINE_20260910.json",
+                "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json",
+                "receipts/future/KIMI_BOOTSTRAP_CLOSEOUT_20260911.json",
+                "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+                "receipts/future/KIMI_P0_OPERATIONAL_BOUNDED_FREEZE_20260911.json"
+              ],
+              "registry": "/Users/scammermike/Downloads/hawking-grok-staging/worker-integration-snapshot/workspace/campaign/odyssey/gravity-artifacts.json",
+              "representation": "dense KIMI_BASE MLX snapshot; no reduced-weight claim",
+              "revision_basis": "SHA-256 over the ordered artifact filenames and bytes for four model shards, model.safetensors.index.json, and config.json",
+              "role": "bounded local conversational, read/research, scientific-assistant resident",
+              "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+              "status": "FROZEN_OPERATIONAL_DEVELOPMENTAL",
+              "weight_lineage": "KIMI_BASE unchanged"
+            },
+            "backend": "mlx",
+            "gb": 17.86,
+            "loaded": true,
+            "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+            "revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+            "source": "gravity",
+            "supported_actions": [
+              "execute",
+              "serve",
+              "web"
+            ]
+          },
+          "id": "KIMI_P0_OPERATIONAL",
+          "object": "model",
+          "owned_by": "hawking"
+        }
+      ],
+      "object": "list"
+    },
+    "url": "http://127.0.0.1:8014"
+  },
+  "source_model": "KIMI_DERIVATIVE_SERVER",
+  "status": "SERVER_BASELINE_COMPLETE_NOT_KIMI_QUALIFIED"
+}

@@ -111,9 +111,9 @@ const SCALES: [i32; 25] = [
     i32::MIN,
     i32::MAX - 1,
     -(i32::MAX),
-    1_431_655_765,  // 0x55555555
+    1_431_655_765, // 0x55555555
     -1_431_655_765,
-    858_993_459,    // 0x33333333
+    858_993_459, // 0x33333333
     -858_993_459,
 ];
 
@@ -156,7 +156,10 @@ fn chain_golden_fast_l4_to_l7() {
 #[ignore = "heavy: ~52M chain evaluations across all 11 frozen Ls; run with --release -- --ignored"]
 fn chain_golden_full_l4_to_l14() {
     let (hash, count) = chain_hash(FROZEN_MIN_L, FROZEN_MAX_L);
-    assert_eq!(count, 52_403_200, "case-count drift (grid or frozen-L range changed)");
+    assert_eq!(
+        count, 52_403_200,
+        "case-count drift (grid or frozen-L range changed)"
+    );
     assert_eq!(
         hash, 0xc3ad_262e_5604_336e,
         "frozen-LUT decode arithmetic drift over the full L=4..14 sweep"
@@ -242,12 +245,20 @@ fn recon_is_floor_div_boundary_sweep() {
             // truncation toward zero whenever there is a nonzero remainder.
             if prod < 0 && prod % (1 << SCALE_SHIFT) != 0 {
                 let trunc = prod / (1 << SCALE_SHIFT); // Rust `/` truncates toward zero
-                assert_eq!(shifted, trunc - 1, "negative shift did not round down at s={s} q={q}");
+                assert_eq!(
+                    shifted,
+                    trunc - 1,
+                    "negative shift did not round down at s={s} q={q}"
+                );
             }
             checked += 1;
         }
     }
-    eprintln!("floor-div sweep: {} scales x {} quantiles = {checked} pairs", scales.len(), qs.len());
+    eprintln!(
+        "floor-div sweep: {} scales x {} quantiles = {checked} pairs",
+        scales.len(),
+        qs.len()
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -310,9 +321,9 @@ fn decode_path_is_float_free() {
     // `f32_wrapper_is_exact_q12` in exhaustive.rs) and downstream of the bit-identical
     // integer decode. Everything ABOVE it — the actual decode arithmetic — must be
     // float-free. We scan only that region.
-    let cutoff = src
-        .find("const Q12_TO_F32")
-        .expect("decode.rs no longer has the Q12_TO_F32 float-wrapper marker — re-audit the float boundary");
+    let cutoff = src.find("const Q12_TO_F32").expect(
+        "decode.rs no longer has the Q12_TO_F32 float-wrapper marker — re-audit the float boundary",
+    );
     let integer_region = &src[..cutoff];
 
     // Strip line comments so doc/comment prose mentioning floats doesn't trip us.
@@ -379,7 +390,10 @@ mod kani_harnesses {
         let q: i32 = kani::any();
         kani::assume((-(Q_CLAMP as i32)..=Q_CLAMP as i32).contains(&q));
         let prod = s as i64 * q as i64;
-        assert_eq!(reconstruct_q(s, q) as i64, prod.div_euclid(1 << SCALE_SHIFT));
+        assert_eq!(
+            reconstruct_q(s, q) as i64,
+            prod.div_euclid(1 << SCALE_SHIFT)
+        );
     }
 
     /// The composed pipeline `recon(eff_scale_q(scale, code), q)` for any i32 `scale`,

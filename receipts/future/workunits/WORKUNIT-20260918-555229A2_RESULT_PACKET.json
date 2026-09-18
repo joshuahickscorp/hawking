@@ -1,0 +1,110 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T15:19:57.263424+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:19:57.263433+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:19:57.264933+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"objective\": \"Advance P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 with one bounded source delta in tools/accelerator/cuda_runtime.py: export the already-defined runtime_contract_manifest_v3_digest symbol from __all",
+      "outcome": "CONTINUE",
+      "reply_chars": 1509,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T15:21:19.628657+00:00",
+      "calls_used": 0,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T15:21:19.628666+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:21:19.630479+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 tranche: the append op ignores the leading newline in content and concatenates onto the file's final line, producing a SyntaxError. Switch to a repl",
+      "outcome": "CONTINUE",
+      "reply_chars": 2800,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 2
+    },
+    {
+      "files": [
+        "tools/accelerator/backend_contract.py",
+        "tools/accelerator/test_backend_contract.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-555229A2_SEAL_B1",
+      "turn": 2
+    }
+  ],
+  "files_changed": [
+    "tools/accelerator/backend_contract.py",
+    "tools/accelerator/test_backend_contract.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded implementation or qualification-support tranche. Inspect the current owner and existing receipt, make only the aligned source change in the declared scope, run focused verification, and record exact evidence. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-555229A2_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      2
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-555229A2"
+}

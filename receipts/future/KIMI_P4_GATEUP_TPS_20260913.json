@@ -1,0 +1,246 @@
+{
+  "claim_boundary": "Real measurements from the already-live local KIMI-derived q8 server. These are not raw KIMI_BASE weights, not a reduced Noetic representation, not a capability-preservation receipt, not a qualified KIMI TPS milestone, and not promotion or Odyssey admission evidence.",
+  "contexts": [
+    {
+      "context_repeats": 0,
+      "rows": [
+        {
+          "peak_memory_gib": 19.972813448,
+          "predicted_ms": 1294.9427159040472,
+          "predicted_n": 97,
+          "prompt_ms": 1526.3687080005184,
+          "prompt_n": 3773,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "2393",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:30:58 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 74.90678839201063,
+          "server_prompt_tps": 2471.8798152921245,
+          "wall_ms": 2972.5636250223033
+        },
+        {
+          "peak_memory_gib": 19.972813448,
+          "predicted_ms": 929.2995325507339,
+          "predicted_n": 97,
+          "prompt_ms": 1451.526749995537,
+          "prompt_n": 3773,
+          "rep": 1,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "2392",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:31:01 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 104.37969309395343,
+          "server_prompt_tps": 2599.3320481428264,
+          "wall_ms": 2497.8003339783754
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 97.0,
+        "decode_ms_median": 1112.1211242273905,
+        "decode_tps": 87.22071534014566,
+        "end_to_end_tps": 35.463819492449225,
+        "prefill_ms_median": 1488.9477289980277,
+        "prefill_tps": 2534.004335087708,
+        "prompt_tokens_median": 3773.0,
+        "rep_count": 2,
+        "wall_ms_median": 2735.1819795003394
+      },
+      "valid_rep_count": 2
+    },
+    {
+      "context_repeats": 64,
+      "rows": [
+        {
+          "peak_memory_gib": 20.187798548,
+          "predicted_ms": 3606.638201435345,
+          "predicted_n": 140,
+          "prompt_ms": 2177.2014580201358,
+          "prompt_n": 3976,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "2696",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:31:07 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 38.8173119067734,
+          "server_prompt_tps": 1826.1975644714216,
+          "wall_ms": 5926.584208005806
+        },
+        {
+          "peak_memory_gib": 20.187798548,
+          "predicted_ms": 4675.596157401271,
+          "predicted_n": 140,
+          "prompt_ms": 2815.5717920162715,
+          "prompt_n": 3976,
+          "rep": 1,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "2697",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:31:14 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 29.942705761357495,
+          "server_prompt_tps": 1412.1465527088299,
+          "wall_ms": 7629.182125005173
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 140.0,
+        "decode_ms_median": 4141.117179418308,
+        "decode_tps": 33.80730221685382,
+        "end_to_end_tps": 20.655416530612843,
+        "prefill_ms_median": 2496.3866250182036,
+        "prefill_tps": 1592.7020118412174,
+        "prompt_tokens_median": 3976.0,
+        "rep_count": 2,
+        "wall_ms_median": 6777.8831665054895
+      },
+      "valid_rep_count": 2
+    },
+    {
+      "context_repeats": 256,
+      "rows": [
+        {
+          "peak_memory_gib": 20.27758512,
+          "predicted_ms": 3529.485136587111,
+          "predicted_n": 263,
+          "prompt_ms": 1901.752457022667,
+          "prompt_n": 4552,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "3324",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:31:20 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 74.51511759426528,
+          "server_prompt_tps": 2393.581763594243,
+          "wall_ms": 5582.413708005333
+        },
+        {
+          "peak_memory_gib": 20.27758512,
+          "predicted_ms": 5145.816843520262,
+          "predicted_n": 263,
+          "prompt_ms": 1904.8659580294043,
+          "prompt_n": 4552,
+          "rep": 1,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "3327",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 09:31:27 GMT",
+            "server": "BaseHTTP/0.6 Python/3.14.6"
+          },
+          "server_predicted_tps": 51.10947552110721,
+          "server_prompt_tps": 2389.6694572194847,
+          "wall_ms": 7197.357583994744
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 263.0,
+        "decode_ms_median": 4337.650990053687,
+        "decode_tps": 60.63189514395322,
+        "end_to_end_tps": 41.15879603645702,
+        "prefill_ms_median": 1903.3092075260356,
+        "prefill_tps": 2391.624010434328,
+        "prompt_tokens_median": 4552.0,
+        "rep_count": 2,
+        "wall_ms_median": 6389.885646000039
+      },
+      "valid_rep_count": 2
+    }
+  ],
+  "elapsed_s": 33.775,
+  "generated_at": "2026-09-13T09:31:27.630238+00:00",
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6"
+  },
+  "measurement_contract": {
+    "concurrency": 1,
+    "context_repeats": [
+      0,
+      64,
+      256
+    ],
+    "endpoint": "/chat/completions",
+    "max_tokens": 512,
+    "path": "live mlx_vlm HTTP server timings plus client wall time",
+    "prefill_and_decode_separate": true,
+    "reps_per_context": 2,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "warmup_excluded": true
+  },
+  "model": "KIMI_P4_P0_Q8_GATEUP_STAGING",
+  "raw_kimi_base_equivalence": false,
+  "schema": "hawking.future.kimi_tps_live_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_live_baseline.py",
+  "server": {
+    "headers": {
+      "access-control-allow-origin": "*",
+      "content-length": "1023",
+      "content-type": "application/json",
+      "date": "Sun, 13 Sep 2026 09:30:53 GMT",
+      "server": "BaseHTTP/0.6 Python/3.14.6"
+    },
+    "models": {
+      "data": [
+        {
+          "created": 0,
+          "hawking": {
+            "admitted": true,
+            "artifact": {
+              "authority": {
+                "admitted": [
+                  "staging decode measurement",
+                  "read-only smoke comparison"
+                ],
+                "withheld": [
+                  "canonical promotion",
+                  "autonomous repository writing",
+                  "self-certifying qualification"
+                ]
+              },
+              "capability": "unqualified runtime probe; exact parity required before acceptance",
+              "lineage": "KIMI_P0_OPERATIONAL unchanged artifact",
+              "registry": "/tmp/hawkingd-p4-gravity-artifacts.json",
+              "revision_basis": "P0 admitted artifact revision; temporary gate/up packed runtime overlay is separately bound",
+              "role": "P0 q8 routed gate/up single-gather staging probe",
+              "status": "OPERATIONAL_DEVELOPMENTAL"
+            },
+            "backend": "mlx",
+            "gb": 17.86,
+            "loaded": true,
+            "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+            "revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+            "source": "gravity",
+            "supported_actions": [
+              "execute",
+              "serve",
+              "web"
+            ]
+          },
+          "id": "KIMI_P4_P0_Q8_GATEUP_STAGING",
+          "object": "model",
+          "owned_by": "hawking"
+        }
+      ],
+      "object": "list"
+    },
+    "url": "http://127.0.0.1:8027"
+  },
+  "source_model": "KIMI_DERIVATIVE_SERVER",
+  "status": "SERVER_BASELINE_COMPLETE_NOT_KIMI_QUALIFIED"
+}

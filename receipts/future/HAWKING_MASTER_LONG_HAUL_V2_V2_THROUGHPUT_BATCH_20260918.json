@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.long_haul.v2.throughput_batch.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T05:09:17Z",
+  "claim_boundary": "This is a fan-out and provider-outcome measurement, not an architectural acceptance claim.",
+  "window": {
+    "start_utc": "2026-09-18T04:59:00Z",
+    "end_utc": "2026-09-18T05:02:44Z",
+    "wall_hours": 0.0621
+  },
+  "fanout": {
+    "admitted_lanes": 4,
+    "peak_active_lanes": 4,
+    "configured_hawking_ceiling": null,
+    "admission_ceiling": null,
+    "admissions_per_wall_hour": 64.4,
+    "writer_scopes": ["gravity", "native-cpu", "apple", "odyssey-modellake"]
+  },
+  "verified_progress": {
+    "structured_workunit_packets": 1,
+    "parent_goal_acceptances": 0,
+    "terminal_provider_outcomes": 3,
+    "accepted_architectural_tranches": 0,
+    "accepted_architectural_tranches_per_hour": 0.0
+  },
+  "provider_utilization": {
+    "moonshotai/kimi-k3": {
+      "lanes_started": 4,
+      "structured_packets": 1,
+      "provider_output_unusable": 3
+    },
+    "deepseek/deepseek-v4.1-flash": {
+      "lanes_started": 0
+    }
+  },
+  "http_200_boundary": {
+    "upstream_empty_or_incomplete_200": "rejected as gateway HTTP 502",
+    "nonempty_or_tool_semantic_200": "transport accepted, then WorkUnit contract decides evidence acceptance"
+  },
+  "lanes": [
+    {"tranche": "P6_GRAVITY", "workunit_id": "WORKUNIT-20260918-826938FD", "outcome": "TERMINAL_PROVIDER_OUTCOME"},
+    {"tranche": "P11_NATIVE_CPU", "workunit_id": "WORKUNIT-20260918-36432726", "outcome": "COMPLETE_PENDING_ACCEPTANCE"},
+    {"tranche": "P12_APPLE_BACKEND", "workunit_id": "WORKUNIT-20260918-A84AE3D5", "outcome": "TERMINAL_PROVIDER_OUTCOME"},
+    {"tranche": "P16_ODYSSEY_MODELLAKE", "workunit_id": "WORKUNIT-20260918-17CDC9DA", "outcome": "TERMINAL_PROVIDER_OUTCOME"}
+  ]
+}

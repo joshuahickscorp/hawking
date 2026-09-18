@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.long_haul.v2.runtime_residency_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "RUNTIME_RESIDENCY_RECONCILIATION_V6",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-RUNTIME-RESIDENCY-V6-20260918",
+  "observed_at": "2026-09-18T09:40:00Z",
+  "daemon": {
+    "endpoint": "http://127.0.0.1:8014",
+    "pid": 4167,
+    "rss_kb": 98624,
+    "health_http_status": 200,
+    "health_state": "waiting_for_native_runtime",
+    "requested_model": "hawking-auto",
+    "model": null,
+    "resident": null,
+    "provider_children": "none while native role is withheld"
+  },
+  "process_census": {
+    "mlx_or_kimi_processes": [],
+    "local_model_resident": false
+  },
+  "catalog_boundary": {
+    "local_review_identity": "KIMI_P0_OPERATIONAL",
+    "availability": "WITHHELD",
+    "review_only": true,
+    "default_remote_models": []
+  },
+  "claim_boundary": "Fresh runtime residency observation only. The daemon is model-free until a native artifact receives an explicit resident role; this does not qualify native execution, production readiness, or full-objective completion.",
+  "falsifier": "A fresh process census or health response showing a loaded resident model, an MLX/Kimi child while no model is selected, or a non-200 canonical health response invalidates this reconciliation."
+}

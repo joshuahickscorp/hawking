@@ -1468,7 +1468,7 @@ def compile_and_overlay(architecture: Mapping[str, Any] | None = None) -> dict[s
     repo = Path(__file__).resolve().parents[2]
     if str(repo) not in sys.path:
         sys.path.insert(0, str(repo))
-    from hcli.physical_graph import compile_physical_graph  # noqa: WPS433
+    from hawking.physical_graph import compile_physical_graph  # noqa: WPS433
 
     graph = compile_physical_graph(architecture or {"model_id": "fusion-bridge", "organs": []})
     plan = two_domain_plan()

@@ -1,0 +1,51 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-pi0_base",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + README.md + policy_{pre,post}processor.json + one safetensors header, EVERY tensor bucketed with zero unaccounted bytes). Zero mlx/torch load, zero HCLI resident contention. Model source code (PI0Policy) is NOT bundled in this specimen at all -- confirmed by an explicit empty-glob assertion, not by omission.",
+ "_label": "Odyssey I DISCOVERY. FIRST non-token-generation specimen this session: a robotics Vision-Language-Action policy. Outputs are continuous robot joint/gripper actions via flow matching, not text or DNA tokens -- a genuinely different Odyssey question (control, not generation) from every other specimen surveyed this session or in prior campaigns.",
+ "identity": {
+  "name": "lerobot/pi0_base",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2",
+  "paper": "pi0: A Vision-Language-Action Flow Model for General Robot Control (Physical Intelligence, per README)",
+  "reference_impl": "github.com/Physical-Intelligence/openpi (external, not bundled)",
+  "lerobot_class": "lerobot.policies.pi0.PI0Policy (external package, NOT in this checkpoint dir)"
+ },
+ "domain": {
+  "modality": "Vision-Language-Action (VLA) robot control -- 3 RGB camera views (224x224 each) + 32-dim proprioceptive state + optional language instruction IN, 32-dim continuous action chunk (chunk_size=50, n_action_steps=50) OUT. NOT a text/DNA generation task at all -- the single most task-different specimen surveyed this session (evo2 changed the SEQUENCE DOMAIN, this changes the TASK ITSELF: continuous control, not sequence generation)."
+ },
+ "architecture_DUAL_TOWER_CONFIRMED_FROM_WEIGHTS": {
+  "family": "Two parallel Gemma-architecture transformers under one 'paligemma_with_expert' module, confirmed directly from tensor-name prefixes (not assumed from config alone): (1) paligemma.model.language_model -- the VLM backbone, 18 layers, hidden=2048 (1.9819B params; config names it 'gemma_2b', a reasonably close match); (2) gemma_expert -- a SEPARATE Gemma-architecture 'action expert', 18 layers, hidden=1024 (0.5748B params; config names it 'gemma_300m' -- MEASURED at 574.8M, 91.6% above the name's implied 300M, an unexplained naming/measurement gap, same pattern as this session's BitNet '1.58-bit'-vs-2.0-actual finding -- reported honestly, not rationalized).",
+  "vision_tower": "SigLIP-style ViT, 27 encoder layers, 0.4124B params, feeds a multi_modal_projector (2.36M params, [2048,1152] linear) into the language_model's hidden space -- standard PaliGemma vision-bridging structure, confirmed from tensor shapes.",
+  "flow_matching_head": "action_in_proj/action_out_proj (state<->hidden, 32<->1024 dims) + action_time_mlp_in/out (the noise-timestep embedding MLP that makes this a flow-matching, not autoregressive, action decoder) + state_proj -- together only 3248.2K params, a tiny fraction of the 3.5B total; the actual action-generation compute happens INSIDE the shared gemma_expert tower, not in this glue.",
+  "lm_head_untied_storage_note": "language_model has NO separate embed_tokens tensor -- tied to paligemma.lm_head.weight ([257152, 2048], 526.6M params, Gemma's large vocabulary). UNLIKE iLLaDA-8B (discovered earlier this session), this checkpoint stores the tied weight ONLY ONCE -- no wasteful duplicate -- a real, positive counter-example confirming R-tied-embedding-dedup-verify's premise that SOME checkpoint authors already get this right and some (iLLaDA) do not."
+ },
+ "byte_accounting_EXACT": {
+  "n_tensors": 777,
+  "total_bytes": 14005488704,
+  "total_gib": 13.044,
+  "total_params": 3501372176,
+  "total_params_B": 3.5014,
+  "fully_bucketed_zero_unaccounted_bytes": true,
+  "dtype": "F32 throughout (unlike every other specimen this session, which were BF16/F16-dominant) -- this checkpoint is stored at FULL float32, doubling naive storage vs an equivalent bf16 checkpoint. Untested whether this is a real precision requirement (robot control error tolerance may differ meaningfully from text-generation error tolerance) or simply an unoptimized release checkpoint -- a genuinely open, domain-specific Gravity question no other specimen this session has raised."
+ },
+ "obvious_representation_opportunities": [
+  "Full F32 storage is itself the most obvious lever, untested this pass: even a conservative bf16 cast of the two Gemma towers + vision tower (leaving the tiny action-glue and flow-matching timestep math at higher precision if warranted) would roughly halve storage with unknown but plausibly small capability cost -- no other specimen this session started from F32, so this is a new axis.",
+  "The gemma_expert (575M, action-specific) and the language_model (1.98B, general VLM) plausibly tolerate very DIFFERENT compression aggressiveness -- an organ-heterogeneous allocation question analogous to this session's LFM2/BitNet findings, but split by FUNCTION (perception+language vs control) rather than by layer type or MoE-expert status."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery (and none of Hawking's existing text-generation batteries would even apply -- this needs a robot-control-specific evaluation, e.g. the LIBERO benchmark the README's own example code loads, which this pass did not run).",
+  "Zero verification of the actual flow-matching sampling loop or the joint vision+language+action attention mechanism -- both live entirely in the external `lerobot` package, not inspectable from this checkpoint's own files (a harder gap than iLLaDA's, where at least the forward pass was bundled).",
+  "The 92% gemma_expert size-vs-name gap is reported, not explained -- possible causes (untested): a different counting convention (embedding-excluded vs included), or the 'expert' having its own unshared head/embedding overhead the '300m' name doesn't count."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN, OUT-OF-DOMAIN FOR HCLI. Genuinely the highest task-diversity specimen surveyed this session (continuous robot control via flow matching, not sequence generation of any kind) -- valuable for Odyssey's architecture-diversity mandate and for the F32-storage / dual-tower-heterogeneous-allocation Gravity questions it newly raises, but has no bearing on HCLI's own text/code/tool-use domain.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "NOT APPLICABLE -- a robot-control policy has no HCLI relevance (same reasoning as evo2's DNA-only verdict earlier this session).",
+  "pulsar_candidate": "NOT APPLICABLE",
+  "magnetar_candidate": "NOT APPLICABLE",
+  "cepheid_candidate": "NOT EVALUATED",
+  "verdict": "OUT OF SCOPE for the Resident/Pulsar/Magnetar/Cepheid framework, recorded for architecture-diversity completeness per the creed's 'prefer high-information diversity', same class of finding as evo2 -- the two most domain-different specimens the census surfaced this session."
+ },
+ "commit": "f33604319",
+ "emitted_at": "2026-09-09T14:08:49Z"
+}

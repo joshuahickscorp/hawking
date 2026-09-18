@@ -123,7 +123,7 @@ def test_modellake_sha256_matches_known_bytes(tmp_path):
 
 
 def test_census_symbol_is_actually_called(tmp_path, monkeypatch):
-    mg = pytest.importorskip("hcli.agentos.modellake_gate")
+    mg = pytest.importorskip("hawking.modellake_gate")
     lake = tmp_path / "lake"
     specimens = lake / "specimens"
     (specimens / "Qwen--Qwen3-0.6B@c1899de289a0").mkdir(parents=True)
@@ -152,7 +152,7 @@ def test_census_symbol_is_actually_called(tmp_path, monkeypatch):
     report = call_run_modellake_census(
         repo_root=tmp_path, emit=emit, timeout_s=5.0
     )
-    assert report["schema"] == "hcli.agentos.modellake_census.v1"
+    assert report["schema"] == "hawking.modellake_census.v1"
     names = [e["name"] for e in (report.get("specimens") or {}).get("entries") or []]
     assert "Qwen--Qwen3-0.6B@c1899de289a0" in names
     assert report.get("acquisition_policy", {}).get("download_performed") is False
@@ -204,9 +204,9 @@ def test_runtime_archaeology_symbol_freezes_identity(tmp_path, monkeypatch):
     )
     from tools.acceptance.lake.common import PRIMARY
 
-    profile = PRIMARY / "hcli" / "hawking-native.sealed-3.14.json"
+    profile = PRIMARY / "hawking" / "hawking-native.sealed-3.14.json"
     if not profile.is_file():
-        pytest.skip("primary hcli profile absent")
+        pytest.skip("primary hawking profile absent")
     raw = call_run_runtime_archaeology(
         repo_root=PRIMARY,
         profile=profile,
@@ -242,7 +242,7 @@ def test_protected_baseline_symbol_records_missing_quiet_window(tmp_path, monkey
         measure_requests=1,
         max_new_tokens=4,
     )
-    assert raw["schema"] == "hcli.agentos.protected_accelerator_benchmark.v1"
+    assert raw["schema"] == "hawking.agentos.protected_accelerator_benchmark.v1"
     assert not raw.get("measurements")
     monkeypatch.setattr("tools.acceptance.lake.common.RECEIPTS", tmp_path)
     receipt = run_protected_baseline_gate(ready_timeout_s=0.3)

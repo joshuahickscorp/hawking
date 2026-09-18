@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.v2.runtime_receipt.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T15:38:05-04:00",
+  "status": "RUNNING",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "changes": {
+    "mutation_boundary": [
+      "Compiles explicit top-level HAWKING_EDIT_V1/HAWKING_PATCH_V1 file/mode/anchor/replacement packets into one canonical replace/create/append operation.",
+      "Compiles the observed source_operations/source_operation provider dialect and replace_once/replace_lines/patch operation aliases into the same canonical operation path.",
+      "UNKNOWN expected_digest remains non-authoritative; real digest validation remains unchanged."
+    ],
+    "http_200_semantics": [
+      "Accepts one complete typed JSON object wrapped by provider fences or a short prefix/suffix after HTTP 200.",
+      "Malformed JSON and prose-only structured responses remain fail-closed."
+    ],
+    "transport": [
+      "Typed mutation turns use one upstream attempt for fast route recovery.",
+      "Disconnected clients no longer create a secondary daemon traceback/late error write."
+    ]
+  },
+  "verification": {
+    "focused_tests": "125 passed",
+    "git_diff_check": "passed",
+    "live_daemon_pid": 79696,
+    "live_health": {
+      "status": "waiting_for_native_runtime",
+      "resident": null,
+      "model": null,
+      "requested_model": "hawking-auto",
+      "provider_children": "none while native role is withheld"
+    },
+    "active_workunits_observed": 10,
+    "active_model_mix_observed": {
+      "deepseek/deepseek-v4.1-flash": 7,
+      "moonshotai/kimi-k3": 3
+    },
+    "goal_complete_count_observed": 98,
+    "post_reload_complete_count_delta": 3,
+    "accepted_workunit": {
+      "id": "WORKUNIT-20260918-86713BE0",
+      "phase": "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "evidence": [
+        "repo.edit",
+        "tests.run verified",
+        "git.status",
+        "git.diff",
+        "receipts/future/workunits/WORKUNIT-20260918-86713BE0_SEAL_B1.json"
+      ],
+      "boundary": "accepted bounded implementation tranche; no phase, release, or hardware qualification claim"
+    }
+  },
+  "boundary": {
+    "release_claim": false,
+    "hardware_qualification_claim": false,
+    "known_remaining_classes": [
+      "provider proposals rejected for read-only bundles, stale/non-unique anchors, or missing focused evidence",
+      "independent provider transport failures are retried/reopened by Auto"
+    ]
+  }
+}

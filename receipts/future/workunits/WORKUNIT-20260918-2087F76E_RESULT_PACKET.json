@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "c6aef565f07cbdb41f54659c6d9474798594e16ff232708ff131d702ddec7f46",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:51:37.381951+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:51:37.381959+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:51:37.383383+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/goal_surface.py contains model-identity helpers `_is_remote_openrouter_model` and `_openrouter_model_id`; the former recognizes `openrouter:` prefixes and provider/model-shaped ids while excluding absolute paths, d",
+      "outcome": "CONTINUE",
+      "reply_chars": 2551,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/goal_surface.py contains model-identity helpers `_is_remote_openrouter_model` and `_openrouter_model_id`; the former recognizes `openrouter:` prefixes and provider/model-shaped ids while excluding absolute paths, dot-prefixed paths, and local weight/artifact suffixes.\",\"The observed excerpt also contains `_normalize_attachment_refs`, which is unrelated to model identity and enforces attachment artifact-id, digest, size, and read-path constraints.\",\"The observed file excerpt is truncated at 4000 of 66909 bytes, so no conclusion can be drawn about the rest of `goal_surface.py`, including whether additional model-identity logic or call sites exist.\",\"No observation was made of `hawking/serve.py`, `hawking/tests/test_auto_orchestration.py`, or `hawking/tests/test_serve_openai_surface.py`; therefore ownership overlap, behavioral anchors, and focused-test outcomes are not established.\",\"The admitted focused tests were not run in this read-only observation, so no deterministic test result can be reported.\"],\"sources\":[\"hawking/goal_surface.py (sha256 d95e9747171306a061f251322da34799d6497493e038167a1c9b3e6803732597; observed excerpt only, 4000 of 66909 bytes)\"],\"recommendations\":[\"Refuse the proposed P17 pure model-identity helper extraction as currently unverified: the observed excerpt shows model-identity helpers in `goal_surface.py`, but there is insufficient source-grounded evidence that the extraction is disjoint from `hawking/serve.py` ownership or that focused tests anchor the behavior.\",\"Bounded next seam: inspect the full `hawking/goal_surface.py` model-identity call sites, then inspect `hawking/serve.py` for duplicate or conflicting model-identity handling, and run the two admitted focused tests.\",\"Falsifier: if full inspection shows `hawking/serve.py` has no independent model-identity authority and the admitted focused tests deterministically pass against the extracted helper boundary, then the extraction may be source-grounded and disjoint.\"],\"unresolved_questions\":[\"Does `hawking/serve.py` currently own, duplicate, or delegate model-identity normalization in a way that would make the proposed extraction non-disjoint?\",\"Are there additional model-identity helpers or call sites later in `hawking/goal_surface.py` beyond the observed 4000-byte excerpt?\",\"Do `hawking/tests/test_auto_orchestration.py` and `hawking/tests/test_serve_openai_surface.py` contain deterministic behavioral anchors for the proposed helper boundary?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-73f7b7a28cef48c6",
+  "worker_id": "hawking-worker-ddc0a7021b2f4746",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-2087F76E"
+}

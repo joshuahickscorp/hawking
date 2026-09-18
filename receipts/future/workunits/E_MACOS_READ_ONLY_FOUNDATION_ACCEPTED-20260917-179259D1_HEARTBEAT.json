@@ -1,0 +1,70 @@
+{
+  "active_job": "job-0fe27835-1517-4c66-b19f-a5dde216e908",
+  "blocker": {
+    "pid": 33985,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.002838672,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-179259D1",
+    "tool_less_continue_streak": 6
+  },
+  "context_packet_digest": "de82d4100d4870dcc0fd0217a856570d6dc5979866ee383b874639c23eadc3c3",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 33985,
+  "exact_next_action": "Child provider output was unusable after bounded recovery; preserve evidence and continue an independent dependency-valid WorkUnit. Resume only with a fresh packet.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Perform one bounded P1 read-only control-plane liveness audit for the existing long-haul Goal. Do not retry or reopen the failed provider-mutation WorkUnit and do not design another mutation path. Inspect the current parent/child lifecycle and recovery owners after the new child-level provider-output policy: hawking/goal_surface.py, hawking/workunit_owner.py, hawking/goal.py, and hawking/dag_store.py. Use only Hawking-admitted read/search/source tools. Determine whether any remaining Goal-owned ",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-8e39abb30e4c427a96824625:tool-5",
+    "gen-1789683056-3TwNrfSu1rZcr2mu5qzI",
+    "gateway-14484ac1ce9c4479a8330579:tool-5",
+    "gen-1789683064-GmTDPdj9AbJTKkfpYs8K",
+    "gateway-fd8db3188c0649aea54dc78f:tool-5",
+    "gen-1789683070-XXs4wLuT632AQkyaBa9C",
+    "gateway-e8cf90a19b3148a8ba09de93:tool-5",
+    "gen-1789683077-KxfhPuN7IZM9EYf02O7k",
+    "gateway-5d90b911a5cf409a8c6e6fc2:tool-5",
+    "gen-1789683084-bdEWnkK8GrjPKdtq8ymf",
+    "gateway-7ffa523e9ac049a9a3857438:tool-5",
+    "gen-1789683091-zN4tm7kS2xZrGuJOXetr"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-17T22:18:44.171878+00:00",
+  "worker_attempt_id": "hawking-attempt-464b1efdbf8741f8",
+  "worker_cost_usd": 0.002838672,
+  "worker_id": "hawking-worker-08729567475346a2",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789683086.7149272,
+  "worker_spawned_at": 1789683053.244755,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-179259D1"
+}

@@ -1,0 +1,260 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T14:56:56.439446+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"MUTATION_PAYLOAD_MISSING\"}",
+      "outcome": "CONTINUE",
+      "reply_chars": 37,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 11
+    },
+    {
+      "at": "2026-09-18T14:57:06.515918+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T14:57:06.515927+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T14:57:06.517055+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P14_PCIE_IMPLEMENTATION_CONTRACT_V2 with one bounded implementation tranche in tools/accelerator/accelerator_runner.py, verified by the focused backend-contract and physical-qualification t",
+      "outcome": "CONTINUE",
+      "reply_chars": 1151,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 12
+    },
+    {
+      "at": "2026-09-18T14:57:11.575188+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T14:57:11.575195+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T14:57:11.575418+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"MUTATION_PAYLOAD_MISSING\"}",
+      "outcome": "CONTINUE",
+      "reply_chars": 37,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 13
+    },
+    {
+      "at": "2026-09-18T14:57:24.889274+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T14:57:24.889283+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T14:57:24.890888+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the EngineError by supplying a non-empty old_text for the replace op: one bounded source marker in tools/accelerator/accelerator_runner.py plus its focused qualification-support test, using ",
+      "outcome": "CONTINUE",
+      "reply_chars": 2487,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 14
+    },
+    {
+      "at": "2026-09-18T14:57:36.824406+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T14:57:36.824414+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T14:57:36.825862+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P14_PCIE_IMPLEMENTATION_CONTRACT_V2 with one bounded source mutation in tools/accelerator/accelerator_runner.py plus a focused test assertion, using the explicitly qualified alternate model",
+      "outcome": "CONTINUE",
+      "reply_chars": 2009,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 15
+    },
+    {
+      "at": "2026-09-18T14:58:01.228298+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T14:58:01.228306+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T14:58:01.228706+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P14_PCIE_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded implementation or qualification-support tranche in tools/accelerator, using the explicitly qualified alter",
+      "outcome": "CONTINUE",
+      "reply_chars": 1016,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 17
+    },
+    {
+      "at": "2026-09-18T14:58:11.580284+00:00",
+      "calls_used": 0,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T14:58:11.580293+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T14:58:11.581337+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P14_PCIE_IMPLEMENTATION_CONTRACT_V2 with one bounded source mutation in tools/accelerator/accelerator_runner.py plus a focused qualification-support test, using the qualified alternate mode",
+      "outcome": "CONTINUE",
+      "reply_chars": 1919,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 18
+    },
+    {
+      "files": [
+        "tools/accelerator/accelerator_runner.py",
+        "tools/accelerator/test_backend_contract.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-9386191E_SEAL_B1",
+      "turn": 18
+    }
+  ],
+  "files_changed": [
+    "tools/accelerator/accelerator_runner.py",
+    "tools/accelerator/test_backend_contract.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P14_PCIE_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded implementation or qualification-support tranche. Inspect the current owner and existing receipt, make only the aligned source change in the declared scope, run focused verification, and record exact evidence. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-9386191E_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      18
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-9386191E"
+}

@@ -1,0 +1,216 @@
+{
+  "schema": "hawking.long_haul.v2.overnight_baseline.v2",
+  "generated_at": "2026-09-18T11:08:00-04:00",
+  "goal_id": "GOAL-A52AB48501",
+  "observation_only": true,
+  "provider_workunits_launched": 0,
+  "full_objective_reread": false,
+  "objective_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "goal_status": "RUNNING",
+  "source_census": {
+    "v2_starting_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+    "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+    "head_equals_v2_starting_revision": true,
+    "measurement_scope": "git diff from V2 starting revision plus all current untracked files; dirty worktree included",
+    "files_added": 15198,
+    "files_deleted": 2,
+    "files_modified": 278,
+    "loc_added": 14627965,
+    "loc_removed": 13887,
+    "loc_net": 14614078,
+    "categories": {
+      "production_source": {
+        "files_added": 105,
+        "files_deleted": 2,
+        "files_modified": 165,
+        "loc_added": 61732,
+        "loc_removed": 5507,
+        "loc_net": 56225
+      },
+      "tests": {
+        "files_added": 59,
+        "files_deleted": 0,
+        "files_modified": 73,
+        "loc_added": 2952291,
+        "loc_removed": 907,
+        "loc_net": 2951384
+      },
+      "docs_reports": {
+        "files_added": 23,
+        "files_deleted": 0,
+        "files_modified": 11,
+        "loc_added": 4270,
+        "loc_removed": 422,
+        "loc_net": 3848
+      },
+      "receipts_generated_campaign_evidence": {
+        "files_added": 5125,
+        "files_deleted": 0,
+        "files_modified": 22,
+        "loc_added": 4471914,
+        "loc_removed": 7006,
+        "loc_net": 4464908
+      },
+      "other": {
+        "files_added": 9886,
+        "files_deleted": 1,
+        "files_modified": 7,
+        "loc_added": 7137758,
+        "loc_removed": 45,
+        "loc_net": 7137713
+      }
+    },
+    "tracked_production_deletions": [
+      "tools/agentos/genesis_body/Cargo.lock",
+      "tools/agentos/genesis_body/Cargo.toml"
+    ],
+    "production_files_added": 105,
+    "production_files_deleted": 2,
+    "known_duplicate_owners_removed": 0,
+    "compatibility_layers_retired": 0,
+    "interpretation": "Gross growth is dominated by generated receipts and other files; it is not codebase-collapse evidence. Production deletion is two tracked genesis Cargo files; no broad duplicate-owner deletion is proven."
+  },
+  "phase_status": [
+    {"phase": "P0", "state": "IMPLEMENTED_ACCEPTED", "evidence": "Live Auto policy, HTTP 200 model-free boundary, and daemon health are source/runtime-backed."},
+    {"phase": "P1", "state": "IMPLEMENTED_PARTIAL", "evidence": "P1 control-plane acceptance receipt and owner map exist; full owner convergence is not proven."},
+    {"phase": "P2", "state": "IMPLEMENTED_PARTIAL", "evidence": "P2 H-Web/HTTP implementation contract and focused surface evidence exist; release hosting is not complete."},
+    {"phase": "P3", "state": "ACCEPTED_READ_EVIDENCE", "evidence": "P3 memory/artifact source acceptance maps the relevant owners but does not establish implementation completion."},
+    {"phase": "P4", "state": "IMPLEMENTED_ACCEPTED", "evidence": "P4 Auto spool hardening V3 receipt and focused Auto evidence accept refill/unbounded policy behavior."},
+    {"phase": "P5", "state": "IMPLEMENTED_ACCEPTED", "evidence": "P5 perception/local reconciliation receipt and fresh 57-pass focused suite support the local tranche."},
+    {"phase": "P6", "state": "IMPLEMENTED_PARTIAL", "evidence": "P6 Gravity execution-boundary receipt establishes source/contract boundaries; native qualification remains absent."},
+    {"phase": "P7", "state": "ACCEPTED_READ_EVIDENCE", "evidence": "P7 NR execution-boundary receipt provides source/read evidence only."},
+    {"phase": "P8", "state": "QUALIFICATION_PENDING", "evidence": "P8 Nova candidate/heldout evidence is reconciled, but promotion is explicitly withheld."},
+    {"phase": "P9", "state": "IMPLEMENTED_PARTIAL", "evidence": "DARKMATTER physical-plan owner is source-grounded and 46 focused compiler/fusion tests pass; plan execution is withheld."},
+    {"phase": "P10", "state": "IMPLEMENTED_PARTIAL", "evidence": "Current NX census is source-bound at 98 live/818 declared with 62 focused tests; native runtime qualification is withheld."},
+    {"phase": "P11", "state": "IMPLEMENTED_PARTIAL", "evidence": "Native artifact/mission and queue/profile repairs have accepted bounded evidence; physical qualification is still pending."},
+    {"phase": "P12", "state": "QUALIFICATION_PENDING", "evidence": "Apple implementation/read evidence exists, but no Apple hardware execution is accepted."},
+    {"phase": "P13", "state": "QUALIFICATION_PENDING", "evidence": "NVIDIA contract/read evidence and focused tests exist, but no CUDA hardware/runtime qualification is accepted."},
+    {"phase": "P14", "state": "EXTERNAL_BLOCKER", "evidence": "FPGA/PCIe contract evidence exists, but required hardware is unavailable and qualification is withheld."},
+    {"phase": "P15", "state": "QUALIFICATION_PENDING", "evidence": "Autotuning contract/read evidence exists, but no accepted physical tuning run is measured."},
+    {"phase": "P16", "state": "IMPLEMENTED_PARTIAL", "evidence": "Odyssey/ModelLake implementation contract and execution boundary exist; release runtime evidence is incomplete."},
+    {"phase": "P17", "state": "IMPLEMENTED_PARTIAL", "evidence": "Collapse owner review and local 37-pass evidence exist; broad production duplicate removal is not proven."},
+    {"phase": "P18", "state": "IMPLEMENTED_ACCEPTED", "evidence": "HTTP 200 semantic gate/tunnel focused suite has 89 passing tests; production relay/hosting remains withheld."},
+    {"phase": "P19", "state": "IMPLEMENTED_PARTIAL", "evidence": "Sandbox audit/local reconciliation evidence exists; live worker allocation and release are not accepted."},
+    {"phase": "P20", "state": "EXTERNAL_BLOCKER", "evidence": "P20 convergence/refusal evidence identifies missing native artifact/runtime and unresolved final release conditions."}
+  ],
+  "accepted_state": {
+    "accepted_heads": 79,
+    "accepted_head_state_counts": {"COMPLETE": 59, "ACCEPTED_READ_EVIDENCE": 18, "IMPLEMENTED_ACCEPTED": 2},
+    "accepted_read_evidence_tranches_goal_metric": 17,
+    "accepted_evidence_lanes": [
+      "Auto/control-plane and HTTP 200 semantic boundary",
+      "perception/local reconciliation",
+      "Gravity and NR execution-boundary evidence",
+      "Nova candidate evidence",
+      "DARKMATTER physical-plan evidence",
+      "NX current-source census and binding evidence",
+      "Apple/NVIDIA/FPGA/autotuning/Odyssey contract evidence",
+      "sandbox and collapse audits"
+    ],
+    "accepted_implementation_tranches": [
+      "P4 Auto spool/refill hardening",
+      "P5 perception audit reconciliation",
+      "P9 DARKMATTER physical-plan owner and compiler path",
+      "P10 NX current binding/census hardening",
+      "P18 HTTP 200 semantic gate/tunnel"
+    ],
+    "implementation_acceptance_caveat": "The Goal does not expose a separate canonical implementation-tranche counter; the list above is conservative source-backed classification and must not be read as full phase completion.",
+    "runtime_hardware_qualification": "NONE_ACCEPTED_IN_CURRENT_V2",
+    "terminal_dead_letter_provider_outcomes": {"OUTPUT_UNUSABLE": 92, "PAUSED_PROVIDER": 70, "CANCELLED": 3},
+    "active_workunits": {"canonical_goal_projection": 11, "live_workunit_ledger": 12, "note": "one reconciliation lag is visible between the Goal projection and live ledger census"},
+    "runnable_frontier": {"canonical_workunit_frontier": 11, "graph_runnable_nodes": 9},
+    "waiting_dependencies": 0,
+    "historical_blocked_provider_edges": 14,
+    "provider_edge_interpretation": "Historical terminal provider edges are contained outcomes, not the current root release blocker."
+  },
+  "test_baseline": {
+    "focused_tests": "66 passed in 1.31s for remote WorkUnit contract, mutation boundary, and Auto orchestration; synthetic mixed-envelope path executed once and closed without follow-up decode. Existing HTTP 200/tunnel and perception focused evidence remains valid.",
+    "broad_python_tests": "NOT_RERUN; freshest known baseline has collection failures from missing mlx and unrelated sparse hcli modules.",
+    "rust_tests_check": "NOT_RERUN against dirty worktree; accepted V1 baseline was 2000 passed, 20 skipped, 28 subtests passed.",
+    "compile": "py_compile passed for hawking/remote_cognition.py; focused Python verification passed.",
+    "git_diff_check": "PASS",
+    "known_unrelated_failures_skips": ["missing mlx", "sparse hcli collection failures", "historical provider OUTPUT_UNUSABLE/transport outcomes"],
+    "suite_policy": "Observation-only checkpoint; no redundant broad suite was run."
+  },
+  "provider_economics": {
+    "reconciliation_status": "GOAL_WORKUNIT_LEDGER_CURRENT; not a provider invoice",
+    "total_remote_spend": 3.62091437,
+    "kimi_spend": 3.31099984,
+    "deepseek_spend": 0.24167273,
+    "glm_spend": 0.0682418,
+    "other_models_spend": 0.0,
+    "successful_grounded_workunits_by_model": {
+      "DeepSeek": 42,
+      "Kimi": 41,
+      "GLM": 1,
+      "other": 0
+    },
+    "terminal_unusable_workunits_by_model": {"DeepSeek": 77, "Kimi": 88, "GLM": 5, "other": 0},
+    "routine_implementation_provider_failures": {"Kimi": 108, "DeepSeek": 4, "GLM": 9},
+    "cost_per_accepted_evidence_packet": "NOT_YET_MEASURED",
+    "cost_per_accepted_implementation_tranche": "NOT_YET_MEASURED",
+    "measurement_note": "Complete WorkUnits are predominantly read/evidence children; no fresh implementation WorkUnit has crossed the accepted mutation boundary in this live batch."
+  },
+  "runtime_health": {
+    "hawkingd_pid": 75838,
+    "rss_kb": 60320,
+    "rss_mb_approx": 58.9,
+    "requested_model": "hawking-auto",
+    "resident_model": null,
+    "active_provider_children": "none resident in daemon; provider requests are ephemeral child attempts",
+    "auto_ceiling_policy": "unbounded remote cognition admission; dependency, provider-health, budget, resource, and disjoint-writer boundaries remain authoritative",
+    "auto_policy_revision": "hawking-auto-aggressive-v2-measured-diversity-unbounded-14",
+    "local_model_residency": "CONFIRMED_NONE; resident=null and no provider child is resident. Local Kimi remains withheld unless explicitly selected.",
+    "health": "HTTP 200; waiting_for_native_runtime"
+  },
+  "collapse_refactor": {
+    "owners_consolidated": ["Auto control-plane policy/refill boundary", "HTTP 200 semantic gate/tunnel", "DARKMATTER physical-plan owner", "NX current-source census/binding owner"],
+    "duplicate_paths_removed": 0,
+    "compatibility_layers_retired": 0,
+    "production_loc_actually_deleted": 5507,
+    "production_files_deleted": 2,
+    "major_refactor_wins": "Provider-friendly edit dialect normalization, mixed-envelope proposal recovery, immediate Hawking closeout after verified evidence, and explicit model-free daemon boundary.",
+    "remaining_major_collapse_targets": ["P17 release-collapse/codebase owner convergence", "duplicate historical receipt/owner paths", "native runtime and hardware qualification", "final P20 handoff/release convergence"]
+  },
+  "science_compiler_status": {
+    "field_semantics": "Each entry separates source_mapped, implemented, compiled, executed, measured, and hardware_qualified.",
+    "Gravity": {"source_mapped": true, "implemented": "PARTIAL", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false},
+    "NR": {"source_mapped": true, "implemented": "READ_EVIDENCE_ONLY", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false},
+    "Nova": {"source_mapped": true, "implemented": "CANDIDATE_ONLY", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": "HELDOUT_CANDIDATE_EVIDENCE", "measured": "CANDIDATE_ONLY", "hardware_qualified": false},
+    "DARKMATTER": {"source_mapped": true, "implemented": "PLAN_ONLY", "compiled": true, "executed": false, "measured": "COST_MODEL_ONLY", "hardware_qualified": false},
+    "NX": {"source_mapped": true, "implemented": "STATIC_CENSUS/BINDING", "compiled": true, "executed": false, "measured": "98_LIVE_818_DECLARED_STATIC_CENSUS", "hardware_qualified": false},
+    "Apple": {"source_mapped": true, "implemented": "CONTRACT/READ_EVIDENCE", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false},
+    "NVIDIA": {"source_mapped": true, "implemented": "CONTRACT/READ_EVIDENCE", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false},
+    "FPGA": {"source_mapped": true, "implemented": "CONTRACT/READ_EVIDENCE", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false},
+    "Autotuning": {"source_mapped": true, "implemented": "CONTRACT/READ_EVIDENCE", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false},
+    "Odyssey/ModelLake": {"source_mapped": true, "implemented": "PARTIAL_CONTRACT/BOUNDARY", "compiled": "NOT_CURRENTLY_RECONFIRMED", "executed": false, "measured": false, "hardware_qualified": false}
+  },
+  "true_release_blockers": [
+    {"blocker": "native_resident_role_not_admitted", "evidence": "8014 health is waiting_for_native_runtime; no admitted native artifact has an explicit resident role binding."},
+    {"blocker": "physical_runtime_hardware_qualification", "evidence": "P11 physical window is withheld pending quiescence; DARKMATTER/NX/Apple/NVIDIA/FPGA/Autotuning and release measurements remain unqualified."},
+    {"blocker": "P20_release_convergence", "evidence": "Final handoff/release convergence remains open and must not be inferred from read evidence or provider outcomes."}
+  ],
+  "final_summary": {
+    "HAWKING V2 OVERNIGHT BASELINE": true,
+    "SOURCE_REVISION": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+    "LOC_PRODUCTION_ADDED": 61732,
+    "LOC_PRODUCTION_REMOVED": 5507,
+    "LOC_PRODUCTION_NET": 56225,
+    "FILES_ADDED": 15198,
+    "FILES_DELETED": 2,
+    "ACCEPTED_HEADS": 79,
+    "IMPLEMENTATION_TRANCHES_ACCEPTED": 7,
+    "READ_EVIDENCE_TRANCHES_ACCEPTED": 18,
+    "PHASES_IMPLEMENTED_ACCEPTED": ["P0", "P4", "P5", "P18"],
+    "PHASES_PARTIAL": ["P1", "P2", "P6", "P9", "P10", "P11", "P16", "P17", "P19"],
+    "PHASES_READ_EVIDENCE_ONLY": ["P3", "P7"],
+    "REMOTE_SPEND": 3.62091437,
+    "KIMI_SPEND": 3.31099984,
+    "DEEPSEEK_SPEND": 0.24167273,
+    "TEST_BASELINE": "Focused 66 passed; HTTP 200/tunnel and perception evidence retained; broad Python/Rust not rerun; git diff --check PASS.",
+    "RUNTIME_HEALTH": "hawkingd 75838, RSS ~58.9 MB, requested hawking-auto, resident null, no resident provider children, HTTP 200 waiting_for_native_runtime",
+    "MAJOR_REFACTOR_WINS": "Provider mutation handoff boundary hardened; no broad production collapse claimed.",
+    "TRUE_RELEASE_BLOCKERS": "native resident-role admission, physical/runtime/hardware qualification, P20 release convergence",
+    "READY_FOR_UNATTENDED_CONTINUATION": "YES"
+  }
+}

@@ -1,4 +1,4 @@
-# HCLI resident daemon
+# HAWKING resident daemon
 
 ## Roadmap relationship
 
@@ -15,7 +15,55 @@ daemon**. Roadmap execution stays ahead of speculative daemon qualification:
   return immediately to the roadmap. Do not broaden the daemon architecture
   speculatively.
 
-HCLI now has a durable resident control loop. The resident is split into two
+## One live Hawking surface
+
+The browser/OpenAI surface has the same ownership law as the resident daemon:
+there is one long-lived Hawking execution surface per machine. Start it as:
+
+```bash
+hawkingd serve KIMI_P0_OPERATIONAL --port 8014
+```
+
+`hawking serve` remains a compatibility entry point and routes through the same
+implementation. A machine-wide advisory lease refuses a second surface before
+it loads another model, even when the requested port differs. Hawking-native /
+Noetic is the preferred runtime; MLX/MLX-VLM is transitional only while a
+native loader is missing for a Gravity artifact. llama.cpp is disabled for
+normal runtime selection. Any transitional provider child is created,
+health-checked, and stopped by the owning `hawkingd`; it is not an independent
+Hawking instance.
+
+Multiple Open WebUI clients are allowed. Each invocation chooses a free port
+and a per-client data directory, while all clients reuse the same `hawkingd`
+OpenAI endpoint. The UI children are daemon-owned: `hawking web` is only a
+launcher and exits after the browser surface is ready. This supports a
+user-facing UI and temporary blind HAWKING UIs at the same time without leaving
+one Python launcher per session or loading another model.
+
+The invariant is one sovereign **process tree**, not one literal OS PID.
+Provider, WebUI, worker, and future accelerator processes are valid only as
+owned descendants of the singleton `hawkingd` root. This preserves fault
+isolation while keeping lifecycle and duplicate-model authority in one place.
+The frozen KIMI P0 surface is read/research authority; autonomous repository
+mutation remains explicitly withheld by its closeout receipt.
+
+Delegated `hawking run` work follows the same rule. On the current daemon image,
+the client writes the durable delegation specification and asks the local
+`/hawkingd/delegations/start` control surface to launch the worker. The daemon
+accepts only a prepared workspace below its own `.hawking/delegations/` root, owns
+the child without creating a new session, and terminates/reaps it during daemon
+shutdown. If a pre-upgrade daemon lacks that endpoint, a client addressing the
+production `:8014` surface refuses to detach a fallback Python worker; install
+the staged build and use a controlled daemon restart instead.
+
+The ModelLake acquisition watcher is not a resident and is disabled by
+default. Do not restore an independent launchd watcher beside the live body:
+if background acquisition is needed later, it must be admitted as an owned
+daemon child with an explicit memory budget. The current operational selector
+contains only admitted Gravity artifacts; legacy Ascension/Qwen3.8 binaries,
+source, and receipts remain separate historical/reproducibility material.
+
+HAWKING now has a durable resident control loop. The resident is split into two
 process roles:
 
 - a small supervisor that owns heartbeat, memory admission, restart limits,
@@ -30,7 +78,7 @@ protected experiment, and return without losing the mission.
 Start it with an explicit goal:
 
 ```text
-hcli resident start --workspace /path/to/workspace \
+hawking resident start --workspace /path/to/workspace \
   --goal "continue the current bounded research mission" \
   --model /path/to/profile.json
 ```
@@ -38,23 +86,23 @@ hcli resident start --workspace /path/to/workspace \
 Inspecting status does not construct a `Controller` or open model weights:
 
 ```text
-hcli resident status --workspace /path/to/workspace
-hcli resident stop --workspace /path/to/workspace
-hcli resident clean-room --workspace /path/to/workspace \
+hawking resident status --workspace /path/to/workspace
+hawking resident stop --workspace /path/to/workspace
+hawking resident clean-room --workspace /path/to/workspace \
   --reason "protected accelerator experiment"
-hcli resident resume --workspace /path/to/workspace
-hcli resident queue --workspace /path/to/workspace \
+hawking resident resume --workspace /path/to/workspace
+hawking resident queue --workspace /path/to/workspace \
   --id source-check --role research \
   --description "verify the pinned source"
 ```
 
-Use `hcli agentos resident ...` for the equivalent namespaced command.
+There is no namespaced resident command: use `hawking resident ...` directly.
 
 When host pressure is high, free memory is below the configured reserve, or
 swap exceeds the configured ceiling, the supervisor records
 `WAITING_FOR_MEMORY`, asks only its owned worker session to evacuate, and waits
 for the next probe. If no ceiling is supplied, the daemon uses the same
-conservative 2 GiB default as HCLI's runtime `MemGate`; `HCLI_SWAP_CEILING_GIB`
+conservative 2 GiB default as HAWKING's runtime `MemGate`; `HAWKING_SWAP_CEILING_GIB`
 may be used when the machine policy explicitly changes. It never scans or
 kills unrelated applications. A model worker is only launched after the
 memory preflight passes.
@@ -69,7 +117,7 @@ worker cycle admits pending WorkUnits into the durable mission DAG. The CLI
 form is shown above; the Python form is:
 
 ```python
-from hcli.agentos import ResidentDaemon, WorkUnit
+from hawking import ResidentDaemon, WorkUnit
 
 ResidentDaemon(workspace).enqueue_workunit(
     WorkUnit(id="source-check", role="research", description="verify the pinned source")
@@ -86,7 +134,7 @@ trigger for another cycle. The physical body registry records `CONFIGURED`,
 merely because a worker process was constructed.
 
 The lightweight resident qualification is
-`hcli/tests/test_hcli_resident_daemon.py`. It uses a fixture engine and a
+`hawking/tests/test_hawking_resident_daemon.py`. It uses a fixture engine and a
 short-lived child process, so it does not load Qwen3.8 or consume GPU memory.
 
 For a serving-only latency experiment, set
@@ -96,8 +144,8 @@ vectors are intentionally absent; health and propose responses report
 `untimed_resident_fast`. Leave it unset for measured qualification runs.
 
 Both headless qualification scripts named in earlier versions of this document
--- `tools/headless/hcli_resident_native_smoke.py` and
-`tools/headless/hcli_resident_qualification.py` -- were **deleted** in
+-- `tools/headless/hawking_resident_native_smoke.py` and
+`tools/headless/hawking_resident_qualification.py` -- were **deleted** in
 `1baee5464` ("retire caller-free headless scripts"). Their receipts survive
 under `receipts/headless/`, which is evidence that they once ran, not that they
 can be run now. This document instructed the reader to execute one of them for
@@ -107,14 +155,14 @@ The live equivalents:
 
 ```bash
 # is the sealed profile still what the seal binds?
-python3 tools/hcli_resident/serve_sealed.py --check-only
+python3 tools/hawking_resident/serve_sealed.py --check-only
 
 # what is this resident actually like to use, right now?
-hcli report
+hawking report
 ```
 
 This runs a real source/test AgentOS mission, verifies evidence-derived child
 continuation, then SIGKILLs only a disposable worker under the real supervisor.
-It emits `receipts/headless/HCLI_RESIDENT_CRASH_RECOVERY.json`. The receipt is
+It emits `receipts/headless/HAWKING_RESIDENT_CRASH_RECOVERY.json`. The receipt is
 explicitly control-plane evidence; it makes no model-quality or GPU-performance
 claim.

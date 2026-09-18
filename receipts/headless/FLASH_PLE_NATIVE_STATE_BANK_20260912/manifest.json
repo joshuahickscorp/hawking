@@ -1,0 +1,122 @@
+{
+  "capture": {
+    "capture_path": "actual complete-session native body, not a synthetic perturbation or reset per token",
+    "layer": 0,
+    "persistent_state_authority": "the bound session receipt owns recurrence/KV persistence and token acceptance; this manifest owns only captured F32 boundary states",
+    "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+    "state_width": 10240,
+    "trajectory_boundary": "The current native session does not embed the source PLE formula. These are real stateful native contexts, not upstream PLE-inclusive source-model trajectory parity.",
+    "upstream_PLE_inclusive_source_trajectory": false
+  },
+  "claim_boundary": "This exports real source-bound native-session pre-PLE boundary states for a later formula/generator discriminator. The native body does not yet embed PLE, so the states are not upstream PLE-inclusive source-model trajectory parity. It is not independent source PLE-output parity, a native PLE runtime, a compact representation, complete EBPW, capability, qualified TPS, or promotion evidence.",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "prompt_length": 5,
+  "schema": "hawking.flash.ple_pre_layer_state_bank.v1",
+  "seal_sha256": "d9f8a40f2c026144a3f7ba2823625d5d629833d58d29b64d9a0d5afb1c55da2f",
+  "session_receipt": {
+    "bytes": 182772,
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+    "schema": "hawking.flash.stateful_complete_token_session.v1",
+    "seal_sha256": "369172076bedecc1079ddcf45c6bec40471f06292b156c8905413150c8ad07eb",
+    "sha256": "8c248203f284f1f8889ba4bba3bc28c628fa9101a7cb0bbf07b2d744dabc9c05",
+    "status": "PASSED_COMPLETE_FORWARD_REFERENCE_REJECTED"
+  },
+  "states": [
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000000.f32",
+      "sha256": "3b3b4b534bec3b5702a96f7495aea8a00dd6a6fc3de8722c4f10ca012d152f1a",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 0,
+      "token_id": 5423
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000001.f32",
+      "sha256": "7e140b191cedb95f652df699db3481e631117690fc7379e92121cb58cefe669e",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 1,
+      "token_id": 799
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000002.f32",
+      "sha256": "f99dc2b43a0b3b83281674d4a4aca27ac07469b215e6181a9b73ab452222344a",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 2,
+      "token_id": 4581
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000003.f32",
+      "sha256": "a01727b942b3c9601670fa564ca6d522b5eb65766d37da342116c979e663f006",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 3,
+      "token_id": 3817
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000004.f32",
+      "sha256": "d82135f682350db6a6c8348d112ca760cbc2025a0c7d30b6eab69646e8d0c75a",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 4,
+      "token_id": 13
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000005.f32",
+      "sha256": "b0a536f3b713388f2776138070babe70d5c428f6d93a315b5f5bf8d1105f8d3b",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 5,
+      "token_id": 2972
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/state-step-000006.f32",
+      "sha256": "07a792fc61b466bab24588a6445d30c62dfa03dd9ce6e8a7b601ccc06fd84c16",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 6,
+      "token_id": 96125
+    }
+  ],
+  "status": "EXPORTED_SOURCE_BOUND_NATIVE_PRE_PLE_STATE_BANK__FORMULA_ONLY",
+  "token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13,
+    2972,
+    96125
+  ]
+}

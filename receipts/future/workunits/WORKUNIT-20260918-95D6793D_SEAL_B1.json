@@ -1,0 +1,28 @@
+{
+  "receipt_id": "WORKUNIT-20260918-95D6793D_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "WORKUNIT-20260918-95D6793D",
+  "phase": "BUILD",
+  "title": "Goal milestone 1: tested repository change",
+  "at": "2026-09-18T17:06:01.284484+00:00",
+  "written_at_unix": 1789751161,
+  "change": {
+    "paths": [
+      "research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json",
+      "hawking/tests/test_auto_p9_darkmatter_core_regression.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 1"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 1,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-A52AB48501",
+  "real_engineering_seal": true
+}

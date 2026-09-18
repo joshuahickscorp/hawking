@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "2791e29ce6f025318f5b276b74e6b0e4ea074717424d32f5c757c7fe2d638fb9",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:08:41.443301+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:08:41.443312+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:08:41.446146+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"hawking/serve.py (399376 bytes, sha256 fe91362e5385eec04d7fbe0f187969e1d652ae1aed3c24c237d88e7ce0264e58) is the OpenAI-compatible HTTP surface over the persistent Hawking resident; its module docstring states the ",
+      "outcome": "CONTINUE",
+      "reply_chars": 5749,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"hawking/serve.py (399376 bytes, sha256 fe91362e5385eec04d7fbe0f187969e1d652ae1aed3c24c237d88e7ce0264e58) is the OpenAI-compatible HTTP surface over the persistent Hawking resident; its module docstring states the server is deliberately thin: HTTP in, backend.complete out, adding no second runtime, no second model resolution, and no second state universe.\",\n    \"hawking/serve.py defines REVIEW_ONLY_MODEL_ID = \\\"KIMI_P0_OPERATIONAL\\\" and WEB_AUTO_MODEL_IDS = REMOTE_AUTO_ROSTER (imported from .auto_mode), and a comment states the launcher uses the daemon's advertised endpoint contract to distinguish the current H-Web owner from an older healthy-but-stale process, with that contract list kept beside the route owner so a new Web capability cannot be added silently.\",\n    \"hawking/serve.py imports execute_mutation_proposal from .mutation, process_start_token from .resources, resolve from .context_budget, and AUTO_POLICY_REVISION plus REMOTE_AUTO_ROSTER from .auto_mode, placing the H-Web product-command surface beside mutation-execution and resource-attribution machinery in the same module.\",\n    \"hawking/tests/test_serve_openai_surface.py (49937 bytes, sha256 3aec23f79b63e6249358de1add40a22baa7d88f0ad091fcec37bab4ab4693641) drives the real handler over a real socket with a fake backend, because the guarded failure is a SHAPE failure (a missing created field, a stream flag answered with JSON instead of SSE) invisible to tests that call functions directly.\",\n    \"The test module imports GREEDY_OK, Resident, chat_payload, make_handler, models_payload, profile_is_greedy, sampler_refusal, stream_frames, visible_text, worker_tool_allowlist, and worker_request_mode from hawking.serve, naming the module's admitted public seam.\",\n    \"The test module defines a _WebUIManager fake with snapshot() returning process rows of the form {pid, port, state} and start(port, endpoint, requester_pid) / stop(port, *, requester_pid=None) methods that record invocations, and make_handler is constructed with webui_manager= and endpoint_base= keyword arguments, establishing the WebUI process manager as an injected adapter seam owned by make_handler.\",\n    \"test_models_carries_the_fields_the_picker_reads asserts GET /v1/models returns object == \\\"list\\\" and row id == \\\"KIMI_P0_OPERATIONAL\\\", with a comment that H-Web deliberately exposes the admitted device identity while the router still owns runtime choice.\",\n    \"Only 1.0% of hawking/serve.py and 8.0% of the test file were shown by the read; no conclusion is drawn about unshown routes, handlers, or tests.\"\n  ],\n  \"sources\": [\n    \"hawking/serve.py (399376 bytes, sha256 fe91362e5385eec04d7fbe0f187969e1d652ae1aed3c24c237d88e7ce0264e58, first 4000 bytes observed)\",\n    \"hawking/tests/test_serve_openai_surface.py (49937 bytes, sha256 3aec23f79b63e6249358de1add40a22baa7d88f0ad091fcec37bab4ab4693641, first 4000 bytes observed)\"\n  ],\n  \"recommendations\": [\n    \"Bounded contract for HWEB product commands \u2014 OWNER: hawking/serve.py, specifically make_handler(backend, profile, ..., webui_manager=..., endpoint_base=...) as the route owner, with WebUI process-control behavior delegated to the injected webui_manager adapter.\",\n    \"SMALLEST SEAM: the webui_manager adapter interface \u2014 snapshot() -> list of {pid, port, state}; start(port, endpoint, requester_pid) -> {pid, port, endpoint, state}; stop(port, *, requester_pid=None) -> bool \u2014 injected into make_handler, so product commands can be exercised over a real socket without touching the backend, the resident, or real processes.\",\n    \"RED TEST: a new socket-level test in hawking/tests/test_serve_openai_surface.py that posts an HWEB product command (e.g., a WebUI start/stop request) against make_handler wired with the _WebUIManager fake and asserts the exact adapter call recorded in started/stopped plus the response shape; it fails before the route exists.\",\n    \"GREEN TEST: the same test passes once the route delegates to webui_manager.start",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-f9125424a7484468",
+  "worker_id": "hawking-worker-bac0f9677d6f4976",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-B5D5B3CA"
+}

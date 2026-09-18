@@ -57,7 +57,7 @@ def test_summary_count_matches_verdicts(bundle):
 
 
 def test_authority_one_resolve_drives_root_and_worker(bundle):
-    from hcli.context_budget import estimate_tokens, preflight, preflight_packet, resolve
+    from hawking.context_budget import estimate_tokens, preflight, preflight_packet, resolve
 
     row = bundle["results"]["HCLI_CONTEXT_AUTHORITY_UNIFIED"]
     assert row["verdict"] == "ACCEPTED"
@@ -74,8 +74,8 @@ def test_authority_one_resolve_drives_root_and_worker(bundle):
 
 
 def test_focused_worker_packet_excludes_the_roadmap(bundle):
-    from hcli.goal import compile_worker_context, refuse_goal_dump
-    from hcli.workunit import WorkUnit
+    from hawking.goal import compile_worker_context, refuse_goal_dump
+    from hawking.workunit import WorkUnit
 
     row = bundle["results"]["HCLI_CONTEXT_FOCUSED_WORKUNITS"]
     assert row["verdict"] == "ACCEPTED"
@@ -111,8 +111,8 @@ def test_focused_worker_packet_excludes_the_roadmap(bundle):
 
 
 def test_changed_evidence_refuses_stale_compiled_context(bundle):
-    from hcli.goal import StaleEvidenceError, assert_evidence_fresh, compile_worker_context, identity_for_path
-    from hcli.workunit import WorkUnit
+    from hawking.goal import StaleEvidenceError, assert_evidence_fresh, compile_worker_context, identity_for_path
+    from hawking.workunit import WorkUnit
     from tools.acceptance.context.common import rewrite
     import tempfile
 
@@ -152,7 +152,7 @@ def test_status_physical_is_judged_against_d9_not_a_thinner_contract(bundle):
         assert row["verdict"] == "ACCEPTED"
     rendered = row.get("rendered") or ""
     assert "mission " in rendered
-    from hcli.commands import format_status
+    from hawking.commands import format_status
 
     text = format_status({"mission_id": "x", "phase": "idle", "goal": "g"})
     assert "mission " in text
@@ -164,7 +164,7 @@ def test_mixed_max_does_not_accept_cpu_only_as_mixed(bundle):
     assert row.get("blocker")
     assert row["checks"]["did_not_substitute_cpu_only_as_mixed"] is True
     assert row["checks"]["heterogeneous_throughput_measured"] is False
-    from hcli.max_policy import grok_pool_snapshot
+    from hawking.max_policy import grok_pool_snapshot
 
     snap = grok_pool_snapshot(str(REPO))
     assert "active" in snap and "admitted" in snap
@@ -176,7 +176,7 @@ def test_backend_failure_isolation_holds_and_terminate_pid_is_called(bundle):
     assert row["checks"]["injected_backend_failure_does_not_stop_independent_units"]
     assert row["checks"]["terminate_pid_invoked_on_owned_child"]
     assert row["terminate_pid"]["gone"] is True
-    from hcli.resources import classify_failure
+    from hawking.resources import classify_failure
 
     assert classify_failure({"http_status": 429}).kind == "RATE_LIMIT"
     assert classify_failure({"http_status": 503}).kind == "TRANSIENT_BACKEND"
@@ -189,7 +189,7 @@ def test_self_supplement_full_chain_and_unverified_refusal(bundle):
     assert hops["child_dependencies"] == ["parent"]
     assert hops["unverified_denied"] == []
     assert hops["ghost_absent"] is True
-    from hcli.agentos.resident import admit_evidence_children
+    from hawking.resident import admit_evidence_children
 
     denied = admit_evidence_children(
         None,

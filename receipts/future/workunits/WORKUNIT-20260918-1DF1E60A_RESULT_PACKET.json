@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:45:40.602488+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:45:40.602499+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:45:40.602501+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5370,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:45:40.602513+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"GENOME_FACT_KEYS = (\\\"chipset\\\", \\\"gpu_cores\\\", \\\"unified_memory_bytes\\\",\\n                    \\\"metal_family\\\", \\\"measured_roof_gb_s\\\")\\n\\n\\ndef genome_digest(facts):\\n    \\\"\\\"\\\"Digest over exactly the facts a lowering depends on. The seal and the load-time\\n    check must agree on this projection, or a machine could be admitted on a digest\\n    that never covered the fact that drifted.\\\"\\\"\\\"\\n    return hashlib.sha256(\\n        json.dumps({k: facts.get(k) for k in GENOME_FACT_KEYS},\\n                   sort_keys=True).encode()).hexdigest()\\n\\n\\ndef genome_matches(sealed, current):\\n    \\\"\\\"\\\"REFUSE rather than run and hope: an NX may only load on a machine whose genome\\n    digest equals the digest sealed at compile time. Any drift in chipset, GPU core\\n    count, unified memory, Metal family, or the measured bandwidth roof is a refusal.\\n\\n    The sealed digest is not trusted on its own: it is recomputed from the sealed\\n    facts and compared to the current facts, so a seal whose stored digest disagrees\\n    with its own facts (tampered, truncated, or hand-edited) is refused instead of\\n    being replayed as authority.\\\"\\\"\\\"\\n    if not isinstance(sealed, dict) or not isinstance(current, dict):\\n        return False\\n    sealed_digest = sealed.get(\\\"genome_digest\\\")\\n    if not isinstance(sealed_digest, str) or not sealed_digest:\\n        return False\\n    if sealed_digest != genome_digest(sealed):\\n        return False\\n    return sealed_digest == genome_digest(current)\", \"old_text\": \"def ge",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/test_auto_p10_nx_implementation_contract_v2_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789753540.1269069, \"n_stdout_chars\": 99, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789753539.963872, \"stderr\": \"\", \"stdout\": \"..........                                                               [100%]\\n10 passed in 0.03s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"tools/nx_genome.py\", \"sha256_after\": \"fad54fff7ae36de4e0f0a4fd5608360b263dcf7ef2a900009fff4366b785da8b\", \"sha256_before\": \"b48dae7f35d372b574bea015c36141b0525a92ffa6b100afe6213d1ffca24663\"}, {\"changed\": true, \"path\": \"hawking/test_auto_p10_nx_implementation_contract_v2_regression.py\", \"sha256_after\": \"a18a0ac7d41f25a5a0efd84070e8e17c1793eff1e209e1599501eb1abf14a3c2\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"tools/nx_genome.py\", \"sha256_after\": \"fad54fff7ae36de4e0f0a4fd5608360b263dcf7ef2a900009fff4366b785da8b\", \"sha256_before\": \"b48dae7f35d372b574bea015c36141b0525a92ffa6b100afe6213d1ffca24663\"}, {\"changed\": true, \"path\": \"hawking/test_auto_p10_nx_implementation_contract_v2_regression.py\", \"sha256_after\": \"a18a0ac7d41f25a5a0efd84070e8e17c1793eff1e209e1599501eb1abf14a3c2\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"tools/nx_genome.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/test_auto_p10_nx_implementation_contract_v2_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 10, \"executed\": 10, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 10, \"requested\": \"hawking/test_auto_p10_nx_implementation_contract_v2_regression.py\", \"runner\": \"pytest\", \"stderr\": ",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:45:40.605491+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operations\":[{\"op\":\"replace\",\"path\":\"tools/nx_genome.py\",\"old_text\":\"def genome_matches(sealed, current):\\n    \\\"\\\"\\\"REFUSE rather than run and hope: an NX may only load on a machine whose genome\\n    digest e",
+      "outcome": "CONTINUE",
+      "reply_chars": 5370,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "tools/nx_genome.py",
+        "hawking/test_auto_p10_nx_implementation_contract_v2_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-1DF1E60A_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "tools/nx_genome.py",
+    "hawking/test_auto_p10_nx_implementation_contract_v2_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P10_NX_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-1DF1E60A_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-1DF1E60A"
+}

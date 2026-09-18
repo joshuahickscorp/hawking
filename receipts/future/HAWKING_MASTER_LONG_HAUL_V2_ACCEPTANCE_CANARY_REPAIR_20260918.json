@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.v2.acceptance_canary_repair.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "workunit_id": "WORKUNIT-20260918-FC184E3C",
+  "classification": "REPAIRED_BUT_NOT_ACCEPTED",
+  "claim_boundary": "This receipt records a post-WorkUnit local repair and focused verification. It does not promote the original provider mutation or close the shared acceptance circuit.",
+  "root_cause": "The provider inserted FrontierState.state with a default before required dataclass fields, causing import-time TypeError.",
+  "repair": "Preserved positional FrontierState construction, placed the state compatibility alias after positional fields, and normalized kind/state together in __post_init__.",
+  "verification": {
+    "command": "pytest -q hawking/test_frontier_scheduler.py hawking/test_auto_p15_autotuning_focused_contract_v4_regression.py",
+    "result": "19 passed in 0.08s",
+    "compile": "python3 -m py_compile hawking/frontier_scheduler.py hawking/test_auto_p15_autotuning_focused_contract_v4_regression.py: PASS",
+    "diff_check": "git diff --check -- hawking/frontier_scheduler.py hawking/test_auto_p15_autotuning_focused_contract_v4_regression.py: PASS"
+  },
+  "next_action": "Require a fresh mutation WorkUnit to independently produce repo.edit, focused tests, git.status, git.diff, and accepted completion before refilling implementation lanes."
+}

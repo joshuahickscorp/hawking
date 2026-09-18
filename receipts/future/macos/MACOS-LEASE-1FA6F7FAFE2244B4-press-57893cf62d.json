@@ -1,0 +1,78 @@
+{
+  "at": 1789526478.044527,
+  "claim_boundary": "Hawking admitted one scoped semantic AXPress; the native helper performed mechanics and did not own authority.",
+  "details": {
+    "after_revision": 101,
+    "before_revision": 100,
+    "revision_delta": 1,
+    "target": {
+      "application": {
+        "active": true,
+        "bundle_id": "",
+        "hidden": false,
+        "name": "hawking-macos-fixture-20260915",
+        "pid": 94370,
+        "terminated": false
+      },
+      "match_count": 1,
+      "matches": [
+        {
+          "enabled": true,
+          "focused": false,
+          "identifier": "hawking.fixture.toggle",
+          "label": "Toggle fixture",
+          "path": "0.0.1",
+          "role": "AXButton",
+          "title": "Toggle"
+        }
+      ],
+      "target": {
+        "identifier": "hawking.fixture.toggle",
+        "role": "AXButton"
+      },
+      "world_revision": 100
+    },
+    "verification": {
+      "application": {
+        "active": true,
+        "bundle_id": "",
+        "hidden": false,
+        "name": "hawking-macos-fixture-20260915",
+        "pid": 94370,
+        "terminated": false
+      },
+      "match_count": 1,
+      "matches": [
+        {
+          "enabled": true,
+          "focused": false,
+          "identifier": "hawking.fixture.state",
+          "label": "Fixture state",
+          "path": "0.0.0",
+          "role": "AXStaticText",
+          "value": "done"
+        }
+      ],
+      "target": {
+        "identifier": "hawking.fixture.state",
+        "role": "AXStaticText",
+        "value": "done"
+      },
+      "world_revision": 101
+    },
+    "verified": true
+  },
+  "goal_id": "GOAL-B33C69F193",
+  "lease_id": "MACOS-LEASE-1FA6F7FAFE2244B4",
+  "operation": "press",
+  "outcome": "VERIFIED",
+  "reason": "semantic AXPress completed with post-action observation",
+  "schema": "hawking.macos.action_receipt.v1",
+  "state": "ACTIVE",
+  "target": {
+    "application": "hawking-macos-fixture-20260915",
+    "pid": 94370
+  },
+  "worker_id": "hawking-worker-537f526210d74e03",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A4C5D04A"
+}

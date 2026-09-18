@@ -159,8 +159,8 @@ pub enum UndoStrategy {
 /// How a surface reaches the backend for this command.
 ///
 /// - [`BackendBinding::Intent`] names a real `hide-core` `Intent` variant
-///   (`crates/hide-core/src/api.rs`) for the HCLI backend bridge.
-/// - [`BackendBinding::Custom`] names an `Intent::Custom{name}` the HCLI host
+///   (`crates/hide-core/src/api.rs`) for the HAWKING backend bridge.
+/// - [`BackendBinding::Custom`] names an `Intent::Custom{name}` the HAWKING host
 ///   handles and exposes through [`WIRE_CUSTOM_NAMES`]. There is no pending
 ///   tier: a name the host does not handle is not on the contract at all.
 /// - [`BackendBinding::Rpc`] names an elevated capability: either a real
@@ -216,7 +216,7 @@ pub struct CommandSpec {
     pub telemetry: Option<String>,
 }
 
-/// The `Intent` variant tags the HCLI backend bridge accepts.
+/// The `Intent` variant tags the HAWKING backend bridge accepts.
 /// Mirror of the snake_case `#[serde(tag = "type")]` names in
 /// `crates/hide-core/src/api.rs` (the `custom` escape hatch is excluded; custom
 /// names are validated separately). Kept as a mirror the way `wire.ts` mirrors
@@ -234,7 +234,7 @@ pub const INTENT_NAMES: &[&str] = &[
     "run_command",
 ];
 
-/// The canonical custom names for the HCLI/HIDE protocol. Every `Custom`
+/// The canonical custom names for the HAWKING/HIDE protocol. Every `Custom`
 /// binding must be in here, and every name in here has an arm in
 /// `crates/hide-backend/src/host.rs` `HANDLED_CUSTOM_NAMES` (asserted there).
 pub const WIRE_CUSTOM_NAMES: &[&str] = &[
@@ -290,7 +290,7 @@ pub const WIRE_CUSTOM_NAMES: &[&str] = &[
     "attach_process",
     "stop_process",
     "capture_process_artifact",
-    // The sealed diff review receipt over a diff the HCLI backend produced.
+    // The sealed diff review receipt over a diff the HAWKING backend produced.
     "export_review_receipt",
     // YOU / CHAT / IDE shared session graph (claim-only handoffs).
     "switch_surface",
@@ -302,9 +302,9 @@ pub const WIRE_CUSTOM_NAMES: &[&str] = &[
 /// are NOT also a [`Method`](crate::protocol::Method) string. An `Rpc` binding
 /// must be a real `Method` OR one of these. No command binds `Rpc` at all any
 /// more: `run_static_analysis` was the last bound to one of THESE and is now
-/// `Custom`, dispatched over the HCLI backend bridge by
+/// `Custom`, dispatched over the HAWKING backend bridge by
 /// `handle_static_analysis_intent`, and `goal_get` (the last `Rpc` row of any
-/// kind) is retired because HCLI has no `/rpc` client to dispatch it with. This
+/// kind) is retired because HAWKING has no `/rpc` client to dispatch it with. This
 /// list stays as the
 /// census record of the elevated surface.
 /// Host refs inline:

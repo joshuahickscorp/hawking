@@ -1,0 +1,23 @@
+{
+  "schema": "hawking.long_haul.v2.handoff_review_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P20_FINAL_HANDOFF_FOCUSED_REVIEW_V3",
+  "workunit_id": "WORKUNIT-20260918-C0B0D1F7",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Handoff convergence review only; parent Goal remains RUNNING and no release/completion claim is made.",
+  "runtime": {
+    "endpoint": "http://127.0.0.1:8014",
+    "status": "waiting_for_native_runtime",
+    "model": null,
+    "resident": null,
+    "requested_model": "hawking-auto",
+    "auto_revision": "hawking-auto-aggressive-v2-measured-diversity-unbounded-14"
+  },
+  "focused_verification": {"command":"python3 -m pytest -q hawking/tests/test_serve_openai_surface.py hawking/tests/test_share_bridge.py hawking/tests/test_web_live_contract.py hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py","result":"75 passed"},
+  "accepted_boundaries":["HTTP/OpenAI socket surface and semantic 200 paths","share/tunnel status and secret boundaries","measured Auto routing, unbounded refill, terminal graph protection","P16/P17/P18/P19 remain bounded evidence, not release promotion"],
+  "remaining_blockers":["P9 DARKMATTER has no authoritative current owner and remains discovery-only","P20 parent Goal must remain RUNNING until the full objective's remaining P tranches and release conditions are independently satisfied"],
+  "falsifiers":["Daemon health reports a resident model while hawking-auto is selected without an explicit native role","focused HTTP/share/Auto tests regress","an owner-grounded P9 DARKMATTER source appears and is not re-audited"]
+}

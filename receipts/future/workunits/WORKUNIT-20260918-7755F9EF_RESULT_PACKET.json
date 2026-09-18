@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "8e73db409c00aaf5aa19148068e11708af2a64c54236466d024dfe8ce5bec955",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:15:26.545690+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:15:26.545706+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:15:26.549256+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"FRANKENSTEIN_PROGRAM_PLAN.json (5678 bytes, sha256 fe8ffffeec19463df0ba15291117567486331344ddf318e9f34e918f48fbde6e) was observed with only the first 4000 bytes (70.4%) shown; the remaining 1678 bytes, including the cut-of",
+      "outcome": "CONTINUE",
+      "reply_chars": 4575,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"FRANKENSTEIN_PROGRAM_PLAN.json (5678 bytes, sha256 fe8ffffeec19463df0ba15291117567486331344ddf318e9f34e918f48fbde6e) was observed with only the first 4000 bytes (70.4%) shown; the remaining 1678 bytes, including the cut-off P8 entry and any P9 entry, were not visible.\",\"In the shown portion of the plan, programme_phases P0 through P8 are visible; no phase with id 'P9' and no phase titled or labeled 'DARKMATTER' appears anywhere in the shown bytes.\",\"No phase entry in the shown portion carries an 'owner' field; the only ownership-adjacent attributes observed are 'owner_gated': true on P8 and 'human': true on P5, and a phase label or gate flag is not an authoritative owner.\",\"The plan's four_way_comparison.promotion_rule states 'tolerances owner-set before runs' but names no person, role, worker, Goal, or WorkUnit as owner of any phase, and nothing in the shown bytes references DARKMATTER.\",\"HAWKING_PROVIDER_INDEPENDENT_MUTATION_20260917.md (26152 bytes, sha256 b2945328c1049b194dea4fe4dd734c5a7163b746d3760c2504141550c15deb49) was observed with only the first 4000 bytes (15.3%) shown; its shown content covers the provider-independent mutation boundary under canonical root GOAL-B33C69F193 (phase P1_CONTROL_PLANE_COLLAPSE) and contains no mention of P9, DARKMATTER, or the Frankenstein programme.\",\"Grounded intermediate falsifier: no authoritative owner for P9 DARKMATTER is present in the observed byte ranges of either admitted source; the evidence cannot distinguish owner-absent from owner-unobserved in the unshown regions.\"],\"sources\":[{\"path\":\"research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json\",\"sha256\":\"fe8ffffeec19463df0ba15291117567486331344ddf318e9f34e918f48fbde6e\",\"bytes\":5678,\"shown_bytes\":4000,\"truncated\":true,\"relevance\":\"Primary programme plan; phases P0\u2013P8 partially visible; P9/DARKMATTER absent from shown range\"},{\"path\":\"docs/reports/HAWKING_PROVIDER_INDEPENDENT_MUTATION_20260917.md\",\"sha256\":\"b2945328c1049b194dea4fe4dd734c5a7163b746d3760c2504141550c15deb49\",\"bytes\":26152,\"shown_bytes\":4000,\"truncated\":true,\"relevance\":\"Mutation-boundary status report; no DARKMATTER/P9 reference in shown range\"}],\"recommendations\":[{\"contract_type\":\"read_only_research\",\"objective\":\"Determine whether P9 DARKMATTER has an authoritative owner by reading the unshown tail of the programme plan and running targeted searches of the mutation report and the referenced Frankenstein plan document.\",\"focused_files\":[\"research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json (bytes 4000\u20135678: the truncated tail containing the P8 continuation and any P9 entry)\",\"docs/reports/HAWKING_PROVIDER_INDEPENDENT_MUTATION_20260917.md (targeted search for 'DARKMATTER', 'P9', 'owner' across the unshown 84.7%)\",\"workspace/docs/plans/FRANKENSTEIN_PROGRAM.md (doc_path referenced inside the plan JSON)\"],\"focused_tests\":[],\"writer_scope\":\"none (read-only; no file mutation, no receipts, no git mutation)\",\"protected_resources\":[\"Flash, Pulsar, and ModelLake lanes (declared protected in the mutation report)\",\"canonical root GOAL-B33C69F193 and its preserved child evidence\"],\"falsifier\":\"If the plan tail (bytes 4000\u20135678) contains no P9/DARKMATTER entry, and targeted searches of the mutation report and FRANKENSTEIN_PROGRAM.md return no DARKMATTER owner, then P9 DARKMATTER has no authoritative owner in the admitted sources; any single explicit owner field or named accountable party in those regions falsifies owner-absence.\",\"continuation_capsule\":{\"next_action\":\"read_tail_and_targeted_search\",\"reason\":\"Truncation hid the exact regions where a P9 DARKMATTER entry or owner would appear; current evidence cannot distinguish owner-absent from owner-unobserved.\",\"expected_evidence\":\"Full text of plan bytes 4000\u20135678 plus search hit/no-hit records for 'DARKMATTER', 'P9', and 'owner' in the mutation report and FRANKENSTEIN_PROGRAM.md.\",\"tool_family\":\"read_only_file_and_search\"}}],\"unresolved_questions\":[\"Does the ",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-1434ff94fc2049ca",
+  "worker_id": "hawking-worker-39fec9fa8a9245e8",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-7755F9EF"
+}

@@ -1,0 +1,110 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T15:29:00.784626+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:29:00.784634+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:29:00.785757+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"workunit\":\"WORKUNIT-20260918-E155CA16\",\"goal\":\"GOAL-A52AB48501\",\"phase\":\"P5_PERCEPTION_FOCUSED_AUDIT_V4\",\"operation\":{\"type\":\"source_edit\",\"file\":\"hawking/perception/tools.py\",\"anchor\":\"TOOL_REGISTRY_DIGEST_LI",
+      "outcome": "CONTINUE",
+      "reply_chars": 1725,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T15:29:30.069843+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T15:29:30.069851+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:29:30.071424+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operations\":[{\"op\":\"replace\",\"path\":\"hawking/perception/tools.py\",\"anchor\":\"TOOL_REGISTRY_DIGEST_LITERAL_AUDIT_REF = \\\"WORKUNIT-20260918-62D77786\\\"\",\"replacement\":\"TOOL_REGISTRY_DIGEST_LITERAL_AUDIT_REF = \\\"WO",
+      "outcome": "CONTINUE",
+      "reply_chars": 1783,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 4
+    },
+    {
+      "files": [
+        "hawking/perception/tools.py",
+        "hawking/test_tool_registry.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-E155CA16_SEAL_B1",
+      "turn": 4
+    }
+  ],
+  "files_changed": [
+    "hawking/perception/tools.py",
+    "hawking/test_tool_registry.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P5_PERCEPTION_FOCUSED_AUDIT_V4 beyond accepted read evidence with one bounded implementation or qualification-support tranche. Inspect the current owner and existing receipt, make only the aligned source change in the declared scope, run focused verification, and record exact evidence. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "moonshotai/kimi-k3",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-E155CA16_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      4
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-E155CA16"
+}

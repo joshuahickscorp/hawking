@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.v2.measured_reopen_pool.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T11:20:00-04:00",
+  "claim_boundary": "Routing-policy change only; active WorkUnits were not interrupted and no provider output, implementation, hardware, or release claim is made.",
+  "cause": "Fresh route reopen contracts bypassed measured Auto selection with a fixed Kimi override, concentrating all recovery lanes on a failing provider.",
+  "policy": {
+    "reopen_model": "hawking-auto",
+    "qualified_reopen_pool": ["deepseek/deepseek-v4.1-flash", "moonshotai/kimi-k3"],
+    "selection": "select_measured_model by task class and durable performance rows",
+    "glm": "remains in the general CORE Auto roster for bounded trials; mutation reopen waits for a model-specific qualified route receipt",
+    "escalation": "Qwen/Nemotron remain non-default diversity/escalation models"
+  },
+  "qualification_receipts": {
+    "deepseek/deepseek-v4.1-flash": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_DEEPSEEK_ROUTE_QUALIFICATION_20260918.json",
+    "moonshotai/kimi-k3": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_KIMI_ROUTE_REQUALIFICATION_20260918.json"
+  },
+  "verification": {
+    "focused_tests": "68 passed in 1.36s",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "active_workunits_interrupted": 0
+  },
+  "next_action": "Let current lanes drain; future contained provider-terminal reopen lanes are selected by measured qualified value rather than fixed Kimi preference."
+}

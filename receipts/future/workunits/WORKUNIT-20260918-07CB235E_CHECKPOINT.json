@@ -1,0 +1,295 @@
+{
+  "candidate_manifest_id": "CANDIDATE-ae725075362ea6cdc557aec4",
+  "candidate_manifest_path": "/Users/scammermike/Downloads/hawking/.hawking/manifests/candidates/CANDIDATE-ae725075362ea6cdc557aec4.json",
+  "capability_lease": {
+    "authority": "fresh OS observation plus Goal-scoped logical boundary",
+    "cache_is_not_authority": true,
+    "checked_at": 1789749664.02016,
+    "required": [
+      "WORKSPACE_READ",
+      "PROCESS_EXECUTION",
+      "WORKSPACE_WRITE"
+    ],
+    "schema": "hawking.goal.capability_lease.v1",
+    "snapshot": {
+      "cache_path": "/Users/scammermike/Downloads/hawking/.hawking/permissions/state.json",
+      "capabilities": {
+        "ACCESSIBILITY": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "AUTOMATION": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "BROWSER": {
+          "evidence": {
+            "module": true
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.browser_world",
+          "state": "READY"
+        },
+        "DEVELOPER_TOOLS": {
+          "evidence": {
+            "tools": [
+              "/usr/bin/xcrun",
+              "/usr/bin/swiftc",
+              "/usr/bin/codesign"
+            ]
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.native_owner",
+          "state": "READY"
+        },
+        "EXTERNAL_DRIVE_READ": {
+          "evidence": {
+            "paths": [
+              {
+                "path": "/Volumes/corpdrive",
+                "ready": true,
+                "reason": "read probe succeeded"
+              }
+            ],
+            "reason": "at least one mounted volume passed"
+          },
+          "kind": "logical_external_drive",
+          "owner": "hawking.permissions.ExternalDriveBoundary",
+          "state": "READY"
+        },
+        "EXTERNAL_DRIVE_WRITE": {
+          "evidence": {
+            "paths": [
+              {
+                "path": "/Volumes/corpdrive",
+                "ready": true,
+                "reason": "directory write access reported by the OS"
+              }
+            ],
+            "reason": "at least one mounted volume passed"
+          },
+          "kind": "logical_external_drive",
+          "owner": "hawking.permissions.ExternalDriveBoundary",
+          "state": "READY"
+        },
+        "FULL_DISK_ACCESS": {
+          "evidence": {
+            "paths": [
+              {
+                "path": "/Users/scammermike/Library/Mail",
+                "ready": false,
+                "reason": "read probe failed: PermissionError"
+              },
+              {
+                "path": "/Users/scammermike/Library/Messages",
+                "ready": false,
+                "reason": "read probe failed: PermissionError"
+              },
+              {
+                "path": "/Users/scammermike/Library/Safari",
+                "ready": false,
+                "reason": "read probe failed: PermissionError"
+              }
+            ],
+            "probe": "protected user-library paths",
+            "reason": "protected paths were denied"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "MISSING"
+        },
+        "INPUT_MONITORING": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "MICROPHONE": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "NETWORK": {
+          "evidence": {
+            "probe": "loopback bind"
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.network",
+          "state": "READY"
+        },
+        "PROCESS_EXECUTION": {
+          "evidence": {
+            "executable": "/opt/homebrew/opt/python@3.14/bin/python3.14"
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.processes",
+          "state": "READY"
+        },
+        "SCREEN_CAPTURE": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "SPEECH_RECOGNITION": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "WORKSPACE_READ": {
+          "evidence": {
+            "path": "/Users/scammermike/Downloads/hawking",
+            "reason": "read probe succeeded"
+          },
+          "kind": "logical_workspace",
+          "owner": "hawking.permissions.WorkspaceBoundary",
+          "state": "READY"
+        },
+        "WORKSPACE_WRITE": {
+          "evidence": {
+            "path": "/Users/scammermike/Downloads/hawking",
+            "reason": "directory write access reported by the OS"
+          },
+          "kind": "logical_workspace",
+          "owner": "hawking.permissions.WorkspaceBoundary",
+          "state": "READY"
+        }
+      },
+      "checked_at": 1789749664.02016,
+      "code_identity": {
+        "schema": "hawking.native.code_identity.v1",
+        "stable_identifier": "com.hawking.native-helper",
+        "stable_owner": false,
+        "state": "MISSING"
+      },
+      "fresh": true,
+      "helper_revision": null,
+      "native": {
+        "available": false,
+        "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current",
+        "state": "UNAVAILABLE"
+      },
+      "required": [
+        "WORKSPACE_READ",
+        "PROCESS_EXECUTION",
+        "WORKSPACE_WRITE"
+      ],
+      "schema": "hawking.permissions.v1",
+      "workspace": "/Users/scammermike/Downloads/hawking"
+    }
+  },
+  "child_worker_ids": [],
+  "classification": "MUTATION_PAYLOAD_MISSING",
+  "compact_crossings": 0,
+  "context_packet_digest": "b834928cc266bf66b031e5e825c2424bed972eb96e9b8cbbbf258d31071af148",
+  "contract": "/Users/scammermike/Downloads/hawking/.hawking/goals/WORKUNIT-20260918-07CB235E.contract.json",
+  "current_phase": "BUILD",
+  "driver": "hawking.workunit_owner",
+  "driver_pid": 932,
+  "endpoint": {
+    "base_url": "http://127.0.0.1:8014/v1",
+    "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+    "host": "127.0.0.1",
+    "port": 8014,
+    "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+  },
+  "exact_next_action": "bounded provider format recovery: preserve findings and return only HAWKING_PATCH_V1 or HAWKING_EDIT_V1; no repository archaeology",
+  "execution_binding_digest": "bb59d57fed84631b04e0f122539a69aba7e243113aa7408d171901a179e675d0",
+  "last_outcome": "CONTINUE",
+  "last_turn": 18,
+  "objective": "Advance P6_GRAVITY_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "plan_id": "PLAN-4DA7BDD6F923",
+  "provider_request_ids": [
+    "gateway-366acc429a384247945d2b22:tool-2",
+    "gen-1789749057-g1CnS75WIKVRjTNaHfIU",
+    "gateway-3def59d1044f423db29d53f6:tool-2",
+    "gen-1789749082-WDITPzVgmKlp39pLwFzR",
+    "gateway-1d3a0a40117649869032e627:tool-2",
+    "gen-1789749107-3SX5TgRV0pWIVy1lGEa4",
+    "gateway-79de4924ca794e1b82230da0:tool-1",
+    "gen-1789749186-jgqDFNfX4ev0LISyICmn",
+    "gateway-2160a484ccb246bfb634af2e:tool-1",
+    "gen-1789749192-WpVn5gQJ97mPURzdlmFO",
+    "gateway-28a281164007411e90e64eea:tool-2",
+    "gen-1789749198-qdn8Ol8XY9oBkfhMhnXG",
+    "gateway-eefad922e4c841f39e6654ff:tool-2",
+    "gen-1789749270-WCGCsJ2dOyZt906SgRTr",
+    "gateway-6b260f15f0a447c682d0fe9e:tool-2",
+    "gen-1789749280-T3wZv86g44od0m9IuJy2",
+    "gateway-b2724e6769e644ae8478b279:tool-2",
+    "gen-1789749351-gIj7d27vkCmGSHmLeHx4",
+    "gateway-07f4516c10454ac48de75a54:tool-1",
+    "gen-1789749374-7O00vhcadYUfuC2mUO6B",
+    "gateway-9bcf63b8baf347ae8c035499:tool-2",
+    "gen-1789749387-VN6cgDdknamTbQxCjTtF",
+    "gateway-2c071ea4e32e4a6eaa323d15:tool-2",
+    "gen-1789749426-4JlMqaIUP6mdRz2mWdJE",
+    "gateway-d4aaa466c354426ba88a0c7a:tool-2",
+    "gen-1789749499-BXKrZuaP2h6KCnbM3wLC",
+    "gateway-4be21fcae06440de93309700:tool-2",
+    "gen-1789749513-VUEuyA60wbeudJWs10LO",
+    "gateway-85a8d6ee798144f483e02f61:tool-2",
+    "gen-1789749626-TVY2x0Pg8xiG70OhU37N",
+    "gateway-964341b7535f4da5b01f81ee:tool-1",
+    "gen-1789749664-CO5q51ShIoOr9Iuu00Xp"
+  ],
+  "qualification": "UNEARNED",
+  "qualification_unearned": true,
+  "required_capabilities": [
+    "WORKSPACE_READ",
+    "PROCESS_EXECUTION",
+    "WORKSPACE_WRITE"
+  ],
+  "resource_state": "GPU_YIELDABLE",
+  "role": "source-map",
+  "schema": "hawking.kimi.workunit_checkpoint.v1",
+  "session_id": "WORKUNIT-20260918-07CB235E",
+  "status": "OUTPUT_UNUSABLE",
+  "task_class": "model_science",
+  "tool_less_continue_streak": 2,
+  "ultragoal": "",
+  "updated_at": "2026-09-18T16:41:05.310431+00:00",
+  "wall_ceiling_s": 86400.0,
+  "worker_artifact": {
+    "artifact_revision": null,
+    "grant_digest": null,
+    "kind": "remote_openrouter",
+    "model_id": "deepseek/deepseek-v4.1-flash",
+    "name": "deepseek/deepseek-v4.1-flash",
+    "path": null
+  },
+  "worker_attempt_id": "hawking-attempt-0b256348487741b5",
+  "worker_cost_usd": 0.016542292,
+  "worker_id": "hawking-worker-cf53b533c5f7446f",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789749664.019506,
+  "worker_packet_path": "/Users/scammermike/Downloads/hawking/.hawking/auto/packets/WORKUNIT-20260918-07CB235E.json",
+  "worker_policy": "auto",
+  "worker_spawned_at": 1789749049.701028,
+  "worker_status": "WAITING_RETRY",
+  "worktree": {
+    "branch": "worker/WORKER_INTEGRATION_SNAPSHOT",
+    "root": "/Users/scammermike/Downloads/hawking"
+  },
+  "workunit_id": "WORKUNIT-20260918-07CB235E"
+}

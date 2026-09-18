@@ -1,0 +1,28 @@
+{
+  "claim_boundary": "No physical measurement was accepted because the live server warm-up failed.",
+  "generated_at": "2026-09-13T10:15:51.011063+00:00",
+  "schema": "hawking.future.kimi_tps_live_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_live_baseline.py",
+  "server": {
+    "headers": {
+      "connection": "close",
+      "content-length": "129",
+      "content-type": "application/json",
+      "date": "Sun, 13 Sep 2026 10:15:50 GMT",
+      "server": "mlx_vlm/0.7.0"
+    },
+    "models": {
+      "data": [
+        {
+          "created": 1789294550,
+          "id": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+          "object": "model"
+        }
+      ],
+      "object": "list"
+    },
+    "url": "http://127.0.0.1:8032"
+  },
+  "status": "BASELINE_INCOMPLETE",
+  "warmup_error": "HTTPError: HTTP Error 500: Internal Server Error"
+}

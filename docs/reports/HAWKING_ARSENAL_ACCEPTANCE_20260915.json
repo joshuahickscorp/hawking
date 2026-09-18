@@ -1,0 +1,84 @@
+{
+  "schema": "hawking.arsenal.acceptance.v2",
+  "date": "2026-09-15",
+  "generated_at": "2026-09-15T23:51:34Z",
+  "scope": "reconciled first executable Arsenal tranche",
+  "tests": [
+    {
+      "name": "selected_relevant_python_suite",
+      "command": "python3 -m pytest -q hawking/tests/test_arsenal_contracts.py hawking/tests/test_auto_orchestration.py hawking/tests/test_hawking_engine_connector.py hawking/tests/test_chat_tools.py hawking/tests/test_actionable_first_output.py hawking/test_tool_registry.py hawking/test_web_surface.py hawking/test_goal_bank.py hawking/tests/test_dag_store.py hawking/tests/test_detached_steer_reaches_the_mission.py hawking/test_result_envelope.py hawking/test_engine_tool_loop.py hawking/tests/test_apply_typed_mutation.py hawking/tests/test_workunit_identity.py hawking/tests/test_workunit_status.py hawking/tests/test_openrouter_gateway.py hawking/tests/test_serve_openai_surface.py -k 'not process and not test_mutation_path and not test_rollback_on_validation_failure and not test_normal_catalog_exposes_admitted_gravity_bodies_only and not TestGrokRestartAdoption and not test_models_exposes_configured_openrouter_without_fetch and not test_models_carries_the_fields_the_picker_reads'",
+      "status": "PASS_WITH_EXPLICIT_EXCLUSIONS",
+      "passed": 304,
+      "failed": 0,
+      "deselected": 25,
+      "wall_seconds": 19.64
+    },
+    {
+      "name": "arsenal_contracts",
+      "command": "python3 -m pytest -q hawking/tests/test_arsenal_contracts.py",
+      "status": "PASS",
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "name": "hawking_web_typed_contract",
+      "command": "cargo test -p hawking-web",
+      "status": "PASS",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "gravity_repo_search_content_identity",
+      "command": "cargo test -p hawking-core gravity_repo_search",
+      "status": "PASS",
+      "passed": 15,
+      "failed": 0
+    },
+    {
+      "name": "changed_module_compile_and_diff_check",
+      "command": "python3 -m py_compile <changed Hawking modules>; git diff --check",
+      "status": "PASS",
+      "failed": 0
+    },
+    {
+      "name": "live_native_process_protocol_probe",
+      "command": "python3 -m pytest -q hawking/test_tool_registry.py -k process",
+      "status": "KNOWN_RUNTIME_MISMATCH",
+      "passed": 1,
+      "failed": 9,
+      "deselected": 4,
+      "failure_scope": ["processes.list", "processes.summary", "processes.orphaned"],
+      "failure_mechanism": "the running native helper rejects the historical processes subcommand",
+      "daemon_restarted": false
+    }
+  ],
+  "capabilities": {
+    "A0": "PASS",
+    "A1": "PASS",
+    "B1": "PASS",
+    "B2": "PASS_ADAPTER_WITH_EXISTING_INDEX",
+    "C1": "PASS_STAGING",
+    "C2": "NOT_COMPLETE",
+    "H1": "PASS_GATE_AND_PACKET_FOUNDATION",
+    "H1_AUTO_PLAN_EXECUTOR": "NOT_COMPLETE",
+    "D1": "NOT_RUN",
+    "D2": "NOT_RUN",
+    "E1": "NOT_RUN",
+    "F1": "NOT_RUN",
+    "G1": "NOT_RUN",
+    "G2": "NOT_RUN",
+    "I1+": "NOT_RUN",
+    "J1": "NOT_RUN"
+  },
+  "live_state": {
+    "hawkingd": "PID 24929, 127.0.0.1:8014, not restarted",
+    "gravity_helper": "running, not restarted",
+    "modellake_watcher": "running, not restarted",
+    "protected_lanes_touched": false
+  },
+  "remote_spend_usd": 0.0,
+  "daemon_touched": false,
+  "main_goal_disturbed": false,
+  "arsenal_ready": false,
+  "ready_for_next_disposable_staging": true
+}

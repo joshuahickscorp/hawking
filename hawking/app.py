@@ -1,0 +1,142 @@
+from __future__ import annotations
+
+import os
+import sys
+from typing import Any, Optional
+
+from .controller import Controller
+from .tui import TUI
+from .events import EventBus
+from .workspace import Workspace
+from .models import ModelRegistry
+
+
+class App:
+    def __init__(self, workspace: str, runtime_count: int = 1, model: Optional[str] = None,
+                 resolved_action: Any = None, debug: bool = False):
+        self.workspace = workspace
+        self.runtime_count = runtime_count
+        self.model = model
+        self.resolved_action = resolved_action
+        self.debug = debug
+        self.ws = Workspace(workspace)
+        self.registry = ModelRegistry()
+        self.bus = EventBus()
+        self.controller = Controller(
+            workspace=self.ws,
+            runtime_count=runtime_count,
+            model=model,
+            resolved_action=resolved_action,
+            bus=self.bus,
+            registry=self.registry,
+            canonical_execution=True,
+        )
+
+    def run(self, prompt: Optional[str] = None, *, plain: bool = False) -> int:
+        if prompt:
+            return self._run_headless(prompt, plain=plain)
+        return self._run_interactive()
+
+    def _run_headless(self, prompt: str, *, plain: bool = False) -> int:
+        # Headless/piped: never attach the TUI. stdout is the answer (or
+        # slash-command text). Live cursor control is how ANSI would leak.
+        self.bus.emit("session_started", {"mode": "headless"})
+        try:
+            # A slash command is a command in every mode. Routing it through
+            # execute() sends `hawking /help` to the model, which is both wrong
+            # and expensive.
+            if prompt.startswith(("/", "\\")):
+                # Print what the TUI would render, not the structured payload
+                # handle_command returns to programmatic callers. Both surfaces
+                # must show the operator the same text.
+                rendered: list = []
+                self.bus.subscribe(
+                    lambda e: rendered.append(
+                        str(
+                            (e.data or {}).get("content")
+                            or (e.data or {}).get("message")
+                            or ""
+                        )
+                    )
+                    if e.type in ("final_response", "warning", "transcript_cleared")
+                    else None
+                )
+                result = self.controller.handle_command(prompt)
+                text = "\n".join(x for x in rendered if x).strip()
+                if text:
+                    print(text)
+                    return 0
+                if result is None:
+                    print(f"Unknown command: {prompt.split()[0]}", file=sys.stderr)
+                    return 1
+                if isinstance(result, bool):
+                    return 0
+                print(result if isinstance(result, str) else str(result))
+                return 0
+
+            if plain:
+                text = self.controller.complete_text(prompt)
+                if text:
+                    print(text)
+                return 0
+
+            result = self.controller.execute(prompt)
+
+            if isinstance(result, int):
+                return result
+
+            if not isinstance(result, dict):
+                print(str(result))
+                return 0
+
+            content = str(result.get("content") or "")
+            error = str(result.get("error") or "")
+
+            if content:
+                print(content)
+            elif error:
+                print(error, file=sys.stderr)
+
+            if result.get("cancelled") or str(
+                result.get("status") or ""
+            ) == "cancelled":
+                return 130
+
+            if str(result.get("status") or "") != "completed":
+                return 1
+
+            return 0
+        finally:
+            self.controller.shutdown()
+
+    def _run_interactive(self) -> int:
+        model_name = self.controller.model_name or "local"
+        # The ledger belongs to the INTERACTIVE surface only. This is the one
+        # place a human is present to see the numbers and decide, which is the
+        # whole point of it: an unattended run records the same snapshot into
+        # mission evidence instead of offering a prompt nobody is there to
+        # answer. Constructed here rather than inside TUI so a view never reads
+        # the state of a repository nobody handed it.
+        from .session_ledger import SessionLedger
+
+        tui = TUI(
+            event_bus=self.bus,
+            workspace=self.ws.root,
+            model_name=model_name,
+            runtime_count=self.runtime_count,
+            bank_snapshot_fn=self.controller.goal_bank_snapshot,
+            stream=sys.stdout,
+            tty=sys.stdout.isatty(),
+            ledger=SessionLedger(self.ws.root),
+        )
+        self.bus.emit("session_started", {"mode": "interactive"})
+        try:
+            return tui.run(on_input=self._handle_input)
+        finally:
+            self.controller.shutdown()
+
+    def _handle_input(self, text: str):
+        self.bus.emit("user_message", {"text": text})
+        if text.startswith(("/", "\\")):
+            return self.controller.handle_command(text)
+        return self.controller.execute(text)

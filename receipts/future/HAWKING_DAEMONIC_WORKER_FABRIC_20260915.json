@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.daemonic_worker_fabric.v1",
+  "recorded_at": "2026-09-15",
+  "authority": "Hawking Goal/WorkUnit owner and hawkingd",
+  "implementation": {
+    "remote_workers": "ephemeral OpenRouter cognition under Hawking-owned worker_id and WorkUnit lifecycle",
+    "child_delegation": "hawking.worker.spawn with bounded read-only worker_research children",
+    "lifecycle_tools": [
+      "hawking.worker.status",
+      "hawking.worker.kill"
+    ],
+    "limits": {
+      "child_fanout": 4,
+      "delegation_depth": 3,
+      "remote_concurrency": "gateway policy",
+      "child_budget_usd": 0.5,
+      "write_authority": "discrete Goal only, existing mutation lock and engine"
+    },
+    "protected": [
+      "Flash",
+      "Pulsar",
+      "HCLI",
+      "AgentOS",
+      "HIDE",
+      "Grok Bot"
+    ]
+  },
+  "live_evidence": {
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "daemon_state": "waiting_for_native_runtime",
+    "credential_gate": "OPENROUTER_KEY_PRESENT=PASS",
+    "catalog_count": 449,
+    "bounded_remote_roster_live": [
+      "deepseek/deepseek-v4.1-flash",
+      "z-ai/glm-5.3-flash",
+      "z-ai/glm-5.3",
+      "qwen/qwen3.8-flash",
+      "moonshotai/kimi-k3",
+      "minimax/minimax-m3"
+    ],
+    "worker_fabric_count": 0,
+    "new_remote_spend_usd": 0.0
+  },
+  "verification": {
+    "focused_tests": "15 passed",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "qualification_boundary": "The fresh DeepSeek completion-contract retry remains INCOMPLETE; the supplied Odyssey Goal was not launched."
+  },
+  "claim_boundary": "This receipt proves additive Hawking-native fabric wiring and live surface checks; it does not claim native resident readiness, remote model qualification, or Odyssey completion."
+}

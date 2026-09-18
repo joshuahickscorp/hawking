@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.flash.q4_compact_route_lut_primitive.v1",
+  "recorded_at": "2026-09-15T15:52:08Z",
+  "status": "PASSED_BOUNDED_NATIVE_COMPACT_ROUTE_LUT",
+  "seal_sha256": "dc235e4904f00bc1d33bd6c625f420f46b8814cc08edc9dbd524b281495b6ea8",
+  "claim_boundary": "The route-aware compact Q4/G64 gate/up-SwiGLU and down kernels compile and pass a native Metal non-contiguous-route oracle. This is a bounded reusable primitive; it is not a complete Flash body, source-independent NR, complete EBPW, capability result, resident TPS result, or promotion evidence.",
+  "implementation": {
+    "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+    "kernels": [
+      "qwen_uniform_q4_group64_compact_gate_up_swiglu_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_compact_down_geo_tpr64_tg128"
+    ],
+    "route_contract": "route_ids are source expert ids; route_lut maps source ids to compact slots; missing or out-of-range entries write deterministic zero",
+    "bank_contract": {
+      "gate_up": "[compact_expert, gate/up row, hidden] with gate rows followed by up rows",
+      "down": "[compact_expert, hidden row, intermediate]",
+      "activations": "route-major [top_k, width]"
+    },
+    "rust_wrappers": [
+      "qwen_uniform_q4_group64_compact_gate_up_swiglu_tcb",
+      "qwen_uniform_q4_group64_compact_down_tcb"
+    ],
+    "trace_registration": "Both kernel names are admitted by Metal static trace naming and source-presence tests."
+  },
+  "verification": {
+    "device": "Apple M3 Ultra",
+    "native_test": "cargo test -p hawking-core --lib qwen_uniform_q4_compact_route_lut_tcb_preserves_noncontiguous_routes -- --nocapture",
+    "native_test_result": "passed; 1 test, 0 failed; two device dispatches",
+    "static_kernel_name_test": "cargo test -p hawking-core --lib static_kernel_name_tests -- --nocapture; passed; 30 tests, 0 failed",
+    "compile_check": "cargo check -p hawking-core --lib --message-format short; passed",
+    "diff_check": "git diff --check on the three implementation files; passed",
+    "oracle_geometry": {
+      "compact_experts": 2,
+      "source_experts": 5,
+      "top_k": 3,
+      "hidden": 64,
+      "intermediate": 64,
+      "route_ids": [4, 1, 3],
+      "route_lut": [4294967295, 0, 4294967295, 4294967295, 1],
+      "coverage": "non-contiguous mapped routes plus an intentionally missing route"
+    }
+  },
+  "source_hashes": {
+    "crates/hawking-core/shaders/qwen_uniform_q4.metal": "d6a975b3d3ba709f46c62820de3275231a18efc0664491b70e60d1797c77a09e",
+    "crates/hawking-core/src/kernels/mod.rs": "b7309c358237ce09a0150bbb6bd41c49d2b8e4acee1a5770ee7e51b43c63e52e",
+    "crates/hawking-core/src/metal/mod.rs": "9d4ad9475c12276f1bdf9d1d797c8d6138cc20eb9cc13ca345e30f81dda2bd68"
+  },
+  "promotion": {
+    "complete_system_ebpw": null,
+    "qualified_tps": null,
+    "capability": null,
+    "allowed": false
+  },
+  "next_action": "Integrate the compact Q4 banks into a bounded Flash resident path, preserving the existing BF16 control and measuring correctness, dispatch overhead, wall time, and bytes before considering a whole-body candidate."
+}

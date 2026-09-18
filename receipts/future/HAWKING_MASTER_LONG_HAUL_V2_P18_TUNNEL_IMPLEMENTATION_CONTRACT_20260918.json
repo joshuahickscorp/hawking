@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P18_TUNNEL_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-576FC3E5",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded bounded tunnel contract only; no deployment or live authorization claim.",
+  "source_observation": {"owner": "hawking/share_bridge.py", "sha256": "847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46", "observed_focus_bytes": 4000},
+  "focused_tests": [
+    {"path": "hawking/tests/test_share_bridge.py", "sha256": "7d8f8445028b094eae46c33a48686453de72eb795a39c7759c7310897ec1e2f5"},
+    {"path": "hawking/tests/test_web_live_contract.py", "sha256": "26118aa402c55baeb6767deec1b0685cdd83cb27aa6e94e62adc9fa1c2612fa2"},
+    {"path": "hawking/tests/test_web_projection.py", "sha256": "0ea295b1f5ae65309419b5246ecda6b438982bb16ade0b00a7479774907f9aae"},
+    {"path": "hawking/tests/test_hweb_controls.py", "sha256": "de2e585f2bedafa7bde4bfccbcf9dd34f005b204828824c3f997b58474a13f37"}
+  ],
+  "local_verification": {"command": "python3 -m pytest -q hawking/tests/test_share_bridge.py hawking/tests/test_web_live_contract.py hawking/tests/test_web_projection.py hawking/tests/test_hweb_controls.py", "result": "19 passed"},
+  "next_seam": "Extend the existing share/tunnel single-writer boundary only after the full handler body is reviewed; preserve digest-only secrets, TTL bounds, permission mapping, and HTTP status mapping.",
+  "falsifier": "A raw tunnel secret appears in persisted JSON or an operation bypasses TUNNEL_OPERATION_PERMISSIONS, falsifying the contract."
+}

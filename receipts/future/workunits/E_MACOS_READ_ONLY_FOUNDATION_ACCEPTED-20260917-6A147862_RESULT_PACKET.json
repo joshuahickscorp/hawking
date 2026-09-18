@@ -1,0 +1,102 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 10,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "d14f279f122e7a2b9c0df4f7b20f1cf5f3040dccd78b1645eea53502bc5f7db7",
+  "evidence": [
+    {
+      "at": "2026-09-18T00:45:07.544348+00:00",
+      "calls_used": 16,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T00:45:07.544371+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T00:45:07.545839+00:00",
+      "has_tool_json": false,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T00:46:50.128959+00:00",
+      "calls_used": 10,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T00:46:50.128987+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T00:46:50.133373+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"property\":\"artifact_binding\",\"assessment\":\"PASS\",\"evidence\":\"DocumentExtractRequest.validate() requires source_artifact_id starting with 'artifact-' and a 64-hex sha256 source_digest (hawking/perception/document_extract_c",
+      "outcome": "CONTINUE",
+      "reply_chars": 3898,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[{\"property\":\"artifact_binding\",\"assessment\":\"PASS\",\"evidence\":\"DocumentExtractRequest.validate() requires source_artifact_id starting with 'artifact-' and a 64-hex sha256 source_digest (hawking/perception/document_extract_contract.py); test_request_is_artifact_bound_and_bounded rejects '/tmp/file' and 'artifact-a' with ValueError; tool test shows unknown digest 'f'*64 raises FileNotFoundError and malformed digest 'bad' raises ValueError (fail-closed).\"},{\"property\":\"workspace_scope\",\"assessment\":\"PASS\",\"evidence\":\"DocumentExtractRequest requires non-blank workspace_id; tools.py _open() resolves project_path against projects_root and raises ValueError('project path escapes projects root') for traversal; tool fn takes project_path scoped under Host(projects_root).\"},{\"property\":\"bounded_input\",\"assessment\":\"PASS\",\"evidence\":\"MAX_SOURCE_BYTES = 64*1024*1024 enforced in validate(); test rejects byte_count 64MiB+1; tool test shows max_bytes=1 on a 7-byte artifact returns status REFUSED_BOUNDS.\"},{\"property\":\"digest_continuity\",\"assessment\":\"PASS\",\"evidence\":\"red_before_green requires baseline status RED with source_digest, result status GREEN with identical source_digest, non-empty extracted_digest, and verified is True; test confirms mismatched digest ('b'*64 vs 'a'*64) yields ok=False and matching digest yields ok=True; extraction_digest is canonical sha256 over utf-8 text.\"},{\"property\":\"unsupported_media_refusal\",\"assessment\":\"PASS\",\"evidence\":\"tool test: media_type='image/png' against a text/markdown artifact returns status UNSUPPORTED_MEDIA rather than raising or silently extracting; contract requires media_type containing '/'.\"},{\"property\":\"receipt_behavior_and_claim_boundary\",\"assessment\":\"PASS_WITH_NOTE\",\"evidence\":\"red_before_green returns schema 'hawking.document_extract.contract.v1' with explicit claim_boundary 'contract evidence only; no OCR/capture capability is implied'; module docstring states it is an admission/verification seam that does not read arbitrary paths or invoke OCR; test asserts 'OCR/capture capability' appears in claim_boundary. Note: the tool body itself (document.extract registration in tools.py beyond byte 4000) was not fully read this session; observed behavior is via deterministic tests.\"}],\"sources\":[\"hawking/perception/document_extract_contract.py (sha256 810bb637...b3fa7, full read)\",\"hawking/tests/test_document_extract_contract.py (sha256 3e205a54...b601a, full read)\",\"hawking/tests/test_document_extract_tool.py (sha256 c06f8eac...5e6f, full read)\",\"hawking/perception/tools.py (partial read, first 4000 bytes: TOOL_NAMES includes 'document.extract', _open() workspace-scope guard, imports MAX_SOURCE_BYTES and extraction_digest from the contract)\"],\"recommendations\":[\"ACCEPT: all six contract properties (artifact binding, workspace scope, bounded input, digest continuity, unsupported-media refusal, receipt/claim-boundary behavior) are implemented in source and covered by deterministic fail-closed tests; the seam is sufficient to advance the bounded document perception contract.\",\"Follow-up (non-blocking): run pytest on hawking/tests/test_document_extract_contract.py and hawking/tests/test_document_extract_tool.py in a mutation-capable worker to confirm green at current HEAD, and read the remaining bytes of tools.py to cite the document.extract tool body directly.\"],\"unresolved_questions\":[\"Exact body of the document.extract tool function in tools.py (bytes 4000-11820) was not read this session; behavior inferred from its deterministic tests only.\",\"Whether a receipt is persisted to receipts/ on each document.extract invocation, or only returned in-memory, is unconfirmed.\"],\"child_worker_ids\":[],\"status\":\"COMPLETE\",\"structured_result\":{\"terminal_status\":\"ACCEPT\",\"contract_properties_assessed\":6,\"contract_properties_passed\":6,\"mutation_performed\":false,\"extraction_invoked\":false}}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-ea2865e746664fed",
+  "worker_id": "hawking-worker-84fa5d6b16ce4411",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-6A147862"
+}

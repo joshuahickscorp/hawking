@@ -1,0 +1,87 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-iLLaDA-8B",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + configuration_illada.py + modeling_illada.py source + tokenizer.json + all 4 safetensors headers + a FULL byte-exact SHA256 comparison of the embed_tokens/lm_head tensor pair, not a shape-only guess). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY. Second masked-diffusion specimen this session (after Dream-v0-7B) -- a direct, README-documented successor to LLaDA-8B, explicitly benchmarked against Dream-7B by its own authors. Real cross-checkable comparison point, not a repeat of the same architecture.",
+ "identity": {
+  "name": "GSAI-ML/iLLaDA-8B-Base",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+  "architectures": [
+   "ILLaDAForCausalLM"
+  ],
+  "model_type": "illada",
+  "paper": "arXiv:2606.25331 'Improved Large Language Diffusion Models' (per README)",
+  "provenance_note": "configuration_illada.py's own copyright header reads 'Copyright (c) 2025 ByteDance Ltd.' despite the model being published under org GSAI-ML -- a real, verified-from-source provenance detail (shared/derived codebase lineage), not independently explained further this pass.",
+  "predecessor_per_readme": "LLaDA-8B (same lab) -- README ships a direct architecture AND benchmark table against it plus Dream-7B and Qwen2.5-7B"
+ },
+ "architecture_CONFIRMED_FROM_SOURCE": {
+  "family": "Bidirectional (non-causal) masked diffusion transformer -- is_causal=False confirmed directly in modeling_illada.py's SDPA call, and _prepare_4d_attention_mask never forces a triangular mask. Standard GQA dense transformer otherwise (RMSNorm, SiLU MLP, RoPE) -- same 'diffusion behavior lives in generation, not weight shape' pattern as Dream-v0.",
+  "n_layer": 32,
+  "hidden_size": 4096,
+  "n_attn_heads": 32,
+  "n_kv_heads": 8,
+  "gqa_ratio": 4,
+  "intermediate_size": 14336,
+  "vocab_size": 155136,
+  "max_position_embeddings": 8192,
+  "q_proj_shape_layer0": [
+   4096,
+   4096
+  ],
+  "k_proj_shape_layer0": [
+   1024,
+   4096
+  ]
+ },
+ "GENERATION_ALGORITHM_HONEST_GAP": {
+  "finding": "UNLIKE Dream-v0-Instruct-7B (whose HF repo bundles generation_utils.py with the complete denoising loop, letting this session verify the mechanism directly from source), iLLaDA-8B's repo ships ONLY the model architecture (modeling_illada.py has forward-pass/attention code, NO generate()/_sample() method at all -- verified by direct grep, not assumed). The README explicitly defers to an EXTERNAL GitHub repo (github.com/ML-GSAI/LLaDA) for 'generation scripts such as generate.py', which is NOT present in this ModelLake specimen's directory.",
+  "consequence": "the masking/confidence-unmasking SCHEDULE (almost certainly similar in spirit to Dream-v0's topk-confidence transfer, per the shared 'masked diffusion LM' lineage and the paper's own comparison table) cannot be verified from local files the way Dream-v0's was. This is an HONEST GAP, not filled by assumption -- a real difference in how much this specimen's generation behavior can be trusted sight-unseen vs Dream-v0's.",
+  "mask_token": {
+   "content": "<[MASK]>",
+   "id": 5,
+   "note": "present in tokenizer.json's added_tokens (128 total reserved special tokens, many unused '<[PLHDnnn]>' placeholders) but NOT surfaced as a top-level config.json field the way Dream-v0 exposes mask_token_id directly -- a caller must know to look in the tokenizer, not the model config."
+  }
+ },
+ "TIED_EMBEDDINGS_BYTE_VERIFIED": {
+  "config_claims": true,
+  "verified_byte_identical": true,
+  "method": "full SHA256 of the complete embed_tokens.weight tensor (shard 1) vs the complete lm_head.weight tensor (shard 4), not a shape-only or partial-read comparison",
+  "duplicated_bytes": 1270874112,
+  "duplicated_mib": 1212.0,
+  "finding": "the tie_word_embeddings=true flag is GENUINE, not vestigial (contrast with Dream-v0's use_cache=true, which this session found WAS vestigial) -- confirmed by exact byte match, not just matching shape. But the checkpoint still MATERIALIZES the tied weight TWICE on disk: 1212.0 MiB stored as lm_head.weight is a pure, verified duplicate of embed_tokens.weight (7.7% of total checkpoint bytes). A loader that materializes lm_head as a reference/alias instead of a second on-disk copy would eliminate this exactly, at zero capability cost -- a concrete, verified 'obvious representation opportunity', not a guess."
+ },
+ "byte_accounting_EXACT": {
+  "n_shards": 4,
+  "total_bytes_stored_on_disk": 16500924416,
+  "total_gib_stored_on_disk": 15.368,
+  "total_params_stored_on_disk": 8250462208,
+  "total_params_stored_B": 8.2505,
+  "logical_params_dedup_tied_lm_head": 7615025152,
+  "logical_params_dedup_B": 7.615,
+  "readme_stated_total_B": 7.62,
+  "readme_stated_non_embedding_B": 6.98,
+  "stored_vs_readme_raw_gap_pct": 8.274,
+  "logical_vs_readme_gap_pct": 0.065,
+  "finding": "the RAW on-disk sum (8.2505B) is 8.28% off README's 7.62B -- a gap large enough that, on any other specimen this session, would have been flagged as unexplained rather than reported. The cause is exactly the tied/duplicated lm_head.weight verified above: dropping ONE copy of the embedding matrix brings the LOGICAL param count to 7.6150B, 0.065% from README's stated figure. Reporting only the raw stored-bytes sum without this reconciliation would have been a genuine, avoidable error in this receipt."
+ },
+ "obvious_representation_opportunities": [
+  "lm_head.weight is a verified, exact, 100%-redundant copy of embed_tokens.weight -- 7.7% of total checkpoint bytes recoverable at ZERO capability cost by aliasing instead of duplicating at load/pack time. This is a DIFFERENT class of saving than anything Gravity has attacked this session (quantization-free, exact, not a capability tradeoff at all -- pure redundancy elimination).",
+  "same dense-GQA-transformer argument as Dream-v0: every prior dense-architecture Gravity rule plausibly transfers to the WEIGHTS; the generation-time behavior is the orthogonal, unverified axis here."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery.",
+  "No verification of the actual generation/unmasking algorithm -- the honest gap above is the single largest open question for this specimen.",
+  "README benchmark numbers (MMLU 74.8 etc.) are the AUTHORS' OWN reported figures, not independently reproduced by Hawking -- cited as provenance context, not verified capability."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN. Genuinely useful as a SECOND diffusion-LM data point alongside Dream-v0-7B (same session) -- confirms bidirectional attention + standard dense weights is a REPEATED pattern across at least two independent diffusion-LM lineages (Dream-org and GSAI-ML/LLaDA), strengthening the 'Gravity priors transfer to diffusion-LM weights unchanged' hypothesis this session first raised for Dream-v0 -- though the generation-mechanism verification gap means that specific hypothesis remains ONE-SPECIMEN-VERIFIED (Dream-v0's source), one-specimen-UNVERIFIED (this one) rather than confirmed twice.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "UNCLEAR, SAME OPEN QUESTION AS DREAM-V0: depends entirely on whether the (unverified here) generation loop can run with few enough steps to compete with causal decode wall-time for HCLI's short bounded outputs -- untested for BOTH diffusion specimens this session found.",
+  "pulsar_candidate": "UNTESTED.",
+  "magnetar_candidate": "UNTESTED.",
+  "cepheid_candidate": "NOT EVALUATED.",
+  "verdict": "NO CLAIM BEYOND 'a genuine second diffusion-LM data point, generation mechanism unverified unlike Dream-v0' -- Odyssey I discovery only."
+ },
+ "commit": "c1de9010d",
+ "emitted_at": "2026-09-09T14:04:44Z"
+}

@@ -1,0 +1,204 @@
+{
+  "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+  "build": {
+    "commands": [
+      "CARGO_TARGET_DIR=target/flash-task029-attention-only-trace-speed-20260914 cargo build --release -p hawking-core --example flash_stateful_complete_token_session",
+      "CARGO_TARGET_DIR=target/flash-task029-attention-only-trace-speed-20260914 cargo build --release -p hawking --bin hawking"
+    ],
+    "compiler_provenance_attested": false,
+    "reproducible_build_claimed": false,
+    "rustc_version": "rustc 1.94.1 (e408947bf 2026-03-25) (Homebrew)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-apple-darwin\nrelease: 1.94.1\nLLVM version: 21.1.8",
+    "target_dir": "target/flash-task029-attention-only-trace-speed-20260914"
+  },
+  "claim_boundary": "This is a static executable/source closure for bounded localization only. It is not a source/native comparison, source-parity result, complete NR, EBPW, TPS, capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "hawking_metric_owner": {
+    "bytes": 10298352,
+    "format": "Mach-O 64-bit executable arm64",
+    "orchestrator": {
+      "bytes": 30143,
+      "path": "tools/odyssey/flash_source_boundary_compare.py",
+      "sha256": "b47540824d450271751ccb3df1da16ec095413e6516610a76149a4b5980e8e37"
+    },
+    "path": "target/flash-task029-attention-only-trace-speed-20260914/release/hawking",
+    "sha256": "40139418597e1525bf5a4e50e107036822d22999a592ddb5114e4a9ce05653eb",
+    "source": [
+      {
+        "bytes": 15907,
+        "path": "crates/hawking-core/src/flash_boundary_compare.rs",
+        "sha256": "1da7726215dd4a2ab23aacbf2d845d7d9b4d9c29cac05108165fa80024f3c342"
+      },
+      {
+        "bytes": 263861,
+        "path": "crates/hawking/src/main.rs",
+        "sha256": "c130a7b5f4b09dfbbb4e510378b2b6ee47d94a7cd5cf6a6766d8197772c18603"
+      },
+      {
+        "bytes": 96427,
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "version": "hawking 0.2.2"
+  },
+  "native_diagnostic": {
+    "bytes": 3229968,
+    "executed": false,
+    "format": "Mach-O 64-bit executable arm64",
+    "path": "target/flash-task029-attention-only-trace-speed-20260914/release/examples/flash_stateful_complete_token_session",
+    "preexecution_identity_rechecked_after_build": true,
+    "sha256": "fff1d055218cfd20a99ba6d154bb1a77eccb9bca9a9125fb6204bf787ebb076c",
+    "source_closure": [
+      {
+        "bytes": 91428,
+        "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+        "sha256": "7ed6d22ae4aab13155db7a4ff922ce537e11435b6baa1d385f10367d896ceed9"
+      },
+      {
+        "bytes": 12910,
+        "path": "crates/hawking-core/src/lib.rs",
+        "sha256": "a01560292aeb546411630310de6d7993692efc712628edbb5f119475d577349b"
+      },
+      {
+        "bytes": 264077,
+        "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+        "sha256": "b9b250afa2a341486ca99da4cb54cdf8663c9af5bec733c5db882c486e1effe0"
+      },
+      {
+        "bytes": 146786,
+        "path": "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "11b60583592f255a5f11121ca6c39bc24c2d0778fe8f8a837e7347811fcd96c1"
+      },
+      {
+        "bytes": 237309,
+        "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "8cffa8ecebe1c6087484e2f9c6df02288d611ee9422b74ab73f9d198a04b92b6"
+      },
+      {
+        "bytes": 847159,
+        "path": "crates/hawking-core/src/kernels/mod.rs",
+        "sha256": "c5bf93a5678e75ce3cb548f8ca0148e97286721cd6234cb0c2d1deca9b4d7650"
+      },
+      {
+        "bytes": 335292,
+        "path": "crates/hawking-core/src/metal/mod.rs",
+        "sha256": "78b230b5ac42311cea010456a7b6ed13f1f884648d13f391dce0b3df55c78abb"
+      },
+      {
+        "bytes": 155524,
+        "path": "crates/hawking-core/shaders/matmul.metal",
+        "sha256": "72c4c8f855d24ab22f36dae4e2100f371586b0c0c4415f9c6b525f09517a111a"
+      },
+      {
+        "bytes": 123274,
+        "path": "crates/hawking-core/shaders/qwen_next.metal",
+        "sha256": "86801dba54e3f37b680b46359de0c66b8e37ea77cd78042e5ef4e2accd018bc5"
+      },
+      {
+        "bytes": 20650,
+        "path": "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+        "sha256": "e6d61c0effd4c25ed84d8e8d88f6132835926f4751e57b3e2c4dba58f1513602"
+      },
+      {
+        "bytes": 35406,
+        "path": "crates/hawking-core/src/flash_ple.rs",
+        "sha256": "bf9b9940e6a00eddea5f10c3067083232e56078ba0987a9c6c86d1ea1a95495c"
+      },
+      {
+        "bytes": 13488,
+        "path": "crates/hawking-core/src/model/source_safetensors.rs",
+        "sha256": "7cba58d2595a68c02d3b62271a8344bae837f3c9622f9f4978ddb26e5ce2c7eb"
+      },
+      {
+        "bytes": 165129,
+        "path": "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+        "sha256": "e614040d20f816ccd188f8607c578c8d0cb261177197f12d61d9c874e82aef5c"
+      },
+      {
+        "bytes": 96427,
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "wrapper": {
+      "bytes": 32626,
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "872c2d4afc52afae7c900ca669c1a35fc743670c8993bc1082cffc534e95829a"
+    }
+  },
+  "next_safe_action": "Use this closure only with the independently admitted local-canonical reference for one bounded source/native transaction; stop at the first exact payload or route difference. science_status remains UNEARNED.",
+  "observed_unix_ns": 1789484912028942000,
+  "owner_gate": {
+    "detached_ed25519_required_for_local_canonical": false,
+    "local_canonical_admission_accepted": true,
+    "source_boundary_transaction_executed": false
+  },
+  "runtime_actions": {
+    "daemon_restarted": false,
+    "deployment_performed": false,
+    "gpu_or_metal_started": false,
+    "kimi_loaded": false,
+    "native_model_loaded": false,
+    "source_model_loaded": false
+  },
+  "schema": "hawking.flash.source_boundary_executable_closure.v1",
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "seal_sha256": "d86be11f2619847f24965ad02c5753fcb8d559bcd06e6785f248713c7cd0084d",
+  "status": "TASK029_RECONCILED_RELEASE_EXECUTABLES_OBSERVED__LOCAL_CANONICAL_ADMISSION",
+  "supersession": {
+    "predecessor": {
+      "bytes": 8668,
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_TASK029_LOCAL_CANONICAL_CURRENT_20260915.json",
+      "seal_sha256": "a880f94f8b97eb829c753082af61fb9dbcedf21fa9ec52e29f8c8eeb35b80462",
+      "sha256": "4f8c741d0397daef28eee03d00cc6cef75203fa91f19ebea519ef2b85d07d58a",
+      "status": "TASK029_RECONCILED_RELEASE_EXECUTABLES_OBSERVED__LOCAL_CANONICAL_ADMISSION"
+    },
+    "reason": "A bound release binary or transaction wrapper changed. The predecessor remains immutable and must not be reused after source drift.",
+    "scientific_evidence_changed": false
+  },
+  "task_id": "029",
+  "transaction_wrappers": [
+    {
+      "bytes": 29346,
+      "path": "tools/odyssey/flash_source_boundary_transaction.py",
+      "sha256": "327f55029bd81618f0b9dc082048993c4fa0fd96b4edd3ad880aadbe6a0124d8"
+    },
+    {
+      "bytes": 17229,
+      "path": "tools/odyssey/flash_source_boundary_capture_mlx.py",
+      "sha256": "fc90d8bd251f9bb9a5ea2c692f437ad3370b018f3a7681e3d6f599f8a2c3278a"
+    },
+    {
+      "bytes": 21887,
+      "path": "tools/odyssey/flash_source_boundary_mlx_worker.py",
+      "sha256": "b0f124bb25b853df032534251c7ada80e75149ed0ab0c0e24feb3bc5bfde4b76"
+    },
+    {
+      "bytes": 23091,
+      "path": "tools/odyssey/flash_external_greedy_reference_mlx.py",
+      "sha256": "665959b31d36d678b9a590166bb9f8d63940a99b5bdbf2b6c6c59d1e16e4ee8a"
+    },
+    {
+      "bytes": 30703,
+      "path": "tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "sha256": "2397ab0ad42345564fb0d58275f32b543964f019bb4f4f0cb9c47eb53536b19d"
+    },
+    {
+      "bytes": 32626,
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "872c2d4afc52afae7c900ca669c1a35fc743670c8993bc1082cffc534e95829a"
+    },
+    {
+      "bytes": 30143,
+      "path": "tools/odyssey/flash_source_boundary_compare.py",
+      "sha256": "b47540824d450271751ccb3df1da16ec095413e6516610a76149a4b5980e8e37"
+    },
+    {
+      "bytes": 16641,
+      "path": "tools/odyssey/flash_source_boundary_preflight.py",
+      "sha256": "9488ccbdc04e057377535767b0b4879d3ec25499fe3ce23231a4a504d6aa269c"
+    }
+  ],
+  "worktree_dirty": true
+}

@@ -1,0 +1,107 @@
+{
+  "schema": "hawking.agentos.gate_causality.unification.receipt.v1",
+  "status": "STATIC_GATE_CAUSALITY_OWNER_VERIFIED",
+  "recorded_at": "2026-09-12T05:39:09-04:00",
+  "base_commit": "962fbf61bf08676222c9e06dfb036674114cfa5b",
+  "scope": {
+    "canonical_owner": "tools/verify/status_causality.py::stamp_gate",
+    "package_export": "tools.verify.stamp_gate",
+    "migrated_gate_modules": [
+      "hcli/agentos/autonomy_gate.py",
+      "hcli/agentos/modellake_gate.py",
+      "hcli/agentos/native_gate.py",
+      "hcli/agentos/native_mission_gate.py",
+      "hcli/agentos/recovery.py",
+      "hcli/agentos/research.py",
+      "hcli/agentos/resident_gate.py",
+      "hcli/agentos/vmcp_gate.py"
+    ],
+    "preserved_per_gate_owners": [
+      "causality_payload() and its gate-specific probe/observation strings",
+      "record_*_causality() public call points and exact source strings",
+      "the gate report's status, qualification, and checks fields"
+    ]
+  },
+  "duplicate_evidence": {
+    "families": [
+      {
+        "former_helper": "_bind_emit",
+        "copies": 8,
+        "each_span": {
+          "lines": 33,
+          "bytes": 976,
+          "raw_sha256": "8d64f95894adca6b2cb4e61e9dd992bf5d3b7df7d82285ffc8e21d5fb01e8eb9",
+          "ast_sha256": "ae1d5ff659fb171ba3eea37fb73b31361ad35e47f1c0e9a108c6da4260ceb4ce"
+        }
+      },
+      {
+        "former_helper": "records_five_fields",
+        "copies": 8,
+        "each_span": {
+          "lines": 21,
+          "bytes": 790,
+          "raw_sha256": "1a9b254da81372decb0b9a441858f203f88842aa1f42b537fc62d2566bc75980",
+          "ast_sha256": "860202a2411b2710f2616e95b2cdc31161d5247cb707d99f79906dce0f556664"
+        }
+      },
+      {
+        "former_helper": "_record_gate_causality",
+        "copies": 8,
+        "each_span": {
+          "lines": 45,
+          "bytes": 1888,
+          "raw_sha256": "acc50f0aef329f4aa323dc4da2bdafc10c36975b36ce9a598b040a289f09e28b",
+          "ast_sha256": "621a0d78dc87de36bf367e067c13b0b759cf2f7affa9f7701e6ac2824cb513e6"
+        }
+      }
+    ],
+    "pre_change_measurement": "The raw source and syntax-tree hashes above were computed from HEAD for all eight modules before this edit. Each listed helper had one exact body shape across all eight copies."
+  },
+  "implemented": {
+    "shared_stamper": "stamp_gate is a deliberately separate owner from generic stamp. It is a literal migration of the gate-specific contract rather than an attempted reuse of generic stamp, whose status fallback and missing-observation behavior differ.",
+    "compatibility_aliases": "Each gate retains FIVE_RECORDED_FIELDS and records_five_fields as aliases to the canonical owner, preserving existing module-level access and seven existing __all__ exports without keeping a second implementation.",
+    "coverage": "The static gate coverage scanner recognizes sc.stamp_gate, so the migrated gates remain visible as emit-time causality consumers."
+  },
+  "preserved_contract": {
+    "gate_verdict_fields": "The helper snapshots and rejects mutation of status, qualification, and a shallow copy of checks. It records a causality verdict beside the gate verdict; it does not replace the gate verdict.",
+    "missing_observation": "None, empty string, empty list, and empty mapping are treated as unsupplied. They are passed to emit as an empty observation with blank probe_kind and claim_kind=None, yielding UNTESTED rather than restating PASSED or FAILED.",
+    "optional_fields": "The helper writes the five required fields, causality_verdict, and falsifier. It writes top-level probe_kind only for a truthy returned value and claim_kind only for a non-null returned value; an unsupplied observation therefore leaves pre-existing top-level optional labels untouched.",
+    "status_identity": "The helper obtains status only from report['status'] and does not adopt the generic stamp fallback to report['id']; it accepts neither a status nor a falsifier keyword.",
+    "payload_ownership": "Each gate still owns its distinct causality_payload and exact source string. No qualification logic, report construction, subprocess, network, resident, or model behavior changed."
+  },
+  "validation": {
+    "pre_to_post_output_parity": "A synthetic golden comparison captured the eight old record_*_causality outputs for supplied and unsupplied observations before extraction, then compared the new outputs exactly: 8 gates x 2 scenarios matched.",
+    "focused_regressions": "python3 -m pytest -q hcli/tests/test_gate_emit_binding_is_a_noop.py hcli/agentos/test_native_gate_timing.py tools/acceptance/test_lake_acceptance.py::test_census_symbol_is_actually_called: 31 passed",
+    "causality_contract_regressions": "The focused gate test covers canonical ownership, all eight delegating callers, preserved predicate aliases, supplied observation stamping, all four unsupplied sentinels, stale optional-label retention, restricted signature, id-fallback refusal, mutation-guard failures, and import identity.",
+    "coverage": "python3 tools/verify/status_causality.py --coverage: all eight migrated AgentOS gates appear in recording_five_fields; no target gate is unreadable.",
+    "syntax_and_diff": "python3 -m py_compile on all eight gates, canonical owner, package export, and focused test; git diff --check: passed."
+  },
+  "runtime": {
+    "model_execution": false,
+    "weights_loaded": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_service_restart": false,
+    "network_request": false,
+    "deployment": false
+  },
+  "size_ledger": {
+    "production_owner_and_gate_consumers_before_receipt": {
+      "added": 91,
+      "deleted": 963,
+      "net": -872,
+      "interpretation": "Eight private copied helper sets were retired. The remaining three-line per-gate compatibility/delegation surface points to one owner."
+    },
+    "focused_regression_before_receipt": {
+      "added": 220,
+      "deleted": 51,
+      "net": 169,
+      "interpretation": "The prior fallback-only test was replaced with hermetic behavior and ownership regression coverage for the one consolidated contract."
+    },
+    "before_receipt_total": {
+      "added": 311,
+      "deleted": 1014,
+      "net": -703
+    }
+  },
+  "claim_boundary": "This receipt proves one shared AgentOS gate-causality stamping owner, exact migration of the eight listed callers, and hermetic behavior/static coverage evidence. It does not prove gate qualification outcomes, model behavior, hardware availability or performance, model/weight identity, resident or daemon lifecycle behavior, network behavior, or deployment."
+}

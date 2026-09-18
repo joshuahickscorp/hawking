@@ -1,0 +1,100 @@
+{
+  "schema": "hawking.future.kimi_p0_density_freeze.v1",
+  "generated_at": "2026-09-10",
+  "status": "FROZEN_P0_DENSITY_SNAPSHOT_OPERATIONAL_ADMISSION_WITHHELD",
+  "name": "KIMI_P0",
+  "freeze_kind": "developmental_density_control",
+  "freeze_scope": "layer10 down-projection organ; three-projection graph control with dense model remainder",
+  "snapshot_root": "workspace/campaign/odyssey/p0/KIMI_P0_20260910",
+  "requested_target_complete_ebpw": 0.25,
+  "effective_complete_ebpw": 0.271484375,
+  "effective_complete_ebpw_scope": "layer10 down-projection organ only",
+  "full_model_complete_ebpw": null,
+  "source_model": "KIMI_BASE",
+  "immutable_base": true,
+  "lineage": {
+    "source": "KIMI_BASE",
+    "scope": "layer10 routed gate_proj + up_proj + down_proj; all other model weights remain unchanged dense KIMI_BASE",
+    "gate_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_GATE_EXPERTS0_63_20260910.json",
+    "up_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_63_20260910.json",
+    "down_receipt": "receipts/future/KIMI_INT8_RELATIVE_QUARTER_BAND_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "down_audit_receipt": "receipts/future/KIMI_INT8_RELATIVE_QUARTER_BAND_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "graph_receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_QUARTER_BAND_INTEGRATION_CONTROLLED_EXIT_20260910.json"
+  },
+  "representation": {
+    "gate_proj": {
+      "family": "BF16 independent expert lowrank",
+      "rank": 32,
+      "complete_ebpw": 0.6166548295454546,
+      "source_artifact": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova_gate64/expert_lowrank_gate_proj_r32.npz",
+      "artifact": "workspace/campaign/odyssey/p0/KIMI_P0_20260910/gate_proj_r32.npz",
+      "sha256": "5fe262b9cef40f7db2d32fe2471bbfd88352faaca155e98f0c68a946b01b34ce"
+    },
+    "up_proj": {
+      "family": "BF16 independent expert lowrank",
+      "rank": 32,
+      "complete_ebpw": 0.6166548295454546,
+      "source_artifact": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova_all64/expert_lowrank_r32.npz",
+      "artifact": "workspace/campaign/odyssey/p0/KIMI_P0_20260910/up_proj_r32.npz",
+      "sha256": "16c280b9b3bf09334310006768f279fcb5c2d3414d184347e9d3f85a035dea64"
+    },
+    "down_proj": {
+      "family": "row-relative symmetric INT8 factors with FP32 row scales",
+      "rank": 24,
+      "complete_ebpw": 0.271484375,
+      "heldout_mean_relative_l2": 0.8147555445219468,
+      "source_artifact": "workspace/campaign/odyssey/representations/kimi_int8_relative_expert_lowrank_down/int8_expert_lowrank_down_proj_r24.npz",
+      "artifact": "workspace/campaign/odyssey/p0/KIMI_P0_20260910/down_proj_r24.npz",
+      "sha256": "fc1fab140bd76704a13e81961252a82e9cde7c7b757e79c4948e2a5297f21971"
+    },
+    "dense_parent_rematerialization": false,
+    "direct_execution": "three selected organs only",
+    "full_model_direct_execution": false
+  },
+  "evidence": {
+    "direct_routed_audit": "PASS",
+    "sorted_kernel_equivalence_mean_relative_l2": 0.004334708675742149,
+    "sorted_direct_median_ms": 1.0139169753529131,
+    "graph_capability": {
+      "status": "FAIL",
+      "baseline_median_fourgram_repeat_fraction": 0.053763440860215006,
+      "patched_median_fourgram_repeat_fraction": 0.4623655913978495,
+      "gate": 0.1614,
+      "ppl_ratio": 1.021848817526774
+    },
+    "canonical_physical_receipt": "receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+    "resident_adoption": "INTEGRATED_NOT_QUALIFIED; worker admission RED"
+  },
+  "operational_gate": {
+    "frozen": true,
+    "operational_p0_admitted": false,
+    "reason": "The snapshot is useful as a reproducible density/control body, but the real graph fails capability and resident adoption remains RED.",
+    "promotion": "WITHHELD",
+    "odyssey_admission": "WITHHELD",
+    "p0_may_be_used_for": [
+      "offline representation and kernel development",
+      "regression and rate-capability-speed comparison",
+      "bounded non-authoritative engineering experiments"
+    ],
+    "p0_may_not_be_used_for": [
+      "autonomous consequential HCLI work",
+      "capability-qualified worker claims",
+      "self-certification of descendants",
+      "promotion or Odyssey worker admission"
+    ]
+  },
+  "frontier_lane": {
+    "status": "ACTIVE",
+    "target_complete_ebpw": 0.1,
+    "best_direct_organ_current_complete_ebpw": 0.09889914772727272,
+    "best_direct_organ_current_rank": 6,
+    "best_direct_organ_mean_relative_l2": 0.8685076592511479,
+    "fanout_receipt": "receipts/future/KIMI_INT8_RELATIVE_TENTH_BAND_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "direct_audit_receipt": "receipts/future/KIMI_INT8_RELATIVE_TENTH_BAND_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "direct_audit_status": "INT8_EXPERT_LOWRANK_ROUTED_AUDIT_PASS",
+    "sorted_direct_median_ms": 1.2347919982858002,
+    "next_probe": "selective sensitivity/recoverability-weighted protection below the uniform 0.10 control",
+    "claim_boundary": "The 0.10 target is earned for a direct layer-10 down-organ control, not for a capability-preserving full-model body."
+  },
+  "claim_boundary": "KIMI_P0 is a frozen layer10 down-organ developmental density snapshot at the 0.25 band; the full-model complete EBPW is not established because the remainder is dense. It is not an operationally admitted worker, capability-preserving Star, qualified TPS result, NX artifact, or Odyssey promotion."
+}

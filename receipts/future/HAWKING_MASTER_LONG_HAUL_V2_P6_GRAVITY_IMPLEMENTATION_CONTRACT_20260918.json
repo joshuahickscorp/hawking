@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P6_GRAVITY_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-813AF5A9",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded Gravity contract only; no hardware, model, or release qualification claim.",
+  "source_observation": {"owner":"hawking/gravity_gauntlet.py","sha256":"ee2cdf35e5eedb4211a7ed31719917028af3131b8e8e2038254d7c15f5e327e2"},
+  "focused_tests": ["hawking/test_gravity_gauntlet.py","hawking/test_tool_gravity_focus.py"],
+  "local_verification": {"command":"python3 -m pytest -q hawking/test_gravity_gauntlet.py hawking/test_tool_gravity_focus.py","result":"22 passed"},
+  "next_seam":"Preserve closed terminal dispositions, refusal semantics, and unparsed-precision None behavior in the existing Gravity owner.",
+  "falsifier":"An unparsed spec becomes measured precision, a fourth terminal disposition is added, or an empty candidate space passes."
+}

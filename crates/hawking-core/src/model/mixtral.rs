@@ -742,7 +742,9 @@ impl Engine for MixtralEngine {
                 break;
             }
         }
-        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        let prefill_ns = prefill_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.prefill_ns = prefill_ns;
+        stats.prefill_ms = prefill_ns as f64 / 1_000_000.0;
         if prefill_aborted {
             sink(StreamEvent::Done {
                 reason: StopReason::Aborted,
@@ -761,6 +763,7 @@ impl Engine for MixtralEngine {
         let mut decode_command_buffers = 0usize;
         let mut last_decode_dispatches = 0usize;
         let mut decode_forwards = 0usize;
+        let mut decode_token_ns = Vec::with_capacity(req.max_new_tokens);
         let mut decode_token_ms = Vec::with_capacity(req.max_new_tokens);
         let mut reason = StopReason::MaxTokens;
         let mut seed_eos = false;
@@ -806,7 +809,9 @@ impl Engine for MixtralEngine {
                 reason = StopReason::Aborted;
                 break;
             }
-            decode_token_ms.push(step_start.elapsed().as_secs_f64() * 1000.0);
+            let elapsed_ns = step_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+            decode_token_ns.push(elapsed_ns);
+            decode_token_ms.push(elapsed_ns as f64 / 1_000_000.0);
             let next_id = self.sampler.sample(&mut logits, &req.sampling);
             self.sampler.record(next_id);
             let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
@@ -818,8 +823,11 @@ impl Engine for MixtralEngine {
             }
             last_id = next_id;
         }
-        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        let decode_ns = decode_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.decode_ns = decode_ns;
+        stats.decode_ms = decode_ns as f64 / 1_000_000.0;
         stats.decode_token_ms = decode_token_ms;
+        stats.decode_token_ns = decode_token_ns;
         stats.completion_tokens = produced;
         stats.device_id = self.metal_ctx.as_ref().map(|ctx| ctx.device_name());
         stats.prefill_metal_dispatches_total = prefill_dispatches;

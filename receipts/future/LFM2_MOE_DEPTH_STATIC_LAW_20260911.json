@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.odyssey.moe_depth_static_law.v1",
+  "recorded_at": "2026-09-11T07:59:00Z",
+  "status": "SCOPED_LAW",
+  "specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+  "method": "tools/future/representational_anatomy.py over three layer controls; static safetensors anatomy only",
+  "controls": [
+    {"layer": 2, "within_expert_deficit_pct": 37.586, "rank_90": 631, "cross_expert_verdict": "DEAD"},
+    {"layer": 3, "within_expert_deficit_pct": 29.778, "rank_90": 714, "cross_expert_verdict": "DEAD"},
+    {"layer": 39, "within_expert_deficit_pct": 22.688, "rank_90": 804, "cross_expert_verdict": "DEAD"}
+  ],
+  "law": "For the tested LFM2 routed-expert layers, cross-expert sharing has no measured advantage over matched nulls, while within-expert low-rank signal is real but declines with depth. Representation rate and residual protection must remain layer/projection specific.",
+  "closed_for_this_specimen_scope": ["cross-expert shared basis", "common-plus-delta", "expert clustering/alignment as primary substrate", "uniform rank allocation"],
+  "open": ["per-layer low-rank plus sparse salient repair", "activation-aware binary/ternary or vector-coded residual", "two-stage PQ only as repair component"],
+  "claim_boundary": "Static anatomy does not establish output quality, capability, activation-aware allocation, direct execution, TPS, or a complete-model EBPW result."
+}

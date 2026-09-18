@@ -1,0 +1,1289 @@
+{
+  "activation_corpus": {
+    "path": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "split": "interleaved even rows train, odd rows held-out",
+    "train_and_heldout_rows": {
+      "0": {
+        "heldout": 33,
+        "train": 34
+      },
+      "1": {
+        "heldout": 9,
+        "train": 10
+      },
+      "2": {
+        "heldout": 1,
+        "train": 1
+      },
+      "3": {
+        "heldout": 10,
+        "train": 10
+      },
+      "4": {
+        "heldout": 7,
+        "train": 8
+      },
+      "5": {
+        "heldout": 7,
+        "train": 8
+      },
+      "6": {
+        "heldout": 17,
+        "train": 18
+      },
+      "7": {
+        "heldout": 50,
+        "train": 51
+      }
+    }
+  },
+  "claim_boundary": "Bounded representation-native Nova control on eight routed experts. Dense source weights are teacher targets only; independent expert factors are consumed without dense-parent materialization and held-out real routed inputs are measured. This is not full-model capability, end-to-end TPS, a production routed kernel, NX, or promotion evidence.",
+  "expert_count": 8,
+  "fanout_timing": {
+    "execution": "CPU representation-native independent-factor training plus direct-reference fanout",
+    "method_soft_budget_ms": 120000.0,
+    "sum_variant_elapsed_ms": 9185.239457932767,
+    "variant_count": 6,
+    "wall_elapsed_ms": 4659.616917022504,
+    "workers": 2
+  },
+  "fit": {
+    "learning_rate": 0.02,
+    "pca_initializer_ms": 56.238792021758854,
+    "sample_rows_per_tensor": 128,
+    "steps": 500,
+    "teacher_targets": "W_e x computed from immutable source weights",
+    "variants": [
+      8,
+      16,
+      24,
+      32,
+      40,
+      48
+    ]
+  },
+  "generated_at": "2026-09-10T17:23:34.947068+00:00",
+  "guard": {
+    "end": {
+      "compressor_gb": 7.57,
+      "expected_gb": 0.0,
+      "free_gb": 60.91,
+      "headroom_gb": 60.91,
+      "reasons": [],
+      "reclaimable_gb": 31.54,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.37,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.89
+    },
+    "entry": {
+      "compressor_gb": 7.57,
+      "expected_gb": 2.0,
+      "free_gb": 61.18,
+      "headroom_gb": 59.18,
+      "reasons": [],
+      "reclaimable_gb": 31.54,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.64,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.89
+    },
+    "loaded": {
+      "compressor_gb": 7.57,
+      "expected_gb": 2.0,
+      "free_gb": 61.1,
+      "headroom_gb": 59.1,
+      "reasons": [],
+      "reclaimable_gb": 31.53,
+      "resident_rss_gb": 0.0,
+      "residents": 0,
+      "state": "OK",
+      "strictly_free_gb": 29.57,
+      "swap_gb": 3.0,
+      "swapfiles": 3,
+      "wired_gb": 5.89
+    }
+  },
+  "immutable_base": true,
+  "next_discriminator": "If independent factors materially beat shared-core/local-residual at the same complete EBPW, use expert-specific structure in a routed decoder; otherwise prioritize balanced activation coverage and a different topology.",
+  "organ": "layer10_routed_experts_0_to_7",
+  "python": "3.14.6",
+  "ranked_summary": [
+    {
+      "complete_ebpw": 0.17755681818181818,
+      "mean_cosine": 0.6399319148552951,
+      "mean_relative_l2": 0.7271578937090185,
+      "p95_relative_l2": 0.9497772105950085,
+      "training_ms": 997.1319169853814,
+      "variant": {
+        "rank": 8,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.3309659090909091,
+      "mean_cosine": 0.688448229721233,
+      "mean_relative_l2": 0.6729011597050761,
+      "p95_relative_l2": 0.9340212096039354,
+      "training_ms": 1051.0607909527607,
+      "variant": {
+        "rank": 16,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.484375,
+      "mean_cosine": 0.7080610207657316,
+      "mean_relative_l2": 0.6481671436320324,
+      "p95_relative_l2": 0.935822066676931,
+      "training_ms": 1593.7014159862883,
+      "variant": {
+        "rank": 24,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.6377840909090909,
+      "mean_cosine": 0.7103080373646607,
+      "mean_relative_l2": 0.6469856179597084,
+      "p95_relative_l2": 0.9515724755250375,
+      "training_ms": 1590.2389580151066,
+      "variant": {
+        "rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.7911931818181818,
+      "mean_cosine": 0.72154455287243,
+      "mean_relative_l2": 0.6328863147031382,
+      "p95_relative_l2": 0.9351354757685787,
+      "training_ms": 1316.5047920192592,
+      "variant": {
+        "rank": 40,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "complete_ebpw": 0.9446022727272727,
+      "mean_cosine": 0.7194723800491931,
+      "mean_relative_l2": 0.6352284602541337,
+      "p95_relative_l2": 0.9527705632715412,
+      "training_ms": 1362.1352919726633,
+      "variant": {
+        "rank": 48,
+        "tensor_family": "up_proj.weight"
+      }
+    }
+  ],
+  "results": [
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "y_e = A_e(B_e^T x)",
+        "persistent_representation_bytes": 512000,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 355618,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "a_0",
+          "a_1",
+          "a_2",
+          "a_3",
+          "a_4",
+          "a_5",
+          "a_6",
+          "a_7",
+          "b_0",
+          "b_1",
+          "b_2",
+          "b_3",
+          "b_4",
+          "b_5",
+          "b_6",
+          "b_7"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova/expert_lowrank_r8.npz",
+        "sha256": "61b638413ae18fc9e6d9a69a346346b97f2e19e03c900fde1362a12f7c4839c7"
+      },
+      "fanout": {
+        "elapsed_ms": 1374.1973330033943,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 0.9964114625422988,
+        "mean_cosine": 0.6399319148552951,
+        "mean_relative_l2": 0.7271578937090185,
+        "p95_relative_l2": 0.9497772105950085,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 0.000242,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 442368,
+              "gb": 0.000442,
+              "ms": 0.000242,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.17755681818181818,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.17755681818181818,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.17755681818181818,
+            "stored_bytes": 512000
+          },
+          "executable_bytes": 512000,
+          "executable_gb": 0.000512,
+          "flags": [],
+          "id": "KIMI_nova_independent_expert_lowrank_r8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 442368,
+              "category": "regions",
+              "gb": 0.000442,
+              "ms": 0.000242,
+              "ms_per_gb": 0.547282,
+              "name": "independent_expert_lowrank_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_lowrank_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 512000,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 512000,
+          "stored_bpw": 0.17755681818181818,
+          "stored_bytes": 512000,
+          "stored_gb": 0.000512,
+          "stored_ms": 0.000242
+        },
+        "expert_factor_bytes": 442368,
+        "family": "independent_expert_lowrank_AeBeT",
+        "rank": 8
+      },
+      "status": "EXPERT_LOWRANK_NOVA_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.101708970963955,
+        "dense_oracle_batch_samples_ms": [
+          1.127458002883941,
+          1.0893750004470348,
+          1.101708970963955
+        ],
+        "direct_batch_median_ms": 0.19300001440569758,
+        "direct_batch_samples_ms": [
+          0.19300001440569758,
+          0.22350001381710172,
+          0.10895798914134502
+        ],
+        "elapsed_ms": 1374.1973330033943,
+        "pca_initializer_ms": null,
+        "torch_threads": 1,
+        "training_ms": 997.1319169853814
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.9225801229476929,
+          0.13461551070213318
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "rank": 8,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "y_e = A_e(B_e^T x)",
+        "persistent_representation_bytes": 954368,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 707738,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "a_0",
+          "a_1",
+          "a_2",
+          "a_3",
+          "a_4",
+          "a_5",
+          "a_6",
+          "a_7",
+          "b_0",
+          "b_1",
+          "b_2",
+          "b_3",
+          "b_4",
+          "b_5",
+          "b_6",
+          "b_7"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova/expert_lowrank_r16.npz",
+        "sha256": "eccaabd7611e6d6c512bc473ce8d054d5aed2fcd7c00f9bd8cae46b396abef09"
+      },
+      "fanout": {
+        "elapsed_ms": 1446.7212919844314,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 1.0018973695286923,
+        "mean_cosine": 0.688448229721233,
+        "mean_relative_l2": 0.6729011597050761,
+        "p95_relative_l2": 0.9340212096039354,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 0.000484,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 884736,
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.3309659090909091,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.3309659090909091,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.3309659090909091,
+            "stored_bytes": 954368
+          },
+          "executable_bytes": 954368,
+          "executable_gb": 0.000954,
+          "flags": [],
+          "id": "KIMI_nova_independent_expert_lowrank_r16",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 884736,
+              "category": "regions",
+              "gb": 0.000885,
+              "ms": 0.000484,
+              "ms_per_gb": 0.547282,
+              "name": "independent_expert_lowrank_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_lowrank_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 954368,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 954368,
+          "stored_bpw": 0.3309659090909091,
+          "stored_bytes": 954368,
+          "stored_gb": 0.000954,
+          "stored_ms": 0.000484
+        },
+        "expert_factor_bytes": 884736,
+        "family": "independent_expert_lowrank_AeBeT",
+        "rank": 16
+      },
+      "status": "EXPERT_LOWRANK_NOVA_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.1478749802336097,
+        "dense_oracle_batch_samples_ms": [
+          1.2212919536978006,
+          1.0281249997206032,
+          1.1478749802336097
+        ],
+        "direct_batch_median_ms": 0.16858300659805536,
+        "direct_batch_samples_ms": [
+          0.16858300659805536,
+          0.17104099970310926,
+          0.1433329889550805
+        ],
+        "elapsed_ms": 1446.7212919844314,
+        "pca_initializer_ms": null,
+        "torch_threads": 1,
+        "training_ms": 1051.0607909527607
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.8943530321121216,
+          0.05189961567521095
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "rank": 16,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "y_e = A_e(B_e^T x)",
+        "persistent_representation_bytes": 1396736,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1058943,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "a_0",
+          "a_1",
+          "a_2",
+          "a_3",
+          "a_4",
+          "a_5",
+          "a_6",
+          "a_7",
+          "b_0",
+          "b_1",
+          "b_2",
+          "b_3",
+          "b_4",
+          "b_5",
+          "b_6",
+          "b_7"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova/expert_lowrank_r24.npz",
+        "sha256": "158654bc9846eed6f5409a4f02c370ba65427bd3155ac5d7fd3ffdf350211ae6"
+      },
+      "fanout": {
+        "elapsed_ms": 1688.7019999558106,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 0.9707440777148604,
+        "mean_cosine": 0.7080610207657316,
+        "mean_relative_l2": 0.6481671436320324,
+        "p95_relative_l2": 0.935822066676931,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 0.000726,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1327104,
+              "gb": 0.001327,
+              "ms": 0.000726,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.484375,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.484375,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.484375,
+            "stored_bytes": 1396736
+          },
+          "executable_bytes": 1396736,
+          "executable_gb": 0.001397,
+          "flags": [],
+          "id": "KIMI_nova_independent_expert_lowrank_r24",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 1327104,
+              "category": "regions",
+              "gb": 0.001327,
+              "ms": 0.000726,
+              "ms_per_gb": 0.547282,
+              "name": "independent_expert_lowrank_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_lowrank_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1396736,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1396736,
+          "stored_bpw": 0.484375,
+          "stored_bytes": 1396736,
+          "stored_gb": 0.001397,
+          "stored_ms": 0.000726
+        },
+        "expert_factor_bytes": 1327104,
+        "family": "independent_expert_lowrank_AeBeT",
+        "rank": 24
+      },
+      "status": "EXPERT_LOWRANK_NOVA_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.9970410028472543,
+        "dense_oracle_batch_samples_ms": [
+          1.0875000152736902,
+          0.982375000603497,
+          0.9970410028472543
+        ],
+        "direct_batch_median_ms": 0.19520800560712814,
+        "direct_batch_samples_ms": [
+          0.19520800560712814,
+          0.19024999346584082,
+          0.35799999022856355
+        ],
+        "elapsed_ms": 1688.7019999558106,
+        "pca_initializer_ms": null,
+        "torch_threads": 1,
+        "training_ms": 1593.7014159862883
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.871161937713623,
+          0.031121468171477318
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "rank": 24,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "y_e = A_e(B_e^T x)",
+        "persistent_representation_bytes": 1839104,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1410457,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "a_0",
+          "a_1",
+          "a_2",
+          "a_3",
+          "a_4",
+          "a_5",
+          "a_6",
+          "a_7",
+          "b_0",
+          "b_1",
+          "b_2",
+          "b_3",
+          "b_4",
+          "b_5",
+          "b_6",
+          "b_7"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova/expert_lowrank_r32.npz",
+        "sha256": "a40dca982f3c9edbb1574bf87d726eabcb1748876f4d2b2bf59094cfd101a5a4"
+      },
+      "fanout": {
+        "elapsed_ms": 1701.3822079752572,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 0.9956943302746891,
+        "mean_cosine": 0.7103080373646607,
+        "mean_relative_l2": 0.6469856179597084,
+        "p95_relative_l2": 0.9515724755250375,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 0.000968,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 1769472,
+              "gb": 0.001769,
+              "ms": 0.000968,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.6377840909090909,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.6377840909090909,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.6377840909090909,
+            "stored_bytes": 1839104
+          },
+          "executable_bytes": 1839104,
+          "executable_gb": 0.001839,
+          "flags": [],
+          "id": "KIMI_nova_independent_expert_lowrank_r32",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 1769472,
+              "category": "regions",
+              "gb": 0.001769,
+              "ms": 0.000968,
+              "ms_per_gb": 0.547282,
+              "name": "independent_expert_lowrank_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_lowrank_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 1839104,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 1839104,
+          "stored_bpw": 0.6377840909090909,
+          "stored_bytes": 1839104,
+          "stored_gb": 0.001839,
+          "stored_ms": 0.000968
+        },
+        "expert_factor_bytes": 1769472,
+        "family": "independent_expert_lowrank_AeBeT",
+        "rank": 32
+      },
+      "status": "EXPERT_LOWRANK_NOVA_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 0.9040409931913018,
+        "dense_oracle_batch_samples_ms": [
+          0.8966669556684792,
+          0.9265000117011368,
+          0.9040409931913018
+        ],
+        "direct_batch_median_ms": 0.09575003059580922,
+        "direct_batch_samples_ms": [
+          0.09237497579306364,
+          0.09575003059580922,
+          0.09837496327236295
+        ],
+        "elapsed_ms": 1701.3822079752572,
+        "pca_initializer_ms": null,
+        "torch_threads": 1,
+        "training_ms": 1590.2389580151066
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.8560720086097717,
+          0.014325044117867947
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "rank": 32,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "y_e = A_e(B_e^T x)",
+        "persistent_representation_bytes": 2281472,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 1760890,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "a_0",
+          "a_1",
+          "a_2",
+          "a_3",
+          "a_4",
+          "a_5",
+          "a_6",
+          "a_7",
+          "b_0",
+          "b_1",
+          "b_2",
+          "b_3",
+          "b_4",
+          "b_5",
+          "b_6",
+          "b_7"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova/expert_lowrank_r40.npz",
+        "sha256": "0a844db88da98106acc06ea911cd44a4b208b14935f5484eadecbd10179c2228"
+      },
+      "fanout": {
+        "elapsed_ms": 1463.8487080228515,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 0.9707597638893315,
+        "mean_cosine": 0.72154455287243,
+        "mean_relative_l2": 0.6328863147031382,
+        "p95_relative_l2": 0.9351354757685787,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 0.001211,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 2211840,
+              "gb": 0.002212,
+              "ms": 0.001211,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.7911931818181818,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.7911931818181818,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.7911931818181818,
+            "stored_bytes": 2281472
+          },
+          "executable_bytes": 2281472,
+          "executable_gb": 0.002281,
+          "flags": [],
+          "id": "KIMI_nova_independent_expert_lowrank_r40",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 2211840,
+              "category": "regions",
+              "gb": 0.002212,
+              "ms": 0.001211,
+              "ms_per_gb": 0.547282,
+              "name": "independent_expert_lowrank_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_lowrank_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 2281472,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 2281472,
+          "stored_bpw": 0.7911931818181818,
+          "stored_bytes": 2281472,
+          "stored_gb": 0.002281,
+          "stored_ms": 0.001211
+        },
+        "expert_factor_bytes": 2211840,
+        "family": "independent_expert_lowrank_AeBeT",
+        "rank": 40
+      },
+      "status": "EXPERT_LOWRANK_NOVA_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.2405830202624202,
+        "dense_oracle_batch_samples_ms": [
+          1.273375004529953,
+          1.037415990140289,
+          1.2405830202624202
+        ],
+        "direct_batch_median_ms": 0.19537500338628888,
+        "direct_batch_samples_ms": [
+          0.181750045157969,
+          0.2210829989053309,
+          0.19537500338628888
+        ],
+        "elapsed_ms": 1463.8487080228515,
+        "pca_initializer_ms": null,
+        "torch_threads": 1,
+        "training_ms": 1316.5047920192592
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.8401742577552795,
+          0.0061993785202503204
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "rank": 40,
+        "tensor_family": "up_proj.weight"
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "y_e = A_e(B_e^T x)",
+        "persistent_representation_bytes": 2723840,
+        "production_kernel": "NOT_VALIDATED",
+        "verified": true
+      },
+      "factor_artifact": {
+        "compressed_file_bytes": 2112908,
+        "container": "compressed_npz_bf16_bit_patterns",
+        "logical_factor_arrays": [
+          "a_0",
+          "a_1",
+          "a_2",
+          "a_3",
+          "a_4",
+          "a_5",
+          "a_6",
+          "a_7",
+          "b_0",
+          "b_1",
+          "b_2",
+          "b_3",
+          "b_4",
+          "b_5",
+          "b_6",
+          "b_7"
+        ],
+        "path": "workspace/campaign/odyssey/representations/kimi_expert_lowrank_nova/expert_lowrank_r48.npz",
+        "sha256": "234fd0ba7df67f9c9abf5370c7c387456af50f54612ee62168e479ba78d3984d"
+      },
+      "fanout": {
+        "elapsed_ms": 1510.3879169910215,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "heldout_rows_by_expert": [
+          33,
+          9,
+          1,
+          10,
+          7,
+          7,
+          17,
+          50
+        ],
+        "max_relative_l2": 0.9806142063425694,
+        "mean_cosine": 0.7194723800491931,
+        "mean_relative_l2": 0.6352284602541337,
+        "p95_relative_l2": 0.9527705632715412,
+        "total_heldout_rows": 134
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 0.001452,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 69632,
+              "gb": 7e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 2654208,
+              "gb": 0.002654,
+              "ms": 0.001452,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.9446022727272727,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.9446022727272727,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.9446022727272727,
+            "stored_bytes": 2723840
+          },
+          "executable_bytes": 2723840,
+          "executable_gb": 0.002724,
+          "flags": [],
+          "id": "KIMI_nova_independent_expert_lowrank_r48",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 2654208,
+              "category": "regions",
+              "gb": 0.002654,
+              "ms": 0.001452,
+              "ms_per_gb": 0.547282,
+              "name": "independent_expert_lowrank_bf16",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "organ_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "direct_lowrank_decoder_support",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 2723840,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 2723840,
+          "stored_bpw": 0.9446022727272727,
+          "stored_bytes": 2723840,
+          "stored_gb": 0.002724,
+          "stored_ms": 0.001452
+        },
+        "expert_factor_bytes": 2654208,
+        "family": "independent_expert_lowrank_AeBeT",
+        "rank": 48
+      },
+      "status": "EXPERT_LOWRANK_NOVA_HELDOUT_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.018500013742596,
+        "dense_oracle_batch_samples_ms": [
+          1.018500013742596,
+          1.1821670341305435,
+          0.8712910348549485
+        ],
+        "direct_batch_median_ms": 0.1604169956408441,
+        "direct_batch_samples_ms": [
+          0.1604169956408441,
+          0.21879200357943773,
+          0.16016699373722076
+        ],
+        "elapsed_ms": 1510.3879169910215,
+        "pca_initializer_ms": null,
+        "torch_threads": 1,
+        "training_ms": 1362.1352919726633
+      },
+      "training": {
+        "initial_final_normalized_loss": [
+          0.8234207630157471,
+          0.013610065914690495
+        ],
+        "learning_rate": 0.02,
+        "optimizer_state_deployed": false,
+        "steps": 500
+      },
+      "variant": {
+        "rank": 48,
+        "tensor_family": "up_proj.weight"
+      }
+    }
+  ],
+  "schema": "hawking.future.kimi_expert_lowrank_nova_fanout.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_expert_lowrank_nova_fanout.py",
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "EXPERT_LOWRANK_NOVA_FANOUT_COMPLETE",
+  "tensor_family": "up_proj.weight",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+  ]
+}

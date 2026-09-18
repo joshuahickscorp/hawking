@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 3,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "bf27ae6f8fec5a18294203adf75344bbd5cb3b891dc525ba36fcfbcf9a9fe4e1",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:11:08.984802+00:00",
+      "calls_used": 3,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:11:08.984822+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:11:08.988705+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/auto_orchestration.py declares unbounded admission explicitly: BASE_MAX_REMOTE_COGNITION_WORKERS=12 and BASE_MAX_PREMIUM_WORKERS=4 are retained as telemetry-only historical values, while MAX_REMOTE_COGNITION_WORKER",
+      "outcome": "CONTINUE",
+      "reply_chars": 4091,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/auto_orchestration.py declares unbounded admission explicitly: BASE_MAX_REMOTE_COGNITION_WORKERS=12 and BASE_MAX_PREMIUM_WORKERS=4 are retained as telemetry-only historical values, while MAX_REMOTE_COGNITION_WORKERS, MAX_PREMIUM_WORKERS, and MAX_AUTOTUNED_WORKERS are all set to UNBOUNDED_CONCURRENCY=None; the module comment states admission is gated by real resource/provider health, dependency readiness, budget authority, and disjoint writer leases rather than worker count.\",\"Frontier refill exists as an imported hook: the test module imports refill_runnable_frontier, model_routing_value, and select_measured_model from hawking.auto_orchestration, and the source defines AUTO_REFILL_SCHEMA='hawking.auto.refill.v1', consistent with the unbounded-refill contract.\",\"Measured diversification evidence is present in test_auto_orchestration.py: test_model_outcome_is_durable and test_model_outcome_persists_quality_and_transport_dimensions record outcomes keyed by 'model::task_class' (e.g., 'deepseek/deepseek-v4.1-flash::repo_engineering', 'z-ai/glm-5.3::source_mapping') into .hawking/auto/model-performance.json with dimensions including repaired, wall_time_s, tool_compliance, source_grounding_quality, provider_semantic_success, terminal_packet_success, provider_transport_failure, failure_class, and independence_value; the source also defines TASK_CLASS_ALIASES, GLM_TRIAL_CLASSES, and MODEL_PRIORS used as routing priors.\",\"Terminal graph protection is evidenced in hawking/tests/test_discrete_goal_completion_state.py: test_machine_completion_overrides_stale_provider_outcome asserts _complete_discrete_goal forces state COMPLETE, worker_status RELEASED with kill_reason 'goal_complete', and exact_next_action 'Goal complete; durable result packet is available'; test_child_workunit_completion_preserves_parent_goal_phase asserts a child completion leaves parent status RUNNING and phase intact while marking the child WORKUNIT_COMPLETE; test_terminal_output_unusable_child_releases_parent_active_pointer asserts an OUTPUT_UNUSABLE child clears parent active_workunit_id/owner_job without terminating the parent Goal.\",\"test_active_frontier_capacity_has_a_verified_twenty_five_percent_step asserts FRONTIER_BURST_FACTOR==1.25 and that BASE values times the burst factor equal 15 and 5, while MAX_* limits are None, so the refill behavior is verified as unbounded rather than capped by the legacy 12/4 ceilings.\",\"Worker packet hygiene is tested: test_worker_packet_is_redacted_and_persisted asserts Bearer secrets are redacted ('[redacted]') and that persisted packet digests round-trip via packet_path, matching the _SECRET_PATTERNS redaction regexes defined in the source.\",\"Reads were truncated (4000 of 64409 bytes for auto_orchestration.py, ~25% of each test file), so no claim is made about unshown regions; observations are limited to the shown content.\"],\"sources\":[\"hawking/auto_orchestration.py (sha256 cbbc1e5f...; truncated view)\",\"hawking/tests/test_auto_orchestration.py (sha256 a4f401c9...; truncated view)\",\"hawking/tests/test_discrete_goal_completion_state.py (sha256 264ee9c2...; truncated view)\"],\"recommendations\":[\"Re-read hawking/auto_orchestration.py in narrowed line ranges to confirm the bodies of refill_runnable_frontier, select_measured_model, and model_routing_value before any release claim; current evidence covers only the first ~6% of the file.\",\"If bounded delegation is permitted later, spawn a child to focused-run the three admitted tests and attach exact pytest output as evidence; this worker did not run tests per read-only constraints.\"],\"unresolved_questions\":[\"Does refill_runnable_frontier internally enforce the disjoint writer-lease and budget gating described in the module comment, or is gating enforced by callers (unverified due to truncation)?\",\"Do select_measured_model/model_routing_value actually consume the persisted model-performance.json dimensions observed in tests, or are the measured-diversification",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-dffce6fcbf65453b",
+  "worker_id": "hawking-worker-daa6b685ef4645f3",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-57830236"
+}

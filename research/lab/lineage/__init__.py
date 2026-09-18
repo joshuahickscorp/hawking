@@ -1,122 +1,34 @@
-"""Genesis lineage reproduction machinery.
+"""Internal compatibility view of Hawking's canonical Genesis lineage.
 
-Three named slots, an external promotion gate, checksummed state transfer,
-a typed research bus, and the four-slot scheduler.
+Research evidence may retain its historic import paths.  Runtime code belongs
+to :mod:`hawking.lineage`; submodules below are aliases to those exact modules
+so class identity and durable state contracts cannot split.
 """
 from __future__ import annotations
 
-from lab.lineage.bus import (
-    BusRefusal,
-    EpistemicClass,
-    MessageType,
-    ResearchBus,
-    validate_message,
-)
-from lab.lineage.cycle import reproduce
-from lab.lineage.four_slots import (
-    HARD_CAP,
-    PREEMPTIBLE_SLOT,
-    SLOT_ROLES,
-    FourSlotScheduler,
-    SlotCapError,
-    SlotError,
-)
-from lab.lineage.identity import (
-    DEFAULT_BENCHMARK_FINGERPRINT,
-    DEFAULT_CAPABILITY_CONTRACT,
-    GENESIS_BPW,
-    GENESIS_COMPLETE_TOKEN_NS,
-    GenesisInstance,
-    Invoker,
-    make_qwen38_genesis,
-)
-from lab.lineage.promotion import (
-    ALL_CLAUSES,
-    CLAUSE_ARTIFACT_IDENTITY,
-    CLAUSE_BENCHMARK_UNCHANGED,
-    CLAUSE_BPW_UP_TOKEN_DOWN,
-    CLAUSE_CAPABILITY,
-    CLAUSE_COMPLETE_TOKEN_MATERIAL,
-    CLAUSE_NO_NEW_SILENT_FALLBACK,
-    CLAUSE_PROTECTED_TESTS,
-    CLAUSE_REPRESENTATION_BPW,
-    CLAUSE_ROLLBACK_ARTIFACT,
-    CLAUSE_RUNTIME_GENOME,
-    CLAUSE_STATE_TRANSFER,
-    CLAUSE_TPS_UP_CAP_DOWN,
-    SelfCertificationRefused,
-    clause_status,
-    evaluate_promotion,
-    refuse_self_certification,
-)
-from lab.lineage.state import (
-    CANDIDATE,
-    CURRENT,
-    LAST_KNOWN_GOOD,
-    SLOT_NAMES,
-    LaunchResult,
-    LineageError,
-    LineageInvariantError,
-    LineageState,
-)
-from lab.lineage.transfer import (
-    TRANSFER_PAYLOAD_KEYS,
-    TransferChecksumError,
-    TransferError,
-    accept_transfer,
-    pack_state,
-    parent_research_payload,
-)
+import importlib
+import sys
 
-__all__ = [
-    "ALL_CLAUSES",
-    "CANDIDATE",
-    "CLAUSE_ARTIFACT_IDENTITY",
-    "CLAUSE_BENCHMARK_UNCHANGED",
-    "CLAUSE_BPW_UP_TOKEN_DOWN",
-    "CLAUSE_CAPABILITY",
-    "CLAUSE_COMPLETE_TOKEN_MATERIAL",
-    "CLAUSE_NO_NEW_SILENT_FALLBACK",
-    "CLAUSE_PROTECTED_TESTS",
-    "CLAUSE_REPRESENTATION_BPW",
-    "CLAUSE_ROLLBACK_ARTIFACT",
-    "CLAUSE_RUNTIME_GENOME",
-    "CLAUSE_STATE_TRANSFER",
-    "CLAUSE_TPS_UP_CAP_DOWN",
-    "CURRENT",
-    "DEFAULT_BENCHMARK_FINGERPRINT",
-    "DEFAULT_CAPABILITY_CONTRACT",
-    "GENESIS_BPW",
-    "GENESIS_COMPLETE_TOKEN_NS",
-    "HARD_CAP",
-    "LAST_KNOWN_GOOD",
-    "PREEMPTIBLE_SLOT",
-    "SLOT_NAMES",
-    "SLOT_ROLES",
-    "TRANSFER_PAYLOAD_KEYS",
-    "BusRefusal",
-    "EpistemicClass",
-    "FourSlotScheduler",
-    "GenesisInstance",
-    "Invoker",
-    "LaunchResult",
-    "LineageError",
-    "LineageInvariantError",
-    "LineageState",
-    "MessageType",
-    "ResearchBus",
-    "SelfCertificationRefused",
-    "SlotCapError",
-    "SlotError",
-    "TransferChecksumError",
-    "TransferError",
-    "accept_transfer",
-    "clause_status",
-    "evaluate_promotion",
-    "make_qwen38_genesis",
-    "pack_state",
-    "parent_research_payload",
-    "refuse_self_certification",
-    "reproduce",
-    "validate_message",
-]
+from hawking import lineage as _canonical
+
+
+for _name in (
+    "bus",
+    "canon",
+    "continuity",
+    "cycle",
+    "four_slots",
+    "identity",
+    "lifecycle",
+    "promotion",
+    "state",
+    "testing",
+    "transfer",
+):
+    sys.modules[f"{__name__}.{_name}"] = importlib.import_module(
+        f"hawking.lineage.{_name}"
+    )
+
+# A legacy import resolves to the canonical package object, not a re-export
+# copy.  That keeps ``isinstance`` and module-level singleton behavior intact.
+sys.modules[__name__] = _canonical

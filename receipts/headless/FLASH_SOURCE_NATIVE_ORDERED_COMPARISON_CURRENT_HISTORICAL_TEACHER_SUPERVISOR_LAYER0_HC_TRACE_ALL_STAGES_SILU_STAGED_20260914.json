@@ -1,0 +1,296 @@
+{
+  "schema": "hawking.flash.source_boundary_comparison.v1",
+  "status": "FIRST_OBSERVED_PAYLOAD_DIFFERENCE_LOCALIZED__NO_SEMANTIC_VERDICT",
+  "source_reference": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "authorization_binding_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+    "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+    "owner_authorization": {
+      "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+      "schema": "hawking.flash.external_greedy_reference_local_canonical_admission.v1",
+      "authorization_scope": "admit_external_greedy_reference_v2",
+      "path": null,
+      "sha256": null,
+      "owner_signature_required": false,
+      "owner_signature_present": false,
+      "science_status": "UNEARNED",
+      "science_unearned": true,
+      "producer_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+      "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+      "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+      "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+      "sibling_capture": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+        "sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+        "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED",
+        "hawking_packager_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+        "hawking_packager_sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6",
+        "historical_owner_authorization_required_suffix": true,
+        "historical_suffix_policy": "CAPTURED_...__OWNER_AUTHORIZATION_REQUIRED remains a sealed historical label; local-canonical admission supersedes the Ed25519 mandate without mutating capture.json."
+      },
+      "historical_git_snapshot": "a9c8b603fe2f06311324582ca722c55fd32aefb8",
+      "contract_status_vocabulary_note": "EXTERNAL_REFERENCE_STATUS names a sealed-complete source greedy reference; authority is admission_class, and science_status remains UNEARNED until ordered compare.",
+      "policy_note": "Detached machine-owner Ed25519 is not required for provenance-complete canonical local source captures. Scientific correctness remains unearned and is established only by later source/native comparison.",
+      "claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion."
+    }
+  },
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V5_LAYER0_HC_PRECISION_TRACE_20260914.json",
+    "sha256": "2184f3384e7d910567d63ce8a10e3f400d7c93971b267baefe6b4fd1034187b1",
+    "seal_sha256": "11cfef02c012886d9a29708f074267c2a2a1467cb1342e9f517e8587129294b5"
+  },
+  "source_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/capture.json",
+    "sha256": "2e55dbe6c28ef1304e53f7523c2e9d34e3dc1a925d594bdaa54c0b5958cf2b63",
+    "seal_sha256": "4129097399b4c5db4a02283452998d0b87b8c08f0bf43ec58e4a30c929e407a9"
+  },
+  "native_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_TRACE_ALL_STAGES_SILU_STAGED_20260914.json",
+    "sha256": "44601f14261ff2775f3ffc8c5e74ef74b6eaf7c1dd8d009695e7d03b603727bb",
+    "seal_sha256": "477248ccd34c86f6a2cdc387f1100cdb4e276b8c8fe9bbbe045b8448074bfbb4",
+    "schema": "hawking.flash.native_layer0_attention_hc_trace_capture.v1",
+    "status": "CAPTURED_NATIVE_LAYER0_ATTENTION_HC_TRACE_ONLY_TOKEN_0",
+    "capture_scope": "LAYER0_ATTENTION_HC_TRACE_ONLY",
+    "seam_count": 1,
+    "layer0_trace_count": 9,
+    "attention_hc_norm_precision": {
+      "accumulation_dtype": "F32",
+      "logical_dtype": "BF16",
+      "mode": "SOURCE_BF16_ROUNDTRIP_AFTER_EACH_ATTENTION_HC_STAGE_FULL_PAIRWISE_F32_REDUCTION",
+      "reduction_threadgroup_size": 256,
+      "reduction_topology": "CONTIGUOUS_FULL_PAIRWISE_F32",
+      "rounding_points": [
+        "after attention HyperConnection grouped RMSNorm",
+        "after attention HyperConnection down projection",
+        "after attention HyperConnection SiLU",
+        "after attention HyperConnection up projection"
+      ],
+      "scope": "explicit bounded source-boundary diagnostic only",
+      "storage_dtype": "F32 carrier with BF16-representable values"
+    }
+  },
+  "diagnostic_attention_hc_source_bf16_norm": true,
+  "diagnostic_attention_hc_source_bf16_stages": true,
+  "diagnostic_attention_hc_norm_threadgroup": 256,
+  "diagnostic_attention_hc_norm_full_pairwise": true,
+  "layer0_hc_trace_only": true,
+  "metric_owner": {
+    "selected_path": "/Users/scammermike/Downloads/hawking/target/flash-task029-attention-only-trace-speed-20260914/release/hawking",
+    "resolved_path": "/Users/scammermike/Downloads/hawking/target/flash-task029-attention-only-trace-speed-20260914/release/hawking",
+    "sha256": "ba20660ebb9018a47357f8b23a15785e4f0dc103a8a9aa181eea3eccf73dfa0c",
+    "command": "hawking gravity boundary-payload-compare",
+    "independent_python_crosscheck": true
+  },
+  "comparison_policy": {
+    "ordering": "layer-0 trace ordinal, then canonical seam ordinal, then layer-4 pre/post cache array order",
+    "stop_condition": "first exact payload-byte or ordered-route difference",
+    "continuous_metrics": [
+      "finite",
+      "max_abs",
+      "relative_l2",
+      "cosine"
+    ],
+    "numerical_acceptance_bound": null,
+    "semantic_attribution_allowed": false,
+    "cache_hashes_are_not_hidden_states": true
+  },
+  "layer0_trace_compared": [
+    {
+      "ordinal": 0,
+      "layer": 0,
+      "stage": "attention_hyper_connection_normalized",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "comparison": {
+        "source_payload": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-00-attention_hyper_connection_normalized.f32",
+          "sha256": "196a199661bfbc64d323b37921497cc5629ee4851edea574fbb4f753238dac87",
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "bytes": 40960
+        },
+        "native_payload": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_TRACE_ALL_STAGES_SILU_STAGED_20260914.session_artifacts/layer0-trace-00-attention_hyper_connection_normalized.f32",
+          "sha256": "196a199661bfbc64d323b37921497cc5629ee4851edea574fbb4f753238dac87",
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "bytes": 40960
+        },
+        "exact_sha256": true,
+        "metrics": {
+          "finite": true,
+          "elements": 10240,
+          "max_abs": 0.0,
+          "relative_l2": 0.0,
+          "cosine": 0.9999999999999999,
+          "reference_l2_zero": false,
+          "candidate_l2_zero": false
+        },
+        "rust_owner": {
+          "candidate_sha256": "196a199661bfbc64d323b37921497cc5629ee4851edea574fbb4f753238dac87",
+          "continuous": {
+            "candidate_l2_zero": false,
+            "cosine": 0.9999999999999999,
+            "elements": 10240,
+            "finite": true,
+            "max_abs": 0.0,
+            "reference_l2_zero": false,
+            "relative_l2": 0.0
+          },
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "exact_sha256": true,
+          "numerical_acceptance_bound": null,
+          "ordered_i32_exact": null,
+          "reference_sha256": "196a199661bfbc64d323b37921497cc5629ee4851edea574fbb4f753238dac87",
+          "schema": "hawking.flash.boundary_payload_comparison.v1",
+          "semantic_verdict_allowed": false
+        },
+        "independent_python_crosscheck_exact": true
+      }
+    },
+    {
+      "ordinal": 1,
+      "layer": 0,
+      "stage": "attention_hyper_connection_down_projection",
+      "shape": [
+        1,
+        1,
+        320
+      ],
+      "comparison": {
+        "source_payload": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-01-attention_hyper_connection_down_projection.f32",
+          "sha256": "647aa1893ed7a4fe922acde54f2e92562535b38223b0f18df3131edb764a874c",
+          "dtype": "F32_LE",
+          "elements": 320,
+          "bytes": 1280
+        },
+        "native_payload": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_TRACE_ALL_STAGES_SILU_STAGED_20260914.session_artifacts/layer0-trace-01-attention_hyper_connection_down_projection.f32",
+          "sha256": "647aa1893ed7a4fe922acde54f2e92562535b38223b0f18df3131edb764a874c",
+          "dtype": "F32_LE",
+          "elements": 320,
+          "bytes": 1280
+        },
+        "exact_sha256": true,
+        "metrics": {
+          "finite": true,
+          "elements": 320,
+          "max_abs": 0.0,
+          "relative_l2": 0.0,
+          "cosine": 1.0,
+          "reference_l2_zero": false,
+          "candidate_l2_zero": false
+        },
+        "rust_owner": {
+          "candidate_sha256": "647aa1893ed7a4fe922acde54f2e92562535b38223b0f18df3131edb764a874c",
+          "continuous": {
+            "candidate_l2_zero": false,
+            "cosine": 1.0,
+            "elements": 320,
+            "finite": true,
+            "max_abs": 0.0,
+            "reference_l2_zero": false,
+            "relative_l2": 0.0
+          },
+          "dtype": "F32_LE",
+          "elements": 320,
+          "exact_sha256": true,
+          "numerical_acceptance_bound": null,
+          "ordered_i32_exact": null,
+          "reference_sha256": "647aa1893ed7a4fe922acde54f2e92562535b38223b0f18df3131edb764a874c",
+          "schema": "hawking.flash.boundary_payload_comparison.v1",
+          "semantic_verdict_allowed": false
+        },
+        "independent_python_crosscheck_exact": true
+      }
+    },
+    {
+      "ordinal": 2,
+      "layer": 0,
+      "stage": "attention_hyper_connection_low_rank_activation",
+      "shape": [
+        1,
+        1,
+        320
+      ],
+      "comparison": {
+        "source_payload": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-02-attention_hyper_connection_low_rank_activation.f32",
+          "sha256": "f33e39aa0ce36f9de5cf61b4c65272560162fabc371ce5554dbfed89adb98f2f",
+          "dtype": "F32_LE",
+          "elements": 320,
+          "bytes": 1280
+        },
+        "native_payload": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_TRACE_ALL_STAGES_SILU_STAGED_20260914.session_artifacts/layer0-trace-02-attention_hyper_connection_low_rank_activation.f32",
+          "sha256": "b956ce251ce853a90fe48ac380299704c50f2a556da3eb4428eb2f31cb5f443d",
+          "dtype": "F32_LE",
+          "elements": 320,
+          "bytes": 1280
+        },
+        "exact_sha256": false,
+        "metrics": {
+          "finite": true,
+          "elements": 320,
+          "max_abs": 0.03125,
+          "relative_l2": 0.0009650931665517385,
+          "cosine": 0.9999995431631424,
+          "reference_l2_zero": false,
+          "candidate_l2_zero": false
+        },
+        "rust_owner": {
+          "candidate_sha256": "b956ce251ce853a90fe48ac380299704c50f2a556da3eb4428eb2f31cb5f443d",
+          "continuous": {
+            "candidate_l2_zero": false,
+            "cosine": 0.9999995431631424,
+            "elements": 320,
+            "finite": true,
+            "max_abs": 0.03125,
+            "reference_l2_zero": false,
+            "relative_l2": 0.0009650931665517385
+          },
+          "dtype": "F32_LE",
+          "elements": 320,
+          "exact_sha256": false,
+          "numerical_acceptance_bound": null,
+          "ordered_i32_exact": null,
+          "reference_sha256": "f33e39aa0ce36f9de5cf61b4c65272560162fabc371ce5554dbfed89adb98f2f",
+          "schema": "hawking.flash.boundary_payload_comparison.v1",
+          "semantic_verdict_allowed": false
+        },
+        "independent_python_crosscheck_exact": true
+      }
+    }
+  ],
+  "seams_compared": [],
+  "cache_arrays_compared": [],
+  "first_observed_difference": {
+    "comparison_scope": "layer0_trace",
+    "ordinal": 2,
+    "layer": 0,
+    "stage": "attention_hyper_connection_low_rank_activation",
+    "observed_difference_kind": "F32_PAYLOAD_BYTES",
+    "semantic_attribution": "WITHHELD_NO_PREDECLARED_NUMERICAL_ACCEPTANCE_BOUND"
+  },
+  "native_ple_implemented": false,
+  "comparison_performed": true,
+  "promotion_allowed": false,
+  "claim_boundary": "Admitted (owner-authorized or local-canonical) ordered payload localization only. Byte equality/difference and diagnostic metrics do not supply an unearned numerical bound or semantic verdict. The native path injects source post-PLE state and does not implement native PLE. This is not complete inference, NR, EBPW/TPS/capability, deployment, Pulsar promotion, or Kimi retirement. science_status=UNEARNED.",
+  "seal_sha256": "c7b6b3f3482c5a58a642eecc6ead8abba7001e22124c17c8dd06c46f9f492431"
+}

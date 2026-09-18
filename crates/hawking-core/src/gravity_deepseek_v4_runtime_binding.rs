@@ -2,7 +2,7 @@
 //!
 //! This module binds an already-admitted, sealed full source stream to the
 //! *shape* of a future runtime without registering one.  It deliberately has
-//! no `Engine`, Metal, HCLI, token loop, manifest writer, artifact writer, or
+//! no `Engine`, Metal, Hawking, token loop, manifest writer, artifact writer, or
 //! throughput surface.  In particular, serializing this value records an
 //! immutable sidecar only; it cannot promote the full-stream manifest.
 
@@ -198,7 +198,7 @@ impl DeepSeekV4ProtectedBridgeLocationId {
 pub enum DeepSeekV4BridgeLayerScope {
     EveryBaseLayer,
     FinalBodyOnly,
-    HcliEffectBoundary,
+    HawkingEffectBoundary,
 }
 
 /// A protected location is a stable contract point, not a current latent
@@ -227,7 +227,7 @@ pub struct DeepSeekV4RuntimeBindingCapabilities {
     pub engine_registered: bool,
     pub causal_forward_available: bool,
     pub metal_dispatches_available: bool,
-    pub hcli_endpoint_available: bool,
+    pub hawking_endpoint_available: bool,
     pub numeric_parity_v21_passed: bool,
     pub base_true_tps_eligible: bool,
 }
@@ -513,7 +513,7 @@ fn protected_bridge_locations() -> Vec<DeepSeekV4ProtectedBridgeLocation> {
         (Id::AttentionOrIndexState, Scope::EveryBaseLayer),
         (Id::FinalHidden, Scope::FinalBodyOnly),
         (Id::LmHeadLogits, Scope::FinalBodyOnly),
-        (Id::ToolActionDecision, Scope::HcliEffectBoundary),
+        (Id::ToolActionDecision, Scope::HawkingEffectBoundary),
     ]
     .into_iter()
     .map(
@@ -541,7 +541,7 @@ fn non_runtime_capabilities() -> DeepSeekV4RuntimeBindingCapabilities {
         engine_registered: false,
         causal_forward_available: false,
         metal_dispatches_available: false,
-        hcli_endpoint_available: false,
+        hawking_endpoint_available: false,
         numeric_parity_v21_passed: false,
         base_true_tps_eligible: false,
     }
@@ -619,7 +619,7 @@ mod tests {
         assert!(!capabilities.engine_registered);
         assert!(!capabilities.causal_forward_available);
         assert!(!capabilities.metal_dispatches_available);
-        assert!(!capabilities.hcli_endpoint_available);
+        assert!(!capabilities.hawking_endpoint_available);
         assert!(!capabilities.numeric_parity_v21_passed);
         assert!(!capabilities.base_true_tps_eligible);
         assert!(binding

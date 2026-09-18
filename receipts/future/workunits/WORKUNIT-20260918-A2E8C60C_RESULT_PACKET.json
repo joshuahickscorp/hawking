@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T18:08:03.142714+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T18:08:03.142723+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T18:08:03.142725+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5720,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T18:08:03.142737+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def _bounded_identifier(value: object, field: str, pattern: str) -> str:\\n    \\\"\\\"\\\"Coerce a world identifier to text and enforce its declared shape.\\n\\n    Identifiers are the restart-readable join keys of the S0 record, so a\\n    malformed value must fail closed at the boundary rather than be persisted\\n    and only discovered when a later reader cannot resolve the reference.\\n    \\\"\\\"\\\"\\n    text = _bounded_text(value, field, 96)\\n    if re.fullmatch(pattern, text) is None:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} is not a valid identifier\\\", status=400\\n        )\\n    return text\\n\\n\\ndef _bounded_identifier_list(\\n    value: object, field: str, pattern: str, limit: int = 64\\n) -> tuple[str, ...]:\\n    \\\"\\\"\\\"Coerce a bounded list of world identifiers, failing closed on any bad row.\\n\\n    A restart-readable S0 record may carry a collection of join keys (for\\n    example the branch ids a finding cites). Each row must satisfy the same\\n    declared identifier shape as a scalar identifier, the collection must be\\n    non-empty, and the collection must not exceed ``limit`` rows so a persisted\\n    record can never carry an unbounded or partially-valid reference set. The\\n    result is a tuple so the persisted value is immutable and hashable.\\n    \\\"\\\"\\\"\\n    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} must be a list of identifiers\\\", status=400\\n      ",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789754882.708734, \"n_stdout_chars\": 98, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789754882.507422, \"stderr\": \"\", \"stdout\": \".....                                                                    [100%]\\n5 passed in 0.07s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/sandbox_world.py\", \"sha256_after\": \"1fb5cc60ff2bfb16d53b1471c244d66baf0746f2eec59de2c8580006ddfe0def\", \"sha256_before\": \"e5f25724dc9e1f355dfd88e5b8030f22d86093a23ac51b88e620b802b129fd2b\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py\", \"sha256_after\": \"4a9851a9c0cc353a457f7091cb0742b5d00c2cdb7dd14fd5c2e8a4526161d30f\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/sandbox_world.py\", \"sha256_after\": \"1fb5cc60ff2bfb16d53b1471c244d66baf0746f2eec59de2c8580006ddfe0def\", \"sha256_before\": \"e5f25724dc9e1f355dfd88e5b8030f22d86093a23ac51b88e620b802b129fd2b\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py\", \"sha256_after\": \"4a9851a9c0cc353a457f7091cb0742b5d00c2cdb7dd14fd5c2e8a4526161d30f\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/sandbox_world.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 5, \"executed\": 5, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 5, \"requested\": \"hawking/tests/test_auto_p19_sandbox_implementation",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T18:08:03.145895+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"goal_id\": \"GOAL-A52AB48501\", \"workunit_id\": \"WORKUNIT-20260918-A2E8C60C\", \"operations\": [{\"op\": \"replace\", \"path\": \"hawking/sandbox_world.py\", \"old_text\": \"def _bounded_identifier(value: object, field: str, ",
+      "outcome": "CONTINUE",
+      "reply_chars": 5720,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/sandbox_world.py",
+        "hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-A2E8C60C_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/sandbox_world.py",
+    "hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P19_SANDBOX_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-A2E8C60C_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-A2E8C60C"
+}

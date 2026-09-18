@@ -1,0 +1,61 @@
+{
+  "accepted_architectural_tranches": 1,
+  "accepted_architectural_tranches_per_hour": 0.7154343059028111,
+  "accepted_local_foundations": 2,
+  "active_lane_utilization": {
+    "active_lanes": 0,
+    "configured_ceiling": 12,
+    "fraction": 0.0,
+    "graph_runnable_frontier_count": 0
+  },
+  "claim_boundary": "throughput snapshot, not programme completion or provider qualification.",
+  "cost": {
+    "accepted_provider_tranche_cost_usd": 0.0575418,
+    "cost_per_accepted_architectural_tranche_usd": 0.26992157,
+    "route_qualification_cost_usd": 0.0019227,
+    "worker_provider_cost_usd": 0.26992157
+  },
+  "goal_id": "GOAL-A52AB48501",
+  "method": "derived from canonical Goal/WorkUnit records, SupervisorWatcher delta receipts, and the route qualification receipt; no provider prose treated as acceptance.",
+  "objective_reads": {
+    "bound_master_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+    "claim_boundary": "digest comparison only; full objective not reread after the steer",
+    "full_objective_rereads_since_steer": 0,
+    "objective_digest_checks_since_steer": 1
+  },
+  "observed_window": {
+    "end_epoch": 1789702280.386452,
+    "end_utc": "2026-09-18T03:31:20.386452+00:00",
+    "start_epoch": 1789697248.4779031,
+    "start_utc": "2026-09-18T02:07:28.477903+00:00",
+    "wall_hours": 1.3977523746755387
+  },
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "provider_failures": {
+    "count": 9,
+    "durable_stall_records": 1,
+    "per_hour": 6.4389087531252995,
+    "terminal_owner_failures": 8
+  },
+  "provider_utilization": {
+    "deepseek/deepseek-v4.1-flash": {
+      "active": 0,
+      "attempts": 6,
+      "complete": 0,
+      "cost_usd": 0.007808136,
+      "provider_failures": 6
+    },
+    "moonshotai/kimi-k3": {
+      "active": 0,
+      "attempts": 4,
+      "complete": 1,
+      "cost_usd": 0.26211343000000004,
+      "provider_failures": 2
+    }
+  },
+  "receipt": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_THROUGHPUT_20260918.json",
+  "recorded_at": 1789702280.386452,
+  "schema": "hawking.long_haul.v2.throughput_metrics.v1",
+  "supervisor_calls": 7,
+  "supervisor_calls_per_hour": 5.008040141319678
+}

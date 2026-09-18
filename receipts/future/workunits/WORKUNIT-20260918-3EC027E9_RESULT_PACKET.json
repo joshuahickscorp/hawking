@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "4c0d917545eb39fb11750992bb62fbb9adc81cd538c73dec3f5bc211d8c2dfb4",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:51:44.888987+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:51:44.889003+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:51:44.892894+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/odyssey.py is documented as a resident-facing bridge into the live mid-flight Odyssey-I driver under tools/odyssey_ctl.py; it shells out to existing driver subcommands and adds nothing to the curriculum.\",\"The modu",
+      "outcome": "CONTINUE",
+      "reply_chars": 3984,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/odyssey.py is documented as a resident-facing bridge into the live mid-flight Odyssey-I driver under tools/odyssey_ctl.py; it shells out to existing driver subcommands and adds nothing to the curriculum.\",\"The module declares ODYSSEY_STATE.json as driver-owned and read-only from this module, while HAWKING_LEDGER.json is HAWKING-owned and this module is the only writer.\",\"The inspect capability class is documented as read-only and unconditional: status, queue, value, economics, completions(), and patient() never write or spend.\",\"admit_check is explicitly not registered because cmd_admit calls reclaim_if_tight(), which can run tools/reclaim_safe.sh below DISK_WARN_GIB and delete build caches and finished lane directories.\",\"The continue capability class includes harvest, write_packet, run, cycle, retire, acquire_next, completions(rebuild=True), and gravity_gauntlet; each can mutate persistent Odyssey state, spawn a subprocess, or start a download.\",\"Every continue-class verb requires confirm=True or raises PermissionError, mirroring the benchmark.run/accelerator.benchmark gate in hawking/tool_registry.py.\",\"A dry_run=True path, where the driver has one, needs no confirm because the driver itself launches nothing in that mode.\",\"The own capability class includes ingest, add_to_eligibility, park_specimen, record_law, record_scar, create_transfer_probe, and create_adversarial_probe.\",\"Own-class writes land in HAWKING_LEDGER.json, alongside but never inside the driver's ODYSSEY_STATE.json, so they cannot race the driver's own cycle/harvest/retire writers.\",\"ingest reads both real on-disk states and is read-only; the other six own-class verbs mutate the ledger and gate on confirm=True before the ledger is loaded, so a refusal touches no file.\",\"Odyssey II (transfer) and III (adversarial) probes require a law already recorded via record_law; that is the only ordering enforced, so I/II/III can overlap the moment a law is claimed, per the campaign's no-phase-barrier rule.\",\"The module defines REPO, ODYSSEY_CTL, ODYSSEY_DIR, PATIENTS_DIR, STATE_PATH, LEDGER_PATH, and _LEDGER_LISTS as its path and ledger-list constants.\",\"_run invokes sys.executable with ODYSSEY_CTL, cwd=REPO, capture_output=True, text=True, and a timeout; it has special handling for acquire-next --dry-run when returncode is 1 and stdout starts with REFUSE.\"],\"sources\":[\"hawking/odyssey.py (sha256:41f616eddc2a485173099a8f3d089463fb4e9a1815f384f91891912fed223b7d; 20488 bytes; observed first 4000 bytes)\"],\"recommendations\":[\"Run the admitted focused tests hawking/test_odyssey.py, hawking/test_modellake_index_mount_guard.py, and tools/odyssey/test_modellake_watch.py to obtain deterministic pass/fail evidence.\",\"Inspect the remaining admitted focus files hawking/modellake_gate.py, hawking/test_odyssey.py, hawking/test_modellake_index_mount_guard.py, tools/odyssey/modellake_watch.py, and tools/odyssey/test_modellake_watch.py for the ModelLake admission boundary and watch scheduling seam.\",\"Verify the exact confirm=True gate implementation and the acquire-next --dry-run REFUSE special case in the full hawking/odyssey.py source.\",\"Confirm whether the no-phase-barrier scheduling seam is implemented only by the record_law ordering rule or also enforced in modellake_watch.py.\"],\"unresolved_questions\":[\"The admitted focused tests were not run in this observation, so deterministic test results remain unverified.\",\"The full hawking/odyssey.py source beyond the first 4000 bytes was not observed, so exact gate and _run implementation details remain unconfirmed.\",\"The owner and behavior of the ModelLake admission boundary in hawking/modellake_gate.py were not observed.\",\"The no-phase-barrier scheduling seam in tools/odyssey/modellake_watch.py was not observed.\",\"Whether the documented no-phase-barrier rule is enforced by tests in tools/odyssey/test_modellake_watch.py remains unverified.\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-291a61c9fb024146",
+  "worker_id": "hawking-worker-30cf13127abf474a",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-3EC027E9"
+}

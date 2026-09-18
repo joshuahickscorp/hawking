@@ -1,0 +1,143 @@
+{
+  "schema": "hawking.future.kimi_performance_transfer.v1",
+  "status": "DEFERRED_AT_ACTIVE_KIMI_WORKUNIT_BOUNDARY_NO_RUNTIME_MUTATION",
+  "generated_at": "2026-09-13T04:19:53-04:00",
+  "objective": "Cash only a low-risk runtime dividend from the current operational Kimi body; preserve capability and stop before Kimi-specific representation work.",
+  "live_identity": {
+    "resident": "KIMI_P0_OPERATIONAL",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "revision_basis": "SHA-256 over ordered four model shards, model.safetensors.index.json, and config.json",
+    "selected_artifact_bytes": 17856321839,
+    "backend": "mlx",
+    "provider": "mlx_vlm/0.7.0",
+    "quantization": {
+      "bits": 8,
+      "group_size": 64,
+      "mode": "affine"
+    },
+    "model_shape": {
+      "layers": 27,
+      "routed_experts": 64,
+      "selected_experts_per_token": 6,
+      "shared_experts": 2,
+      "hidden_size": 2048,
+      "moe_intermediate_size": 1408
+    },
+    "context_window": 24576,
+    "prompt_window": 32768,
+    "resident_reported_gb": 17.86,
+    "catalog_revision": "1a122dc82ad74284c48ad2d469237f8ec4cd4d19d84988dbb592571dba8a8803",
+    "grant_digest": "f7e9501fce7374a34d3e3f66d4a4bf2bf2b4bf1bdf62d1c2e7823862caaef372"
+  },
+  "measurement_boundary": {
+    "fresh_run": false,
+    "reason": "An existing Hawking-owned KIMI-U001 12-hour workunit was actively using the sole resident; injecting a benchmark would invalidate single-stream control and perturb useful local work.",
+    "job_id": "job-58fdd767-7af6-4921-a163-4caae748bb14",
+    "driver_pid": 73217,
+    "background_pid": 73199,
+    "state": "RUNNING",
+    "resource_class": "GPU_YIELDABLE",
+    "turn_observed": 485,
+    "provider_restart": false,
+    "model_mutation": false,
+    "gpu_lane_lock": "absent; no protected Flash lease was touched"
+  },
+  "clean_baseline": {
+    "evidence_mode": "REUSED_PRIOR_CONTROLLED_RECEIPTS_CURRENT_OPERATIONAL_LINEAGE",
+    "operational_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_20260910.json",
+    "operational_repeat_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_REPEAT2_20260910.json",
+    "operational_steady_decode_tps_by_context": {
+      "prompt_tokens_35": 74.68366309739233,
+      "prompt_tokens_227": 74.61755406139201,
+      "prompt_tokens_803": 72.08845281908901,
+      "cross_context_median": 73.00105389709667
+    },
+    "operational_end_to_end_tps_by_context": {
+      "prompt_tokens_35": 42.21699741835996,
+      "prompt_tokens_227": 32.64392312555461,
+      "prompt_tokens_803": 20.172871370621695
+    },
+    "direct_raw_control_receipt": "receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+    "direct_raw_steady_decode_tps": {
+      "prompt_tokens_20": 86.91719199781267,
+      "prompt_tokens_212": 83.38581965862952,
+      "prompt_tokens_788": 85.38968210971538
+    },
+    "direct_raw_completion_end_to_end_tps_prompt_tokens_20": 77.9381876287143,
+    "prefill_tps_prompt_tokens_20": 253.53445425680042,
+    "ttft_proxy_ms_prompt_tokens_20": 96.330,
+    "generated_length_tokens": 64,
+    "concurrency": 1,
+    "capability_regression": "not rerun in this tranche; no body or serving contract changed"
+  },
+  "bottleneck_evidence": {
+    "dominant_class": "per_token_quantized_MoE_compute_and_expert_weight_traffic",
+    "basis": [
+      "steady decode remains approximately 70-87 TPS while prefill changes from roughly 328 to 2227 prompt TPS across contexts",
+      "decode is nearly context-flat relative to prefill, so prompt attention/prefill is not the limiting path",
+      "27 layers execute a 64-way routed MoE with top-6 routed experts plus two shared experts per generated token",
+      "current MLX implementation stacks routed weights and uses fused mx.gather_qmm for gate/up/down projections"
+    ],
+    "not_supported_as_primary_bottleneck": [
+      "fragmented per-expert Python calls",
+      "provider HTTP streaming overhead (resident returns a completed single chunk)",
+      "prefill or tokenizer work for steady decode"
+    ],
+    "hardware_profile": "No uncontended GPU profile was taken because the active KIMI-U001 workunit was preserved; current provider CPU snapshots are not a valid decode profile."
+  },
+  "changes": {
+    "accepted": [],
+    "rejected_or_withheld": [
+      {
+        "candidate": "Flash-style selected-expert route fusion",
+        "decision": "WITHHELD_NO_OP",
+        "reason": "Already present as stacked SwitchGLU plus fused gather_qmm; no safe semantic-preserving patch remained to test under a clean lane."
+      },
+      {
+        "candidate": "lower precision candidate",
+        "decision": "NOT_STARTED",
+        "reason": "The measured path is already q8 and expert bandwidth is implicated, but a second resident/candidate would violate the bounded tranche while U001 is active."
+      },
+      {
+        "candidate": "provider restart, speculative drafter, or KV policy change",
+        "decision": "REJECTED_FOR_SCOPE",
+        "reason": "Would perturb the live worker or change capability/runtime semantics before an uncontended baseline."
+      }
+    ]
+  },
+  "gates": {
+    "100_tps": {
+      "status": "NOT_EARNED",
+      "target": 100.0,
+      "best_reused_operational_steady_decode_tps": 74.68366309739233,
+      "best_reused_direct_raw_steady_decode_tps": 86.91719199781267
+    },
+    "200_tps": {
+      "classification": "200_TPS_REQUIRES_BODY_CHANGE",
+      "required_gain_vs_operational_median": 2.739687578995042,
+      "required_gain_vs_direct_raw_median": 2.301582119659128,
+      "basis": "The current path already performs compiled routing and fused selected-expert quantized matmuls; no runtime-only control was identified that can supply the required 2.3-2.7x without changing the body or doing major kernel surgery."
+    }
+  },
+  "hawking_loop": {
+    "new_runtime_improvement": "none",
+    "practical_wall_separation": "preserved",
+    "observation": "The active U001 log shows roughly 15-18 seconds per model turn with tools; this is agent-loop wall and must not be reported as raw decode TPS.",
+    "transferable_now": [
+      "one hawkingd-owned resident and child lifecycle",
+      "resolved artifact identity and grant binding",
+      "resident reuse instead of reloads",
+      "prefix/KV-cache owners remain future-facing but were not enabled or claimed as a decode speedup here"
+    ]
+  },
+  "flash_state": {
+    "source_frontier": "layer_4_token_0",
+    "teacher": "not admitted; detached owner Ed25519 trust anchor remains absent",
+    "native_full_replay": "withheld",
+    "pulsar_tps_or_epbw": "unearned",
+    "impact": "none; no Flash/Pulsar source capture, ModelLake, GPU lease, or native body was touched"
+  },
+  "claim_boundary": "This receipt records a safe no-mutation performance transfer boundary and reused controlled evidence. It is not a fresh current-resident benchmark, not a 100-TPS qualification, not a 200-TPS impossibility proof, and not Pulsar promotion evidence.",
+  "next_safe_action": "At the next idle resident boundary, run one uncontended 512+ token single-stream decode against this exact artifact, record GPU/CPU/memory/profile telemetry, then stop unless a measured low-risk path crosses 100 TPS."
+}

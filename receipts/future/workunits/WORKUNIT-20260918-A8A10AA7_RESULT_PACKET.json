@@ -1,0 +1,123 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:24:41.708961+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:24:41.708970+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:24:41.708973+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 3005,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:24:41.708984+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "ok": true,
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "ok": true,
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "ok": true,
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:24:41.711436+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"goal_id\": \"GOAL-A52AB48501\", \"workunit_id\": \"WORKUNIT-20260918-A8A10AA7\", \"operations\": [{\"op\": \"replace\", \"path\": \"hawking/sandbox_world.py\", \"old_text\": \"def _text(value: object) -> str:\\n    \\\"\\\"\\\"Coerce ",
+      "outcome": "CONTINUE",
+      "reply_chars": 3005,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/sandbox_world.py",
+        "hawking/tests/test_auto_p19_sandbox_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-A8A10AA7_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/sandbox_world.py",
+    "hawking/tests/test_auto_p19_sandbox_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P19_SANDBOX beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-A8A10AA7_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-A8A10AA7"
+}

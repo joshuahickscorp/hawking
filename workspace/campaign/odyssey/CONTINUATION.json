@@ -1,17 +1,21 @@
 {
-  "objective": "Close the autonomy loop: one accepted unit, hence the first hcli_owned law.",
-  "active_specimen": "hcli/perception/store.py",
-  "why_this_specimen": "Small and new, with a gap I verified is genuinely RED before the change.",
-  "active_workunit": "AUTONOMY-4",
-  "hypothesis": "Both prior units died on a HARNESS defect, not a model one: insert/append fragments were compiled standalone and falsely rejected as syntax errors. That is fixed. The previous task was also ill-posed -- its test passed before any change. This one is verified red.",
-  "next_action": "ProjectStore.create in hcli/perception/store.py accepts an empty project name, so a project can be created whose name is the empty string. 1. Write hcli/tests/test_project_name_must_not_be_empty.py asserting that ProjectStore.create(tmp_path/'p', '') raises ValueError. 2. Run it. It MUST fail -- the guard does not exist yet. 3. Add the guard using op='insert_after' with old_lines copied VERBATIM from the file (the 'store = cls(root)' line inside create), raising ValueError when the name is empty or whitespace. Do not use replace_file. 4. Run the test again and confirm it passes. Report both runs as your evidence.",
+  "objective": "GOAL-F4F72EFC0A Pass A: make Hawking WorkUnit completion contracts refuse prose-stop acceptance when real evidence is owed.",
+  "active_specimen": "hawking/remote_cognition.py::_workunit_completion_contract",
+  "why_this_specimen": "It is the single normalization point where the completion contract is derived, so one additive line changes acceptance for every WorkUnit that opts in.",
+  "active_workunit": "GOAL-F4F72EFC0A/t14",
+  "hypothesis": "A completion contract that sets require_final_tests_pass but does not list tests.run in required_successful_tools lets a prose stop be scored complete; implying tests.run from the flag closes that gap without changing opt-out behavior.",
+  "next_action": "Enforce require_structured_result against the final response body in _tool_trace_completion, with a focused regression in hawking/tests/test_remote_workunit_contract.py.",
   "evidence_refs": [
-    "hcli/perception/store.py"
+    "repo.edit bundle accepted applied=true rolled_back=false red_before_green=true",
+    "tests.run hawking/tests/test_remote_workunit_contract.py verified=true returncode=0 8 passed",
+    "git.status dirty worktree preserved; git.diff focus paths empty"
   ],
-  "open_jobs": [],
+  "open_jobs": [
+    "enforce require_structured_result on final response body",
+    "live OpenRouter credential + worker comparison needs owner spending authority"
+  ],
   "resource_deps": [
-    "--model"
+    "owner authorization for any paid provider call"
   ],
-  "representations_ruled_out": [],
-  "written_at": 1788892941
+  "written_at": 1789487838
 }

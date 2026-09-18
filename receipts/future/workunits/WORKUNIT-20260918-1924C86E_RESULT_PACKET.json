@@ -1,0 +1,180 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T15:50:23.012826+00:00",
+      "calls_used": 3,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:50:23.012837+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:50:23.014845+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operation\":{\"kind\":\"edit\",\"path\":\"tools/accelerator/accelerator_runner.py\",\"anchor\":\"P14_PCIE_CONTRACT_PHASE_DESCRIPTOR = {\",\"action\":\"append_after\",\"content\":\"    \\\"qualification_support_tranche\\\": \\\"bounded\\",
+      "outcome": "CONTINUE",
+      "reply_chars": 1007,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T15:51:14.141007+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:51:14.141017+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:51:14.142799+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"GOAL-A52AB48501\",\"operations\":[{\"op\":\"append\",\"path\":\"tools/accelerator/accelerator_runner.py\",\"anchor\":\"EOF\",\"content\":\"\\n\\n# P14_PCIE_IMPLEMENTATION_CONTRACT_V2 qualification-support marker.\\n# B",
+      "outcome": "CONTINUE",
+      "reply_chars": 2997,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-18T15:52:11.456392+00:00",
+      "calls_used": 3,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:52:11.456402+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:52:11.457400+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operation\":{\"kind\":\"edit\",\"path\":\"tools/accelerator/accelerator_runner.py\",\"anchor\":\"def p14_pcie_contract_phase_boundary() -> dict:\",\"action\":\"append_after_function\",\"content\":\"\\n\\ndef p14_pcie_contract_phase",
+      "outcome": "CONTINUE",
+      "reply_chars": 1996,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 5
+    },
+    {
+      "at": "2026-09-18T15:53:26.519552+00:00",
+      "calls_used": 3,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T15:53:26.519560+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:53:26.521666+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operations\":[{\"kind\":\"edit\",\"path\":\"tools/accelerator/accelerator_runner.py\",\"anchor\":\"def p14_pcie_contract_phase_boundary() -> dict:\",\"action\":\"replace\",\"old_text\":\"def p14_pcie_contract_phase_boundary() -> ",
+      "outcome": "CONTINUE",
+      "reply_chars": 2841,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 6
+    },
+    {
+      "files": [
+        "tools/accelerator/accelerator_runner.py",
+        "tools/accelerator/test_backend_contract.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-1924C86E_SEAL_B1",
+      "turn": 6
+    }
+  ],
+  "files_changed": [
+    "tools/accelerator/accelerator_runner.py",
+    "tools/accelerator/test_backend_contract.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P14_PCIE_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded implementation or qualification-support tranche. Inspect the current owner and existing receipt, make only the aligned source change in the declared scope, run focused verification, and record exact evidence. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "moonshotai/kimi-k3",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-1924C86E_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      6
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-1924C86E"
+}

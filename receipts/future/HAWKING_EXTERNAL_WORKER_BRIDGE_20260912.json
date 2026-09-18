@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.external_worker.bridge.v1",
+  "status": "IMPLEMENTED_STAGING_ONLY",
+  "objective": "Allow a separately metered external engineering worker to work in an isolated Hawking staging worktree and return reviewable evidence without production authority.",
+  "canonical_owner": "hawking CLI",
+  "implementation": {
+    "module": "crates/hawking/src/external_worker.rs",
+    "dispatch": "crates/hawking/src/main.rs",
+    "stage_command": "hawking agent stage grok <task>",
+    "result_command": "hawking agent result <task>",
+    "worker_brief": "docs/worker/GROK_BOT_HAWKING_WORKER.md",
+    "task_packet_template": "docs/worker/TASK_PACKET_TEMPLATE.md",
+    "continuation": "docs/GROK_BOT_HANDOFF.md"
+  },
+  "boundary": {
+    "provider_call": false,
+    "runtime_profile_neutral": true,
+    "kernel_sandbox": false,
+    "local_execution_approval": "ASK EVERY TIME",
+    "normal_grok_invocation": false,
+    "production_promotion": false,
+    "production_deployment": false,
+    "canonical_branch_push_or_force_update": false,
+    "sudo_or_credentials": false,
+    "daemon_control": false,
+    "model_or_gpu_control": false,
+    "teacher_or_gravity_promotion": false,
+    "canonical_dirty_tree_reset_or_clean": false
+  },
+  "evidence": [
+    {
+      "command": "cargo check -p hawking --bin hawking",
+      "result": "PASS"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check -- crates/hawking/src/main.rs crates/hawking/src/external_worker.rs docs/worker docs/GROK_BOT_HANDOFF.md",
+      "result": "PASS"
+    },
+    {
+      "command": "cargo test -p hawking --test external_worker -- --nocapture",
+      "result": "PASS",
+      "tests": 2,
+      "asserts": [
+        "dirty canonical state is preserved",
+        "staging is based on the recorded commit",
+        "implicit reuse is rejected",
+        "explicit clean reuse is allowed",
+        "worker result is advisory",
+        "promotion_allowed is false",
+        "staging roots inside the canonical checkout are rejected"
+      ]
+    }
+  ],
+  "qualification": {
+    "status": "NOT_RUN",
+    "reason": "No Grok Bot installation or authenticated session was available; no interactive login was attempted.",
+    "recommended_first_task": "Inspect the 12 current Flash Organ Passports and canonical Gravity registry for one deterministic validation gap; make at most a staging-only test improvement without changing scientific conclusions."
+  },
+  "flash_preservation": {
+    "source_frontier_receipt": "receipts/future/FLASH_SOURCE_CORRECTNESS_FRONTIER_20260912.json",
+    "state": "BLOCKED_MISSING_MACHINE_OWNER_AUTHORIZATION_FOR_CAPTURED_EXTERNAL_TEACHER",
+    "last_bounded_frontier": "layer 4 / token 0",
+    "owner_key_blocker": "Detached machine-admin Ed25519 trust anchor and authorization are absent.",
+    "release_candidate": null,
+    "next_authorized_action": "Machine owner provisions /Library/Application Support/Hawking/owner_ed25519_public_key and signs the exact existing V2 request; then the existing source-boundary transaction may run once at a safe runtime boundary and stop at the first exact difference.",
+    "protected_runtime_started": false,
+    "kimi_restarted": false
+  },
+  "claim_boundary": "This receipt proves the local staging/result boundary and its focused tests only. It does not qualify Grok Bot, certify a worker change, authorize a teacher, qualify a model, prove TPS, promote Gravity, deploy production, or claim Flash/Kimi progress."
+}

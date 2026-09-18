@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.v2.receipt.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T15:18:00-04:00",
+  "claim_boundary": "Gateway/Auto throughput repair only; no phase, release, hardware, or provider-prose acceptance claim.",
+  "changes": [
+    {
+      "files": ["hawking/serve.py", "hawking/remote_cognition.py"],
+      "repair": "Typed discrete WorkUnit requests set hawking_fast_failover. OpenRouter performs one bounded upstream attempt per mutation turn instead of retrying three times beyond the owner timeout; ordinary chat retains the normal retry policy."
+    },
+    {
+      "files": ["hawking/serve.py"],
+      "repair": "BrokenPipe/ConnectionReset during late response delivery is treated as client cancellation and no longer produces a second daemon traceback."
+    },
+    {
+      "files": ["hawking/auto_orchestration.py"],
+      "repair": "Active route diversity counts authoritative WorkUnit records before queue projections, so stale queue labels cannot suppress the qualified alternate model."
+    }
+  ],
+  "verification": {
+    "focused_tests": "119 passed",
+    "py_compile": "PASS",
+    "git_diff_check": "PASS",
+    "semantic_contract": "HTTP 200 without required semantics remains rejected; valid tool-call HTTP 200 remains accepted."
+  },
+  "live_state": {
+    "daemon_pid": 36308,
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "requested_model": "hawking-auto",
+    "resident_model": null,
+    "goal_status": "RUNNING",
+    "active_route_counts_observed": {
+      "deepseek/deepseek-v4.1-flash": 8,
+      "moonshotai/kimi-k3": 3
+    },
+    "configured_hawking_worker_ceiling": null
+  },
+  "next_action": "Let existing owners reach bounded terminal/recovery edges and confirm the next fresh P18 route uses the fast-failover boundary; continue Auto refill without duplicate writer scopes."
+}

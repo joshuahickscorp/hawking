@@ -1,0 +1,168 @@
+{
+  "schema": "hawking.persist.identity_io.unification.receipt.v1",
+  "status": "STATIC_PERSIST_IDENTITY_IO_OWNER_VERIFIED",
+  "recorded_at": "2026-09-12T06:03:19-04:00",
+  "base_commit": "8080dfe01e17666b9fd090fa76daca337c1028f4",
+  "scope": {
+    "canonical_owner": {
+      "module": "hcli/persist.py",
+      "symbols": [
+        "read_json_object_or_none",
+        "sha256_file_or_none"
+      ],
+      "import_boundary": "stdlib-only; hcli.persist imports no hcli or tools module"
+    },
+    "json_object_reader_consumers": [
+      "hcli/agentos/accelerator_regression.py::_read_json",
+      "hcli/agentos/autonomy_gate.py::_read_json",
+      "hcli/agentos/flash_component_body.py::_read_json",
+      "hcli/agentos/flash_component_campaign.py::_read_json",
+      "hcli/agentos/flash_executable.py::_read_json",
+      "hcli/agentos/flash_graph_component.py::_read_json",
+      "hcli/agentos/flash_loader_roundtrip.py::_read_json",
+      "hcli/agentos/flash_matrix_component_body.py::_read_json",
+      "hcli/agentos/flash_representation_experiment.py::_read_json",
+      "hcli/agentos/flash_router_graph.py::_read_json",
+      "hcli/agentos/flash_router_representation_ab.py::_read_json",
+      "hcli/agentos/flash_router_selection.py::_read_json",
+      "hcli/agentos/flash_telemetry.py::_read_json",
+      "hcli/agentos/flash_tensor_probe.py::_read_json",
+      "hcli/agentos/flash_transform_parity.py::_read_json",
+      "hcli/agentos/modellake_gate.py::_read_json",
+      "hcli/agentos/qwen27_runtime_identity.py::_read_json",
+      "hcli/agentos/qwen38_fusion_audit.py::_read_json",
+      "hcli/agentos/recovery.py::_read",
+      "hcli/agentos/preboard.py::_read",
+      "hcli/agentos/modellake_supervisor.py::_read",
+      "hcli/agentos/checkpoint.py::_read_object"
+    ],
+    "optional_digest_consumers": [
+      "hcli/flash_next.py::_sha256",
+      "hcli/agentos/accelerator_regression.py::_sha256",
+      "hcli/agentos/charge.py::_sha256",
+      "hcli/agentos/flash_component_campaign.py::_sha256",
+      "hcli/agentos/flash_executable.py::_sha256",
+      "hcli/agentos/flash_graph_component.py::_sha256",
+      "hcli/agentos/flash_router_graph.py::_sha256",
+      "hcli/agentos/flash_telemetry.py::_sha256",
+      "hcli/agentos/modellake_gate.py::_sha256",
+      "hcli/agentos/qwen27_runtime_identity.py::_sha256",
+      "hcli/agentos/qwen38_fusion_audit.py::_sha256",
+      "hcli/agentos/science_maps.py::_sha256",
+      "hcli/agentos/flash_component_body.py::_sha256_file",
+      "hcli/agentos/flash_router_selection.py::_sha256_file"
+    ]
+  },
+  "duplicate_evidence": {
+    "measurement_method": "Each tracked HEAD function was extracted with Python AST before editing. Raw source hashes retain the original local name; normalized AST hashes replace only that FunctionDef name before hashing.",
+    "json_object_readers": {
+      "copies": 22,
+      "normalized_ast_sha256": "1d0c8da59d16537fcd896915900e10bd8973ea792bb3a3cc913daaa8120c4924",
+      "raw_source_groups": [
+        {
+          "copies": 18,
+          "local_name": "_read_json",
+          "each_span": {
+            "lines": 6,
+            "bytes": 257,
+            "sha256": "f07d801c7438bf79a1a72cf2c3460d399755d4d2b697384b0b4c43e68d80ee17"
+          }
+        },
+        {
+          "copies": 3,
+          "local_name": "_read",
+          "each_span": {
+            "lines": 6,
+            "bytes": 252,
+            "sha256": "9f79c824157451b067a14257db4ed07e3793d9c338ae78ab77569db2a1f4fe8d"
+          }
+        },
+        {
+          "copies": 1,
+          "local_name": "_read_object",
+          "each_span": {
+            "lines": 6,
+            "bytes": 259,
+            "sha256": "2a4659a4023827904b517c271c73f9e9db87b811656250ec0e802dff2692263b"
+          }
+        }
+      ]
+    },
+    "optional_sha256_helpers": {
+      "copies": 14,
+      "normalized_ast_sha256": "73245862152c859d15ec3adfcdc0a9676c5888884ef02664e793ec40354e1888",
+      "raw_source_groups": [
+        {
+          "copies": 12,
+          "local_name": "_sha256",
+          "each_span": {
+            "lines": 9,
+            "bytes": 305,
+            "sha256": "b61f72a63a2abd9b9dd0a1238b74ee4195f39dd1f83e8902f1b40dcff6f0ef64"
+          }
+        },
+        {
+          "copies": 2,
+          "local_name": "_sha256_file",
+          "each_span": {
+            "lines": 9,
+            "bytes": 310,
+            "sha256": "5f991c00ed4a2c439d04d6d1e9640e8a013d30134beb1a4de5c3eb9f32488e0d"
+          }
+        }
+      ]
+    }
+  },
+  "preserved_contract": {
+    "json_object_reader": "Path.read_text(encoding='utf-8') then json.loads; return None for OSError, UnicodeError, JSONDecodeError, or any non-dict root. It adds no size cap, replacement decoding, file-type precheck, schema validation, or retry.",
+    "optional_digest": "Open the supplied Path in binary mode, update SHA-256 in exactly 1 MiB chunks, return the lowercase hexdigest, and return None for every OSError. It adds no size, symlink, time, or file-type policy.",
+    "consumer_surface": "Each consumer retains its former private helper name as a direct import alias, so local call sites and any accidental same-process attribute lookup keep the same callable contract.",
+    "separate_contracts_retained": "Capped or replacement-decoding readers, prefix digests, and raising hashes were deliberately left under their existing owners because their error and admission policies differ."
+  },
+  "excluded": [
+    "hcli/agentos/handoff.py::_read_object: 16 MiB cap and replacement decoding",
+    "hcli/agentos/science_maps.py::_read_receipt: 4 MiB cap and replacement decoding",
+    "hcli/architecture.py::_load_json, hcli/resident.py::_read_json, and hcli/agentos/fpga_preboard.py: distinct input and failure contracts",
+    "hcli/agentos/flash_tensor_probe.py::_sha256_file_prefix: prefix-only digest",
+    "hcli/agentos/autonomy_gate.py::_sha256 and hcli/tool_registry.py hashing: raising rather than optional failure behavior",
+    "tools/agentos/genesis_resident.py: standalone helper outside the HCLI import leaf"
+  ],
+  "validation": {
+    "pre_to_post_output_parity": "A synthetic golden probe ran all 22 reader aliases on valid object, list, scalar, malformed JSON, invalid UTF-8, missing-path, and directory cases, and all 14 digest aliases on empty, >1 MiB-plus-tail, missing-path, and directory cases. The 210 post-change outputs matched the pre-change JSON exactly.",
+    "focused_regression": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m pytest -p no:cacheprovider -q hcli/tests/test_persist_identity_io.py: 38 passed in 0.12s.",
+    "persistence_regression": "The focused test plus hcli/tests/test_core_authorities.py completed as 60 passed in 0.20s, retaining the existing atomic-writer authority checks.",
+    "focused_test_scope": "Direct owner cases prove the fallback boundaries. Parametrized consumer assertions prove all 22 reader and all 14 digest names are direct canonical aliases and no longer local function definitions.",
+    "syntax_and_diff": "python3 -B -m py_compile on all 25 changed consumers and hcli/persist.py; git diff --check: passed.",
+    "import_cycle_audit": "Every migrated consumer already imported hcli.persist before this change; hcli.persist remains stdlib-only. Flash Next retains its existing relative .persist import.",
+    "non_execution_boundary": "The probe and pytest use only temporary files. They do not load a model, inspect a model lake, call a network endpoint, start or restart a daemon, or sample host accelerator state."
+  },
+  "runtime": {
+    "model_execution": false,
+    "weights_loaded": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_service_restart": false,
+    "network_request": false,
+    "host_state_sampling": false,
+    "deployment": false
+  },
+  "size_ledger": {
+    "production_owner_and_consumers_before_receipt": {
+      "added": 140,
+      "deleted": 369,
+      "net": -229,
+      "interpretation": "Two shared leaf functions and direct imports replace 36 local helpers; unused stdlib imports were removed where the extracted helper had been their sole use."
+    },
+    "hermetic_regression_before_receipt": {
+      "added": 102,
+      "deleted": 0,
+      "net": 102,
+      "interpretation": "The focused temporary-file test guards the owner contract and all consumer aliases without invoking their broader runtime workflows."
+    },
+    "before_receipt_total": {
+      "added": 242,
+      "deleted": 369,
+      "net": -127
+    }
+  },
+  "claim_boundary": "This receipt proves one stdlib-only owner for the listed optional JSON-object and streaming SHA-256 contracts, plus static import identity and temporary-file output parity. It does not claim that all repository file I/O is unified; compatibility with capped, replacement-decoding, prefix, raising, or runtime-specific helpers; live gate outcomes; model identity; model behavior; accelerator behavior; daemon behavior; network behavior; or deployment."
+}

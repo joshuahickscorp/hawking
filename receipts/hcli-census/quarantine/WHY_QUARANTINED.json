@@ -1,0 +1,14 @@
+{
+ "date": "2026-09-09",
+ "verdict": "PASSED THE VERIFIER, FAILED THE SCIENCE. Not counted as census coverage.",
+ "what_happened": "The first three HCLI census units were accepted by the numeric gate -- every required key present, valid disposition, no invented numbers -- and two of the three classifications are WRONG.",
+ "the_errors": {
+  "Dream-v0-Instruct-7B": "called 'LLM' / execution class 'instruct'. It is a DIFFUSION language model, which is the entire reason it is an interesting specimen.",
+  "iLLaDA-8B-Base": "called 'LLaMA-variant'. Also a diffusion LM -- measured as such in Epoch I's own cross-layer transfer run.",
+  "SmolVLM2-2.2B": "roughly right ('LLM with Vision Transformer')"
+ },
+ "the_deeper_failure": "execution_class came back as 'instruct' and 'high-throughput inference', which are not execution classes. The Odyssey sense is autoregressive decode vs diffusion steps vs encoder pass vs streaming. And all three dispositions defaulted to RESEARCH SPECIMEN.",
+ "why_the_gate_missed_it": "the verifier checked NUMBERS against the measurement and required every key to be present. It never checked KNOWLEDGE. A confident wrong answer with correct arithmetic passes.",
+ "the_fix": "two changes. (1) hand the body the config's own model_type and architectures as FACTS, since those are mechanical and it should not be guessing them. (2) require every agent to pass a CALIBRATION SET of specimens whose answers are already known from Epoch I before any of its verdicts are written. An agent that cannot classify a body we have already measured is not qualified to classify one we have not.",
+ "kept_not_deleted": "this is the first measured evidence about which agent is fit for census work, which is Epoch II G018's actual question."
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "hawking.arsenal.owner_migration_map.v1",
+  "date": "2026-09-15",
+  "rows": [
+    {
+      "old_or_adjacent_owner": "OpenWebUI/review HTML",
+      "current_callers": ["hawking/serve.py", "hawking/web.py"],
+      "behavior": "minimal black/white H-Web presentation and session transport",
+      "destination_owner": "hawking/serve.py plus staged crates/hawking-web projections",
+      "status": "preserve_live_python; typed_rust_staging",
+      "deletion_gate": "route/auth/stream/cancel/recovery parity fixture"
+    },
+    {
+      "old_or_adjacent_owner": "generic filesystem/repo writers",
+      "current_callers": ["hawking/engine.py", "hawking/chat_tools.py", "hawking/tool_registry.py"],
+      "behavior": "authorized file mutation, verification and rollback",
+      "destination_owner": "hawking/mutation.py::MutationExecutor",
+      "status": "unified",
+      "deletion_gate": "all compatibility names route through typed request and intent"
+    },
+    {
+      "old_or_adjacent_owner": "search/scanner adapters",
+      "current_callers": ["hawking/tool_registry.py", "hawking/repo_context.py", "crates/hawking-index"],
+      "behavior": "bounded lexical and structural source/evidence lookup",
+      "destination_owner": "existing hawking-index plus Hawking registry scope adapter",
+      "status": "corpus boundary implemented; structural adapter added",
+      "deletion_gate": "Rust index IPC/query parity and worktree invalidation receipt"
+    },
+    {
+      "old_or_adjacent_owner": "provider conversation state",
+      "current_callers": ["hawking/remote_cognition.py", "hawking/serve.py"],
+      "behavior": "remote inference transport only",
+      "destination_owner": "Hawking Goal/WorkUnit/worker packet authority",
+      "status": "provider state remains optimization, not authority",
+      "deletion_gate": "cold worker recovery and receipt parity"
+    },
+    {
+      "old_or_adjacent_owner": "HIDE/AgentOS historical surfaces",
+      "current_callers": ["mapped in current Cargo/Python graph before each migration"],
+      "behavior": "legacy schemas/adapters and compatibility records",
+      "destination_owner": "relevant Hawking domain owner, not hawking-web wholesale",
+      "status": "migration evidence retained; no blind deletion",
+      "deletion_gate": "zero runtime callers, fixtures, authorization/error parity, rollback"
+    },
+    {
+      "old_or_adjacent_owner": "Flash/Pulsar protected callers",
+      "current_callers": ["current native/scientific runtime"],
+      "behavior": "protected production model lane",
+      "destination_owner": "existing owner pending separate approval",
+      "status": "excluded from this implementation",
+      "deletion_gate": "explicit owner-approved parity campaign"
+    }
+  ]
+}

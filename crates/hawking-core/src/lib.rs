@@ -1,4 +1,7 @@
 #![allow(clippy::all)]
+/// Strict immutable NR descriptor admission. It produces an identity only and
+/// intentionally has no Engine, Metal, provider, subprocess, or serving path.
+pub mod admitted_nr;
 pub mod artifact;
 pub mod attn;
 pub mod backend;
@@ -29,7 +32,7 @@ pub mod gravity_deepseek_v4_artifact_index;
 pub mod gravity_deepseek_v4_attention_device;
 /// Parameterized BOS/position-0 attention device graph for any base layer
 /// 1..42. Window-KV only (compressed slots empty at BOS). Not a full causal
-/// compressed graph, Engine, HCLI, serve, or TPS claim.
+/// compressed graph, Engine, Hawking, serve, or TPS claim.
 #[cfg(target_os = "macos")]
 pub mod gravity_deepseek_v4_bos_layer_attention_device;
 /// Bounded, source-backed preparation context for a future DeepSeek-V4 native
@@ -67,7 +70,7 @@ pub mod gravity_deepseek_v4_layer0_position1_ffn;
 pub mod gravity_deepseek_v4_layer0_prefix;
 /// Bounded macOS-only, caller-owned-context continuation from the layer-0
 /// child boundary through layer-1/BOS ratio-zero attention. It is not a full
-/// forward, Engine, HCLI endpoint, parity receipt, or TPS result.
+/// forward, Engine, Hawking endpoint, parity receipt, or TPS result.
 #[cfg(target_os = "macos")]
 pub mod gravity_deepseek_v4_layer1_attention_device;
 /// General per-layer device plan resolved from source anchors: compression
@@ -111,7 +114,7 @@ pub mod gravity_deepseek_v4_p7_composition;
 pub mod gravity_deepseek_v4_p7_device;
 /// Immutable source-hash-bound ABI, storage, kernel-slot, residency, and
 /// bridge-point sidecar for a future DeepSeek-V4 runtime. It cannot alter the
-/// sealed stream, register an Engine, expose HCLI, or claim TPS.
+/// sealed stream, register an Engine, expose Hawking, or claim TPS.
 pub mod gravity_deepseek_v4_runtime_binding;
 /// Source-hash-bound DeepSeek-V4 base-body topology and bounded staging data
 /// plane.  This is intentionally non-Engine/non-servable until a complete
@@ -130,12 +133,38 @@ pub mod gravity_deepseek_v4_token_ns_ledger;
 /// ranges for a future Metal executor. It is storage-only: no device upload,
 /// forward, Engine, serving, or TPS surface exists here.
 pub mod gravity_deepseek_v4_verified_tensor_cache;
+/// Complete representation-byte manifest that feeds the deterministic policy.
+pub mod gravity_manifest;
+pub mod gravity_policy;
+/// Deterministic, bounded native repository search for the Gravity discovery lane.
+pub mod gravity_repo_search;
+/// Native pure ranking for the Hawking tool catalog; Python remains dispatch and
+/// permission authority.
+pub mod gravity_tool_catalog;
+/// Native name/mutation/permission admission fence below the Python tool
+/// dispatcher. It has no handler execution authority.
+pub mod gravity_tool_dispatch;
+/// Read-only deterministic ModelLake catalog query; it never walks sealed
+/// specimens or opens model payloads.
+pub mod model_lake_catalog;
+/// Deterministic header-only safetensors inventory and byte-closure verifier.
+/// Gravity admission uses this before any source payload becomes executable.
+pub mod safetensors_inventory;
 /// Unified TOKEN_NS schema + adapters + closure + lane reconciler.
 /// Does not sit on a runtime hot path; both existing ledgers stay as-is.
 pub mod token_ns;
 
 /// G023 shared decode family (Q80 + Qwen3.8 + DSV4F).
 pub mod decode_family;
+/// Provider-neutral raw F32/I32 boundary metrics for admitted Flash captures.
+/// It has no receipt admission, model execution, threshold, or promotion authority.
+pub mod flash_boundary_compare;
+/// CPU-only, source-hash-bound E13 frequency/script/control evidence producer.
+/// It uses Hawking's tokenizer and cannot open model weights or execute rows.
+pub mod flash_e13_vocabulary_evidence;
+/// Deterministic Qwen4-Exp PLE lookup-address and lexical-history mechanics.
+/// Payload admission, numerical execution, Metal, and serving remain separate.
+pub mod flash_ple;
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]
 pub mod gravity_glm_resident;
@@ -143,6 +172,9 @@ pub mod gravity_llama;
 pub mod json_constrain;
 pub mod kernel_bench;
 pub mod kernels;
+/// Deterministic provider-neutral model-aware execution spine shared by
+/// CPU/Metal/ANE and future backend lowerings. Plan-only until gated.
+pub mod mega_kernel;
 pub mod metal;
 pub mod mixed_quant_store;
 pub mod model;

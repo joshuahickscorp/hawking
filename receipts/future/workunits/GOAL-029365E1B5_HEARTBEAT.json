@@ -1,0 +1,58 @@
+{
+  "active_job": "job-d52de719-dbd9-4f03-9fcf-1b6a740bdad2",
+  "blocker": {
+    "exact_next_action": "Keep this bounded and read-only; return one concise owning-symbol evidence line.",
+    "last_failure": null,
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "GOAL-029365E1B5",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "",
+  "current_phase": "STEERED",
+  "driver_alive": false,
+  "driver_pid": 57180,
+  "exact_next_action": "Keep this bounded and read-only; return one concise owning-symbol evidence line.",
+  "goal_id": "GOAL-029365E1B5",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "",
+  "last_tool_dispatch": null,
+  "last_turn": 0,
+  "latest_real_seal": "",
+  "objective": "Read one Hawking source file and report the owning symbol; do not edit or run tests.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-15T18:23:41.374076+00:00",
+  "worker_attempt_id": "",
+  "worker_cost_usd": 0.0,
+  "worker_id": "hawking-worker-c4848945932748d3",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789496577.679852,
+  "worker_spawned_at": 1789496577.5131662,
+  "worker_status": "KILLED",
+  "workunit_id": "GOAL-029365E1B5"
+}

@@ -1,14 +1,14 @@
 use super::*;
-use crate::hcli_sources::HcliSourceContext;
+use crate::hawking_sources::HawkingSourceContext;
 
-/// A durable, explicit-runtime model turn for HCLI and other headless callers.
+/// A durable, explicit-runtime model turn for HAWKING and other headless callers.
 ///
 /// Unlike the historical [`BackendHost::generate_and_publish`] convenience
 /// method, this result proves that the user prompt was first recorded in the
 /// session log. That makes subsequent calls to the same named session a real
 /// contextual conversation rather than a completion-only sequence.
 #[derive(Debug, Clone, Serialize)]
-pub struct HcliTurnResult {
+pub struct HawkingTurnResult {
     pub session_id: SessionId,
     /// The exact durable user-intent event written before inference began.
     pub intent_event_id: EventId,
@@ -18,12 +18,13 @@ pub struct HcliTurnResult {
     /// case this method returns an error instead of a partial success result.
     pub assistant_event_id: EventId,
     /// The durable runtime-generation event sequence, suitable for correlating
-    /// Wire-B token streaming with the terminal HCLI response.
+    /// Wire-B token streaming with the terminal HAWKING response.
     pub stream_id: String,
     pub completion: String,
     /// Raw metrics from the model runtime. Optional fields mean the runtime did
     /// not expose them; callers must not derive a complete-forward TPS without
-    /// both `decode_ms` and `completed_decode_forwards`.
+    /// both `decode_ns` (or a legacy `decode_ms` fallback) and
+    /// `completed_decode_forwards`.
     pub generation_stats: hide_core::runtime::GenerationStats,
     pub complete_forward_tps: Option<f64>,
     /// Metadata-only receipt for an explicit local evidence selection. This is
@@ -286,33 +287,33 @@ impl BackendHost {
         Ok(outcome.completion)
     }
 
-    /// Run one externally selected local model endpoint as a durable HCLI
+    /// Run one externally selected local model endpoint as a durable HAWKING
     /// conversation turn. The explicit URL avoids coupling a CLI client to the
     /// optional `HIDE_MODEL_WEIGHTS` supervisor, while the recorded
     /// `SubmitTurn` preserves the full user/assistant history for the next
     /// call. This method deliberately does *not* call `handle_intent`, because
     /// that method would also start the supervisor-owned generation path.
-    pub async fn hcli_turn(
+    pub async fn hawking_turn(
         &self,
         session_id: SessionId,
         base_url: impl Into<String>,
         prompt: impl Into<String>,
-    ) -> Result<HcliTurnResult> {
-        self.hcli_turn_with_output_cap(session_id, base_url, prompt, None)
+    ) -> Result<HawkingTurnResult> {
+        self.hawking_turn_with_output_cap(session_id, base_url, prompt, None)
             .await
     }
 
-    /// As [`Self::hcli_turn`], with an explicit caller-requested output cap.
+    /// As [`Self::hawking_turn`], with an explicit caller-requested output cap.
     /// The cap only narrows the model window derived by `run_turn_core`; it can
     /// never make a packed context claim a larger usable window.
-    pub async fn hcli_turn_with_output_cap(
+    pub async fn hawking_turn_with_output_cap(
         &self,
         session_id: SessionId,
         base_url: impl Into<String>,
         prompt: impl Into<String>,
         requested_output_cap: Option<usize>,
-    ) -> Result<HcliTurnResult> {
-        self.hcli_turn_with_output_cap_and_source_context(
+    ) -> Result<HawkingTurnResult> {
+        self.hawking_turn_with_output_cap_and_source_context(
             session_id,
             base_url,
             prompt,
@@ -322,22 +323,22 @@ impl BackendHost {
         .await
     }
 
-    /// As [`Self::hcli_turn_with_output_cap`], with a single explicit,
+    /// As [`Self::hawking_turn_with_output_cap`], with a single explicit,
     /// bounded pack of local object-store derivatives. The pack is injected
     /// into this invocation's real native prompt as untrusted reference
     /// material; it is not appended to durable user history or implicitly
     /// carried to a later turn.
-    pub async fn hcli_turn_with_output_cap_and_source_context(
+    pub async fn hawking_turn_with_output_cap_and_source_context(
         &self,
         session_id: SessionId,
         base_url: impl Into<String>,
         prompt: impl Into<String>,
         requested_output_cap: Option<usize>,
-        source_context: Option<HcliSourceContext>,
-    ) -> Result<HcliTurnResult> {
+        source_context: Option<HawkingSourceContext>,
+    ) -> Result<HawkingTurnResult> {
         let prompt = prompt.into();
         let base_url = base_url.into();
-        // An explicitly selected HCLI endpoint may have a much smaller native
+        // An explicitly selected HAWKING endpoint may have a much smaller native
         // window than the product-default coding role.  Consult the endpoint
         // before compiling durable context so the packer does not knowingly
         // send an over-window prompt and rely on the runtime to truncate it.
@@ -365,12 +366,12 @@ impl BackendHost {
         if !ack.accepted {
             return Err(hide_core::error::HideError::PolicyDenied(
                 ack.message
-                    .unwrap_or_else(|| "HCLI turn was refused before logging".to_string()),
+                    .unwrap_or_else(|| "HAWKING turn was refused before logging".to_string()),
             ));
         }
         let intent_event_seq = ack.event_seq.ok_or_else(|| {
             hide_core::error::HideError::PolicyDenied(
-                "accepted HCLI turn was missing its durable intent event".to_string(),
+                "accepted HAWKING turn was missing its durable intent event".to_string(),
             )
         })?;
         let intent_event_id = self
@@ -383,7 +384,7 @@ impl BackendHost {
             .map(|event| event.id)
             .ok_or_else(|| {
                 hide_core::error::HideError::PolicyDenied(
-                    "accepted HCLI turn intent event could not be recovered from the durable log"
+                    "accepted HAWKING turn intent event could not be recovered from the durable log"
                         .to_string(),
                 )
             })?;
@@ -398,16 +399,16 @@ impl BackendHost {
             )
             .await?;
         let complete_forward_tps = match (
-            outcome.generation_stats.decode_ms,
+            outcome.generation_stats.effective_decode_ns(),
             outcome.generation_stats.completed_decode_forwards,
         ) {
-            (Some(decode_ms), Some(forwards)) if decode_ms > 0.0 && forwards > 0 => {
-                Some(forwards as f64 / (decode_ms / 1_000.0))
+            (Some(decode_ns), Some(forwards)) if forwards > 0 => {
+                Some(forwards as f64 * 1_000_000_000.0 / decode_ns as f64)
             }
             _ => None,
         };
         let source_context_disposition = outcome.source_context_disposition;
-        Ok(HcliTurnResult {
+        Ok(HawkingTurnResult {
             session_id,
             intent_event_id,
             intent_event_seq,
@@ -453,7 +454,7 @@ impl BackendHost {
         base_url: String,
         prompt: String,
         requested_output_cap: Option<usize>,
-        source_context: Option<&HcliSourceContext>,
+        source_context: Option<&HawkingSourceContext>,
         live_ceiling: Option<(Option<usize>, Option<usize>, usize, Option<usize>)>,
     ) -> Result<TurnOutcome> {
         use crate::model_provider::{HttpModelProvider, ModelProviderInferenceClient};

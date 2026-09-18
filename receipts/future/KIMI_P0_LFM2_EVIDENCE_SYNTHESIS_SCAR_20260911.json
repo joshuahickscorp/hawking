@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.kimi.p0.evidence_synthesis_scar.v1",
+  "recorded_at": "2026-09-11T08:01:00Z",
+  "status": "SCOPED_NEGATIVE",
+  "session": "p0-lfm-static-plan-20260911",
+  "task": "Read four named LFM2 Odyssey receipts, expand compacted evidence, and propose one static sparse-residual discriminator with evidence, assumptions, and a kill condition.",
+  "observations": [
+    {
+      "turn": 1,
+      "actual_tool_invocations": 1,
+      "tool": "receipt.read",
+      "result": "read one receipt, received a compacted observation, then stopped before the requested comparison"
+    },
+    {
+      "turn": 2,
+      "explicit_recovery_instruction": "expand the named observation and read the remaining receipts",
+      "actual_tool_invocations": 0,
+      "result": "claimed an intended tool sequence and returned generic task restatement without evidence"
+    }
+  ],
+  "classification": ["MODEL_TOOL_FOLLOW_THROUGH", "MODEL_COMPACTED_EVIDENCE_INTERPRETATION", "MODEL_EVIDENCE_SYNTHESIS"],
+  "law": "For the current P0 body, named receipt access and a single corrective prompt do not establish autonomous multi-receipt synthesis. Narrative plans are not evidence of tool execution.",
+  "admission_effect": "No change to bounded P0 conversational/read/research assistance. Autonomous Odyssey evidence synthesis remains withheld; Codex and tools remain the verifier.",
+  "reopen_condition": "A future body must expand the specified observation, read every named receipt, and produce a discriminator whose cited facts independently match the receipts under a blind replay.",
+  "claim_boundary": "This is a two-turn bounded research WorkUnit, not a general statement that P0 can never contribute useful supervised analysis."
+}

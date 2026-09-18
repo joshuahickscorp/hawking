@@ -32,10 +32,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
-from hcli.persist import atomic_write_json
+from hawking.persist import atomic_write_json
 from tools.future._common import git
 from tools.future.repro_science import seal_is_valid as _repro_seal_is_valid
-from tools.future.workunit_species import emit_hcli_workunit, validate_emitted_unit
+from tools.future.workunit_species import emit_hawking_workunit, validate_emitted_unit
 
 
 RECEIPT = "RECEIPT_WAKEUP.json"
@@ -89,15 +89,15 @@ RECOVERY_PROBES: tuple[tuple[str, str], ...] = (
         "idempotent routing of deltas into named consumers; dispatch ledger is the same idea at completion grain",
     ),
     (
-        "hcli/events.py",
+        "hawking/events.py",
         "in-memory EventBus; launching-context bound — recovered as the anti-pattern. Completion must not live here.",
     ),
     (
-        "hcli/ledger.py",
-        "obligation ledger: VERIFIED only via run_verify. Read-only. Wakeup does not mark HCLI obligations.",
+        "hawking/ledger.py",
+        "obligation ledger: VERIFIED only via run_verify. Read-only. Wakeup does not mark HAWKING obligations.",
     ),
     (
-        "hcli/persist.py",
+        "hawking/persist.py",
         "atomic_write_json is the crash-safe writer; the wakeup ledger goes through it.",
     ),
     (
@@ -110,7 +110,7 @@ RECOVERY_PROBES: tuple[tuple[str, str], ...] = (
     ),
     (
         "tools/future/workunit_species.py",
-        "emit_hcli_workunit into the recovered HCLI field set; SLEEPING maps to blocked + wakeup_state.",
+        "emit_hawking_workunit into the recovered HAWKING field set; SLEEPING maps to blocked + wakeup_state.",
     ),
     (
         "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
@@ -823,7 +823,7 @@ def harvest_sealed_specimens(
 
 
 # ---------------------------------------------------------------------------
-# WorkUnit emission — HCLI field set, SLEEPING is blocked not a fake result.
+# WorkUnit emission — HAWKING field set, SLEEPING is blocked not a fake result.
 # ---------------------------------------------------------------------------
 
 
@@ -875,7 +875,7 @@ def emit_wakeup_workunits() -> list[dict[str, Any]]:
                 "tools/future/codex_ingest.py",
                 "tools/future/propagate.py",
                 "tools/future/repro_science.py",
-                "hcli/persist.py",
+                "hawking/persist.py",
             ],
             "output_receipt_path": f"receipts/future/{RECEIPT}",
             "claim_boundary": (
@@ -888,7 +888,7 @@ def emit_wakeup_workunits() -> list[dict[str, Any]]:
             "blocked_reason": spec["blocked_reason"],
             "frontier": DEFAULT_FRONTIER,
         }
-        row = emit_hcli_workunit(
+        row = emit_hawking_workunit(
             id=spec["id"],
             role=spec["role"],
             description=spec["description"],
@@ -935,7 +935,7 @@ def recovered_implementation() -> dict[str, Any]:
             "codex_ingest.py hashes a directory and emits LAW/SCAR deltas; it does "
             "not register a per-unit expectation, wake a verifier/graph/frontier by "
             "name, fail-close on truncated/seal-mismatch/deadline, or survive a "
-            "supervisor restart as a completion bus. hcli.events.EventBus is "
+            "supervisor restart as a completion bus. hawking.events.EventBus is "
             "in-memory and dies with the launching context. propagate.py is the "
             "idempotent consumer router this module mirrors at completion grain."
         ),
@@ -943,10 +943,10 @@ def recovered_implementation() -> dict[str, Any]:
             "content-hashed cursor (codex_ingest) — appearance OR sha change is the event",
             "idempotent applied-key ledger (propagate) — same event_id dispatches once",
             "corrupt_receipt / partial_result (repro_science) — distinct terminals, no silent pass",
-            "atomic_write_json (hcli.persist) — torn ledger must not reset the dispatch set",
+            "atomic_write_json (hawking.persist) — torn ledger must not reset the dispatch set",
             "O_RDONLY open (codex_ingest) — the watcher never creates the evidence it waits on",
         ],
-        "not_used_as_completion_path": "hcli.events.EventBus",
+        "not_used_as_completion_path": "hawking.events.EventBus",
     }
 
 
@@ -969,10 +969,10 @@ def negative_findings(recovered: Mapping[str, Any]) -> list[str]:
     ]
     findings.extend(
         [
-            "hcli.events.EventBus cannot be the completion path: it is in-memory and bound to the launching process",
+            "hawking.events.EventBus cannot be the completion path: it is in-memory and bound to the launching process",
             "Codex physical blockers (no Metal GPU, no Metal compiler, unproven bench locks, HEAVY quiescence, Flash NX SCAFFOLD_ONLY, teacher capture 0/256) stay SLEEPING; wakeup will not mint a synthetic qualification receipt",
             "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; every emission is STATIC_ONLY / bench UNKNOWN",
-            "former future workgraph/frontiers runtimes are retired; HCLI scheduler and Watcher are the active interfaces",
+            "former future workgraph/frontiers runtimes are retired; HAWKING scheduler and Watcher are the active interfaces",
         ]
     )
     return findings
@@ -980,7 +980,7 @@ def negative_findings(recovered: Mapping[str, Any]) -> list[str]:
 
 def resident_callable(work_units: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     return {
-        "can_hcli_invoke": True,
+        "can_hawking_invoke": True,
         "entry_point": "python3 tools/future/wakeup.py --selftest",
         "callables": {
             "register_expectation": "tools.future.wakeup.Watcher.register_expectation",
@@ -1010,7 +1010,7 @@ def resident_callable(work_units: Sequence[Mapping[str, Any]]) -> dict[str, Any]
             ),
         },
         "how_the_resident_uses_it": (
-            "HCLI registers an expectation naming the output receipt, the verifier, "
+            "HAWKING registers an expectation naming the output receipt, the verifier, "
             "the graph consumer and the frontier. The worker writes the receipt via "
             "atomic replace. A supervisor — possibly a different process after a "
             "restart — harvests the path and dispatch() wakes the three consumers. "
@@ -1431,7 +1431,7 @@ def build(*, tmp: Path | None = None) -> Path:
         "resident_callable": callable_block,
         "integration_points": {
             "workgraph.py": "swap Watcher._apply_graph for the landed dependency graph",
-            "frontier_scheduler.py": "HCLI owns frontier selection; Watcher only applies disk wake events",
+            "frontier_scheduler.py": "HAWKING owns frontier selection; Watcher only applies disk wake events",
             "detached.py": "supervisor that harvests after a detached worker exits",
             "evidence_dag.py": "completion events are DAG edges once that module lands",
             "resident_api.py": "resident discovers this via --selftest / run_once",

@@ -1,0 +1,127 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "007fed070d05a0e180f566d727cff463b34a19386b9b8fb55b89520af95dc0a2",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:14:57.733739+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:14:57.733747+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:14:57.735844+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"The durable parent objective is civilization/sovereign-goal.txt (mtime 1789411627); its permanent laws include 'DISK STATE IS AUTHORITY', 'PASS SPARSELY. FAIL PRECISELY.', and 'EVERY RESULT MUST CHANGE WHAT HAWKING DOES NE",
+      "outcome": "CONTINUE",
+      "reply_chars": 5861,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T07:17:33.851812+00:00",
+      "calls_used": 6,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:17:33.851831+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:17:33.854460+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root /Users/scammermike/Downloads/hawking contains Hawking-owned governance and research surfaces: GRAVITY-CANON.md, GRAVITY-ALGEBRA.md, GRAVITY-MIGRATION-MAP.md, GRAVITY-SLIMMING-WORKORDER.md, GRAVITY-TOOL-GRAV",
+      "outcome": "CONTINUE",
+      "reply_chars": 5117,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-18T07:18:12.930237+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:18:12.930333+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:18:12.933283+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root is /Users/scammermike/Downloads/hawking; README.md (4340 bytes, sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9) was read with 92.2% of content shown (4000 of 4340 bytes), so the tai",
+      "outcome": "CONTINUE",
+      "reply_chars": 3655,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 6
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root is /Users/scammermike/Downloads/hawking; README.md (4340 bytes, sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9) was read with 92.2% of content shown (4000 of 4340 bytes), so the tail of the repository table is unobserved.\",\"README states Hawking pairs a Rust inference runtime on Apple Silicon (crates/) with a Python control plane (hawking/) that plans work, calls tools, runs deterministic verifiers, and records evidence receipts for every claim.\",\"README designates docs/CURRENT_ARCHITECTURE.md as the detailed, current ownership map: HAWKING owns planning, typed tool calls, lifecycle, and verification; the Rust crates own execution and serving; receipts/ holds acceptance and provenance records and is explicitly evidence, not an architecture source.\",\"Repository layout per README: crates/ (Rust workspace: runtime, CLI, serving, benchmarks, HAWKING backend crates), hawking/ (Python control plane, resident supervision, tools and verifiers), tools/ (campaign/evaluation/analysis), docs/ (architecture, control-plane boundaries, specifications), research/ (experiments, evidence), receipts/ (acceptance and provenance), workspace/ (local build/campaign tree), civilization/ (roadmap, truncated entry).\",\"README's stated work-in-progress items mention the Event Horizon structural refactor (consolidates source authorities, moves generated/operator state to owned roots) but contain no explicit reference to a 'P7' phase or an 'NR' tranche, so the dependency-valid P7 NR tranche and its precise Hawking-owned NR owner were not located in this observation.\",\"README documents verification lanes relevant to any follow-on contract: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check|compile|policy, and named isolated integration targets such as cargo test -p hawking-core --test q4k_fast_parity.\"],\"sources\":[\"README.md @ /Users/scammermike/Downloads/hawking/README.md sha256=4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9 (truncated at 4000/4340 bytes)\"],\"recommendations\":[\"Next bounded observation: read docs/CURRENT_ARCHITECTURE.md, the README-designated ownership map, to resolve the precise Hawking-owned NR owner before drafting any follow-on contract.\",\"Search docs/, research/, and receipts/ for literal 'P7' and 'NR' tranche markers to identify the dependency-valid tranche definition and its admission state; do not infer ownership from receipt prose alone per the README's evidence-not-architecture rule.\",\"Read the truncated tail of README.md (bytes 4000-4340) to complete the repository table, including the civilization/ roadmap entry which may index phase/tranche nomenclature.\",\"Draft the follow-on execution contract only after the NR owner is source-grounded: bound its writer scope to the owning component, name focused tests from the documented lanes (pytest, cargo check --workspace, rust_test_fast.sh), and include one falsifier tied to a receipt-verifiable check.\"],\"unresolved_questions\":[\"What and where is the authoritative definition of the 'P7 NR tranche' (phase ledger, civilization/ roadmap, or receipts/), and what makes a tranche dependency-valid?\",\"Which specific Hawking-owned component (Python control plane under hawking/ vs a Rust crate under crates/) owns NR, per docs/CURRENT_ARCHITECTURE.md?\",\"Does any existing receipt under receipts/ already cover part of the P7 NR scope, which would shrink the smallest independent follow-on contract?\",\"What content is in the unobserved 340-byte tail of README.md, particularly the full civilization/ entry?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-aea08b922f3f4ba8",
+  "worker_id": "hawking-worker-561d123a5cc74318",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-8D4EE0B5"
+}

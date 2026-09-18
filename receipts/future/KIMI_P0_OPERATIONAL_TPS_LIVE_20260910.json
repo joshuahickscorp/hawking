@@ -1,0 +1,324 @@
+{
+  "claim_boundary": "Real measurements from the already-live local KIMI-derived q8 server. These are not raw KIMI_BASE weights, not a reduced Noetic representation, not a capability-preservation receipt, not a qualified KIMI TPS milestone, and not promotion or Odyssey admission evidence.",
+  "contexts": [
+    {
+      "context_repeats": 0,
+      "rows": [
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "669",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:34:48 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2157.0560410036705
+        },
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 1,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "639",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:34:50 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2116.582082991954
+        },
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 2,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "639",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:34:52 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2085.4453750071116
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 0.0,
+        "decode_ms_median": null,
+        "decode_tps": null,
+        "end_to_end_tps": null,
+        "prefill_ms_median": null,
+        "prefill_tps": null,
+        "prompt_tokens_median": 0.0,
+        "rep_count": 3,
+        "wall_ms_median": 2116.582082991954
+      },
+      "valid_rep_count": 3
+    },
+    {
+      "context_repeats": 64,
+      "rows": [
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "542",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:34:54 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 1944.3478339817375
+        },
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 1,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "681",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:34:56 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2239.457208022941
+        },
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 2,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "681",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:34:59 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2252.5102919898927
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 0.0,
+        "decode_ms_median": null,
+        "decode_tps": null,
+        "end_to_end_tps": null,
+        "prefill_ms_median": null,
+        "prefill_tps": null,
+        "prompt_tokens_median": 0.0,
+        "rep_count": 3,
+        "wall_ms_median": 2239.457208022941
+      },
+      "valid_rep_count": 3
+    },
+    {
+      "context_repeats": 256,
+      "rows": [
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 0,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "542",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:35:01 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2189.1591669991612
+        },
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 1,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "542",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:35:03 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2191.9582500122488
+        },
+        {
+          "peak_memory_gib": null,
+          "predicted_ms": null,
+          "predicted_n": 0,
+          "prompt_ms": null,
+          "prompt_n": 0,
+          "rep": 2,
+          "server_headers": {
+            "access-control-allow-origin": "*",
+            "content-length": "542",
+            "content-type": "application/json",
+            "date": "Thu, 10 Sep 2026 20:35:05 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.6"
+          },
+          "server_predicted_tps": null,
+          "server_prompt_tps": null,
+          "wall_ms": 2192.9409590084106
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 0.0,
+        "decode_ms_median": null,
+        "decode_tps": null,
+        "end_to_end_tps": null,
+        "prefill_ms_median": null,
+        "prefill_tps": null,
+        "prompt_tokens_median": 0.0,
+        "rep_count": 3,
+        "wall_ms_median": 2191.9582500122488
+      },
+      "valid_rep_count": 3
+    }
+  ],
+  "elapsed_s": 21.593,
+  "generated_at": "2026-09-10T20:35:05.803476+00:00",
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.13"
+  },
+  "measurement_contract": {
+    "concurrency": 1,
+    "context_repeats": [
+      0,
+      64,
+      256
+    ],
+    "endpoint": "/chat/completions",
+    "max_tokens": 32,
+    "path": "live mlx_vlm HTTP server timings plus client wall time",
+    "prefill_and_decode_separate": true,
+    "reps_per_context": 3,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "warmup_excluded": true
+  },
+  "model": "KIMI_P0_OPERATIONAL",
+  "raw_kimi_base_equivalence": false,
+  "schema": "hawking.future.kimi_tps_live_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_live_baseline.py",
+  "server": {
+    "headers": {
+      "access-control-allow-origin": "*",
+      "content-length": "2786",
+      "content-type": "application/json",
+      "date": "Thu, 10 Sep 2026 20:34:44 GMT",
+      "server": "BaseHTTP/0.6 Python/3.12.6"
+    },
+    "models": {
+      "data": [
+        {
+          "created": 0,
+          "hawking": {
+            "artifact": {
+              "admission_note": "Visible as an admitted Gravity native control; raw ModelLake specimens remain research-only.",
+              "capability": "historical sealed contract qualification 30/43",
+              "hcli": "native HCLI resident path and tool contract",
+              "promotion": "existing sealed artifact; not a KIMI learned-weight promotion",
+              "receipts": [
+                "receipts/headless/CAPABILITY_noetic-sealed-3.14.json"
+              ],
+              "registry": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/gravity-artifacts.json",
+              "representation": "Noetic native sealed artifact; exact profile is the executable representation",
+              "role": "sealed Gravity native resident / regression control",
+              "status": "ADMITTED",
+              "weight_lineage": "Qwen3.8-27B sealed native artifact"
+            },
+            "backend": "noetic_native",
+            "gb": null,
+            "loaded": false,
+            "path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+            "source": "gravity"
+          },
+          "id": "sealed-3.14",
+          "object": "model",
+          "owned_by": "hawking"
+        },
+        {
+          "created": 0,
+          "hawking": {
+            "artifact": {
+              "admission_note": "Visible and runnable as a developmental body with qualified HCLI tool reachability; operational qualification remains fail-closed after the blind mission failed to produce a verified edit.",
+              "capability": "KIMI_BASE qualified 4/4 bounded WorkUnit battery",
+              "destructive_controls": "independent HCLI controls 6/6",
+              "epistemic": "KIMI_BASE calibration 7/7",
+              "hcli": "resident Engine contract 16/16; 0 effective refusals; deployment-path evidence",
+              "mission_gate": "FAILED_BLIND_REAL_HAWKING_WORKUNIT_REQUIRES_MODEL_RECOVERY",
+              "physical": "canonical raw KIMI_BASE steady decode ~85.4 TPS across context medians",
+              "receipts": [
+                "receipts/future/KIMI_WORKUNIT_CAPABILITY_LIVE_RETRY2_20260910.json",
+                "receipts/future/KIMI_HCLI_ENGINE_LIVE_RETRY3_20260910.json",
+                "receipts/future/KIMI_HCLI_BOUNDARY_CONTROLS_20260910.json",
+                "receipts/future/KIMI_EPISTEMIC_LIVE_20260910.json",
+                "receipts/future/KIMI_RAW_BASE_TPS_BASELINE_20260910.json",
+                "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json"
+              ],
+              "registry": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/gravity-artifacts.json",
+              "representation": "dense KIMI_BASE MLX snapshot; no reduced-weight claim",
+              "role": "developmental resident cognition body",
+              "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+              "status": "OPERATIONAL_DEVELOPMENTAL",
+              "weight_lineage": "KIMI_BASE unchanged"
+            },
+            "backend": "mlx",
+            "gb": 32.82,
+            "loaded": true,
+            "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+            "source": "gravity"
+          },
+          "id": "KIMI_P0_OPERATIONAL",
+          "object": "model",
+          "owned_by": "hawking"
+        }
+      ],
+      "object": "list"
+    },
+    "url": "http://127.0.0.1:8014"
+  },
+  "source_model": "KIMI_DERIVATIVE_SERVER",
+  "status": "SERVER_BASELINE_COMPLETE_NOT_KIMI_QUALIFIED"
+}

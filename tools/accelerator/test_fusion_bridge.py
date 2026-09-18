@@ -354,7 +354,7 @@ def test_plan_to_timeline_emits_acquire_copy_fence_submit():
 
 
 def test_overlay_physical_graph_fills_hcli_fields_without_editing_hcli():
-    from hcli.physical_graph import SCHEMA, compile_physical_graph
+    from hawking.physical_graph import SCHEMA, compile_physical_graph
 
     graph = compile_physical_graph({"model_id": "fusion-bridge-test", "organs": []})
     assert graph["schema"] == SCHEMA

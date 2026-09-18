@@ -15,7 +15,7 @@
 //! The MTP auxiliary layer is deliberately excluded from the base topology.
 //! It cannot accidentally participate in `BASE_TRUE_TPS`, and no method here
 //! allocates Metal resources, maintains causal state, forwards a token,
-//! samples, streams HCLI output, or implements `Engine`.
+//! samples, streams Hawking output, or implements `Engine`.
 
 use std::ops::Range;
 
@@ -341,7 +341,7 @@ pub struct DeepSeekV4RuntimeCapabilityGate {
     pub causal_forward_available: bool,
     pub continuation_available: bool,
     pub metal_dispatches_available: bool,
-    pub hcli_endpoint_available: bool,
+    pub hawking_endpoint_available: bool,
     pub numeric_parity_v21_passed: bool,
     pub base_true_tps_eligible: bool,
     pub next_parity_rung: &'static str,
@@ -355,7 +355,7 @@ impl DeepSeekV4RuntimeCapabilityGate {
             && self.causal_forward_available
             && self.continuation_available
             && self.metal_dispatches_available
-            && self.hcli_endpoint_available
+            && self.hawking_endpoint_available
             && self.numeric_parity_v21_passed
         {
             return Ok(());
@@ -397,7 +397,7 @@ impl DeepSeekV4RuntimeSpine {
             causal_forward_available: false,
             continuation_available: false,
             metal_dispatches_available: false,
-            hcli_endpoint_available: false,
+            hawking_endpoint_available: false,
             numeric_parity_v21_passed: false,
             base_true_tps_eligible: false,
             // P0/P1/P2 are owned by existing source-linear evidence; this
@@ -1376,7 +1376,7 @@ mod tests {
             causal_forward_available: false,
             continuation_available: false,
             metal_dispatches_available: false,
-            hcli_endpoint_available: false,
+            hawking_endpoint_available: false,
             numeric_parity_v21_passed: false,
             base_true_tps_eligible: false,
             next_parity_rung: "P3_MHC_NORM_Q_PATH",

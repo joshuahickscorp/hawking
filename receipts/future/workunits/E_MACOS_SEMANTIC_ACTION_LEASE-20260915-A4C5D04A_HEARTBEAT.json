@@ -1,0 +1,61 @@
+{
+  "active_job": "job-05d24b05-134c-432c-b568-606f2048a603",
+  "blocker": {
+    "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+    "last_failure": null,
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0015089004,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A4C5D04A",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "b88a4dfb47fb2302c1d06db4afadebcbe7851209705b6b7d08cd6c4b432a444b",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 94882,
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 1,
+  "latest_real_seal": "",
+  "objective": "Complete the next production slice for the existing Hawking macOS foundation. Use the real Hawking macOS tool registry and current source owners; do not use HCLI, HIDE, Grok, Flash, Pulsar, or ModelLake. The accepted parent phase is E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED. Implement and verify one scoped semantic desktop action lease: resolve exactly one AX target in the disposable AppKit fixture hawking-macos-fixture-20260915, explicitly acquire the Hawking lease, perform one AXPress, observe bef",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-2a878a192e8d42daa682397d:tool-19",
+    "gen-1789526597-7m85ERrSc4nBUHuaGeAj"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T02:43:51.458900+00:00",
+  "worker_attempt_id": "hawking-attempt-cbacf847fa5b48f9",
+  "worker_cost_usd": 0.0015089004,
+  "worker_id": "hawking-worker-537f526210d74e03",
+  "worker_kill_reason": "macOS child tool loop exceeded bounded fixture turn; retry with 12-call cap",
+  "worker_last_heartbeat_at": 1789526466.293943,
+  "worker_spawned_at": 1789526465.924054,
+  "worker_status": "KILLED",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A4C5D04A"
+}

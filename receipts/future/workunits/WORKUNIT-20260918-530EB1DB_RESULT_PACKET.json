@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "cf417a4e914e7faa27b20c115a62f3b1596a97d45f9598aa740f43ef12560b85",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:10:25.824825+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:10:25.824845+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:10:25.828882+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First read-only observation targeted admitted focus file hawking/sandbox_world.py, not README.md.\",\"The shown prefix defines WORLD_SCHEMA = \\\"hawking.sandbox.world.v1\\\" and related schemas for branch, finding, candidate, e",
+      "outcome": "CONTINUE",
+      "reply_chars": 2806,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First read-only observation targeted admitted focus file hawking/sandbox_world.py, not README.md.\",\"The shown prefix defines WORLD_SCHEMA = \\\"hawking.sandbox.world.v1\\\" and related schemas for branch, finding, candidate, evaluator, artifact, and event records.\",\"Canonical world directory is constructed as Path(workspace).expanduser().resolve() / \\\".hawking\\\" / \\\"sandbox\\\" / \\\"worlds\\\", and _world_path appends f\\\"{world_id}.json\\\".\",\"_load reads via read_json_object_or_none(_world_path(...)), rejects missing or wrong schema with SandboxWorldError(404), and rejects world_id mismatch with SandboxWorldError(409).\",\"_save writes via atomic_write_json to _world_path(workspace, str(world.get(\\\"world_id\\\") or \\\"\\\")), so the persisted path is derived from the world record's world_id.\",\"Redaction logic in _safe drops mapping keys whose casefolded names contain secret, token, cookie, authorization, api_key, credential, or environment; it also truncates strings and limits depth/list/mapping sizes.\",\"A module-level threading.RLock named _LOCK is present in the shown prefix, but the shown prefix does not yet demonstrate how it is used around load/save or mutation operations.\",\"The file read was truncated at 4000 of 25417 bytes, so observations are limited to the shown prefix and do not establish behavior in unshown sections.\"],\"sources\":[{\"path\":\"hawking/sandbox_world.py\",\"sha256\":\"019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27\",\"sha256_scope\":\"full_file\",\"bytes\":25417,\"observed_bytes\":4000,\"truncated\":true}],\"recommendations\":[\"Bounded next action: inspect the remaining lines of hawking/sandbox_world.py, especially all uses of _LOCK, _load, _save, and any mutation entry points, to verify single-writer behavior and canonical path enforcement.\",\"Then inspect hawking/tests/test_sandbox_world.py for focused evidence of schema/world_id identity, canonical world path, redaction, and single-writer behavior.\",\"If needed, inspect admitted tests hawking/tests/test_worker_option_c.py and hawking/tests/test_worker_special_unit.py for integration evidence, without mutating files or claiming execution/release.\"],\"unresolved_questions\":[\"Does the unshown portion of hawking/sandbox_world.py hold _LOCK across read-modify-write operations, or only around narrower critical sections?\",\"Are there any mutation paths that bypass _world_path or _save and therefore could write outside the canonical world path?\",\"Does redaction apply consistently to all persisted records, including nested event/artifact payloads, or only to selected fields?\",\"What exact focused-test assertions in hawking/tests/test_sandbox_world.py cover schema/world_id identity, canonical path, redaction, and single-writer behavior?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-85bbf55c2809465c",
+  "worker_id": "hawking-worker-dad8c36a1c864324",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-530EB1DB"
+}

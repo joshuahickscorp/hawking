@@ -1,0 +1,266 @@
+{
+  "claim_boundary": "Real measurements from the already-live local KIMI-derived q8 server. These are not raw KIMI_BASE weights, not a reduced Noetic representation, not a capability-preservation receipt, not a qualified KIMI TPS milestone, and not promotion or Odyssey admission evidence.",
+  "contexts": [
+    {
+      "context_repeats": 0,
+      "rows": [
+        {
+          "peak_memory_gib": 16.774553824,
+          "predicted_ms": 249.39398113593387,
+          "predicted_n": 27,
+          "prompt_ms": 157.63879101723433,
+          "prompt_n": 35,
+          "rep": 0,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1046",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:10:59 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 108.26243631470588,
+          "server_prompt_tps": 222.02656956544104,
+          "wall_ms": 524.2457080166787
+        },
+        {
+          "peak_memory_gib": 16.774553828,
+          "predicted_ms": 202.4022122115219,
+          "predicted_n": 27,
+          "prompt_ms": 55.666541011305526,
+          "prompt_n": 35,
+          "rep": 1,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1044",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:00 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 133.39775146223923,
+          "server_prompt_tps": 628.7439342223854,
+          "wall_ms": 363.88837499544024
+        },
+        {
+          "peak_memory_gib": 16.774553828,
+          "predicted_ms": 760.9378846201042,
+          "predicted_n": 27,
+          "prompt_ms": 300.64100000890903,
+          "prompt_n": 35,
+          "rep": 2,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "1043",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:00 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 35.48252826639018,
+          "server_prompt_tps": 116.41792037334505,
+          "wall_ms": 1189.7332500084303
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 27.0,
+        "decode_ms_median": 249.39398113593387,
+        "decode_tps": 108.26243631470588,
+        "end_to_end_tps": 51.50256756921509,
+        "prefill_ms_median": 157.63879101723433,
+        "prefill_tps": 222.02656956544104,
+        "prompt_tokens_median": 35.0,
+        "rep_count": 3,
+        "wall_ms_median": 524.2457080166787
+      },
+      "valid_rep_count": 3
+    },
+    {
+      "context_repeats": 64,
+      "rows": [
+        {
+          "peak_memory_gib": 17.038551572,
+          "predicted_ms": 151.94017707059783,
+          "predicted_n": 16,
+          "prompt_ms": 128.73479101108387,
+          "prompt_n": 227,
+          "rep": 0,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "974",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:02 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 105.30460282776771,
+          "server_prompt_tps": 1763.3150931239377,
+          "wall_ms": 400.22416700958274
+        },
+        {
+          "peak_memory_gib": 17.038551576,
+          "predicted_ms": 490.57497813676787,
+          "predicted_n": 16,
+          "prompt_ms": 120.33837399212644,
+          "prompt_n": 227,
+          "rep": 1,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "973",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:02 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 32.61479022181059,
+          "server_prompt_tps": 1886.3475753366276,
+          "wall_ms": 688.9609999780077
+        },
+        {
+          "peak_memory_gib": 17.038551576,
+          "predicted_ms": 401.7281781261166,
+          "predicted_n": 16,
+          "prompt_ms": 363.3071259828284,
+          "prompt_n": 227,
+          "rep": 2,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "969",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:03 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 39.827925625314336,
+          "server_prompt_tps": 624.8157103605204,
+          "wall_ms": 886.7649160092697
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 16.0,
+        "decode_ms_median": 401.7281781261166,
+        "decode_tps": 39.827925625314336,
+        "end_to_end_tps": 23.22337548933936,
+        "prefill_ms_median": 128.73479101108387,
+        "prefill_tps": 1763.3150931239377,
+        "prompt_tokens_median": 227.0,
+        "rep_count": 3,
+        "wall_ms_median": 688.9609999780077
+      },
+      "valid_rep_count": 3
+    },
+    {
+      "context_repeats": 256,
+      "rows": [
+        {
+          "peak_memory_gib": 17.7750835,
+          "predicted_ms": 163.5061333266397,
+          "predicted_n": 16,
+          "prompt_ms": 317.9130000062287,
+          "prompt_n": 803,
+          "rep": 0,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "971",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:04 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 97.85565638713048,
+          "server_prompt_tps": 2525.848266614663,
+          "wall_ms": 600.597500015283
+        },
+        {
+          "peak_memory_gib": 17.775083504,
+          "predicted_ms": 163.5465333548685,
+          "predicted_n": 16,
+          "prompt_ms": 317.622417001985,
+          "prompt_n": 803,
+          "rep": 1,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "972",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:04 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 97.83148362602519,
+          "server_prompt_tps": 2528.159087697458,
+          "wall_ms": 603.129833994899
+        },
+        {
+          "peak_memory_gib": 17.775083504,
+          "predicted_ms": 161.68884479751188,
+          "predicted_n": 16,
+          "prompt_ms": 316.66620800388046,
+          "prompt_n": 803,
+          "rep": 2,
+          "server_headers": {
+            "connection": "close",
+            "content-length": "976",
+            "content-type": "application/json",
+            "date": "Sun, 13 Sep 2026 10:11:05 GMT",
+            "server": "mlx_vlm/0.7.0"
+          },
+          "server_predicted_tps": 98.95549702292271,
+          "server_prompt_tps": 2535.793146549315,
+          "wall_ms": 597.9120830015745
+        }
+      ],
+      "summary": {
+        "completion_tokens_median": 16.0,
+        "decode_ms_median": 163.5061333266397,
+        "decode_tps": 97.85565638713048,
+        "end_to_end_tps": 26.640137529032103,
+        "prefill_ms_median": 317.622417001985,
+        "prefill_tps": 2528.159087697458,
+        "prompt_tokens_median": 803.0,
+        "rep_count": 3,
+        "wall_ms_median": 600.597500015283
+      },
+      "valid_rep_count": 3
+    }
+  ],
+  "elapsed_s": 6.829,
+  "generated_at": "2026-09-13T10:11:06.378812+00:00",
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6"
+  },
+  "measurement_contract": {
+    "concurrency": 1,
+    "context_repeats": [
+      0,
+      64,
+      256
+    ],
+    "endpoint": "/chat/completions",
+    "max_tokens": 512,
+    "path": "live mlx_vlm HTTP server timings plus client wall time",
+    "prefill_and_decode_separate": true,
+    "reps_per_context": 3,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "warmup_excluded": true
+  },
+  "model": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+  "raw_kimi_base_equivalence": false,
+  "schema": "hawking.future.kimi_tps_live_baseline.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_tps_live_baseline.py",
+  "server": {
+    "headers": {
+      "connection": "close",
+      "content-length": "129",
+      "content-type": "application/json",
+      "date": "Sun, 13 Sep 2026 10:10:58 GMT",
+      "server": "mlx_vlm/0.7.0"
+    },
+    "models": {
+      "data": [
+        {
+          "created": 1789294259,
+          "id": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+          "object": "model"
+        }
+      ],
+      "object": "list"
+    },
+    "url": "http://127.0.0.1:8032"
+  },
+  "source_model": "KIMI_DERIVATIVE_SERVER",
+  "status": "SERVER_BASELINE_COMPLETE_NOT_KIMI_QUALIFIED"
+}

@@ -1,0 +1,336 @@
+{
+  "schema": "hawking.flash.native_source_boundary_runner.v1",
+  "status": "CAPTURED_NATIVE_LAYER0_ATTENTION_HC_TRACE_ONLY_WITH_OWNER_BOUND_SOURCE_LINEAGE",
+  "source_reference": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "authorization_binding_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+    "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+    "owner_authorization": {
+      "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+      "schema": "hawking.flash.external_greedy_reference_local_canonical_admission.v1",
+      "authorization_scope": "admit_external_greedy_reference_v2",
+      "path": null,
+      "sha256": null,
+      "owner_signature_required": false,
+      "owner_signature_present": false,
+      "science_status": "UNEARNED",
+      "science_unearned": true,
+      "producer_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+      "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+      "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+      "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+      "sibling_capture": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+        "sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+        "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED",
+        "hawking_packager_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+        "hawking_packager_sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6",
+        "historical_owner_authorization_required_suffix": true,
+        "historical_suffix_policy": "CAPTURED_...__OWNER_AUTHORIZATION_REQUIRED remains a sealed historical label; local-canonical admission supersedes the Ed25519 mandate without mutating capture.json."
+      },
+      "historical_git_snapshot": "a9c8b603fe2f06311324582ca722c55fd32aefb8",
+      "contract_status_vocabulary_note": "EXTERNAL_REFERENCE_STATUS names a sealed-complete source greedy reference; authority is admission_class, and science_status remains UNEARNED until ordered compare.",
+      "policy_note": "Detached machine-owner Ed25519 is not required for provenance-complete canonical local source captures. Scientific correctness remains unearned and is established only by later source/native comparison.",
+      "claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion."
+    }
+  },
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V5_LAYER0_HC_PRECISION_TRACE_20260914.json",
+    "sha256": "2184f3384e7d910567d63ce8a10e3f400d7c93971b267baefe6b4fd1034187b1",
+    "seal_sha256": "11cfef02c012886d9a29708f074267c2a2a1467cb1342e9f517e8587129294b5"
+  },
+  "source_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/capture.json",
+    "sha256": "2e55dbe6c28ef1304e53f7523c2e9d34e3dc1a925d594bdaa54c0b5958cf2b63",
+    "seal_sha256": "4129097399b4c5db4a02283452998d0b87b8c08f0bf43ec58e4a30c929e407a9"
+  },
+  "native_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_TRACE_ALL_STAGES_20260914.json",
+    "sha256": "d4f3e6f488ca0fa508d030240bd8fb434f6dad38ad54cd5ec529c862fc80c215",
+    "seal_sha256": "c2fde51168888a08dd7fea800df02952919f2b90c95234c5a97ea512e3a764af",
+    "schema": "hawking.flash.native_layer0_attention_hc_trace_capture.v1",
+    "status": "CAPTURED_NATIVE_LAYER0_ATTENTION_HC_TRACE_ONLY_TOKEN_0",
+    "capture_scope": "LAYER0_ATTENTION_HC_TRACE_ONLY",
+    "seam_count": 1,
+    "layer0_trace_count": 9,
+    "attention_hc_norm_precision": {
+      "accumulation_dtype": "F32",
+      "logical_dtype": "BF16",
+      "mode": "SOURCE_BF16_ROUNDTRIP_AFTER_EACH_ATTENTION_HC_STAGE_FULL_PAIRWISE_F32_REDUCTION",
+      "reduction_threadgroup_size": 256,
+      "reduction_topology": "CONTIGUOUS_FULL_PAIRWISE_F32",
+      "rounding_points": [
+        "after attention HyperConnection grouped RMSNorm",
+        "after attention HyperConnection down projection",
+        "after attention HyperConnection SiLU",
+        "after attention HyperConnection up projection"
+      ],
+      "scope": "explicit bounded source-boundary diagnostic only",
+      "storage_dtype": "F32 carrier with BF16-representable values"
+    }
+  },
+  "build": {
+    "captured_before_native_execution": true,
+    "attestation": "observed_executable_and_source_closure_only",
+    "compiler_provenance_attested": false,
+    "promotion_allowed": false,
+    "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+    "git_status_porcelain_sha256": "1a76536965c9c6505b7f73aac539f746abdb6c382681db77d4419c774a369608",
+    "worktree_dirty": true,
+    "rustc_version": "rustc 1.94.1 (e408947bf 2026-03-25) (Homebrew)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-apple-darwin\nrelease: 1.94.1\nLLVM version: 21.1.8",
+    "native_executable": {
+      "path": "target/flash-task029-attention-only-trace-speed-20260914/release/examples/flash_stateful_complete_token_session",
+      "sha256": "7604d6851571d54e5bc96103a69ac9c1be0db657ea94f6254162d64583987f19"
+    },
+    "source_closure": [
+      {
+        "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+        "sha256": "454b88f9b5d9b3cc86699ce4460340a66a70bf41c770e0c0a65283cd2f2c7b18"
+      },
+      {
+        "path": "crates/hawking-core/src/lib.rs",
+        "sha256": "a01560292aeb546411630310de6d7993692efc712628edbb5f119475d577349b"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+        "sha256": "18c7eecdc061ccf290b634dab5e4d588e88b503fce6a9e11a121a5b6a26bfeb6"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "acb0e7dcf641e948a590d0a1517dd3b5c810a52895ec13d177e324258c55813a"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "b5e71aec5e19c0ef46b049222df84bb715fabbe032994445bab6f056619eaf18"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+        "sha256": "e6d61c0effd4c25ed84d8e8d88f6132835926f4751e57b3e2c4dba58f1513602"
+      },
+      {
+        "path": "crates/hawking-core/src/flash_ple.rs",
+        "sha256": "bf9b9940e6a00eddea5f10c3067083232e56078ba0987a9c6c86d1ea1a95495c"
+      },
+      {
+        "path": "crates/hawking-core/src/model/source_safetensors.rs",
+        "sha256": "7cba58d2595a68c02d3b62271a8344bae837f3c9622f9f4978ddb26e5ce2c7eb"
+      },
+      {
+        "path": "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+        "sha256": "e614040d20f816ccd188f8607c578c8d0cb261177197f12d61d9c874e82aef5c"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ]
+  },
+  "command": [
+    "/Users/scammermike/Downloads/hawking/target/flash-task029-attention-only-trace-speed-20260914/release/examples/flash_stateful_complete_token_session",
+    "--root",
+    "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "--token-ids",
+    "5423",
+    "--out",
+    "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_TRACE_ALL_STAGES_20260914.json",
+    "--capture-layer0-hc-trace-only",
+    "--source-boundary-capture-sha256",
+    "2e55dbe6c28ef1304e53f7523c2e9d34e3dc1a925d594bdaa54c0b5958cf2b63",
+    "--source-boundary-preflight-sha256",
+    "2184f3384e7d910567d63ce8a10e3f400d7c93971b267baefe6b4fd1034187b1",
+    "--wrapper-admitted-source-control",
+    "--supervising-launcher-pid",
+    "27992",
+    "--diagnostic-attention-hc-source-bf16-norm",
+    "--diagnostic-attention-hc-source-bf16-stages",
+    "--diagnostic-attention-hc-norm-full-pairwise"
+  ],
+  "diagnostic_attention_hc_source_bf16_norm": true,
+  "diagnostic_attention_hc_source_bf16_stages": true,
+  "diagnostic_attention_hc_norm_threadgroup": 256,
+  "diagnostic_attention_hc_norm_full_pairwise": true,
+  "comparison_performed": false,
+  "promotion_allowed": false,
+  "capture_scope": "LAYER0_ATTENTION_HC_TRACE_ONLY",
+  "source_layer0_trace": [
+    {
+      "layer": 0,
+      "ordinal": 0,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-00-attention_hyper_connection_normalized.f32",
+        "sha256": "196a199661bfbc64d323b37921497cc5629ee4851edea574fbb4f753238dac87",
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "bytes": 40960
+      },
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_hyper_connection_normalized"
+    },
+    {
+      "layer": 0,
+      "ordinal": 1,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-01-attention_hyper_connection_down_projection.f32",
+        "sha256": "647aa1893ed7a4fe922acde54f2e92562535b38223b0f18df3131edb764a874c",
+        "dtype": "F32_LE",
+        "elements": 320,
+        "bytes": 1280
+      },
+      "shape": [
+        1,
+        1,
+        320
+      ],
+      "stage": "attention_hyper_connection_down_projection"
+    },
+    {
+      "layer": 0,
+      "ordinal": 2,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-02-attention_hyper_connection_low_rank_activation.f32",
+        "sha256": "f33e39aa0ce36f9de5cf61b4c65272560162fabc371ce5554dbfed89adb98f2f",
+        "dtype": "F32_LE",
+        "elements": 320,
+        "bytes": 1280
+      },
+      "shape": [
+        1,
+        1,
+        320
+      ],
+      "stage": "attention_hyper_connection_low_rank_activation"
+    },
+    {
+      "layer": 0,
+      "ordinal": 3,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-03-attention_hyper_connection_up_projection.f32",
+        "sha256": "694770df68387f7f77510aa06f09f98fe3832fe9f705232d44a6537e7dc6ab12",
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "bytes": 40960
+      },
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_hyper_connection_up_projection"
+    },
+    {
+      "layer": 0,
+      "ordinal": 4,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-04-attention_hyper_connection_mix_weights.f32",
+        "sha256": "ad335f02758d28777f629806547d0ec2e751f67313bcf90b567e04b06c0edd87",
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "bytes": 40960
+      },
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_hyper_connection_mix_weights"
+    },
+    {
+      "layer": 0,
+      "ordinal": 5,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-05-attention_hyper_connection_mixed.f32",
+        "sha256": "bb9956d51506ca37d39d25c8f42dfa677a08ebd8d0dbe0c81016a00e228aec2c",
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "bytes": 10240
+      },
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "attention_hyper_connection_mixed"
+    },
+    {
+      "layer": 0,
+      "ordinal": 6,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-06-attention_block_injection_weights.f32",
+        "sha256": "5cff2df02069bbada3d5da9f160aac1b356bb53cbc4796fb31b3ca582f1e82cc",
+        "dtype": "F32_LE",
+        "elements": 4,
+        "bytes": 16
+      },
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "stage": "attention_block_injection_weights"
+    },
+    {
+      "layer": 0,
+      "ordinal": 7,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-07-attention_branch.f32",
+        "sha256": "56dd3e43298544210d46c451b1361c2c6415a7d032135b4e748d9d816f21f247",
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "bytes": 10240
+      },
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "attention_branch"
+    },
+    {
+      "layer": 0,
+      "ordinal": 8,
+      "original_dtype": "mlx.core.bfloat16",
+      "payload": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/layer0-trace-08-post_attention_state.f32",
+        "sha256": "7ddd0c2bc994dfe78531889f351c90b83817781fe134f1cfa0afe171c9ae87ea",
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "bytes": 40960
+      },
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "post_attention_state"
+    }
+  ],
+  "source_ple_state": {
+    "consumed": false,
+    "ordinary_inference_dependency_allowed": false
+  },
+  "claim_boundary": "Bounded admitted (owner-authorized or local-canonical) native layer-0 attention-HyperConnection causal capture only. It does not load or inject source PLE payload state, load layer-0 MLP weights or execute layer-0 MLP operators, execute layers 1 through 4 or the complete body, establish source parity by itself, qualify an NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi. science_status=UNEARNED.",
+  "seal_sha256": "101374052e189a1d59b028feb0d3dcbf1acff6cb1a1a25c982a4aeb07cc8f88c"
+}

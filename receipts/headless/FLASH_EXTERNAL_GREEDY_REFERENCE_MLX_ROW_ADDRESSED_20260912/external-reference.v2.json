@@ -1,0 +1,73 @@
+{
+  "generated_token_ids": [
+    271,
+    248045
+  ],
+  "logits_trace": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-logits-trace.json",
+    "schema": "hawking.flash.external_greedy_logits_trace.v1",
+    "seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+    "sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+    "status": "SEALED_EXTERNAL_COMPLETE_SOURCE_GREEDY_LOGITS_TRACE"
+  },
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "provider": {
+    "execution_schedule": "exact_qwen4_exp_row_addressed_ple_and_experts_with_evaluated_sublayer_boundaries",
+    "implementation": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/provider-implementation.json",
+      "sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117"
+    },
+    "implementation_version": "mlx-vlm-0.7.0-qwen4-exp",
+    "independent_from_hawking_native_executor": true,
+    "ple_storage_manifest": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/provider-ple-range-manifest.json",
+      "sha256": "4c90319bd24f9bb3bfba956eafdd6a7e929af73f0f3c679fef5f3b7943d6952e"
+    },
+    "producer": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418"
+    },
+    "runtime_lock": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    }
+  },
+  "sampling": {
+    "do_sample": false,
+    "method": "greedy_argmax",
+    "temperature": 0
+  },
+  "schema": "hawking.flash.external_greedy_reference.v2",
+  "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+  "source": {
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_lake_manifest": {
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+    },
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "ple_inclusive": true,
+    "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "shard_ledger": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_SHARD_LEDGER_20260912.json",
+      "schema": "hawking.flash.source_shard_ledger.v1",
+      "seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "status": "VERIFIED_COMPLETE_SOURCE_SHARD_LEDGER"
+    }
+  },
+  "status": "ADMITTED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE",
+  "tokenizer": {
+    "file": "tokenizer.json",
+    "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+  }
+}

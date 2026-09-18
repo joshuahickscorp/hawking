@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "71e231a58ef6e3b5342ecc5c178673dace78a67510f455564b32d5a83bc60bf5",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:58:52.713755+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:58:52.713775+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:58:52.716826+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md states the detailed current ownership map is docs/CURRENT_ARCHITECTURE.md.\",\"README.md states HAWKING owns planning, typed tool calls, lifecycle, and verification; the Hawking Rust crates own execution and servin",
+      "outcome": "CONTINUE",
+      "reply_chars": 2403,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md states the detailed current ownership map is docs/CURRENT_ARCHITECTURE.md.\",\"README.md states HAWKING owns planning, typed tool calls, lifecycle, and verification; the Hawking Rust crates own execution and serving.\",\"README.md states receipts are evidence, not an additional source of architecture.\",\"README.md lists verification commands including python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check, tools/ci/rust_test_fast.sh compile, tools/ci/rust_test_fast.sh policy, and cargo test -p hawking-core --test q4k_fast_parity.\",\"README.md states the Rust fast lane compiles 135 integration sources through checked aggregate targets while preserving each named source file as an explicit isolated target for runtime work.\",\"README.md states model weights are local inputs and are not part of the repository.\",\"README.md states no Odyssey campaign has been run end to end, no Odyssey wall time has been measured, and FPGA work is pre-board with no hardware results.\",\"README.md full-file sha256 is 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9.\"],\"sources\":[{\"path\":\"README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"sha256_scope\":\"full_file\",\"bytes\":4340}],\"recommendations\":[\"Read docs/CURRENT_ARCHITECTURE.md next to identify the exact source/test owners for P4_AUTO_IMPLEMENTATION_CONTRACT before naming a mutation seam.\",\"Do not name a smallest safe mutation seam or focused RED/GREEN tests from README.md alone; the objective requires source-grounded owner evidence that has not yet been observed.\",\"Preserve the README-stated boundary that receipts are evidence, not architecture, and that HAWKING owns planning/verification while Rust crates own execution/serving.\",\"Keep the contract read-only and bounded: no file mutation, no hardware access, no production/release completion claim.\"],\"unresolved_questions\":[\"Which exact source and test files own P4_AUTO_IMPLEMENTATION_CONTRACT?\",\"What is the smallest safe mutation or verification seam for that contract?\",\"Which focused RED/GREEN tests and deterministic acceptance evidence are already admitted for this contract?\",\"What protected resources and one-writer scope apply to the named seam?\",\"What single falsifier should be attached to the bounded implementation contract?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-02c78654df914a66",
+  "worker_id": "hawking-worker-d668c8c8c0fa4a10",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-51E50485"
+}

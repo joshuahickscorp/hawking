@@ -1,0 +1,4635 @@
+{
+  "active_lookup": {
+    "embedding_values_per_token": 2560,
+    "lookup_events": 16,
+    "lookup_events_per_token": 16,
+    "ordered_lookup_records": [
+      {
+        "combined_row": 9663979,
+        "global_head": 0,
+        "local_row": 2163943,
+        "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 3,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+      },
+      {
+        "combined_row": 26558231,
+        "global_head": 1,
+        "local_row": 1558111,
+        "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 10,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+      },
+      {
+        "combined_row": 56120240,
+        "global_head": 2,
+        "local_row": 1119976,
+        "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 22,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+      },
+      {
+        "combined_row": 74755659,
+        "global_head": 3,
+        "local_row": 2255311,
+        "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 29,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+      },
+      {
+        "combined_row": 80459717,
+        "global_head": 4,
+        "local_row": 459333,
+        "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 32,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+      },
+      {
+        "combined_row": 109265651,
+        "global_head": 5,
+        "local_row": 1765135,
+        "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 43,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+      },
+      {
+        "combined_row": 132697467,
+        "global_head": 6,
+        "local_row": 196831,
+        "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 53,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+      },
+      {
+        "combined_row": 151022725,
+        "global_head": 7,
+        "local_row": 1022005,
+        "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 60,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+      },
+      {
+        "combined_row": 170054832,
+        "global_head": 8,
+        "local_row": 54016,
+        "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 68,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+      },
+      {
+        "combined_row": 192967038,
+        "global_head": 9,
+        "local_row": 466114,
+        "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 77,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+      },
+      {
+        "combined_row": 200687722,
+        "global_head": 10,
+        "local_row": 686762,
+        "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 80,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+      },
+      {
+        "combined_row": 225763581,
+        "global_head": 11,
+        "local_row": 762501,
+        "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 90,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+      },
+      {
+        "combined_row": 259275737,
+        "global_head": 12,
+        "local_row": 1774501,
+        "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 103,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+      },
+      {
+        "combined_row": 272983544,
+        "global_head": 13,
+        "local_row": 482236,
+        "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 109,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+      },
+      {
+        "combined_row": 297596484,
+        "global_head": 14,
+        "local_row": 95056,
+        "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 119,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+      },
+      {
+        "combined_row": 300986548,
+        "global_head": 15,
+        "local_row": 985108,
+        "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+        "row_bytes": 320,
+        "session_token_index": 0,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      }
+    ],
+    "source_bytes_referenced_across_events": 5120,
+    "source_range_read_sha256": "252971962a85c94b3341b39eff45d569ff3253234cce5f430208c162ed65e359",
+    "source_row_bytes": 320,
+    "source_row_records": [
+      {
+        "combined_row": 9663979,
+        "local_row": 2163943,
+        "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+        "row_bytes": 320,
+        "shard_ordinal": 3,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+      },
+      {
+        "combined_row": 26558231,
+        "local_row": 1558111,
+        "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+        "row_bytes": 320,
+        "shard_ordinal": 10,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+      },
+      {
+        "combined_row": 56120240,
+        "local_row": 1119976,
+        "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+        "row_bytes": 320,
+        "shard_ordinal": 22,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+      },
+      {
+        "combined_row": 74755659,
+        "local_row": 2255311,
+        "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+        "row_bytes": 320,
+        "shard_ordinal": 29,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+      },
+      {
+        "combined_row": 80459717,
+        "local_row": 459333,
+        "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+        "row_bytes": 320,
+        "shard_ordinal": 32,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+      },
+      {
+        "combined_row": 109265651,
+        "local_row": 1765135,
+        "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+        "row_bytes": 320,
+        "shard_ordinal": 43,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+      },
+      {
+        "combined_row": 132697467,
+        "local_row": 196831,
+        "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+        "row_bytes": 320,
+        "shard_ordinal": 53,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+      },
+      {
+        "combined_row": 151022725,
+        "local_row": 1022005,
+        "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+        "row_bytes": 320,
+        "shard_ordinal": 60,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+      },
+      {
+        "combined_row": 170054832,
+        "local_row": 54016,
+        "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+        "row_bytes": 320,
+        "shard_ordinal": 68,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+      },
+      {
+        "combined_row": 192967038,
+        "local_row": 466114,
+        "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+        "row_bytes": 320,
+        "shard_ordinal": 77,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+      },
+      {
+        "combined_row": 200687722,
+        "local_row": 686762,
+        "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+        "row_bytes": 320,
+        "shard_ordinal": 80,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+      },
+      {
+        "combined_row": 225763581,
+        "local_row": 762501,
+        "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+        "row_bytes": 320,
+        "shard_ordinal": 90,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+      },
+      {
+        "combined_row": 259275737,
+        "local_row": 1774501,
+        "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+        "row_bytes": 320,
+        "shard_ordinal": 103,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+      },
+      {
+        "combined_row": 272983544,
+        "local_row": 482236,
+        "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+        "row_bytes": 320,
+        "shard_ordinal": 109,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+      },
+      {
+        "combined_row": 297596484,
+        "local_row": 95056,
+        "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+        "row_bytes": 320,
+        "shard_ordinal": 119,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+      },
+      {
+        "combined_row": 300986548,
+        "local_row": 985108,
+        "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+        "row_bytes": 320,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      }
+    ],
+    "token_count": 1,
+    "unique_source_bytes": 5120,
+    "unique_source_rows": 16
+  },
+  "candidates": [
+    {
+      "active_row_metrics": {
+        "cosine_defined_rows": 16,
+        "finite": true,
+        "global_relative_l2": 0.9993999004364014,
+        "max_row_relative_l2": 1.015679955482483,
+        "mean_row_cosine": 0.04654071852564812,
+        "mean_row_relative_l2": 0.9997076988220215,
+        "min_row_cosine": -0.13275940716266632,
+        "nonzero_reference_rows": 16,
+        "p95_row_relative_l2": 1.0104014873504639,
+        "rmse": 0.008864613388861069,
+        "rows": 16,
+        "zero_reference_rows": 0
+      },
+      "direct_execution": false,
+      "family": "address_conditioned_fourier_row_generator",
+      "feature_count": 5,
+      "feature_program": "bias plus deterministic local-row/shard Fourier coordinates",
+      "generator_coefficients": {
+        "dtype": "BF16",
+        "sha256": "0e72bf83836d201803c13f61e6a7db50969207d3fe9764d67bb81acb09891241",
+        "shape": [
+          5,
+          160
+        ]
+      },
+      "heldout_row_metrics": {
+        "cosine_defined_rows": 1023,
+        "finite": true,
+        "global_relative_l2": 0.9999597072601318,
+        "max_row_relative_l2": 1.0242191553115845,
+        "mean_row_cosine": 0.046517081558704376,
+        "mean_row_relative_l2": 1.0001269578933716,
+        "min_row_cosine": -0.2242586314678192,
+        "nonzero_reference_rows": 1023,
+        "p95_row_relative_l2": 1.0121906995773315,
+        "rmse": 0.007686754531037735,
+        "rows": 1024,
+        "zero_reference_rows": 1
+      },
+      "lookup_semantics_qualified": false,
+      "ple_output_metrics": {
+        "cosine": 0.290106862783432,
+        "finite": true,
+        "max_abs": 0.20432530343532562,
+        "relative_l2": 0.9748294353485107,
+        "rmse": 0.012958891006929658
+      },
+      "projected_full_table": {
+        "active_representation_bytes_per_token": 5952,
+        "coefficient_bytes": 1600,
+        "coefficient_dtype": "BF16",
+        "coefficient_shape": [
+          5,
+          160
+        ],
+        "complete_projected_bytes": 5952,
+        "logical_rows": 320001536,
+        "logical_weights": 51200245760,
+        "metadata_bytes": 256,
+        "projected_complete_table_ebpw": 9.299955360214271e-07,
+        "runtime_support_bytes": 4096
+      },
+      "representation_materialized": false,
+      "ridge_l2": 0.001,
+      "source_independent_when_materialized": true,
+      "train_row_metrics": {
+        "cosine_defined_rows": 1024,
+        "finite": true,
+        "global_relative_l2": 0.9955340027809143,
+        "max_row_relative_l2": 1.025058388710022,
+        "mean_row_cosine": 0.09308362007141113,
+        "mean_row_relative_l2": 0.9957826137542725,
+        "min_row_cosine": -0.1576663851737976,
+        "nonzero_reference_rows": 1024,
+        "p95_row_relative_l2": 1.0092995166778564,
+        "rmse": 0.00761082132473717,
+        "rows": 1024,
+        "zero_reference_rows": 0
+      }
+    },
+    {
+      "active_row_metrics": {
+        "cosine_defined_rows": 16,
+        "finite": true,
+        "global_relative_l2": 0.9971504807472229,
+        "max_row_relative_l2": 1.0198142528533936,
+        "mean_row_cosine": 0.07688970863819122,
+        "mean_row_relative_l2": 0.997750997543335,
+        "min_row_cosine": -0.1418420672416687,
+        "nonzero_reference_rows": 16,
+        "p95_row_relative_l2": 1.009986162185669,
+        "rmse": 0.008844661186060091,
+        "rows": 16,
+        "zero_reference_rows": 0
+      },
+      "direct_execution": false,
+      "family": "address_conditioned_fourier_row_generator",
+      "feature_count": 9,
+      "feature_program": "bias plus deterministic local-row/shard Fourier coordinates",
+      "generator_coefficients": {
+        "dtype": "BF16",
+        "sha256": "9aec229f0b0bb399c3f7aad88d29f09e87fd6870133f2239ecb70b25c5053d6f",
+        "shape": [
+          9,
+          160
+        ]
+      },
+      "heldout_row_metrics": {
+        "cosine_defined_rows": 1023,
+        "finite": true,
+        "global_relative_l2": 1.001806378364563,
+        "max_row_relative_l2": 1.0309258699417114,
+        "mean_row_cosine": 0.03996065631508827,
+        "mean_row_relative_l2": 1.0020612478256226,
+        "min_row_cosine": -0.25480926036834717,
+        "nonzero_reference_rows": 1023,
+        "p95_row_relative_l2": 1.015743374824524,
+        "rmse": 0.007700950232648075,
+        "rows": 1024,
+        "zero_reference_rows": 1
+      },
+      "lookup_semantics_qualified": false,
+      "ple_output_metrics": {
+        "cosine": 0.29807981848716736,
+        "finite": true,
+        "max_abs": 0.20372401177883148,
+        "relative_l2": 0.9730157852172852,
+        "rmse": 0.012934779501735796
+      },
+      "projected_full_table": {
+        "active_representation_bytes_per_token": 7232,
+        "coefficient_bytes": 2880,
+        "coefficient_dtype": "BF16",
+        "coefficient_shape": [
+          9,
+          160
+        ],
+        "complete_projected_bytes": 7232,
+        "logical_rows": 320001536,
+        "logical_weights": 51200245760,
+        "metadata_bytes": 256,
+        "projected_complete_table_ebpw": 1.129994576026035e-06,
+        "runtime_support_bytes": 4096
+      },
+      "representation_materialized": false,
+      "ridge_l2": 0.001,
+      "source_independent_when_materialized": true,
+      "train_row_metrics": {
+        "cosine_defined_rows": 1024,
+        "finite": true,
+        "global_relative_l2": 0.9936001300811768,
+        "max_row_relative_l2": 1.0267471075057983,
+        "mean_row_cosine": 0.1118435263633728,
+        "mean_row_relative_l2": 0.9938599467277527,
+        "min_row_cosine": -0.1282496154308319,
+        "nonzero_reference_rows": 1024,
+        "p95_row_relative_l2": 1.009061574935913,
+        "rmse": 0.007596036591939418,
+        "rows": 1024,
+        "zero_reference_rows": 0
+      }
+    },
+    {
+      "active_row_metrics": {
+        "cosine_defined_rows": 16,
+        "finite": true,
+        "global_relative_l2": 0.9967970848083496,
+        "max_row_relative_l2": 1.0330405235290527,
+        "mean_row_cosine": 0.09355802088975906,
+        "mean_row_relative_l2": 0.9964564442634583,
+        "min_row_cosine": -0.159405916929245,
+        "nonzero_reference_rows": 16,
+        "p95_row_relative_l2": 1.0183894634246826,
+        "rmse": 0.008841526196103792,
+        "rows": 16,
+        "zero_reference_rows": 0
+      },
+      "direct_execution": false,
+      "family": "address_conditioned_fourier_row_generator",
+      "feature_count": 17,
+      "feature_program": "bias plus deterministic local-row/shard Fourier coordinates",
+      "generator_coefficients": {
+        "dtype": "BF16",
+        "sha256": "f0c3c687830008c2c0752fe2bac2e1ed481ae7c1d2c05ab5f13a78df0d34f934",
+        "shape": [
+          17,
+          160
+        ]
+      },
+      "heldout_row_metrics": {
+        "cosine_defined_rows": 1023,
+        "finite": true,
+        "global_relative_l2": 1.0028700828552246,
+        "max_row_relative_l2": 1.0545220375061035,
+        "mean_row_cosine": 0.061586420983076096,
+        "mean_row_relative_l2": 1.0034030675888062,
+        "min_row_cosine": -0.20311537384986877,
+        "nonzero_reference_rows": 1023,
+        "p95_row_relative_l2": 1.0259108543395996,
+        "rmse": 0.007709127849355772,
+        "rows": 1024,
+        "zero_reference_rows": 1
+      },
+      "lookup_semantics_qualified": false,
+      "ple_output_metrics": {
+        "cosine": 0.29296067357063293,
+        "finite": true,
+        "max_abs": 0.20496803522109985,
+        "relative_l2": 0.9609750509262085,
+        "rmse": 0.012774717756370398
+      },
+      "projected_full_table": {
+        "active_representation_bytes_per_token": 9792,
+        "coefficient_bytes": 5440,
+        "coefficient_dtype": "BF16",
+        "coefficient_shape": [
+          17,
+          160
+        ],
+        "complete_projected_bytes": 9792,
+        "logical_rows": 320001536,
+        "logical_weights": 51200245760,
+        "metadata_bytes": 256,
+        "projected_complete_table_ebpw": 1.529992656035251e-06,
+        "runtime_support_bytes": 4096
+      },
+      "representation_materialized": false,
+      "ridge_l2": 0.001,
+      "source_independent_when_materialized": true,
+      "train_row_metrics": {
+        "cosine_defined_rows": 1024,
+        "finite": true,
+        "global_relative_l2": 0.9869234561920166,
+        "max_row_relative_l2": 1.0406594276428223,
+        "mean_row_cosine": 0.15898218750953674,
+        "mean_row_relative_l2": 0.9875560998916626,
+        "min_row_cosine": -0.10777001082897186,
+        "nonzero_reference_rows": 1024,
+        "p95_row_relative_l2": 1.0109739303588867,
+        "rmse": 0.007544994002317484,
+        "rows": 1024,
+        "zero_reference_rows": 0
+      }
+    },
+    {
+      "active_row_metrics": {
+        "cosine_defined_rows": 16,
+        "finite": true,
+        "global_relative_l2": 0.9964631199836731,
+        "max_row_relative_l2": 1.0353031158447266,
+        "mean_row_cosine": 0.10914182662963867,
+        "mean_row_relative_l2": 0.9962579011917114,
+        "min_row_cosine": -0.10035392642021179,
+        "nonzero_reference_rows": 16,
+        "p95_row_relative_l2": 1.0226386785507202,
+        "rmse": 0.008838564640877228,
+        "rows": 16,
+        "zero_reference_rows": 0
+      },
+      "direct_execution": false,
+      "family": "address_conditioned_fourier_row_generator",
+      "feature_count": 33,
+      "feature_program": "bias plus deterministic local-row/shard Fourier coordinates",
+      "generator_coefficients": {
+        "dtype": "BF16",
+        "sha256": "262e32a61eeb8f91598dbb13ce931d9ded49ebc9c1dd2b48a5c81696e1b8b530",
+        "shape": [
+          33,
+          160
+        ]
+      },
+      "heldout_row_metrics": {
+        "cosine_defined_rows": 1023,
+        "finite": true,
+        "global_relative_l2": 1.004231333732605,
+        "max_row_relative_l2": 1.0574185848236084,
+        "mean_row_cosine": 0.07436380535364151,
+        "mean_row_relative_l2": 1.0049813985824585,
+        "min_row_cosine": -0.1274929791688919,
+        "nonzero_reference_rows": 1023,
+        "p95_row_relative_l2": 1.033471941947937,
+        "rmse": 0.007719591695887683,
+        "rows": 1024,
+        "zero_reference_rows": 1
+      },
+      "lookup_semantics_qualified": false,
+      "ple_output_metrics": {
+        "cosine": 0.2968146502971649,
+        "finite": true,
+        "max_abs": 0.2041710764169693,
+        "relative_l2": 0.9557302594184875,
+        "rmse": 0.01270499628082438
+      },
+      "projected_full_table": {
+        "active_representation_bytes_per_token": 14912,
+        "coefficient_bytes": 10560,
+        "coefficient_dtype": "BF16",
+        "coefficient_shape": [
+          33,
+          160
+        ],
+        "complete_projected_bytes": 14912,
+        "logical_rows": 320001536,
+        "logical_weights": 51200245760,
+        "metadata_bytes": 256,
+        "projected_complete_table_ebpw": 2.329988816053683e-06,
+        "runtime_support_bytes": 4096
+      },
+      "representation_materialized": false,
+      "ridge_l2": 0.001,
+      "source_independent_when_materialized": true,
+      "train_row_metrics": {
+        "cosine_defined_rows": 1024,
+        "finite": true,
+        "global_relative_l2": 0.9795900583267212,
+        "max_row_relative_l2": 1.0474048852920532,
+        "mean_row_cosine": 0.19862529635429382,
+        "mean_row_relative_l2": 0.9804774522781372,
+        "min_row_cosine": -0.0642947405576706,
+        "nonzero_reference_rows": 1024,
+        "p95_row_relative_l2": 1.0092344284057617,
+        "rmse": 0.007488930162911227,
+        "rows": 1024,
+        "zero_reference_rows": 0
+      }
+    },
+    {
+      "active_row_metrics": {
+        "cosine_defined_rows": 16,
+        "finite": true,
+        "global_relative_l2": 1.006727695465088,
+        "max_row_relative_l2": 1.0442842245101929,
+        "mean_row_cosine": 0.08027392625808716,
+        "mean_row_relative_l2": 1.0067899227142334,
+        "min_row_cosine": -0.1187896654009819,
+        "nonzero_reference_rows": 16,
+        "p95_row_relative_l2": 1.0355770587921143,
+        "rmse": 0.008929610078153294,
+        "rows": 16,
+        "zero_reference_rows": 0
+      },
+      "direct_execution": false,
+      "family": "address_conditioned_fourier_row_generator",
+      "feature_count": 65,
+      "feature_program": "bias plus deterministic local-row/shard Fourier coordinates",
+      "generator_coefficients": {
+        "dtype": "BF16",
+        "sha256": "a0fcdc5c7fe090b24ee3fefd9d251b7c2938b80c75b20dd1ba45aacf57f9d410",
+        "shape": [
+          65,
+          160
+        ]
+      },
+      "heldout_row_metrics": {
+        "cosine_defined_rows": 1023,
+        "finite": true,
+        "global_relative_l2": 1.0164823532104492,
+        "max_row_relative_l2": 1.1176649332046509,
+        "mean_row_cosine": 0.07275951653718948,
+        "mean_row_relative_l2": 1.0178570747375488,
+        "min_row_cosine": -0.2768656313419342,
+        "nonzero_reference_rows": 1023,
+        "p95_row_relative_l2": 1.0579522848129272,
+        "rmse": 0.007813765523792475,
+        "rows": 1024,
+        "zero_reference_rows": 1
+      },
+      "lookup_semantics_qualified": false,
+      "ple_output_metrics": {
+        "cosine": 0.29790136218070984,
+        "finite": true,
+        "max_abs": 0.20468084514141083,
+        "relative_l2": 0.954626202583313,
+        "rmse": 0.012690317909149143
+      },
+      "projected_full_table": {
+        "active_representation_bytes_per_token": 25152,
+        "coefficient_bytes": 20800,
+        "coefficient_dtype": "BF16",
+        "coefficient_shape": [
+          65,
+          160
+        ],
+        "complete_projected_bytes": 25152,
+        "logical_rows": 320001536,
+        "logical_weights": 51200245760,
+        "metadata_bytes": 256,
+        "projected_complete_table_ebpw": 3.929981136090547e-06,
+        "runtime_support_bytes": 4096
+      },
+      "representation_materialized": false,
+      "ridge_l2": 0.001,
+      "source_independent_when_materialized": true,
+      "train_row_metrics": {
+        "cosine_defined_rows": 1024,
+        "finite": true,
+        "global_relative_l2": 0.9647093415260315,
+        "max_row_relative_l2": 1.0724269151687622,
+        "mean_row_cosine": 0.26056596636772156,
+        "mean_row_relative_l2": 0.9661045074462891,
+        "min_row_cosine": -0.03344837576150894,
+        "nonzero_reference_rows": 1024,
+        "p95_row_relative_l2": 1.0052539110183716,
+        "rmse": 0.007375167960136267,
+        "rows": 1024,
+        "zero_reference_rows": 0
+      }
+    },
+    {
+      "active_row_metrics": {
+        "cosine_defined_rows": 16,
+        "finite": true,
+        "global_relative_l2": 1.0376869440078735,
+        "max_row_relative_l2": 1.1399985551834106,
+        "mean_row_cosine": 0.06195785105228424,
+        "mean_row_relative_l2": 1.0412836074829102,
+        "min_row_cosine": -0.0895964726805687,
+        "nonzero_reference_rows": 16,
+        "p95_row_relative_l2": 1.1193767786026,
+        "rmse": 0.009204217357469327,
+        "rows": 16,
+        "zero_reference_rows": 0
+      },
+      "direct_execution": false,
+      "family": "address_conditioned_fourier_row_generator",
+      "feature_count": 129,
+      "feature_program": "bias plus deterministic local-row/shard Fourier coordinates",
+      "generator_coefficients": {
+        "dtype": "BF16",
+        "sha256": "32f261ef1c643f673900c7bc499ff74ffd23b100f68359fd7240ea03cc8a7825",
+        "shape": [
+          129,
+          160
+        ]
+      },
+      "heldout_row_metrics": {
+        "cosine_defined_rows": 1023,
+        "finite": true,
+        "global_relative_l2": 1.0357834100723267,
+        "max_row_relative_l2": 1.1601760387420654,
+        "mean_row_cosine": 0.06381870061159134,
+        "mean_row_relative_l2": 1.0380135774612427,
+        "min_row_cosine": -0.2407393604516983,
+        "nonzero_reference_rows": 1023,
+        "p95_row_relative_l2": 1.0859475135803223,
+        "rmse": 0.00796213450262771,
+        "rows": 1024,
+        "zero_reference_rows": 1
+      },
+      "lookup_semantics_qualified": false,
+      "ple_output_metrics": {
+        "cosine": 0.3021423816680908,
+        "finite": true,
+        "max_abs": 0.20251542329788208,
+        "relative_l2": 0.9532825350761414,
+        "rmse": 0.012672457617452412
+      },
+      "projected_full_table": {
+        "active_representation_bytes_per_token": 45632,
+        "coefficient_bytes": 41280,
+        "coefficient_dtype": "BF16",
+        "coefficient_shape": [
+          129,
+          160
+        ],
+        "complete_projected_bytes": 45632,
+        "logical_rows": 320001536,
+        "logical_weights": 51200245760,
+        "metadata_bytes": 256,
+        "projected_complete_table_ebpw": 7.129965776164274e-06,
+        "runtime_support_bytes": 4096
+      },
+      "representation_materialized": false,
+      "ridge_l2": 0.001,
+      "source_independent_when_materialized": true,
+      "train_row_metrics": {
+        "cosine_defined_rows": 1024,
+        "finite": true,
+        "global_relative_l2": 0.943965494632721,
+        "max_row_relative_l2": 1.0691012144088745,
+        "mean_row_cosine": 0.32694026827812195,
+        "mean_row_relative_l2": 0.9460592269897461,
+        "min_row_cosine": 0.0056412178091704845,
+        "nonzero_reference_rows": 1024,
+        "p95_row_relative_l2": 0.9957845211029053,
+        "rmse": 0.007216581620935176,
+        "rows": 1024,
+        "zero_reference_rows": 0
+      }
+    }
+  ],
+  "claim_boundary": "This is a one-source-control address-generator discriminator. It bills the complete generated-row program and measures one sealed PLE injection, but it does not establish all-address lookup semantics, a materialized artifact, native compact execution, broader PLE state behavior, whole-NR EBPW, TPS, or capability.",
+  "elapsed_ns": 111865042,
+  "generated_at": "2026-09-12T04:28:07.865652+00:00",
+  "global_training_sample": {
+    "heldout_rows": 1024,
+    "index_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "range_read_bytes": 655360,
+    "sample_sha256": "a32a467779400966c6ecbe1fb056828fa4bcf23be0ccc4679800bb1e7fc27ed1",
+    "sampled_tensors": [
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00008-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00030-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_100.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00030-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_101.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00031-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_102.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00031-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00031-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_104.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00031-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_105.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00032-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_106.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00032-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00032-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00032-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00008-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00033-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_110.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00033-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_111.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00033-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_112.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00033-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_113.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00034-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_114.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00034-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00034-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_116.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00034-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00035-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_118.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00035-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00008-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_12.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00035-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00035-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_121.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00036-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_122.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00036-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00036-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_124.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00036-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_125.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_126.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_127.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00008-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_13.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00009-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_14.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00009-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_15.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00009-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00009-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_17.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00010-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_18.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00010-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_19.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00006-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_2.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00010-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_20.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00010-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_21.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00011-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00011-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00011-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_24.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00011-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_25.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00012-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_26.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00012-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_27.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00012-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_28.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00012-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00006-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00013-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_30.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00013-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00013-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00013-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_33.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00014-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00014-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_35.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00014-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_36.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00014-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_37.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00015-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00015-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00006-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_4.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00015-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_40.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00015-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_41.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00016-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00016-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00016-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_44.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00016-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_45.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00017-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_46.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00017-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00017-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_48.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00017-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_49.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00006-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_5.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00018-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00018-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00018-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_52.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00018-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00019-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_54.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00019-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_55.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00019-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_56.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00019-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_57.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00020-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00020-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_59.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00007-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_6.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00020-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00020-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_61.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00021-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_62.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00021-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_63.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00021-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00021-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_65.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00022-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_66.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00022-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_67.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00022-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00022-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00007-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_7.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00023-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_70.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00023-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_71.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00023-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_72.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00023-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_73.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00024-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00024-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_75.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00024-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_76.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00024-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00025-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00025-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_79.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00007-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00025-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00025-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_81.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00026-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_82.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00026-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_83.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00026-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00026-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_85.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00027-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_86.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00027-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_87.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00027-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_88.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00027-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_89.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00007-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_9.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00028-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00028-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_91.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00028-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00028-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00029-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_94.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00029-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_95.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00029-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00029-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_97.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00030-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_98.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      },
+      {
+        "heldout_row_ids": [
+          166667,
+          500002,
+          833337,
+          1166671,
+          1500006,
+          1833341,
+          2166676,
+          2500011
+        ],
+        "shape": [
+          2500012,
+          160
+        ],
+        "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00030-of-00131.safetensors",
+        "source_bytes": 800003840,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight",
+        "train_row_ids": [
+          0,
+          333334,
+          666669,
+          1000004,
+          1333339,
+          1666674,
+          2000008,
+          2333343
+        ]
+      }
+    ],
+    "source_passes": 1,
+    "source_reads": "deterministic BF16 range reads only; no full lookup tensor is loaded",
+    "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "tensor_count": 128,
+    "tensor_pattern": "ngram_embedding.shard_",
+    "total_entries": 51200245760,
+    "total_rows": 320001536,
+    "train_rows": 1024,
+    "width": 160
+  },
+  "layout": {
+    "combined_rows": 320001536,
+    "feature_address_space": "canonical combined source PLE row index",
+    "feature_program": "bias plus local-row/shard Fourier coordinates",
+    "head_dimension": 160,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+    "sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "shard_count": 128,
+    "source_bytes": 102400491520,
+    "tensor_prefix": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_"
+  },
+  "next": "Escalate only an address-generator survivor to disjoint source controls and then direct execution. If this simple address-conditioned prior is dominated, retain the result as a structural Scar and move to a materially different state-conditioned/generated or learned/Nova PLE function rather than retrying uniform codecs or fixed local-error repair.",
+  "promotion_allowed": false,
+  "reference_parity": {
+    "baseline_source_formula_metrics": {
+      "cosine": 1.0,
+      "finite": true,
+      "max_abs": 4.470348358154297e-08,
+      "relative_l2": 1.498442827596591e-07,
+      "rmse": 1.9919543169561657e-09
+    },
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+    "seal_sha256": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+    "sha256": "8c1b854d0c4410a0deb0a1e185b0cd3c2fe7d1d6c22fdd9ed3c57f8b0c84d189"
+  },
+  "representation": {
+    "base": "address-conditioned BF16 Fourier generator; no per-row code or residual table",
+    "billed": {
+      "generator_coefficients": "all BF16 address-generator coefficients",
+      "metadata_bytes": 256,
+      "runtime_support_bytes": 4096,
+      "source_table": "not retained by the projected generator representation"
+    },
+    "fit": "closed-form ridge regression with an explicitly billed BF16 coefficient matrix",
+    "function_control": "one sealed source PLE BOS injection checked by the reference oracle",
+    "ridge_l2": 0.001,
+    "training": "deterministic train-only source rows from every PLE shard"
+  },
+  "schema": "hawking.odyssey.ple_address_generator_screen.v1",
+  "seal_sha256": "83cabb5dfb9a7f7c20504c54d6bdfd2e4668369bbac0e191f39223c032bec03f",
+  "source_control": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+    "seal_sha256": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+    "sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"
+  },
+  "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY",
+  "target_summary": [
+    {
+      "best_candidate": {
+        "feature_count": 129,
+        "heldout_row_relative_l2": 1.0357834100723267,
+        "ple_output_cosine": 0.3021423816680908,
+        "ple_output_relative_l2": 0.9532825350761414,
+        "projected_complete_table_ebpw": 7.129965776164274e-06
+      },
+      "status": "ONE_SOURCE_PLE_OUTPUT_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM",
+      "target_projected_table_ebpw": 0.1
+    },
+    {
+      "best_candidate": {
+        "feature_count": 129,
+        "heldout_row_relative_l2": 1.0357834100723267,
+        "ple_output_cosine": 0.3021423816680908,
+        "ple_output_relative_l2": 0.9532825350761414,
+        "projected_complete_table_ebpw": 7.129965776164274e-06
+      },
+      "status": "ONE_SOURCE_PLE_OUTPUT_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM",
+      "target_projected_table_ebpw": 0.25
+    },
+    {
+      "best_candidate": {
+        "feature_count": 129,
+        "heldout_row_relative_l2": 1.0357834100723267,
+        "ple_output_cosine": 0.3021423816680908,
+        "ple_output_relative_l2": 0.9532825350761414,
+        "projected_complete_table_ebpw": 7.129965776164274e-06
+      },
+      "status": "ONE_SOURCE_PLE_OUTPUT_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM",
+      "target_projected_table_ebpw": 0.5
+    },
+    {
+      "best_candidate": {
+        "feature_count": 129,
+        "heldout_row_relative_l2": 1.0357834100723267,
+        "ple_output_cosine": 0.3021423816680908,
+        "ple_output_relative_l2": 0.9532825350761414,
+        "projected_complete_table_ebpw": 7.129965776164274e-06
+      },
+      "status": "ONE_SOURCE_PLE_OUTPUT_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM",
+      "target_projected_table_ebpw": 0.75
+    },
+    {
+      "best_candidate": {
+        "feature_count": 129,
+        "heldout_row_relative_l2": 1.0357834100723267,
+        "ple_output_cosine": 0.3021423816680908,
+        "ple_output_relative_l2": 0.9532825350761414,
+        "projected_complete_table_ebpw": 7.129965776164274e-06
+      },
+      "status": "ONE_SOURCE_PLE_OUTPUT_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM",
+      "target_projected_table_ebpw": 1.0
+    }
+  ]
+}

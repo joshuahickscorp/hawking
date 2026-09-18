@@ -24,7 +24,7 @@ SOURCE_MLP = WORKTREE / "crates" / "hawking-core" / "src" / "model" / "qwen38_hy
 
 
 def _primary_profile() -> Path:
-    return PRIMARY / "hcli" / "hawking-native.sealed-3.14.json"
+    return PRIMARY / "hawking" / "hawking-native.sealed-3.14.json"
 
 
 def call_run_runtime_archaeology(
@@ -36,7 +36,7 @@ def call_run_runtime_archaeology(
 ) -> dict[str, Any]:
     """Production call site of the catalog symbol."""
     run_runtime_archaeology = load_symbol(
-        "hcli.agentos.qwen27_runtime_identity", "run_runtime_archaeology"
+        "hawking.agentos.qwen27_runtime_identity", "run_runtime_archaeology"
     )
     return run_runtime_archaeology(
         repo_root=str(repo_root),
@@ -49,7 +49,7 @@ def call_run_runtime_archaeology(
 def call_run_protected_accelerator_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Production call site of the catalog symbol."""
     run_protected_accelerator_benchmark = load_symbol(
-        "hcli.agentos.protected_accelerator_benchmark",
+        "hawking.agentos.protected_accelerator_benchmark",
         "run_protected_accelerator_benchmark",
     )
     return run_protected_accelerator_benchmark(**kwargs)
@@ -58,7 +58,7 @@ def call_run_protected_accelerator_benchmark(**kwargs: Any) -> dict[str, Any]:
 def call_run_qwen27_mlp_diagnostic_ab(**kwargs: Any) -> dict[str, Any]:
     """Production call site of the catalog symbol. Do not call while a live resident holds the machine."""
     run_qwen27_mlp_diagnostic_ab = load_symbol(
-        "hcli.agentos.qwen27_mlp_diagnostic", "run_qwen27_mlp_diagnostic_ab"
+        "hawking.agentos.qwen27_mlp_diagnostic", "run_qwen27_mlp_diagnostic_ab"
     )
     return run_qwen27_mlp_diagnostic_ab(**kwargs)
 

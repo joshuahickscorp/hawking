@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:30:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P10_NX",
+  "workunit_id": "WORKUNIT-20260918-A3871FFE",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-A3871FFE_RESULT_PACKET.json",
+  "accepted_scope": "Read-only NX owner boundary: tools/nx_genome.py is the machine-bound counterpart to NR, binds exact NR content hash and machine genome, derives actually bound kernels, and exposes explicit refusal testing.",
+  "follow_on_contract": "Re-read the unobserved NX seal/refusal path and contract clauses, then verify exact hash/genome refusal and bound-kernel evidence with focused checks.",
+  "falsifier": "An exact source/test observation showing NX loads with mismatched NR content or machine genome, or a seal that claims undeclared kernels as dispatched, invalidates this boundary map.",
+  "limitations": [
+    "The provider read covered only the first 4000 bytes of tools/nx_genome.py.",
+    "No NX artifact, hardware, or production qualification is accepted."
+  ],
+  "claim_boundary": "Accepted as bounded read evidence only; P10 implementation and qualification remain incomplete."
+}

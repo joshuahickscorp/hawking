@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "8c8437f360710dd728fba185f764ae4c70d1d776830b83ec3a5445b7f4813185",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:57:15.814658+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:57:15.814676+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:57:15.820014+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/backends.py was observed read-only; full-file sha256 is 69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50, size 111789 bytes, with only the first 4000 bytes visible in the returned projection.\",\"The ",
+      "outcome": "CONTINUE",
+      "reply_chars": 2498,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/backends.py was observed read-only; full-file sha256 is 69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50, size 111789 bytes, with only the first 4000 bytes visible in the returned projection.\",\"The backends.py module docstring states the pool talks only to the RuntimeBackend interface, with LlamaServerBackend, MlxServerBackend, and MlxVlmServerBackend as implementations.\",\"The backends.py docstring states mlx_lm.server keeps chat_template_kwargs and prefix cache and has NO response_format/grammar, and that supports() is honest so a caller degrades rather than send a field the backend silently ignores.\",\"The backends.py docstring states make_structured_output_contract() returns a prompt-side instruction plus a validator when a backend cannot enforce a schema; invalid responses are rejected and retried a bounded number of times, and exhausting retries raises StructuredOutputExhausted rather than silently passing.\",\"The backends.py probe cache is keyed by binary path plus mtime and size, and the store path explicitly refuses to cache a probe for a binary that does not exist, so a capability answer cannot outlive the binary it describes.\",\"No read-only observation of hawking/workunit_owner.py is present in this packet, so the durable research focus-path gate and the HTTP-200 semantic owner logic cannot be confirmed from both admitted files here.\"],\"sources\":[\"hawking/backends.py (read-only observation; full-file sha256 69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50; 111789 bytes; 4000 bytes shown)\"],\"recommendations\":[\"Observe hawking/workunit_owner.py read-only, targeting the durable research focus-path gate, the daemon restart path, and the HTTP-200 semantic owner logic.\",\"Compare backends.py transport/backend capability handling against workunit_owner.py semantic ownership to name the exact transport/semantic boundary.\",\"Do not claim the restarted daemon applies the durable research focus-path gate until workunit_owner.py is observed and the gate invocation is source-grounded.\"],\"unresolved_questions\":[\"Does the restarted daemon apply the durable research focus-path gate?\",\"Where is the durable research focus-path gate implemented and invoked?\",\"What exactly is the transport/semantic boundary between backends.py and workunit_owner.py?\",\"Does workunit_owner.py contain the admitted HTTP-200 semantic owner logic referenced by the objective?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-3058acf3a36a483d",
+  "worker_id": "hawking-worker-be9e7eb95f14468e",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-CFCA4DEE"
+}

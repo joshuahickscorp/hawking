@@ -1,0 +1,46 @@
+{
+  "goal_id": "GOAL-A52AB48501",
+  "graph_state": {
+    "claim_boundary": "P19 phase completion is not promoted",
+    "dependencies": [
+      "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN"
+    ],
+    "p19": "WAITING_DEPENDENCIES"
+  },
+  "implemented": [
+    "persistent S0 world and bounded event replay",
+    "disposable branches with parent/source/worktree identity",
+    "findings with falsifier/action/evidence and candidate claim boundary",
+    "independent evaluator registry",
+    "candidate/artifact provenance",
+    "protected-controller-only assimilation",
+    "root and branch budget reservation/settlement",
+    "child failure isolation with active root and siblings",
+    "capability catalogue and Auto allocation metadata without scheduler"
+  ],
+  "next_evidence": [
+    "accepted P4 predecessor and Auto resource allocation integration",
+    "live branch execution/evaluator wiring",
+    "daemon/restart recovery around a running branch",
+    "device/tool discovery through existing capability registry"
+  ],
+  "owner": "hawking.sandbox_world",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": 1789700705.253231,
+  "schema": "hawking.long_haul.v2.sandbox_s0_foundation.v1",
+  "source_digests": {
+    "docs/reports/HAWKING_SANDBOX_S0_FOUNDATION_20260917.md": "727c01e7e2e1a8122774565295ac2946881bfe7ca1682aa2c2fbdb193b93943d",
+    "hawking/execution_sandbox.py": "850584150167181f4fff60231ec2876987a1a138c987c7c85a0863f10d45f244",
+    "hawking/sandbox_world.py": "019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27",
+    "hawking/tests/test_sandbox_world.py": "460747df82cf48e2315864be4b00ca40b050bb4567ff5c408fb21efae35256ed",
+    "hawking/worker/option_c.py": "c3f8b0cc96c27a7ca28d773f620d469578cee22e15da40a8942bd9c572e92709"
+  },
+  "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+  "status": "LOCAL_S0_PERSISTENT_FOUNDATION",
+  "tranche": "P19_SANDBOX",
+  "verification": {
+    "claim_boundary": "local S0 foundation only; no live worker allocation or Sandbox release acceptance",
+    "command": "python3 -m pytest -q hawking/tests/test_sandbox_world.py hawking/tests/test_worker_option_c.py hawking/tests/test_worker_special_unit.py",
+    "result": "98 passed"
+  }
+}

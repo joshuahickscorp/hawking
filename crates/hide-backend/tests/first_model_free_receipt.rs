@@ -154,6 +154,7 @@ impl InferenceClient for ScriptedInferenceClient {
             Ok(GenerationStats {
                 input_tokens: 0,
                 output_tokens: 1,
+                decode_ns: None,
                 decode_ms: None,
                 completed_decode_forwards: None,
                 decode_tokens_per_second: None,

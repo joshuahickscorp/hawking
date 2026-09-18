@@ -1,0 +1,255 @@
+{
+  "claim_boundary": "One pinned source-bound BOS PLE formula fixture evaluated in native Rust CPU F32. Passing proves only this address/row/support/formula/state control. It does not establish the current owner-gated teacher trajectory, complete native PLE integration, Metal performance, full inference, compact PLE/NR, EBPW/TPS/capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "complete_ple_runtime": false,
+  "control": {
+    "expected_conv_state": {
+      "bytes": 368640,
+      "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.ple_conv_state.f32",
+      "sha256": "76def3e11f235c0285e681d6d2b4f5c080b5fe69228ccfa4f0ebf079d306cc36"
+    },
+    "expected_injection": {
+      "bytes": 40960,
+      "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.ple_injection.f32",
+      "sha256": "2761917fb36a92fd579689800a0e9eb10d67de90c57811df0a3b12ff4f7721d8"
+    },
+    "independent_reference_receipt": "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+    "independent_reference_status": "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS",
+    "input_state": {
+      "bytes": 40960,
+      "path": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-0/state.f32",
+      "sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e"
+    },
+    "token_id": 248044
+  },
+  "elapsed_ns": 427927000,
+  "finished_unix_ns": 1789242496448218000,
+  "gpu_or_metal_started": false,
+  "model_loaded": false,
+  "numerical_policy": {
+    "activation_and_accumulation_dtype": "F32",
+    "convolution": "four-tap depthwise causal cross-correlation; dilation=3; zero initial state",
+    "max_abs_threshold": 5e-6,
+    "relative_l2_threshold": 5e-6,
+    "support_dtype": "BF16 decoded to F32"
+  },
+  "observed": {
+    "conv_state": {
+      "bytes": 368640,
+      "path": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V2_20260912.native_conv_state.f32",
+      "sha256": "89cd343e458e8cbab54583ba1ec7ad89e78f08cc21a0f3a361f7312dc0591269"
+    },
+    "conv_state_metrics": {
+      "elements": 92160,
+      "finite": true,
+      "max_abs": 0.000019073486328125,
+      "relative_l2": 1.1466480253682527e-6,
+      "within_predeclared_bound": false
+    },
+    "injection": {
+      "bytes": 40960,
+      "path": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V2_20260912.native_injection.f32",
+      "sha256": "14e9a26d2e95763d643806caf1fb2df09d7f1fc07a0243613669541384c6d44e"
+    },
+    "injection_metrics": {
+      "elements": 10240,
+      "finite": true,
+      "max_abs": 2.086162567138672e-7,
+      "relative_l2": 1.3165579670060782e-6,
+      "within_predeclared_bound": true
+    }
+  },
+  "promotion_allowed": false,
+  "schema": "hawking.flash.ple_native_formula_control.v1",
+  "seal_sha256": "695ed9e20f39d9f45f05ddff1bf13c2bb096a88ab35658a687ff20ee9fc2d7f7",
+  "source": {
+    "config": {
+      "bytes": 4745,
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+    },
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "payload_bytes_read": 65684760,
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "safetensors_index": {
+      "bytes": 170726,
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+      "sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"
+    }
+  },
+  "source_lookup_table_materialized": false,
+  "source_rows": [
+    {
+      "bytes": 320,
+      "combined_row": 9663979,
+      "global_head": 0,
+      "local_row": 2163943,
+      "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+      "shard_ordinal": 3,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 26558231,
+      "global_head": 1,
+      "local_row": 1558111,
+      "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+      "shard_ordinal": 10,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 56120240,
+      "global_head": 2,
+      "local_row": 1119976,
+      "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+      "shard_ordinal": 22,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 74755659,
+      "global_head": 3,
+      "local_row": 2255311,
+      "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+      "shard_ordinal": 29,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 80459717,
+      "global_head": 4,
+      "local_row": 459333,
+      "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+      "shard_ordinal": 32,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 109265651,
+      "global_head": 5,
+      "local_row": 1765135,
+      "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+      "shard_ordinal": 43,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 132697467,
+      "global_head": 6,
+      "local_row": 196831,
+      "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+      "shard_ordinal": 53,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 151022725,
+      "global_head": 7,
+      "local_row": 1022005,
+      "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+      "shard_ordinal": 60,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 170054832,
+      "global_head": 8,
+      "local_row": 54016,
+      "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+      "shard_ordinal": 68,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 192967038,
+      "global_head": 9,
+      "local_row": 466114,
+      "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+      "shard_ordinal": 77,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 200687722,
+      "global_head": 10,
+      "local_row": 686762,
+      "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+      "shard_ordinal": 80,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 225763581,
+      "global_head": 11,
+      "local_row": 762501,
+      "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+      "shard_ordinal": 90,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 259275737,
+      "global_head": 12,
+      "local_row": 1774501,
+      "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+      "shard_ordinal": 103,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 272983544,
+      "global_head": 13,
+      "local_row": 482236,
+      "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+      "shard_ordinal": 109,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 297596484,
+      "global_head": 14,
+      "local_row": 95056,
+      "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+      "shard_ordinal": 119,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+    },
+    {
+      "bytes": 320,
+      "combined_row": 300986548,
+      "global_head": 15,
+      "local_row": 985108,
+      "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+      "shard_ordinal": 120,
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+    }
+  ],
+  "source_support": {
+    "conv1d": {
+      "bytes": 81920,
+      "sha256": "06a84201bf8cc7082874aae671bc8688e848d51ccca9b78a0f1be791f1fb5f7e"
+    },
+    "key_proj": {
+      "bytes": 52428800,
+      "sha256": "f431e2b51311b4bbea97ea0e02b6c35944033490dd5dc76bb5cc5b594f7af7de"
+    },
+    "norm_conv": {
+      "bytes": 20480,
+      "sha256": "30ffcc1dfc34a7008f54447d199d9001dd534d8e04911976b587d2773575f705"
+    },
+    "norm_key": {
+      "bytes": 20480,
+      "sha256": "516e94b36bec727c0d219282d9166ab7a6ad6684680d1f4f186b5738d2d5a6d6"
+    },
+    "norm_query": {
+      "bytes": 20480,
+      "sha256": "f5a531160c93e1345f15a02803fdefb5df59e830e7259d28f0cce8ca87fb121d"
+    },
+    "value_proj": {
+      "bytes": 13107200,
+      "sha256": "d25aabbce09091bf133d776b41d5b3e0802c4d2523b9ca97003491c28db3c437"
+    }
+  },
+  "started_unix_ns": 1789242496020291000,
+  "status": "NATIVE_RUST_PLE_FORMULA_BOUNDED_PARITY_FAIL"
+}

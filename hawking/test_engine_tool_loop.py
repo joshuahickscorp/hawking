@@ -1,0 +1,481 @@
+"""The agentic loop: a model that needs to LOOK at something can now say so.
+
+Before this, HAWKING_RESULT_SCHEMA was edit-only -- `operations` are file edits, so a
+model with a question about the repo had no field to put a tool call in. 61
+registered tools were unreachable from the natural-language path BY SCHEMA
+CONSTRUCTION, and the measured symptom was HAWKING answering "no deterministic
+evidence provided" to "list the python files in the hawking directory".
+
+These tests use a stub model so the loop's control flow is checked deterministically,
+without a resident. The live end-to-end run is separate and slow.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from hawking.engine import (
+    Engine,
+    HAWKING_RESULT_SCHEMA,
+    _AGENTIC_SYSTEM_PROMPT,
+    _is_contract_example_echo,
+)
+from hawking.backends import StructuredOutputContract, schema_instruction
+from hawking.tool_registry import default_tool_registry
+from hawking.workspace import Workspace
+
+REPO = Path(__file__).resolve().parents[1]
+
+
+def _registry():
+    return default_tool_registry(REPO, repo_root=REPO)
+
+
+def test_the_schema_can_express_a_tool_call_at_all():
+    """The defect was structural: there was nowhere to put one."""
+    props = HAWKING_RESULT_SCHEMA["properties"]
+    assert "tool_calls" in props, "no field a tool call could occupy"
+    assert "tool_use" in props["kind"]["enum"]
+    # Only the universal envelope fields are required. Mode-specific arrays
+    # are defaulted by Engine._sanitize_result, which keeps short answers
+    # short without weakening the mutation evidence gate.
+    assert set(HAWKING_RESULT_SCHEMA["required"]) == {"kind", "content"}
+    assert {"operations", "tests", "tool_calls"}.issubset(props)
+    item = props["tool_calls"]["items"]["properties"]
+    assert set(item) == {"tool", "arguments"}
+    # Arguments must NOT be a JSON-encoded string. That version was tried and
+    # measurably failed: the model could not escape quotes inside quotes and
+    # blew all 3 structured-output attempts on "Expecting ',' delimiter".
+    assert item["arguments"]["type"] == "array"
+    assert item["arguments"]["items"]["properties"]["value"]["type"] == "string"
+
+
+def test_string_pairs_become_the_types_each_tool_declares():
+    """The model can only emit strings; tools want ints and bools."""
+    registry = _registry()
+    args = Engine._typed_arguments(registry, "fs.list", [
+        {"name": "path", "value": "hawking"},
+        {"name": "max_results", "value": "5"},
+        {"name": "recursive", "value": "false"},
+    ])
+    assert args == {"path": "hawking", "max_results": 5, "recursive": False}
+    # and the coerced call must actually satisfy the registry
+    result = registry.invoke("fs.list", args)
+    assert result.ok, result.error
+    assert len(result.value["files"]) == 5
+
+
+def test_an_uncoercible_value_reaches_the_registry_as_a_readable_error():
+    """Never guess. A bad value must surface as text the model can react to."""
+    registry = _registry()
+    args = Engine._typed_arguments(registry, "fs.list", [
+        {"name": "path", "value": "hawking"},
+        {"name": "max_results", "value": "not-a-number"},
+    ])
+    assert args["max_results"] == "not-a-number"  # left alone, not invented
+    assert registry.invoke("fs.list", args).ok is False
+
+
+def test_a_failing_tool_is_an_observation_not_an_exception():
+    """A daemon that dies on a bad argument is not unattended.
+
+    Every failure mode here -- unknown tool, missing required argument, a handler
+    that raises -- must come back as readable text.
+    """
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    engine.MAX_EVIDENCE_CHARS_PER_FILE = 4000
+    engine._emit = lambda *a, **k: None
+
+    out = engine._run_tool_calls([
+        {"tool": "no.such.tool", "arguments": []},
+        {"tool": "fs.search", "arguments": [{"name": "root", "value": "hawking"}]},
+        {"tool": "fs.read", "arguments": [{"name": "path", "value": "does/not/exist.py"}]},
+    ], goal_id="g")
+
+    assert len(out) == 3
+    assert all(o["ok"] is False for o in out)
+    assert "unknown tool" in out[0]["text"]
+    # THE FIX THAT MATTERS: the signature travels WITH the error, so the retry
+    # does not have to guess. Without it the model burned a whole tool budget
+    # calling fs.search without `pattern` and guessing again each round.
+    assert "pattern" in out[1]["text"] and "signature:" in out[1]["text"]
+    assert "pattern*" in out[1]["text"], "required args must be marked"
+
+
+def test_the_catalog_tells_the_model_the_arguments_not_just_the_names():
+    """The point is the ARGUMENTS, not which name carries them.
+
+    After the surface consolidation the filesystem reads live behind one `fs`
+    door, so the signature to check is that door's. This is the assertion that
+    caught the consolidation shipping `fs(op*:string)` with every argument
+    hidden -- keep it pointed at whatever name currently owns the capability.
+    """
+    catalog = Engine._tool_catalog(_registry())
+    assert "fs(" in catalog
+    line = next(l for l in catalog.splitlines() if l.startswith("fs("))
+    assert "op*:string" in line, "required marker missing on the op selector"
+    assert "pattern:string" in line, "the search argument vanished from the signature"
+    assert "path:string" in line, "the read argument vanished from the signature"
+    assert "root:string" in line and "root*" not in line, "optional marked required"
+
+
+def test_observation_round_catalog_is_alias_aware_and_focused():
+    registry = _registry()
+    full = Engine._tool_catalog(registry)
+    focused = Engine._compact_tool_catalog(
+        registry,
+        focus="list the python files in the hawking directory",
+    )
+    assert len(focused) < len(full) // 2, (len(full), len(focused))
+    # The merged door advertises every vocabulary it absorbed, so the alias
+    # join is now wider than the two names this once pinned.
+    assert "fs|" in focused and "filesystem.list" in focused and "fs.list" in focused
+    assert "git.checkout-safe" not in focused  # destructive capability is opt-in
+    assert "git.checkout/revert-safe" not in focused  # slash alias stays callable but not model-facing
+    assert "odyssey:" not in focused
+
+    rollback = Engine._compact_tool_catalog(registry, focus="inspect git revert safety")
+    assert "git.checkout-safe|git.revert-safe" in rollback
+    assert "git.checkout/revert-safe" not in rollback
+
+
+def test_compact_catalog_expands_the_domain_selected_by_the_goal():
+    catalog = Engine._compact_tool_catalog(
+        _registry(),
+        focus="audit Odyssey and the Gravity compression experiment",
+    )
+    assert "odyssey:" in catalog
+    assert "gravity:" in catalog
+    # odyssey.status is an op on the merged read door now; the domain must
+    # still surface, and the op must still be nameable from the catalog.
+    assert "odyssey: " in catalog
+    assert "status" in catalog
+
+
+def test_tools_catalog_reveals_a_focused_signature_without_running_it():
+    registry = _registry()
+    result = registry.invoke("tools.catalog", {"focus": "directory listing"})
+
+    assert result.ok, result.error
+    names = {item["name"] for item in result.value["matches"]}
+    aliases = {a for item in result.value["matches"] for a in (item.get("aliases") or [])}
+    assert "fs" in names or "fs.list" in names | aliases
+    assert result.value["provenance"] == "hawking.tool_registry.ToolRegistry.describe"
+
+
+def test_context_recall_is_a_bounded_typed_tool(tmp_path):
+    from hawking.knowledge import KnowledgeStore
+
+    store = KnowledgeStore(tmp_path)
+    store.record_note("remember the overnight production gate", source="test")
+    registry = default_tool_registry(tmp_path, repo_root=tmp_path)
+
+    result = registry.invoke("context.recall", {"focus": "overnight production"})
+
+    assert result.ok, result.error
+    assert result.value["retrieval"]["mode"] == "cold_recall"
+    assert any(
+        "overnight production gate" in json.dumps(item)
+        for item in result.value["records"]
+    )
+
+
+def test_a_directory_listing_verb_exists():
+    """It did not, and that cost an entire tool budget on the first real query.
+
+    61 tools and none could answer "what files are in this directory": fs.search
+    requires a content `pattern`, so listing was inexpressible. The model was not
+    confused, the capability was absent.
+    """
+    registry = _registry()
+    assert registry.get("fs.list") is not None
+    result = registry.invoke("fs.list", {"path": "hawking", "glob": "*.py", "recursive": False})
+    assert result.ok, result.error
+    names = {row["path"] for row in result.value["files"]}
+    assert "engine.py" in names and "tool_registry.py" in names
+    assert all(row["path"].endswith(".py") for row in result.value["files"])
+
+
+def test_directory_listing_includes_immediate_directories(tmp_path):
+    (tmp_path / "child").mkdir()
+    (tmp_path / "note.txt").write_text("observed\n", encoding="utf-8")
+    registry = default_tool_registry(tmp_path, repo_root=tmp_path)
+
+    result = registry.invoke(
+        "fs.list",
+        {"path": ".", "recursive": False, "max_results": 10},
+    )
+
+    assert result.ok, result.error
+    assert result.value["directories"] == [{
+        "path": "child",
+        "filename": "child",
+        "type": "directory",
+        "kind": "directory",
+        "size": None,
+    }]
+    assert result.value["files"] == [{
+        "path": "note.txt",
+        "filename": "note.txt",
+        "type": "file",
+        "kind": "file",
+        "size": 9,
+        "bytes": 9,
+    }]
+
+
+def test_obvious_directory_question_uses_the_typed_tool_without_model_startup(tmp_path):
+    (tmp_path / "child").mkdir()
+    (tmp_path / "note.txt").write_text("observed\n", encoding="utf-8")
+
+    class ModelMustNotStart:
+        def complete(self, **_kwargs):
+            raise AssertionError("simple directory listing should not cold-start the model")
+
+    engine = Engine(Workspace(str(tmp_path)), model_client=ModelMustNotStart())
+    result = engine.execute(
+        "What is in this directory? Inspect it with the available tools and answer from observed files."
+    )
+
+    assert result["status"] == "completed"
+    assert "[directory] child/" in result["content"]
+    assert "[file] note.txt (9 bytes)" in result["content"]
+    assert result["receipt"].endswith(".json")
+    assert engine._model_calls == []
+
+
+def test_tool_output_never_enters_the_evidence_list():
+    """Evidence items are hashed, size/mtime-stamped file snapshots that get
+    re-read when they change. Tool output is none of those. Letting it into the
+    same list would let unhashed, model-directed content pose as deterministic
+    evidence and quietly weaken the freshness gate."""
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    text = engine._prompt_with_observations(
+        "the goal", [{"tool": "fs.list", "ok": True, "text": "engine.py"}]
+    )
+    assert "OBSERVATIONS" in text and "engine.py" in text
+    assert "AVAILABLE TOOLS" in text
+    assert "TOOL BUDGET EXHAUSTED" not in text
+    final = engine._prompt_with_observations("the goal", [], final=True)
+    assert "TOOL BUDGET EXHAUSTED" in final
+
+
+def test_observation_round_keeps_the_tool_catalog_prefix_stable():
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    before = engine._prompt_with_observations("the goal", [])
+    after = engine._prompt_with_observations(
+        "the goal",
+        [{"tool": "fs.read", "ok": True, "text": "new observation"}],
+    )
+    before_catalog = before.split("OBSERVATIONS", 1)[0].rstrip()
+    after_catalog = after.split("OBSERVATIONS", 1)[0].rstrip()
+    assert before_catalog == after_catalog
+
+
+def test_tool_round_history_keeps_schema_in_the_stable_user_turn(tmp_path):
+    engine = Engine(Workspace(str(tmp_path)))
+    payload = engine._build_model_payload(
+        "the goal",
+        [],
+        None,
+        history=[
+            {"role": "assistant", "content": '{"kind":"tool_use"}'},
+            {"role": "user", "content": "OBSERVATIONS (tool results):\nresult"},
+        ],
+    )
+    prepared = StructuredOutputContract(
+        HAWKING_RESULT_SCHEMA, schema_instruction(HAWKING_RESULT_SCHEMA)
+    ).apply(payload)
+    assert prepared["messages"][1]["role"] == "user"
+    assert "MUST satisfy this JSON Schema" in prepared["messages"][1]["content"]
+    assert "MUST satisfy this JSON Schema" not in prepared["messages"][-1]["content"]
+def test_failed_tool_loop_can_close_catalog_for_one_final_model_call():
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    closed = engine._prompt_with_observations(
+        "finish the goal",
+        [{"tool": "fs.read", "ok": False, "repeat": True, "text": "missing"}],
+        tools_allowed=False,
+    )
+    assert "TOOL ACCESS IS CLOSED" in closed
+    assert "AVAILABLE TOOLS" not in closed
+    assert "missing" in closed
+
+
+def test_implementation_close_requires_a_real_existing_proof_path():
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    closed = engine._prompt_with_observations(
+        "ROLE: implementation\nOBJECTIVE: repair the engine",
+        [],
+        tools_allowed=False,
+    )
+    assert "hawking/test_engine_tool_loop.py" in closed
+    assert "hawking/tests/test_engine.py" not in closed
+    assert "comment-only" in closed
+    assert "exactly one operation" in closed
+    assert "under 900 UTF-8 bytes" in closed
+    assert "never use `create`" in closed
+    assert "never trailing spaces" in closed
+
+
+def test_no_tools_enters_the_closed_budget_path_on_the_first_call(monkeypatch):
+    engine = Engine.__new__(Engine)
+    engine._cancelled = False
+    engine.MAX_TOOL_ROUNDS = 4
+    prompts = []
+    engine._prompt_with_observations = (
+        lambda *args, **kwargs: prompts.append(kwargs) or "closed"
+    )
+    engine._call_model = lambda *args, **kwargs: {
+        "kind": "answer",
+        "content": "bounded",
+    }
+    engine._sanitize_result = lambda value: value
+    engine._emit = lambda *args, **kwargs: None
+    engine._write_receipt = lambda **kwargs: "receipt"
+    monkeypatch.setenv("HAWKING_NO_TOOLS", "1")
+
+    result = engine.execute("ROLE: implementation\nOBJECTIVE: repair", evidence=[], compiled={})
+
+    assert result["kind"] == "answer"
+    assert len(prompts) == 1
+    assert prompts[0]["tools_allowed"] is False
+
+
+def test_contract_example_echo_is_retried_once_instead_of_mutated(monkeypatch):
+    engine = Engine.__new__(Engine)
+    engine._cancelled = False
+    engine.MAX_TOOL_ROUNDS = 4
+    replies = iter([
+        {
+            "kind": "mutation",
+            "content": "what changed",
+            "operations": [{
+                "op": "create",
+                "path": "dir/file.txt",
+                "new_lines": ["line one", "line two"],
+            }],
+            "tests": ["cmd"],
+        },
+        {"kind": "answer", "content": "No grounded mutation is justified."},
+    ])
+    calls = []
+    engine._prompt_with_observations = lambda *args, **kwargs: "closed"
+    engine._call_model = lambda *args, **kwargs: calls.append(kwargs) or next(replies)
+    engine._sanitize_result = lambda value: value
+    engine._emit = lambda *args, **kwargs: None
+    engine._write_receipt = lambda **kwargs: "receipt"
+    monkeypatch.setenv("HAWKING_NO_TOOLS", "1")
+
+    result = engine.execute(
+        "ROLE: implementation\nOBJECTIVE: repair",
+        evidence=[{"path": "hawking/serve.py", "content": "observed"}],
+        compiled={},
+    )
+
+    assert result["status"] == "completed"
+    assert result["content"] == "No grounded mutation is justified."
+    assert len(calls) == 2
+    assert "dir/file.txt" in calls[1]["history"][-1]["content"]
+
+
+def test_contract_example_echo_detector_does_not_match_a_real_mutation():
+    assert _is_contract_example_echo({
+        "kind": "mutation",
+        "content": "persist the stream turn",
+        "operations": [{"op": "replace", "path": "hawking/serve.py"}],
+        "tests": ["hawking/tests/test_serve_openai_surface.py"],
+    }) is False
+
+
+def test_agentic_prompt_has_a_shape_but_no_copyable_fake_mutation():
+    assert "Mutation fields:" in _AGENTIC_SYSTEM_PROMPT
+    assert "operations=[operation objects]" in _AGENTIC_SYSTEM_PROMPT
+    assert "dir/file.txt" not in _AGENTIC_SYSTEM_PROMPT
+    assert "line one" not in _AGENTIC_SYSTEM_PROMPT
+    assert 'tests=["cmd"]' not in _AGENTIC_SYSTEM_PROMPT
+
+
+def test_mutation_grounding_rejects_placeholders_before_file_io(tmp_path):
+    engine = Engine(Workspace(str(tmp_path)))
+    errors = engine._mutation_grounding_errors({
+        "kind": "mutation",
+        "content": "Local repair of JSON syntax",
+        "operations": [{
+            "op": "replace",
+            "path": "path/to/file.json",
+            "old_lines": [],
+            "new_lines": ["{}"],
+        }],
+        "tests": ["cat path/to/file.json"],
+    })
+    assert any("placeholder path" in item for item in errors)
+    assert any("not an admitted focused pytest path" in item for item in errors)
+    assert not (tmp_path / "path").exists()
+
+
+def test_mutation_grounding_accepts_existing_file_and_focused_test(tmp_path):
+    (tmp_path / "hawking").mkdir()
+    (tmp_path / "hawking" / "serve.py").write_text("OLD = True\n")
+    (tmp_path / "hawking" / "test_serve.py").write_text(
+        "def test_old():\n    assert True\n"
+    )
+    engine = Engine(Workspace(str(tmp_path)))
+    errors = engine._mutation_grounding_errors({
+        "kind": "mutation",
+        "content": "persist streaming state",
+        "operations": [{
+            "op": "replace",
+            "path": "hawking/serve.py",
+            "old_lines": ["OLD = True"],
+            "new_lines": ["OLD = False"],
+        }],
+        "tests": ["hawking/test_serve.py"],
+    })
+    assert errors == []
+
+
+def test_mutation_grounding_accepts_a_focused_test_created_by_the_transaction(tmp_path):
+    (tmp_path / "hawking" / "tests").mkdir(parents=True)
+    engine = Engine(Workspace(str(tmp_path)))
+    errors = engine._mutation_grounding_errors({
+        "kind": "mutation",
+        "content": "add streaming persistence regression",
+        "operations": [{
+            "op": "create",
+            "path": "hawking/tests/test_session_state_persistence.py",
+            "new_lines": ["def test_stream_state():", "    assert True"],
+        }],
+        "tests": ["pytest -v hawking/tests/test_session_state_persistence.py"],
+    })
+    assert errors == []
+    assert not (tmp_path / "hawking" / "tests" / "test_session_state_persistence.py").exists()
+
+
+def test_sanitizer_accepts_tool_use_and_drops_nameless_calls():
+    engine = Engine.__new__(Engine)
+    out = engine._sanitize_result({
+        "kind": "tool_use", "content": "looking",
+        "operations": [], "tests": [],
+        "tool_calls": [
+            {"tool": "fs.list", "arguments": [{"name": "path", "value": "hawking"}]},
+            {"tool": "   ", "arguments": []},
+            "not-a-dict",
+        ],
+    })
+    assert out["kind"] == "tool_use"
+    assert [c["tool"] for c in out["tool_calls"]] == ["fs.list"]
+
+
+def test_an_answer_still_carries_no_tool_calls():
+    engine = Engine.__new__(Engine)
+    out = engine._sanitize_result(
+        {"kind": "answer", "content": "hi", "operations": [], "tests": []}
+    )
+    assert out["kind"] == "answer" and out["tool_calls"] == []

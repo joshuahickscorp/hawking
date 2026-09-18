@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.long_haul.v2.implementation_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P4_AUTO_SPOOL_HARDENING_V3",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Focused Auto WorkUnit contract hardening only; no provider-output promotion, release, or full-objective completion claim.",
+  "changed_sources": [
+    "hawking/remote_cognition.py",
+    "hawking/workunit_owner.py",
+    "hawking/tests/test_remote_workunit_contract.py"
+  ],
+  "change": "Research completion now requires every durable required_focus_path to be observed by a successful read before terminal structured-packet mode; one shallow read can no longer close a multi-file lane.",
+  "verification": {
+    "command": "python3 -m pytest -q hawking/tests/test_remote_workunit_contract.py hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py hawking/tests/test_serve_openai_surface.py",
+    "result": "98 passed",
+    "syntax": "python3 -m py_compile hawking/remote_cognition.py hawking/workunit_owner.py",
+    "diff_check": "passed"
+  },
+  "runtime": {
+    "daemon_pid": 97636,
+    "status": "waiting_for_native_runtime",
+    "requested_model": "hawking-auto",
+    "model": null,
+    "resident": null,
+    "provider_children": "none while native role is withheld"
+  },
+  "falsifier": "A research WorkUnit with multiple admitted focus paths can terminalize after observing only one path, or a provider-only HTTP 200 packet bypasses the durable focus-path gate."
+}

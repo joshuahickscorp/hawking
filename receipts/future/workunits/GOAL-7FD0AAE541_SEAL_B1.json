@@ -1,0 +1,28 @@
+{
+  "receipt_id": "GOAL-7FD0AAE541_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "GOAL-7FD0AAE541",
+  "phase": "BUILD",
+  "title": "Goal milestone 3: tested repository change",
+  "at": "2026-09-16T05:24:02.760660+00:00",
+  "written_at_unix": 1789536242,
+  "change": {
+    "paths": [
+      "hawking/goal_surface.py",
+      "hawking/tests/test_web_attachments.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 3"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 3,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-7FD0AAE541",
+  "real_engineering_seal": true
+}

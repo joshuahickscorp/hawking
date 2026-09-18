@@ -1,0 +1,105 @@
+{
+  "claim_boundary": "This is a baseline for comparison. It does not claim a speedup, capability parity, or semantic equivalence for any future reduction.",
+  "generated_at": "2026-09-11T11:39:35.599870+00:00",
+  "next_measurement": "Run the same receipt after one typed-family migration and compare first-tool correctness, invalid-call recovery, tokens, latency, compile cost, and retained tests.",
+  "schema": "hawking.gravity.tool_benchmark.v2",
+  "source": {
+    "bytes": 233342,
+    "lines": 4884,
+    "path": "hcli/tool_registry.py"
+  },
+  "status": "CURRENT_NS",
+  "surface": {
+    "all_catalog_json_bytes": 77529,
+    "compact_prompt_catalog_chars": {
+      "authorized defensive security": 1296,
+      "campaign": 1296,
+      "filesystem": 1296,
+      "gravity": 1422
+    },
+    "compact_prompt_reduction_percent": {
+      "authorized defensive security": 70.09,
+      "campaign": 70.09,
+      "filesystem": 70.09,
+      "gravity": 67.18
+    },
+    "compatibility_aliases": 66,
+    "discoverable_catalog_json_bytes": 39371,
+    "discoverable_model_facing_tools": 44,
+    "focused_catalog_json_bytes": {
+      "authorized defensive security": 9565,
+      "campaign": 5491,
+      "filesystem": 11652,
+      "gravity": 4327
+    },
+    "full_prompt_catalog_chars": 4333,
+    "registered_callable_spellings": 110
+  },
+  "timing": {
+    "compact_prompt_catalog": {
+      "authorized defensive security": {
+        "max_ns": 52791,
+        "median_ns": 50542,
+        "min_ns": 49958
+      },
+      "campaign": {
+        "max_ns": 50917,
+        "median_ns": 49583,
+        "min_ns": 49375
+      },
+      "filesystem": {
+        "max_ns": 60000,
+        "median_ns": 52396,
+        "min_ns": 49541
+      },
+      "gravity": {
+        "max_ns": 54334,
+        "median_ns": 52041,
+        "min_ns": 51708
+      }
+    },
+    "discover": {
+      "max_ns": 20333,
+      "median_ns": 16291,
+      "min_ns": 15875
+    },
+    "focused_discover": {
+      "authorized defensive security": {
+        "max_ns": 87125,
+        "median_ns": 66041,
+        "min_ns": 65792
+      },
+      "campaign": {
+        "max_ns": 11708,
+        "median_ns": 10458,
+        "min_ns": 10250
+      },
+      "filesystem": {
+        "max_ns": 23542,
+        "median_ns": 14625,
+        "min_ns": 14333
+      },
+      "gravity": {
+        "max_ns": 11375,
+        "median_ns": 10396,
+        "min_ns": 10125
+      }
+    },
+    "registry_build": {
+      "max_ns": 907084,
+      "median_ns": 760042,
+      "min_ns": 716167
+    },
+    "tool_registry_compile": {
+      "max_ns": 22487375,
+      "median_ns": 20533958,
+      "min_ns": 19360667
+    },
+    "unknown_tool_recovery": {
+      "max_ns": 20667,
+      "median_ns": 3145,
+      "min_ns": 3000
+    }
+  },
+  "timing_unit": "ns"
+}

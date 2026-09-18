@@ -1,0 +1,24 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_acceptance.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "workunit_id": "WORKUNIT-20260918-038C77CB",
+  "workunit_result": "receipts/future/workunits/WORKUNIT-20260918-038C77CB_RESULT_PACKET.json",
+  "accepted_at": "2026-09-18T04:23:21Z",
+  "accepted_read_evidence": true,
+  "observations": [
+    "The Auto refill seam is serialized and admits only durable graph-runnable queue entries.",
+    "The current canonical Goal graph has no durable runnable queue entry, so zero refill admission is correct and no lane is invented.",
+    "Writer-scope conflict and terminal-tranche filters remain intact after the unbounded count-policy change."
+  ],
+  "independent_verification": {
+    "focused_tests": "hawking/tests/test_auto_orchestration.py: passed",
+    "compileall": "passed",
+    "git_diff_check": "passed",
+    "source_policy": "hawking/auto_orchestration.py: efficient_concurrency=None means all dependency-valid candidates are admitted unless max_new or a real scope/admission error applies"
+  },
+  "excluded_claims": [
+    "The worker's historical 15/5 capacity description was stale and is not accepted.",
+    "Provider prose is not an architectural or tranche acceptance authority."
+  ],
+  "claim_boundary": "Read-only Auto/refill evidence only; parent Goal remains RUNNING and no new graph tranche was created."
+}

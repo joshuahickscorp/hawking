@@ -1,0 +1,127 @@
+{
+  "schema": "hawking.flash.native_ple_frontier.v2",
+  "status": "NATIVE_PLE_REDUCTION_POLICY_SEAM_EXACT__SOURCE_PERSISTENT_STATE_AUTHORITY_UNQUALIFIED",
+  "observed_at_utc": "2026-09-12T20:09:54Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "specimen": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"
+  },
+  "supersedes": {
+    "receipt": "receipts/future/HAWKING_FLASH_NATIVE_PLE_FRONTIER_20260912.json",
+    "receipt_sha256": "f6dae0b83d91380d945766ab79ff988f96f238bb71c478318b8237aea14e85f9",
+    "receipt_seal_sha256": "27270f6c738d886190d027528fa7ba17425b92e9cd127009238b80d4db430af7",
+    "preserved_fact": "The vectorized NumPy cache target and native F32 source-order target differ by max-abs 1.9073486328125e-5; its predeclared 5e-6 state bound remains failed and was not relaxed.",
+    "new_disposition": "The mismatch is a bounded F32 reduction-policy seam, not evidence of a cache rotation/layout defect in this one BOS control."
+  },
+  "owners": {
+    "native_ple": {
+      "path": "crates/hawking-core/src/flash_ple.rs",
+      "sha256": "dbc412b3f85095679043af586e341c22c8f9aec092326a6cba03373f015f1dc3",
+      "reduction_policy": "left-to-right F32 projection, grouped-RMS, and gate-dot reductions"
+    },
+    "source_formula_policy_owner": {
+      "path": "tools/odyssey/ple_source_output_control.py",
+      "sha256": "2630b6eca36c7e7446dd5dd0d88738713a59f9ac2e3ea7d2240415e8d6ff40d0",
+      "policies": [
+        "numpy_vectorized_f32",
+        "ltr_f32"
+      ],
+      "ltr_scope": "native-comparison diagnostic only; not a claim about the source framework's undocumented internal reduction tree"
+    },
+    "policy_tests": {
+      "path": "tools/odyssey/test_ple_source_output_control.py",
+      "sha256": "1a1ab5084536f7a8c93c13e8759959aabb48215168305e456f7b354620103352",
+      "focused_result": "6 passed, 0 failed"
+    }
+  },
+  "source_controls": {
+    "vectorized_formula": {
+      "receipt": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+      "receipt_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66",
+      "reduction_policy": "numpy_vectorized_f32",
+      "persistent_state_sha256": "76def3e11f235c0285e681d6d2b4f5c080b5fe69228ccfa4f0ebf079d306cc36"
+    },
+    "independent_framework_injection_oracle": {
+      "receipt": "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+      "receipt_sha256": "8c1b854d0c4410a0deb0a1e185b0cd3c2fe7d1d6c22fdd9ed3c57f8b0c84d189",
+      "status": "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS",
+      "scope": "one-token injection only; it does not independently validate the persistent convolution cache"
+    },
+    "ltr_f32_sibling": {
+      "receipt": "receipts/headless/FLASH_PLE_LAYER1_BOS_LTR_F32_REDUCTION_CONTROL_20260912.json",
+      "receipt_sha256": "a7b6456b01ea68c559df3b71a60744a0e0c84b21e34d6c28d5afd458561176b3",
+      "receipt_seal_sha256": "5e5323bd20ec2059ae5c79ac40e0916d4de093af7c6145845d5b8b64ebda6d8c",
+      "status": "SOURCE_BOUND_PLE_OUTPUT_CONTROL__NO_INDEPENDENT_PLE_OUTPUT_PARITY",
+      "token_id": 248044,
+      "source_lookup_rows": 16,
+      "source_support_payload_bytes": 65679640,
+      "model_loaded": false,
+      "gpu_or_metal_started": false,
+      "gated_value_normed_sha256": "9d4fdfca2f38213268205a4971a706cdc531f7db83e8d75b96606c06c557642e",
+      "injection_sha256": "14e9a26d2e95763d643806caf1fb2df09d7f1fc07a0243613669541384c6d44e",
+      "persistent_state_sha256": "89cd343e458e8cbab54583ba1ec7ad89e78f08cc21a0f3a361f7312dc0591269"
+    }
+  },
+  "native_control": {
+    "receipt": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json",
+    "receipt_sha256": "29ac9cbab6527c75c0fbeed4e13920f69766252e1af6190129281130e553fe8a",
+    "receipt_seal_sha256": "f710f80decf0c7685d4b6cb43646b4c6fc19588510c256c38c065d644f19594a",
+    "vectorized_state_status": "NATIVE_RUST_PLE_FORMULA_BOUNDED_PARITY_FAIL",
+    "vectorized_state_max_abs": 0.000019073486328125,
+    "vectorized_state_relative_l2": 0.0000011466480253682527,
+    "vectorized_state_predeclared_max_abs_threshold": 0.000005,
+    "vectorized_state_threshold_relaxed": false
+  },
+  "seam_result": {
+    "cache_layout": {
+      "state_rows": 9,
+      "historical_zero_rows_exact": 8,
+      "new_tail_row_elements": 10240,
+      "new_tail_nonidentical_under_vectorized_policy": 9849,
+      "conclusion": "The observed difference is confined to the newly written gated_value_normed tail, not a state rotation/layout offset."
+    },
+    "ltr_sibling_to_native": {
+      "injection_bytes": 40960,
+      "injection_exact": true,
+      "persistent_state_bytes": 368640,
+      "persistent_state_exact": true,
+      "result": "The explicit LTR F32 source-formula sibling reproduces both native V4 payloads byte-for-byte."
+    },
+    "ltr_injection_to_independent_framework_oracle": {
+      "max_abs": 0.00000019744038581848145,
+      "relative_l2": 0.0000012172097285656491,
+      "predeclared_max_abs_threshold": 0.000005,
+      "predeclared_relative_l2_threshold": 0.000005,
+      "within_predeclared_bound": true
+    },
+    "interpretation": "At this BOS seam, the native formula is exact under its explicitly reproduced left-to-right F32 numerical policy, and its injection remains within the independent framework bound. This neither converts the vectorized cache failure to a pass nor proves a source-framework persistent-state contract."
+  },
+  "validation": {
+    "source_formula_policy_tests": "6 passed, 0 failed",
+    "py_compile": "passed",
+    "ltr_receipt_seal": "verified under its declared sorted-key serialization",
+    "ltr_native_payload_comparison": "exact injection and persistent-state bytes",
+    "git_diff_check": "passed",
+    "protected_model_run_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false
+  },
+  "frontier": {
+    "source_teacher_authority": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+    "source_native_correctness": "layer 4 / token 0 remains the last bounded frontier",
+    "native_ple": "Exact address/history/source-row ownership; one BOS source-formula numerical-policy seam is closed; no multi-token PLE-inclusive source trajectory is admitted.",
+    "persistent_state_source_parity": "UNQUALIFIED_PENDING_AN_INDEPENDENTLY_ADMITTED_PLE_INCLUSIVE_SOURCE_TRAJECTORY",
+    "complete_runnable_nr": false,
+    "complete_ebpw": null,
+    "native_worker_tps": null,
+    "capability_qualified": false,
+    "pulsar_promoted": false
+  },
+  "next_safe_action": "Preserve both numerical-policy artifacts. After machine-owner admission of the exact captured teacher, run the existing lease-owned source/native boundary transaction once. Then use a PLE-inclusive multi-token source trajectory to bind an actual persistent-state contract before changing native reduction policy or spending another full-body replay.",
+  "claim_boundary": "This closes one deterministic numerical-policy seam between a vectorized NumPy source formula and the current native left-to-right F32 control. It does not establish framework cache-state parity, source/full-model parity, a complete or admitted NR, source independence, Metal execution, EBPW, TPS, capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "d0bfb31fcbf77c041852d2aa4735ec6d74a0d87a0ed56ae889efb186e82ee211"
+}

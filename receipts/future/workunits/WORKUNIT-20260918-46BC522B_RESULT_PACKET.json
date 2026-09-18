@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "67ff3ceecea7ba325367623336d49f32e4e1929276e4d47a2ec9dfa7a9a16c4e",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:11:21.150461+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:11:21.150479+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:11:21.155558+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/share_bridge.py exists at /Users/scammermike/Downloads/hawking/hawking/share_bridge.py (49705 bytes, sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46); only the first 4000 bytes (8.0%) were o",
+      "outcome": "CONTINUE",
+      "reply_chars": 5668,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/share_bridge.py exists at /Users/scammermike/Downloads/hawking/hawking/share_bridge.py (49705 bytes, sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46); only the first 4000 bytes (8.0%) were observed, so all conclusions are scoped to that prefix and nothing is claimed about the unobserved 92%.\",\"Module docstring states the token in /s/<token> is the capability, Hawking stores only its SHA-256 digest, the raw bearer is never written to the workspace, and the bridge deliberately exposes a Goal/conversation snapshot rather than the daemon API, provider credentials, prompts, or an arbitrary tool surface.\",\"Digest-only persistence is structurally confirmed in the observed prefix: _token_hash(token) returns hashlib.sha256(token.encode('utf-8')).hexdigest() and _path() builds the storage path as .hawking/shares/<sha256_digest>.json, so the on-disk filename is the digest, not the raw token.\",\"HTTP status mapping primitive observed: class ShareError(RuntimeError) carries an explicit integer status attribute defaulting to 404, documented as 'An explicit share failure that maps cleanly to an HTTP status'; the web-layer mapping of ShareError.status to actual HTTP responses was not in the observed prefix.\",\"TTL constants observed: DEFAULT_TTL_SECONDS = 3600, MAX_TTL_SECONDS = 604800 (7 days), TUNNEL_INVITATION_TTL_SECONDS = 300, TUNNEL_MAX_INVITATION_TTL_SECONDS = 3600; runtime enforcement of these TTL gates at access/redemption time was not visible in the observed prefix.\",\"Permission model observed: KNOWN_PERMISSIONS = {'read','comment','steer','prompt','build'} and TUNNEL_OPERATION_PERMISSIONS maps list_chats->read, list_models->read, stream_prompt->prompt, scoped_build->build, retrieve_result->read; _permissions() normalizes against KNOWN_PERMISSIONS, deduplicates, and forces 'read' to be present (body truncated at observation boundary).\",\"Input validation regexes observed: TOKEN_RE ^[A-Za-z0-9_-]{10,64}$, GOAL_RE ^GOAL-[A-Za-z0-9_-]{1,100}$ (case-insensitive), SESSION_RE ^[A-Za-z0-9_-]{1,64}$, DEVICE_RE ^[A-Za-z0-9_.:-]{1,128}$, TUNNEL_SECRET_RE ^[A-Za-z0-9_-]{16,128}$.\",\"Secret hygiene in projected content observed: SECRET_PATTERNS redact bearer tokens, openrouter_api_key values, and sk- style keys; _clean_text applies these with a 1600-char cap; _clean_value recursively sanitizes mappings/lists (depth cap 3, 40 keys, 24 items) and drops keys whose names contain authorization, api_key, secret, cookie, environment, or system_prompt.\",\"Schema identifiers observed: SHARE_SCHEMA hawking.share_capability.v1, SHARE_EVENT_SCHEMA hawking.share_event.v1, TUNNEL_SCHEMA hawking.tunnel.session.v1, TUNNEL_EVENT_SCHEMA hawking.tunnel.event.v1, TUNNEL_FRAME_SCHEMA hawking.tunnel.frame.v1; a module-level threading.RLock (_LOCK) guards shared state.\",\"No RED condition was confirmed within the observed prefix, but the audit is materially incomplete: the TTL gate, per-operation permission gate, tunnel session lifecycle, any raw-token or tunnel-secret persistence path, and all admitted focus tests (test_share_bridge.py, test_web_live_contract.py, test_web_projection.py, test_hweb_controls.py) remain uninspected, so HTTP-200 semantic correctness of the P18 tunnel contract cannot be affirmed or denied from this evidence.\"],\"sources\":[\"hawking/share_bridge.py (first 4000 of 49705 bytes, sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46, read via projected read-only file inspection, invocation tool-6ba2d2a9-1242-4fcc-b724-f09430a484ad)\"],\"recommendations\":[\"Continue the audit with ranged reads of hawking/share_bridge.py covering the remaining ~45705 bytes, prioritizing: TTL enforcement at redemption/access, the per-operation permission gate using TUNNEL_OPERATION_PERMISSIONS, tunnel session/invitation lifecycle, and every write path (atomic_write_json call sites) to confirm no raw token or tunnel secret is persisted.\",\"Inspect hawking/tests/test_share_bridge.py and hawking/tests/test_web_",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-3758285990b84ff2",
+  "worker_id": "hawking-worker-554e5bde100e49e4",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-46BC522B"
+}

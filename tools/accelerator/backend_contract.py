@@ -19,6 +19,28 @@ Evidence tiers are honest and never merged:
 """
 from __future__ import annotations
 
+
+# P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 qualification-support surface.
+# Stable, importable NVIDIA backend identifier and capability declaration.
+# Bounded contract-surface delta only: no hardware execution, no runtime
+# behavior change, no release or hardware-qualification claim.
+NVIDIA_BACKEND_ID = "nvidia"
+NVIDIA_BACKEND_CAPABILITIES = (
+    "cuda_runtime",
+    "device_enumeration",
+    "backend_contract_v2",
+)
+
+
+def nvidia_backend_identifier():
+    """Return the stable NVIDIA backend identifier for contract consumers."""
+    return NVIDIA_BACKEND_ID
+
+
+def nvidia_backend_capabilities():
+    """Return the declared NVIDIA backend capability surface."""
+    return NVIDIA_BACKEND_CAPABILITIES
+
 import json
 import platform
 import subprocess
@@ -1317,7 +1339,13 @@ def capability_and_cost_snapshot(
 _register_defaults()
 
 
+HARDWARE_QUALIFICATION_CLAIMED = False
+
+NVIDIA_BACKEND_CAPABILITY_FLAGS = ("cuda",)
+
+
 __all__ = [
+    "NVIDIA_BACKEND_CAPABILITY_FLAGS",
     "AKB_MACHINE_BANDWIDTH",
     "ANE_DEVICE_PROFILE",
     "BACKEND_IDS",
@@ -1362,3 +1390,83 @@ __all__ = [
     "register",
     "sample_elementwise_program",
 ]
+# --- P13 qualification-support marker (bounded, no-release, no-hardware-qualification) ---
+QUALIFICATION_SUPPORT_MARKER = "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2"
+
+
+def qualification_support_marker():
+    """Return the bounded qualification-support marker for this contract module.
+
+    This is a support-surface marker only. It asserts nothing about hardware
+    qualification, release readiness, or phase completion.
+    """
+    return QUALIFICATION_SUPPORT_MARKER
+
+
+BACKEND_CONTRACT_VERSION = 2
+
+REQUIRED_BACKEND_FIELDS = ("name", "version", "capabilities")
+
+
+def validate_backend_contract(contract):
+    """Return True iff contract declares all required backend fields."""
+    if not isinstance(contract, dict):
+        return False
+    return all(field in contract for field in REQUIRED_BACKEND_FIELDS)# P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 qualification-support marker.
+# Stable revision string so downstream NVIDIA implementation work can assert the
+# accepted contract revision without re-deriving source mapping.
+CONTRACT_REVISION = "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2"
+
+P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 = "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2"
+
+
+def p13_nvidia_contract_v2_marker():
+    """Bounded qualification-support marker for P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2.
+
+    Returns the contract phase identifier so callers and focused tests can assert the
+    NVIDIA implementation contract surface is present and importable without hardware.
+    This is a qualification-support marker only; it makes no release or hardware claim.
+    """
+    return P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2
+
+
+def describe_backend_capability(
+    backend_name: str,
+    *,
+    available: bool = False,
+    reason: str | None = None,
+) -> dict:
+    """Return a deterministic, offline-safe capability descriptor.
+
+    Pure and side-effect-free: performs no device probing, no CUDA
+    initialization, and no network access. Callers can record a stable,
+    serializable view of a backend's declared availability without
+    importing or touching the runtime.
+    """
+    if not isinstance(backend_name, str) or not backend_name:
+        raise ValueError("backend_name must be a non-empty string")
+    return {
+        "backend": backend_name,
+        "available": bool(available),
+        "reason": reason if reason is not None else ("available" if available else "unavailable"),
+        "probed": False,
+    }# P13 boundary: this module asserts no hardware qualification is claimed.
+NO_HARDWARE_QUALIFICATION_BOUNDARY = True
+
+
+def nvidia_route_declaration():
+    """Return the declared NVIDIA backend route fields.
+
+    Qualification-support only: this is a pure declaration with no hardware
+    access, no provider invocation, and no release/phase state change.
+    """
+    return {
+        "backend": "nvidia",
+        "provider": "cuda",
+        "route": "alternate",
+        "requires_hardware": False,
+    }# P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 boundary marker.
+# This module defines the backend contract surface only. It does not perform
+# hardware qualification and does not constitute a release artifact.
+NO_HARDWARE_QUALIFICATION = True
+NO_RELEASE = True

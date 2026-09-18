@@ -1,0 +1,771 @@
+{
+  "schema": "hawking.future.kimi_phase_transition.v1",
+  "generated_at": "2026-09-10",
+  "status": "ACTIVE_CONTINUATION",
+  "parent_objective": "Make KIMI small, directly executable, fast, useful, and safe under HCLI; gravity the system and return it to Odyssey.",
+  "preserved_truths": {
+    "kimi_base_immutable": true,
+    "raw_and_resident_evidence_separate": true,
+    "raw_effective_dead_end_refusals": "3/16",
+    "resident_contract_effective_dead_end_refusals": "0/16",
+    "resident_contract_bounded_passes": "16/16",
+    "resident_contract_is_not_learned_weight_evidence": true,
+    "learned_operator_promoted": false,
+    "odyssey_kimi_worker_scope": [],
+    "model_lake_watcher_preserved": true
+  },
+  "oph": {
+    "process_restarted": false,
+    "status": "EXECUTION_INCOMPLETE",
+    "claim": "none",
+    "reason": "Corrected run failed while collecting common DeepSeek router layers; no atomic scientific result was produced.",
+    "receipt": "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPH_ROUTER_RUN_FAILURE_20260910.json",
+    "reopen_rule": "Only a materially different causal hypothesis may reopen learned-weight intervention; do not run a nearby projection sweep."
+  },
+  "complete_ebpw": {
+    "receipt": "receipts/future/KIMI_BASE_COMPLETE_EBPW_INVENTORY_20260910.json",
+    "source_model": "KIMI_BASE",
+    "parameters": 16407657776,
+    "complete_package_bytes": 32819631440,
+    "complete_ebpw": 16.002104328629436,
+    "kind": "raw_bf16_package_baseline",
+    "reduced_noetic_representation": "NOT_BUILT",
+    "dense_parent_dependency": false,
+    "claim_boundary": "This is complete accounting of the raw package, not a reduced Noetic result."
+  },
+  "physical_baseline": {
+    "receipt": "receipts/future/KIMI_DERIVATIVE_SERVER_TPS_BASELINE_20260910.json",
+    "status": "SERVER_BASELINE_COMPLETE_NOT_KIMI_QUALIFIED",
+    "source": "already-live local mlx_vlm q8 KIMI derivative server",
+    "endpoint": "/chat/completions",
+    "concurrency": 1,
+    "prefill_decode_separated": true,
+    "decode_tps_medians": {
+      "prompt_tokens_35": 126.38885721330564,
+      "prompt_tokens_227": 124.63052240268485,
+      "prompt_tokens_803": 118.83396218159535
+    },
+    "end_to_end_tps_medians": {
+      "prompt_tokens_35": 68.41905941526751,
+      "prompt_tokens_227": 48.47254674656374,
+      "prompt_tokens_803": 31.59683494080681
+    },
+    "claim_boundary": "Real serving measurements for the q8 derivative only; not raw KIMI_BASE, not a reduced Noetic representation, not capability-preserving evidence, and not a KIMI promotion milestone."
+  },
+  "raw_kimi_physical_baseline": {
+    "receipt": "receipts/future/KIMI_RAW_BASE_TPS_BASELINE_20260910.json",
+    "status": "RAW_KIMI_BASE_TIMING_COMPLETE_NOT_QUALIFIED",
+    "source": "immutable KIMI_BASE cached local snapshot",
+    "load_s": 6.235,
+    "measurement_contract": "generate_step; two repetitions at each context after excluded warmup; first-yield boundary includes first decode step",
+    "steady_decode_tps_medians": {
+      "prompt_tokens_20": 88.2225,
+      "prompt_tokens_212": 84.768,
+      "prompt_tokens_788": 83.937
+    },
+    "completion_end_to_end_tps_medians": {
+      "prompt_tokens_20": 71.434,
+      "prompt_tokens_212": 60.7035,
+      "prompt_tokens_788": 40.6605
+    },
+    "first_yield_ms_medians": {
+      "prompt_tokens_20": 96.583,
+      "prompt_tokens_212": 161.4495,
+      "prompt_tokens_788": 433.081
+    },
+    "resource_watch_worst_state": "OK",
+    "claim_boundary": "Raw KIMI_BASE physical timing only. This is not a CorpDrive cold-load result, not a direct Noetic decoder result, not capability-preservation evidence, and not a qualified TPS or admission milestone."
+  },
+  "canonical_tps_pareto": {
+    "receipt": "receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+    "status": "CANONICAL_TPS_BENCHMARK_COMPLETE",
+    "measurement_contract": {
+      "source": "KIMI_BASE versus layer-10 three-projection direct organ consumer",
+      "contexts_prompt_tokens": [20, 212, 788],
+      "generated_tokens": 64,
+      "repetitions": 2,
+      "batch": 1,
+      "device": "Device(gpu, 0)",
+      "prefill": "full forward without KV-cache reuse",
+      "decode": "generate_step; first-yield includes first decode; steady excludes it",
+      "warmup_excluded": true,
+      "microkernel_claim": false
+    },
+    "raw_kimi_base": {
+      "prefill_forward_tps_median": [253.534, 1386.796, 2274.033],
+      "steady_decode_tps_median": [86.917, 83.386, 85.390],
+      "completion_end_to_end_tps_median": [77.938, 69.824, 59.892],
+      "first_yield_ms_median": [96.330, 161.053, 330.795]
+    },
+    "patched_three_projection_direct_organs": {
+      "prefill_forward_tps_median": [249.715, 1338.363, 2149.945],
+      "steady_decode_tps_median": [71.272, 68.365, 70.145],
+      "completion_end_to_end_tps_median": [64.921, 58.441, 50.577],
+      "first_yield_ms_median": [101.865, 173.582, 367.281],
+      "capability": "FAILS_0.1614_GATE",
+      "scope": "three layer-10 routed projections direct; all other model weights dense"
+    },
+    "representation": {
+      "down_complete_ebpw": 0.9618252840909091,
+      "active_factor_bytes_per_token": 1582464,
+      "active_factor_bytes_per_token_by_projection": {
+        "gate": 444544,
+        "up": 444544,
+        "down": 693376
+      },
+      "persistent_executable_bytes": {
+        "gate": 14225408,
+        "up": 14225408,
+        "down": 22188032
+      },
+      "direct_execution": true,
+      "full_model_direct_execution": false,
+      "dense_parent_rematerialization": false
+    },
+    "resource": {
+      "model_load_s": 5.7104,
+      "peak_free_gb": 28.12,
+      "swapfiles_delta": 0,
+      "watch_worst_state": "OK"
+    },
+    "bottleneck": "The patched three-projection consumer is 18.0-18.6% below raw steady decode across the measured contexts; full-layer attribution is not yet isolated. The organ direct path is numerically audited, but full-model direct execution is absent.",
+    "best_routed_kernel_latency_ms": 1.039,
+    "best_capability_passing_reduced_ebpw": null,
+    "claim_boundary": "This is canonical paired timing for raw KIMI_BASE and a three-organ direct consumer. It is not a full-model under-1 body, capability-preserving Star, qualified KIMI TPS, resident adoption, NX, Odyssey admission, or promotion milestone."
+  },
+  "direct_organ_rate_frontier": {
+    "fanout_receipt": "receipts/future/KIMI_INT8_RELATIVE_LOWER_RANK_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "routed_audit_receipt": "receipts/future/KIMI_INT8_RELATIVE_QUARTER_BAND_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "organ": "layer10 routed down_proj experts 0 through 63",
+    "objective": "row_relative",
+    "frontier": [
+      {"rank": 48, "complete_ebpw": 0.5015980113636364, "mean_relative_l2": 0.7945285932800775},
+      {"rank": 32, "complete_ebpw": 0.34818892045454547, "mean_relative_l2": 0.8031257292011271},
+      {"rank": 24, "complete_ebpw": 0.271484375, "mean_relative_l2": 0.8147555445219468},
+      {"rank": 16, "complete_ebpw": 0.19477982954545456, "mean_relative_l2": 0.8327197947750874},
+      {"rank": 8, "complete_ebpw": 0.11807528409090909, "mean_relative_l2": 0.8588771876623518},
+      {"rank": 6, "complete_ebpw": 0.09889914772727272, "mean_relative_l2": 0.8685076592511479}
+    ],
+    "selected_direct_audit": {
+      "rank": 24,
+      "complete_ebpw": 0.271484375,
+      "mean_relative_l2": 0.8147578239440918,
+      "sorted_kernel_equivalence_relative_l2": 0.004334708675742149,
+      "sorted_direct_median_ms": 1.0139169753529131,
+      "sorted_factor_oracle_median_ms": 1.5432080253958702,
+      "unsorted_direct_median_ms": 0.5424160044640303,
+      "unsorted_factor_oracle_median_ms": 0.2887499867938459,
+      "status": "INT8_EXPERT_LOWRANK_ROUTED_AUDIT_PASS"
+    },
+    "claim_boundary": "The 0.25 band is crossed by a complete, directly consumed layer-10 down-organ representation. Fidelity is materially below the rank-96 arm, and no full-model capability, qualified TPS, resident adoption, or promotion claim follows."
+  },
+  "quarter_band_graph_control": {
+    "receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_QUARTER_BAND_INTEGRATION_CONTROLLED_EXIT_20260910.json",
+    "status": "PATCHED_FAILS_CAPABILITY_GATE",
+    "scope": "layer10 three-projection direct organs; all other KIMI_BASE weights dense",
+    "selected_down_rank": 24,
+    "selected_down_complete_ebpw": 0.271484375,
+    "ppl": {"baseline": 2.8935918048525204, "patched": 2.8816415078823376, "ratio": 1.021848817526774},
+    "median_fourgram_repeat": {"baseline": 0.053763440860215006, "patched": 0.4623655913978495, "gate": 0.1614},
+    "resource_watch": "OK",
+    "claim_boundary": "The quarter-band arm is a direct graph-integrated negative capability control. Healthy PPL does not rescue the repetition failure; no reduced body or promotion claim follows."
+  },
+  "kimi_p0": {
+    "receipt": "receipts/future/KIMI_P0_EXACT_025_FREEZE_20260910.json",
+    "prior_band_receipt": "receipts/future/KIMI_P0_DENSITY_FREEZE_20260910.json",
+    "name": "KIMI_P0_DENSITY_R16",
+    "role": "developmental density specimen",
+    "status": "FROZEN_DENSITY_SPECIMEN_CAPABILITY_WITHHELD",
+    "scope": "layer10 down-organ complete EBPW; three-projection graph control with dense model remainder",
+    "requested_target_complete_ebpw": 0.25,
+    "effective_complete_ebpw": 0.19477982954545456,
+    "full_model_complete_ebpw": null,
+    "frozen": true,
+    "operational_p0_admitted": false,
+    "reason": "The exact <=0.25 down-organ control is reproducible and directly audited, but the model remainder is dense, graph repetition is 0.4624 versus the 0.1614 gate, and resident worker admission remains RED.",
+    "frontier_lane": "Continue independently below 0.10 complete EBPW through selective protection; current direct down-organ control is 0.0989 EBPW at rank 6."
+  },
+  "kimi_p0_operational": {
+    "receipt": "receipts/future/KIMI_P0_OPERATIONAL_IDENTITY_20260910.json",
+    "name": "KIMI_P0_OPERATIONAL",
+    "role": "first operational developmental KIMI resident candidate",
+    "status": "FROZEN_DEVELOPMENTAL_IDENTITY_MISSION_WITHHELD",
+    "weight_lineage": "KIMI_BASE unchanged",
+    "representation": "dense KIMI_BASE MLX snapshot; no reduced-weight claim",
+    "full_model_complete_ebpw": null,
+    "capability": "bounded 4/4",
+    "hcli_contract": "16/16 bounded passes; 0 effective dead-end refusals; serving-path evidence",
+    "destructive_controls": "6/6",
+    "epistemic": "7/7",
+    "canonical_steady_decode_tps_mean": 85.231,
+    "detached_runtime_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_20260910.json",
+    "detached_runtime_steady_decode_tps_by_context": {
+      "prompt_tokens_35": 74.68366309739233,
+      "prompt_tokens_227": 74.61755406139201,
+      "prompt_tokens_803": 72.08845281908901
+    },
+    "detached_runtime_prefill_tps_by_context": {
+      "prompt_tokens_35": 328.4130028144996,
+      "prompt_tokens_227": 1303.496778001973,
+      "prompt_tokens_803": 2227.3019871019346
+    },
+    "detached_runtime_end_to_end_tps_by_context": {
+      "prompt_tokens_35": 42.21699741835996,
+      "prompt_tokens_227": 32.64392312555461,
+      "prompt_tokens_803": 20.172871370621695
+    },
+    "detached_runtime_mean_context_median_steady_decode_tps": 73.00105389709667,
+    "detached_runtime_replicate_receipt": "receipts/future/KIMI_P0_OPERATIONAL_TPS_RUNTIME_REPEAT2_20260910.json",
+    "resident_catalog_wired": true,
+    "live_detachment_receipt": "receipts/future/KIMI_P0_OPERATIONAL_LIVE_DETACHMENT_20260910.json",
+    "blind_mission": "ATTEMPTED_FAILED_NO_VERIFIED_EDIT",
+    "operational_admitted": false,
+    "promotion": "WITHHELD",
+    "claim_boundary": "This is the separate dense/base developmental body. Its identity and lineage are frozen, but operational resident admission remains fail-closed until the blind real HCLI WorkUnit passes."
+  },
+  "kimi_density_frontier_r6": {
+    "receipt": "receipts/future/KIMI_INT8_RELATIVE_TENTH_BAND_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "name": "KIMI_DENSITY_FRONTIER_R6",
+    "role": "extreme representation frontier",
+    "scope": "layer10 routed down-organ experts 0 through 63",
+    "rank": 6,
+    "complete_ebpw": 0.09889914772727272,
+    "direct_execution": "PASS",
+    "direct_audit": "receipts/future/KIMI_INT8_RELATIVE_TENTH_BAND_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "full_graph_capability": "NOT_EARNED",
+    "resident": false,
+    "claim_boundary": "The 0.0989 result is an organ-scope direct control, not a full-model representation, capability result, resident, or P0."
+  },
+  "kimi_density_frontier_sub_tenth": {
+    "receipt": "receipts/future/KIMI_INT8_RELATIVE_SUBTENTH_BAND_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "role": "sub-tenth representation frontier",
+    "scope": "layer10 routed down-organ experts 0 through 63",
+    "arms": [
+      {
+        "name": "KIMI_DENSITY_FRONTIER_R4",
+        "rank": 4,
+        "complete_ebpw": 0.07972301136363637,
+        "mean_relative_l2": 0.885521331892222,
+        "direct_audit": "receipts/future/KIMI_INT8_RELATIVE_SUBTENTH_BAND_R4_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+        "direct_status": "PASS",
+        "sorted_direct_median_ms": 1.272000023163855,
+        "sorted_factor_oracle_median_ms": 2.2002080222591758,
+        "sorted_kernel_equivalence_mean_relative_l2": 0.004253055434674025
+      },
+      {
+        "name": "KIMI_DENSITY_FRONTIER_R2",
+        "rank": 2,
+        "complete_ebpw": 0.060546875,
+        "mean_relative_l2": 0.90935501392519,
+        "direct_audit": "receipts/future/KIMI_INT8_RELATIVE_SUBTENTH_BAND_R2_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+        "direct_status": "PASS",
+        "sorted_direct_median_ms": 1.1939589749090374,
+        "sorted_factor_oracle_median_ms": 2.186166006140411,
+        "sorted_kernel_equivalence_mean_relative_l2": 0.004410962374183941
+      },
+      {
+        "name": "KIMI_DENSITY_FRONTIER_R1",
+        "rank": 1,
+        "complete_ebpw": 0.050958806818181816,
+        "mean_relative_l2": 0.9343229494757258,
+        "direct_audit": "receipts/future/KIMI_INT8_RELATIVE_SUBTENTH_R1_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+        "direct_status": "PASS",
+        "sorted_direct_median_ms": 1.207917,
+        "sorted_factor_oracle_median_ms": 1.765708,
+        "sorted_kernel_equivalence_mean_relative_l2": 0.0074417
+      }
+    ],
+    "rank1_three_projection_control": {
+      "receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_SUBTENTH_R1_INTEGRATION_CONTROLLED_EXIT_20260910.json",
+      "scope": "layer10 routed gate/up/down only; all other weights remain dense",
+      "patched_ppl": 2.88629168628,
+      "patched_repetition": 0.13793103448,
+      "capability_gate": "PASS",
+      "full_model_direct_execution": false,
+      "full_body_capability": "NOT_EARNED",
+      "resident": false,
+      "claim_boundary": "A bounded three-projection control passes the current PPL/repetition gate, but this is not a complete reduced body, direct full-model execution result, qualified TPS result, resident, or promotion result."
+    },
+    "full_graph_capability": "NOT_EARNED",
+    "resident": false,
+    "claim_boundary": "Ranks 4, 2, and 1 extend the directly consumed organ frontier below 0.10 EBPW. The rank-1 three-projection control passes the bounded capability gate at its declared scope, but none of these results is a full-model body, capability-qualified complete representation, resident, or P0 candidate."
+  },
+  "compute_takeover": {
+    "receipt": "receipts/future/KIMI_COMPUTE_TAKEOVER_DOSSIER_20260910.json",
+    "status": "MACHINE_WIDE_COMPUTE_CHARACTERIZATION_COMPLETE",
+    "cpu_vector_add_median_gb_s": 118.80016080916492,
+    "gpu_triad_median_gb_s": 572.71,
+    "gpu_triad_iqr_spread_pct": 3.03,
+    "ane_maturity": "PROFILED",
+    "storage_maturity": "MEASURED",
+    "claim_boundary": "Primitive/domain characterization only; not an SoC roof, ANE KIMI workload, 100 TPS, or 500 TPS claim.",
+    "next": "matched CPU/GPU KIMI placement and latency decomposition"
+  },
+  "real_organ_activation_capture": {
+    "receipt": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.json",
+    "corpus": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "target": "layer10 switch_mlp.up_proj",
+    "expert_count_observed": 64,
+    "total_retained_rows": 2550,
+    "input_width": 2048,
+    "claim": "real forward-captured routed inputs; used as a bounded representation objective, not a candidate or promotion artifact"
+  },
+  "resident_adoption": {
+    "status": "INTEGRATED_NOT_QUALIFIED",
+    "focused_tests": "34 passed",
+    "owner_boundary": "RuntimePool.start",
+    "worker_admission": "RED"
+  },
+  "repository_gravity": {
+    "map_receipt": "receipts/future/GRAVITY_REPOSITORY_MAP_AFTER_THREE_PROJECTION_20260910.json",
+    "counts": {
+      "inventoried_files": 7897,
+      "gravity_adjacent_files": 2100,
+      "python_modules": 1396,
+      "test_files": 553,
+      "top_level_paths": 23
+    },
+    "claim": "heuristic ownership inventory only; no mass cleanup authorized"
+  },
+  "daemon_recovery": {
+    "status": "SELF_CHECK_PASS",
+    "defect": "daemon Genesis contract path pointed at retired contracts/genesis location",
+    "repair": "tools/ascent_daemon.py now uses docs/contracts/genesis canonical owner",
+    "production_integrity_gate_relaxed": false,
+    "verification": "python3.12 tools/ascent_daemon.py selfcheck"
+  },
+  "first_ebpw_organ_discriminator": {
+    "receipt": "receipts/future/KIMI_EBPW_ORGAN_SCREEN_20260910.json",
+    "weight_load": false,
+    "status": "ACCOUNTING_SCREEN_ONLY",
+    "fanout": {"method_count": 9, "organ_count": 3, "rows": 27, "method_soft_budget_ms": 2000.0},
+    "best_accounted_scoped_rows": {
+      "layer10_routed_expert23": {"family": "generated_seeded_1mb", "complete_ebpw": 1.0348011363636365},
+      "layer10_shared_experts": {"family": "generated_seeded_1mb", "complete_ebpw": 0.5174005681818182},
+      "layer10_attention": {"family": "generated_seeded_1mb", "complete_ebpw": 0.6508656166734094},
+      "layer10_attention_pq_control": {"family": "pq_d64_shared", "complete_ebpw": 0.9463941938813945}
+    },
+    "next_discriminator": "Fit measured codebooks/generator parameters, run output-sensitive capability checks, and validate a direct consumer; do not extrapolate to the full body.",
+    "claim_boundary": "Sub-1 scoped rows are hypotheses only because generator/direct-kernel/capability evidence is absent."
+  },
+  "direct_execution_reference": {
+    "single_tensor_receipt": "receipts/future/KIMI_NOETIC_PQ_REFERENCE_EXPERT23_UP_D32_20260910.json",
+    "fanout_receipt": "receipts/future/KIMI_NOETIC_PQ_FANOUT_EXPERT23_UP_20260910.json",
+    "status": "ORGAN_REFERENCE_COMPLETE_NOT_QUALIFIED",
+    "tensor": "language_model.model.layers.10.mlp.experts.23.up_proj.weight",
+    "fanout": {
+      "variant_count": 6,
+      "workers": 6,
+      "wall_elapsed_ms": 2686.947542009875,
+      "method_soft_budget_ms": 20000.0
+    },
+    "best_accounted_variant": {
+      "name": "pq_d64_e16_s2",
+      "complete_ebpw": 0.5,
+      "relative_l2": 0.968865028380619,
+      "direct_median_ms": 2.5771459913812578,
+      "dense_oracle_median_ms": 0.44145798892714083
+    },
+    "best_error_variant": {
+      "name": "pq_d16_e32_s2",
+      "complete_ebpw": 1.0568181818181819,
+      "relative_l2": 0.8223735726153265,
+      "direct_median_ms": 1.2148750247433782,
+      "dense_oracle_median_ms": 0.3726659924723208
+    },
+    "direct_path_dense_parent_materialized": false,
+    "claim_boundary": "The direct consumer is mechanically verified on one tensor, but all tested low-entry sub-1 variants have poor output fidelity and are slower than the dense oracle. This is not a full-organ representation, capability result, end-to-end TPS result, or KIMI admission evidence.",
+    "next_discriminator": "Fit shared codebooks across the MoE organ, then add output-aware protected residuals and measure organ capability before body-wide compilation."
+  },
+  "shared_moe_direct_fanout": {
+    "pq_receipt": "receipts/future/KIMI_SHARED_PQ_ORGAN_FANOUT_LAYER10_UP_EXPERTS0_7_SCALED_20260910.json",
+    "residual_receipt": "receipts/future/KIMI_SHARED_PQ_RESIDUAL_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "basis_receipt": "receipts/future/KIMI_SHARED_BASIS_ORGAN_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "additive_receipt": "receipts/future/KIMI_SHARED_ADDITIVE_ORGAN_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "additive_heldout_receipt": "receipts/future/KIMI_SHARED_ADDITIVE_HELDOUT_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "multistage_bitpacked_receipt": "receipts/future/KIMI_SHARED_MULTISTAGE_BITPACKED_HELDOUT_EXPANDED_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "multistage_optimized_fit_receipt": "receipts/future/KIMI_SHARED_MULTISTAGE_BITPACKED_HELDOUT_OPTIMIZED_FIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "multistage_protected_receipt": "receipts/future/KIMI_MULTISTAGE_PROTECTED_RESIDUAL_HELDOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "learned_generator_receipt": "receipts/future/KIMI_LEARNED_COORDINATE_GENERATOR_EXPERT_ROW_HELDOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "learned_generator_deepfit_receipt": "receipts/future/KIMI_LEARNED_COORDINATE_GENERATOR_HELDOUT_DEEPFIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "basis_sparse_residual_receipt": "receipts/future/KIMI_SHARED_BASIS_SPARSE_RESIDUAL_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "tucker_receipt": "receipts/future/KIMI_SHARED_TUCKER_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "organ": "layer10 routed experts 0 through 7 up_proj",
+    "pq": {
+      "variants": 13,
+      "wall_elapsed_ms": 21052.525708044413,
+      "lowest_complete_ebpw": 0.171875,
+      "lowest_error_mean_relative_l2": 0.9119674485188677,
+      "lowest_error_complete_ebpw": 0.546875,
+      "claim": "shared codebooks amortize bytes but tested fits remain inaccurate"
+    },
+    "protected_residual": {
+      "variants": 5,
+      "wall_elapsed_ms": 214.43670900771394,
+      "best_under_1_complete_ebpw": 0.6267422762784091,
+      "best_under_1_mean_relative_l2": 0.8846511473344579,
+      "above_1_control_complete_ebpw": 1.1044810901988635,
+      "above_1_control_mean_relative_l2": 0.8128427844545868,
+      "claim": "small output-aware protected rows improve error but do not yet reach useful fidelity"
+    },
+    "shared_basis": {
+      "variants": 5,
+      "fit_ms": 25.57583397720009,
+      "wall_elapsed_ms": 10.784665995743126,
+      "best_complete_ebpw": 0.09801136363636363,
+      "best_error_mean_relative_l2": 0.96411431052769,
+      "claim": "A_e(Bx) is direct and fast in the bounded reference, but sampled low-rank structure is not accurate"
+    },
+    "additive_heldout": {
+      "variants": 3,
+      "fit_ms": 2930.715958995279,
+      "wall_elapsed_ms": 684.85854199389,
+      "best_under_1_complete_ebpw": 0.7059659090909091,
+      "best_under_1_mean_relative_l2": 0.8891174820615926,
+      "best_under_1_p95_relative_l2": 0.9185441461982321,
+      "claim": "additive improvement survives held-out activation probes but remains inaccurate"
+    },
+    "multistage_bitpacked": {
+      "variants": 6,
+      "fit_ms": 3619.1451249760576,
+      "wall_elapsed_ms": 13436.104874999728,
+      "best_under_1_complete_ebpw": 0.8650568181818182,
+      "best_under_1_mean_relative_l2": 0.749134563915801,
+      "best_under_1_p95_relative_l2": 0.7760436775796171,
+      "claim": "bit-packed multi-stage residuals materially improve held-out error but remain inadequate"
+    },
+    "multistage_protected": {
+      "base_complete_ebpw": 0.9105113636363636,
+      "base_mean_relative_l2": 0.7051916043130617,
+      "full_budget_complete_ebpw": 0.9901344992897727,
+      "full_budget_mean_relative_l2": 0.7024794931659896,
+      "full_budget_p95_relative_l2": 0.7272233022751883,
+      "claim": "near-1 EBPW sparse protected rows do not repair the distributed residual error"
+    },
+    "learned_coordinate_generator": {
+      "variants": 6,
+      "deepfit_steps": 2500,
+      "lowest_complete_ebpw": 0.03775301846590909,
+      "best_error_mean_relative_l2": 1.000376486936207,
+      "expert_row_control_complete_ebpw": 0.284912109375,
+      "expert_row_control_mean_relative_l2": 1.0012057851422673,
+      "claim": "compact learned coordinate generator is capacity-limited and does not recover the organ"
+    },
+    "basis_sparse_residual": {
+      "variants": 9,
+      "fit_ms": 26.469915988855064,
+      "wall_elapsed_ms": 507.61725002666935,
+      "best_under_1_complete_ebpw": 0.8979880593039773,
+      "best_under_1_mean_relative_l2": 0.9720864666114242,
+      "best_under_1_p95_relative_l2": 0.983149646132801,
+      "claim": "shared input basis plus output-aware per-expert sparse residual remains inaccurate at sub-1 organ budgets; residual index overhead rises sharply"
+    },
+    "shared_tucker": {
+      "variants": 12,
+      "wall_elapsed_ms": 241.5391670074314,
+      "best_byte_complete_ebpw": 0.04367897727272727,
+      "best_byte_mean_relative_l2": 0.9995896599401025,
+      "lowest_error_complete_ebpw": 0.125,
+      "lowest_error_mean_relative_l2": 0.9963703039536828,
+      "direct_path": "U(C_e(V^T x)); dense parent not materialized",
+      "claim": "shared output/input bases plus expert-local cores are direct and fully accounted but capacity-limited on the held-out organ probes"
+    },
+    "activation_capture_receipt": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.json",
+    "down_activation_capture_receipt": "workspace/campaign/odyssey/activations/KIMI_LAYER10_DOWN_REAL_ACTIVATIONS_20260910.json",
+    "tucker_real_activation_receipt": "receipts/future/KIMI_SHARED_TUCKER_REAL_ACTIVATION_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "representation_native_nova_receipt": "receipts/future/KIMI_REPRESENTATION_NATIVE_NOVA_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "nova_local_residual_receipt": "receipts/future/KIMI_NOVA_LOCAL_RESIDUAL_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "nova_factor_artifact_audit_receipt": "receipts/future/KIMI_NOVA_FACTOR_ARTIFACT_AUDIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "nova_mlx_direct_audit_receipt": "receipts/future/KIMI_NOVA_MLX_DIRECT_AUDIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "nova_routed_kernel_audit_receipt": "receipts/future/KIMI_NOVA_ROUTED_KERNEL_AUDIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "independent_expert_lowrank_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "independent_expert_lowrank_routed_audit_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+    "representation_native_nova": {
+      "variants": 10,
+      "training_steps": 300,
+      "activation_source": "real forward-captured KIMI layer10 up_proj inputs with interleaved train/held-out split",
+      "wall_elapsed_ms": 11547.470209014136,
+      "best_byte_complete_ebpw": 0.04367897727272727,
+      "best_byte_mean_relative_l2": 0.8822079291258875,
+      "best_error_complete_ebpw": 0.1434659090909091,
+      "best_error_mean_relative_l2": 0.7694873701192078,
+      "best_error_p95_relative_l2": 1.06653272921116,
+      "best_error_mean_cosine": 0.6049787545048478,
+      "direct_path": "U(C_e(V^T x)); dense parent is teacher-only",
+      "claim": "representation-native training materially improves the organ error regime on real routed inputs, but held-out error and p95 remain inadequate for capability or admission"
+    },
+    "nova_local_residual": {
+      "variants": 6,
+      "training_steps": 300,
+      "activation_source": "same real forward-captured KIMI layer10 up_proj corpus with interleaved train/held-out split",
+      "wall_elapsed_ms": 7592.510290967766,
+      "best_under_1_complete_ebpw": 0.140625,
+      "best_under_1_mean_relative_l2": 0.7621012706093114,
+      "best_error_complete_ebpw": 0.2599431818181818,
+      "best_error_mean_relative_l2": 0.7002380645497156,
+      "best_error_p95_relative_l2": 0.9867622355643706,
+      "best_error_mean_cosine": 0.6614967574601742,
+      "artifact_audit": "NOVA_FACTOR_ARTIFACT_AUDIT_PASS",
+      "mlx_direct_audit": "NOVA_MLX_DIRECT_AUDIT_PASS",
+      "mlx_direct_median_ms": 0.3464789770077914,
+      "mlx_oracle_median_ms": 0.2538955013733357,
+      "direct_path": "U(C_e(V^T x)) + A_e(B_e^T x); dense parent teacher-only",
+      "claim": "learned expert-local residual factors materially improve held-out error and are replayable in MLX BF16, but this remains an organ reference and not full-model capability or promotion evidence",
+      "artifact_integrity": "restored six-arm receipt and regenerated downstream audits after isolating expanded artifacts"
+    },
+    "nova_local_residual_expanded": {
+      "receipt": "receipts/future/KIMI_NOVA_LOCAL_RESIDUAL_EXPANDED_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+      "artifact_directory": "workspace/campaign/odyssey/representations/kimi_nova_local_residual_expanded",
+      "variants": 12,
+      "training_steps": 500,
+      "activation_source": "same real forward-captured KIMI layer10 up_proj corpus with interleaved train/held-out split",
+      "wall_elapsed_ms": 24879.99324995326,
+      "all_variants_below_1_complete_ebpw": true,
+      "lowest_byte_complete_ebpw": 0.140625,
+      "lowest_byte_mean_relative_l2": 0.7572525680889348,
+      "best_error_complete_ebpw": 0.4786931818181818,
+      "best_error_mean_relative_l2": 0.6923111010666027,
+      "best_error_p95_relative_l2": 0.9871032603711654,
+      "best_error_mean_cosine": 0.671711697284855,
+      "claim": "larger ranks and residual budgets remain sub-1 EBPW and improve the organ error frontier only modestly; rank increases are not monotonic, so balanced coverage and topology changes are required before capability work"
+    },
+    "independent_expert_lowrank": {
+      "receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_UP_EXPERTS0_7_20260910.json",
+      "variants": 6,
+      "training_steps": 500,
+      "pca_initializer_ms": 56.238792021758854,
+      "wall_elapsed_ms": 4659.616917022504,
+      "best_under_1_complete_ebpw": 0.9446022727272727,
+      "best_under_1_mean_relative_l2": 0.6352284602541337,
+      "best_error_complete_ebpw": 0.7911931818181818,
+      "best_error_mean_relative_l2": 0.6328863147031382,
+      "best_error_p95_relative_l2": 0.9351354757685787,
+      "best_error_mean_cosine": 0.72154455287243,
+      "routed_kernel_equivalence_mean_relative_l2": 0.0028299610130488873,
+      "routed_sorted_direct_median_ms": 0.7657079841010273,
+      "routed_sorted_factor_oracle_median_ms": 0.7851669797673821,
+      "direct_path": "A_e(B_e^T x); dense parent teacher-only and oracle-only",
+      "claim": "independent expert factors beat the shared-core/local-residual source-error frontier on this organ at sub-1 EBPW, with routed direct consumption validated; full-model capability and decoder integration remain unearned"
+    },
+    "independent_expert_lowrank_all64": {
+      "receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_63_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_UP_EXPERTS0_63_20260910.json",
+      "expert_count": 64,
+      "variants": 6,
+      "training_steps": 300,
+      "pca_initializer_ms": 439.26579103572294,
+      "wall_elapsed_ms": 20354.401124990545,
+      "all_variants_below_1_complete_ebpw": true,
+      "best_error_complete_ebpw": 0.6166548295454546,
+      "best_error_mean_relative_l2": 0.64613892783622,
+      "best_error_p95_relative_l2": 0.9502966299726116,
+      "best_error_mean_cosine": 0.7234603158038133,
+      "routed_kernel_equivalence_mean_relative_l2": 0.0028186868876218796,
+      "routed_sorted_rows": 1256,
+      "routed_sorted_direct_median_ms": 1.457959006074816,
+      "routed_sorted_factor_oracle_median_ms": 1.5641250065527856,
+      "claim": "independent expert factors remain sub-1 EBPW across all 64 layer-10 experts and preserve routed execution, but sparse/uneven activation coverage and source error still block full-model capability qualification"
+    },
+    "independent_expert_lowrank_gate_all64": {
+      "receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_GATE_EXPERTS0_63_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_GATE_EXPERTS0_63_20260910.json",
+      "expert_count": 64,
+      "best_error_complete_ebpw": 0.6166548295454546,
+      "best_error_mean_relative_l2": 0.5975051259512907,
+      "best_error_p95_relative_l2": 0.8971532805354453,
+      "best_error_mean_cosine": 0.7715307727551005,
+      "routed_kernel_equivalence_mean_relative_l2": 0.0027593267150223255,
+      "claim": "gate projection is more recoverable than up/down under the same independent-factor budget; direct routing passes, but full-model capability is not inferred"
+    },
+    "independent_expert_lowrank_down_all64": {
+      "receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "activation_capture_receipt": "workspace/campaign/odyssey/activations/KIMI_LAYER10_DOWN_REAL_ACTIVATIONS_20260910.json",
+      "expert_count": 64,
+      "best_error_complete_ebpw": 0.9234730113636364,
+      "best_error_mean_relative_l2": 0.7945994122472592,
+      "best_error_p95_relative_l2": 1.0545537564585934,
+      "best_error_mean_cosine": 0.5553742509141006,
+      "routed_kernel_equivalence_mean_relative_l2": 0.003034997498616576,
+      "claim": "down projection is the fidelity bottleneck for this topology; routed arithmetic passes but source approximation remains too poor for three-projection capability"
+    },
+    "variable_rank_down_recovery": {
+      "receipt": "receipts/future/KIMI_VARIABLE_RANK_LOWRANK_NOVA_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_VARIABLE_RANK_LOWRANK_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "activation_capture_receipt": "workspace/campaign/odyssey/activations/KIMI_LAYER10_DOWN_REAL_ACTIVATIONS_20260910.json",
+      "schedules": 4,
+      "training_steps": 300,
+      "wall_elapsed_ms": 16449.33954102453,
+      "best_complete_ebpw": 0.8851207386363636,
+      "best_mean_relative_l2": 0.7871239031495332,
+      "uniform_rank48_mean_relative_l2": 0.7945994122472592,
+      "best_routed_direct_median_ms": 3.6646249936893582,
+      "factor_oracle_median_ms": 1.5829160111024976,
+      "claim": "routing-mass-aware variable ranks improve down fidelity only modestly and remain over 2x the factor-oracle latency due rank-group sort/scatter; close as a production path until a fused grouped kernel exists"
+    },
+    "int8_down_recovery": {
+      "receipt": "receipts/future/KIMI_INT8_EXPERT_LOWRANK_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_INT8_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "integration_receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_DOWN_INTEGRATION_PROBE_LAYER10_EXPERTS0_63_96TOK_20260910.json",
+      "expert_count": 64,
+      "quantizer": "symmetric_rowwise_int8_fp32_scale",
+      "variants": 4,
+      "load_ms": 119279.02895800071,
+      "initializer_wall_ms": 1236.0234590014443,
+      "fanout_wall_ms": 22116.724832972977,
+      "best_under_1_complete_ebpw": 0.9618252840909091,
+      "best_under_1_mean_relative_l2": 0.7706095028322943,
+      "rank112_complete_ebpw": 1.115234375,
+      "routed_kernel_equivalence_mean_relative_l2": 0.00447120564058423,
+      "routed_sorted_direct_median_ms": 1.139792031608522,
+      "routed_sorted_factor_oracle_median_ms": 1.844500016886741,
+      "integration_mean_ppl_ratio": 1.0113409022974866,
+      "integration_patched_median_fourgram_repeat_fraction": 0.30107526881720426,
+      "integration_capability_gate": "PATCHED_FAILS_CAPABILITY_GATE",
+      "integration_process_exit_code": 139,
+      "claim": "row-wise INT8 factors buy higher rank under 1 complete EBPW and improve down held-out error, with routed numerical equivalence; the mixed three-projection graph still fails capability through repetition and the launcher recorded a native teardown crash after writing its receipt"
+    },
+    "int8_row_relative_down_recovery": {
+      "receipt": "receipts/future/KIMI_INT8_RELATIVE_EXPERT_LOWRANK_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "routed_audit_receipt": "receipts/future/KIMI_INT8_RELATIVE_EXPERT_LOWRANK_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "integration_receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_DOWN_INTEGRATION_PROBE_CONTROLLED_EXIT_20260910.json",
+      "unclean_integration_receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_DOWN_INTEGRATION_PROBE_LAYER10_EXPERTS0_63_96TOK_20260910.json",
+      "expert_count": 64,
+      "objective": "row_relative_output_error",
+      "best_under_1_complete_ebpw": 0.9618252840909091,
+      "best_under_1_mean_relative_l2": 0.7592850022157502,
+      "best_under_1_p95_relative_l2": 1.0391746579923469,
+      "fanout_wall_ms": 22755.205666006077,
+      "routed_kernel_equivalence_mean_relative_l2": 0.004495194181799889,
+      "routed_sorted_direct_median_ms": 1.03854201734066,
+      "routed_sorted_factor_oracle_median_ms": 1.5340420068241656,
+      "integration_mean_ppl_ratio": 1.0284348426852963,
+      "integration_patched_median_fourgram_repeat_fraction": 0.19565217391304346,
+      "integration_generation_repeat_delta": 0.14188873305282845,
+      "integration_kernel": "optimized two-stage MLX gather_mm with row-scale pre/postconditioning",
+      "integration_capability_gate": "PATCHED_FAILS_CAPABILITY_GATE",
+      "integration_process_exit_code": 139,
+      "claim": "row-relative output training improves the organ held-out relative-L2 frontier to 0.7593 at 0.9618 complete EBPW and reduces graph repetition versus INT8-MSE, but still fails capability; normal native teardown remains defective and a controlled worker exit is available"
+    },
+    "int8_output_whitened_down_negative": {
+      "receipt": "receipts/future/KIMI_INT8_WHITENED_EXPERT_LOWRANK_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+      "expert_count": 64,
+      "objective": "per-expert-output-coordinate-energy-whitened-mse",
+      "variants": 4,
+      "fanout_wall_ms": 22196.02183299139,
+      "best_under_1_complete_ebpw": 0.9618252840909091,
+      "best_under_1_mean_relative_l2": 0.7929653531796539,
+      "row_relative_frontier_mean_relative_l2": 0.7592850022157502,
+      "claim": "output-energy whitening is a negative discriminator on the real down corpus; it is worse than row-relative training at the same complete-EBPW frontier and is closed without routed or graph integration"
+    },
+    "full_model_probe_teardown_repair": {
+      "receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_DOWN_INTEGRATION_PROBE_CONTROLLED_EXIT_20260910.json",
+      "normal_interpreter_exit_code": 139,
+      "controlled_worker_exit_code": 0,
+      "teardown": "SYNCHRONIZED_RELEASED_CACHE_CLEARED",
+      "process_exit_mode": "controlled_os_exit_0",
+      "watch_worst_state": "OK",
+      "capability_gate": "PATCHED_FAILS_CAPABILITY_GATE",
+      "patched_median_fourgram_repeat_fraction": 0.19565217391304346,
+      "claim": "the full-graph probe completes through an explicit bounded worker-exit fallback after MLX cleanup; normal native interpreter teardown remains a runtime defect and the model candidate remains withheld"
+    },
+    "full_model_one_organ_integration_probe": {
+      "receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_ORGAN_INTEGRATION_PROBE_LAYER10_UP_EXPERTS0_63_20260910.json",
+      "target": "language_model.model.layers.10.mlp.switch_mlp.up_proj",
+      "replacement": "all-64 independent expert lowrank rank32",
+      "other_weights": "unchanged KIMI_BASE dense/MLX weights",
+      "baseline_nll_text_ppl": 2.8935918048525204,
+      "patched_nll_text_ppl": 2.900844337156227,
+      "mean_nll_delta": 0.023666560649871826,
+      "mean_ppl_ratio": 1.0399838723177015,
+      "generation_median_s_delta": 0.049649624968878925,
+      "generation_repeat_delta": 0.0,
+      "generation_unique_fraction_delta": -0.03125,
+      "watch_worst_state": "OK",
+      "claim": "one-organ replacement enters the real KIMI graph without immediate collapse, but the rest of the model remains dense and capability/admission are not qualified"
+    },
+    "full_model_three_projection_integration_probe": {
+      "receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INTEGRATION_PROBE_LAYER10_EXPERTS0_63_96TOK_20260910.json",
+      "target": "layer10 routed gate_proj + up_proj + down_proj",
+      "other_weights": "unchanged KIMI_BASE dense/MLX weights",
+      "baseline_nll_text_ppl": 2.8935918048525204,
+      "patched_nll_text_ppl": 2.9014896858983765,
+      "mean_nll_delta": 0.01320415735244751,
+      "mean_ppl_ratio": 1.0210912426741172,
+      "baseline_median_fourgram_repeat_fraction": 0.053763440860215006,
+      "patched_median_fourgram_repeat_fraction": 0.4731182795698925,
+      "capability_gate": "PATCHED_FAILS_CAPABILITY_GATE",
+      "watch_worst_state": "OK",
+      "claim": "three-projection real-graph integration preserves NLL closely but fails the established 96-token generation gate through repetition; no promotion or Odyssey admission"
+    },
+    "claim_boundary": "These are organ-level representation discriminators on eight experts and fixed probe vectors. They do not establish full-model capability, end-to-end TPS, NX artifacts, or KIMI admission. The routed direct consumer is validated against MLX gather_mm at organ level but is not integrated into the full KIMI model.",
+    "next_discriminator": "Repair the down-projection representation under balanced real activation coverage and output-aware Nova objectives; do not carry variable-rank dispatch into the graph without a fused grouped kernel. Then rerun the three-projection 96-token capability harness. Keep promotion fail-closed until full-model capability, epistemic, authorization, and HCLI gates pass."
+  },
+  "full_model_sparse_fanout": {
+    "receipt": "receipts/future/KIMI_GRAVITY_FANOUT_20260910.json",
+    "specimen": "KIMI_BASE",
+    "candidate_count": 19,
+    "measured_under_1_count": 18,
+    "execution_lane": "single MLX physical lane with fresh worker per candidate; parallel search fanout without shared-model contention",
+    "timing_standard": {
+      "required_stage_fields": [
+        "admission_s", "plan_s", "load_s", "inventory_s", "activation_calibration_s",
+        "routing_calibration_s", "expert_transform_s", "non_expert_quantize_s",
+        "materialize_sync_s", "nll_s", "generation_total_s", "generation_median_s"
+      ],
+      "resource_trace_labels": [
+        "entry", "loaded", "calibrated", "experts_replaced", "materialized",
+        "nll_complete", "generation_complete"
+      ],
+      "fanout_wall_s_recorded": 180.404,
+      "typical_full_worker_wall_s": "20.359-28.310",
+      "claim": "Search timing is measured per stage and per worker; it is not qualified TPS."
+    },
+    "best_measured_under_1": {
+      "spec": "sparseact0.05percal-g128",
+      "complete_ebpw": 0.870546848002469,
+      "ppl": 33.6197,
+      "median_4gram_repeat": 0.9892,
+      "capability_ok": false
+    },
+    "best_measured_byte_frontier": {
+      "spec": "sparseact0.05percal-g128+o2g128",
+      "complete_ebpw": 0.6563860867303842,
+      "ppl": 548169.1884,
+      "median_4gram_repeat": 0.9157,
+      "capability_ok": false,
+      "execution_complete": false
+    },
+    "best_near_target_measured": {
+      "spec": "organdownternary0.03u0.12percal-g128",
+      "complete_ebpw": 0.9962349497506975,
+      "ppl": 37.6048,
+      "median_4gram_repeat": 0.9892,
+      "capability_ok": false
+    },
+    "frontier_reading": "Sub-1 complete EBPW is physically byte-reachable in this KIMI full-model evaluator: 18 of 19 measured bodies crossed the target, with a new 0.6564 byte frontier after separately reducing the non-expert stream to 2-bit/group-128. That compound reduction catastrophically worsens perplexity, and every screened body still fails capability. The byte frontier is therefore a real search result, not a useful worker.",
+    "direct_execution": "NOT_EARNED; sparse side-channel is reconstructed into dense bf16 inside the evaluator and has no production sparse kernel",
+    "promotion": "WITHHELD",
+    "next_discriminator": "Representation-native Nova factorization with output-aware held-out objective and direct decoder; do not spend another budget on nearby sparse density/ternary or non-expert-bit sweeps unless a new causal mechanism changes the distributed-error phenotype."
+  },
+  "next_actions": [
+    "replace the controlled worker exit with a normal clean MLX teardown when the runtime permits; retain the bounded fallback",
+    "test downstream or sensitivity-weighted down objectives against the 0.9618 EBPW INT8 rank-96 frontier",
+    "rerun the three-projection 96-token capability harness after downstream down-projection recovery",
+    "use the frozen KIMI_P0_DENSITY_R16 exact <=0.25 organ control as a density reference while pursuing selective sensitivity/recoverability-weighted allocation",
+    "use the 0.2715 and 0.1948 direct down-organ arms as low-rate controls for sensitivity-weighted and selective-residual allocation; do not promote the uniform low-rate arms",
+    "allocate protected residual/rank to the measured high-repair-cost down rows and rerun the three-projection capability harness; uniform quarter-band rank is closed",
+    "maintain the sealed KIMI_P0_DENSITY_R16 exact <=0.25 density snapshot while keeping KIMI_P0_OPERATIONAL mission admission fail-closed",
+    "the 0.0989 rank-6 direct down-organ control is audited; rank-2 now reaches 0.06055 and is directly audited; move lower only through selective sensitivity/recoverability protection, not uniform rank reduction",
+    "run matched CPU/GPU placement and token-latency decomposition from the machine-wide compute dossier",
+    "integrate the leading 64-expert factor consumers into a full-model direct decoder without dense rematerialization",
+    "full-model direct sparse decoder prototype with no dense rematerialization",
+    "full-model direct-consumption audit with capability, epistemic, authorization, and HCLI gates",
+    "reproduce the canonical raw-versus-reduced timing with a production streaming contract before qualifying KIMI TPS; keep prefill and decode separate",
+    "live resident adoption and independent gate evaluation",
+    "one typed-family Gravity migration with parity and rollback",
+    "one measured daemon recovery repair",
+    "continue ModelLake/Odyssey independently"
+  ]
+}

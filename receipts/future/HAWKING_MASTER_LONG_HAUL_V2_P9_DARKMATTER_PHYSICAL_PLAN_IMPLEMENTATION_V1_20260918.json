@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.long_haul.v2.implementation_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P9_DARKMATTER_PHYSICAL_PLAN_IMPLEMENTATION_V1",
+  "workunit_id": "LOCAL-P9-DARKMATTER-PHYSICAL-PLAN-20260918",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Source/contract-validated DARKMATTER physical-plan owner only; no hardware execution, timing, speedup, production qualification, or release claim.",
+  "owner": "tools/odyssey/physical_graph_compiler.py::build_darkmatter_physical_plan",
+  "authority_source": {
+    "path": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "sha256": "e5ace43f1e3e13424a85187b070e99f9aedbb46f9bb70b13c64314d0314913fb",
+    "pass": "DARKMATTER_PHYSICAL_PLAN_PASS"
+  },
+  "implementation": {
+    "schema": "hawking.odyssey.darkmatter_physical_plan.v1",
+    "reuses": "compile_heterogeneous_physical_graph",
+    "evidence_tier": "COST_MODEL",
+    "qualification": "PLAN_ONLY",
+    "physical_qualification": "WITHHELD",
+    "execution": "WITHHELD_PENDING_SEPARATELY_ADMITTED_BACKEND_AND_RUNTIME_RECEIPT"
+  },
+  "focused_verification": {
+    "command": "python3 -m pytest -q tools/odyssey/test_darkmatter_physical_plan.py tools/accelerator/test_fusion_bridge.py tools/odyssey/test_arch_recognizer.py",
+    "result": "46 passed in 0.41s",
+    "syntax": "python3 -m py_compile tools/odyssey/physical_graph_compiler.py",
+    "diff_check": "passed"
+  },
+  "falsifier": "The compiler emits a plan without its ordering/coherency/ownership/placement gates, labels a plan HARDWARE_MEASURED, or exposes execution as qualified without a runtime receipt.",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "provider_output_promotion": "withheld"
+}

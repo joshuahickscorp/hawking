@@ -1,0 +1,72 @@
+{
+  "active_job": "job-9c13151a-d548-49ff-96cf-f17a0e1b5959",
+  "blocker": {
+    "pid": 31285,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0131775816,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "GOAL-945600ECD0",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 31285,
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "goal_id": "GOAL-945600ECD0",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "receipts/future/workunits/GOAL-945600ECD0_SEAL_B1.json",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 7,
+  "latest_real_seal": "receipts/future/workunits/GOAL-945600ECD0_SEAL_B1.json",
+  "objective": "One disposable H-Web live qualification Goal. Hawking has provisioned the isolated linked Git worktree .worktrees/hweb-live-qualification-20260915; first verify it with git.status and work only inside that worktree, never the dirty main checkout. Use the real Hawking tool registry and inspect available capabilities with tools.catalog focused on filesystem, tests, git, and repo.edit. Search the repository efficiently with one targeted fs.search, then read only the necessary current source with fs",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-f82b7bc525194abe91cf32d0:tool-5",
+    "gen-1789498612-hHtdxc6uNAzsUvjwe2XD",
+    "gateway-042491e19c6340c9aff28b51:tool-7",
+    "gen-1789498682-PTpTJSgfWZFOkdPmqRvj",
+    "gateway-64a3f07ac981472bb10f43ad:tool-12",
+    "gen-1789498782-2dM0I5JZLgjHHxNoZW7m",
+    "gateway-0e1a03f5bab54149b2ddadfd:tool-12",
+    "gen-1789499148-FCSQaXXQzmNqfwvWAsQ7",
+    "gateway-ce73ecffe99b4353b25f4e06:tool-11",
+    "gen-1789499298-cPkLgL6Ae7gXafXsgvBi",
+    "gateway-f9d7864de799414c93b40a56:tool-11",
+    "gen-1789499415-jYqKv6EGv98XSkxl2IHC",
+    "gateway-9609982d56364fd39003aed3:tool-10",
+    "gen-1789499511-0bulOmgrOnFuLQXNPlLz"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "COMPLETE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-15T19:12:01.308278+00:00",
+  "worker_attempt_id": "",
+  "worker_cost_usd": 0.0131775816,
+  "worker_id": "hawking-worker-c20507d789184c2f",
+  "worker_kill_reason": "goal_complete",
+  "worker_last_heartbeat_at": 1789499427.960298,
+  "worker_spawned_at": 1789498347.6013598,
+  "worker_status": "RELEASED",
+  "workunit_id": "GOAL-945600ECD0"
+}

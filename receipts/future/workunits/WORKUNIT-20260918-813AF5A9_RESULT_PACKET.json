@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "4f40216af4a765d96d929a22333954ed5599b4a18b854ed3adfe698a5667a9d8",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:16:54.546059+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:16:54.546080+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:16:54.550112+00:00",
+      "has_tool_json": false,
+      "head": "{ \n  \"observations\": [\n    \"The admitted focus file hawking/gravity_gauntlet.py is owned in scope by HAWKING as a bounded, resumable Gravity search layer around existing Doctor/Gravity/NR/NX artifacts, explicitly not a second model runtime.",
+      "outcome": "CONTINUE",
+      "reply_chars": 3857,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{ \n  \"observations\": [\n    \"The admitted focus file hawking/gravity_gauntlet.py is owned in scope by HAWKING as a bounded, resumable Gravity search layer around existing Doctor/Gravity/NR/NX artifacts, explicitly not a second model runtime.\",\n    \"The current Gravity owner boundary is split: an evaluator supplies real patient-runner receipts, while hawking/gravity_gauntlet.py owns candidate choice, checkpointing, terminal classification, and the complete-system verifier.\",\n    \"Terminal semantics are explicit and closed: TARGET_HIT, PROVEN_UNABLE, and BUDGET_EXHAUSTED form TERMINAL_DISPOSITIONS.\",\n    \"Protected accounting semantics are visible in _spec_bits: absent precision information returns None rather than a default such as q4, preserving refusal/protected-boundary behavior by not converting unmeasured strings into measured precision.\",\n    \"The bounded implementation contract grounded in the admitted source is: keep hawking/gravity_gauntlet.py as the Gravity search owner; require focused tests hawking/test_gravity_gauntlet.py and hawking/test_tool_gravity_focus.py; protect terminal dispositions, empty candidate-space ValueError, negative-control representation classification, and _spec_bits None-for-no-precision semantics; falsifier: any change that makes an unparsed spec indistinguishable from measured qN precision, adds a fourth terminal disposition, or lets an empty candidate space pass without ValueError invalidates the contract.\",\n    \"Only a truncated prefix of hawking/gravity_gauntlet.py was observed, so module-level owner semantics are grounded, but full-file functions and exact protected resources beyond the shown region remain unverified.\"\n  ],\n  \"sources\": [\n    {\n      \"path\": \"hawking/gravity_gauntlet.py\",\n      \"observed_absolute_path\": \"/Users/scammermike/Downloads/hawking/hawking/gravity_gauntlet.py\",\n      \"sha256\": \"ee2cdf35e5eedb4211a7ed31719917028af3131b8e8e2038254d7c15f5e327e2\",\n      \"sha256_scope\": \"full_file\",\n      \"bytes\": 27453,\n      \"shown_bytes\": 4000,\n      \"truncated\": true,\n      \"observation\": \"first admitted read-only observation targeted an admitted focus file and returned module docstring plus initial declarations\"\n    }\n  ],\n  \"recommendations\": [\n    \"Treat HAWKING/hawking.gravity_gauntlet as the current Gravity search owner and do not assign ownership to DARKMATTER.\",\n    \"Use focused tests hawking/test_gravity_gauntlet.py and hawking/test_tool_gravity_focus.py as the admitted verification surface before any implementation claim.\",\n    \"Preserve refusal and protected-boundary semantics by keeping unparsed precision as None, keeping TERMINAL_DISPOSITIONS closed, and retaining ValueError for an empty candidate space.\",\n    \"Do not mutate files, qualify hardware, promote models, or claim release from this result.\"\n  ],\n  \"unresolved_questions\": [\n    \"What exact protected resources and edge cases are asserted in hawking/test_gravity_gauntlet.py and hawking/test_tool_gravity_focus.py beyond the source-visible semantics already observed?\",\n    \"What remains in the unobserved bytes of hawking/gravity_gauntlet.py after the first 4000-byte truncation, especially checkpointing and verifier implementation details?\",\n    \"Is continuation required to read the admitted focus tests before Hawking marks the WorkUnit COMPLETE?\"\n  ],\n  \"child_worker_ids\": [],\n  \"status\": \"STRUCTURED_RESULT_READY\",\n  \"next_action\": \"read_admitted_focus_tests\",\n  \"reason\": \"The source owner boundary is grounded, but the exact focused-test assertions and protected resources are not yet observed.\",\n  \"expected_evidence\": \"Grounded excerpts from hawking/test_gravity_gauntlet.py and hawking/test_tool_gravity_focus.py naming the protected semantics for candidates, terminal dispositions, checkpointing, refusal, and boundary behavior.\",\n  \"tool_family\": \"read_only_file_inspection\"\n}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-fa7bfd31c62d4060",
+  "worker_id": "hawking-worker-7d1eef3345ba4abb",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-813AF5A9"
+}

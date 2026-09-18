@@ -1,0 +1,105 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "6c9007b3a5aace46de2d7f28fdd1e6dbb05b8a96b0c6d9ee5c34436007daba1a",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:08:06.612537+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:08:06.612557+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:08:06.616226+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\": [\"fs.read succeeded on hawking/auto_orchestration.py (invocation_id tool-0852f565-a02e-4fff-8150-f75832fccd96, ok=true, mutation=read_only, deterministic=true, provenance.source=hawking.tool_registry).\", \"File metadata: pat",
+      "outcome": "CONTINUE",
+      "reply_chars": 3162,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T06:08:06.625947+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "TERMINAL",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260918-9F9548FE_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.read"
+      ]
+    },
+    {
+      "at": "2026-09-18T06:08:31.502588+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:08:31.502611+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:08:31.504990+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\": [{\"tool\": \"fs.read\", \"invocation_id\": \"tool-4ebcffc4-2695-4860-811d-53fb5fed4c83\", \"path\": \"hawking/auto_orchestration.py\", \"start_line\": 900, \"end_line\": 1020, \"total_lines\": 1045, \"bytes\": 46103, \"sha256\": \"a924e7c465ed88",
+      "outcome": "CONTINUE",
+      "reply_chars": 3507,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\": [{\"tool\": \"fs.read\", \"invocation_id\": \"tool-4ebcffc4-2695-4860-811d-53fb5fed4c83\", \"path\": \"hawking/auto_orchestration.py\", \"start_line\": 900, \"end_line\": 1020, \"total_lines\": 1045, \"bytes\": 46103, \"sha256\": \"a924e7c465ed8893768931058f26a0cd86cdf94afcb49d3785df84ce779bdfa9\", \"ok\": true, \"mutation\": \"read_only\", \"truncated\": true, \"shown_bytes\": 4000, \"truncation_note\": \"66.4% of requested window shown; no conclusion drawn about unshown content\", \"content_summary\": \"Tail of a queue-selection routine for auto-orchestration. Observed: (1) live-gateway evidence helper accepts a tool_call Mapping with http_status==200, tool_call_count>0, arguments_present, or route_receipt['live_gateway_probes'] entries with accepted is True, gateway_status==200, and tool_name or generated_text present; (2) queue candidates are skipped for missing tranche_id, non-READY/RUNNABLE/PENDING state, non-graph-runnable tranche when graph_bound, known terminal/admitted tranche without fresh reopen evidence, missing objective, or missing/non-list acceptance; (3) priority coerced via int(item.get('priority', 0)) with TypeError/ValueError fallback 0; (4) candidates sorted by (-priority, index) and dispatched while slots remain; (5) per-candidate guards: writer_scope conflict vs active_scopes, budget coercion from item['budget_usd'] defaulting to goal['budget_authorized_usd'] or 0.5 with invalid_budget skip, then dispatch_child_workunit(root, goal_id, objective, acceptance, focus_files, focus_tests, budget_usd, required_capabilities, external_roots=...) truncated mid-argument-list.\"}], \"sources\": [{\"kind\": \"file\", \"path\": \"hawking/auto_orchestration.py\", \"sha256\": \"a924e7c465ed8893768931058f26a0cd86cdf94afcb49d3785df84ce779bdfa9\", \"lines\": \"900-1020\", \"provenance\": \"hawking.tool_registry\", \"observed_at\": 1789711689.2784798}], \"recommendations\": [{\"id\": \"R1\", \"text\": \"Re-read lines ~1000-1045 to capture the full dispatch_child_workunit call signature and post-dispatch bookkeeping.\", \"tool_family\": \"fs.read\", \"bounded\": true}, {\"id\": \"R2\", \"text\": \"Read lines ~840-900 to confirm definitions of graph_frontier, terminal_tranches, admitted_tranches, active_scopes, and _has_fresh_reopen_evidence.\", \"tool_family\": \"fs.read\", \"bounded\": true}, {\"id\": \"R3\", \"text\": \"Verify the live-gateway acceptance predicate against tests before asserting it is the P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN admission gate.\", \"tool_family\": \"fs.search\", \"bounded\": true}], \"unresolved_questions\": [\"What are the remaining arguments and return handling of dispatch_child_workunit after the truncation point?\", \"How are graph_frontier, terminal_tranches, admitted_tranches, and active_scopes populated upstream?\", \"What is the exact semantics of _has_fresh_reopen_evidence and which receipt fields it inspects?\", \"Is the live-gateway probe predicate the sole admission gate for auto-execution, or one of several?\"], \"child_worker_ids\": [], \"status\": \"COMPLETE\", \"terminal_status\": \"structured_result_delivered_read_only_no_mutation\", \"next_action\": \"Read hawking/auto_orchestration.py lines 1000-1045 to capture the truncated dispatch_child_workunit call tail and post-dispatch bookkeeping.\", \"reason\": \"The single admitted observation succeeded but was truncated at 66.4%, leaving the dispatch call signature and downstream logic unobserved.\", \"expected_evidence\": \"One fs.read observation of lines 1000-1045 with sha256 a924e7c465ed8893768931058f26a0cd86cdf94afcb49d3785df84ce779bdfa9.\", \"tool_family\": \"fs.read\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-8543d7b7c7124f3a",
+  "worker_id": "hawking-worker-bbf2fedd33fa47b7",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-9F9548FE"
+}

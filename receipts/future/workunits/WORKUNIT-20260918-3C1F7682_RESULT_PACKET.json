@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "0e5fe8f09eacbf45e595f563acc5005bbd177aa565fbdd242889e09c7e944658",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:57:12.985659+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:57:12.985680+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:57:12.989561+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/auto_mode.py was read via read-only fs.read; full-file sha256=5e30720cbf8ca6af0c23d0bef16b4bde6ac4bf3cceaa47a53ad9355cba3b0865, bytes=10396, but only 4000 bytes (38.5%) were shown before truncation.\",\"auto_mode.py ",
+      "outcome": "CONTINUE",
+      "reply_chars": 3968,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/auto_mode.py was read via read-only fs.read; full-file sha256=5e30720cbf8ca6af0c23d0bef16b4bde6ac4bf3cceaa47a53ad9355cba3b0865, bytes=10396, but only 4000 bytes (38.5%) were shown before truncation.\",\"auto_mode.py declares AUTO_MODEL_ID=\\\"hawking-auto\\\" and AUTO_POLICY_REVISION=\\\"hawking-auto-aggressive-v2-measured-diversity-unbounded-14\\\".\",\"auto_mode.py defines REMOTE_AUTO_ROSTER with five exact remote identities: deepseek/deepseek-v4.1-flash, moonshotai/kimi-k3, z-ai/glm-5.3, qwen/qwen3.8-2.4t-a95b, nvidia/nemotron-3-ultra-550b-a55b.\",\"auto_mode.py splits the roster into CORE_AUTO_MODELS (deepseek/deepseek-v4.1-flash, moonshotai/kimi-k3, z-ai/glm-5.3) and ESCALATION_AUTO_MODELS (qwen/qwen3.8-2.4t-a95b, nvidia/nemotron-3-ultra-550b-a55b).\",\"auto_mode.py defines MODEL_ROLE_BIASES mapping each roster model to role tags (e.g. deepseek->implementation/source_mapping/bug_repair; kimi->architecture/deep_synthesis/hard_debugging; glm->planning/coding/security_research; qwen->disagreement_resolution/deep_planning_backup; nemotron->architectural_diversity/independent_review/falsification).\",\"auto_mode.py defines AutoRouteUnavailable(RuntimeError) and a frozen AutoRoute dataclass with fields model_id, task_class, reason, candidates, requested_profile, cognition_plan, plus to_dict() emitting requested_model, selected_model, runtime=\\\"remote\\\", provider=\\\"openrouter\\\", policy=AUTO_POLICY_REVISION.\",\"auto_mode.py defines is_auto_model() accepting only canonical id and UI aliases (hawking-auto, hawking/auto, hawking:auto, auto), and _content_text() for string/list content extraction.\",\"The shown portion of auto_mode.py contains no focus-path gate, no durable research focus-path check, and no refill-owner logic; the module docstring frames Auto as a selector that classifies requests and chooses an admitted live model, with gateway owning credentials/cost/cancellation/receipts.\",\"hawking/auto_orchestration.py was NOT observed in this session; no read-only observation of that admitted focus file was returned.\",\"No measured pool identifier or refill owner was observed in the shown bytes; the only pool-like structures seen are REMOTE_AUTO_ROSTER, CORE_AUTO_MODELS, and ESCALATION_AUTO_MODELS.\"],\"sources\":[\"hawking/auto_mode.py (read-only fs.read, sha256 5e30720cbf8ca6af0c23d0bef16b4bde6ac4bf3cceaa47a53ad9355cba3b0865, 10396 bytes, 4000 shown)\"],\"recommendations\":[\"Re-read hawking/auto_mode.py with start/end line ranges to cover the remaining ~6396 bytes, specifically searching for focus-path gate, durable focus, refill, and pool-selection symbols.\",\"Read hawking/auto_orchestration.py in full via read-only tooling to locate the durable research focus-path gate and the refill owner.\",\"Do not claim the restarted daemon applies the durable research focus-path gate until both admitted focus files are fully observed and the gate call site is identified.\"],\"unresolved_questions\":[\"Does hawking/auto_orchestration.py contain the durable research focus-path gate, and does it invoke it on the restarted daemon path?\",\"What is the measured pool identifier referenced by the objective, and which component is the refill owner?\",\"Are the truncated tail sections of auto_mode.py (lines beyond the shown 4000 bytes) where focus-path gating or refill ownership is implemented?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\",\"next_action\":\"Read hawking/auto_orchestration.py and the unshown tail of hawking/auto_mode.py via read-only tools, then locate the durable research focus-path gate call site and the refill owner.\",\"reason\":\"Only one of two admitted focus files was observed, and it was truncated at 38.5%, so the focus-path gate and refill owner could not be confirmed.\",\"expected_evidence\":\"Source-grounded lines from hawking/auto_orchestration.py and the remainder of hawking/auto_mode.py showing the focus-path gate invocation, the measured pool name, and the refill owner.\",\"tool_family\":\"fs.read\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-de5494f995c3487c",
+  "worker_id": "hawking-worker-334f54edc982494f",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-3C1F7682"
+}

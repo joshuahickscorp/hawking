@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-16T01:20:44.658670+00:00",
+      "calls_used": 16,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "unmet": []
+    },
+    {
+      "at": "2026-09-16T01:20:44.662045+00:00",
+      "has_tool_json": true,
+      "head": "The post-reload click hit the tool-call budget ceiling. Attempting the final verification call.",
+      "outcome": "CONTINUE",
+      "reply_chars": 95,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        ".worktrees/browser-world-self-repair-20260915/browser_self_repair_fixture.html",
+        ".worktrees/browser-world-self-repair-20260915/test_browser_self_repair_fixture.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "D-BROWSER-POST_REPAIR-VERIFY-20260915_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    ".worktrees/browser-world-self-repair-20260915/browser_self_repair_fixture.html",
+    ".worktrees/browser-world-self-repair-20260915/test_browser_self_repair_fixture.py"
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Close the documented browser verification gap in the existing disposable linked worktree. Use only .worktrees/browser-world-self-repair-20260915/browser_self_repair_fixture.html and .worktrees/browser-world-self-repair-20260915/test_browser_self_repair_fixture.py. The previous WorkUnit repaired the click handler and passing test but did not prove a later positive browser verification; its correction receipt is receipts/future/workunits/D-BROWSER-SELF-REPAIR-20260915_BROWSER_COMPLETION_RECTIFICATION.json. Use the fixed Hawking session BROWSER-B33C69F193. Open file:///Users/scammermike/Downloads/hawking/.worktrees/browser-world-self-repair-20260915/browser_self_repair_fixture.html, observe it, find the Toggle fixture control, click it, and verify text done. Then make one small harmless source/test bundle: add a clear data-repair marker to the fixture state element and assert it in the test file. Run the focused test. Reload the same local file with browser.goto, observe it, find/click the same control, and browser.verify text done true. Finally inspect git.status and git.diff for the linked worktree. Do not touch main, receipts, Flash/Pulsar, ModelLake, or unrelated files. Return structured evidence only after all browser and deterministic checks are real.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "D-BROWSER-POST_REPAIR-VERIFY-20260915_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "D-BROWSER-POST_REPAIR-VERIFY-20260915"
+}

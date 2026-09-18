@@ -1,0 +1,45 @@
+{
+  "architecture": "Qwen4ExpForConditionalGeneration / Qwen4ExpTextConfig",
+  "claim_boundary": "source-code closure only; semantic correctness still requires independent review and owner authorization",
+  "execution_role": "isolated PLE-inclusive source oracle only",
+  "files": [
+    {
+      "bytes": 101847,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/models/cache.py",
+      "sha256": "fde16e0558f8135fa88ae72484cdddc6adfd0c201a18be60bd041cb2d4f602d7"
+    },
+    {
+      "bytes": 84024,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/models/qwen3_5/language.py",
+      "sha256": "1f5086e5e3f6898a0265f38baab1235d9e9173739a7fe71d75073dd0e4a5eb7f"
+    },
+    {
+      "bytes": 3286,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/models/qwen4_exp/fp8.py",
+      "sha256": "b6b2418a9e4ae2a5a7e122be45d69efb04a95d863f9acd81166c970400e5b4b0"
+    },
+    {
+      "bytes": 82765,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/models/qwen4_exp/language.py",
+      "sha256": "c619c12a8b4e74e40506af8d3758ce36a9bd423f1294c6286140538a619e42a7"
+    },
+    {
+      "bytes": 25236,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/models/qwen4_exp/ple_storage.py",
+      "sha256": "da74a867f6c8eeb0142edfd265ad8d01baf07763e5716120e94659fa91f9d2f6"
+    },
+    {
+      "bytes": 2573,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/models/qwen4_exp/qwen4_exp.py",
+      "sha256": "ad017efd9d56bdc7c320138acf9095a7eddc377c6bed9d91d4dc9c0179807d85"
+    },
+    {
+      "bytes": 99888,
+      "path": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/mlx_vlm/utils.py",
+      "sha256": "3021949a42e4ab5f52fa729890fd5db38143bc1fb27f6e32d329012b8cc1b4a3"
+    }
+  ],
+  "independent_from_hawking_native_executor": true,
+  "schema": "hawking.flash.external_reference_mlx_implementation.v1",
+  "status": "PINNED_EXTERNAL_REFERENCE_IMPLEMENTATION"
+}

@@ -9,7 +9,7 @@ use crate::engine::{
 use crate::gguf::{GgmlType, GgufFile, TensorInfo};
 use crate::kernels::{add_inplace, embed_lookup, gemv_f32, rope_inplace, silu_mul};
 use crate::metal::{DecodeArena, MetalContext, PinnedBuffer};
-use crate::moe::topk_gate;
+use crate::moe::{topk_gate, topk_gate_kimi};
 use crate::profile::KernelProfile;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
@@ -88,6 +88,12 @@ pub struct DeepSeekConfig {
     pub n_routed_experts: usize,
     pub n_shared_experts: usize,
     pub top_k_routed: usize,
+    /// Kimi's sigmoid/noaux_tc router uses a learned choice bias and scales
+    /// the normalized selected weights after routing.  Older DeepSeek GGUFs
+    /// leave these at the legacy softmax/scale-one defaults.
+    pub expert_gating_sigmoid: bool,
+    pub norm_topk_prob: bool,
+    pub routed_scaling_factor: f32,
     pub first_k_dense_layers: usize,
     pub vocab_size: usize,
     pub rope_theta: f32,
@@ -99,6 +105,7 @@ impl DeepSeekConfig {
     fn from_gguf(g: &GgufFile) -> Result<Self> {
         let get_u32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_u32());
         let get_f32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_f32());
+        let get_bool = |k: &str| g.metadata.get(k).and_then(|v| v.as_bool());
 
         let n_layers = get_u32("deepseek2.block_count")
             .or_else(|| get_u32("llama.block_count"))
@@ -137,6 +144,9 @@ impl DeepSeekConfig {
             n_routed_experts: get_u32("deepseek2.expert_count").unwrap_or(64) as usize,
             n_shared_experts: get_u32("deepseek2.expert_shared_count").unwrap_or(2) as usize,
             top_k_routed: get_u32("deepseek2.expert_used_count").unwrap_or(6) as usize,
+            expert_gating_sigmoid: get_u32("deepseek2.expert_gating_func") == Some(2),
+            norm_topk_prob: get_bool("deepseek2.expert_weights_norm").unwrap_or(false),
+            routed_scaling_factor: get_f32("deepseek2.expert_weights_scale").unwrap_or(1.0),
             first_k_dense_layers: get_u32("deepseek2.leading_dense_block_count").unwrap_or(1)
                 as usize,
             vocab_size,
@@ -303,6 +313,8 @@ pub struct LayerPinned {
     pub kv_a_norm: Option<PinnedBuffer>,
     /// v1.0.0-C: pre-uploaded MoE gate logit weight for uncounted gate dispatch.
     pub gate_logits_w: Option<PinnedBuffer>,
+    /// Optional Kimi/noaux_tc learned correction bias used by device routing.
+    pub gate_correction_bias: Option<PinnedBuffer>,
     /// Dense FFN weights for the leading dense block TCB path.
     pub dense_gate_w: Option<PinnedBuffer>,
     pub dense_up_w: Option<PinnedBuffer>,
@@ -317,6 +329,7 @@ pub enum LayerMode {
     },
     MoE {
         gate_logits_w: Vec<f32>, // (n_routed, hidden), eager
+        correction_bias: Vec<f32>,
         routed_fused: MoEFusedTensors,
         routed: Vec<Expert>, // lazy refs into mmap
         shared_fused: Option<MoEFusedTensors>,
@@ -364,7 +377,7 @@ impl FfnMoeSetup {
             "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             // v2t_gu / v2t_gu_serial / v2t_gu_v2 / v2t_gu_v3 fuse gate+up into one kernel;
             // single-matrix GEMVs (down) use v2t
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_v4" => {
                 "moe_batched_gemm_q4_indexed_v2t"
             }
             _ => "moe_batched_gemm_q4_indexed",
@@ -388,12 +401,24 @@ impl FfnMoeSetup {
         routed_down_schedule: &str,
     ) -> &'static str {
         match self.routed_down_dtype {
-            GgmlType::Q8_0 => match q4k_schedule {
-                "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+            GgmlType::Q4_0 => "moe_batched_gemm_q4_0_indexed_v2t",
+            GgmlType::Q8_0 => {
+                // Q8 routed-down has its own schedule lever.  Older profiles
+                // left the top-level Q4_K selector at `per_shape`, which
+                // silently forced the scalar one-row Q8 kernel even when the
+                // profile explicitly requested `routed_down_schedule=v2t`.
+                // Honour that opt-in independently; retain the historical
+                // coupling as the fallback for older profiles.
+                if routed_down_schedule == "v2t" {
                     "moe_batched_gemm_q8_0_indexed_v2t"
+                } else {
+                    match q4k_schedule {
+                        "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3"
+                        | "v2t_gu_v4" => "moe_batched_gemm_q8_0_indexed_v2t",
+                        _ => "moe_batched_gemm_q8_0_indexed",
+                    }
                 }
-                _ => "moe_batched_gemm_q8_0_indexed",
-            },
+            }
             GgmlType::Q5_0 => match routed_down_schedule {
                 "v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
                 _ => "moe_batched_gemm_q5_0_indexed",
@@ -585,6 +610,9 @@ impl Engine for DeepSeekV2 {
                 // Older exports stored one tensor per expert; we no longer
                 // try those -- if a model needs them, it predates hawking.
                 let gate_logits_w = dequant_f32(&gguf, &lp("ffn_gate_inp.weight"))?;
+                let correction_bias =
+                    dequant_f32_opt(&gguf, &lp("ffn_gate_inp.e_score_correction.bias"))?
+                        .unwrap_or_default();
 
                 let routed_fused = MoEFusedTensors {
                     gate_w: tensor_ref(&gguf, &lp("ffn_gate_exps.weight"))?,
@@ -640,6 +668,7 @@ impl Engine for DeepSeekV2 {
                 };
                 LayerMode::MoE {
                     gate_logits_w,
+                    correction_bias,
                     routed_fused,
                     routed,
                     shared_fused,
@@ -893,6 +922,14 @@ impl Engine for DeepSeekV2 {
                 if let LayerMode::MoE { gate_logits_w, .. } = &layer.mode {
                     layer.pinned.gate_logits_w = Some(upload(gate_logits_w));
                 }
+                if let LayerMode::MoE {
+                    correction_bias, ..
+                } = &layer.mode
+                {
+                    if !correction_bias.is_empty() {
+                        layer.pinned.gate_correction_bias = Some(upload(correction_bias));
+                    }
+                }
                 if let LayerMode::Dense {
                     gate_w,
                     up_w,
@@ -1134,7 +1171,9 @@ impl Engine for DeepSeekV2 {
                 break;
             }
         }
-        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        let prefill_ns = prefill_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.prefill_ns = prefill_ns;
+        stats.prefill_ms = prefill_ns as f64 / 1_000_000.0;
         stats.dispatches_per_forward = self.last_dispatch_count;
         if prefill_aborted {
             sink(StreamEvent::Done {
@@ -1154,6 +1193,7 @@ impl Engine for DeepSeekV2 {
         let mut completed_decode_forwards = 0usize;
         let mut decode_command_buffers_total = 0usize;
         let mut decode_cpu_reference_fallback_total = 0usize;
+        let mut decode_token_ns = Vec::with_capacity(req.max_new_tokens);
         let mut decode_token_ms = Vec::with_capacity(req.max_new_tokens);
 
         if self.speculate_mode == crate::SpeculateMode::ExactShared {
@@ -1323,12 +1363,14 @@ impl Engine for DeepSeekV2 {
                     decode_cpu_reference_fallback_total =
                         decode_cpu_reference_fallback_total.saturating_add(1);
                 }
-                let complete_forward_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                let complete_forward_ns =
+                    step_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
                     break;
                 }
-                decode_token_ms.push(complete_forward_ms);
+                decode_token_ns.push(complete_forward_ns);
+                decode_token_ms.push(complete_forward_ns as f64 / 1_000_000.0);
                 self.sampler.record(next_id);
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 sink(StreamEvent::Token { id: next_id, text });
@@ -1340,8 +1382,11 @@ impl Engine for DeepSeekV2 {
                 last_id = next_id;
             }
         }
-        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        let decode_ns = decode_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.decode_ns = decode_ns;
+        stats.decode_ms = decode_ns as f64 / 1_000_000.0;
         stats.completion_tokens = produced;
+        stats.decode_token_ns = decode_token_ns;
         stats.decode_token_ms = decode_token_ms;
         stats.metal_dispatches = self.last_dispatch_count;
         stats.dispatches_per_forward = self.last_dispatch_count;
@@ -2046,7 +2091,7 @@ impl DeepSeekV2 {
                 // the slow scalar `gemv_q4_k_m` here.
                 if matches!(
                     schedule,
-                    "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_serial"
+                    "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_v4" | "v2t_gu_serial"
                 ) {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v2_pinned(
@@ -2422,14 +2467,37 @@ impl DeepSeekV2 {
                             &arena.x_norm_buf,
                             &arena.moe_logits_buf,
                         )?;
-                        crate::kernels::moe_topk_gate_tcb(
-                            &mut global_tcb,
-                            &arena.moe_logits_buf,
-                            &arena.moe_route_ids_buf,
-                            &arena.moe_route_weights_buf,
-                            self.config.n_routed_experts,
-                            self.config.top_k_routed,
-                        )?;
+                        if self.config.expert_gating_sigmoid {
+                            let correction = self.layers[li]
+                                .pinned
+                                .gate_correction_bias
+                                .as_ref()
+                                .ok_or_else(|| {
+                                Error::Model(format!(
+                                    "shared-only: l{li} sigmoid router missing correction bias"
+                                ))
+                            })?;
+                            crate::kernels::moe_topk_gate_kimi_tcb(
+                                &mut global_tcb,
+                                &arena.moe_logits_buf,
+                                correction,
+                                &arena.moe_route_ids_buf,
+                                &arena.moe_route_weights_buf,
+                                self.config.n_routed_experts,
+                                self.config.top_k_routed,
+                                self.config.norm_topk_prob,
+                                self.config.routed_scaling_factor,
+                            )?;
+                        } else {
+                            crate::kernels::moe_topk_gate_tcb(
+                                &mut global_tcb,
+                                &arena.moe_logits_buf,
+                                &arena.moe_route_ids_buf,
+                                &arena.moe_route_weights_buf,
+                                self.config.n_routed_experts,
+                                self.config.top_k_routed,
+                            )?;
+                        }
                         crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
                             &mut global_tcb,
                             model_buf,
@@ -2937,14 +3005,37 @@ impl DeepSeekV2 {
                                         &arena.x_norm_buf,
                                         &arena.moe_logits_buf,
                                     )?;
-                                    crate::kernels::moe_topk_gate_tcb(
-                                        tcb,
-                                        &arena.moe_logits_buf,
-                                        &arena.moe_route_ids_buf,
-                                        &arena.moe_route_weights_buf,
-                                        self.config.n_routed_experts,
-                                        self.config.top_k_routed,
-                                    )?;
+                                    if self.config.expert_gating_sigmoid {
+                                        let correction = self.layers[li]
+                                            .pinned
+                                            .gate_correction_bias
+                                            .as_ref()
+                                            .ok_or_else(|| {
+                                                Error::Model(format!(
+                                                    "merged: l{li} sigmoid router missing correction bias"
+                                                ))
+                                            })?;
+                                        crate::kernels::moe_topk_gate_kimi_tcb(
+                                            tcb,
+                                            &arena.moe_logits_buf,
+                                            correction,
+                                            &arena.moe_route_ids_buf,
+                                            &arena.moe_route_weights_buf,
+                                            self.config.n_routed_experts,
+                                            self.config.top_k_routed,
+                                            self.config.norm_topk_prob,
+                                            self.config.routed_scaling_factor,
+                                        )?;
+                                    } else {
+                                        crate::kernels::moe_topk_gate_tcb(
+                                            tcb,
+                                            &arena.moe_logits_buf,
+                                            &arena.moe_route_ids_buf,
+                                            &arena.moe_route_weights_buf,
+                                            self.config.n_routed_experts,
+                                            self.config.top_k_routed,
+                                        )?;
+                                    }
                                     // v1.2.0-9: snapshot route IDs into per-layer history
                                     // so expert access stats can be updated after the CB
                                     // completes. Without this, only the last layer's routes
@@ -3959,7 +4050,7 @@ impl DeepSeekV2 {
                         || routed_fused.up_w.dtype != GgmlType::Q4_K
                         || !matches!(
                             routed_fused.down_w.dtype,
-                            GgmlType::Q8_0 | GgmlType::Q5_0 | GgmlType::Q4_K
+                            GgmlType::Q4_0 | GgmlType::Q8_0 | GgmlType::Q5_0 | GgmlType::Q4_K
                         )
                     {
                         return Ok(None);
@@ -4389,6 +4480,7 @@ impl DeepSeekV2 {
             }
             LayerMode::MoE {
                 gate_logits_w,
+                correction_bias,
                 routed_fused,
                 routed,
                 shared_fused,
@@ -4402,7 +4494,17 @@ impl DeepSeekV2 {
                     x,
                     &mut logits,
                 )?;
-                let routes = topk_gate(&mut logits, cfg.top_k_routed, true);
+                let routes = if cfg.expert_gating_sigmoid {
+                    topk_gate_kimi(
+                        &logits,
+                        correction_bias,
+                        cfg.top_k_routed,
+                        cfg.norm_topk_prob,
+                        cfg.routed_scaling_factor,
+                    )
+                } else {
+                    topk_gate(&mut logits, cfg.top_k_routed, true)
+                };
 
                 // Batched indexed one-command-buffer path (current default).
                 if let Some(batched) = self.moe_block_batched_dispatch(
@@ -4485,6 +4587,7 @@ impl DeepSeekV2 {
             }
             LayerMode::MoE {
                 gate_logits_w,
+                correction_bias,
                 routed_fused: _,
                 routed: _,
                 shared_fused,
@@ -4500,7 +4603,17 @@ impl DeepSeekV2 {
                     x,
                     &mut logits,
                 )?;
-                let _routes = topk_gate(&mut logits, cfg.top_k_routed, true);
+                let _routes = if cfg.expert_gating_sigmoid {
+                    topk_gate_kimi(
+                        &logits,
+                        correction_bias,
+                        cfg.top_k_routed,
+                        cfg.norm_topk_prob,
+                        cfg.routed_scaling_factor,
+                    )
+                } else {
+                    topk_gate(&mut logits, cfg.top_k_routed, true)
+                };
 
                 // Shared expert only (same code as in ffn()).
                 let mut w_buf = Vec::<f32>::new();

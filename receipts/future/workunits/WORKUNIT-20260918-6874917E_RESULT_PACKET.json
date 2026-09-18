@@ -1,0 +1,132 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 5,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "6244bb61bbe38e549e5842c58909e8ef762381c684bcb46fae67b93cef08cb5c",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:58:15.680741+00:00",
+      "calls_used": 5,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:58:15.680750+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:58:15.683095+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"The authoritative parent document is civilization/sovereign-goal.txt (mtime 1789411627); its latest section is 'KIMI P0 bounded operational freeze; Odyssey resumes \u2014 2026-09-11', which explicitly withholds autonom",
+      "outcome": "CONTINUE",
+      "reply_chars": 4998,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T06:58:43.757499+00:00",
+      "calls_used": 5,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:58:43.757516+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:58:43.761307+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"campaign.state returned authoritative_parent civilization/sovereign-goal.txt (mtime 1789411627) with latest_section 'KIMI P0 bounded operational freeze; Odyssey resumes \u2014 2026-09-11'; the freeze explicitly WITHHOL",
+      "outcome": "CONTINUE",
+      "reply_chars": 5506,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T06:58:57.485899+00:00",
+      "calls_used": 5,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:58:57.485915+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:58:57.489196+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"campaign.state returned authoritative_parent path 'civilization/sovereign-goal.txt' (mtime 1789411627) with primary objective 'MAXIMIZE VERIFIED FRONTIER MOVEMENT PER UNATTENDED WALL-CLOCK HOUR' and latest section 'KIMI P0",
+      "outcome": "CONTINUE",
+      "reply_chars": 5035,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 3
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"campaign.state returned authoritative_parent path 'civilization/sovereign-goal.txt' (mtime 1789411627) with primary objective 'MAXIMIZE VERIFIED FRONTIER MOVEMENT PER UNATTENDED WALL-CLOCK HOUR' and latest section 'KIMI P0 bounded operational freeze; Odyssey resumes \u2014 2026-09-11'.\",\"campaign.state continuation checkpoint objective is 'GOAL-F4F72EFC0A Pass A: make Hawking WorkUnit completion contracts refuse prose-stop acceptance when real evidence is owed', active specimen 'hawking/remote_cognition.py::_workunit_completion_contract', active_workunit 'GOAL-F4F72EFC0A/t14'.\",\"campaign.state reports bottleneck 'depth axes with ZERO measurements: [nx_disposition]' and axis_coverage nx_disposition = {REFUSED: 30, OWED: 26} with no MEASURED entries.\",\"campaign.state recent_evidence lists receipts under receipts/future including HAWKING_MASTER_LONG_HAUL_V2_RESEARCH_PACKET_RECOVERY_20260918.json, MODELLAKE_EVENTS.json, HAWKING_MASTER_LONG_HAUL_V2_ROUTE_REQUALIFICATION_JSON_TOOL_20260918.json, HAWKING_MASTER_LONG_HAUL_V2_HTTP_200_SEMANTIC_GATE_LIVE_20260918.json, HAWKING_MASTER_LONG_HAUL_V2_ROUTE_REQUALIFICATION_LIVE_20260918.json, HAWKING_MASTER_LONG_HAUL_V2_LOCAL_FRONTIER_EVIDENCE_20260918.json.\",\"Repository root listing enumerated directories including hawking, receipts, civilization, tests, tools, research, docs, reports, artifacts, logs, scratchpad, workspace, native, crates, app, visionmcp, and top-level files including AGENTS.md, directive-goal.txt, HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.json/.md.\",\"Search for pattern 'P19_SANDBOX' over the authorized corpus returned zero matches (files_seen 5000, truncated true, generation 2).\",\"Search for pattern 'S0_SANDBOX|S0 sandbox|sandbox_foundation|persistent sandbox' over the authorized corpus returned zero matches (files_seen 5000, truncated true, generation 2).\",\"No S0 receipt path, sandbox module path, or P19_SANDBOX identifier was directly observed in the indexed corpus during this bounded read-only pass; the index is truncated at 5000 files and excludes .git, .worktrees, target, workspace, and binary suffixes.\",\"No child worker was spawned and no mutation, live worker allocation, hardware access, or Sandbox release was performed or claimed.\"],\"sources\":[\"campaign.state invocation tool-54991ba3-ee93-4d8e-86e2-55206b04bec6 (authoritative_parent civilization/sovereign-goal.txt; continuation GOAL-F4F72EFC0A/t14)\",\"fs.list invocation tool-fc76bf90-8a09-4e87-a3d1-01aeab2eebce (root /Users/scammermike/Downloads/hawking)\",\"fs.search invocation tool-0d6e9671-3d2e-49ca-8467-e7ccc36876e0 (pattern P19_SANDBOX, zero matches)\",\"fs.search invocation tool-6c211a77-b98f-43ec-aff2-a9251cfe3d55 (pattern S0_SANDBOX|S0 sandbox|sandbox_foundation|persistent sandbox, zero matches)\"],\"recommendations\":[\"Treat the S0 sandbox foundation as not yet locatable via the default authorized index; the next bounded evidence step should be a targeted read of the receipts/future directory and the hawking package tree to find the actual S0 receipt filename and sandbox module path before any integration contract is asserted.\",\"Define the integration contract around the observed completion-contract specimen hawking/remote_cognition.py::_workunit_completion_contract, since it is the single normalization point already named by the active continuation and is the natural seam for wiring branch execution/evaluator evidence requirements.\",\"Scope the next bounded test to a read-only contract assertion: given a WorkUnit that owes live branch execution evidence, the completion contract must require the corresponding evaluator tool in required_successful_tools; falsifier is a prose-only final response being scored complete.\",\"Preserve branch isolation and budget boundaries by keeping the next step read-only and by not spawning children until the S0 receipt path is actually observed; a child is only justified once the target file set is known.\",\"Record the nx_disposition zero-measurement bottleneck as a sep",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-1e8b66dfa89243e0",
+  "worker_id": "hawking-worker-683ab07f7afc47ea",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-6874917E"
+}

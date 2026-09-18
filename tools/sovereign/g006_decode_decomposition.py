@@ -30,7 +30,7 @@ PROMPT = "Count from one to sixty, one number per line, and write nothing else."
 
 
 def arm(grammar: bool, max_tokens: int) -> dict:
-    from hcli.hawking_native import HawkingNativeConnector, config_for_model_path
+    from hawking.hawking_native import HawkingNativeConnector, config_for_model_path
     conn = HawkingNativeConnector(config_for_model_path(str(ENVELOPE)))
     payload = {"model": "local", "messages": [{"role": "user", "content": PROMPT}],
                "temperature": 0.0, "max_tokens": max_tokens,

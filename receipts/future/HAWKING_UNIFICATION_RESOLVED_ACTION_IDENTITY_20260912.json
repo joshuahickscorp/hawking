@@ -1,0 +1,224 @@
+{
+  "schema": "hawking.future.hawking_unification_resolved_action_identity.v1",
+  "version": 1,
+  "recorded_at": "2026-09-12T06:52:50Z",
+  "campaign": "HAWKING UNIFICATION",
+  "claim_boundary": "Normal admitted-artifact selection now carries one full, revalidated resolved-action record across the Rust selector, HCLI resolver, terminal action, serve resident, HTTP switch, and Web reuse paths. The catalog owns the admission decision; Rust and transport boundaries validate and preserve its complete record. This does not unify raw research, AgentOS, or non-catalog model paths, and it does not establish byte-level verification of the legacy KIMI aggregate revision.",
+  "base_commit": "e90e6dcd3706b85c2add0b36bd0dacc7fcec7a80",
+  "implementation_commits": [
+    "998209267afdf13e58f41a481c38ada0950f8aab",
+    "59aeae8c6d4f1b23e0785b79bdbf8909ad2879d1"
+  ],
+  "measurement_commit": "59aeae8c6d4f1b23e0785b79bdbf8909ad2879d1",
+  "result_commit_ref": "HEAD: the commit containing this receipt",
+  "worktree": ".worktrees/hawking-unification-implementation",
+  "scope": {
+    "canonical_owner": {
+      "symbols": [
+        "hcli.catalog.ResolvedAction",
+        "hcli.catalog.resolve_action",
+        "hcli.catalog.revalidate_action",
+        "hcli.catalog.resolved_action_from_wire"
+      ],
+      "contract": "hawking.resolved_action.v1 carries the action and execution intent; exact artifact id, canonical path, kind, revision, and revision basis; catalog identity and revision; grant identity, digest, admission, and supported actions; and a complete reuse binding. A transport must carry the full wire record and the receiving HCLI owner revalidates it against the current Gravity registry before use."
+    },
+    "migrated_production_paths": [
+      "crates/hawking/src/main.rs: hawking select <artifact> <action> asks the HCLI catalog for a typed action, structurally validates it, and forwards its original JSON only through --resolved-action-json",
+      "hcli/use.py: --resolve-only requires --action and emits the full record; ordinary use resolves serve before its HTTP switch",
+      "hcli/cli.py, hcli/app.py, and hcli/controller.py: the direct terminal accepts only an execute action, revalidates it, and does not reselect it through ModelRegistry",
+      "hcli/serve.py: typed startup, /v1/switch, direct-server construction, health, and completion all preserve and revalidate the admitted surface action",
+      "hcli/web.py: fresh startup and both explicit and implicit reuse forward the full Web action; equal paths do not bypass binding/action revalidation"
+    ],
+    "deleted_or_replaced_policy": [
+      "Rust's path-only ResolvedHcliArtifact selection result and production --model forwarding after a typed resolution",
+      "the Web same-path early-return that could retain an older serve binding instead of posting the requested Web action",
+      "serve completion's hard-coded resolve-as-serve behavior for a resident carrying another admitted surface action"
+    ],
+    "necessary_adapters_retained": [
+      "Rust invokes the Python catalog through a subprocess because the public selector and catalog live in different runtimes; it validates the record but does not recreate catalog policy.",
+      "JSON is the explicit process/HTTP transport at Rust-to-HCLI, HCLI-to-action, and Web-to-resident boundaries."
+    ]
+  },
+  "boundary_controls": {
+    "python_resolution": "The resolver emits only hawking.resolved_action.v1 with lower-case SHA-256-shaped revision fields, complete matching reuse binding, admitted grant, and a supported requested action.",
+    "rust_resolution": "The Rust resolver command is python -P -m hcli models <artifact> --resolve-only --action <action>. -P prevents the caller's working directory from shadowing the paired HCLI source root supplied through PYTHONPATH.",
+    "transport": "Rust preserves the resolver's original JSON serialization rather than rebuilding a smaller record from a path. The selected action process receives --resolved-action-json and no --model argument.",
+    "serve_and_web": "A typed serve action may be serve or web, never execute. A current request revalidates the resident's action before backend completion. Web reuse posts a full action even when the artifact path matches, so serve-to-web transitions cannot be silently skipped.",
+    "failure_semantics": "Malformed typed switch input returns HTTP 400; unavailable, revoked, stale, unsupported, or action-mismatched admission returns HTTP 403 before a backend request or replacement load."
+  },
+  "artifact_revision_integrity": {
+    "registry_value": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "status": "legacy_declared_unverified",
+    "evidence": [
+      "workspace/campaign/odyssey/gravity-artifacts.json gives only prose saying SHA-256 covers ordered named files and bytes.",
+      "The value and prose entered in merge ac81444f177915a2f50888893f502408b52d0584; its history preserves no algorithm, delimiter/encoding, exact ordering rule, command, or aggregate preimage.",
+      "The bounded-freeze and bootstrap receipts retain individual file digests, but individual SHA-256 values cannot reconstruct a hash over raw concatenated file bytes.",
+      "hcli.catalog revalidates the current registry declaration and explicitly does not rehash a multi-shard artifact per action."
+    ],
+    "meaning": "The artifact revision is a legacy admitted-registry declaration. The historical aggregate preimage and serialization are not retained in this repository. This action was revalidated against the current registry binding, not rehashed against model bytes.",
+    "reopen_condition": "Define a versioned streaming pre-spawn algorithm and exact file manifest, then mint and verify a new revision. Do not guess an algorithm for b63fa8d4."
+  },
+  "diff_ledger": {
+    "files_changed": [
+      "crates/hawking/src/main.rs",
+      "hcli/app.py",
+      "hcli/catalog.py",
+      "hcli/cli.py",
+      "hcli/controller.py",
+      "hcli/serve.py",
+      "hcli/tests/test_catalog_and_switching.py",
+      "hcli/tests/test_resolved_action_identity.py",
+      "hcli/tests/test_web_explicit_selection.py",
+      "hcli/use.py",
+      "hcli/web.py"
+    ],
+    "total_added": 1973,
+    "total_deleted": 216,
+    "net_physical_diff": 1757,
+    "interpretation": "This is not a LOC-reduction claim. It deliberately adds a strict cross-process identity contract, revalidation checks, negative controls, and independent boundary tests while replacing weaker path-only production transports."
+  },
+  "source_ledger": {
+    "frozen_v1": {
+      "tool": "tools/loc/hawking_loc.py",
+      "policy": "tracked active source physical lines; existing test-excluding product rule",
+      "base": {
+        "combined_active_monorepo_LOC": 1210568,
+        "runtime_LOC": 1065915,
+        "test_excluding_runtime_LOC": 1012333,
+        "product_LOC": 522703,
+        "test_excluding_product_LOC": 469331,
+        "python_LOC": 564061,
+        "rust_LOC": 454034,
+        "shader_LOC": 48320
+      },
+      "after": {
+        "combined_active_monorepo_LOC": 1212325,
+        "runtime_LOC": 1066958,
+        "test_excluding_runtime_LOC": 1013272,
+        "product_LOC": 523746,
+        "test_excluding_product_LOC": 470270,
+        "python_LOC": 565503,
+        "rust_LOC": 454349,
+        "shader_LOC": 48320
+      },
+      "delta": {
+        "combined_active_monorepo_LOC": 1757,
+        "runtime_LOC": 1043,
+        "test_excluding_runtime_LOC": 939,
+        "product_LOC": 1043,
+        "test_excluding_product_LOC": 939,
+        "python_LOC": 1442,
+        "rust_LOC": 315,
+        "shader_LOC": 0
+      }
+    },
+    "corrected_v2": {
+      "tool": "tools/loc/collapse_probe.py in codex/hawking-collapse-diagnostic",
+      "policy": "same tracked active-source population with an unterminated-final-line correction and conservative Rust cfg(test) exclusion",
+      "parser_warnings": [],
+      "base": {
+        "combined_active_monorepo_LOC": 1210573,
+        "runtime_LOC": 1065916,
+        "test_excluding_runtime_LOC": 1012788,
+        "product_LOC": 522704,
+        "test_excluding_product_LOC": 469786,
+        "strict_product_python_LOC": 93449,
+        "strict_product_rust_LOC": 328632,
+        "strict_product_shader_LOC": 47696,
+        "strict_product_rust_percent": 77.859937
+      },
+      "after": {
+        "combined_active_monorepo_LOC": 1212330,
+        "runtime_LOC": 1066959,
+        "test_excluding_runtime_LOC": 1013727,
+        "product_LOC": 523747,
+        "test_excluding_product_LOC": 470725,
+        "strict_product_python_LOC": 94177,
+        "strict_product_rust_LOC": 328843,
+        "strict_product_shader_LOC": 47696,
+        "strict_product_rust_percent": 77.736986
+      },
+      "delta": {
+        "combined_active_monorepo_LOC": 1757,
+        "runtime_LOC": 1043,
+        "test_excluding_runtime_LOC": 939,
+        "product_LOC": 1043,
+        "test_excluding_product_LOC": 939,
+        "strict_product_python_LOC": 728,
+        "strict_product_rust_LOC": 211,
+        "strict_product_shader_LOC": 0,
+        "strict_product_rust_percentage_points": -0.122951
+      }
+    }
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "cargo fmt --check -p hawking && cargo test -p hawking public_surface_tests -- --nocapture",
+        "result": "10 passed"
+      },
+      {
+        "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest hcli/tests/test_resolved_action_identity.py hcli/tests/test_web_explicit_selection.py hcli/tests/test_catalog_and_switching.py -q -p no:cacheprovider",
+        "result": "45 passed"
+      },
+      {
+        "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest hcli/tests/test_resolved_action_identity.py hcli/tests/test_catalog_and_switching.py hcli/tests/test_web_explicit_selection.py hcli/test_web_surface.py hcli/tests/test_serve_openai_surface.py hcli/tests/test_hcli_cli.py hcli/tests/test_hawking_native.py hcli/tests/test_runtime_pool.py hcli/tests/test_runtime_interface.py hcli/tests/test_liveness_and_receipt_races.py hcli/test_cancel_does_not_wait_on_a_zombie.py hcli/test_processes.py hcli/tests/test_hcli_engine_connector.py -q -p no:cacheprovider",
+        "result": "144 passed; two known baseline failures below"
+      },
+      {
+        "command": "PYTHONPATH=<implementation-worktree> PYTHONDONTWRITEBYTECODE=1 python3 -P -m hcli models KIMI_P0_OPERATIONAL --resolve-only --action serve",
+        "result": "returned one complete hawking.resolved_action.v1 record without starting a model or resident"
+      },
+      {
+        "command": "git diff --check",
+        "result": "passed before each implementation commit"
+      }
+    ],
+    "coverage": [
+      "wire round-trip, strict lowercase SHA-shaped values, tampering, stale catalog revision, revocation, unsupported action, and malformed binding refusal",
+      "direct terminal execute-only acceptance and Controller no-reselection behavior",
+      "Rust exact resolver argv, typed record requirements, full JSON preservation, and no --model downgrade",
+      "typed socket switch health publication, malformed 400, denied 403, pre-backend revocation refusal, and changed revision replacement",
+      "explicit and implicit Web reuse, same-binding serve-to-web transition, stale binding switch, Web-only resident completion, and direct Web server construction"
+    ],
+    "known_baseline_failures": {
+      "tests": [
+        "hcli/tests/test_hcli_engine_connector.py::TestEngineConnector::test_mutation_path",
+        "hcli/tests/test_hcli_engine_connector.py::TestEngineConnector::test_rollback_on_validation_failure"
+      ],
+      "current_result": "Both return an error rather than the test's expected mutation because the existing mutation guard refuses UNGROUNDED_MUTATION with no proving test.",
+      "baseline_relation": "Both were reproduced from the frozen e90e6dcd baseline before this tranche and are outside this resolved-action scope."
+    }
+  },
+  "runtime_probe": {
+    "purpose": "Check resolver process overhead only; it does not run an action or initialize a backend.",
+    "current_method": "31 sequential fresh subprocesses of python3 -P -m hcli models KIMI_P0_OPERATIONAL --resolve-only --action serve with the implementation source root on PYTHONPATH; each successful stdout value was parsed as JSON.",
+    "current": {
+      "p50_ms": 77.635,
+      "p95_ms": 90.546,
+      "min_ms": 75.457,
+      "max_ms": 138.51,
+      "resolver_subprocesses_per_sample": 1
+    },
+    "earlier_base_measurement": {
+      "p50_ms": 92.529,
+      "p95_ms": 94.2,
+      "method": "31 sequential fresh legacy resolver subprocesses collected before the initial implementation commit"
+    },
+    "interpretation": "No gross resolver regression was observed. Cache state, ordering, and the new explicit action argument were uncontrolled, so these figures are not a causal speedup claim. Full selection still has one resolver process plus the selected action process."
+  },
+  "remaining_duplicate_or_raw_authority": [
+    "Generic HCLI still allows non-catalog local/native/GGUF/remote values through legacy ModelRegistry/RuntimePool selection. An admitted raw path is normalized to execute, but a non-catalog value remains outside this action contract.",
+    "AgentOS persists and exports a raw ResidentConfig.model/HCLI_MODEL_PATH model identity, then reconstructs its model independently.",
+    "Native qualification runners retain raw profile execution because they are a separate qualification surface.",
+    "Explicit research ModelLake switching retains raw research selection.",
+    "hcli.web.start_surface retains an internal raw --model fallback for legacy callers; the public Web route now supplies a typed action."
+  ],
+  "higher_order_removal_question": "The contract now identifies the normal admitted route. The next practical deletion candidate is duplicated effective default/profile policy once its actual precedence is projected in one typed result; raw AgentOS and research paths require separate ownership decisions before they can be migrated or removed.",
+  "rollback": "Revert the receipt commit, then git revert 59aeae8c6d4f1b23e0785b79bdbf8909ad2879d1 and 998209267afdf13e58f41a481c38ada0950f8aab in that order.",
+  "limitations": [
+    "No model, GPU, ANE, Hawkingd, Web, ModelLake, watcher, or deployed binary was started, restarted, or modified. The live resident process was left untouched.",
+    "The tranche creates stronger action identity and admission revalidation; it does not make the legacy b63 revision byte-verified.",
+    "The source ledger increased, so this tranche must unlock later deletion rather than count as a repository-size reduction itself."
+  ]
+}

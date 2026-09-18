@@ -1,0 +1,229 @@
+{
+  "schema": "hawking.odyssey.flash_router_source_output_screen.v1",
+  "status": "FIXED_INT4_ROUTER_ROUTE_GATE_REJECTED",
+  "artifact_kind": "NR_DIAGNOSTIC",
+  "model": "Qwen3.8-Flash-Next",
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "router_tensor": "model.language_model.layers.0.mlp.gate.weight",
+    "router_shape": [
+      512,
+      2560
+    ],
+    "router_dtype": "BF16",
+    "router_source_bf16_bytes": 2621440,
+    "router_payload_bytes_read_after_decode": 2621440,
+    "router_shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00003-of-00131.safetensors",
+    "router_shard_sha256": "b783fbb3bdf185b4576ffee9ba786dbd9a218ec3cac9d92706d99216567b37a6",
+    "source_activation_bridge": {
+      "bridge_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+      "bridge_sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f",
+      "source_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "source_route_weights": [
+        0.28047239780426025,
+        0.16330188512802124,
+        0.08495357632637024,
+        0.0796680673956871,
+        0.0709957629442215,
+        0.06884919106960297,
+        0.06699836254119873,
+        0.06179732084274292,
+        0.061543043702840805,
+        0.06142038106918335
+      ],
+      "router_logits_sha256": "8137ce080d09c608181efe8c0139065819c3a190a6eae807ac47af5f7eeb19f4",
+      "activation": {
+        "kind": "sealed_source_layer_mlp_input",
+        "bridge_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "bridge_sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f",
+        "source_layer_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_SOURCE_BRIDGE_CONTROL.json",
+        "source_layer_receipt_sha256": "c73d2008cebab74a5b8be0784b200f91668a1a73a79c1b7af5e6d0903bec9a78",
+        "activation_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.mlp_input.f32",
+        "activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+        "activation_elements": 2560,
+        "route_expert": 411,
+        "route_position": 0,
+        "route_weight": 0.28047239780426025,
+        "teacher_only": true,
+        "standalone_nr_dependency": false
+      }
+    },
+    "activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+    "route_selection_semantics": "softmax(router_logits, float32), stable top-10, normalize selected probabilities"
+  },
+  "candidate": {
+    "family": "rowwise_symmetric_int4_router",
+    "quantized_dtype": "INT4_PACKED_SIGNED",
+    "scale_dtype": "BF16",
+    "scale_policy": "one positive max-abs / 7 scale per router row, stored BF16",
+    "seed": 1337,
+    "weight_payload_sha256": "7c15ad02d013394f860ab50663ab31c2b47271e98c6e27952ca04ea14cdf35a8",
+    "scale_payload_sha256": "c6444a9db1d8022011c824507a5577af26b66a2e17f4fcd403c0501c1fdddc34",
+    "source_output": {
+      "logits": {
+        "elements": 512,
+        "relative_l2": 0.3463221788406372,
+        "rmse": 2.3984925992508903,
+        "max_abs_error": 7.165263652801514,
+        "cosine": 0.9527938961982727,
+        "finite": true,
+        "reference_sha256": "c2de79fa23570a98f199456a9627a39a663bd2fabb42527606611a336a159c44",
+        "candidate_sha256": "55a631609e53b30eb18a62234872ea41b87981a269614008a3468efcd56acfc1"
+      },
+      "source_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "candidate_ids": [
+        211,
+        304,
+        414,
+        226,
+        507,
+        446,
+        298,
+        391,
+        402,
+        135
+      ],
+      "candidate_top10_symmetric_difference": 16,
+      "candidate_top10_order_positions_changed": 10,
+      "candidate_selected_weights": [
+        0.1948077380657196,
+        0.12920019030570984,
+        0.11885639280080795,
+        0.08954831957817078,
+        0.08689378201961517,
+        0.08513189107179642,
+        0.08117470890283585,
+        0.07347294688224792,
+        0.07130651921033859,
+        0.06960751116275787
+      ],
+      "candidate_weights_aligned_to_source_ids": [
+        0.03141070157289505,
+        0.017866849899291992,
+        0.079587422311306,
+        0.011808188632130623,
+        0.030849682167172432,
+        0.13514961302280426,
+        0.010804383084177971,
+        0.39759984612464905,
+        0.2755754292011261,
+        0.009347885847091675
+      ],
+      "source_weights_aligned_to_source_ids": [
+        0.28047239780426025,
+        0.16330188512802124,
+        0.08495357632637024,
+        0.0796680673956871,
+        0.0709957629442215,
+        0.06884919106960297,
+        0.06699836254119873,
+        0.06179732084274292,
+        0.061543043702840805,
+        0.06142038106918335
+      ],
+      "route_weight_error": {
+        "elements": 10,
+        "relative_l2": 1.3366976976394653,
+        "rmse": 0.16070681383460214,
+        "max_abs_error": 0.33580252528190613,
+        "cosine": 0.3795497417449951,
+        "finite": true,
+        "reference_sha256": "03f1d3b6ebacd827e9aa288ca1d830ea40e7b7480cbe55c35b3b82bd49859518",
+        "candidate_sha256": "3ef3789d6be4938bd56b1ba35134dff2fb3be74e19b258a8a64f113ea48399bd"
+      },
+      "route_identity_pass": false,
+      "route_weight_tolerance_max_abs": 0.002,
+      "source_top10_top11_margin": 0.054087162017822266,
+      "candidate_top10_top11_margin": 0.03106999397277832
+    }
+  },
+  "matched_null": {
+    "family": "same_budget_random_column_address_null",
+    "seed": 1337,
+    "column_permutation_sha256": "4c2fc5d296ba8994e313719b2bde6ba12306b2f8c14f7d39800c15cf87478285",
+    "source_output": {
+      "logits": {
+        "elements": 512,
+        "relative_l2": 0.9591805934906006,
+        "rmse": 6.642911029051448,
+        "max_abs_error": 12.725865364074707,
+        "cosine": 0.4317092001438141,
+        "finite": true,
+        "reference_sha256": "c2de79fa23570a98f199456a9627a39a663bd2fabb42527606611a336a159c44",
+        "candidate_sha256": "d42dfa4a5509255b700cf9e1b590c8a7f68db9a4b87c3701316fc1e9a1fb2c06"
+      },
+      "null_ids": [
+        97,
+        365,
+        105,
+        254,
+        176,
+        7,
+        343,
+        173,
+        49,
+        64
+      ],
+      "null_top10_symmetric_difference": 20,
+      "null_route_identity": false
+    },
+    "interpretation": "diagnostic address control only; not a candidate representation"
+  },
+  "accounting": {
+    "rows": 512,
+    "width": 2560,
+    "logical_weights": 1310720,
+    "source_bf16_bytes": 2621440,
+    "int4_payload_bytes": 655360,
+    "row_scale_bf16_bytes": 1024,
+    "metadata_bytes": 256,
+    "decoder_support_bytes": 65536,
+    "complete_candidate_bytes": 722176,
+    "active_candidate_bytes_excluding_shared_support": 656640,
+    "complete_scoped_ebpw": 4.4078125,
+    "active_scoped_ebpw_excluding_shared_support": 4.0078125,
+    "byte_reduction_percent_vs_source_bf16": 72.451171875,
+    "accounting_boundary": "router scope only; shared decoder support is billed here and must not be recounted as learned weights in a whole-body NR"
+  },
+  "gate": {
+    "source_control_recomputed_ids_match_bridge": true,
+    "fixed_candidate_route_identity_pass": false,
+    "source_output_gate": "route IDs exact and selected-weight max-abs error <= 0.002",
+    "tail_non_router_organs": "WITHHELD; no compatible source-output control was loaded"
+  },
+  "claim_boundary": "one source-bound layer-0 router candidate only; no tail representation, whole-body complete EBPW, direct execution, capability, TPS, or promotion claim",
+  "promotion_allowed": false,
+  "next_gate": "retain the source router at high fidelity after this fixed INT4 rejection; reopen only with a materially different router representation or a new disjoint source-input bank, while keeping tail organs independently gated",
+  "bench": {
+    "measurement_state": "MEASURED_SOURCE_OUTPUT_DISCRIMINATOR",
+    "elapsed_ns": 2110967625,
+    "machine": "Apple host CPU; bounded source BF16 router and sealed source MLP input",
+    "source_model_loaded": false,
+    "native_execution": false,
+    "complete_token": false
+  },
+  "seal_sha256": "c4dabb739165745a5d292b65bb1da7721079e937d2482ced08e7d7a7044cba85"
+}

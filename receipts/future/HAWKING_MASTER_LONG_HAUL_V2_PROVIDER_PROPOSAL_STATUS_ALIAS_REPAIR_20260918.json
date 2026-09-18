@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.v2.receipt.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T15:05:00-04:00",
+  "claim_boundary": "Provider-boundary repair only; no phase, release, hardware, or implementation-tranche completion claim.",
+  "change": {
+    "files": [
+      "hawking/mutation.py",
+      "hawking/remote_cognition.py",
+      "hawking/tests/test_mutation_proposal_boundary.py"
+    ],
+    "behavior": "Explicit PATCH_PROPOSED, EDIT_PROPOSED, and REPAIR_PROPOSED JSON objects with non-empty operations are canonicalized to MUTATION_PROPOSED before the existing authority, scope, digest, bundle, and test gates. Prose-only or operation-less statuses remain rejected."
+  },
+  "verification": {
+    "focused_tests": "63 passed",
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "live_reload": {
+    "daemon_pid": 3716,
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "requested_model": "hawking-auto",
+    "resident_model": null,
+    "health": "waiting_for_native_runtime"
+  },
+  "live_observation": {
+    "goal_status": "RUNNING",
+    "accepted_heads": 79,
+    "running_workunits": 10,
+    "fresh_p18_replacement_present": true,
+    "new_implementation_acceptance_after_reload": false,
+    "provider_failures_remain_recoverable": true
+  },
+  "next_action": "Continue the existing V2 frontier; inspect the fresh P18 replacement and promote only a complete, grounded mutation bundle with focused verification."
+}

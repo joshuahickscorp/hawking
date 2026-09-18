@@ -146,14 +146,14 @@
             "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
           },
           {
-            "file": "tools/headless/hcli_scheduler_quality.py",
+            "file": "tools/headless/hawking_scheduler_quality.py",
             "line": 245,
             "kind": "call",
             "note": "Scheduler",
             "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
           },
           {
-            "file": "tools/headless/hcli_scheduler_quality.py",
+            "file": "tools/headless/hawking_scheduler_quality.py",
             "line": 593,
             "kind": "call",
             "note": "Scheduler",
@@ -303,14 +303,14 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 245,
           "kind": "call",
           "note": "Scheduler",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 593,
           "kind": "call",
           "note": "Scheduler",
@@ -455,14 +455,14 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 245,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 593,
           "kind": "call",
           "symbol": "Scheduler",
@@ -864,13 +864,13 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 40,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 41,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -980,28 +980,28 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 157,
           "kind": "weak_signal",
           "symbol": "Scheduler",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 191,
           "kind": "weak_signal",
           "symbol": "Scheduler",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 244,
           "kind": "weak_signal",
           "symbol": "Scheduler",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 262,
           "kind": "weak_signal",
           "symbol": "Scheduler",
@@ -1628,7 +1628,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_max_isolation_test.py",
+          "file": "tools/headless/hawking_max_isolation_test.py",
           "line": 32,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -2011,7 +2011,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 40,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -2441,7 +2441,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 40,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -2858,7 +2858,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 40,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -3578,7 +3578,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 40,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -4975,7 +4975,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 39,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -24092,7 +24092,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "tools/headless/hcli_scheduler_quality.py",
+          "file": "tools/headless/hawking_scheduler_quality.py",
           "line": 40,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"

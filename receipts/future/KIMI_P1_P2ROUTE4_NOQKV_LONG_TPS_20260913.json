@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.future.kimi_p1_p2route4_noqkv_long_tps.v1",
+  "generated_at": "2026-09-13T06:45:00-04:00",
+  "status": "STAGING_MEASURED_NOT_QUALIFIED",
+  "objective": "Test whether the disposable P2 route-q4 body benefits from the QKV overlay without touching P0 or KIMI-U001.",
+  "protected_control": {
+    "artifact": "KIMI_P0_OPERATIONAL",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "daemon_pid": 20162,
+    "provider_pid": 20173,
+    "workunit": "KIMI-U001",
+    "p0_replaced": false,
+    "flash_lease_touched": false
+  },
+  "candidate": {
+    "id": "KIMI_P2_ROUTE4_STAGING",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+    "revision": "89babe1efae390ca37f7cedcf7ac98d54d1e84bc5dca5c760358958862c62b6e",
+    "recipe": "P0 q8 non-routed organs plus q4/group64 routed switch_mlp only",
+    "overlay": "/tmp/hawking-kimi-p1-fused/sitecustomize.py",
+    "overlay_sha256": "44f118f1decf1ef893fb7c39c10d7169d2fdfd3a269649142b715f48addf3b95",
+    "route_kernel": "compiled q4 gather_qmm gate/up plus down consumer",
+    "qkv_kernel": "stock MLX QKV path; P1_DISABLE_QKV=1",
+    "shared_kernel": "packed q8 shared path, uncompiled"
+  },
+  "measurement_contract": {
+    "endpoint": "disposable local mlx_vlm HTTP server",
+    "concurrency": 1,
+    "prompt": "Generate a numbered list from 1 through 120. Put each number and a single letter on its own line. Do not stop early.",
+    "max_tokens": 512,
+    "generated_tokens": 486,
+    "repetitions": 3,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "warmup_excluded": true,
+    "p0_and_u001_remained_live": true
+  },
+  "decode_tps_samples": [
+    81.8800405820,
+    100.3082557289,
+    100.0896059941
+  ],
+  "summary": {
+    "median_decode_tps": 100.0896059941,
+    "min_decode_tps": 81.8800405820,
+    "max_decode_tps": 100.3082557289,
+    "sustained_100_tps": "NOT_QUALIFIED",
+    "reason": "The median is approximately 100 TPS but one of three long controls falls to 81.9 TPS and the lane remains co-resident with U001."
+  },
+  "decision": {
+    "qkv_overlay": "REJECTED",
+    "reason": "Removing the packed QKV overlay improved the long-control median relative to the repaired all-overlay run; QKV packing is not a safe route to 250 TPS.",
+    "next_frontier": "native route-major MLA consumer or a measured body-level representation change",
+    "promotion": "withheld"
+  },
+  "claim_boundary": "Disposable staging evidence only; not a clean-room qualification, not P1 promotion, not Kimi capability evidence, and not Pulsar admission."
+}

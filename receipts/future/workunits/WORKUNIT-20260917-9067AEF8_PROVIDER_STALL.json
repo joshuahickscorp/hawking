@@ -1,0 +1,22 @@
+{
+  "at": 1789699261.98476,
+  "claim_boundary": "no provider result, read evidence, phase completion, or cost was accepted.",
+  "classification": "PROVIDER_REQUEST_STALL",
+  "goal_id": "GOAL-A52AB48501",
+  "observed": {
+    "elapsed_over_seconds": 180,
+    "last_tool_dispatch": null,
+    "mutation_evidence": false,
+    "provider_request_ids": [],
+    "read_evidence": false,
+    "turn": 1,
+    "worker_cost_usd": 0.0
+  },
+  "owner_log": "receipts/future/workunits/WORKUNIT-20260917-9067AEF8_OWNER.log",
+  "retry_policy": "DO_NOT_RETRY_SAME_STALLED_ROUTE; require a separately qualified provider route before a fresh P12 lane.",
+  "schema": "hawking.workunit.provider_stall.v1",
+  "state": "CANCELLED",
+  "tranche": "P12_APPLE_BACKEND",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260917-9067AEF8"
+}

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "751d76d19d2d9cf102b48fbdf873c495b6cbd26a31d83571b8a8468972f57020",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:35:54.084351+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:35:54.084373+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:35:54.088464+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First and only read-only observation targeted workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json, the authoritative scheduling file named in the objective; full-file sha256=e5ace43f1e3e13424a85187b070e99f9aedbb",
+      "outcome": "CONTINUE",
+      "reply_chars": 4421,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First and only read-only observation targeted workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json, the authoritative scheduling file named in the objective; full-file sha256=e5ace43f1e3e13424a85187b070e99f9aedbb46f9bb70b13c64314d0314913fb, 60521 bytes total, with only the first 4000 bytes (6.6%) shown and an explicit truncation warning not to conclude anything about the unshown portion.\",\"The shown portion declares schema hawking.modellake.scheduling_authority.v2, authority status ACTIVE, mode CAMPAIGN_PHASE_GATED_ACQUISITION_WITH_EXPLICIT_MODEL_LIFECYCLE, generated_on 2026-09-10, updated_on 2026-09-17, and states this file is the canonical ModelLake/Odyssey scheduling and model-lifecycle control state controlling campaign ordering, scheduled acquisition, mandatory Odyssey NR/NX work, and durable post-Odyssey disposition classes.\",\"The shown portion lists four source_policies (three attachment pasted-text files plus conversation-canon/2026-09-17-star-family-odyssey-nr-nx-lifecycle) and an evidence array of receipts and workspace artifacts; none of the visible entries reference DARKMATTER or DARKMATTER_PHYSICAL_PLAN_PASS.\",\"The string DARKMATTER does not appear anywhere in the 4000 shown bytes; because 56521 bytes (93.4%) were not observed, a full-file owner-absent conclusion is not yet grounded and an owner-present claim would be fabrication.\",\"No DARKMATTER owner, producer, or bounded seam was observed in this bounded pass; the named current source candidates hawking/odyssey.py, hawking/physical_graph.py, tools/odyssey/physical_graph_compiler.py, and tools/odyssey_memgate.py were not inspected within this observation window, so nothing is claimed about their contents.\",\"No files were mutated, no receipts written, no tests run, no git mutation invoked, no implementation owner invented, and no phase or release completion claimed; this is a discovery-only checkpoint.\"],\"sources\":[{\"path\":\"workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json\",\"sha256\":\"e5ace43f1e3e13424a85187b070e99f9aedbb46f9bb70b13c64314d0314913fb\",\"sha256_scope\":\"full_file\",\"bytes\":60521,\"shown_bytes\":4000,\"truncated\":true,\"observed_content_summary\":\"schema hawking.modellake.scheduling_authority.v2; authority ACTIVE; mode CAMPAIGN_PHASE_GATED_ACQUISITION_WITH_EXPLICIT_MODEL_LIFECYCLE; updated_on 2026-09-17; no DARKMATTER string in shown bytes\"}],\"recommendations\":[\"Conclusion: owner-absent within the observed window only; no real current DARKMATTER owner or bounded seam was observed, and the discovery-only refusal posture is preserved pending full-file coverage.\",\"Smallest bounded follow-on: narrowed line-range reads of workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json covering the unshown 56521 bytes, searching for DARKMATTER_PHYSICAL_PLAN_PASS and recording exact line numbers plus any owner/producer fields, anchored to full-file sha256 e5ace43f1e3e13424a85187b070e99f9aedbb46f9bb70b13c64314d0314913fb.\",\"If and only if a DARKMATTER_PHYSICAL_PLAN_PASS entry is located, inspect only the admitted focus files it names (hawking/odyssey.py, hawking/physical_graph.py, tools/odyssey/physical_graph_compiler.py, tools/odyssey_memgate.py) to test for a real current owner and bounded seam; do not widen the file set and do not replay the prior Frankenstein-label search.\",\"Falsifier: any line-range read of the same file (hash e5ace43f1e3e13424a85187b070e99f9aedbb46f9bb70b13c64314d0314913fb) revealing a DARKMATTER_PHYSICAL_PLAN_PASS entry with a concrete owner or producer field falsifies the owner-absent conclusion; conversely, full coverage of all 60521 bytes with zero DARKMATTER occurrences confirms it.\",\"If full coverage confirms owner-absent, preserve the discovery-only refusal with exact source citations and this falsifier, and do not invent an implementation owner or claim phase/release completion.\"],\"unresolved_questions\":[\"Does the unshown 93.4% of MODELLAKE_SCHEDULING_AUTHORITY.json contain any DARKMATTER_PHYSICAL_",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-1b05612d34b64253",
+  "worker_id": "hawking-worker-fd4e69846cfd403f",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-1FCA48EA"
+}

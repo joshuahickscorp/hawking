@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "b7c38eae6d101bf2bc02af6595c5e54c0b5dc0377ad05091adf40d198d041a2f",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:13:05.812774+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:13:05.812784+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:13:05.814707+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root is /Users/scammermike/Downloads/hawking; it is a directory whose top-level contents were not enumerated in this bounded pass, so the full file inventory remains unobserved.\",\"README.md was read: 4340 bytes,",
+      "outcome": "CONTINUE",
+      "reply_chars": 4225,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root is /Users/scammermike/Downloads/hawking; it is a directory whose top-level contents were not enumerated in this bounded pass, so the full file inventory remains unobserved.\",\"README.md was read: 4340 bytes, sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, with 4000 of 4340 bytes (92.2%) shown; the tail, including the complete civilization/ repository-table row, was not observed.\",\"README identifies docs/CURRENT_ARCHITECTURE.md as 'the detailed, current ownership map', making it the most likely authoritative source for the canonical handoff/reconciliation owner; its contents were not observed in this pass.\",\"README identifies receipts/ as holding 'Acceptance and provenance records' and states 'a result that has no receipt did not happen', making receipts/ the most likely location of P20 final-handoff tranche evidence; no receipt files were observed.\",\"README 'Current state' describes an Event Horizon structural refactor that 'only consolidates source authorities and moves generated/operator state to owned roots' without altering live ascension state; this is plausibly adjacent to handoff/reconciliation ownership, but no P20 linkage was observed.\",\"README documents the verification surface: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh in check/compile/policy modes, and named isolated integration targets such as cargo test -p hawking-core --test q4k_fast_parity.\",\"README's repository table maps crates/ (Rust workspace: runtime, CLI, serving, benchmarks, HAWKING backend crates), hawking/ (Python control plane, resident supervision, tools and verifiers), tools/ (campaign, evaluation, analysis), docs/ (architecture, control-plane boundaries, specifications), research/ (experiments, lab operators, archived work, evidence), receipts/ (acceptance and provenance), and workspace/ (local build and campaign working tree).\",\"README states HAWKING owns planning, typed tool calls, lifecycle, and verification while the Hawking Rust crates own execution and serving, and that receipts are evidence, not an additional source of architecture.\",\"README states model weights are local inputs and are not part of the repository.\",\"No P20-specific files, tranche ledgers, handoff contracts, or reconciliation owner entries were directly observed; the P20 final-handoff tranche remains unlocated in the gathered evidence, so a source-grounded execution-contract proposal cannot yet be constructed without fabrication.\"],\"sources\":[{\"path\":\"/Users/scammermike/Downloads/hawking/README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"bytes\":4340,\"observed_bytes\":4000,\"truncated\":true}],\"recommendations\":[\"Enumerate the repository root and the receipts/ tree to locate P20 final-handoff tranche acceptance and provenance records before drafting any contract.\",\"Read docs/CURRENT_ARCHITECTURE.md in full to identify the canonical handoff/reconciliation owner from the current ownership map.\",\"Search docs/, receipts/, research/, and civilization/ for the literals 'P20', 'handoff', 'reconciliation', and 'tranche' to bind the tranche to concrete files.\",\"Read the remaining 340 unobserved bytes of README.md to recover the full civilization/ repository-table row.\",\"Only after the tranche and owner are located, construct the smallest independent follow-on contract with bounded objective, focus files, focused tests drawn from the documented verification surface (pytest, cargo check --workspace, tools/ci/rust_test_fast.sh modes), acceptance checks, writer/effect scope, protected resources, and one falsifier.\"],\"unresolved_questions\":[\"Where do the P20 final-handoff tranche receipts live: under receipts/, research/, or civilization/?\",\"Which component is the canonical handoff/reconciliation owner per docs/CURRENT_ARCHITECTURE.md?\",\"What are the P20 tranche's dependency-valid predecessors, and are their receipts present and accepted?\",\"Does the Event Horizon refactor",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-a91b1d7637334478",
+  "worker_id": "hawking-worker-9e5df6e64ff54a47",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-25E7E62B"
+}

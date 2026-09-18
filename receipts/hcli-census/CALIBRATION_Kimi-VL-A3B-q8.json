@@ -1,0 +1,109 @@
+{
+ "agent": "Kimi-VL-A3B-q8",
+ "passed": false,
+ "results": [
+  {
+   "specimen": "Dream-org--Dream-v0-Instruct-7B",
+   "passed": false,
+   "why": "architecture_family='DENSE_DECODER' lacks any of ['diffusion_lm']; execution_class='AUTOREGRESSIVE_DECODE_WITH_KV' lacks any of ['iterative_denoising']",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "dominant_organs": [
+     "model.layers.<L>.self_attn.k_proj.weight",
+     "model.layers.<L>.self_attn.o_proj.weight"
+    ],
+    "state_or_kv": "KV_CACHE",
+    "likely_bottleneck": "SINGLE_FORWARD_EMBEDDING",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive.",
+     "ForCausalLM in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name.",
+     "num_experts / num_local_experts mean MoE: stored bytes and ACTIVE bytes differ, and complete accounting must say which it is quoting.",
+     "state_size / a recurrent mixer means the persistent state is not a KV cache; state cost is per-layer and constant in context, not linear.",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth.",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate."
+    ],
+    "disposition": "PARETO CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  },
+  {
+   "specimen": "GSAI-ML--iLLaDA-8B-Base",
+   "passed": false,
+   "why": "architecture_family='DENSE_DECODER' lacks any of ['diffusion_lm']; execution_class='AUTOREGRESSIVE_DECODE_WITH_KV' lacks any of ['iterative_denoising']",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "dominant_organs": [
+     "model.layers.<L>.self_attn.q_proj.weight",
+     "model.layers.<L>.self_attn.k_proj.weight",
+     "model.layers.<L>.self_attn.o_proj.weight"
+    ],
+    "state_or_kv": "KV_CACHE",
+    "likely_bottleneck": "decode_bandwidth",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive.",
+     "ForCausalLM in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name.",
+     "num_experts / num_local_experts mean MoE: stored bytes and ACTIVE bytes differ, and complete accounting must say which it is quoting.",
+     "state_size / a recurrent mixer means the persistent state is not a KV cache; state cost is per-layer and constant in context, not linear.",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth."
+    ],
+    "disposition": "PARETO CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  },
+  {
+   "specimen": "microsoft--bitnet-b1.58-2B-4T",
+   "passed": true,
+   "why": "",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "dominant_organs": [
+     "model.layers.<L>.input_layernorm.weight",
+     "model.layers.<L>.mlp.down_proj.weight",
+     "model.layers.<L>.mlp.down_proj.weight_scale",
+     "model.layers.<L>.mlp.ffn_sub_norm.weight",
+     "model.layers.<L>.mlp.gate_proj.weight",
+     "model.layers.<L>.mlp.gate_proj.weight_scale",
+     "model.layers.<L>.mlp.up_proj.weight",
+     "model.layers.<L>.mlp.up_proj.weight_scale"
+    ],
+    "state_or_kv": "STATE",
+    "likely_bottleneck": "AUTOREGRESSIVE_DECODE_WITH_KV",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive.",
+     "`ForCausalLM` in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name. Trust mask/diffusion signals and the model_type over the class suffix when they disagree.",
+     "`num_experts` / `num_local_experts` mean MoE: stored bytes and ACTIVE bytes differ, and complete accounting must say which it is quoting.",
+     "`state_size` / a recurrent mixer means the persistent state is not a KV cache; state cost is per-layer and constant in context, not linear.",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth.",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate."
+    ],
+    "disposition": "PULSAR CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  },
+  {
+   "specimen": "answerdotai--ModernBERT-large",
+   "passed": false,
+   "why": "architecture_family='DENSE_DECODER' lacks any of ['bidirectional_encoder']; execution_class='ITERATIVE_DENOISING' lacks any of ['bidirectional_encoder_pass']",
+   "verdict": {
+    "architecture_family": "DENSE_DECODER",
+    "execution_class": "ITERATIVE_DENOISING",
+    "dominant_organs": "model.layers.<L>.attn.Wo.weight, model.layers.<L>.attn.Wqkv.weight, model.layers.<L>.mlp.Wi.weight, model.layers.<L>.mlp.Wo.weight, model.layers.<L>.mlp_norm.weight, model.layers.<L>.attn_norm.weight",
+    "state_or_kv": "state",
+    "likely_bottleneck": "encoder body",
+    "relevant_laws": [
+     "a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive.",
+     "`ForCausalLM` in the architecture name is NOT proof of autoregression -- some diffusion language models reuse that class name. Trust mask/diffusion signals and the model_type over the class suffix when they disagree.",
+     "`num_experts` / `num_local_experts` mean MoE: stored bytes and ACTIVE bytes differ, and complete accounting must say which it is quoting.",
+     "`state_size` / a recurrent mixer means the persistent state is not a KV cache; state cost is per-layer and constant in context, not linear.",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth.",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate."
+    ],
+    "disposition": "RESEARCH SPECIMEN",
+    "next_experiment": "none, dominated"
+   }
+  }
+ ]
+}

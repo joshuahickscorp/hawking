@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "7aa6853cf540f2767333efc8538a7c530605a7ccce32665719c0a35eabce7e9c",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:01:11.625392+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:01:11.625460+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:01:11.629798+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md at the repository root is 4340 bytes (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9); only 4000 of 4340 bytes (92.2%) were observed, so the tail of the repository table is unobserved.\",\"",
+      "outcome": "CONTINUE",
+      "reply_chars": 3936,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md at the repository root is 4340 bytes (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9); only 4000 of 4340 bytes (92.2%) were observed, so the tail of the repository table is unobserved.\",\"README states the Hawking stack pairs a Rust inference runtime on Apple Silicon with a Python control plane, and that HAWKING owns planning, typed tool calls, lifecycle, and verification while the Rust crates own execution and serving.\",\"README designates docs/CURRENT_ARCHITECTURE.md as the detailed, current ownership map for the codebase; that ownership authority was not inspected during this WorkUnit.\",\"README states the Event Horizon structural refactor does not alter live ascension state or perform physical optimization; it only consolidates source authorities and moves generated/operator state to owned roots \u2014 this is the standing claim boundary most relevant to a codebase-collapse contract.\",\"The README repository table names the top-level owners: crates/ (Rust workspace), hawking/ (Python control plane), tools/ (campaign and evaluation tooling), docs/ (architecture and specifications), research/ (experiments and evidence), receipts/ (acceptance and provenance records), workspace/ (local working tree), plus a truncated civilization/ entry.\",\"README enumerates deterministic verification lanes relevant to a focused RED/GREEN pair: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check|compile|policy, and named isolated integration targets such as cargo test -p hawking-core --test q4k_fast_parity.\",\"A read of P17_CODEBASE_COLLAPSE.md at the repository root returned a not-found result; the root contains 36 files and the accepted P17_CODEBASE_COLLAPSE read evidence referenced by the objective was not observed at that path.\",\"Because the accepted P17_CODEBASE_COLLAPSE evidence and the named current source/test owners were not observed, no source-grounded owner, smallest mutation seam, RED/GREEN test pair, or falsifier can honestly be named from this WorkUnit alone.\"],\"sources\":[\"/Users/scammermike/Downloads/hawking/README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, partial read of 4000/4340 bytes)\",\"/Users/scammermike/Downloads/hawking/P17_CODEBASE_COLLAPSE.md (not found at repository root)\"],\"recommendations\":[\"Locate the accepted P17_CODEBASE_COLLAPSE read evidence under one of the named owner roots (docs/, research/, or receipts/) before drafting P17_COLLAPSE_IMPLEMENTATION_CONTRACT; do not proceed on README alone.\",\"Read docs/CURRENT_ARCHITECTURE.md, which README names as the detailed, current ownership map, to obtain the source/test owner names required by the objective.\",\"Choose the smallest seam only after the collapse evidence is located; candidate verification lanes from README are python3 -m pytest, cargo check --workspace, and tools/ci/rust_test_fast.sh check|compile|policy.\",\"Preserve the README's stated claim boundary for the Event Horizon refactor: any collapse implementation contract must limit effect to consolidating source authorities and moving generated/operator state to owned roots, with no live-state alteration claimed.\",\"Keep writer scope to a single owner root per mutation and keep receipts/ as a protected resource until the contract names its effect scope.\"],\"unresolved_questions\":[\"Where does the accepted P17_CODEBASE_COLLAPSE evidence actually live (docs/, research/, receipts/, or another root), given it is absent at the repository root?\",\"Which exact source and test owners does P17_COLLAPSE_IMPLEMENTATION_CONTRACT govern, per docs/CURRENT_ARCHITECTURE.md?\",\"What is the truncated tail of README's repository table (the civilization/ entry and any remaining content in the final 340 unobserved bytes)?\",\"What falsifier would Hawking accept for the collapse seam once the owner set is identified?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-6c7d4abcffd94983",
+  "worker_id": "hawking-worker-471f7765651a41c3",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-6C15D524"
+}

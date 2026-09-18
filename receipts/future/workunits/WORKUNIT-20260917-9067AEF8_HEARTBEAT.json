@@ -1,0 +1,58 @@
+{
+  "active_job": "job-cef0934f-9083-4660-8fba-f5bbe126f74c",
+  "blocker": {
+    "exact_next_action": "Inspect the bounded repository and return evidence from the admitted read-only tools; do not mutate files.",
+    "last_failure": null,
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260917-9067AEF8",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "5ffe91475cfbeac73870183706339cce173fbca72e06619a542378b8509e1ce7",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 71385,
+  "exact_next_action": "Inspect the bounded repository and return evidence from the admitted read-only tools; do not mutate files.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "",
+  "last_tool_dispatch": null,
+  "last_turn": 0,
+  "latest_real_seal": "",
+  "objective": "P12 Apple backend read-only qualification: inspect the current Metal, Core ML/ANE, and backend-contract owners and receipts; identify the narrowest next acceptance test and any explicit withholding boundary. Use admitted read-only Hawking tools, return grounded observations and source paths, and do not mutate files.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "moonshotai/kimi-k3"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T02:40:20.188891+00:00",
+  "worker_attempt_id": "hawking-attempt-2d48d6e3f0f64684",
+  "worker_cost_usd": 0.0,
+  "worker_id": "hawking-worker-0bb89fc9ecb547e6",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789698981.096813,
+  "worker_spawned_at": 1789698980.714415,
+  "worker_status": "KILLED",
+  "workunit_id": "WORKUNIT-20260917-9067AEF8"
+}

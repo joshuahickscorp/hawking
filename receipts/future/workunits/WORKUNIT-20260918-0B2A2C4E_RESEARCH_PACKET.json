@@ -1,0 +1,216 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "12bd2636c4bc19c63b440d83d7beaf150f04bfd2c9d59a30ea8fece214237c62",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:22:35.881861+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:22:35.881884+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:22:35.884847+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\":[{\"file\":\"hawking/share_bridge.py\",\"window\":\"lines 1-180\",\"sha256\":\"847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46\",\"total_lines\":1198,\"bytes\":49705,\"truncated\":true,\"shown_bytes\":4000,\"truncation_note\":\"66",
+      "outcome": "CONTINUE",
+      "reply_chars": 4440,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T06:22:35.895346+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "TERMINAL",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260918-0B2A2C4E_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.read"
+      ]
+    },
+    {
+      "at": "2026-09-18T06:22:59.249866+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:22:59.249891+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:22:59.253985+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\":[{\"file\":\"hawking/share_bridge.py\",\"window\":\"lines 1-180\",\"sha256\":\"847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46\",\"total_lines\":1198,\"bytes\":49705,\"shown_bytes\":4000,\"truncated\":true,\"truncation_note\":\"66",
+      "outcome": "CONTINUE",
+      "reply_chars": 4096,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T06:22:59.254963+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "TERMINAL_PARTIAL_EVIDENCE",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260918-0B2A2C4E_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.read"
+      ]
+    },
+    {
+      "at": "2026-09-18T06:23:36.942879+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:23:36.942899+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:23:36.946280+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\":[{\"file\":\"hawking/share_bridge.py\",\"window\":\"lines 1-180\",\"sha256\":\"847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46\",\"total_lines\":1198,\"bytes\":49705,\"truncated\":true,\"shown_bytes\":4000,\"truncation_note\":\"66",
+      "outcome": "CONTINUE",
+      "reply_chars": 4212,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 5
+    },
+    {
+      "at": "2026-09-18T06:23:36.948041+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "PARTIAL_READ_ONLY_EVIDENCE",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260918-0B2A2C4E_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.read"
+      ]
+    },
+    {
+      "at": "2026-09-18T06:24:01.631857+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:24:01.631870+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:24:01.634056+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\":[{\"file\":\"hawking/share_bridge.py\",\"window\":\"lines 1-180\",\"sha256\":\"847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46\",\"total_lines\":1198,\"bytes\":49705,\"shown_bytes\":4000,\"truncated\":true,\"truncation_note\":\"66",
+      "outcome": "CONTINUE",
+      "reply_chars": 4226,
+      "tool_less_continue_streak": 4,
+      "tool_signal": "theater",
+      "turn": 6
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    {
+      "bytes": "49705",
+      "claim_boundary": "Read-only local tunnel evidence from a single fs.read of lines 1-180; no relay, release, revocation, or encryption-completeness claim is made or supported by this window.",
+      "file": "hawking/share_bridge.py",
+      "findings": "['Docstring: the /s/<token> token IS the capability; Hawking stores only its SHA-256 digest, so the raw bearer secret is never written to the workspace; the bridge exposes a Goal/conversation snapshot, not the daemon API, provider credentials, prompts, or an arbitrary tool surface.', 'Object-scoped, short-lived capability model: SHARE_SCHEMA=hawking.share_capability.v1, DEFAULT_TTL_SECONDS=3600, MAX_TTL_SECONDS=604800, TUNNEL_INVITATION_TTL_SECONDS=300, TUNNEL_MAX_INVITATION_TTL_SECONDS=3600.', 'Closed permission lattice: KNOWN_PERMISSIONS={read,comment,steer,prompt,build}; TUNNEL_OPERATION_PERMISSIONS maps list_chats/list_models/retrieve_result->read, stream_prompt->prompt, scoped_build->build.', 'Regex-bounded input validation: TOKEN_RE ^[A-Za-z0-9_-]{10,64}$, GOAL_RE ^GOAL-[A-Za-z0-9_-]{1,100}$ (IGNORECASE), SESSION_RE ^[A-Za-z0-9_-]{1,64}$, DEVICE_RE ^[A-Za-z0-9_.:-]{1,128}$, TUNNEL_SECRET_RE ^[A-Za-z0-9_-]{16,128}$.', 'In-process redaction boundary: SECRET_PATTERNS scrub bearer tokens, openrouter_api_key assignments, sk-* keys; _clean_text truncates to 1600 chars; _clean_value caps depth 3, lists 24, mappings 40 keys, and drops keys containing authorization/api_key/secret/cookie/environment/system_prompt.', 'Storage path is derived, not caller-supplied: _path = <workspace>/.hawking/shares/<sha256(token)>.json; _root creates the directory; _token_hash = hashlib.sha256 over UTF-8 token.', 'Concurrency guarded by module-level threading.RLock (_LOCK); ShareError carries explicit HTTP status defaulting to 404.', 'Window ends mid-function at _permissions with \\'if \"read\" not",
+      "sha256": "847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46",
+      "shown_bytes": "4000",
+      "total_lines": "1198",
+      "truncated": "True",
+      "truncation_note": "66.4% of requested window shown; no conclusion about unshown content",
+      "window": "lines 1-180"
+    }
+  ],
+  "provider_status": "PARTIAL_EVIDENCE_CHECKPOINT",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [
+    "Next bounded evidence step: fs.read hawking/share_bridge.py lines 150-260 to capture the truncated _permissions tail and the first token-verification/constant-time-compare path (hmac is imported but its use is not yet observed).",
+    "Falsifier: if any path writes the raw token (not its digest) to disk or logs, or compares digests with == instead of hmac.compare_digest, the stated digest-only and revocation-safety properties are falsified.",
+    "Preserve the claim boundary: do not assert tunnel encryption, relay, or release semantics from this window; those require the TUNNEL_* frame/session handlers later in the file."
+  ],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [
+    {
+      "deterministic": "True",
+      "invocation_id": "tool-43bbe96a-8dc5-4815-accc-cdc131625af3",
+      "lines": "1-180",
+      "mutation": "read_only",
+      "observed_at": "1789712620.082315",
+      "path": "hawking/share_bridge.py",
+      "sha256": "847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46",
+      "tool": "fs.read"
+    }
+  ],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.read"
+  ],
+  "unresolved_questions": [
+    "What is the defaulting rule when 'read' is absent from requested permissions (line cut mid-expression)?",
+    "Where and how is hmac used \u2014 is token verification constant-time, and is revocation digest deletion or a tombstone?",
+    "Are TUNNEL_FRAME_SCHEMA/TUNNEL_EVENT_SCHEMA frames authenticated or encrypted, and what bounds their replay window?",
+    "Does _clean_value's key denylist cover all credential-bearing keys, or can nested/renamed keys bypass redaction?"
+  ],
+  "worker_attempt_id": "hawking-attempt-5bf4c19613344f32",
+  "worker_id": "hawking-worker-46feea9fd4bd468d",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-0B2A2C4E"
+}

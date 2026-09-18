@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Seat the current best verified ancestor as GENESIS, and report the lineage.
 
-The lineage machinery (research/lab/lineage/) was built and tested but never turned on, so
+The Hawking lineage machinery was built and tested but never turned on, so
 nothing was actually seated - Genesis existed as a tournament result and a set of
 receipts rather than as a running lineage. This seats it.
 
@@ -36,17 +36,17 @@ from typing import Any, Callable, Mapping
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-from lab.lineage.identity import (  # noqa: E402
+from hawking.lineage.identity import (  # noqa: E402
     GENESIS_ARTIFACT_MANIFEST_PATH,
     GENESIS_MODEL,
     GenesisInstance,
     file_sha256,
     make_qwen38_genesis,
 )
-from lab.lineage.canon import digest, require_sha256, utc_now  # noqa: E402
-from lab.lineage.state import LineageState  # noqa: E402
-from lab.qwen38_protected_run_verifier import VERIFICATION_SCHEMA  # noqa: E402
-from tools.agentos.genesis_resident import (  # noqa: E402
+from hawking.lineage.canon import digest, require_sha256, utc_now  # noqa: E402
+from hawking.lineage.state import LineageState  # noqa: E402
+from hawking.qwen38_protected_run_verifier import VERIFICATION_SCHEMA  # noqa: E402
+from hawking.genesis_resident import (  # noqa: E402
     default_socket,
     health as resident_health,
     process_alive,

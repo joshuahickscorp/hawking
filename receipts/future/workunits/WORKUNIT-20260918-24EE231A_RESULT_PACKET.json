@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "30b335625eb7b279e68b93ca6f3353e6487e11ad9ed1b41d00ab5eef69f30c81",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:07:46.098023+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:07:46.098042+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:07:46.102631+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/ane_provider.py (15932 bytes, sha256 86ab120e8b7e70825ca969e956282e1c3f1974f1188325b2ec5e631516e280da) is a self-described evidence adapter for Apple Core ML / Neural Engine, explicitly 'not an ANE driver'; executi",
+      "outcome": "CONTINUE",
+      "reply_chars": 3823,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/ane_provider.py (15932 bytes, sha256 86ab120e8b7e70825ca969e956282e1c3f1974f1188325b2ec5e631516e280da) is a self-described evidence adapter for Apple Core ML / Neural Engine, explicitly 'not an ANE driver'; execution stays in public Core ML APIs per its module docstring.\",\"Owner/capability boundary: the dataclass ANEProvider exposes read-only capability view properties 'available' (profile.neural_engine_present), 'plan_ready' (profile.mlcomputeplan.status == 'PLANNED'), and 'atlas_ready' (atlas.status == 'MEASURED'); the docstring states availability does not imply per-operation support or ANE token-wall advantage.\",\"Callers/dependencies: the module imports MEGA_KERNEL_SCHEMA, MEGA_KERNEL_STAGES, and _decode_state_layout from hawking.physical_graph, and defaults its receipt inputs to receipts/headless/APPLE_ANE_DEVICE_PROFILE.json (profile) and receipts/headless/APPLE_ANE_ATLAS.json (atlas), guarded by MODEL_CHARACTERIZATION_SCHEMA = 'hawking.ane.model_characterization.v1'.\",\"Protected boundary: placement decisions are evidence-gated \u2014 an operation is considered ANE-placeable only when its MLComputePlan row or atlas graph row lists 'NEURAL_ENGINE' among supported devices or names it as preferred; receipt loading failures (FileNotFoundError, JSONDecodeError, OSError) degrade to empty mappings, and helpers _positive_int/_shape refuse to fabricate zero values or invalid shapes.\",\"Focused-test surface: ANEProvider.from_receipts defaults, operation_evidence lookup (MLComputePlan rows first, atlas graphs second), and placement output dict were partially visible; the read was TRUNCATED at 4000 of 15932 bytes (25.1%), so the full placement payload, mega-kernel stage handling, and any test files were not observed.\",\"No production Metal/ANE hardware qualification was established; this was a static source inspection of an evidence adapter only.\"],\"sources\":[{\"path\":\"hawking/ane_provider.py\",\"sha256\":\"86ab120e8b7e70825ca969e956282e1c3f1974f1188325b2ec5e631516e280da\",\"bytes\":15932,\"observed_bytes\":4000,\"scope\":\"partial_truncated_read\"}],\"recommendations\":[\"Re-read hawking/ane_provider.py with narrow line ranges to cover the unobserved 11932 bytes before extending capability claims, particularly the remainder of the placement() return payload and any mega-kernel stage logic.\",\"Inspect hawking/physical_graph.py to ground the imported symbols MEGA_KERNEL_SCHEMA, MEGA_KERNEL_STAGES, and _decode_state_layout that this adapter depends on.\",\"Locate and read the focused tests for this provider (likely referencing MODEL_CHARACTERIZATION_SCHEMA 'hawking.ane.model_characterization.v1' or the APPLE_ANE_DEVICE_PROFILE/APPLE_ANE_ATLAS receipt fixtures) to identify the admitted test surface for any follow-on tranche.\",\"Bounded disjoint follow-on tranche: a read-only audit of receipts/headless/APPLE_ANE_DEVICE_PROFILE.json and receipts/headless/APPLE_ANE_ATLAS.json to verify which operations, if any, carry MEASURED atlas status and PLANNED MLComputePlan status \u2014 falsifiable blocker: without those receipts, 'atlas_ready'/'plan_ready' cannot be true and no ANE placement claim can be grounded.\"],\"unresolved_questions\":[\"What does the truncated remainder of placement() and any downstream mega-kernel integration code actually return or mutate?\",\"Which test files exercise ANEProvider.from_receipts, operation_evidence, and placement, and what fixtures do they use?\",\"Do the default receipt files (APPLE_ANE_DEVICE_PROFILE.json, APPLE_ANE_ATLAS.json) exist in the repository checkout, and do any of their rows carry NEURAL_ENGINE support with MEASURED status?\",\"Is there a Swift probe or compiled MLProgram asset generation path elsewhere in the repo that produces these receipts, or are they imported artifacts?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-6e64d1da060048ad",
+  "worker_id": "hawking-worker-2ab42ed94dfa4868",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-24EE231A"
+}

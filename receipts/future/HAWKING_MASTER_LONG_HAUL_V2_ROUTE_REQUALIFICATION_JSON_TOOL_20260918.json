@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.long_haul.v2.route_requalification_live.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:48:28Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "endpoint": "http://127.0.0.1:8014/v1/chat/completions",
+  "tool_call_qualified": true,
+  "request_shape": "explicit named route_probe tool_choice plus response_format json_object and max_tokens 128",
+  "probes": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "http_status": 200,
+      "finish_reason": "tool_calls",
+      "tool_call_count": 1,
+      "tool_name": "route_probe",
+      "arguments": "{\"ok\":true}",
+      "provider_route": "Together",
+      "cost_usd": 0.002586
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "http_status": 200,
+      "finish_reason": "tool_calls",
+      "tool_call_count": 1,
+      "tool_name": "route_probe",
+      "arguments": "{\"ok\":true}",
+      "provider_route": "Together",
+      "cost_usd": 0.0001602
+    }
+  ],
+  "claim_boundary": "Fresh transport/tool-call compatibility only. No provider tranche acceptance, source mutation, hardware qualification, or local resident claim."
+}

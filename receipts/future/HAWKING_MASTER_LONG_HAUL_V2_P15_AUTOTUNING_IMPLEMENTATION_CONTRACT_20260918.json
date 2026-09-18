@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P15_AUTOTUNING_FOCUSED_CONTRACT_V4",
+  "workunit_id": "WORKUNIT-20260918-77AA2361",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded scheduler/autotuning contract only; no hardware or release claim.",
+  "source_observation": {"owner":"hawking/frontier_scheduler.py","sha256":"22b07d365b0e96c4bbcc8b9d5c07c07e272d6b2a9e35f1358479bdaded246273"},
+  "focused_tests": [
+    {"path":"hawking/test_frontier_scheduler.py","sha256":"2fdc401fff1c49832742343256c2affd6f3fce28f23a47b249c31b56869c7cef"},
+    {"path":"hawking/tests/test_gpu_lane_defers_not_blocks.py","sha256":"b70d4a0912c4e0d146af63ebafbe2a7bad159a045b91d62bba5ad664ad45c29d"},
+    {"path":"hawking/tests/test_control_plane_performance.py","sha256":"9a4dfef700342f5258a9f4d8a34117fe27b5b7dd6d3d48e6ed9f2f870a1650b0"}
+  ],
+  "local_verification": {"command":"python3 -m pytest -q hawking/test_frontier_scheduler.py hawking/tests/test_gpu_lane_defers_not_blocks.py hawking/tests/test_control_plane_performance.py","result":"39 passed"},
+  "next_seam":"Keep select_next/PARK_ALL fail-closed: WAITING requires wake_condition, ELIGIBLE outranks idle, RUNNING is not preempted, and every parked frontier carries its wake condition.",
+  "falsifier":"A WAITING state can be constructed without a wake condition or select_next returns idle while any frontier is ELIGIBLE."
+}

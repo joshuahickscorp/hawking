@@ -1,0 +1,79 @@
+{
+  "base_commit": "3b21ea830fbe0fc651b4a32e27f0b4a266c6934a",
+  "claim_boundary": "This receipt establishes integrity for the one existing Python Flash accounting automatic path. It does not unify all Gravity experiments, historical receipt readers, Noetic compiler controls, HCLI gauntlet behavior, MLX patient experiments, method applicability across all architectures, or capability qualification. It does not establish a compact runnable NR, capability preservation, model execution, hardware behavior, or performance.",
+  "implemented": {
+    "destination_integrity": "The receipt records requested/resolved paths, pre-run state, staged identity, and published identity. A changed final destination, nonzero runner, timeout, missing staged output, malformed output, invalid NR, bad seal, or promotion error leaves the existing destination unpromoted.",
+    "discovery_boundary": "Public select_methods retains literal any_model tag behavior; assess_methods retains its established any_model wildcard eligibility behavior.",
+    "freshness_and_promotion": "The runner writes to a unique same-directory staging path. A regular non-symlink staged output is required; the actual bound verifier and legacy seal rule must pass before atomic replace promotes it to the requested destination.",
+    "legacy_compatibility": "The historical Flash sorted-key/default-separator payload seal is now named seal_payload_sha256_v1 and used by both producer and automatic-reuse verifier. Historical method_reuse.v1 receipts remain unmodified evidence.",
+    "typed_adapter": "The registry admits only flash_complete_nr.v1 with nr_container_validate.v1, explicit paths, symbol, and a 120-second timeout. Unknown shapes or kinds are refused before subprocess launch.",
+    "verification_scope": "nr_container.validate is recorded as an NR portability/container and payload-seal integrity check only. It is not treated as a capability verifier."
+  },
+  "recorded_at": "2026-09-12T04:49:44-04:00",
+  "runtime": {
+    "daemon_or_service_restart": false,
+    "deployment": false,
+    "gpu_or_ane_execution": false,
+    "model_execution": false,
+    "weights_loaded": false
+  },
+  "schema": "hawking.gravity.method_execution.unification.receipt.v1",
+  "scope": {
+    "adapter": "flash-complete-nr-accounting-v1",
+    "canonical_owner": "tools/foundry/query_gravity_methods.py::reuse_method",
+    "contract": "A selected automatic method emits hawking.gravity.method_execution.v2 with bound observation, registry, input, runner, verifier, invocation, output, and claim-boundary evidence.",
+    "migrated_path": "--reuse-observation -> flash-complete-nr-accounting-v1 -> tools/flash_complete_nr.py -> tools/nr_container.py:validate"
+  },
+  "size_ledger": {
+    "canonical_execution_owner": {
+      "added": 632,
+      "deleted": 70,
+      "file": "tools/foundry/query_gravity_methods.py",
+      "net": 562
+    },
+    "evidence_receipt": {
+      "added": 79,
+      "deleted": 0,
+      "file": "receipts/future/HAWKING_GRAVITY_METHOD_EXECUTION_20260912.json",
+      "net": 79
+    },
+    "interpretation": "This safety tranche deliberately grows the one existing automatic path while replacing its direct-to-final implementation. The ledger includes canonical code, the typed adapter, shared seal rule, regression coverage, and this evidence receipt. No claim of net codebase reduction is made until related duplicate execution/proof paths are migrated or retired.",
+    "producer_adapter": {
+      "added": 2,
+      "deleted": 2,
+      "file": "tools/flash_complete_nr.py",
+      "net": 0
+    },
+    "regression_tests": {
+      "added": 319,
+      "deleted": 7,
+      "file": "tools/foundry/tests/test_query_gravity_methods.py",
+      "net": 312
+    },
+    "shared_seal_owner": {
+      "added": 11,
+      "deleted": 0,
+      "file": "tools/nr_container.py",
+      "net": 11
+    },
+    "total": {
+      "added": 1053,
+      "deleted": 81,
+      "net": 972
+    },
+    "typed_registry_adapter": {
+      "added": 10,
+      "deleted": 2,
+      "file": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "net": 8
+    }
+  },
+  "status": "OFFLINE_TYPED_METHOD_EXECUTION_VERIFIED",
+  "validation": {
+    "focused_python": "python3 -m pytest tools/foundry/tests/test_query_gravity_methods.py tools/test_flash_complete_nr_accounting.py tools/test_odyssey_costmodel.py tools/odyssey/test_noetic_representation_chain.py -q: 48 passed",
+    "historical_nr": "python3 tools/nr_container.py --validate receipts/headless/FLASH_NR_AUTOMATIC_REUSE_20260912.nr.json: PASS; --negative-test rejected injected machine-specific fields as required.",
+    "real_cli_path": "Temporary observed-traits input through query_gravity_methods.py --reuse-observation: exit 0; EXECUTED_VERIFIED; v2 receipt; verifier executed; atomic promotion; no staging leftovers.",
+    "regressions": "Covers literal discovery versus wildcard eligibility, real adapter success, excluded-feature and missing-input refusal, output symlink refusal, zero-exit/no-write, staged promotion over existing output, malformed/machine-specific/bad-seal output, nonzero, timeout, runner/verifier mismatch, destination race, historical v1 receipts, and historical Flash seal compatibility.",
+    "static": "python3 -m py_compile changed Python files; python3 -m json.tool tools/foundry/GRAVITY_METHOD_REGISTRY.json; git diff --check: passed."
+  }
+}

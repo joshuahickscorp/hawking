@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.rust.source_safetensors.unification.receipt.v1",
+  "status": "OFFLINE_SOURCE_SAFETENSORS_OWNER_VERIFIED",
+  "recorded_at": "2026-09-12T05:23:40-04:00",
+  "base_commit": "f17e6a232f746e43c1de96ce6dbf1e3d1412664c",
+  "scope": {
+    "canonical_owner": "crates/hawking-core/src/model/source_safetensors.rs::read_safetensors_header",
+    "visibility": "private to crate::model and its child source-index modules",
+    "migrated_consumers": [
+      "qwen30_source_bf16_layer_major::SourceBf16Index::open",
+      "qwen80_source_bf16_layer_major::SourceBf16Index::open"
+    ]
+  },
+  "duplicate_evidence": {
+    "prior_spans": "The prior Qwen30 and Qwen80 SafetensorsHeader, SafetensorsTensorInfo, and read_safetensors_header spans were identical.",
+    "each_prior_span": {
+      "lines": 96,
+      "bytes": 3271,
+      "sha256": "a364e61b2e17c9bc90fda9f32f5f1a9605026322585eed8d28b7397ac283b20a"
+    },
+    "equivalence_check": "The new parser body matches the prior Qwen30 parser after only the private function visibility and named MAX_HEADER_BYTES substitution."
+  },
+  "preserved_contract": {
+    "parser": "The shared leaf preserves the 64 MiB header cap, Error::Model messages, __metadata__ exclusion, usize-representable shape conversion, and raw u64 data-offset extraction. It deliberately does not add file-size, byte-geometry, contiguity, duplicate-name, or offset-order validation.",
+    "qwen30_index": "Qwen30 keeps its existing policy: every mapped tensor must be BF16 or BFLOAT16 before its local inverted-offset check.",
+    "qwen80_index": "Qwen80 keeps its existing Flash-Next policy: non-BF16 control tensors are skipped before its local inverted-offset check, so its BF16 source view remains narrow.",
+    "separate_owners": "Gravity safetensors_inventory remains a stricter Error::Gravity byte-closure admission owner. Qwen38 remains unchanged because its structurally similar parser has different I/O and JSON error behavior."
+  },
+  "runtime": {
+    "model_execution": false,
+    "weights_loaded": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_service_restart": false,
+    "deployment": false
+  },
+  "validation": {
+    "focused": "cargo test -p hawking-core --lib source_safetensors -- --nocapture: 6 passed",
+    "shared_parser_cases": "Covers valid metadata/fields; short, zero, oversized, and truncated headers; invalid JSON and root; malformed descriptor fields; and Error::Model category/message boundaries.",
+    "consumer_smoke_cases": "Synthetic BF16 source/index opens and range-reads through both actual Qwen indexes. A mixed BF16/U32 source proves Qwen30 still rejects the mapped control tensor while Qwen80 still skips it and refuses a BF16-view read.",
+    "fast_core_check": "tools/ci/rust_test_fast.sh check core: passed; 135 direct integration sources across 10 packages",
+    "fast_core_compile": "tools/ci/rust_test_fast.sh compile core: passed",
+    "format_and_diff": "rustfmt --edition 2021 --check crates/hawking-core/src/model/source_safetensors.rs and git diff --check: passed"
+  },
+  "size_ledger": {
+    "production_owner_and_consumers": {
+      "added": 127,
+      "deleted": 196,
+      "net": -69,
+      "interpretation": "One private model-source parsing owner replaces two identical production spans, including the necessary caller imports and Qwen80 platform-specific Read import adjustment."
+    },
+    "hermetic_regressions": {
+      "added": 227,
+      "deleted": 0,
+      "net": 227,
+      "interpretation": "Parser and real-index regression coverage is intentionally model-free and payload-minimal."
+    },
+    "before_receipt_total": {
+      "added": 354,
+      "deleted": 196,
+      "net": 158
+    }
+  },
+  "claim_boundary": "This receipt proves the one shared Qwen30/Qwen80 source-header parsing owner and the listed caller migration. It does not claim source-wide safetensors unification, Qwen38 migration, Gravity admission equivalence, full model behavior, numerical parity, Flash execution, GPU/ANE behavior, runtime throughput, daemon behavior, or deployment."
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:24:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P15_AUTOTUNING",
+  "workunit_id": "WORKUNIT-20260918-C2621832",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-C2621832_RESULT_PACKET.json",
+  "local_verification": "Focused Auto/refill and remote-contract regression suite passes; broad MLX-dependent baseline remains separately tracked.",
+  "accepted_scope": "Read-only admission-policy evidence: auto_orchestration.py owns the unbounded MAX_* policy; legacy 12/4 and 1.25 values are telemetry only, with readiness, provider health, budget authority, dependency readiness, and disjoint writer leases gating admission.",
+  "follow_on_contract": "Verify the remaining refill/autotuning and supervisor-delta functions against those gates, then exercise focused policy/refill tests.",
+  "falsifier": "A live admission path using finite legacy values as a ceiling, or admitting without the required resource/provider/dependency/budget/scope gates, invalidates this policy map.",
+  "limitations": [
+    "The provider packet did not observe supervisor_watcher.py or all later auto_orchestration.py functions.",
+    "No release, phase completion, or production capacity guarantee is claimed."
+  ],
+  "claim_boundary": "Accepted as bounded read evidence only; P15 implementation and release remain incomplete."
+}

@@ -22,6 +22,27 @@ static inline float qwen_next_source_bf16_value(ushort bits)
     return as_type<float>(((uint)bits) << 16u);
 }
 
+// The source Flash trace exposes BF16 results while the native graph retains
+// an F32 carrier.  This helper is used only by explicit source-boundary
+// diagnostic siblings so the normal resident path does not inherit a hidden
+// precision cast or an extra command-buffer launch.
+static inline float qwen_next_source_bf16_roundtrip_rne(float value)
+{
+    const uint bits = as_type<uint>(value);
+    const uint low_lsb = (bits >> 16u) & 1u;
+    return as_type<float>((bits + 0x7fffu + low_lsb) & 0xffff0000u);
+}
+
+static inline float qwen_next_source_bf16_sigmoid(float input)
+{
+    const float value = qwen_next_source_bf16_roundtrip_rne(input);
+    const float exponential = qwen_next_source_bf16_roundtrip_rne(exp(abs(value)));
+    const float denominator = qwen_next_source_bf16_roundtrip_rne(1.0f + exponential);
+    const float inverse = qwen_next_source_bf16_roundtrip_rne(1.0f / denominator);
+    return qwen_next_source_bf16_roundtrip_rne(
+        value < 0.0f ? inverse : 1.0f - inverse);
+}
+
 #pragma clang fp contract(off)
 // Source-order dot helper for device-resident BF16 rows. Vector loads reduce
 // address-generation and transaction overhead while each product is still
@@ -34,6 +55,7 @@ static inline float qwen_next_source_bf16_dot_vec4(
 {
     float acc = 0.0f;
     uint column = 0u;
+    #pragma clang loop unroll_count(16)
     for (; column + 4u <= count; column += 4u) {
         const ushort4 packed_w = *(device const ushort4*)(weights + column);
         const float4 packed_x = *(device const float4*)(values + column);
@@ -58,6 +80,7 @@ static inline float qwen_next_source_bf16_dot_vec4_threadgroup(
 {
     float acc = 0.0f;
     uint column = 0u;
+    #pragma clang loop unroll_count(16)
     for (; column + 4u <= count; column += 4u) {
         const ushort4 packed_w = *(device const ushort4*)(weights + column);
         const float4 packed_x = *(threadgroup const float4*)(values + column);
@@ -72,6 +95,11 @@ static inline float qwen_next_source_bf16_dot_vec4_threadgroup(
     return acc;
 }
 
+// Vector-arithmetic Flash candidate. It keeps the same packed BF16/F32
+// loads and output-row ownership as the exact helper, but lets Metal lower
+// each four-value group as a vector dot. The accumulation association is
+// intentionally candidate-only; the caller must keep the flag off for the
+// source-order authority path.
 kernel void qwen_next_gated_delta_decode_single(
     device       float* state       [[buffer(0)]],
     device const float* query       [[buffer(1)]],
@@ -363,11 +391,14 @@ inline float qwen_next_causal_conv_update_source_bf16(
     for (uint tap = 0u; tap + 1u < state_len; ++tap) {
         conv_state[state_base + tap] = conv_state[state_base + tap + 1u];
     }
-    conv_state[state_base + state_len - 1u] = current;
-    sum = fma(current,
+    const float source_current = qwen_next_source_bf16_roundtrip_rne(current);
+    conv_state[state_base + state_len - 1u] = source_current;
+    sum = fma(source_current,
               qwen_next_source_bf16_value(conv_weights[weight_base + state_len]),
               sum);
-    return sum / (1.0f + exp(-sum));
+    const float source_sum = qwen_next_source_bf16_roundtrip_rne(sum);
+    const float sigmoid = qwen_next_source_bf16_sigmoid(source_sum);
+    return qwen_next_source_bf16_roundtrip_rne(source_sum * sigmoid);
 }
 
 // Source-BF16 split projection counterpart of
@@ -425,7 +456,8 @@ kernel void qwen_next_qkv_split_rearrange_conv_l2(
             value_channel,
             projected_qkv[value_channel],
             conv_kernel);
-        z[value_base + value_offset] = projected_z[value_base + value_offset];
+            z[value_base + value_offset] = qwen_next_source_bf16_roundtrip_rne(
+                projected_z[value_base + value_offset]);
     }
     query_sums[tid] = tid < key_head_dim ? query_local[tid] * query_local[tid] : 0.0f;
     key_sums[tid] = tid < key_head_dim ? key_local[tid] * key_local[tid] : 0.0f;
@@ -443,8 +475,10 @@ kernel void qwen_next_qkv_split_rearrange_conv_l2(
         const uint value_head_base = key_head * values_per_key_head;
         for (uint repeat = 0u; repeat < values_per_key_head; ++repeat) {
             const uint destination = (value_head_base + repeat) * key_head_dim + tid;
-            repeated_query[destination] = query_local[tid] * query_scale;
-            repeated_key[destination] = key_local[tid] * key_scale;
+            repeated_query[destination] = qwen_next_source_bf16_roundtrip_rne(
+                query_local[tid] * query_scale);
+            repeated_key[destination] = qwen_next_source_bf16_roundtrip_rne(
+                key_local[tid] * key_scale);
         }
     }
 }
@@ -465,15 +499,58 @@ kernel void qwen_next_ba_split_to_decay_beta_source_bf16(
 {
     const uint value_heads = key_heads * values_per_key_head;
     if (value_head >= value_heads) return;
-    const float b = projected_b[value_head];
-    const float a = projected_a[value_head];
+    const float b = qwen_next_source_bf16_roundtrip_rne(projected_b[value_head]);
+    const float a = qwen_next_source_bf16_roundtrip_rne(projected_a[value_head]);
     const float a_log = qwen_next_source_bf16_value(a_log_bf16[value_head]);
     const float dt_bias = qwen_next_source_bf16_value(dt_bias_bf16[value_head]);
-    const float x = a + dt_bias;
-    const float softplus = max(x, 0.0f) + log(1.0f + exp(-abs(x)));
+    const float x = qwen_next_source_bf16_roundtrip_rne(a + dt_bias);
+    const float softplus = qwen_next_source_bf16_roundtrip_rne(
+        max(x, 0.0f) + log(1.0f + exp(-abs(x))));
     const float g = -exp(a_log) * softplus;
     decay[value_head] = exp(g);
-    beta[value_head] = 1.0f / (1.0f + exp(-b));
+    beta[value_head] = qwen_next_source_bf16_sigmoid(b);
+}
+
+// Fused source-BF16 B/A projection and DeltaNet-control materialization.
+// The standalone split kernel above remains available to older callers and
+// diagnostic comparisons; the resident Flash graph uses this path so the two
+// small dependent launches become one without dropping the projected B/A
+// buffers that the existing diagnostic surface observes.
+#pragma clang fp contract(off)
+kernel void qwen_next_ba_project_to_decay_beta_source_bf16(
+    device const ushort* weight_b_bits [[buffer(0)]],
+    device const ushort* weight_a_bits [[buffer(1)]],
+    device const float* input          [[buffer(2)]],
+    device const ushort* a_log_bf16    [[buffer(3)]],
+    device const ushort* dt_bias_bf16  [[buffer(4)]],
+    device float* projected_b          [[buffer(5)]],
+    device float* projected_a          [[buffer(6)]],
+    device float* decay                [[buffer(7)]],
+    device float* beta                 [[buffer(8)]],
+    constant uint& key_heads           [[buffer(9)]],
+    constant uint& values_per_key_head [[buffer(10)]],
+    constant uint& input_dim           [[buffer(11)]],
+    uint value_head                    [[thread_position_in_grid]])
+{
+    const uint value_heads = key_heads * values_per_key_head;
+    if (value_head >= value_heads) return;
+
+    const ulong row_base = (ulong)value_head * (ulong)input_dim;
+    const float b = qwen_next_source_bf16_roundtrip_rne(
+        qwen_next_source_bf16_dot_vec4(weight_b_bits + row_base, input, input_dim));
+    const float a = qwen_next_source_bf16_roundtrip_rne(
+        qwen_next_source_bf16_dot_vec4(weight_a_bits + row_base, input, input_dim));
+    projected_b[value_head] = b;
+    projected_a[value_head] = a;
+
+    const float a_log = qwen_next_source_bf16_value(a_log_bf16[value_head]);
+    const float dt_bias = qwen_next_source_bf16_value(dt_bias_bf16[value_head]);
+    const float x = qwen_next_source_bf16_roundtrip_rne(a + dt_bias);
+    const float softplus = qwen_next_source_bf16_roundtrip_rne(
+        max(x, 0.0f) + log(1.0f + exp(-abs(x))));
+    const float g = -exp(a_log) * softplus;
+    decay[value_head] = exp(g);
+    beta[value_head] = qwen_next_source_bf16_sigmoid(b);
 }
 
 // Source `Qwen3NextRMSNormGated` for the DeltaNet output. The compact norm
@@ -547,9 +624,10 @@ kernel void qwen_next_deltanet_source_bf16_gated_rmsnorm(
     }
     const float inverse_rms = rsqrt(scratch[0] / float(value_head_dim) + eps);
     for (uint index = tid; index < value_head_dim; index += 256u) {
-        const float gate = 1.0f / (1.0f + exp(-z[base + index]));
+        const float gate = qwen_next_source_bf16_sigmoid(z[base + index]);
         const float weight = qwen_next_source_bf16_value(weight_bf16[index]);
-        output[base + index] = input[base + index] * inverse_rms * weight * gate;
+        output[base + index] = qwen_next_source_bf16_roundtrip_rne(
+            input[base + index] * inverse_rms * weight * gate);
     }
 }
 
@@ -1233,6 +1311,163 @@ kernel void qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4(
         (gate_acc / (1.0f + exp(-gate_acc))) * up_acc;
 }
 
+// Candidate physical variant of the compact routed/shared gate-up organ.
+// One SIMD group owns an (expert-route, intermediate-row) pair and reduces
+// the hidden dimension cooperatively.  This trades the source scalar
+// accumulation association for much higher parallelism; it is therefore
+// opt-in and must pass the separate Flash candidate/state contract before it
+// can leave the physical-laboratory path.
+#pragma clang fp contract(off)
+kernel void qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32(
+    device const ushort* gate_up_weights        [[buffer(0)]],
+    device const uint* route_ids                [[buffer(1)]],
+    device const uint* route_lut                 [[buffer(2)]],
+    device const float* input                   [[buffer(3)]],
+    device float* routed_output                 [[buffer(4)]],
+    device const ushort* shared_gate_weights    [[buffer(5)]],
+    device const ushort* shared_up_weights      [[buffer(6)]],
+    device float* shared_output                 [[buffer(7)]],
+    constant uint& compact_experts              [[buffer(8)]],
+    constant uint& top_k                        [[buffer(9)]],
+    constant uint& intermediate                 [[buffer(10)]],
+    constant uint& hidden                       [[buffer(11)]],
+    constant uint& source_experts               [[buffer(12)]],
+    uint group_id                               [[threadgroup_position_in_grid]],
+    uint lane_id                                [[thread_index_in_simdgroup]])
+{
+    const uint route = group_id / intermediate;
+    const uint row = group_id - route * intermediate;
+    if (route > top_k || row >= intermediate) return;
+
+    device const ushort* gate = nullptr;
+    device const ushort* up = nullptr;
+    device float* destination = nullptr;
+    uint destination_offset = 0u;
+    if (route == top_k) {
+        const ulong base = (ulong)row * (ulong)hidden;
+        gate = shared_gate_weights + base;
+        up = shared_up_weights + base;
+        destination = shared_output;
+        destination_offset = row;
+    } else {
+        const uint expert = route_ids[route];
+        if (expert >= source_experts) {
+            if (lane_id == 0u) routed_output[route * intermediate + row] = 0.0f;
+            return;
+        }
+        const uint slot = route_lut[expert];
+        if (slot >= compact_experts) {
+            if (lane_id == 0u) routed_output[route * intermediate + row] = 0.0f;
+            return;
+        }
+        const ulong expert_stride = (ulong)(2u * intermediate) * (ulong)hidden;
+        const ulong base = (ulong)slot * expert_stride + (ulong)row * (ulong)hidden;
+        gate = gate_up_weights + base;
+        up = gate + (ulong)intermediate * (ulong)hidden;
+        destination = routed_output;
+        destination_offset = route * intermediate + row;
+    }
+
+    float gate_acc = 0.0f;
+    float up_acc = 0.0f;
+    for (uint column = lane_id; column < hidden; column += 32u) {
+        const float x = input[column];
+        gate_acc = gate_acc + qwen_next_source_bf16_value(gate[column]) * x;
+        up_acc = up_acc + qwen_next_source_bf16_value(up[column]) * x;
+    }
+    const float gate_total = simd_sum(gate_acc);
+    const float up_total = simd_sum(up_acc);
+    if (lane_id == 0u) {
+        destination[destination_offset] =
+            (gate_total / (1.0f + exp(-gate_total))) * up_total;
+    }
+}
+
+// Exact-order cooperative sibling for the compact routed/shared gate-up
+// organ.  Each SIMD lane owns one contiguous hidden-dimension chunk, then
+// lane zero combines the 32 partials in chunk order.  The chunk partition and
+// the final addition order reproduce the scalar source-order reduction while
+// allowing the memory/ALU work to occupy a full SIMD group.  This is slower
+// than the unconstrained SIMD reduction on some devices, but it preserves
+// the route/state boundary needed by the native candidate control.
+#pragma clang fp contract(off)
+kernel void qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_exact_tg32(
+    device const ushort* gate_up_weights        [[buffer(0)]],
+    device const uint* route_ids                [[buffer(1)]],
+    device const uint* route_lut                 [[buffer(2)]],
+    device const float* input                   [[buffer(3)]],
+    device float* routed_output                 [[buffer(4)]],
+    device const ushort* shared_gate_weights    [[buffer(5)]],
+    device const ushort* shared_up_weights      [[buffer(6)]],
+    device float* shared_output                 [[buffer(7)]],
+    constant uint& compact_experts              [[buffer(8)]],
+    constant uint& top_k                        [[buffer(9)]],
+    constant uint& intermediate                 [[buffer(10)]],
+    constant uint& hidden                       [[buffer(11)]],
+    constant uint& source_experts               [[buffer(12)]],
+    uint group_id                               [[threadgroup_position_in_grid]],
+    uint lane_id                                [[thread_index_in_threadgroup]])
+{
+    const uint route = group_id / intermediate;
+    const uint row = group_id - route * intermediate;
+    if (route > top_k || row >= intermediate) return;
+
+    device const ushort* gate = nullptr;
+    device const ushort* up = nullptr;
+    device float* destination = nullptr;
+    uint destination_offset = 0u;
+    if (route == top_k) {
+        const ulong base = (ulong)row * (ulong)hidden;
+        gate = shared_gate_weights + base;
+        up = shared_up_weights + base;
+        destination = shared_output;
+        destination_offset = row;
+    } else {
+        const uint expert = route_ids[route];
+        if (expert >= source_experts) {
+            if (lane_id == 0u) routed_output[route * intermediate + row] = 0.0f;
+            return;
+        }
+        const uint slot = route_lut[expert];
+        if (slot >= compact_experts) {
+            if (lane_id == 0u) routed_output[route * intermediate + row] = 0.0f;
+            return;
+        }
+        const ulong expert_stride = (ulong)(2u * intermediate) * (ulong)hidden;
+        const ulong base = (ulong)slot * expert_stride + (ulong)row * (ulong)hidden;
+        gate = gate_up_weights + base;
+        up = gate + (ulong)intermediate * (ulong)hidden;
+        destination = routed_output;
+        destination_offset = route * intermediate + row;
+    }
+
+    threadgroup float gate_partials[32];
+    threadgroup float up_partials[32];
+    const uint chunk = (hidden + 31u) / 32u;
+    const uint begin = lane_id * chunk;
+    const uint end = min(begin + chunk, hidden);
+    float gate_acc = 0.0f;
+    float up_acc = 0.0f;
+    for (uint column = begin; column < end; ++column) {
+        const float x = input[column];
+        gate_acc = gate_acc + qwen_next_source_bf16_value(gate[column]) * x;
+        up_acc = up_acc + qwen_next_source_bf16_value(up[column]) * x;
+    }
+    gate_partials[lane_id] = gate_acc;
+    up_partials[lane_id] = up_acc;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lane_id == 0u) {
+        float gate_total = 0.0f;
+        float up_total = 0.0f;
+        for (uint lane = 0u; lane < 32u; ++lane) {
+            gate_total = gate_total + gate_partials[lane];
+            up_total = up_total + up_partials[lane];
+        }
+        destination[destination_offset] =
+            (gate_total / (1.0f + exp(-gate_total))) * up_total;
+    }
+}
+
 #pragma clang fp contract(off)
 kernel void qwen_next_bf16_compact_expert_down(
     device const ushort* down_weights [[buffer(0)]],
@@ -1703,6 +1938,87 @@ kernel void qwen_next_hyperconnection_grouped_rmsnorm(
     }
 }
 
+// Exact source-order norm with parallel output materialization.  Lane zero
+// owns the same left-to-right square accumulation as the fused HC kernels;
+// the remaining lanes only distribute the independent normalized writes.
+#pragma clang fp contract(off)
+kernel void qwen_next_hyperconnection_grouped_rmsnorm_serial(
+    device const float* input        [[buffer(0)]],
+    device const ushort* weight_bf16 [[buffer(1)]],
+    device float* output              [[buffer(2)]],
+    constant uint& hidden             [[buffer(3)]],
+    constant uint& streams            [[buffer(4)]],
+    constant float& eps               [[buffer(5)]],
+    threadgroup float* scratch        [[threadgroup(0)]],
+    uint stream                       [[threadgroup_position_in_grid]],
+    uint tid                          [[thread_index_in_threadgroup]],
+    uint tg_size                      [[threads_per_threadgroup]])
+{
+    if (stream >= streams) return;
+    const uint stream_start = stream * hidden;
+    if (tid == 0u) {
+        float sum = 0.0f;
+        for (uint index = 0u; index < hidden; ++index) {
+            const float value = input[stream_start + index];
+            sum += value * value;
+        }
+        scratch[0] = sum;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float inverse_rms = rsqrt(scratch[0] / float(hidden) + eps);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const uint id = stream_start + index;
+        const float scale = 1.0f + qwen_next_hc_bf16_value(weight_bf16[id]);
+        output[id] = input[id] * inverse_rms * scale;
+    }
+}
+
+// Bounded source-boundary diagnostic: preserve a full contiguous pairwise
+// F32 reduction tree for one HyperConnection stream.  The production kernel
+// above remains the default strided reduction.  Here lane 0 performs only the
+// reduction after all lanes have materialized their squares, which makes the
+// order explicit without introducing a second source-runtime dependency.
+kernel void qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise(
+    device const float* input        [[buffer(0)]],
+    device const ushort* weight_bf16 [[buffer(1)]],
+    device float* output              [[buffer(2)]],
+    constant uint& hidden              [[buffer(3)]],
+    constant uint& streams             [[buffer(4)]],
+    constant float& eps                [[buffer(5)]],
+    threadgroup float* scratch         [[threadgroup(0)]],
+    uint stream                        [[threadgroup_position_in_grid]],
+    uint tid                           [[thread_index_in_threadgroup]],
+    uint tg_size                       [[threads_per_threadgroup]])
+{
+    if (stream >= streams || hidden == 0u) return;
+    const uint stream_start = stream * hidden;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float value = input[stream_start + index];
+        scratch[index] = value * value;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        uint remaining = hidden;
+        while (remaining > 1u) {
+            const uint destinations = (remaining + 1u) >> 1u;
+            for (uint destination = 0u; destination < destinations; ++destination) {
+                const uint left = destination << 1u;
+                const uint right = left + 1u;
+                scratch[destination] = scratch[left]
+                    + (right < remaining ? scratch[right] : 0.0f);
+            }
+            remaining = destinations;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float inverse_rms = rsqrt(scratch[0] / float(hidden) + eps);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const uint id = stream_start + index;
+        const float scale = 1.0f + qwen_next_hc_bf16_value(weight_bf16[id]);
+        output[id] = input[id] * inverse_rms * scale;
+    }
+}
+
 kernel void qwen_next_hyperconnection_silu_scale(
     device const float* input [[buffer(0)]],
     device float* output       [[buffer(1)]],
@@ -1713,6 +2029,48 @@ kernel void qwen_next_hyperconnection_silu_scale(
     if (id >= elements) return;
     const float value = input[id] / divisor;
     output[id] = value / (1.0f + exp(-value));
+}
+
+// Source-boundary diagnostic sibling: retain the source BF16 output seam in
+// the existing F32 graph carrier without introducing a separate round-trip
+// dispatch between the low-rank activation and its consumer.
+kernel void qwen_next_hyperconnection_silu_scale_source_bf16(
+    device const float* input [[buffer(0)]],
+    device float* output       [[buffer(1)]],
+    constant uint& elements    [[buffer(2)]],
+    constant float& divisor    [[buffer(3)]],
+    uint id                    [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    // MLX's BF16 sigmoid uses a sign-stable formulation and keeps the BF16
+    // carrier through the denominator and reciprocal before sign selection.
+    const float value = qwen_next_source_bf16_roundtrip_rne(input[id] / divisor);
+    const float sigmoid = qwen_next_source_bf16_sigmoid(value);
+    output[id] = qwen_next_source_bf16_roundtrip_rne(value * sigmoid);
+}
+
+// Source-boundary diagnostic sibling of `qwen_next_hyperconnection_read_mix`.
+// MLX materializes BF16 sigmoid, elementwise-product, and reduction values
+// before its four-stream mean; retain the F32 carrier only between explicit
+// BF16 round trips.
+kernel void qwen_next_hyperconnection_read_mix_source_bf16(
+    device const float* normalized [[buffer(0)]],
+    device const float* gate_logits [[buffer(1)]],
+    device float* output            [[buffer(2)]],
+    constant uint& hidden           [[buffer(3)]],
+    constant uint& streams          [[buffer(4)]],
+    uint id                         [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    float sum = 0.0f;
+    for (uint stream = 0u; stream < streams; ++stream) {
+        const uint offset = stream * hidden + id;
+        const float gate = qwen_next_source_bf16_sigmoid(gate_logits[offset]);
+        const float state = qwen_next_source_bf16_roundtrip_rne(normalized[offset]);
+        sum = qwen_next_source_bf16_roundtrip_rne(
+            sum + qwen_next_source_bf16_roundtrip_rne(gate * state));
+    }
+    output[id] = qwen_next_source_bf16_roundtrip_rne(sum / float(streams));
 }
 
 kernel void qwen_next_hyperconnection_read_mix(
@@ -1729,6 +2087,62 @@ kernel void qwen_next_hyperconnection_read_mix(
         const uint offset = stream * hidden + id;
         const float gate = 1.0f / (1.0f + exp(-gate_logits[offset]));
         sum += gate * normalized[offset];
+    }
+    output[id] = sum / float(streams);
+}
+
+// Exact-order split HC pair: down projection and block injection consume the
+// same normalized vector, so their independent rows can share one launch.
+// The source-order dot helper is unchanged; this only removes a dispatch.
+#pragma clang fp contract(off)
+kernel void qwen_next_hyperconnection_down_block_vec4(
+    device const ushort* down_weight  [[buffer(0)]],
+    device const ushort* block_weight [[buffer(1)]],
+    device const float* normalized    [[buffer(2)]],
+    device float* low_rank             [[buffer(3)]],
+    device float* block_logits         [[buffer(4)]],
+    constant uint& down_rows           [[buffer(5)]],
+    constant uint& block_rows          [[buffer(6)]],
+    constant uint& cols                [[buffer(7)]],
+    uint row                           [[thread_position_in_grid]])
+{
+    if (row >= max(down_rows, block_rows) || (cols & 3u) != 0u) return;
+    if (row < down_rows) {
+        const ulong base = (ulong)row * (ulong)cols;
+        low_rank[row] = qwen_next_source_bf16_dot_vec4(
+            down_weight + base, normalized, cols);
+    }
+    if (row < block_rows) {
+        const ulong base = (ulong)row * (ulong)cols;
+        block_logits[row] = qwen_next_source_bf16_dot_vec4(
+            block_weight + base, normalized, cols);
+    }
+}
+
+// Exact-order split HC pair: each hidden output owns the four stream-local
+// up-projection rows and immediately performs the existing read mix.  The
+// gate-logit buffer is still populated for parity/diagnostic consumers.
+#pragma clang fp contract(off)
+kernel void qwen_next_hyperconnection_up_read_mix_vec4(
+    device const ushort* up_weight          [[buffer(0)]],
+    device const float* low_rank_activation [[buffer(1)]],
+    device const float* normalized          [[buffer(2)]],
+    device float* gate_logits               [[buffer(3)]],
+    device float* output                    [[buffer(4)]],
+    constant uint& hidden                   [[buffer(5)]],
+    constant uint& streams                  [[buffer(6)]],
+    constant uint& low_rank_width           [[buffer(7)]],
+    uint id                                 [[thread_position_in_grid]])
+{
+    if (id >= hidden || (low_rank_width & 3u) != 0u) return;
+    float sum = 0.0f;
+    for (uint stream = 0u; stream < streams; ++stream) {
+        const uint offset = stream * hidden + id;
+        const ulong base = (ulong)offset * (ulong)low_rank_width;
+        const float gate_logit = qwen_next_source_bf16_dot_vec4(
+            up_weight + base, low_rank_activation, low_rank_width);
+        gate_logits[offset] = gate_logit;
+        sum += (1.0f / (1.0f + exp(-gate_logit))) * normalized[offset];
     }
     output[id] = sum / float(streams);
 }
@@ -1773,9 +2187,13 @@ kernel void qwen_next_hyperconnection_input_fused(
         scratch[tid] = sum;
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+    if (tid < streams) {
+        scratch[tid] = rsqrt(scratch[tid] / float(hidden) + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint id = tid; id < elements; id += tg_size) {
         const uint stream = id / hidden;
-        const float inv = rsqrt(scratch[stream] / float(hidden) + eps);
+        const float inv = scratch[stream];
         normalized[id] = input[id] * inv * (1.0f + qwen_next_hc_bf16_value(norm_weight[id]));
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
@@ -1844,9 +2262,13 @@ kernel void qwen_next_hyperconnection_input_fused_with_block(
         scratch[tid] = sum;
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+    if (tid < streams) {
+        scratch[tid] = rsqrt(scratch[tid] / float(hidden) + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint id = tid; id < elements; id += tg_size) {
         const uint stream = id / hidden;
-        const float inv = rsqrt(scratch[stream] / float(hidden) + eps);
+        const float inv = scratch[stream];
         normalized[id] = input[id] * inv * (1.0f + qwen_next_hc_bf16_value(norm_weight[id]));
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
@@ -1916,16 +2338,19 @@ kernel void qwen_next_hyperconnection_input_fused_with_block_router_topk(
     constant uint& top_k                      [[buffer(23)]],
     constant float& tie_epsilon               [[buffer(24)]],
     constant uint& normalize_topk             [[buffer(25)]],
+    constant uint& compact_outputs            [[buffer(26)]],
     threadgroup float* scratch                [[threadgroup(0)]],
     uint tid                                  [[thread_index_in_threadgroup]],
     uint tg_size                              [[threads_per_threadgroup]])
 {
     const uint elements = hidden * streams;
     const uint stage_offset = streams;
-    const uint work_offset = ((stage_offset + hidden + 3u) / 4u) * 4u;
+    const uint low_rank_offset = stage_offset + hidden;
+    const uint work_offset = ((low_rank_offset + low_rank_width + 3u) / 4u) * 4u;
     const uint red_val_offset = work_offset + n_experts;
     const uint red_idx_offset = ((red_val_offset + tg_size + 3u) / 4u) * 4u;
     threadgroup float* output_stage = scratch + stage_offset;
+    threadgroup float* low_rank_stage = scratch + low_rank_offset;
     threadgroup float* work = scratch + work_offset;
     threadgroup float* red_val = scratch + red_val_offset;
     threadgroup uint* red_idx = (threadgroup uint*)(scratch + red_idx_offset);
@@ -1940,27 +2365,45 @@ kernel void qwen_next_hyperconnection_input_fused_with_block_router_topk(
         scratch[tid] = sum;
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+    if (tid < streams) {
+        scratch[tid] = rsqrt(scratch[tid] / float(hidden) + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint id = tid; id < elements; id += tg_size) {
         const uint stream = id / hidden;
-        const float inv = rsqrt(scratch[stream] / float(hidden) + eps);
+        const float inv = scratch[stream];
         normalized[id] = input[id] * inv * (1.0f + qwen_next_hc_bf16_value(norm_weight[id]));
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint row = tid; row < low_rank_width; row += tg_size) {
         const ulong base = (ulong)row * (ulong)elements;
-        low_rank[row] = qwen_next_source_bf16_dot_vec4(
+        const float value = qwen_next_source_bf16_dot_vec4(
             down_weight + base, normalized, elements);
+        if (compact_outputs != 0u) {
+            low_rank_stage[row] = value;
+        } else {
+            low_rank[row] = value;
+        }
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint id = tid; id < low_rank_width; id += tg_size) {
-        const float value = low_rank[id] / divisor;
-        low_rank_activation[id] = value / (1.0f + exp(-value));
+        const float value = compact_outputs != 0u ? low_rank_stage[id] : low_rank[id];
+        const float activation = value / divisor;
+        const float silu = activation / (1.0f + exp(-activation));
+        if (compact_outputs != 0u) {
+            low_rank_stage[id] = silu;
+        } else {
+            low_rank_activation[id] = silu;
+        }
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint row = tid; row < elements; row += tg_size) {
         const ulong base = (ulong)row * (ulong)low_rank_width;
-        gate_logits[row] = qwen_next_source_bf16_dot_vec4(
-            up_weight + base, low_rank_activation, low_rank_width);
+        gate_logits[row] = compact_outputs != 0u
+            ? qwen_next_source_bf16_dot_vec4_threadgroup(
+                up_weight + base, low_rank_stage, low_rank_width)
+            : qwen_next_source_bf16_dot_vec4(
+                up_weight + base, low_rank_activation, low_rank_width);
     }
     threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
     for (uint id = tid; id < hidden; id += tg_size) {
@@ -1989,7 +2432,9 @@ kernel void qwen_next_hyperconnection_input_fused_with_block_router_topk(
         const ulong row_base = (ulong)expert * (ulong)hidden;
         const float acc = qwen_next_source_bf16_dot_vec4_threadgroup(
             router_weights + row_base, output_stage, hidden);
-        router_logits[expert] = acc;
+        if (compact_outputs == 0u) {
+            router_logits[expert] = acc;
+        }
         work[expert] = acc;
     }
     if (tid == 0u) {

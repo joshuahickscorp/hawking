@@ -180,7 +180,7 @@ def test_no_negative_control_left_in_source():
     text = Path(harness.__file__).read_text(encoding="utf-8")
     assert "MAX_REPAIR_DEPTH = 12" in text  # the control exists
     # The production modules we import must still carry the real bound.
-    from hcli.workunit import MAX_REPAIR_DEPTH, MAX_REPAIRS_PER_ROOT
+    from hawking.workunit import MAX_REPAIR_DEPTH, MAX_REPAIRS_PER_ROOT
 
     assert MAX_REPAIR_DEPTH == 3
     assert MAX_REPAIRS_PER_ROOT == 6

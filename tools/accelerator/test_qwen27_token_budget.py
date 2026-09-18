@@ -12,6 +12,7 @@ def test_qwen27_budget_separates_static_bytes_from_missing_physical_metrics():
     body = budget.build_budget(repo_root=REPO)
     assert body["schema"] == budget.SCHEMA
     assert body["status"] == "PLANNED_UNTIL_NATIVE_PROTECTED_EXECUTION"
+    assert body["baseline"]["profile"] == "hawking/hawking-native.sealed-3.14.json"
     assert body["source_byte_denominator"]["active_weight_bytes_per_token"] == 9_878_901_136
     assert len(body["source_byte_denominator"]["regions"]) == 14
     assert all(value is None for value in body["system_ledger"].values())

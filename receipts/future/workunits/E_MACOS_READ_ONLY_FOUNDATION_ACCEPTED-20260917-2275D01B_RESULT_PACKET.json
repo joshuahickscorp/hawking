@@ -1,0 +1,101 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 11,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "bc2f3c20651c9585f5ae13646447f22605553dba051c26d432442b73c5000e98",
+  "evidence": [
+    {
+      "at": "2026-09-18T00:39:55.430769+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T00:39:55.430787+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T00:39:55.432598+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Executing parallel reads of contract, tool, and test files plus Phase G search.\"],\"sources\":[],\"recommendations\":[],\"unresolved_questions\":[],\"child_worker_ids\":[],\"status\":\"IN_PROGRESS\",\"next_action\":\"fs_read x3 + fs_sear",
+      "outcome": "CONTINUE",
+      "reply_chars": 385,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T00:41:21.210053+00:00",
+      "calls_used": 11,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T00:41:21.210089+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T00:41:21.219709+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\": [\"document.extract contract (hawking/perception/document_extract_contract.py) is a typed fail-closed admission seam: SCHEMA=hawking.document_extract.contract.v1, MAX_SOURCE_BYTES=64MiB; DocumentExtractRequest.validate() enf",
+      "outcome": "CONTINUE",
+      "reply_chars": 4687,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\": [\"document.extract contract (hawking/perception/document_extract_contract.py) is a typed fail-closed admission seam: SCHEMA=hawking.document_extract.contract.v1, MAX_SOURCE_BYTES=64MiB; DocumentExtractRequest.validate() enforces artifact- id prefix, 64-hex sha256 digest, media_type with '/', bounded byte_count, non-empty workspace_id; red_before_green() is ok only for RED baseline + GREEN result + matching source_digest + extracted_digest + verified=True; extraction_digest() is sha256 over UTF-8 text.\", \"Live tool (hawking/perception/tools.py lines 109-137): validates digest format (ValueError), opens project via _open with path-escape refusal, FileNotFoundError for unadmitted artifacts, REFUSED_BOUNDS over max_bytes, UNSUPPORTED_MEDIA outside text//json/xml, else UTF-8 decode + observation receipt (status=EXTRACTED) returning status=GREEN with extracted_digest, full text, verified=True, receipt_id.\", \"Perception registry (hawking/perception/host.py) is an in-process ToolManager (add/get/remove/list; RegisteredTool.run wraps errors as ToolError); TOOL_NAMES allowlists 10 tools including document.extract; no MCP/stdio/JSON-RPC surface, so validation is pure in-process with no network or optional deps.\", \"Coverage is exactly one test (hawking/tests/test_document_extract_tool.py): GREEN for text/markdown, UNSUPPORTED_MEDIA for image/png. Untested: REFUSED_BOUNDS, unadmitted digest, malformed digest, non-UTF-8 payload, red_before_green contract.\", \"workunit_owner.py lines 3639/3726/3781-3783 embed DOCUMENT_SCHEMA=hawking.document.extract.v1 and registry.get/invoke('document.extract') call sites - a reusable registry-door acceptance pattern.\", \"Three schema strings coexist (hawking.document.extract.v1 vs hawking.document_extract.contract.v1 vs hawking.document_extract.result.v1); acceptance must pin one to avoid false-green.\", \"No source names 'Phase G'; scope must bind to the contract/tool/test files directly.\"], \"sources\": [\"hawking/perception/document_extract_contract.py (full read, sha256 810bb637...b3fa7)\", \"hawking/perception/tools.py lines 100-200 (sha256 3f648d29...f6106)\", \"hawking/perception/host.py (full read, sha256 85a78af6...2464)\", \"hawking/tests/test_document_extract_tool.py (full read, sha256 731b3ba6...62d4b1)\", \"hawking/workunit_owner.py lines 3639/3726/3781-3783 (search hits)\", \"campaign_state: nx_disposition ZERO-measured; 31 priors; continuation GOAL-F4F72EFC0A/t14\"], \"recommendations\": [\"Plan: (1) RED - add four tests to test_document_extract_tool.py: REFUSED_BOUNDS via small max_bytes, FileNotFoundError for unadmitted digest, ValueError for malformed digest, red_before_green ok=true only on full RED->GREEN digest continuity. (2) GREEN - run the focused file; the tool already implements all four behaviors, so this is coverage-closing with no production edit expected. (3) Evidence owed: tests.run receipt returncode=0 with per-test counts, plus a red_before_green ok=true receipt against the text/markdown fixture.\", \"Risks: (a) UnicodeDecodeError on non-UTF-8 bytes under text/* is untested - decide fail-closed raise vs typed REFUSED_DECODE, no behavior change without RED-first test; (b) full text returned inline up to 64MiB - assert byte counts, not payload echo, for large fixtures; (c) schema-string drift across three v1 identifiers - pin one in acceptance.\", \"Kimi escalation NOT justified: surface is local, in-process, dependency-free; flash-class worker or direct h build suffices; paid escalation would violate the programme spend rule.\", \"No child spawned; remaining work is one bounded test edit plus one focused tests.run.\"], \"unresolved_questions\": [\"Is 'Phase G' defined in a supervisor-side document not projected here? No source hit exists.\", \"Should non-UTF-8 bytes under admitted text/* raise (current) or return typed REFUSED_DECODE?\", \"Which schema string is authoritative for acceptance: hawking.document.extract.v1, hawking.document_extract.contract.v1, or hawking.document_extract.result.",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-372aa72054884c66",
+  "worker_id": "hawking-worker-4f6be71de4474ac6",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-2275D01B"
+}

@@ -1,0 +1,179 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-SMALL-BODY-COHORT",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + every safetensors header per specimen; tied-embedding verdicts settled by FULL-TENSOR SHA256 comparison where a separate head tensor exists, never from the config flag). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY, COHORT PASS. Four small bodies answered together because S003's question is comparative. ANATOMY ONLY -- no capability battery, which stays gated on G004/G005.",
+ "specimens": {
+  "Falcon3-1B-Instruct": {
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "model_type": "llama",
+   "n_layer": 18,
+   "hidden_size": 2048,
+   "n_attn_heads": 8,
+   "n_kv_heads": 4,
+   "vocab_size": 131072,
+   "context": 8192,
+   "layer_types": null,
+   "total_params": 1669408768,
+   "total_params_B": 1.6694,
+   "total_bytes": 3338817536,
+   "total_gib": 3.11,
+   "dtype": [
+    "BF16"
+   ],
+   "embedding_frac_of_params_pct": 16.08,
+   "tied_embedding_test": {
+    "flag": false,
+    "separate_head_tensor_on_disk": true,
+    "wasted_bytes": 0,
+    "wasted_pct_of_checkpoint": 0.0,
+    "verdict": "NOT TIED -- embedding and head are genuinely independent weights"
+   }
+  },
+  "LFM2.5-1.2B-Instruct": {
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "model_type": "lfm2",
+   "n_layer": 16,
+   "hidden_size": 2048,
+   "n_attn_heads": 32,
+   "n_kv_heads": 8,
+   "vocab_size": 65536,
+   "context": 128000,
+   "layer_types": {
+    "conv": 10,
+    "full_attention": 6
+   },
+   "total_params": 1170340608,
+   "total_params_B": 1.1703,
+   "total_bytes": 2340681216,
+   "total_gib": 2.18,
+   "dtype": [
+    "BF16"
+   ],
+   "embedding_frac_of_params_pct": 11.47,
+   "tied_embedding_test": {
+    "flag": false,
+    "separate_head_tensor_on_disk": false,
+    "wasted_bytes": 0,
+    "wasted_pct_of_checkpoint": 0.0,
+    "verdict": "NOT TIED -- embedding and head are genuinely independent weights"
+   }
+  },
+  "LFM2.5-2.6B-Base": {
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "model_type": "lfm2",
+   "n_layer": 30,
+   "hidden_size": 2048,
+   "n_attn_heads": 32,
+   "n_kv_heads": 8,
+   "vocab_size": 128000,
+   "context": 128000,
+   "layer_types": {
+    "conv": 22,
+    "full_attention": 8
+   },
+   "total_params": 2697198592,
+   "total_params_B": 2.6972,
+   "total_bytes": 5394397184,
+   "total_gib": 5.024,
+   "dtype": [
+    "BF16"
+   ],
+   "embedding_frac_of_params_pct": 9.72,
+   "tied_embedding_test": {
+    "flag": true,
+    "separate_head_tensor_on_disk": false,
+    "byte_identical": null,
+    "wasted_bytes": 0,
+    "wasted_pct_of_checkpoint": 0.0,
+    "verdict": "CLEAN -- tied and stored once"
+   }
+  },
+  "Qwen3-Embedding-0.6B": {
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "model_type": "qwen3",
+   "n_layer": 28,
+   "hidden_size": 1024,
+   "n_attn_heads": 16,
+   "n_kv_heads": 8,
+   "vocab_size": 151669,
+   "context": 32768,
+   "layer_types": null,
+   "total_params": 595776512,
+   "total_params_B": 0.5958,
+   "total_bytes": 1191553024,
+   "total_gib": 1.11,
+   "dtype": [
+    "BF16"
+   ],
+   "embedding_frac_of_params_pct": 26.07,
+   "tied_embedding_test": {
+    "flag": true,
+    "separate_head_tensor_on_disk": false,
+    "byte_identical": null,
+    "wasted_bytes": 0,
+    "wasted_pct_of_checkpoint": 0.0,
+    "verdict": "CLEAN -- tied and stored once"
+   }
+  }
+ },
+ "TIED_EMBEDDING_TESTS_5_THROUGH_8": {
+  "wasteful": [],
+  "clean": [
+   "LFM2.5-2.6B-Base",
+   "Qwen3-Embedding-0.6B"
+  ],
+  "not_tied": [
+   "Falcon3-1B-Instruct",
+   "LFM2.5-1.2B-Instruct"
+  ],
+  "running_total_across_the_campaign": {
+   "wasteful": [
+    "iLLaDA-8B",
+    "Qwen3-0.6B"
+   ],
+   "clean": [
+    "pi0_base",
+    "ModernBERT-large",
+    "LFM2.5-2.6B-Base",
+    "Qwen3-Embedding-0.6B"
+   ],
+   "not_tied": [
+    "Falcon3-1B-Instruct",
+    "LFM2.5-1.2B-Instruct"
+   ]
+  },
+  "finding": "the rule keeps holding in the only way that matters: the config flag still predicts nothing, and the split is still decided per checkpoint. Every wasteful case is exact, zero-capability-cost reclaimable storage; every clean case proves the waste is avoidable rather than inherent to the format."
+ },
+ "LFM2_FAMILY_TRANSFER": {
+  "question": "LFM2-24B-A2B (discovered earlier this session) is conv + sparse-attention + MoE. Do the SMALL LFM2.5 bodies keep the conv/attention hybrid, and do they keep the MoE?",
+  "answer": "the conv/attention hybrid TRANSFERS and the MoE does NOT. LFM2.5-1.2B is 10 conv / 6 attention and LFM2.5-2.6B is 22 conv / 8 attention -- both dense, no expert tensors at all, where the 24B carried MoE FFN on 38 of 40 layers. So 'LFM2 = triple hybrid' is wrong as a family rule: the conv+attention token-mixing split is the family trait, and MoE is a scale-tier choice layered on top of it only at the large end.",
+  "conv_fraction": {
+   "LFM2.5-1.2B-Instruct": 0.625,
+   "LFM2.5-2.6B-Base": 0.733
+  },
+  "why_it_matters_for_gravity": "a rule keyed on 'LFM2 -> attack the expert organ' would find no expert organ here and silently do nothing. Architecture-family rules must be keyed on measured structure, not on the family NAME."
+ },
+ "RESIDENT_PULSAR_ANATOMY_per_S003": {
+  "note": "SIZE AND SHAPE ONLY. None of these has run a single HCLI WorkUnit, so nothing below is a capability claim -- S003's metric is VERIFIED ACCEPTED WORK / WALL / RESOURCES, and the numerator here is entirely unmeasured.",
+  "smallest_footprint": "Qwen3-Embedding-0.6B",
+  "longest_context": "LFM2.5-1.2B-Instruct",
+  "context_observation": "both LFM2.5 bodies advertise 128000-token context at 1.2B/2.6B -- far beyond anything else in this size class here (Falcon3-1B 8192, Qwen3-Embedding-0.6B 32768) and beyond the CURRENT RESIDENT's own 8192 max_seq_len. Context servability is an explicit S003 judging axis, and experiment 1's campaign hit the 8192 ceiling hard enough to need an admission guard -- so this is the one axis where a small body plausibly beats the 27B outright. UNTESTED.",
+  "embedding_overhead_warning": "Falcon3-1B spends a large share of a small budget on a 131072-entry vocabulary, and Qwen3-Embedding-0.6B likewise on 151669 -- at this scale the embedding table is a first-order term, not a rounding error, which inverts the usual assumption that the transformer stack dominates.",
+  "disqualified_for_resident": [
+   "Qwen3-Embedding-0.6B -- an EMBEDDING model: it scores text, it does not generate or call tools, so it cannot run a WorkUnit at all. Retained as a possible CEPHEID (independent calibrator) only."
+  ]
+ },
+ "obvious_representation_opportunities": [
+  "The wasteful tied-embedding cases are free storage, exactly as in iLLaDA/Qwen3-0.6B.",
+  "At 0.6-2.6B the embedding table is a first-order share of total bytes, so embedding-specific codecs matter far more here than they do at 24B+ -- the opposite of the MoE-organ priority this session derived from the large bodies."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No capability battery, no WorkUnit trial, no tool-reliability or malformed-call measurement -- all gated on G004/G005 per the standing resource law.",
+  "The 128k context claims are CONFIG ASSERTIONS by their authors, not measured servability."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMENS / QUALIFICATION CANDIDATES DEFERRED. The cohort's real yield is the LFM2 family-rule correction and the observation that a small body already advertises 15x the resident's context.",
+ "commit": "bdb3f3aa0",
+ "emitted_at": "2026-09-09T14:58:15Z"
+}

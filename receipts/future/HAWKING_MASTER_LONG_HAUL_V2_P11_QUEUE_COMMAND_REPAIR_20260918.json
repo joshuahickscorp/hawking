@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P11_NATIVE_PHYSICAL_QUEUE_COMMAND_REPAIR_V1",
+  "state": "IMPLEMENTED_ACCEPTED",
+  "accepted_workunit_id": "LOCAL-P11-QUEUE-COMMAND-REPAIR-20260918",
+  "owner": "tools/accelerator/physical_qualification.py::_hcli_qwen_command",
+  "changed_sources": [
+    "tools/accelerator/physical_qualification.py",
+    "tools/accelerator/architecture_atlas.py",
+    "tools/accelerator/test_physical_qualification.py"
+  ],
+  "repair": {
+    "old_command": "python3 -m hcli agentos protected-accelerator-bench",
+    "new_command": "python3 -m hawking protected-accelerator-bench",
+    "old_profile_path": "hcli/hawking-native.sealed-3.14.json",
+    "new_profile_path": "hawking/hawking-native.sealed-3.14.json",
+    "scope": "queue and architecture-atlas emission only; no physical run launched by the repair"
+  },
+  "regenerated_queue": {
+    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "fingerprint": "1bbc8035d053189e28705f3b04009ebc9b0c9f09fb19d95ef346963515a0d681",
+    "candidates": 16,
+    "ready": 13,
+    "work_units": 13,
+    "root_candidate": "qwen27-fast-profile",
+    "root_candidate_dependencies": []
+  },
+  "focused_tests": {
+    "command": "python3 -m pytest -q tools/accelerator/test_physical_qualification.py tools/accelerator/test_physical_graph_scoring.py tools/accelerator/test_backend_contract.py",
+    "result": "59 passed",
+    "git_diff_check": "PASS"
+  },
+  "claim_boundary": "The queue now emits a launchable current-repository command and profile path. This does not claim a physical benchmark passed; the protected window remains subject to the independent quiescence gate.",
+  "falsifier": "Any newly emitted Qwen27 work unit containing the obsolete hcli module/path, or a command that fails its current --help surface, invalidates this repair."
+}

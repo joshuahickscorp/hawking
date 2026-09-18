@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P2_HWEB_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-B5D5B3CA",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded HWEB contract only; no route mutation or release claim.",
+  "source_observation": {"owner": "hawking/serve.py", "sha256": "fe91362e5385eec04d7fbe0f187969e1d652ae1aed3c24c237d88e7ce0264e58", "observed_focus_bytes": 4000},
+  "focused_tests": [{"path": "hawking/tests/test_serve_openai_surface.py", "sha256": "3aec23f79b63e6249358de1add40a22baa7d88f0ad091fcec37bab4ab4693641"}],
+  "local_verification": {"command": "python3 -m pytest -q hawking/tests/test_serve_openai_surface.py", "result": "42 passed"},
+  "next_seam": "Keep make_handler's injected WebUI manager as the single product-command seam and preserve socket-level response-shape tests.",
+  "falsifier": "A product command bypasses the injected adapter or returns the wrong socket response shape, falsifying the contract."
+}

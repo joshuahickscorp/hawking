@@ -1,0 +1,2898 @@
+{
+  "argmax_tie_break": "lowest_token_id",
+  "dtype": "F32_LE",
+  "generated_token_ids": [
+    271,
+    248045
+  ],
+  "ple_execution": {
+    "execution_schedule": "exact_qwen4_exp_row_addressed_ple_and_experts_with_evaluated_sublayer_boundaries",
+    "inclusive": true,
+    "incremental_cache_continuity": true,
+    "instantiated_ple_layer_ids": [
+      1
+    ],
+    "row_addressed_storage_manifest": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/provider-ple-range-manifest.json",
+      "sha256": "4c90319bd24f9bb3bfba956eafdd6a7e929af73f0f3c679fef5f3b7943d6952e"
+    }
+  },
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "provider_artifacts": {
+    "implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+    "ple_storage_manifest_sha256": "4c90319bd24f9bb3bfba956eafdd6a7e929af73f0f3c679fef5f3b7943d6952e",
+    "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+    "runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+  },
+  "sampling": {
+    "do_sample": false,
+    "method": "greedy_argmax",
+    "temperature": 0
+  },
+  "schema": "hawking.flash.external_greedy_logits_trace.v1",
+  "seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+  "source": {
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+  },
+  "status": "SEALED_EXTERNAL_COMPLETE_SOURCE_GREEDY_LOGITS_TRACE",
+  "steps": [
+    {
+      "argmax_token_id": 271,
+      "elapsed_ns": 203568623000,
+      "expected_token_id": 271,
+      "generation_index": 0,
+      "incremental_execution_input_token_ids": [
+        5423,
+        799,
+        4581,
+        3817,
+        13
+      ],
+      "input_token_ids": [
+        5423,
+        799,
+        4581,
+        3817,
+        13
+      ],
+      "logits_f32": {
+        "bytes": 993280,
+        "dtype": "F32_LE",
+        "elements": 248320,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/logits-000000.f32",
+        "sha256": "990db10b7348cd7c030552d5a6a2f63a7809243f19cbac22c74e1f27ed32bcc8"
+      },
+      "state_boundary": {
+        "array_count": 122,
+        "arrays": [
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "0.0",
+            "sha256": "d3204783d6403e536f14496fb213de3c613c755116c29a4c4f41209e969637a3",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "0.1",
+            "sha256": "183158f10483648f4dde578d04c8d476c18aaca7ce64865b0fb282341f7fb863",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "1.0",
+            "sha256": "8899ddbf67b0ab56b9afddced67a1bc72832165f0224d81c08f824166430badf",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "1.1",
+            "sha256": "6d1f893cc5b01cdba8a146f8729f8d809119fc8f586c28327878851bded72d61",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 184320,
+            "dtype": "mlx.core.bfloat16",
+            "path": "1.2",
+            "sha256": "025dd5b5487a21efb3edacf7a8b5f58670c9888414fcc109a290e2869b367a19",
+            "shape": [
+              1,
+              9,
+              10240
+            ]
+          },
+          {
+            "bytes": 16,
+            "dtype": "mlx.core.int64",
+            "path": "1.3",
+            "sha256": "52022412028ae8d51be1e46c12d87a5ea3d3ce43e7febda4ced747417a19d138",
+            "shape": [
+              1,
+              2
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "2.0",
+            "sha256": "750d4c70e47e0e3583f9d6e93d98127f128c4ac1581e40713c0d8fe015692ec1",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "2.1",
+            "sha256": "2a0926bb983393baf7936e8322f6986d15577091f8dfc1cff8590bc5fa2be580",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "3.0",
+            "sha256": "717d54720337af6573c92192f71af29cc596ce900a13c56c775dadfb8e1a6480",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "3.1",
+            "sha256": "795bf252dd6d4670e2ff234c7ac0056b9ff065fde3cec6b710f884c74c1d4ec8",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "3.2",
+            "sha256": "5287f57c45cb4ca4e88a3d0f3f0ae91aed9658856420083db993624008ec2435",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "3.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "4.0",
+            "sha256": "be53658b7f19d83f8729b64e83e8a235b46760725490117712ad6f3954d78afa",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "4.1",
+            "sha256": "6caf732caa02e72f9cca426188946d97893940b2ea59f59f7571e63941326b1e",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "5.0",
+            "sha256": "963395cc0ed3c747be4171f21dbae414351dba2366220e1fffb3bc40858f2a34",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "5.1",
+            "sha256": "a5725b135d065f1daefbb977bf220530e68f29ef16754eb5e448087a89760e91",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "6.0",
+            "sha256": "1b3743334c3154c77448d5b9f57170a86248948974a4be2749077694fd50b580",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "6.1",
+            "sha256": "ef2ea3152c046bbd192987ad4c729bf2895019c52643e647b55a506fd7f9d79a",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "7.0",
+            "sha256": "7a2aac5c5350dddf1c898f767f1077cfb5b01c1662e17d946cff9d32d0cd2149",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "7.1",
+            "sha256": "6dfd998effac5f675c58d3bbef33f5bac94282732b6d172c606f4d8d7f553f56",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "7.2",
+            "sha256": "4c427971119e69e172f00aecb1d28265c0491ead5b91c738b7a063e2fff3948a",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "7.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "8.0",
+            "sha256": "17e8d940ffa3ce6fcd290e99cd5c0d562e47511ae9761f44137da9362a8ec8ce",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "8.1",
+            "sha256": "06655757198c766b8e389851e72ef21679557445fec65ea592b398afe44fde35",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "9.0",
+            "sha256": "744587aad73f927a1dfb3ba1973be9bf8940fe7ab63038c4fb634420643f07ce",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "9.1",
+            "sha256": "27fd515b28c1f86c2fcce57d0b549873f9726df309f41a293721eb10ac96407b",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "10.0",
+            "sha256": "54c8d549af681f452b83c26b34bec978fbfa44206014976ac61a8c8a3fe8fb40",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "10.1",
+            "sha256": "bd642eb632d10e2ee2f891df88398f3510b96d5bf80aa1412ab21bf2e4d9b539",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "11.0",
+            "sha256": "0ff1d1caf011574d3f3482d666ac966c04f891019f797e83bea5c3922a5fbd66",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "11.1",
+            "sha256": "4091024fe85be0f2b99a96038822dd60c6e5d81ae5ae0542abae974d3132dddd",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "11.2",
+            "sha256": "663f399b74f3b356b1238a6ecdee0dfb1ae123b61e09249b2a601f1a4ddc7db1",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "11.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "12.0",
+            "sha256": "bf20de8333d3f7747ea696b2f23ad4a4e417c6b91e2a93a4661640b1b4aee37d",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "12.1",
+            "sha256": "74d34d82118d3b0e5acd1c808532d05c10937c952425dfe5f19221c02fed9412",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "13.0",
+            "sha256": "9bdb2665243976d12ce1a0a7f32ff6fbc2a30555c0936afe40416977e6080b02",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "13.1",
+            "sha256": "b84e676b357aaa9be8359981cb4b90d772caf685720cf022f8464130978bf466",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "14.0",
+            "sha256": "52c622246e7f9d3909722239d756eb86d1b1bd674fc4547c78c292589fe788c4",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "14.1",
+            "sha256": "659c1ba22dfc26fb269aa9bcbfb204811b8e1882a22ef9c539089f70804fcd33",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "15.0",
+            "sha256": "6c82cd2ceb3fd1424a6d52f2fee336df9ad72987e8971ca2d82d66f727202350",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "15.1",
+            "sha256": "2121117e42b32e4825657d9647d5c7a4ad7fa45c75b31f4392d8aeb018c51a64",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "15.2",
+            "sha256": "39cc7a71870e7429838ed3895b67f8990a917a8c1c8f87eac0b7ce4b5eb63df5",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "15.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "16.0",
+            "sha256": "cb221f03c4f7885461865204e75fdb05c4fbf75890139a7b4382fc70987e5f9c",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "16.1",
+            "sha256": "cbba21b206788de9e660834966561b2f9b5afdbf7022bc3d89f39f26e8afff73",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "17.0",
+            "sha256": "7707d226e293a4ed5fc1a6f350ba9b8ca725a1df638a99b0b90a30d3f71fbe4a",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "17.1",
+            "sha256": "5ced0c2fa75b674f03ae3763699b335b2bdb07e4357bad8b8f8a3a41e10d9c6a",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "18.0",
+            "sha256": "df1e83f354382ea0d177c21a6bc4a1023091ff17ae4832d8e199bff743353fa8",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "18.1",
+            "sha256": "e076a414f232818bacb8dba45c4484d02f247d039e2e977d5ceb57cd47e222cc",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "19.0",
+            "sha256": "0b562a0807fd45ae93af91cefb539871f8fa82e1b6076d7a4e441cc4e178eba1",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "19.1",
+            "sha256": "69fffaeaf042b959747b9a67acae9c4a560db6b00b85d5284100a6fff7819d03",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "19.2",
+            "sha256": "87f3afe8c1c9b37a31d89d39823d93a95402fe631c29c7dd8a9c1bdd46007858",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "19.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "20.0",
+            "sha256": "dddcb708cea439a3ef02cd4cde068128b1e4457705df18b07a4144a698cc016a",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "20.1",
+            "sha256": "5f8021d4188a9f376054d3cc73ab018ae3823da2b4d056f324ba13472e601a8e",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "21.0",
+            "sha256": "3955bdff402f6472a8ff43258dc3adb87107e7579ed86a586f2787f6df855b15",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "21.1",
+            "sha256": "d08a2fad6e1f3f2c7c0230c1c70414d639ffde5c09749802741d85813e0de737",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "22.0",
+            "sha256": "0a928a401daeebb37e0b0bb2cc744ef18aca3c9488530a95c0b88eb028d1c9a4",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "22.1",
+            "sha256": "7750bea294c3c7a3bf7d4cdd94a0571f2102f9eb98c02fb5a2964c5997fdf430",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "23.0",
+            "sha256": "1088d2c6c37d8a35eb85adbf07fbc8a030306bd2dbebe54a4f7aa016bc6b6c6c",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "23.1",
+            "sha256": "4dc7008b0cb384f981d91eb3378d295abec56a8d88f1ab9c4c99917359f1e534",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "23.2",
+            "sha256": "a2014708fac50555fd54abe7b50aa5c3f53ef705121e70bb4c24f8563605dce5",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "23.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "24.0",
+            "sha256": "995967639f32e62c9db171fe352fd602fa34d0d514c40c1da939fc00f2035677",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "24.1",
+            "sha256": "19892493791409be6caa4b19477c818a541867b5c5178e5ce6d0145e115f2299",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "25.0",
+            "sha256": "c9ba7e6d6d6fae878ae30dd59f7ec62a26e12a9048f8851e715e2309fa7051c7",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "25.1",
+            "sha256": "70b3f7da11b306994b902c582def58407bd1f2ce2544e8c608299cfbfa06eb2e",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "26.0",
+            "sha256": "96b7422cc8ad37326a5ab2196cb162220514e4bfcc21bb8193108ab399970639",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "26.1",
+            "sha256": "916a6936bdc24b657575140e719ebfcca6e710163b7b49f98b9a07b5ebc40140",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "27.0",
+            "sha256": "7ee96db2c2835170d4ea49e0a209334711597835fe1a84166d799c523a6dbb40",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "27.1",
+            "sha256": "7d78dec764cb628d0ea590638b505e62e87b321e6dba9895e3753b6bafc179c1",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "27.2",
+            "sha256": "4bce3284ea148473d82eecf92c365ade9b5416b867fe74f0b65eefdd757d8185",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "27.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "28.0",
+            "sha256": "dd061bcd8854b4a72c1f24ffff066272e2f42509b64b6d760c01e1a22a42393b",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "28.1",
+            "sha256": "d6a4c7ade08a39919245b2d1aaddd332aaa8f3e41c9ed340eeae7a2c861fe63b",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "29.0",
+            "sha256": "6ed71e8ea96879696a154daa2cfe0ba5be1b90f00dd7fde6f9f0895e23d793f7",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "29.1",
+            "sha256": "a9c71caa48efbbb70c2ea55e5781ddbc34c7b59383de5515b34e03e48423563f",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "30.0",
+            "sha256": "4b294e0f431cab25384e13fd75a549cb0988eb158f7a71efad15fd28dc540c03",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "30.1",
+            "sha256": "0f29ec7dc719f1716b4ea9c25a9fc2ef9d462cebbb1829e6e9b04fd60574d4e8",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "31.0",
+            "sha256": "2455b9b3d05bdc3ef55346ffdc2f9f8ebe052166eee73172dbd2d20d703db6ff",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "31.1",
+            "sha256": "0190de2825ccb2e239f2d588b4fe0d16e9d3d8329d83eed0326913efe611aada",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "31.2",
+            "sha256": "577dd741f0b8b6ba3f52dc1f2a8b76c76f88a05362151063257db3405396f7f2",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "31.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "32.0",
+            "sha256": "1a533629b47dc1bc0845c53e45a5715379c04cdf1b4f85acc32cfd786a9fe66c",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "32.1",
+            "sha256": "8dd306339c3fbb3091a23ab1b775b5b244c4c96a2df65cf3ac85b39e14eebd6f",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "33.0",
+            "sha256": "254fc324906329e1e56e0957df70dcf94909e64c2bbd50d55a2e06421b487d66",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "33.1",
+            "sha256": "2abadaf44f83d3e7cb27584376df90fab4199241d896d2fef01ac0791cfdd701",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "34.0",
+            "sha256": "51972bf8bd4f41db2e222725b156ada2738b02b95880ad6dae2dd19ba09e19c3",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "34.1",
+            "sha256": "efb7acaabd94c97b9f2012690c6bbbde9ddded286acf95baaeb58c8a4e9449cc",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "35.0",
+            "sha256": "7a179350b6f67e89d58b07d6a4e4486b80116004e9fc2e6be8c3daaa2635fce9",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "35.1",
+            "sha256": "85e09b3eeb9387a5694cc762f0db6ae09e7177730b61491ac7b9da0717249a84",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "35.2",
+            "sha256": "de6a330ff880f7e23f51cb8537e2757f7465a7e71c62ac19397cd6303f4d91a8",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "35.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "36.0",
+            "sha256": "98b74e657f1fcadb6e36bfa9fcf1aabc116b8a08234ba5bebca0b20548ce0914",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "36.1",
+            "sha256": "e1a04e982a80a2ba646d56290f1d9963d2125408fbf5e1e948d0e6984a7437d7",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "37.0",
+            "sha256": "213a0a2e75458d3f8660bd92b66a1653b522961d2b2a15f59c5782ac56c80bed",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "37.1",
+            "sha256": "e4f477c0990236417de713417a111fe7dba71b3d39122f9631547cde57be7185",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "38.0",
+            "sha256": "7b37bc4b0874572aa48d700e2cf519a3e163672edf82e5eab6529d2cd927dbae",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "38.1",
+            "sha256": "fdcddf7e74ed11b94829947e0e85943d193115e30eddda51b50c474832a2fca9",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "39.0",
+            "sha256": "3fc2836ddc3d4466921720a293169b423b206a3fa3bc5d939c44c2332a8bf624",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "39.1",
+            "sha256": "1208aceef82af9af5cd35fc406ba78503cb41cb7cc0534d1f32527c46cf2fba6",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "39.2",
+            "sha256": "950032899b44ae1c10c414865741f476f330d2660a2c7e219461de14e54a649d",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "39.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "40.0",
+            "sha256": "321f54ab249849f211a2418ff88e0851abe5b43f759f4c8697c26f61cd2f362e",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "40.1",
+            "sha256": "2ad4f705a62decfbdbfaaa7ba8efa4b77fd2c09f7a9a16848a8b666e0ad67e16",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "41.0",
+            "sha256": "8269da6defbd7939e65b1fe8c2fb5d29b54690722ee69bf6754618679cd14543",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "41.1",
+            "sha256": "b5a47d423a5cf5dcc3bdf0b294eeacf36f473a42464fdb1a31b28a2eba3c104c",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "42.0",
+            "sha256": "8a56a166d680e0057ff4688a5ae4cdcbc3bc4c09c273c35097957a10aec0ed15",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "42.1",
+            "sha256": "46c48b08e9657194fbba14027ed53cf5253a20188b9ca447db4e21285515802e",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "43.0",
+            "sha256": "19489bc7f011ac1f7042d5ed3817073b90040d55b03cc9d77be2e73c98fc5724",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "43.1",
+            "sha256": "bb790829ae86f3664eead2f2add87187cafd74f4d64efa91e4fd27ec8baf5f07",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "43.2",
+            "sha256": "edaf65cc858fb39561e8d72e1afe2ecb91ca2197b421dab77633d23a04a6c34e",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "43.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "44.0",
+            "sha256": "60d3440a6bc98a9d50007f81477c26984e4a26f598c610a2556fe8e9ae48f35f",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "44.1",
+            "sha256": "d8022a70ecf115a6b5d637b9dd356140ffa7fbf3783ceb07c6029bbc524c0f50",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "45.0",
+            "sha256": "8cafc25cd148764d4531b12ec2b69c08cb81bce0ea329c984687fab5f9ab362e",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "45.1",
+            "sha256": "edd4ce4abfb94dcb38fae19844d5c32740272bf56b07ccfdac10ee350f536e35",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "46.0",
+            "sha256": "2003ab83966bb219be8b25f0cd24dacb8c66657b0d1d6ce0760d555fb0f36876",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "46.1",
+            "sha256": "b7e5a606a7cfc8d184ab4439a3c075589896571f7415e290c512d7fc03f03acf",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "47.0",
+            "sha256": "041e19a7c52be3750308c32d08805c494b8fa9b6e1a159a2cafa1396ebf86eae",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 5120,
+            "dtype": "mlx.core.bfloat16",
+            "path": "47.1",
+            "sha256": "95e97903cd2948c23c7c4be20913ccbaefc8d0675562f2e5fca6c5befb72e2eb",
+            "shape": [
+              1,
+              2,
+              5,
+              256
+            ]
+          },
+          {
+            "bytes": 1280,
+            "dtype": "mlx.core.bfloat16",
+            "path": "47.2",
+            "sha256": "c5077dfbb3084f47320f0cd282fa453bccb09217ed7ae91d56fd5c5e181c6c04",
+            "shape": [
+              1,
+              5,
+              128
+            ]
+          },
+          {
+            "bytes": 40,
+            "dtype": "mlx.core.int64",
+            "path": "47.3",
+            "sha256": "281b02b10f5f4997e5bf8c93343e6f2aa8bc81ffad6d6813c593181ebceda12a",
+            "shape": [
+              1,
+              5
+            ]
+          }
+        ],
+        "arrays_sha256": "52f453793be3928a81ff559a159b2c1275f3ecde85a70051cd26f17b8201ec50",
+        "bytes": 115781104,
+        "schema": "hawking.flash.external_source_state_boundary.v1"
+      }
+    },
+    {
+      "argmax_token_id": 248045,
+      "elapsed_ns": 24474098000,
+      "expected_token_id": 248045,
+      "generation_index": 1,
+      "incremental_execution_input_token_ids": [
+        271
+      ],
+      "input_token_ids": [
+        5423,
+        799,
+        4581,
+        3817,
+        13,
+        271
+      ],
+      "logits_f32": {
+        "bytes": 993280,
+        "dtype": "F32_LE",
+        "elements": 248320,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/logits-000001.f32",
+        "sha256": "d3d6d3f4c997d78c9abcad70e5624b0505adedcce3a5fa7467f9fb98fccddaf9"
+      },
+      "state_boundary": {
+        "array_count": 122,
+        "arrays": [
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "0.0",
+            "sha256": "e0d9e18f9c4ad2e27a769c202e102d586563d83e15c503a081517c50e736b01b",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "0.1",
+            "sha256": "bcfb0ebb96ea1f359953cfee7360d3509b49702d4a3bb54ca5cd3161688cf65d",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "1.0",
+            "sha256": "6dcee92267199750245264e180072e5af04770a8db88035ce6d0ae294f3348cc",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "1.1",
+            "sha256": "87b6b4afe1d2f6b7aaf64d25888d76d30eb73fbf2850a6f50b052938095f6a68",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 184320,
+            "dtype": "mlx.core.bfloat16",
+            "path": "1.2",
+            "sha256": "1b598a5094daa9006b08e35fd739855b87b69ee42fff312c65e504a4c219ccaf",
+            "shape": [
+              1,
+              9,
+              10240
+            ]
+          },
+          {
+            "bytes": 16,
+            "dtype": "mlx.core.int64",
+            "path": "1.3",
+            "sha256": "5316590d2f4991b7f996e2c878e7456592d26d9998406dbed0ed9ad197855ea0",
+            "shape": [
+              1,
+              2
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "2.0",
+            "sha256": "52e2566b69c9bf90bc3a56489779a19890e51bbd3630152247ddb061256fb886",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "2.1",
+            "sha256": "e096ee90777b800784fa25a6c49b0ef492645af52cfbd128362c28a35dc274b3",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "3.0",
+            "sha256": "ef02ce7189684499127dd75f4acd2928804b3b3a7a120732632af17e40d68d8d",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "3.1",
+            "sha256": "60e55c35f417f3820103474dbb2e1a293282f78f995864b1510a780bd37916d4",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "3.2",
+            "sha256": "7d6b8a03b0a1e64e4f8b7a2257d792eecd22b4bead47cfcec5c06be91d4136a9",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "3.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "4.0",
+            "sha256": "66c32bf6bab6625c087bfbf38b0ca920172b708b97abfc1ea4aa559bfe20da73",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "4.1",
+            "sha256": "4cb0e7c4943902f68ddc68f8f2d397768ad6397b803629dda39667da9f25c1ee",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "5.0",
+            "sha256": "35493a8d97fc3a1dbedaf847405dd1232ff5f59523d724b0bd841bf42c9842ad",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "5.1",
+            "sha256": "63cde136801c67770df379490930b5806bcec97fae8e8d37ca58c84e799c14d6",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "6.0",
+            "sha256": "88d6f43f8e670fdc7e7eb429e31b6ff6937dda0186c32e40a3998d4e0f3584a1",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "6.1",
+            "sha256": "45702fe64790a9f31cea6537a4095555e1249b45560a19ff6e88f4789e24bcc2",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "7.0",
+            "sha256": "32f8131ed67ff545109b6c8d2d2ffb0a7720f050238e557a6243c3eed1ed54ec",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "7.1",
+            "sha256": "045f4da8953e200c2bf54dc08ac0ee9e0ba829af18f9e3b11b8eedf109f8a8fb",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "7.2",
+            "sha256": "ba60f7a84ce0291c00e738d25330cf29980dae3cd664eff068e3a9fce5597ae0",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "7.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "8.0",
+            "sha256": "5e6c232101e06f5b8a7815cc94d6d0920de7336907f77f3be4bd1a9aaa8d51ae",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "8.1",
+            "sha256": "2cd33cbbe802fb848b70167833fe4039039c2b3217b26a0e870d5252cc9c940f",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "9.0",
+            "sha256": "b74d651daac75d5894efaa4aa3c15d1a7d691e3160446a52a8c7ba0be82955a3",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "9.1",
+            "sha256": "bbdd68a3a38cb6a13845bf602f3e5b40cc27086d1830dea20e2999e176c9d55f",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "10.0",
+            "sha256": "5f86628d8b0d58448a338e64eb9b549ed5c603b28292087d3862f725940b24cc",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "10.1",
+            "sha256": "41ffca31cb789e4b2b81b4bc01b1fb4ea34eadd39245bab07ae06c9a783df153",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "11.0",
+            "sha256": "243824257af0f1073b39bfa7c368b5ab71b1d3c220e241c3f26dc95a3c36f5c8",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "11.1",
+            "sha256": "16f28d167330f9756a40d57efb8fc9c7c037723bfe5727a0b6208897f322425f",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "11.2",
+            "sha256": "7c1fc345dc36fc9a76e5b640c0a395900ebb9ef5f58eeabc5528a442380500e6",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "11.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "12.0",
+            "sha256": "d5ec87b60c99ce0c96b0c7d08804dc1d15e717af162f73f614367f84592cf750",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "12.1",
+            "sha256": "877b83cb4e2a83a9c4b14295a3c9bd9665c1489eca91c2ec951322505aba405f",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "13.0",
+            "sha256": "f840c6d0a1a3541b0fedfe8232809cbdb4b086e9ff04c01c6165c7c65b9b19d1",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "13.1",
+            "sha256": "1f3e4b40e6ab22d2af939e3f796e25bff6a7cb204e70a10e65e7d0dc7e81e5a0",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "14.0",
+            "sha256": "536b98f89e9d1953dde9ab092dbd045892d3cba0b30d9f77506f8e9104f16ec1",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "14.1",
+            "sha256": "d8ab5c677a990ce93b273ed5e741ffe6aa8c6fbf0fe480e5bc83e7d43f80a164",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "15.0",
+            "sha256": "a68d2ce8874ba4b4c5069d44b23105ed465227f622bafde8b1faa354f4d00a2e",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "15.1",
+            "sha256": "d4eb94704ca98c349d7101cdc154a50da23ec1ece02ab1a1c661606636824c2b",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "15.2",
+            "sha256": "3ad950f1f8c160e6f09ab9b55a50b0e870655f32f52b20a82987c303e3149a4c",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "15.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "16.0",
+            "sha256": "2ec6f0d2bfb4d50692dfd77906bae69eabcb4e93ef6986a85d27f184311e0f3f",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "16.1",
+            "sha256": "6cc548bfa29b445979c565604200b61b91e0c877365e70aeac664e6bd205096c",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "17.0",
+            "sha256": "d2977b668df86cce3a913a49478f4e6a5b623a3967ee1488c99fd98723efd907",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "17.1",
+            "sha256": "85bc27f55fb141a3da675d979cce32ca6c556b656a5776166d7b10f12250eb47",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "18.0",
+            "sha256": "285a29ceb14a72ae1d055b4a802f88d53b7df52580c70a069dcfbd9b44697c04",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "18.1",
+            "sha256": "de5bfc410eb5cac2ec992aab6aef488fa79ad6bf2d874afe1b5f27e1aa28f8f6",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "19.0",
+            "sha256": "0dd1eeccedd790b11ba73110096ddbac189079394708acf7c864b627d71f4cb3",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "19.1",
+            "sha256": "a6b74838bfbe5d62692666c5341f9869d363d521af71e6e468c880a8c84335f0",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "19.2",
+            "sha256": "a669b57e6f45ce290a43e24aa6c43e387238db5ccef8a21749d6995b4e9a0be4",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "19.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "20.0",
+            "sha256": "d72001f104b2dbf2d33e6ee58be7f6d1e6199dd23bfd9c79c076e7b88ee20aea",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "20.1",
+            "sha256": "b66396183fc482128d077ad9159439cc9b166d0e045dbc9d05cae5f4df16b5c7",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "21.0",
+            "sha256": "50602eb93123d3038f303ae65a076085288cfab506e1f4a772c151563b3198ee",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "21.1",
+            "sha256": "3a7d281763633ffde4b52cb6aac8cb5aebf24b538671f5a54a027e7fdc03d01b",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "22.0",
+            "sha256": "fe83f72c1bf143905fab568ba2032a44baee4bb877da70d28493bb64b59d7878",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "22.1",
+            "sha256": "c05b84d6633a2fea87dcef636f22dcd41d16eccc7db498b5d539fc8f0d16b756",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "23.0",
+            "sha256": "d46ef98db1a8d6ff7a7d7dd7bbe8aa720a27f038e6dc51bc391f94e15fccaeff",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "23.1",
+            "sha256": "24becefc99db605ff8f6c465a623b483ca8ca60d5f8ce9b0516ebee276a1ad52",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "23.2",
+            "sha256": "1a7136b1de25414a185eaa04566fe01bf2031794091d7b865f0b0fe36cddfe49",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "23.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "24.0",
+            "sha256": "7bbe12aa05e479735fa016f81c1f196eefa816eff72f82ae3a21c4ad3244eca4",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "24.1",
+            "sha256": "a331bb330710e68d81e5425e1918cb1a23c4eb51a93fbb1aab829b0e17de490d",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "25.0",
+            "sha256": "ca5210708627c4aabce0e6b536afebf4e624789f8608ba44a7114094397b559a",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "25.1",
+            "sha256": "0432a474d468300bfe4e26d9a557d21001a2a0a02a4e06677f70adab64e65831",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "26.0",
+            "sha256": "3f8666ba657fd8d1b0d09e70023f3ca499ca0fa2e2e10756142d28627783d07e",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "26.1",
+            "sha256": "923329634da0b130de7ddd42383930360e969e86ef4d3eb77d6acdf49b88e2f2",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "27.0",
+            "sha256": "94ed18482246d522434eac85c9ba8dfe00b1ddb38bf105e3f51cf8805d665f47",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "27.1",
+            "sha256": "c4e0d7a0efdc8fb90208a1dacba32bb9056791b97325fd4e82aa4a91f6c40f9e",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "27.2",
+            "sha256": "a9ebfd8af072390691b4e354017907e5e5f7ceba47d9a4fd7a870c3bce82b097",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "27.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "28.0",
+            "sha256": "0f1b349cdc2146808b9219d1498c5fdc6cc02587debaae0fffa85e9eb71bf97a",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "28.1",
+            "sha256": "d36b035718923cdb91e10da188a34ed48a8c04c1ae9aae24d64dfbcf38d2c93f",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "29.0",
+            "sha256": "0383a020bb85ada66b575639e11261e7148fcf4aacf97db145a3d6b3b53ace5b",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "29.1",
+            "sha256": "2991f9222a1d92a236089e462c74203c51cdb4b78a7c6e504d9410315f458e65",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "30.0",
+            "sha256": "ed3b3c99fd12f84d108dfc486e8f88a2aee719bdf2e2438983fb19d52d8a2131",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "30.1",
+            "sha256": "5f5e3f5dd1b15d3cda79b8a1c4094c3a2a96aef5d09d86ebbe9759a6485eeb51",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "31.0",
+            "sha256": "d7bb661e06e11b124f52348f977257d36f15d75320a478f046ade36c03a368a0",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "31.1",
+            "sha256": "ce38c2ec6e6e95f684f6d568486eb5a384dd2d125131e289b0b71cf91c0e644c",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "31.2",
+            "sha256": "c51a7ca0214c8a601a9084d4997f6b5326aa0ba998e8b44f6218aa05536effe2",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "31.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "32.0",
+            "sha256": "32cb1b0170bf036dbd0d24f838bde311040e9fb8b0fc86f06e7716e57faeab5f",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "32.1",
+            "sha256": "49e517c77a3f51956b590a464f14021aae3af44cd3ad6dbbfd53cc78b42a72ab",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "33.0",
+            "sha256": "02ba59cbf3fc617edfd392d453f669e44f29f08ae4c012d986f920b4ce1eb517",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "33.1",
+            "sha256": "cbcd00c0b7a04d75aa88724f697dbb3dfc740c56b60206e159e787be70ad78b8",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "34.0",
+            "sha256": "9aa36c0c921c1d5f79fc62fff2382d96bb76bcb7b2428f957f521294fecef3ac",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "34.1",
+            "sha256": "d96254c29c4332814b0a838c3477f9d6f2a1d7dffc0596f70890aa1019299e36",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "35.0",
+            "sha256": "ff696df80b6616a299ea426e7d330acb02e6636434515140ddcb81d69d997b69",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "35.1",
+            "sha256": "bbb2d3704517926cbcfb6b348077d530f8dcd85e7798189935718b70c2b8f5e3",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "35.2",
+            "sha256": "642f01910610cd2cabc9150a474026124c1920b61093434ec9da495b5719183a",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "35.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "36.0",
+            "sha256": "9623cd153f02bc827545f62db15c173e5617aaafd85679d7dff6d7b903eda47a",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "36.1",
+            "sha256": "01cbbda978335e85f655e418f5dcfa790a0e37ab68e9e210bb872791813d535a",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "37.0",
+            "sha256": "c1b62b1e5d65d99f39c32bccc0eb102b374540564dcff891d3e0dd8d8968c8da",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "37.1",
+            "sha256": "afcc350fbed822697346062d30c491225e51c86e83f81bfdaeb7056b2a06282d",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "38.0",
+            "sha256": "a83b5529dbfc59e25e80b330aa44737570cf23e7c3f9d50f22efcf92faca3415",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "38.1",
+            "sha256": "51b47d722a22539b3c531be81d93af903cbb2ada1245565fcdda558ae3790924",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "39.0",
+            "sha256": "1113bc4b0103ed51b6901ff14a4bccc93c594d3c9ab8e08e8555bbf3921f8101",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "39.1",
+            "sha256": "23b95a1d753a9de95b34a7388531b53424faac44019ea0d528aa9984811610e8",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "39.2",
+            "sha256": "6156679ce7b231a2c3d5d9d0bd38f48831bb3085cbd97882b2ffa12eccf3e0ea",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "39.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "40.0",
+            "sha256": "27d891fe5e1e1543b6e584c2c23502044527607eb7e561b50525ba23db73f88d",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "40.1",
+            "sha256": "2c32879f0292317b2e18a6f124db6de4632b567bf25f699a61b717984b2de296",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "41.0",
+            "sha256": "78b428018941e191163fd81e5e0ee33625a00efd3a52da2eaa14bf2b24beb6f0",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "41.1",
+            "sha256": "08aef37f967fab06ecf226d0e93b108e77adf2643146d49cd18f3903a7e32ac2",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "42.0",
+            "sha256": "3a609c6847d1be1c1b42052c38240804a7637958ad00574b782312988efa0d1b",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "42.1",
+            "sha256": "5fae0a538591c223728cc19e8162b7ce6408891342dc7c4eb9a90345b17c0082",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "43.0",
+            "sha256": "0019245d70a8fb0f7d92bcca1fce0746cdfab0e9a88d23870b47a2a0c74b8fd7",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "43.1",
+            "sha256": "9fa34d087fc904880e57dec7f72d5b24acbb437b1c5c072f07068a1dca927402",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "43.2",
+            "sha256": "9ed6ef078e6c07c4d3cbf823bdb06e45b0f2760288a6e6dd582c3510c1634297",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "43.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "44.0",
+            "sha256": "1ea6f1d144a14c23e88066e6801222a0bc276e860783549364532c99d9fe7838",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "44.1",
+            "sha256": "a0fb4cff388d8d6a5fc80dcccf12e99715ea96dfd8d87d75d828f9b8c660822a",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "45.0",
+            "sha256": "4d057f9a70721c86d881086384293f996ee24c799833230b3d072a0a493f2d8d",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "45.1",
+            "sha256": "a9b32ceffff907ea17f4312465c4d7430f46ab8c1f865e1b6cbe539d752b598e",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 61440,
+            "dtype": "mlx.core.bfloat16",
+            "path": "46.0",
+            "sha256": "266f075b00d34467e15f3a0d68d6c3b8e329cdbb68c587bedf06a4cdf3f522c9",
+            "shape": [
+              1,
+              3,
+              10240
+            ]
+          },
+          {
+            "bytes": 3145728,
+            "dtype": "mlx.core.float32",
+            "path": "46.1",
+            "sha256": "40498727bebdb62256a6d4d8b90161d6a38b4fda3069ca2ca40dc5956d5c0413",
+            "shape": [
+              1,
+              48,
+              128,
+              128
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "47.0",
+            "sha256": "11e8aceca14bc1151bed0cdad269d02e76db392bbce13d2e7c738d88439a8bc1",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 6144,
+            "dtype": "mlx.core.bfloat16",
+            "path": "47.1",
+            "sha256": "b8995b8b83b137404021b1ee8dd53958546eb8f8ef938f27f5aa0bc580f69fdd",
+            "shape": [
+              1,
+              2,
+              6,
+              256
+            ]
+          },
+          {
+            "bytes": 1536,
+            "dtype": "mlx.core.bfloat16",
+            "path": "47.2",
+            "sha256": "342dd3c74358c9f30e7bb349e947746b1c82d8478f8caa7c28c7654e847e64a5",
+            "shape": [
+              1,
+              6,
+              128
+            ]
+          },
+          {
+            "bytes": 48,
+            "dtype": "mlx.core.int64",
+            "path": "47.3",
+            "sha256": "f190072c5052f4f440d4a607c25f5bced487c420806c9aab4ca5b0653e72da61",
+            "shape": [
+              1,
+              6
+            ]
+          }
+        ],
+        "arrays_sha256": "6a5ead9ba7642697d53c3ac0873d00efc4b7bb8c642f5331ca7e224d3385f46e",
+        "bytes": 115808848,
+        "schema": "hawking.flash.external_source_state_boundary.v1"
+      }
+    }
+  ],
+  "vocab_size": 248320
+}

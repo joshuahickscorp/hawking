@@ -17,9 +17,7 @@
 
 use std::time::Instant;
 
-use strand_quant::debias::{
-    debias_tensor, estimate_mu_bar, output_error,
-};
+use strand_quant::debias::{debias_tensor, estimate_mu_bar, output_error};
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
 use strand_quant::gate_utils::{normal_vec, rel_rms, rht_seed_for};
@@ -63,7 +61,10 @@ fn strand_recon(
     let workspace = rht_forward_rows(&work_gt, &rcfg, in_features);
 
     // 3. trellis encode + 4. integer decode.
-    let opts = EncodeOpts { adaptive: true, ..EncodeOpts::default() };
+    let opts = EncodeOpts {
+        adaptive: true,
+        ..EncodeOpts::default()
+    };
     let mut enc = encode_tensor_with(&workspace, cfg, &opts);
     enc.has_rht_seed = true;
     let q12 = decode_tensor_fixed(&enc, cfg);
@@ -121,8 +122,13 @@ fn main() {
     };
 
     let proj = [
-        "q_proj.weight", "k_proj.weight", "v_proj.weight", "o_proj.weight",
-        "gate_proj.weight", "up_proj.weight", "down_proj.weight",
+        "q_proj.weight",
+        "k_proj.weight",
+        "v_proj.weight",
+        "o_proj.weight",
+        "gate_proj.weight",
+        "up_proj.weight",
+        "down_proj.weight",
     ];
 
     // Aggregate over the non-zero-mean model.
@@ -170,13 +176,22 @@ fn main() {
         let r = debias_tensor(&w, &recon, in_features, mu_bar, 16);
 
         let (b_u, rms_u) = output_error(&w, &recon, in_features, &xs, None);
-        let (b_c, rms_c) =
-            output_error(&w, &recon, in_features, &xs, Some(&r.bias_correction));
-        let drms = if rms_u > 0.0 { (rms_u - rms_c) / rms_u * 100.0 } else { 0.0 };
+        let (b_c, rms_c) = output_error(&w, &recon, in_features, &xs, Some(&r.bias_correction));
+        let drms = if rms_u > 0.0 {
+            (rms_u - rms_c) / rms_u * 100.0
+        } else {
+            0.0
+        };
 
         println!(
             "{:<34} {:>7.3} {:>11.4e} {:>11.4e} {:>11.4e} {:>11.4e} {:>+10.2}",
-            short(name), rr, b_u, b_c, rms_u, rms_c, drms
+            short(name),
+            rr,
+            b_u,
+            b_c,
+            rms_u,
+            rms_c,
+            drms
         );
         agg_rms_uncorr += rms_u;
         agg_rms_corr += rms_c;
@@ -192,12 +207,27 @@ fn main() {
 
     let mean_drms = (agg_rms_uncorr - agg_rms_corr) / agg_rms_uncorr * 100.0;
     println!("\n--- aggregate over {nt} tensors (non-zero-mean, mu_bar~0.3) ---");
-    println!("  mean |output bias|  uncorrected = {:.4e}", agg_bias_uncorr / nt as f64);
-    println!("  mean |output bias|  de-biased   = {:.4e}", agg_bias_corr / nt as f64);
-    println!("  mean output-RMS     uncorrected = {:.4e}", agg_rms_uncorr / nt as f64);
-    println!("  mean output-RMS     de-biased   = {:.4e}", agg_rms_corr / nt as f64);
+    println!(
+        "  mean |output bias|  uncorrected = {:.4e}",
+        agg_bias_uncorr / nt as f64
+    );
+    println!(
+        "  mean |output bias|  de-biased   = {:.4e}",
+        agg_bias_corr / nt as f64
+    );
+    println!(
+        "  mean output-RMS     uncorrected = {:.4e}",
+        agg_rms_uncorr / nt as f64
+    );
+    println!(
+        "  mean output-RMS     de-biased   = {:.4e}",
+        agg_rms_corr / nt as f64
+    );
     println!("  output-RMS reduction            = {:+.2}%", mean_drms);
-    println!("  side-channel cost @ in=896      = {:.4} bpw (bf16 bias)", 16.0 / 896.0);
+    println!(
+        "  side-channel cost @ in=896      = {:.4} bpw (bf16 bias)",
+        16.0 / 896.0
+    );
 
     // The honest zero-mean control: rerun output error with a centred act model.
     println!("\nZERO-MEAN control (mu_bar -> 0; eq.1 says correction is vacuous):");
@@ -231,11 +261,21 @@ fn main() {
             s2 += (s as f64) * (s as f64);
         }
         zm_rowsum_mag += (s2 / out as f64).sqrt();
-        zm_drms += if rms_u > 0.0 { (rms_u - rms_c) / rms_u * 100.0 } else { 0.0 };
+        zm_drms += if rms_u > 0.0 {
+            (rms_u - rms_c) / rms_u * 100.0
+        } else {
+            0.0
+        };
         zc += 1;
     }
-    println!("  mean rowsum-bias RMS (post-RHT) = {:.4e}  (nonzero => survives RHT)", zm_rowsum_mag / zc as f64);
-    println!("  mean output-RMS reduction       = {:+.4}%  (expect ~0 => dead-Hessian degeneracy)", zm_drms / zc as f64);
+    println!(
+        "  mean rowsum-bias RMS (post-RHT) = {:.4e}  (nonzero => survives RHT)",
+        zm_rowsum_mag / zc as f64
+    );
+    println!(
+        "  mean output-RMS reduction       = {:+.4}%  (expect ~0 => dead-Hessian degeneracy)",
+        zm_drms / zc as f64
+    );
 
     // Verdict.
     let kill_bar = 0.5f64; // % output-RMS reduction to justify the side-channel
@@ -273,13 +313,20 @@ fn run_synthetic(cfg: &TrellisConfig, outlier_pct: f64, n_acts: usize) {
     let (b_c, rms_c) = output_error(&w, &recon, in_features, &xs, Some(&r.bias_correction));
     println!("synthetic 896x896: relRMS={rr:.3}% bpw={bpw:.4}");
     println!("  outBias u={b_u:.4e} c={b_c:.4e} | outRMS u={rms_u:.4e} c={rms_c:.4e}");
-    println!("  output-RMS reduction = {:+.2}%", (rms_u - rms_c) / rms_u * 100.0);
+    println!(
+        "  output-RMS reduction = {:+.2}%",
+        (rms_u - rms_c) / rms_u * 100.0
+    );
 }
 
 fn short(name: &str) -> &str {
     // last 32 chars for readability in the table
     let n = name.len();
-    if n > 32 { &name[n - 32..] } else { name }
+    if n > 32 {
+        &name[n - 32..]
+    } else {
+        name
+    }
 }
 
 fn machine_stamp() -> String {

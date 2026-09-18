@@ -1,0 +1,70 @@
+{
+  "active_job": "job-269341cb-a3b2-44ca-abc0-4eb73d93375e",
+  "blocker": {
+    "pid": 28131,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.001495692,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260917-55E1A8D9",
+    "tool_less_continue_streak": 6
+  },
+  "context_packet_digest": "1552c09d3b175af9f0402c0bacf319db42558a73d1158aaeaeabc89b2700d40d",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 28131,
+  "exact_next_action": "Research output was unusable after the bounded continuation cap; inspect the checkpoint and dead-letter, then either continue independent work or resume with a fresh Hawking Worker Packet. Do not replay provider turns.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Read-only P1 control-plane reconnaissance for HAWKING_MASTER_LONG_HAUL_V2. Inspect the current Goal, WorkUnit, Auto, daemon, supervision, and receipt owners; map duplicate/stale paths and the smallest parity-safe collapse candidates. Do not edit files, start/stop daemons, touch protected resources, or retry dead letters. Return a compact evidence packet with exact source paths and unresolved risks.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-b4ed20c20a67448b9da1523a:tool-7",
+    "gen-1789697304-29l6CHJPpZNxSbCMZUor",
+    "gateway-64e0382f66b842c399966d49:tool-6",
+    "gen-1789697311-ARK8nUznzTmydCVihper",
+    "gateway-4e6941c361254c7288bc9d3e:tool-6",
+    "gen-1789697319-qbBnvODsixtQbR9RUrpV",
+    "gateway-80c28dbfc3cd4209b6de37e6:tool-6",
+    "gen-1789697327-RJrOZlMqgjR0iWInnvih",
+    "gateway-7e70e2e1cc6943e2a1ccbb33:tool-6",
+    "gen-1789697334-a28Is5LjNLIwpjN962LJ",
+    "gateway-e0d6915faf2c41c5b282b9fb:tool-6",
+    "gen-1789697342-WmtLHZYKsnGYAKlkviem"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T02:09:03.260078+00:00",
+  "worker_attempt_id": "hawking-attempt-7e21e968a12c4669",
+  "worker_cost_usd": 0.001495692,
+  "worker_id": "hawking-worker-0afe9d91c19a4316",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789697336.891776,
+  "worker_spawned_at": 1789697295.1824708,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260917-55E1A8D9"
+}

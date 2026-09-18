@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.gravity.flash_e13_evidence_declaration.v1",
+  "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+  "corpus_sha256": "d0410eeee1f2527d7d36ee5da1a761fe8d802fb58947e0be86432c0a5d7d2776",
+  "eligible_model_vocab_count": 248044,
+  "row_budget": 4096,
+  "fit_rows_per_stratum": 256,
+  "heldout_rows_per_stratum": 256,
+  "rare_max_count": 1,
+  "common_min_count": 2,
+  "short_max_utf8_bytes": 3,
+  "long_min_utf8_bytes": 4,
+  "selection_seed": 5683489481123170890,
+  "shuffled_null_seed": 15016081310332754406,
+  "source": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+    "role_headers_sha256": "48dc2cc9ad567b511dcc2834a58d94e225d7f5707d14b5b9dc47e29020615418",
+    "tokenizer_addressability_sha256": "6c7166ca5fc9a75fec8bfb7ace11019c8f7cd1f33f5ba801af2086e20f3d5e8d"
+  },
+  "row_universe": {
+    "schema": "tokenizer_lexical_model_vocab_rows_only.v2",
+    "tensor_row_count": 248320,
+    "tokenizer_addressable_token_count": 248077,
+    "excluded_tensor_tail_row_count": 243,
+    "e13_eligible_model_vocab_token_count": 248044,
+    "excluded_added_control_token_count": 33,
+    "excluded_added_control_token_ids_sha256": "e4fc11bf3c04b699ff5a9cc6e78f3f9230ba328962738e71db9ce93eaa73c63d",
+    "tail_policy": "exclude_tokenizer_unaddressable_tensor_tail_until_output_semantics_are_verified.v1",
+    "added_token_policy": "exclude_all_tokenizer_added_ids_from_E13_lexical_strata_regardless_of_special_flag.v1"
+  }
+}

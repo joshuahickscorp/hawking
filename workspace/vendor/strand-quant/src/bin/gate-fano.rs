@@ -1,14 +1,11 @@
-
 use std::time::Instant;
 
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::decode_tensor;
 use strand_quant::encode::{encode_tensor_with_lut, EncodeOpts};
-use strand_quant::fano::{
-    encode_tensor_fano, encode_tensor_pruned, FanoParams, PruneReport,
-};
-use strand_quant::rht::{rht_forward_rows, RhtConfig};
+use strand_quant::fano::{encode_tensor_fano, encode_tensor_pruned, FanoParams, PruneReport};
 use strand_quant::gate_utils::{normal_vec, outlier_shaped, rel_rms, rht_seed_for};
+use strand_quant::rht::{rht_forward_rows, RhtConfig};
 use strand_quant::safetensor_io::SafeTensors;
 use strand_quant::TrellisConfig;
 
@@ -39,13 +36,15 @@ fn load_real_tensors(path: &str, max_tensors: usize) -> Vec<(String, Vec<f32>)> 
             continue;
         }
         let mut w = st.to_f32(t);
-        
+
         let n = w.len();
         let k = ((1.0 / 100.0) * n as f64).round() as usize;
         if k > 0 {
             let mut order: Vec<usize> = (0..n).collect();
             order.sort_unstable_by(|&a, &b| {
-                w[b].abs().partial_cmp(&w[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
+                w[b].abs()
+                    .partial_cmp(&w[a].abs())
+                    .unwrap_or(std::cmp::Ordering::Equal)
             });
             for &i in &order[..k] {
                 w[i] = 0.0;
@@ -60,10 +59,50 @@ fn load_real_tensors(path: &str, max_tensors: usize) -> Vec<(String, Vec<f32>)> 
 }
 
 const OPT_COMBOS: [(&str, EncodeOpts); 4] = [
-    ("default", EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
-    ("tail", EncodeOpts { adaptive: true, tail_biting: true, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
-    ("affine", EncodeOpts { adaptive: true, tail_biting: false, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
-    ("tail+affine", EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
+    (
+        "default",
+        EncodeOpts {
+            adaptive: true,
+            tail_biting: false,
+            affine_min: false,
+            silence_bonus: 0.0,
+            entropy_bonus_scale: 0.0,
+            entropy_bonus_two_pass: false,
+        },
+    ),
+    (
+        "tail",
+        EncodeOpts {
+            adaptive: true,
+            tail_biting: true,
+            affine_min: false,
+            silence_bonus: 0.0,
+            entropy_bonus_scale: 0.0,
+            entropy_bonus_two_pass: false,
+        },
+    ),
+    (
+        "affine",
+        EncodeOpts {
+            adaptive: true,
+            tail_biting: false,
+            affine_min: true,
+            silence_bonus: 0.0,
+            entropy_bonus_scale: 0.0,
+            entropy_bonus_two_pass: false,
+        },
+    ),
+    (
+        "tail+affine",
+        EncodeOpts {
+            adaptive: true,
+            tail_biting: true,
+            affine_min: true,
+            silence_bonus: 0.0,
+            entropy_bonus_scale: 0.0,
+            entropy_bonus_two_pass: false,
+        },
+    ),
 ];
 
 fn run_identity(model: &str, max_tensors: usize, max_blocks: usize) -> bool {
@@ -92,47 +131,81 @@ fn run_identity(model: &str, max_tensors: usize, max_blocks: usize) -> bool {
                 continue;
             }
             let cfg = TrellisConfig::new(l, k, 256);
-            let sizes: &[usize] = if l == 12 { &[2048, 257] } else { &[2048, 1000, 257, 17] };
+            let sizes: &[usize] = if l == 12 {
+                &[2048, 257]
+            } else {
+                &[2048, 1000, 257, 17]
+            };
             for &n in sizes {
                 for (oname, opts) in &OPT_COMBOS {
                     seed += 1;
                     let w = normal_vec(n, seed);
-                    check(format!("scalar k={k} L={l} n={n} opts={oname}"), &w, &cfg, opts);
+                    check(
+                        format!("scalar k={k} L={l} n={n} opts={oname}"),
+                        &w,
+                        &cfg,
+                        opts,
+                    );
                 }
             }
         }
     }
-    
+
     {
         let cfg = TrellisConfig::new(12, 2, 256);
         let w = outlier_shaped(4096, 0xBADC_AB1E);
         for (oname, opts) in &OPT_COMBOS {
-            check(format!("k=2 L=12 outlier-shaped n=4096 opts={oname}"), &w, &cfg, opts);
+            check(
+                format!("k=2 L=12 outlier-shaped n=4096 opts={oname}"),
+                &w,
+                &cfg,
+                opts,
+            );
         }
     }
-    
+
     for (k, l) in [(2u32, 12u32), (3, 12), (2, 8), (4, 8)] {
         let cfg = TrellisConfig::new(l, k, 256);
         let vals = [0.0f32, 0.5, -0.5, 0.25];
         let w: Vec<f32> = (0..2048).map(|i| vals[i % vals.len()]).collect();
         for (oname, opts) in &OPT_COMBOS {
-            check(format!("k={k} L={l} tie-cyclic n=2048 opts={oname}"), &w, &cfg, opts);
+            check(
+                format!("k={k} L={l} tie-cyclic n=2048 opts={oname}"),
+                &w,
+                &cfg,
+                opts,
+            );
         }
         let lut = codebook_lut(cfg.l_bits);
         let base = normal_vec(2048, 0x71E5_0000 + (k as u64) << 16 | l as u64);
         let enc = encode_tensor_with_lut(&base, &cfg, &OPT_COMBOS[0].1, lut);
         let snapped = decode_tensor(&enc, &cfg);
         for (oname, opts) in &OPT_COMBOS {
-            check(format!("k={k} L={l} tie-snapped n=2048 opts={oname}"), &snapped, &cfg, opts);
+            check(
+                format!("k={k} L={l} tie-snapped n=2048 opts={oname}"),
+                &snapped,
+                &cfg,
+                opts,
+            );
         }
     }
-    
+
     {
         let cfg = TrellisConfig::new(12, 2, 256);
         let w = vec![0.0f32; 512];
-        check("k=2 L=12 all-zero n=512 opts=default".into(), &w, &cfg, &OPT_COMBOS[0].1);
+        check(
+            "k=2 L=12 all-zero n=512 opts=default".into(),
+            &w,
+            &cfg,
+            &OPT_COMBOS[0].1,
+        );
         let w = vec![0.25f32; 300];
-        check("k=2 L=12 constant n=300 opts=default".into(), &w, &cfg, &OPT_COMBOS[0].1);
+        check(
+            "k=2 L=12 constant n=300 opts=default".into(),
+            &w,
+            &cfg,
+            &OPT_COMBOS[0].1,
+        );
     }
 
     let real = load_real_tensors(model, max_tensors);
@@ -188,7 +261,7 @@ fn stamp() {
 fn bench_pair(label: &str, w: &[f32], cfg: &TrellisConfig, iters: u32) {
     let lut = codebook_lut(cfg.l_bits);
     let opts = EncodeOpts::default();
-    
+
     let _ = encode_tensor_with_lut(&w[..1024.min(w.len())], cfg, &opts, lut);
 
     let t0 = Instant::now();
@@ -236,7 +309,12 @@ fn run_bench(model: &str, max_tensors: usize, max_blocks: usize) {
         let n_use = (max_blocks * 256).min(w.len());
         for (k, l) in [(2u32, 12u32), (3, 12)] {
             let cfg = TrellisConfig::new(l, k, 256);
-            bench_pair(&format!("{name} [..{n_use}] k={k} L={l}"), &w[..n_use], &cfg, 1);
+            bench_pair(
+                &format!("{name} [..{n_use}] k={k} L={l}"),
+                &w[..n_use],
+                &cfg,
+                1,
+            );
         }
     }
     println!();
@@ -277,7 +355,7 @@ fn run_hist(model: &str, max_tensors: usize, max_blocks: usize) {
         let lut = codebook_lut(cfg.l_bits);
         let opts = EncodeOpts::default();
         let mut win_per_w: Vec<f64> = Vec::new();
-        let mut win_rel: Vec<f64> = Vec::new(); 
+        let mut win_rel: Vec<f64> = Vec::new();
         let mut greedy_gap: Vec<f64> = Vec::new();
         let mut floor_gap: Vec<f64> = Vec::new();
         let mut expansion: Vec<f64> = Vec::new();
@@ -322,7 +400,10 @@ fn run_fano(model: &str, max_tensors: usize, max_blocks: usize) {
     let mut inputs: Vec<(String, Vec<f32>)> = Vec::new();
     if real.is_empty() {
         println!("  (no real tensors — synthetic fallback)");
-        inputs.push(("synthetic-gauss-64k".into(), normal_vec(65_536, 0xFA90_0FA0)));
+        inputs.push((
+            "synthetic-gauss-64k".into(),
+            normal_vec(65_536, 0xFA90_0FA0),
+        ));
     } else {
         for (name, w) in real {
             let n_use = (max_blocks * 256).min(w.len());
@@ -335,7 +416,6 @@ fn run_fano(model: &str, max_tensors: usize, max_blocks: usize) {
         let lut = codebook_lut(cfg.l_bits);
         println!("  config k={k} L={l}:");
         for (name, w) in &inputs {
-            
             let t0 = Instant::now();
             let exact = encode_tensor_with_lut(w, &cfg, &opts, lut);
             let dt_v = t0.elapsed().as_secs_f64();
@@ -347,7 +427,10 @@ fn run_fano(model: &str, max_tensors: usize, max_blocks: usize) {
                 dt_v
             );
             for (bias, budget) in [(0.5, 4.0), (1.0, 4.0), (1.0, 8.0), (1.5, 8.0), (1.0, 16.0)] {
-                let params = FanoParams { bias_scale: bias, budget_mult: budget };
+                let params = FanoParams {
+                    bias_scale: bias,
+                    budget_mult: budget,
+                };
                 let t0 = Instant::now();
                 let (enc, rep) = encode_tensor_fano(w, &cfg, &opts, lut, &params);
                 let dt_f = t0.elapsed().as_secs_f64();
@@ -375,7 +458,7 @@ fn main() {
     let mode = args.get(1).cloned().unwrap_or_else(|| "all".into());
     let mut model = "scratch/qwen-05b/qat-pv2-hf/model.safetensors".to_string();
     let mut max_tensors = 4usize;
-    let mut max_blocks = 512usize; 
+    let mut max_blocks = 512usize;
     let mut it = args.iter().skip(2);
     while let Some(a) = it.next() {
         match a.as_str() {

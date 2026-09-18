@@ -1,0 +1,28 @@
+{
+  "receipt_id": "WORKUNIT-20260918-3732EC28_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "WORKUNIT-20260918-3732EC28",
+  "phase": "BUILD",
+  "title": "Goal milestone 1: tested repository change",
+  "at": "2026-09-18T18:11:28.879506+00:00",
+  "written_at_unix": 1789755088,
+  "change": {
+    "paths": [
+      "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+      "hawking/test_auto_p9_darkmatter_owner_reconciliation_v2_regression.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 1"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 1,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-A52AB48501",
+  "real_engineering_seal": true
+}

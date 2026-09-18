@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.flash_e13.fixed_corpus_refusal.v1",
+  "status": "WITHHELD_FIXED_WIKINEWS_CONTROL_UNDERPOWERED",
+  "recorded_at": "2026-09-12T17:58:31Z",
+  "experiment": "E13",
+  "source": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "eligible_model_vocab_count": 248044
+  },
+  "controls": {
+    "predeclaration": {
+      "path": "receipts/headless/FLASH_E13_WIKINEWS_CORPUS_PREDECLARATION_20260912.json",
+      "file_sha256": "b5d4df70d3feb4f66a2b537a57ec5d3325a800f58630110f5f7d55f38f05b126",
+      "seal_sha256": "9231754ea9ae9558ad6f224806794fb3041035192091d27d6db16f443b918907"
+    },
+    "materialization": {
+      "path": "receipts/headless/FLASH_E13_WIKINEWS_CORPUS_MATERIALIZATION_20260912.json",
+      "file_sha256": "5cf2c0d8ee68f0bf09c37eca4607c2c490196e7ad776ad7f33941d8fc0574cfe",
+      "seal_sha256": "ac45138b36f828e2709fc7a74a4ba51012423a772137f22be1f69f7f15384fe7"
+    },
+    "evidence_declaration": {
+      "path": "receipts/headless/FLASH_E13_WIKINEWS_EVIDENCE_DECLARATION_20260912.json",
+      "file_sha256": "ce1b59a9c011ca984396a4e67ac875026e9481e9d85ee80178f8fdc7ee7bd9b4"
+    },
+    "row_budget": 4096,
+    "rows_per_cell": 512,
+    "fit_rows_per_cell": 256,
+    "heldout_rows_per_cell": 256,
+    "rare_max_count": 1,
+    "common_min_count": 2,
+    "short_max_utf8_bytes": 3,
+    "long_min_utf8_bytes": 4,
+    "selection_seed": 5683489481123170890,
+    "shuffled_null_seed": 15016081310332754406
+  },
+  "execution": {
+    "owner": "crates/hawking-core/src/flash_e13_vocabulary_evidence.rs::produce_e13_evidence",
+    "owner_source_sha256": "20f03e5f8384bf5ac2b78c650f46b2929d4b107ff76645ebd53c76f05a924adc",
+    "command": "cargo run -q -p hawking -- gravity e13-evidence --declaration receipts/headless/FLASH_E13_WIKINEWS_EVIDENCE_DECLARATION_20260912.json --tokenizer /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json --corpus /Users/scammermike/Library/Caches/Hawking/e13-wikinews-20260901/flash-e13-wikinews-corpus-20260901.txt --control-root receipts/headless --run-name FLASH_E13_WIKINEWS_EVIDENCE_20260912",
+    "exit_code": 1,
+    "error": "gravity: Flash E13 evidence: stratum rare-han-short has 166 eligible tokens but needs 512; change only a predeclared corpus/threshold contract",
+    "first_underpowered_stratum": {
+      "id": "rare-han-short",
+      "eligible_rows": 166,
+      "required_rows": 512,
+      "deficit_rows": 346
+    },
+    "evidence_directory": "receipts/headless/FLASH_E13_WIKINEWS_EVIDENCE_20260912",
+    "evidence_directory_committed": false,
+    "thresholds_changed_after_occupancy": false
+  },
+  "runtime_boundary": {
+    "model_loaded": false,
+    "tensor_payload_bytes_read": 0,
+    "row_extraction_performed": false,
+    "gpu_or_ane_execution": false,
+    "provider_started": false,
+    "daemon_or_web_restart": false,
+    "modellake_mutated": false,
+    "kimi_process_present_after_run": false,
+    "flash_process_present_after_run": false
+  },
+  "disposition": {
+    "fixed_wikinews_control": "SEALED_UNDERPOWERED",
+    "e13_overall": "WITHHELD_NOT_FALSIFIED",
+    "threshold_retuning_authorized": false,
+    "tensor_row_extraction_authorized": false,
+    "reopen_condition": "Select and predeclare a materially broader authoritative bilingual corpus and immutable transform before inspecting its cell occupancy. The next attempt must not tune thresholds against this result merely to fill rare-Han-short."
+  },
+  "claim_boundary": "This falsifies only the sufficiency of the fixed September 2026 bilingual Wikinews corpus under the predeclared E13 thresholds and 4096-row design. It does not falsify E13, report the other seven cell occupancies, authorize tensor payload reads, establish a representation, construct a complete NR, measure EBPW/TPS/capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "06180ade59372c20aaf7a506b463eab48f3d50688966a2cfc04defc4e0e55e61"
+}

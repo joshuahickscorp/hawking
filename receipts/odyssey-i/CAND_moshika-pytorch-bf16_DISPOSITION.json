@@ -1,0 +1,31 @@
+{
+ "obligation": "G103",
+ "architecture": "Moshi (Kyutai) full-duplex speech-text model: a main transformer plus a depformer, with gating blocks at both levels",
+ "execution_class": "streaming, real-time audio+text; latency-bound rather than throughput-bound, which makes decode TPS the wrong metric for it",
+ "why_it_was_open": "ships a bare model.safetensors with no config.json; the reader had no architecture to classify from",
+ "structure": "7.784B matrix params, 673 tensors, 97.6% bf16 with a 0.36 GiB fp32 audio tokenizer alongside; depformer gating repeats 48x, transformer gating 32x",
+ "gravity_note": "complete EBPW 16.198 -- the 2.4% fp32 tokenizer is the entire excess over a clean 16, and it is a SEPARATE artifact that must travel with the body. A quantization campaign that counted only model.safetensors would understate the system.",
+ "cross_layer_note": "32-48x repeated gating roles make it a valid subject for the residual reader/writer probe at no extra cost",
+ "disposition": "SPECIALIST / RESEARCH SPECIMEN -- a genuinely different execution class (full-duplex streaming) worth keeping for physics work; not a Resident or Pulsar candidate because its output is audio, not verified engineering work",
+ "reopen": "if the campaign needs a latency-bound rather than throughput-bound physical target",
+ "date": "2026-09-09",
+ "identity": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+ "complete_byte_anatomy": {
+  "n_tensors": 673,
+  "tensor_gib": 14.68,
+  "on_disk_gib": 14.68,
+  "matrix_params_b": 7.7838,
+  "dtype_bytes": {
+   "BF16": 15375458304,
+   "F32": 384605572
+  },
+  "per_container_gib": {
+   "model.safetensors": 14.32,
+   "tokenizer-e351c8d8-checkpoint125.safetensors": 0.36
+  },
+  "tensor_bytes_vs_disk": 1.0,
+  "distinct_roles": 62,
+  "n_repeated_roles": 38
+ },
+ "accounting_verified": "tensor bytes equal on-disk bytes to two decimals after two producer defects were fixed: a DeepSpeed container that yielded zero tensors silently, and logical bytes that double-counted a storage-aliased EMA copy by 48%."
+}

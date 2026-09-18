@@ -10,12 +10,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:15:00Z",
+  "recorded_at": "2026-09-10T14:46:21Z",
   "recorded_by": "tools/future/ebpw_categories.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/d1-doctor-depth-20260902-045450",
+ "branch": "main",
  "categories": {
   "compile_time_nr_bytes": {
    "interchangeable": false,
@@ -57,7 +57,7 @@
   "Validator is GREEN on honest FLASH_META_REPRESENTATION_SUB1 and REFUSED on a synthetic promotion variant.",
   "validate() calls tools.doctor.zeros.check_three_zeros; a low-BPW ledger that fails all three zeros is ordinary quantization (roadmap 9.2) and still does not promote."
  ],
- "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+ "head": "ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e",
  "integration": {
   "can_promote": "can_promote(ledger: PromotionLedger | Mapping) -> tuple[bool, str]",
   "doctor_zeros_for_doc": "doctor_zeros_for_doc(doc) -> dict; CALLS tools.doctor.zeros.check_three_zeros (import is not a call site)",
@@ -471,8 +471,8 @@
  "purpose": "Make category confusion between a prospective meta-BPW budget and a complete physical EBPW structurally impossible, so no future run can promote a sub-1 claim on a budget alone.",
  "recovered_implementation": [
   {
-   "path": "tools/odyssey/metric_audit.py",
-   "what": "DESIGN_EXPECTED vs ARTIFACT_PHYSICAL vs RUNTIME_MEASURED naming for the same kind of byte/EBPW figure. Watched-failing canaries. Does not type-separate the five quantities and does not make cross-category arithmetic a type error."
+   "path": "receipts/headless/PHYSICAL_METRIC_AUDIT.json",
+   "what": "Historical DESIGN_EXPECTED vs ARTIFACT_PHYSICAL vs RUNTIME_MEASURED naming for the same kind of byte/EBPW figure. Watched-failing canaries. Does not type-separate the five quantities and does not make cross-category arithmetic a type error."
   },
   {
    "path": "receipts/headless/EBPW_NAMESPACE_SEPARATION.json",
@@ -512,7 +512,7 @@
   }
  ],
  "schema": "hawking.future.ebpw_categories.v1",
- "seal_sha256": "d8d6827f43dbe89a0efd6e180eb8c43aa0c7e9bda4b13e652a7ff8ebe2304700",
+ "seal_sha256": "6cda2412bec6c1770025a575d6cc9f1504d4bbe4e65ceff4dc9e73d6cab697c3",
  "selftest": {
   "cross_category_arithmetic_message": "refused prospective_meta_bpw + complete_physical_ebpw: EBPW categories are not interchangeable",
   "cross_category_arithmetic_raises": true,

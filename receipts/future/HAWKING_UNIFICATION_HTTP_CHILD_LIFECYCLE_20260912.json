@@ -1,0 +1,235 @@
+{
+  "schema": "hawking.future.hawking_unification_http_child_lifecycle.v1",
+  "version": 1,
+  "recorded_at": "2026-09-12T05:52:07Z",
+  "campaign": "HAWKING UNIFICATION",
+  "claim_boundary": "The local HTTP child lifecycle for Llama and MLX has one implementation for endpoint, log-tail, readiness, and teardown. Provider command construction, spawn semantics, and completion parsing remain provider-owned.",
+  "base_commit": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "measurement_commit": "3a71fe4aef187f5879d12e4c94a7029bf5b34ebe",
+  "result_commit_ref": "HEAD: the commit containing this receipt",
+  "worktree": ".worktrees/hawking-unification-implementation",
+  "scope": {
+    "canonical_owner": {
+      "symbol": "hcli.backends._HttpChildLifecycle",
+      "methods": [
+        "endpoint",
+        "log_tail",
+        "ready",
+        "stop"
+      ],
+      "contract": "A local HTTP child has an optional port, optional attached process, optional recorded detached PID plus start token, health-based readiness, readable-or-empty log access, and idempotent fail-closed cleanup."
+    },
+    "migrated_consumers": [
+      "hcli.backends.LlamaServerBackend",
+      "hcli.backends.MlxServerBackend",
+      "hcli.backends.MlxVlmServerBackend via MlxServerBackend"
+    ],
+    "production_construction_and_consumption": [
+      "hcli.runtime_iface backend factory",
+      "hcli.runtime.RuntimePool readiness and shutdown",
+      "hcli.serve resident/build-server readiness and shutdown"
+    ],
+    "removed_duplicate_bodies": {
+      "classes": [
+        "LlamaServerBackend",
+        "MlxServerBackend"
+      ],
+      "methods": [
+        "endpoint",
+        "log_tail",
+        "ready",
+        "stop"
+      ],
+      "diagnostic_estimate": {
+        "four_method_lines_before": 160,
+        "duplicate_body_lines_before": 80
+      }
+    },
+    "provider_specific_behavior_retained": [
+      "command construction",
+      "spawn slot/decode semantics",
+      "payload normalization",
+      "completion response parsing"
+    ],
+    "necessary_transport_adapter": "hcli.serve._stop_owned_backend_children is a serving-process boundary cleanup adapter. It delegates only after checking the recorded process incarnation and does not implement a second lifecycle."
+  },
+  "process_identity_contract": {
+    "authority": "hcli.resources.process_identity_status",
+    "states": [
+      "matches",
+      "no_recorded_start_time",
+      "live_start_time_unreadable",
+      "pid_reused_start_time_mismatch"
+    ],
+    "destructive_rule": "Only matches may reach terminate_pid through detached fallback cleanup.",
+    "persistence_rule": "RuntimePool retains the original recorded start token for a verified-but-unreaped or identity-unreadable child. A PID-reuse mismatch is reported as skipped and is not persisted as owned.",
+    "boundaries_checked": [
+      "_HttpChildLifecycle.stop",
+      "Runtime.stop",
+      "RuntimePool.stop",
+      "serve._stop_owned_backend_children"
+    ]
+  },
+  "diff_ledger": {
+    "files_changed": [
+      "hcli/backends.py",
+      "hcli/resources.py",
+      "hcli/runtime.py",
+      "hcli/serve.py",
+      "hcli/tests/test_http_child_lifecycle.py"
+    ],
+    "per_file_added_deleted": {
+      "hcli/backends.py": [109, 173],
+      "hcli/resources.py": [22, 0],
+      "hcli/runtime.py": [88, 11],
+      "hcli/serve.py": [41, 24],
+      "hcli/tests/test_http_child_lifecycle.py": [446, 0]
+    },
+    "total_added": 706,
+    "total_deleted": 208,
+    "net_physical_diff": 498,
+    "backend_file_net": -64,
+    "test_path_net": 446,
+    "interpretation": "The duplicate backend bodies were deleted, but the tranche is not a net source reduction: it adds an explicit PID-incarnation safety contract, runtime/serve enforcement, and independent conformance coverage. Tests were retained rather than removed to improve this ledger."
+  },
+  "source_ledger": {
+    "frozen_v1": {
+      "tool": "tools/loc/hawking_loc.py",
+      "schema": "hawking.loc.authority.v1",
+      "policy": "tracked active source physical lines; the tool's existing test-excluding product rule",
+      "base": {
+        "combined_active_monorepo_LOC": 1210070,
+        "runtime_LOC": 1065863,
+        "test_excluding_runtime_LOC": 1012281,
+        "product_LOC": 522651,
+        "test_excluding_product_LOC": 469279,
+        "python_LOC": 563563,
+        "rust_LOC": 454034,
+        "shader_LOC": 48320
+      },
+      "after": {
+        "combined_active_monorepo_LOC": 1210568,
+        "runtime_LOC": 1065915,
+        "test_excluding_runtime_LOC": 1012333,
+        "product_LOC": 522703,
+        "test_excluding_product_LOC": 469331,
+        "python_LOC": 564061,
+        "rust_LOC": 454034,
+        "shader_LOC": 48320
+      },
+      "delta": {
+        "combined_active_monorepo_LOC": 498,
+        "runtime_LOC": 52,
+        "test_excluding_runtime_LOC": 52,
+        "product_LOC": 52,
+        "test_excluding_product_LOC": 52,
+        "python_LOC": 498,
+        "rust_LOC": 0,
+        "shader_LOC": 0
+      }
+    },
+    "corrected_v2": {
+      "tool": "tools/loc/collapse_probe.py on codex/hawking-collapse-diagnostic",
+      "schema": "hawking.loc.collapse_probe.v2",
+      "policy": "same v1 path/language population, physical unterminated-final-line correction, and conservative Rust cfg(test) exclusion; no generated/deletion claim",
+      "base": {
+        "combined_active_monorepo_LOC": 1210075,
+        "runtime_LOC": 1065864,
+        "test_excluding_runtime_LOC": 1012736,
+        "product_LOC": 522652,
+        "test_excluding_product_LOC": 469734,
+        "strict_product_python_LOC": 93397,
+        "strict_product_rust_LOC": 328632,
+        "strict_product_shader_LOC": 47696,
+        "strict_product_rust_percent": 77.86953
+      },
+      "after": {
+        "combined_active_monorepo_LOC": 1210573,
+        "runtime_LOC": 1065916,
+        "test_excluding_runtime_LOC": 1012788,
+        "product_LOC": 522704,
+        "test_excluding_product_LOC": 469786,
+        "strict_product_python_LOC": 93449,
+        "strict_product_rust_LOC": 328632,
+        "strict_product_shader_LOC": 47696,
+        "strict_product_rust_percent": 77.859937
+      },
+      "delta": {
+        "combined_active_monorepo_LOC": 498,
+        "runtime_LOC": 52,
+        "test_excluding_runtime_LOC": 52,
+        "product_LOC": 52,
+        "test_excluding_product_LOC": 52,
+        "strict_product_python_LOC": 52,
+        "strict_product_rust_LOC": 0,
+        "strict_product_shader_LOC": 0,
+        "strict_product_rust_percentage_points": -0.009593
+      }
+    },
+    "reconciliation": "The 446-line test-path increase plus the 52-line production/runtime increase equals the 498-line active-source increase. The corrected v2 469,734 baseline is preserved for campaign comparison; the frozen v1 value remains recorded because it is the repository's existing LOC authority."
+  },
+  "validation": {
+    "caller_authority_check": {
+      "result": "PASS",
+      "evidence": "The exact method objects for endpoint, log_tail, ready, and stop are shared by LlamaServerBackend, MlxServerBackend, and MlxVlmServerBackend. Concrete construction remains in hcli.runtime_iface and lifecycle use remains polymorphic through RuntimePool and serve."
+    },
+    "commands": [
+      {
+        "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest hcli/tests/test_http_child_lifecycle.py hcli/tests/test_mlx_backend.py hcli/tests/test_runtime_pool.py hcli/tests/test_runtime_interface.py hcli/tests/test_liveness_and_receipt_races.py hcli/test_cancel_does_not_wait_on_a_zombie.py hcli/test_processes.py hcli/tests/test_catalog_and_switching.py -q -p no:cacheprovider",
+        "result": "99 passed, 28 subtests passed"
+      },
+      {
+        "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest hcli/tests/test_serve_openai_surface.py hcli/tests/test_hawking_native.py -q -p no:cacheprovider",
+        "result": "34 passed"
+      },
+      {
+        "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m compileall -q hcli/backends.py hcli/resources.py hcli/runtime.py hcli/serve.py hcli/tests/test_http_child_lifecycle.py",
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check",
+        "result": "passed before commit"
+      },
+      {
+        "command": "python3 tools/loc/hawking_loc.py --rev 8f10e8bb8ad4b1888c024a22db67b24472cf30f8 --json; python3 tools/loc/hawking_loc.py --json",
+        "result": "frozen v1 base/after ledger above"
+      },
+      {
+        "command": "python3 tools/loc/collapse_probe.py --rev <base-or-measurement-commit> --out /tmp/... --ledger /tmp/...",
+        "result": "corrected v2 base/after ledger above; diagnostic tool writes only temporary outputs"
+      }
+    ],
+    "known_baseline_failure": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest hcli/tests/test_runtime_authority.py -q -p no:cacheprovider",
+      "base_result": "7 passed, 1 failed",
+      "measurement_result": "7 passed, 1 failed",
+      "failure": "TestOversizedSlotAllocation.test_single_slot_is_not_oversized: its existing FakeBackend lacks an endpoint, so RuntimePool rejects the spawned resident before the slot assertion.",
+      "scope_relation": "Unchanged by this tranche; it was reproduced on both base and measurement commits and is not counted as a lifecycle regression."
+    }
+  },
+  "runtime_probe": {
+    "purpose": "Detect a gross direct-dispatch regression in the shared endpoint method without launching a provider.",
+    "method": "41 samples of 20,000 LlamaServerBackend.endpoint calls in a fresh Python process; perf_counter_ns divided by calls per sample.",
+    "base": {
+      "p50_ns": 77.2729,
+      "p95_ns": 85.8709
+    },
+    "after": {
+      "p50_ns": 74.0458,
+      "p95_ns": 77.7645
+    },
+    "result": "No direct-dispatch regression observed in this run.",
+    "limitations": "This is a nanosecond-scale synthetic Python dispatch probe, run sequentially with uncontrolled CPU/cache state. It did not launch a model, HTTP provider, GPU, ANE, hawkingd, or Web process, so it is not a real serving-performance claim."
+  },
+  "remaining_duplicate_authority": [
+    "OpenAI/native and other non-local HTTP transports retain distinct lifecycle semantics outside this tranche.",
+    "Llama and MLX retain provider-specific spawn, command, and completion behavior because their semantics differ.",
+    "Resolved action identity remains the next authority boundary: the current selection path can still lose revision/grant/action information across Rust, Python, serve, and Web."
+  ],
+  "rollback": "git revert <commit-containing-this-receipt>",
+  "limitations": [
+    "No real provider was launched, by the active Flash-lane isolation constraint.",
+    "This tranche proves one lifecycle owner for the three local backend classes; it does not claim all serving policy is unified.",
+    "The system-wide LOC ledger increased, so no repository-size reduction is claimed from this tranche alone."
+  ]
+}

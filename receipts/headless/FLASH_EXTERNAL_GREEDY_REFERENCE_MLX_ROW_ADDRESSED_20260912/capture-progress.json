@@ -1,0 +1,59 @@
+{
+  "claim_boundary": "in-flight external source capture; not an admitted reference",
+  "generated_token_ids": [],
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "provider": {
+    "hawking_packager": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+      "sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6"
+    },
+    "implementation": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/provider-implementation.json",
+      "sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117"
+    },
+    "producer": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418"
+    },
+    "runtime": {
+      "packages": {
+        "mlx": "0.32.2",
+        "mlx-vlm": "0.7.0",
+        "safetensors": "0.8.0",
+        "torch": "2.14.0",
+        "transformers": "5.17.0"
+      },
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "python_executable": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/bin/python",
+      "python_executable_resolved": "/Users/scammermike/.local/share/uv/python/cpython-3.13.13-macos-aarch64-none/bin/python3.13",
+      "python_executable_sha256": "3237648c5222017bba78737370570e4c9d5a01e552cdf2fa11f107c8d00fc06e",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    },
+    "runtime_lock": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    }
+  },
+  "schema": "hawking.flash.external_greedy_reference_capture.v1",
+  "source": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "shard_ledger": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_SHARD_LEDGER_20260912.json",
+      "schema": "hawking.flash.source_shard_ledger.v1",
+      "seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "status": "VERIFIED_COMPLETE_SOURCE_SHARD_LEDGER"
+    }
+  },
+  "started_unix_ns": 1789230863683282000,
+  "status": "RUNNING_EXTERNAL_SOURCE_GREEDY_CAPTURE",
+  "steps": []
+}

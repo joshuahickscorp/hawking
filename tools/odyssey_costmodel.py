@@ -374,7 +374,7 @@ def _gpu_snapshot() -> dict:
     try:
         if str(REPO) not in sys.path:
             sys.path.insert(0, str(REPO))
-        from hcli.machine import metal_device_info
+        from hawking.machine import metal_device_info
         info = metal_device_info()
     except Exception:
         return {"gpu_working_set_bytes": None, "gpu_allocated_bytes": None,

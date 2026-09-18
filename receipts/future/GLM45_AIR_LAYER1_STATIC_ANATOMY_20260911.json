@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.odyssey.glm45_air.static_anatomy.v1",
+  "recorded_at": "2026-09-11T08:08:00Z",
+  "status": "STATIC_DISCRIMINATOR_PASS",
+  "specimen": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+  "method": {"tool": "tools/future/representational_anatomy.py", "layer": 1, "runtime_loaded": false},
+  "architecture": {"model_type": "glm4_moe", "routed_experts": 128, "shared_experts_present": true, "gqa_attention": true},
+  "observations": {
+    "cross_expert": {"down_proj_deficit_pct": 0.0, "gate_proj_deficit_pct": -0.015, "up_proj_deficit_pct": 0.002, "verdict": "DEAD_FOR_SHARED_BASIS_COMMON_DELTA_AND_CLUSTERING"},
+    "within_expert": {"shape": [4096, 1408], "ratio": 0.4748, "matched_null_ratio": 0.8422, "deficit_pct": 43.618, "rank_90": 624, "bf16_break_even_rank": 1048, "verdict": "REAL_BYTE_LEVER_CAPABILITY_UNTESTED"}
+  },
+  "transfer_result": "The shared-basis negative now transfers across LFM2, Kimi-Linear, and GLM4 MoE. Within-expert low-rank is conditional: strongly real for GLM4 and LFM2, absent in tested Kimi-Linear layer 1.",
+  "next_discriminator": "For GLM4, use output/capability-aware low-rank plus protected residual only after runtime admission. Do not run cross-expert basis or common-delta fanouts.",
+  "claim_boundary": "Static one-layer anatomy only; no capability, execution, physical, or full-body EBPW claim."
+}

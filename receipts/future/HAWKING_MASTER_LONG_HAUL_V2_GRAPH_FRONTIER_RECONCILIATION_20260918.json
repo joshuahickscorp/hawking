@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.long_haul.v2.graph_frontier_reconciliation.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T05:48:06Z",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "claim_boundary": "Dependency projection only. Runnable graph nodes are not admitted WorkUnits until each has a durable objective, acceptance contract, protected-resource boundary, writer scope, and falsifier.",
+  "accepted_predecessors": [
+    "P1_CONTROL_PLANE_COLLAPSE",
+    "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT",
+    "P11_NATIVE_CPU",
+    "P13_NVIDIA_BACKEND"
+  ],
+  "dependency_valid_frontier_without_durable_contract": [
+    "P2_PRODUCT_COMMANDS_HWEB",
+    "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN",
+    "P5_PERCEPTION_ARSENAL",
+    "P14_PCIE_FPGA"
+  ],
+  "terminal_provider_outcomes_not_replayed": [
+    "P6_GRAVITY",
+    "P12_APPLE_BACKEND",
+    "P16_ODYSSEY_MODELLAKE"
+  ],
+  "auto_refill_probe": {
+    "efficient_concurrency": null,
+    "ceiling": null,
+    "admitted": [],
+    "reason": "The queue contains no durable contract for the newly dependency-valid nodes; Auto is unbounded but is not a planner and must not invent objectives."
+  },
+  "next_transition": "Materialize the four named contracts through the canonical Auto/Goal owner, then let unbounded refill admit disjoint nonconflicting lanes concurrently."
+}

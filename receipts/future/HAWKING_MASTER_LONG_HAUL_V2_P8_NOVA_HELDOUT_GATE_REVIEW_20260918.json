@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.long_haul.v2.gate_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T08:24:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P8_NOVA_HELDOUT_GATE_DISCOVERY",
+  "local_source_map": {
+    "functional_evaluator": "tools/future/kimi_operator_evaluation.py",
+    "promotion_gate": "tools/future/kimi_operator_gate.py",
+    "candidate_live_owner": "tools/future/kimi_operator_live_evidence.py",
+    "functional_evaluator_sha256": "603fcbf0b914d60343a6dae1f23f32d09e637ec5b08c8c44b52ead7c2a8423e4",
+    "promotion_gate_sha256": "7bc78fb519fab9bb337e583d68171b57d34029322409abba1fff4b9002cc6171",
+    "candidate_live_owner_sha256": "1db6773e8d5ac5f22d7138b28a708a7f92df356a384f20c9a53f0741486f82d5"
+  },
+  "verification": {
+    "focused_command": "python3 -m pytest -q tools/future/test_kimi_operator_evaluation.py tools/future/test_kimi_operator_gate.py tools/future/test_kimi_operator_live_evidence.py tools/future/test_kimi_operator_evidence.py tools/future/test_kimi_operator_candidates.py",
+    "focused_result": "41 passed",
+    "functional_matrix": "FUNCTIONAL_SIM_COMPLETE; candidate_count=7; all copy-only functional rows passed; weights_written=false; promotion=NOT_PERFORMED",
+    "promotion_gate_command": "python3 tools/future/kimi_operator_gate.py receipts/future/KIMI_OPERATOR_EVALUATION_SIM_20260910.json",
+    "promotion_gate_result": "PROMOTION_REFUSED",
+    "missing_gates": [
+      "heldout_behavior",
+      "causal_behavior",
+      "candidate_live_evaluation",
+      "provenance"
+    ],
+    "gate_axes_passed": [
+      "authorization",
+      "candidate_matrix",
+      "capability",
+      "destructive_controls",
+      "epistemic",
+      "hcli",
+      "physical"
+    ]
+  },
+  "next_action": "Map the candidate-specific clean-process live-evidence owner and its exact refusal/qualification boundary; do not infer candidate identity or promotion from generic functional simulation.",
+  "falsifier": "A current candidate-specific receipt with qualified live evidence and all missing gates independently satisfied would supersede this refusal state; absent that evidence, promotion remains refused.",
+  "claim_boundary": "Local evaluator and fail-closed gate evidence only. No weights were loaded, no candidate was trained or promoted, and no full-model capability or hardware qualification is claimed."
+}

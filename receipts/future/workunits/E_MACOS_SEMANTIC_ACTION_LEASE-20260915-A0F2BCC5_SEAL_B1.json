@@ -1,0 +1,27 @@
+{
+  "receipt_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5",
+  "phase": "BUILD",
+  "title": "Goal milestone 1: tested repository change",
+  "at": "2026-09-16T03:28:37.119525+00:00",
+  "written_at_unix": 1789529317,
+  "change": {
+    "paths": [
+      "hawking/macos_world.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 1"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 1,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-B33C69F193",
+  "real_engineering_seal": true
+}

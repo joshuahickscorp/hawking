@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:47:12.652648+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:47:12.652658+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:47:12.652660+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 3682,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:47:12.652672+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def _is_remote_openrouter_model(value: Any) -> bool:\\n    \\\"\\\"\\\"Recognize an OpenRouter id without making it a second authority.\\\"\\\"\\\"\\n    text = str(value or \\\"\\\").strip()\\n    if text.lower().startswith(\\\"openrouter:\\\"):\\n        return bool(text.split(\\\":\\\", 1)[1].strip())\\n    # OpenRouter's public ids are provider/model and are intentionally opaque.\\n    # Do not mistake absolute paths or native JSON artifacts for one.\\n    if not text or text.startswith((\\\"/\\\", \\\".\\\")):\\n        return False\\n    if text.endswith(WEIGHT_ARTIFACT_SUFFIXES):\\n        return False\\n    if \\\"\\\\\\\\\\\" in text:\\n        return False\\n    if \\\"://\\\" in text:\\n        return False\\n    if text.count(\\\"/\\\") != 1:\\n        return False\\n    provider, _, model = text.partition(\\\"/\\\")\\n    if not provider.strip() or not model.strip():\\n        return False\\n    if any(ch.isspace() for ch in text):\\n        return False\\n    return True\", \"old_text\": \"def _is_remote_openrouter_model(value: Any) -> bool:\\n    \\\"\\\"\\\"Recognize an OpenRouter id without making it a second authority.\\\"\\\"\\\"\\n    text = str(value or \\\"\\\").strip()\\n    if text.lower().startswith(\\\"openrouter:\\\"):\\n        return bool(text.split(\\\":\\\", 1)[1].strip())\\n    # OpenRouter's public ids are provider/model and are intentionally opaque.\\n    # Do not mistake absolute paths or native JSON artifacts for one.\\n    return bool(\\n        \\\"/\\\" in text\\n        and not text.startswith((\\\"/\\\", \\\".\\\"))\\n        and not text.endswith(WEIGHT_ARTIFACT_SUFFIXES)\\n   ",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789753632.184125, \"n_stdout_chars\": 99, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789753631.967251, \"stderr\": \"\", \"stdout\": \"...........................                                              [100%]\\n27 passed in 0.07s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/goal_surface.py\", \"sha256_after\": \"209bb326e61fbc6bc2f46a18b0e006eab807f1acca34ee39f9176d48b2a6326b\", \"sha256_before\": \"b7c16ade34ef4246646d52f57da7c80f7497a9e3d6fe9b5ff45f5ee4122f1328\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py\", \"sha256_after\": \"8157be0a6754313651c755dde96b9afe1f7b46dfe4c5a0a9604ed61755d56005\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/goal_surface.py\", \"sha256_after\": \"209bb326e61fbc6bc2f46a18b0e006eab807f1acca34ee39f9176d48b2a6326b\", \"sha256_before\": \"b7c16ade34ef4246646d52f57da7c80f7497a9e3d6fe9b5ff45f5ee4122f1328\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py\", \"sha256_after\": \"8157be0a6754313651c755dde96b9afe1f7b46dfe4c5a0a9604ed61755d56005\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/goal_surface.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 27, \"executed\": 27, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 27, \"requested\": \"hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py\", \"runner\": \"pyte",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:47:12.655074+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"goal_id\": \"GOAL-A52AB48501\", \"workunit_id\": \"WORKUNIT-20260918-CE62FBBF\", \"operations\": [{\"op\": \"replace\", \"path\": \"hawking/goal_surface.py\", \"old_text\": \"def _is_remote_openrouter_model(value: Any) -> bool:",
+      "outcome": "CONTINUE",
+      "reply_chars": 3682,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/goal_surface.py",
+        "hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-CE62FBBF_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/goal_surface.py",
+    "hawking/tests/test_auto_p20_final_handoff_review_v2_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P20_FINAL_HANDOFF_REVIEW_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-CE62FBBF_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-CE62FBBF"
+}

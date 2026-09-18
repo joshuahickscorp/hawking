@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.long_haul.v2.local_reconciliation_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P18_TUNNEL_WIRE_STATUS_V5",
+  "workunit_id": "WORKUNIT-20260918-502C954D",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Independent local Tunnel wire-status verification only; no deployment, authorization, or release claim.",
+  "source_observation": {
+    "hawking/serve.py": "1824c2e0ba041e799e16f49ccb4db370a84b3a0d980da86d7e02ca68af3a135d",
+    "hawking/share_bridge.py": "847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46",
+    "hawking/tests/test_share_bridge.py": "334c69d436590795aa0ae65d6ad535394b323a8e7c804b8efae17c7061776a69"
+  },
+  "focused_verification": {
+    "command": "python3 -m pytest -q hawking/tests/test_share_bridge.py hawking/tests/test_web_live_contract.py hawking/tests/test_serve_openai_surface.py",
+    "result": "passed as part of 87-test HTTP/share suite"
+  },
+  "wire_statuses": {
+    "host_invite": 201,
+    "public_pair": 200,
+    "public_request": 200
+  },
+  "falsifier": "A successful public pair/reconnect/request/disconnect route returns a non-200 status, or a ShareError status is flattened to 200."
+}

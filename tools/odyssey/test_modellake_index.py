@@ -155,8 +155,26 @@ def test_build_and_query_on_a_tiny_lake(tmp_path):
     assert row["seal_status"] == "SEALED"
     assert row["loaded_weights"] is False
     assert row["wrote_specimen"] is False
+    traits = row["architecture_fingerprint"]["static_traits"]
+    assert traits["schema"] == "hawking.gravity.static_organ_traits.v1"
+    assert traits["static_only"] is True
+    assert traits["loaded_weights"] is False
     assert (lake / "index" / "catalog.json").is_file()
     assert (lake / "index" / "by-slug" / f"{CANON}.json").is_file()
+
+
+def test_generic_modellake_index_never_requests_selected_shape_headers(tmp_path, monkeypatch):
+    lake = _lake(tmp_path)
+    _add_specimen(lake, CANON, model_type="qwen3", architectures=["Qwen3ForCausalLM"])
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("generic ModelLake indexing requested a target-only header witness")
+
+    monkeypatch.setattr(lin, "selected_tensor_headers_from_specimen", forbidden)
+    _build(lake, force=True)
+    row = mx.query_specimen(CANON, index_dir=lake / "index", lake=lake)
+    traits = row["architecture_fingerprint"]["static_traits"]
+    assert "selected_tensor_headers" not in traits
 
 
 def test_query_does_not_walk_the_lake(tmp_path, monkeypatch):

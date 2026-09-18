@@ -9,7 +9,7 @@
 //! - `goldens/commands.d.ts` - CommandSpec types (counted source);
 //! - `fixtures/events.json` - the canonical event fixtures;
 //! External clients consume the crate-owned schema and catalog artifacts; no
-//! frontend mirror is generated in the headless HCLI phase.
+//! frontend mirror is generated in the headless HAWKING phase.
 //!
 //! The golden-file tests regenerate these in memory and compare against the
 //! committed copies, so an intentional protocol change fails the build until

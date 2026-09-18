@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P19_SANDBOX_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-FD173886",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded bounded sandbox persistence contract only; no execution, hardware, or release claim.",
+  "source_observation": {"owner": "hawking/sandbox_world.py", "sha256": "019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27", "observed_focus_bytes": 4000},
+  "focused_tests": [{"path": "hawking/tests/test_sandbox_world.py", "sha256": "460747df82cf48e2315864be4b00ca40b050bb4567ff5c408fb21efae35256ed"}],
+  "local_verification": {"command": "python3 -m pytest -q hawking/tests/test_sandbox_world.py hawking/tests/test_worker_option_c.py hawking/tests/test_worker_special_unit.py", "result": "98 passed"},
+  "next_seam": "Keep _load/_save as the schema/world_id validation and single-write boundary under .hawking/sandbox/worlds; do not expand into execution policy or Option-C lifecycle ownership.",
+  "falsifier": "A mismatched world_id is loaded without SandboxWorldError 409, or a world save writes outside the canonical world path, falsifying the contract."
+}

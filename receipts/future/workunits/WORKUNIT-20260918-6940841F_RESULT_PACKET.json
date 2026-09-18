@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:47:23.665817+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:47:23.665825+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:47:23.665828+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 4504,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:47:23.665841+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def llama_server_binary() -> str:\\n    explicit = os.environ.get(\\\"HAWKING_LLAMA_SERVER\\\")\\n    if explicit:\\n        return explicit\\n    binary = shutil.which(\\\"llama-server\\\")\\n    if not binary:\\n        raise RuntimeError(\\\"llama-server not found on PATH\\\")\\n    return binary\\n\\n\\ndef http200_semantic_gate_v5(response_status: int, body: Any) -> Tuple[bool, str]:\\n    \\\"\\\"\\\"P18_HTTP200_SEMANTIC_GATE_V5: a 200 is not a success by itself.\\n\\n    A model server can answer HTTP 200 with an error envelope, an empty\\n    completion, or a body that is not the JSON object the caller asked for.\\n    Treating the status code as the verdict lets that pass silently. This gate\\n    inspects the decoded body and returns (ok, reason); ok is True only when\\n    the status is 200 AND the body carries a non-empty completion payload.\\n    \\\"\\\"\\\"\\n    if response_status != 200:\\n        return False, f\\\"http_status_{response_status}\\\"\\n    if body is None:\\n        return False, \\\"empty_body\\\"\\n    if isinstance(body, str):\\n        if not body.strip():\\n            return False, \\\"empty_body\\\"\\n        return True, \\\"ok\\\"\\n    if isinstance(body, Mapping):\\n        if body.get(\\\"error\\\"):\\n            return False, \\\"error_envelope\\\"\\n        for key in (\\\"choices\\\", \\\"content\\\", \\\"text\\\", \\\"response\\\"):\\n            if key in body:\\n                value = body[key]\\n                if value is None:\\n                    return False, \\\"empty_completion\\\"\\n                if isinstance(value, str) and not valu",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/test_auto_p18_http200_semantic_gate_v5_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789753643.201321, \"n_stdout_chars\": 99, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789753643.018687, \"stderr\": \"\", \"stdout\": \".............                                                            [100%]\\n13 passed in 0.05s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/backends.py\", \"sha256_after\": \"af1077d15e2fe09c2ac80780cc5f52b9a0451a96be5476a4f836dbc0e4d56405\", \"sha256_before\": \"e8483387a0cfddbdb1ada706188158597404f852cf5e9d2dc9811463da52875a\"}, {\"changed\": true, \"path\": \"hawking/test_auto_p18_http200_semantic_gate_v5_regression.py\", \"sha256_after\": \"d475483dfda9e10c27a8af812c6138b0754915f487a81f60ddd99d2b6d65276e\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/backends.py\", \"sha256_after\": \"af1077d15e2fe09c2ac80780cc5f52b9a0451a96be5476a4f836dbc0e4d56405\", \"sha256_before\": \"e8483387a0cfddbdb1ada706188158597404f852cf5e9d2dc9811463da52875a\"}, {\"changed\": true, \"path\": \"hawking/test_auto_p18_http200_semantic_gate_v5_regression.py\", \"sha256_after\": \"d475483dfda9e10c27a8af812c6138b0754915f487a81f60ddd99d2b6d65276e\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/backends.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/test_auto_p18_http200_semantic_gate_v5_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 13, \"executed\": 13, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 13, \"requested\": \"hawking/test_auto_p18_http200_semantic_gate_v5_regression.py\", \"runner\": \"pytest\", \"stderr\": \"\", \"stdout\": \"==",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:47:23.668674+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operations\":[{\"op\":\"replace\",\"path\":\"hawking/backends.py\",\"old_text\":\"def llama_server_binary() -> str:\\n    explicit = os.environ.get(\\\"HAWKING_LLAMA_SERVER\\\")\\n    if explicit:\\n        return explicit\\n    ",
+      "outcome": "CONTINUE",
+      "reply_chars": 4504,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/backends.py",
+        "hawking/test_auto_p18_http200_semantic_gate_v5_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-6940841F_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/backends.py",
+    "hawking/test_auto_p18_http200_semantic_gate_v5_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P18_HTTP200_SEMANTIC_GATE_V5 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-6940841F_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-6940841F"
+}

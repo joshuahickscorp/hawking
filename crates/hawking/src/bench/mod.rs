@@ -9,11 +9,11 @@ use std::path::PathBuf;
 /// Return an honest model-decode throughput measurement.
 ///
 /// A completion's first emitted token may come from prompt-prefill logits, so
-/// `completion_tokens / decode_ms` can overstate decode TPS by one token. The
+/// `completion_tokens / decode_ns` can overstate decode TPS by one token. The
 /// engine records completed decode forwards separately; use that authoritative
 /// count whenever it is available.
 pub(crate) fn measured_decode_tps(stats: &hawking_core::GenStats) -> Option<f64> {
-    (stats.decode_ms > 0.0).then(|| stats.dec_tps())
+    (stats.decode_elapsed_ns() > 0).then(|| stats.dec_tps())
 }
 
 #[derive(Debug, Clone)]

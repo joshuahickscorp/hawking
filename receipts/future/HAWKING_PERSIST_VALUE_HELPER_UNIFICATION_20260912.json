@@ -1,0 +1,190 @@
+{
+  "schema": "hawking.persist.value_helpers.unification.receipt.v1",
+  "status": "STATIC_PERSIST_VALUE_HELPER_OWNER_VERIFIED",
+  "recorded_at": "2026-09-12T06:19:18-04:00",
+  "base_commit": "43e1de1df98cc2435cfcef16344b64cee910607d",
+  "scope": {
+    "canonical_owner": {
+      "module": "hcli/persist.py",
+      "symbols": [
+        "json_compatible_copy",
+        "sha256_bytes"
+      ],
+      "import_boundary": "stdlib-only; hcli.persist imports no hcli or tools module"
+    },
+    "json_compatible_copy_consumers": [
+      "hcli/physical_graph.py::_copy",
+      "hcli/agentos/accelerator_regression.py::_safe",
+      "hcli/agentos/research.py::_safe_json",
+      "hcli/agentos/autonomy_gate.py::_json_safe",
+      "hcli/agentos/runtime.py::_json_safe",
+      "hcli/agentos/protected_benchmark_watcher.py::_safe",
+      "hcli/agentos/qwen27_runtime_identity.py::_safe",
+      "hcli/agentos/flash_component_campaign.py::_copy",
+      "hcli/agentos/flash_executable.py::_safe"
+    ],
+    "sha256_bytes_consumers": [
+      "hcli/tool_registry.py::_sha256_bytes",
+      "hcli/agentos/flash_tensor_probe.py::_sha256_bytes",
+      "hcli/agentos/flash_science.py::_sha256_bytes",
+      "hcli/agentos/flash_transform_parity.py::_sha256_bytes",
+      "hcli/agentos/flash_representation_experiment.py::_sha256_bytes",
+      "hcli/agentos/flash_loader_roundtrip.py::_sha256_bytes",
+      "hcli/agentos/flash_matrix_component_body.py::_sha256_bytes",
+      "hcli/agentos/flash_router_representation_ab.py::_sha256_bytes",
+      "hcli/agentos/flash_router_selection.py::_sha256_bytes",
+      "hcli/agentos/flash_vector_component_body.py::_sha256_bytes",
+      "hcli/agentos/flash_component_body.py::_sha256_bytes"
+    ],
+    "compatibility_imports_retained": [
+      "hcli/agentos/qwen27_mlp_diagnostic.py imports accelerator_regression._safe",
+      "hcli/agentos/protected_accelerator_benchmark.py imports accelerator_regression._safe"
+    ]
+  },
+  "duplicate_evidence": {
+    "measurement_method": "Each tracked HEAD function was extracted with Python AST before editing. For the JSON family, replacing only the FunctionDef name yields one normalized body shape. The SHA family has two raw groups only because five helpers spell the single formal parameter value instead of data.",
+    "json_compatible_copy": {
+      "copies": 9,
+      "local_call_sites": 56,
+      "normalized_ast_sha256": "f0c0b2a302cbf97b8b90c06660e6a0fbf870640d2b2d2a39b90687c65480e407",
+      "raw_source_groups": [
+        {
+          "copies": 4,
+          "members": [
+            "accelerator_regression::_safe",
+            "protected_benchmark_watcher::_safe",
+            "qwen27_runtime_identity::_safe",
+            "flash_executable::_safe"
+          ],
+          "each_span": {
+            "lines": 5,
+            "bytes": 174,
+            "sha256": "c174e1ec3612a379cd1efb6c418e1aaa2ae49071569c69c65603b266eb087848"
+          }
+        },
+        {
+          "copies": 2,
+          "members": [
+            "autonomy_gate::_json_safe",
+            "runtime::_json_safe"
+          ],
+          "each_span": {
+            "lines": 5,
+            "bytes": 179,
+            "sha256": "d53d729b58c3cc455973527a7249671fb1b32317e644e1590dd36929eae40891"
+          }
+        },
+        {
+          "copies": 2,
+          "members": [
+            "physical_graph::_copy",
+            "flash_component_campaign::_copy"
+          ],
+          "each_span": {
+            "lines": 5,
+            "bytes": 174,
+            "sha256": "682a8a98a9a90eb84a0903127f67d576b07cb5636e6fa476902c931c391ecbad"
+          }
+        },
+        {
+          "copies": 1,
+          "members": [
+            "research::_safe_json"
+          ],
+          "each_span": {
+            "lines": 5,
+            "bytes": 179,
+            "sha256": "403390dfc93af9f545fe3c703eb6f38c07c3be0ba48f2f0c206eca6c1a2fc77d"
+          }
+        }
+      ]
+    },
+    "sha256_bytes": {
+      "copies": 11,
+      "local_call_sites": 42,
+      "raw_source_groups": [
+        {
+          "copies": 6,
+          "members": [
+            "tool_registry::_sha256_bytes",
+            "flash_tensor_probe::_sha256_bytes",
+            "flash_science::_sha256_bytes",
+            "flash_transform_parity::_sha256_bytes",
+            "flash_representation_experiment::_sha256_bytes",
+            "flash_loader_roundtrip::_sha256_bytes"
+          ],
+          "each_span": {
+            "lines": 2,
+            "bytes": 82,
+            "sha256": "abfa6519e1723a732cbf88b79262e31a8e89cfff95d355bab1123ee5cc0502b4"
+          }
+        },
+        {
+          "copies": 5,
+          "members": [
+            "flash_matrix_component_body::_sha256_bytes",
+            "flash_router_representation_ab::_sha256_bytes",
+            "flash_router_selection::_sha256_bytes",
+            "flash_vector_component_body::_sha256_bytes",
+            "flash_component_body::_sha256_bytes"
+          ],
+          "each_span": {
+            "lines": 2,
+            "bytes": 84,
+            "sha256": "fb67d7134ff11e3cdab323bb3925dc94762e2d130965fd3f0f9c4a5566535fa5"
+          }
+        }
+      ]
+    }
+  },
+  "preserved_contract": {
+    "json_compatible_copy": "Call json.loads(json.dumps(value, sort_keys=True, default=str)); on only TypeError or ValueError, return str(value). It adds no cycle handling, redaction, schema validation, coercion, mutation, or catch-all error policy.",
+    "sha256_bytes": "Return hashlib.sha256(data).hexdigest() directly. The existing bytes annotations remain non-enforcing, so bytes-like bytearray input still succeeds; no I/O, chunking, retry, canonical-JSON serialization, or error suppression is introduced.",
+    "consumer_surface": "Every migrated local name remains a direct import alias. In particular, accelerator_regression._safe remains importable for the two existing dependent modules.",
+    "imports": "All migrated AgentOS consumers already imported hcli.persist. The two new imports, physical_graph and tool_registry, are safe because the persistence leaf has no HCLI or tools dependency."
+  },
+  "excluded": [
+    "hcli/providers.py::_copy and hcli/hawking_native.py::_safe: behaviorally related copies with provider/native boundary documentation, deferred for a separately reviewed core-contract tranche",
+    "hcli/agentos/resident.py::_json_safe: no sort_keys policy",
+    "public hcli/agentos/vmcp/receipt.py::sha256_bytes: its public owner surface remains intact",
+    "file hashes, optional file hashes, prefix hashes, and canonical-JSON hashes: distinct I/O, failure, or serialization contracts",
+    "standalone tools copies outside the explicit HCLI/AgentOS control-plane tranche"
+  ],
+  "validation": {
+    "pre_to_post_output_parity": "A synthetic golden probe ran all nine JSON aliases on nested sortable data, default=str data, a TypeError fallback, and a circular ValueError fallback; it ran all eleven SHA aliases on empty, binary, and bytearray inputs. All 69 post-change outputs matched the pre-change JSON exactly.",
+    "focused_regression": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m pytest -p no:cacheprovider -q hcli/tests/test_persist_identity_io.py: 61 passed in 0.20s.",
+    "affected_regressions": "The focused helper test, hcli/tests/test_core_authorities.py, hcli/tests/test_canonical_tool_dispatch.py, and three synthetic Flash science-boundary tests completed as 89 passed in 0.30s.",
+    "focused_test_scope": "The helper test proves direct owner values, all 20 consumer aliases, absence of former local definitions, and the two accelerator-regression compatibility imports.",
+    "syntax_and_diff": "python3 -B -m py_compile on the two owners, all 20 consumers, and the focused test; git diff --check: passed.",
+    "non_execution_boundary": "Tests use in-memory values and temporary synthetic source files only. They do not load a model, inspect a ModelLake specimen, call a network endpoint, start or restart a daemon, or sample host accelerator state."
+  },
+  "runtime": {
+    "model_execution": false,
+    "weights_loaded": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_service_restart": false,
+    "network_request": false,
+    "host_state_sampling": false,
+    "deployment": false
+  },
+  "size_ledger": {
+    "production_owner_and_consumers_before_receipt": {
+      "added": 51,
+      "deleted": 119,
+      "net": -68,
+      "interpretation": "Two stdlib leaf helpers and direct aliases replace 20 local bodies; imports no longer used after extraction were removed where applicable."
+    },
+    "focused_regression_extension_before_receipt": {
+      "added": 90,
+      "deleted": 6,
+      "net": 84,
+      "interpretation": "The existing persistence-helper test gained direct contract cases, alias checks, and compatibility-import coverage for this separate family."
+    },
+    "before_receipt_total": {
+      "added": 141,
+      "deleted": 125,
+      "net": 16
+    }
+  },
+  "claim_boundary": "This receipt proves a single JSON-compatible-copy and in-memory SHA-256 owner for the named 20 consumers, plus static import identity and deterministic in-memory parity. It does not claim all JSON copying, all hashing, all file I/O, provider/native contract equivalence, ModelLake behavior, model behavior, accelerator behavior, daemon behavior, network behavior, or deployment."
+}

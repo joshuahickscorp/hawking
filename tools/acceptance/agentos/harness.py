@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Demonstrate AGENTOS acceptance criteria against the live hcli import.
+"""Demonstrate AGENTOS acceptance criteria against the live hawking import.
 
 Each gate invokes its catalogued implementing symbol (not a module import)
 and records a real run. Verdicts are ACCEPTED or BLOCKED; a receipt that
-merely exists is not acceptance. Nothing here edits hcli.
+merely exists is not acceptance. Nothing here edits hawking.
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from tools.roadmap import lineage
 
-os.environ.setdefault("HCLI_DISABLE_SIGNAL_HOOKS", "1")
+os.environ.setdefault("HAWKING_DISABLE_SIGNAL_HOOKS", "1")
 
 REPO = Path(__file__).resolve().parents[3]
 RECEIPT_DIR = REPO / "receipts" / "acceptance"
@@ -99,9 +99,9 @@ def _git_head() -> str:
 
 
 def _hcli_file() -> str:
-    import hcli
+    import hawking
 
-    return str(Path(hcli.__file__).resolve())
+    return str(Path(hawking.__file__).resolve())
 
 
 def _quote_span(start: int, end: int) -> str:
@@ -113,7 +113,7 @@ def _quote_span(start: int, end: int) -> str:
 
 
 def _wu(uid: str, **kwargs: Any):
-    from hcli.workunit import WorkUnit
+    from hawking.workunit import WorkUnit
 
     return WorkUnit(
         id=uid,
@@ -198,20 +198,20 @@ def _base(
 
 
 def demo_repair_bounded() -> Dict[str, Any]:
-    from hcli.scheduler import Scheduler
-    from hcli.workunit import (
+    from hawking.scheduler import Scheduler
+    from hawking.workunit import (
         MAX_REPAIR_DEPTH,
         MAX_REPAIRS_PER_ROOT,
         is_ready,
         emit_repair,
     )
-    import hcli.workunit as workunit_mod
-    import hcli.scheduler as scheduler_mod
+    import hawking.workunit as workunit_mod
+    import hawking.scheduler as scheduler_mod
 
     log: List[str] = []
     symbols = [
-        {"module": "hcli.scheduler", "symbol": "Scheduler", "via": "Scheduler.fail -> emit_repair"},
-        {"module": "hcli.workunit", "symbol": "emit_repair", "via": "direct + Scheduler._emit_repair"},
+        {"module": "hawking.scheduler", "symbol": "Scheduler", "via": "Scheduler.fail -> emit_repair"},
+        {"module": "hawking.workunit", "symbol": "emit_repair", "via": "direct + Scheduler._emit_repair"},
     ]
 
     def grow(unique: bool, depth_cap: int, count_cap: int) -> Dict[str, Any]:
@@ -366,14 +366,14 @@ def demo_repair_bounded() -> Dict[str, Any]:
 
 
 def demo_retry_classified() -> Dict[str, Any]:
-    from hcli.resources import (
+    from hawking.resources import (
         FAILURE_KINDS,
         classify_failure,
         counts_toward_retry_budget,
         NON_RETRYABLE,
     )
-    from hcli.scheduler import Scheduler, NO_PROGRESS
-    from hcli.workunit import WorkUnit
+    from hawking.scheduler import Scheduler, NO_PROGRESS
+    from hawking.workunit import WorkUnit
 
     log: List[str] = []
     samples = {
@@ -447,11 +447,11 @@ def demo_retry_classified() -> Dict[str, Any]:
             raised = str(exc)
         log.append(f"_record_fingerprint via complete raised NO_PROGRESS={raised is not None}")
 
-    import hcli.resources as resources_mod
-    import hcli.scheduler as scheduler_mod
+    import hawking.resources as resources_mod
+    import hawking.scheduler as scheduler_mod
 
     # Production callers of classify_failure: only BackendHealth.record_failure
-    # in this module. BackendHealth itself has no hcli caller (measured by
+    # in this module. BackendHealth itself has no hawking caller (measured by
     # this run still emitting a repair for a non-retryable failure).
     measured = {
         "failure_kinds_implemented": list(FAILURE_KINDS),
@@ -490,17 +490,17 @@ def demo_retry_classified() -> Dict[str, Any]:
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_retry_classified -o addopts=''",
         symbols=[
             {
-                "module": "hcli.scheduler",
+                "module": "hawking.scheduler",
                 "symbol": "_record_fingerprint",
                 "via": "Scheduler.complete",
             },
             {
-                "module": "hcli.resources",
+                "module": "hawking.resources",
                 "symbol": "classify_failure",
                 "via": "direct call of the D.2 classifier",
             },
             {
-                "module": "hcli.scheduler",
+                "module": "hawking.scheduler",
                 "symbol": "Scheduler.fail",
                 "via": "retry path that should consult the classifier",
             },
@@ -523,8 +523,8 @@ def demo_retry_classified() -> Dict[str, Any]:
 
 
 def demo_circuit_breaker() -> Dict[str, Any]:
-    from hcli.scheduler import Scheduler, NO_PROGRESS, DEFAULT_NO_PROGRESS_THRESHOLD
-    from hcli.resources import (
+    from hawking.scheduler import Scheduler, NO_PROGRESS, DEFAULT_NO_PROGRESS_THRESHOLD
+    from hawking.resources import (
         BackendHealth,
         CIRCUIT_FAILURE_THRESHOLD,
         CIRCUIT_COOLING_SECONDS,
@@ -613,7 +613,7 @@ def demo_circuit_breaker() -> Dict[str, Any]:
         )
 
         # Live dispatch does not consult the breaker (measured).
-        from hcli.workunit import assign_ready
+        from hawking.workunit import assign_ready
 
         live = _wu("live", preferred_backend="qwen")
         live.status = "ready"
@@ -664,8 +664,8 @@ def demo_circuit_breaker() -> Dict[str, Any]:
             end=7358,
             command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_circuit_breaker -o addopts=''",
             symbols=[
-                {"module": "hcli.scheduler", "symbol": "NO_PROGRESS", "via": "raised from Scheduler.complete"},
-                {"module": "hcli.resources", "symbol": "BackendHealth", "via": "record_failure / allows_new_assignments"},
+                {"module": "hawking.scheduler", "symbol": "NO_PROGRESS", "via": "raised from Scheduler.complete"},
+                {"module": "hawking.resources", "symbol": "BackendHealth", "via": "record_failure / allows_new_assignments"},
             ],
             measured=measured,
             output="\n".join(log),
@@ -679,7 +679,7 @@ def demo_circuit_breaker() -> Dict[str, Any]:
         start=7332,
         end=7358,
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_circuit_breaker -o addopts=''",
-        symbols=[{"module": "hcli.scheduler", "symbol": "NO_PROGRESS"}],
+        symbols=[{"module": "hawking.scheduler", "symbol": "NO_PROGRESS"}],
         measured=measured,
         output="\n".join(log),
         verdict="BLOCKED",
@@ -694,9 +694,9 @@ def demo_circuit_breaker() -> Dict[str, Any]:
 
 
 def demo_cancellation() -> Dict[str, Any]:
-    from hcli import delegate as d
-    from hcli.mission import Mission, mission_state_path
-    from hcli.resources import MutationLock
+    from hawking import delegate as d
+    from hawking.mission import Mission, mission_state_path
+    from hawking.resources import MutationLock
 
     log: List[str] = []
     with tempfile.TemporaryDirectory(prefix="acc-cancel-") as tmp:
@@ -708,7 +708,7 @@ def demo_cancellation() -> Dict[str, Any]:
         )
         log.append(f"delegate.run spawn=False keys={sorted(started)}")
         state_path = mission_state_path(ws)
-        dag_path = ws / ".hcli" / "dag.json"
+        dag_path = ws / ".hawking" / "dag.json"
         pre_state = json.loads(state_path.read_text(encoding="utf-8"))
         pre_dag = json.loads(dag_path.read_text(encoding="utf-8"))
         pre_id = pre_state.get("checkpoint_id")
@@ -750,7 +750,7 @@ def demo_cancellation() -> Dict[str, Any]:
         thread.join(timeout=8)
         coop_phase = mission.phase
         coop_repairs = [u.id for u in mission.scheduler.units.values() if u.repairs == "slow"]
-        coop_state = Path(tmp) / "coop" / ".hcli" / "mission" / "state.json"
+        coop_state = Path(tmp) / "coop" / ".hawking" / "mission" / "state.json"
         coop_disk = json.loads(coop_state.read_text(encoding="utf-8")) if coop_state.is_file() else {}
         log.append(
             f"coop phase={coop_phase} repairs={coop_repairs} disk_phase={coop_disk.get('phase')} "
@@ -791,7 +791,7 @@ def demo_cancellation() -> Dict[str, Any]:
         "external jobs.\n\n" + _quote_span(7332, 7358)
     )
     notes = [
-        "Catalog symbol abort is hcli.delegate.abort. It writes delegation_cancel.json, "
+        "Catalog symbol abort is hawking.delegate.abort. It writes delegation_cancel.json, "
         "signals a live mutation-lock holder, loads the mission, Mission.cancel, then "
         "Mission.checkpoint (DAG first, shared checkpoint_id).",
         "Cancel of in-flight units uses _fail_inflight(emit_repair=False) so cancellation "
@@ -804,7 +804,7 @@ def demo_cancellation() -> Dict[str, Any]:
             start=7332,
             end=7358,
             command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_cancellation -o addopts=''",
-            symbols=[{"module": "hcli.delegate", "symbol": "abort", "via": "direct call"}],
+            symbols=[{"module": "hawking.delegate", "symbol": "abort", "via": "direct call"}],
             measured=measured,
             output="\n".join(log),
             verdict="ACCEPTED",
@@ -817,7 +817,7 @@ def demo_cancellation() -> Dict[str, Any]:
         start=7332,
         end=7358,
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_cancellation -o addopts=''",
-        symbols=[{"module": "hcli.delegate", "symbol": "abort"}],
+        symbols=[{"module": "hawking.delegate", "symbol": "abort"}],
         measured=measured,
         output="\n".join(log),
         verdict="BLOCKED",
@@ -854,10 +854,10 @@ class _CooperativeEngine:
 
 
 def demo_orphan_reconciliation() -> Dict[str, Any]:
-    from hcli.agentos.background import BackgroundJobStore
-    from hcli.dag_store import DagStore
-    from hcli.scheduler import Scheduler
-    from hcli.workunit import WorkUnit
+    from hawking.background import BackgroundJobStore
+    from hawking.dag_store import DagStore
+    from hawking.scheduler import Scheduler
+    from hawking.workunit import WorkUnit
 
     log: List[str] = []
     leftovers: List[int] = []
@@ -1012,12 +1012,12 @@ def demo_orphan_reconciliation() -> Dict[str, Any]:
             command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_orphan_reconciliation -o addopts=''",
             symbols=[
                 {
-                    "module": "hcli.agentos.background",
+                    "module": "hawking.background",
                     "symbol": "BackgroundJobStore",
                     "via": "start/inspect/list",
                 },
                 {
-                    "module": "hcli.scheduler",
+                    "module": "hawking.scheduler",
                     "symbol": "Scheduler.from_workspace",
                     "via": "production adopt path",
                 },
@@ -1034,7 +1034,7 @@ def demo_orphan_reconciliation() -> Dict[str, Any]:
         start=7332,
         end=7358,
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_orphan_reconciliation -o addopts=''",
-        symbols=[{"module": "hcli.agentos.background", "symbol": "BackgroundJobStore"}],
+        symbols=[{"module": "hawking.background", "symbol": "BackgroundJobStore"}],
         measured=measured,
         output="\n".join(log),
         verdict="BLOCKED",
@@ -1049,14 +1049,14 @@ def demo_orphan_reconciliation() -> Dict[str, Any]:
 
 
 def demo_persistence_single_authority() -> Dict[str, Any]:
-    from hcli.resources import MutationLock
-    from hcli.persist import atomic_write_json
-    from hcli.mission import Mission, mission_state_path
-    from hcli.max_policy import equilibrium_path, save_equilibrium, load_equilibrium
-    from hcli.steering import SteeringQueue
-    from hcli.resources import HEALTH_FILENAME, MUTATION_LOCK_FILENAME
-    from hcli.dag_store import DAG_FILENAME
-    from hcli.agentos.background import BackgroundJobStore
+    from hawking.resources import MutationLock
+    from hawking.persist import atomic_write_json
+    from hawking.mission import Mission, mission_state_path
+    from hawking.max_policy import equilibrium_path, save_equilibrium, load_equilibrium
+    from hawking.steering import SteeringQueue
+    from hawking.resources import HEALTH_FILENAME, MUTATION_LOCK_FILENAME
+    from hawking.dag_store import DAG_FILENAME
+    from hawking.background import BackgroundJobStore
 
     log: List[str] = []
     with tempfile.TemporaryDirectory(prefix="acc-persist-") as tmp:
@@ -1077,14 +1077,14 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
                     sys.executable,
                     "-c",
                     (
-                        "from hcli.resources import MutationLock\n"
+                        "from hawking.resources import MutationLock\n"
                         f"lock = MutationLock({str(ws)!r})\n"
                         "print('CHILD', lock.acquire('writer-b'))\n"
                     ),
                 ],
                 capture_output=True,
                 text=True,
-                timeout=120,  # cold `import hcli` in a fresh interpreter, under load
+                timeout=120,  # cold `import hawking` in a fresh interpreter, under load
                 env={**os.environ, "PYTHONUNBUFFERED": "1"},
             )
             child_stdout = child.stdout or ""
@@ -1103,7 +1103,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
 
         # Two children racing: at most one wins.
         # Same shape as the child above: one racer is SUPPOSED to lose, and a
-        # nested spawn-pool where each worker cold-imports hcli can outlive the
+        # nested spawn-pool where each worker cold-imports hawking can outlive the
         # budget under load. A timeout must not raise past the verdict -- it is
         # recorded and the gate reports honestly.
         race_timed_out = False
@@ -1114,7 +1114,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
                 "-c",
                 (
                     "import os, sys, time\n"
-                    "from hcli.resources import MutationLock\n"
+                    "from hawking.resources import MutationLock\n"
                     f"ws = {str(ws / 'race')!r}\n"
                     "os.makedirs(ws, exist_ok=True)\n"
                     "def worker(name):\n"
@@ -1155,7 +1155,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             no_progress_threshold=50,
         )
         ckpt = mission.checkpoint()
-        dag_path = ws / "m" / ".hcli" / DAG_FILENAME
+        dag_path = ws / "m" / ".hawking" / DAG_FILENAME
         state_path = mission_state_path(ws / "m")
         dag = json.loads(dag_path.read_text(encoding="utf-8"))
         state = json.loads(state_path.read_text(encoding="utf-8"))
@@ -1173,8 +1173,8 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
         bg = BackgroundJobStore(ws / "m")
         bg_root = bg.jobs_root
 
-        health_path = ws / "m" / ".hcli" / HEALTH_FILENAME
-        lock_path = ws / "m" / ".hcli" / MUTATION_LOCK_FILENAME
+        health_path = ws / "m" / ".hawking" / HEALTH_FILENAME
+        lock_path = ws / "m" / ".hawking" / MUTATION_LOCK_FILENAME
 
         audit = {
             "WorkUnit state": {
@@ -1189,7 +1189,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "Goal/DAG": {
                 "writer": "DagStore.save / Mission.checkpoint",
-                "canonical_store": ".hcli/dag.json plus mission/state.json compiled",
+                "canonical_store": ".hawking/dag.json plus mission/state.json compiled",
                 "generation_checksum": dag.get("checkpoint_id"),
                 "reader": "Mission.from_workspace",
                 "restart_path": "Mission.from_workspace",
@@ -1198,7 +1198,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "backend_task_id": {
                 "writer": "WorkUnit field persisted by DagStore.save",
-                "canonical_store": ".hcli/dag.json units.*.backend_task_id",
+                "canonical_store": ".hawking/dag.json units.*.backend_task_id",
                 "reader": "DagStore.load",
                 "restart_path": "_grok_recovery_decision uses the persisted id",
                 "reconciliation_rule": "adopt if live, fail if terminal, else interrupt",
@@ -1206,7 +1206,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "provider/runtime provenance": {
                 "writer": "WorkUnit.provider / assigned_backend / assigned_runtime",
-                "canonical_store": ".hcli/dag.json",
+                "canonical_store": ".hawking/dag.json",
                 "reader": "DagStore.load",
                 "restart_path": "WorkUnit.from_dict",
                 "reconciliation_rule": "provider is execution policy, persisted so restart does not reroute",
@@ -1214,7 +1214,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "dependencies": {
                 "writer": "WorkUnit.dependencies via DagStore.save",
-                "canonical_store": ".hcli/dag.json",
+                "canonical_store": ".hawking/dag.json",
                 "reader": "identify_ready",
                 "restart_path": "WorkUnit.from_dict",
                 "reconciliation_rule": "content identity includes dependencies",
@@ -1222,7 +1222,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "verifier result": {
                 "writer": "Scheduler.complete (refuses UnverifiedCompletion)",
-                "canonical_store": ".hcli/dag.json units.*.verification",
+                "canonical_store": ".hawking/dag.json units.*.verification",
                 "reader": "Scheduler.complete / Mission._accepted",
                 "restart_path": "WorkUnit.from_dict.verification",
                 "reconciliation_rule": "ok:true is the only completing outcome",
@@ -1230,7 +1230,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "repair lineage": {
                 "writer": "workunit.emit_repair + DagStore.repair_budget",
-                "canonical_store": ".hcli/dag.json repair_budget + unit repair_* fields",
+                "canonical_store": ".hawking/dag.json repair_budget + unit repair_* fields",
                 "reader": "rebuild_repair_budget",
                 "restart_path": "Scheduler.from_workspace rebuilds counts/signatures from disk",
                 "reconciliation_rule": "disk floor wins over in-process maps",
@@ -1238,7 +1238,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "retry state": {
                 "writer": "WorkUnit.attempts",
-                "canonical_store": ".hcli/dag.json",
+                "canonical_store": ".hawking/dag.json",
                 "reader": "is_ready (DEFAULT_RETRY_BUDGET)",
                 "restart_path": "WorkUnit.from_dict",
                 "reconciliation_rule": "interrupted does not consume attempts",
@@ -1246,7 +1246,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "mutation lease": {
                 "writer": "MutationLock.acquire (os.link exclusive)",
-                "canonical_store": f".hcli/{MUTATION_LOCK_FILENAME}",
+                "canonical_store": f".hawking/{MUTATION_LOCK_FILENAME}",
                 "reader": "MutationLock.read / holder_is_live",
                 "restart_path": "try_break_stale if holder pid is dead",
                 "reconciliation_rule": "exactly one live holder; dead pid is breakable",
@@ -1254,7 +1254,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "steering": {
                 "writer": "SteeringQueue.enqueue -> atomic_write_json",
-                "canonical_store": str(steer_path.relative_to(ws / "m")) if steer_path.is_file() else ".hcli/steering/<session>.json",
+                "canonical_store": str(steer_path.relative_to(ws / "m")) if steer_path.is_file() else ".hawking/steering/<session>.json",
                 "reader": "SteeringQueue._load",
                 "restart_path": "Mission.from_workspace reconstructs the queue",
                 "reconciliation_rule": "steer changes future work, not verified history",
@@ -1269,16 +1269,16 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
                 "canary": "compiled" in state,
             },
             "MAX calibration": {
-                "writer": "hcli.max_policy.save_equilibrium",
-                "canonical_store": str(eq_path.relative_to(ws / "m")) if eq_path.is_file() else ".hcli/max_equilibrium.json",
+                "writer": "hawking.max_policy.save_equilibrium",
+                "canonical_store": str(eq_path.relative_to(ws / "m")) if eq_path.is_file() else ".hawking/max_equilibrium.json",
                 "reader": "load_equilibrium",
                 "restart_path": "load_equilibrium",
                 "reconciliation_rule": "atomic_write_json single file",
                 "canary": bool(eq),
             },
             "backend health": {
-                "writer": "BackendHealth.record_failure/record_success (library; no hcli caller)",
-                "canonical_store": f".hcli/{HEALTH_FILENAME}",
+                "writer": "BackendHealth.record_failure/record_success (library; no hawking caller)",
+                "canonical_store": f".hawking/{HEALTH_FILENAME}",
                 "reader": "BackendHealth.snapshot",
                 "restart_path": "BackendHealth __init__ reloads the file",
                 "reconciliation_rule": "stale open older than HEALTH_STALE_AFTER_SECONDS does not refuse work",
@@ -1286,7 +1286,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "checkpoint generation": {
                 "writer": "Mission.checkpoint",
-                "canonical_store": ".hcli/dag.json and .hcli/mission/state.json",
+                "canonical_store": ".hawking/dag.json and .hawking/mission/state.json",
                 "generation_checksum": state.get("checkpoint_id"),
                 "checkpoint_order": "DAG then state; same checkpoint_id",
                 "reader": "Mission.from_workspace prefers DAG",
@@ -1296,23 +1296,23 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             },
             "background jobs": {
                 "writer": "BackgroundJobStore._write -> atomic_write_json",
-                "canonical_store": ".hcli/background/jobs/job-*.json",
+                "canonical_store": ".hawking/background/jobs/job-*.json",
                 "reader": "BackgroundJobStore.inspect/list",
                 "restart_path": "dead pid -> INTERRUPTED",
                 "reconciliation_rule": "same job_id, never a silent second supervisor",
                 "canary": str(bg_root),
             },
             "VMCP evidence references": {
-                "writer": "hcli.agentos.vmcp_gate (atomic_write_json receipts)",
-                "canonical_store": "workspace .hcli/receipts VMCP_* (gate-owned)",
+                "writer": "hawking.agentos.vmcp_gate (atomic_write_json receipts)",
+                "canonical_store": "workspace .hawking/receipts VMCP_* (gate-owned)",
                 "reader": "vmcp_gate report loader",
                 "restart_path": "receipt reread, not reconstructed from model output",
                 "reconciliation_rule": "VMCP is evidence, not work identity",
                 "canary": "module present",
             },
             "ModelLake worker identity": {
-                "writer": "hcli.agentos.modellake_supervisor / modellake_receipts",
-                "canonical_store": "receipts named in CENSUS_RECEIPT_NAMES / SUPERVISION_RECEIPT_NAMES",
+                "writer": "hawking.agentos.modellake_supervisor / hawking.nomenclature",
+                "canonical_store": "receipts named by Hawking's canonical receipt resolver",
                 "reader": "program checkpoint inventory",
                 "restart_path": "receipt reread",
                 "reconciliation_rule": "worker identity is a receipt, not a WorkUnit field",
@@ -1353,7 +1353,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
     notes = [
         "Catalog symbol MutationLock: O_EXCL+os.link exclusive create. Two processes "
         "cannot both hold it (measured).",
-        "hcli.persist.atomic_write_text is the crash-safe writer (tmp + fsync + os.replace).",
+        "hawking.persist.atomic_write_text is the crash-safe writer (tmp + fsync + os.replace).",
         "WorkUnit state has one authoritative store (dag.json); state.json is a stamped copy.",
     ]
     if ok:
@@ -1363,7 +1363,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             start=7382,
             end=7417,
             command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_persistence_single_authority -o addopts=''",
-            symbols=[{"module": "hcli.resources", "symbol": "MutationLock", "via": "acquire in two processes"}],
+            symbols=[{"module": "hawking.resources", "symbol": "MutationLock", "via": "acquire in two processes"}],
             measured=measured,
             output="\n".join(log),
             verdict="ACCEPTED",
@@ -1376,7 +1376,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
         start=7382,
         end=7417,
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_persistence_single_authority -o addopts=''",
-        symbols=[{"module": "hcli.resources", "symbol": "MutationLock"}],
+        symbols=[{"module": "hawking.resources", "symbol": "MutationLock"}],
         measured=measured,
         output="\n".join(log),
         verdict="BLOCKED",
@@ -1393,7 +1393,7 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
 _CHILD_ATOMIC = r"""
 import os, sys, time
 from pathlib import Path
-from hcli.persist import atomic_write_text
+from hawking.persist import atomic_write_text
 dest = Path(sys.argv[1])
 sentinel = Path(sys.argv[2])
 real = os.replace
@@ -1408,10 +1408,10 @@ atomic_write_text(dest, "NEW_COMPLETE" + ("B" * 4096))
 _CHILD_BETWEEN = r"""
 import os, sys, time
 from pathlib import Path
-os.environ["HCLI_DISABLE_SIGNAL_HOOKS"] = "1"
-from hcli.mission import Mission
-from hcli.scheduler import Scheduler
-from hcli.workunit import WorkUnit
+os.environ["HAWKING_DISABLE_SIGNAL_HOOKS"] = "1"
+from hawking.mission import Mission
+from hawking.scheduler import Scheduler
+from hawking.workunit import WorkUnit
 
 ws = Path(sys.argv[1])
 sentinel = Path(sys.argv[2])
@@ -1480,13 +1480,13 @@ def _sigkill_after_sentinel(proc: subprocess.Popen, sentinel: Path, timeout: flo
 
 
 def demo_checkpoint_atomicity() -> Dict[str, Any]:
-    from hcli.persist import atomic_write_json, atomic_write_text
-    from hcli.agentos.checkpoint import write_program_checkpoint
-    from hcli.mission import Mission, load_state
+    from hawking.persist import atomic_write_json, atomic_write_text
+    from hawking.checkpoint import write_program_checkpoint
+    from hawking.mission import Mission, load_state
 
     log: List[str] = []
     env = os.environ.copy()
-    env["HCLI_DISABLE_SIGNAL_HOOKS"] = "1"
+    env["HAWKING_DISABLE_SIGNAL_HOOKS"] = "1"
     env["PYTHONUNBUFFERED"] = "1"
 
     with tempfile.TemporaryDirectory(prefix="acc-ckpt-") as tmp:
@@ -1528,8 +1528,8 @@ def demo_checkpoint_atomicity() -> Dict[str, Any]:
             start_new_session=True,
         )
         kill2 = _sigkill_after_sentinel(proc2, sent2)
-        dag_p = ws / ".hcli" / "dag.json"
-        st_p = ws / ".hcli" / "mission" / "state.json"
+        dag_p = ws / ".hawking" / "dag.json"
+        st_p = ws / ".hawking" / "mission" / "state.json"
         dag = json.loads(dag_p.read_text(encoding="utf-8")) if dag_p.is_file() else {}
         st = json.loads(st_p.read_text(encoding="utf-8")) if st_p.is_file() else {}
         dag_disp = (dag.get("units") or {}).get("dispatched") or {}
@@ -1605,7 +1605,7 @@ def demo_checkpoint_atomicity() -> Dict[str, Any]:
         m.scheduler.units["x"].backend_task_id = "task-GEN1"
         p1 = m.checkpoint()
         st1 = load_state(p1)
-        dag1 = json.loads((ws3 / ".hcli" / "dag.json").read_text(encoding="utf-8"))
+        dag1 = json.loads((ws3 / ".hawking" / "dag.json").read_text(encoding="utf-8"))
         ids_ok = (
             st0.get("checkpoint_id") != st1.get("checkpoint_id")
             and st1.get("checkpoint_id") == dag1.get("checkpoint_id")
@@ -1663,12 +1663,12 @@ def demo_checkpoint_atomicity() -> Dict[str, Any]:
             command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_checkpoint_atomicity -o addopts=''",
             symbols=[
                 {
-                    "module": "hcli.agentos.checkpoint",
+                    "module": "hawking.checkpoint",
                     "symbol": "write_program_checkpoint",
                     "via": "direct call, emit to temp",
                 },
                 {
-                    "module": "hcli.persist",
+                    "module": "hawking.persist",
                     "symbol": "atomic_write_text",
                     "via": "SIGKILL mid-replace",
                 },
@@ -1692,7 +1692,7 @@ def demo_checkpoint_atomicity() -> Dict[str, Any]:
         start=7382,
         end=7417,
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_checkpoint_atomicity -o addopts=''",
-        symbols=[{"module": "hcli.agentos.checkpoint", "symbol": "write_program_checkpoint"}],
+        symbols=[{"module": "hawking.checkpoint", "symbol": "write_program_checkpoint"}],
         measured=measured,
         output="\n".join(log),
         verdict="BLOCKED",
@@ -1708,10 +1708,10 @@ def demo_checkpoint_atomicity() -> Dict[str, Any]:
 
 _PHASE_ONE = r"""
 import json, os, sys, time
-os.environ["HCLI_DISABLE_SIGNAL_HOOKS"] = "1"
-from hcli.mission import Mission
-from hcli.workunit import WorkUnit, transition_status
-from hcli.resources import MutationLock
+os.environ["HAWKING_DISABLE_SIGNAL_HOOKS"] = "1"
+from hawking.mission import Mission
+from hawking.workunit import WorkUnit, transition_status
+from hawking.resources import MutationLock
 
 ws = sys.argv[1]
 
@@ -1752,13 +1752,13 @@ while True:
 
 
 def demo_restart_coherence() -> Dict[str, Any]:
-    from hcli.mission import Mission
-    from hcli.resources import MutationLock
-    from hcli.agentos.recovery import run_recovery_gate
+    from hawking.mission import Mission
+    from hawking.resources import MutationLock
+    from hawking.recovery_gate import run_recovery_gate
 
     log: List[str] = []
     env = os.environ.copy()
-    env["HCLI_DISABLE_SIGNAL_HOOKS"] = "1"
+    env["HAWKING_DISABLE_SIGNAL_HOOKS"] = "1"
     env["PYTHONUNBUFFERED"] = "1"
 
     with tempfile.TemporaryDirectory(prefix="acc-restart-") as ws:
@@ -1782,7 +1782,7 @@ def demo_restart_coherence() -> Dict[str, Any]:
                 start=7662,
                 end=7664,
                 command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_restart_coherence -o addopts=''",
-                symbols=[{"module": "hcli.agentos.recovery", "symbol": "run_recovery_gate"}],
+                symbols=[{"module": "hawking.recovery_gate", "symbol": "run_recovery_gate"}],
                 measured={"phase_one_ready": False, "stderr": err[-600:]},
                 output="\n".join(log),
                 verdict="BLOCKED",
@@ -1898,12 +1898,12 @@ def demo_restart_coherence() -> Dict[str, Any]:
             command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_restart_coherence -o addopts=''",
             symbols=[
                 {
-                    "module": "hcli.agentos.recovery",
+                    "module": "hawking.recovery_gate",
                     "symbol": "run_recovery_gate",
                     "via": "direct call",
                 },
                 {
-                    "module": "hcli.mission",
+                    "module": "hawking.mission",
                     "symbol": "Mission.from_workspace",
                     "via": "phase-two restart",
                 },
@@ -1920,7 +1920,7 @@ def demo_restart_coherence() -> Dict[str, Any]:
         start=7662,
         end=7664,
         command="python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_restart_coherence -o addopts=''",
-        symbols=[{"module": "hcli.agentos.recovery", "symbol": "run_recovery_gate"}],
+        symbols=[{"module": "hawking.recovery_gate", "symbol": "run_recovery_gate"}],
         measured=measured,
         output="\n".join(log),
         verdict="BLOCKED",

@@ -1,0 +1,147 @@
+{
+  "schema": "hawking.flash.source_boundary_executable_closure.v1",
+  "status": "RELEASE_EXECUTABLES_OBSERVED_AND_DRY_GATES_GREEN__WITHHELD_PENDING_MACHINE_OWNER_AUTHORIZATION",
+  "observed_at_utc": "2026-09-12T19:14:45Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "worktree_dirty": true,
+  "build": {
+    "commands": [
+      "CARGO_TARGET_DIR=/Users/scammermike/Downloads/hawking/target cargo build --release -p hawking-core --example flash_stateful_complete_token_session",
+      "CARGO_TARGET_DIR=/Users/scammermike/Downloads/hawking/target cargo build --release -p hawking --bin hawking"
+    ],
+    "native_diagnostic_wall": "2m20s including fresh release dependencies",
+    "hawking_cli_wall": "1m02s including remaining release dependencies",
+    "rustc": {
+      "release": "1.94.1",
+      "commit_hash": "e408947bfd200af42db322daf0fadfe7e26d3bd1",
+      "host": "aarch64-apple-darwin",
+      "llvm": "21.1.8"
+    },
+    "compiler_provenance_attested": false,
+    "reproducible_build_claimed": false
+  },
+  "native_diagnostic": {
+    "path": "target/release/examples/flash_stateful_complete_token_session",
+    "sha256": "20b344f5d18ee24340e71f66f915271ff49a428e225316e136707c82245a91d8",
+    "bytes": 3081360,
+    "format": "Mach-O 64-bit executable arm64",
+    "file_links": 1,
+    "signature": "adhoc linker-signed",
+    "cdhash_sha256": "507a2eb80bf9804ada598ce76a4afdcb9e2567a8",
+    "dynamic_dependency_observation": "Apple system frameworks and libSystem/libobjc/libiconv only; no MLX-family, llama.cpp, Ollama, Transformers, or Python dynamic dependency observed. This bounded diagnostic observation is not a complete-worker runtime-independence proof.",
+    "source_closure": [
+      {
+        "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+        "sha256": "affe8a56fc96c662c55f8bde3087383b78d9217647b0e38b65280456a7da8926"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+        "sha256": "3f72b93fd9d9f5be43b2ad5bef5f6139c3fa2368b031e8b3a0f30dbea31c91f5"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "acb0e7dcf641e948a590d0a1517dd3b5c810a52895ec13d177e324258c55813a"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "3b31137e3700da3d4a683c5ab0dc32bf7697af969c16b70ea8d2df8d21c014c1"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+        "sha256": "e6d61c0effd4c25ed84d8e8d88f6132835926f4751e57b3e2c4dba58f1513602"
+      },
+      {
+        "path": "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+        "sha256": "bac9734163b25e4aed67faa70ccc8086fa04a08efa71cf5d0407271370731a3d"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "wrapper": {
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "c4171e01a1b06c442a5693c9eb7d261e8d68e51779e98b917ec4efe95838955e"
+    },
+    "preexecution_identity_rechecked_after_run": true,
+    "executed": false
+  },
+  "hawking_metric_owner": {
+    "path": "target/release/hawking",
+    "sha256": "701fa6e7832d8190a48ec6107116eaff402050849fff6c5de9f0401987eb470e",
+    "bytes": 10099888,
+    "version": "hawking 0.2.2",
+    "format": "Mach-O 64-bit executable arm64",
+    "file_links": 1,
+    "signature": "adhoc linker-signed",
+    "cdhash_sha256": "0e10c3fdbb1f26f4a6cfd0aa41ba5b67fc0e9a1e",
+    "dynamic_dependency_observation": "Apple system frameworks and libSystem/libobjc/libiconv only; no MLX-family, llama.cpp, Ollama, Transformers, or Python dynamic dependency observed. This CLI observation is not a complete-worker runtime-independence proof.",
+    "source": [
+      {
+        "path": "crates/hawking-core/src/flash_boundary_compare.rs",
+        "sha256": "31088a944ab9b194b7f44e9312fd934629ce54b6d169f500d20cdc6ad9ddbca5"
+      },
+      {
+        "path": "crates/hawking/src/main.rs",
+        "sha256": "005709cdddfd4cfb89be52b5c1f0f87afbcac2ca7d95d0a55b14cb54dc7aa020"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "orchestrator": {
+      "path": "tools/odyssey/flash_source_boundary_compare.py",
+      "sha256": "2c04c0ba5d22fc623fef89a336b727d53c178dddcfa03adeadba0504d2f6f681"
+    }
+  },
+  "validation": {
+    "release_builds": "passed",
+    "native_source_boundary_tests": "2 passed, 0 failed",
+    "rust_metric_tests": "3 passed, 0 failed",
+    "typed_cli_test": "1 passed, 0 failed",
+    "python_native_and_comparison_tests": "6 passed, 0 failed",
+    "release_metric_smoke": {
+      "payload": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/logits-000000.f32",
+      "elements": 248320,
+      "same_payload_only": true,
+      "exact_sha256": true,
+      "relative_l2": 0.0,
+      "semantic_verdict_allowed": false,
+      "model_loaded": false,
+      "gpu_or_metal_started": false
+    },
+    "native_dry_run": {
+      "status": "WITHHELD_PENDING_OWNER_AUTHORIZED_SOURCE_CAPTURE",
+      "native_binary_exists": true,
+      "protected_native_lane_clean": true,
+      "outputs_fresh": true,
+      "model_or_metal_started": false
+    },
+    "comparison_dry_run": {
+      "status": "WITHHELD_PENDING_OWNER_AUTHORIZED_SOURCE_AND_NATIVE_CAPTURES",
+      "hawking_binary_exists": true,
+      "capture_payloads_read": false,
+      "output_fresh": true,
+      "model_or_metal_started": false
+    }
+  },
+  "supersession": {
+    "prior_native_binary_state": "absent",
+    "current_native_binary_state": "present_observed_not_executed",
+    "capture_owner_receipt": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_CAPTURE_OWNER_V2_20260912.json",
+    "comparison_owner_receipt": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_COMPARISON_OWNER_20260912.json",
+    "scientific_evidence_changed": false
+  },
+  "runtime_actions": {
+    "source_model_loaded": false,
+    "native_model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "Machine owner provisions the pinned trust anchor and signs the exact existing V2 teacher request. Then the already-built bounded source/native capture and ordered comparison chain may run under the protected lease without another build or full replay.",
+  "claim_boundary": "This is an observed executable/source closure and dry-gate receipt. It is not a reproducible-build attestation, model execution, source/native comparison, source-parity result, native PLE, complete inference, admitted NR, EBPW/TPS/capability evidence, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "94033f3a192bffe79bcf86a9fff24784ad4e6a0ab956fc3c7e02aedda8cb4185"
+}

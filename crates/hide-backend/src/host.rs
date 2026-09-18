@@ -94,7 +94,7 @@ mod host_lifecycle;
 mod host_tools_workspace;
 #[path = "host_cmds/turn.rs"]
 mod host_turn;
-pub use host_turn::HcliTurnResult;
+pub use host_turn::HawkingTurnResult;
 #[path = "host_cmds/verify_checkpoint.rs"]
 mod host_verify_checkpoint;
 

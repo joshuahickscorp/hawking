@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.long_haul.v2.semantic_boundary_unbounded_live_restart.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T04:30:10Z",
+  "daemon": {
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "pid": 47287,
+    "status": "waiting_for_native_runtime",
+    "revision": "hawking-auto-aggressive-v2-kimi-deepseek-unbounded-13"
+  },
+  "live_semantic_probes": [
+    {
+      "max_tokens": 32,
+      "upstream_transport_status": 200,
+      "gateway_status": 502,
+      "error_code": "REMOTE_SEMANTIC_INCOMPLETE",
+      "accepted": false
+    },
+    {
+      "max_tokens": 128,
+      "gateway_status": 200,
+      "finish_reason": "tool_calls",
+      "tool_name": "route_probe",
+      "arguments_observed": {"ok": true},
+      "accepted": true,
+      "claim_boundary": "transport/tool-call compatibility only"
+    }
+  ],
+  "live_admission_probes": {
+    "remote_worker_leases_acquired": 64,
+    "default_max_workers": null,
+    "default_max_premium_workers": null,
+    "resource_class_hawking_limit": null,
+    "resource_class_hawking_admits_with_10000_occupied": true,
+    "claim_boundary": "count ceilings removed; real resource/provider/effect gates remain"
+  },
+  "verification": {
+    "scheduler_resource_tests": "36 passed",
+    "combined_regression_tests": "114 passed",
+    "compileall": "passed",
+    "git_diff_check": "passed"
+  },
+  "claim_boundary": "Live runtime boundary evidence only; parent Goal remains RUNNING and no provider output is promoted as architectural completion."
+}

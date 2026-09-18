@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.long_haul.v2.frontier_source_evidence.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:10:25Z",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "supervisor_contract_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "claim_boundary": "Independent source and focused-test evidence only. These observations do not claim implementation completion, production promotion, hardware qualification, or provider-output acceptance beyond the bounded read packets named below.",
+  "provider_read_packets": [
+    {
+      "tranche": "P2_PRODUCT_COMMANDS_HWEB",
+      "workunit_id": "WORKUNIT-20260918-6CA032BF",
+      "model": "moonshotai/kimi-k3",
+      "packet": "receipts/future/workunits/WORKUNIT-20260918-6CA032BF_RESULT_PACKET.json",
+      "accepted_scope": "One Hawking-owned fs.read observation of hawking/serve.py lines 6000-6065.",
+      "observed_boundary": "H-Web goal creation is local-only; Auto cloud/both routes resolve through the remote route, while local scope preserves hawking-auto and fails closed when no native role is admitted."
+    },
+    {
+      "tranche": "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN",
+      "workunit_id": "WORKUNIT-20260918-9F9548FE",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "packet": "receipts/future/workunits/WORKUNIT-20260918-9F9548FE_RESULT_PACKET.json",
+      "accepted_scope": "One Hawking-owned fs.read observation of hawking/auto_orchestration.py lines 900-1020; the requested window was provider-truncated and was independently checked locally.",
+      "observed_boundary": "Auto refill filters by graph-runnable state, fresh-reopen evidence, objective/acceptance presence, writer-scope conflict, budget, then dispatches through the canonical child WorkUnit owner."
+    },
+    {
+      "tranche": "P5_PERCEPTION_ARSENAL",
+      "workunit_id": "WORKUNIT-20260918-3CBDF4DE",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "packet": "receipts/future/workunits/WORKUNIT-20260918-3CBDF4DE_RESULT_PACKET.json",
+      "accepted_scope": "One Hawking-owned fs.read observation of hawking/perception/tools.py lines 1-180; the bounded result explicitly records truncation and unresolved remainder.",
+      "observed_boundary": "The perception surface is typed and local-only; TOOL_NAMES contains ten entries while the module docstring says nine, and browser/3d/worldir adapters remain parked."
+    }
+  ],
+  "independent_source_review": [
+    {
+      "tranche": "P2_PRODUCT_COMMANDS_HWEB",
+      "sources": ["hawking/serve.py:6030-6120", "hawking/tests/test_serve_openai_surface.py"],
+      "finding": "The route validates objective and auto_scope, applies the local-only boundary, routes cloud/both Auto through the remote selector, preserves local hawking-auto identity, and carries attachments/source into the canonical Goal route."
+    },
+    {
+      "tranche": "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN",
+      "sources": ["hawking/auto_orchestration.py:900-1045", "hawking/tests/test_auto_orchestration.py", "hawking/tests/test_discrete_goal_completion_state.py"],
+      "finding": "The refill owner is durable-contract driven and has no Hawking worker-count ceiling; it still refuses missing objectives/acceptance, graph-ineligible nodes, stale terminal retries, writer conflicts, invalid budgets, and non-authoritative admission errors."
+    },
+    {
+      "tranche": "P5_PERCEPTION_ARSENAL",
+      "sources": ["hawking/perception/tools.py:1-237", "hawking/tool_registry.py:4700-4730", "hawking/test_tool_registry.py", "hawking/tests/test_sealed_capabilities_reach_the_backend.py"],
+      "finding": "The perception adapter enforces project-root containment, exposes an explicit typed tool set, binds verification to both subject path and digest, and advertises receipt/browser/worldir gaps instead of widening the surface."
+    },
+    {
+      "tranche": "P14_PCIE_FPGA",
+      "sources": ["tools/accelerator/backend_contract.py:1007-1145", "tools/accelerator/test_backend_contract.py"],
+      "finding": "FPGA-HWIR is declared/static-only with simulated execution and COST_MODEL evidence; HARDWARE_MEASURED is refused on every FPGA path, and CUDA is named but not registered."
+    }
+  ],
+  "verification": {
+    "P2": {"command": "python3 -m pytest -q hawking/tests/test_serve_openai_surface.py", "result": "42 passed in 16.88s"},
+    "P4": {"command": "python3 -m pytest -q hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py", "result": "17 passed in 0.13s"},
+    "P5": {"command": "python3 -m pytest -q hawking/test_tool_registry.py hawking/tests/test_sealed_capabilities_reach_the_backend.py", "result": "18 passed in 0.84s"},
+    "P14": {"command": "python3 -m pytest -q tools/accelerator/test_backend_contract.py tools/accelerator/test_physical_graph_scoring.py tools/accelerator/test_physical_qualification.py", "result": "59 passed in 0.29s"},
+    "diff_check": "pending after contract materialization"
+  },
+  "provider_failures_preserved": [
+    "WORKUNIT-20260918-77B6A16C",
+    "WORKUNIT-20260918-829BB3CF",
+    "WORKUNIT-20260918-6AED6E34",
+    "WORKUNIT-20260918-23AB4EFC",
+    "WORKUNIT-20260918-1A2D29D8",
+    "WORKUNIT-20260918-AF39FC0A",
+    "WORKUNIT-20260918-E41B3244",
+    "WORKUNIT-20260918-3847DC08",
+    "WORKUNIT-20260918-81336F84",
+    "WORKUNIT-20260918-480BC2A4",
+    "WORKUNIT-20260918-58D57E13",
+    "WORKUNIT-20260918-47D33C16",
+    "WORKUNIT-20260918-B0AD0F71",
+    "WORKUNIT-20260918-50C6C167",
+    "WORKUNIT-20260918-9F9548FE",
+    "WORKUNIT-20260918-D8D0882F"
+  ],
+  "next_transition": "Materialize one explicit protected contract per dependency-valid frontier node; then invoke canonical unbounded refill. Provider packets remain evidence inputs and are not the authority for admission or acceptance."
+}

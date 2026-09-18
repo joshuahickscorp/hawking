@@ -1,0 +1,160 @@
+{
+  "body_mutated": false,
+  "candidate_body": {
+    "bytes": 870400,
+    "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-down/body-e291-r0-2560.bin",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E291_R0_2560.json",
+    "receipt_sha256": "83629e636ed8da0a1d01dce4341afb38c23a9396f429686c3e64aaafb23e2d77",
+    "sha256": "52e3ff9a7cb37fb86f03d027635c6bf2b3d2bd99f7f4cd667aa6485d3795266b",
+    "source_independent": true
+  },
+  "claim_boundary": "PASSED bounded source-independent Noetic component-body load, source-reference Q4 Metal kernel parity, and GPU timing only; no whole-model loader, capability, complete-token runtime, EBPW, or Flash TPS claim",
+  "complete_system_ebpw": null,
+  "derived_label": "[D]",
+  "elapsed_s": 0.045378583,
+  "flash_tps": null,
+  "gpu_timing": {
+    "device": "Apple M3 Ultra",
+    "gpu_ns": [
+      112625,
+      113375,
+      113125
+    ],
+    "gpu_ns_max": 113375,
+    "gpu_ns_median": 113125,
+    "gpu_ns_min": 112625,
+    "host_wall_ns": [
+      528000,
+      390875,
+      361583
+    ],
+    "host_wall_ns_max": 528000,
+    "host_wall_ns_median": 390875,
+    "host_wall_ns_min": 361583,
+    "measured_runs": 3,
+    "memory_limits": {
+      "current_allocated_size": 1359872,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+    "warmup_runs": 1
+  },
+  "input": {
+    "definition": "((index * 71) mod 509 - 254) / 509",
+    "deterministic_sha256": "b556cc22f805c8f87a9108b8b2af0efa549cd18412de08f270e3829602eb7501",
+    "values": 640
+  },
+  "model_lake_manifest": {
+    "bytes": 360023286454,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+  },
+  "model_loaded": false,
+  "native_kernel": {
+    "dispatches_per_sample": 1,
+    "grid": [
+      2560,
+      1,
+      1
+    ],
+    "kernel": "qwen_uniform_q4_group64_matvec",
+    "kernel_registered": true,
+    "label": "[V]/[D]",
+    "scope": "one Flash routed-expert source block matvec",
+    "shader_family": "qwen_uniform_q4.metal",
+    "threadgroup": [
+      1,
+      1,
+      1
+    ],
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "native_loader": {
+    "candidate_body_persisted": true,
+    "candidate_id": "independent_q4_g64",
+    "dense_rematerialization": "forbidden",
+    "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOWN_PROJ_LOADER_ROUNDTRIP.json",
+    "descriptor_sha256": "9cbfef48ea25fcc4b0bc2b537bfd00e9a7b19ceb7e33f6c36fc3e903ebf7943b",
+    "source_block_streamed_for_reference": true,
+    "source_independent_execution": true,
+    "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "next_action": "compose the source-independent component body into the bounded Noetic graph while keeping protected complete-token timing gated",
+  "noetic_descriptor": {
+    "candidate_id": "independent_q4_g64",
+    "load_policy": "validated serialized descriptor; candidate body is not persisted by this bounded probe",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOWN_PROJ_LOADER_ROUNDTRIP.json",
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "sha256": "9cbfef48ea25fcc4b0bc2b537bfd00e9a7b19ceb7e33f6c36fc3e903ebf7943b"
+  },
+  "noetic_representation": {
+    "candidate_bytes": 870400,
+    "candidate_id": "independent_q4_g64",
+    "candidate_sha256": "52e3ff9a7cb37fb86f03d027635c6bf2b3d2bd99f7f4cd667aa6485d3795266b",
+    "code_bytes": 819200,
+    "code_dtype": "uint4_packed",
+    "code_offset": 8,
+    "effective_bits_per_value": 4.25,
+    "group_size": 64,
+    "label": "[D]",
+    "layout": "row-major [expert, row, column]",
+    "nibble_order": "low_nibble_then_high_nibble_row_major",
+    "scale_bytes": 51200,
+    "scale_dtype": "little_endian_float16",
+    "scale_scope": "one scale per 64 source values",
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "source_to_candidate_max_abs_error": 0.0068359375,
+    "source_to_candidate_rmse": 0.001373988914515693
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "cosine": 0.9999999999999793,
+    "count": 2560,
+    "finite": true,
+    "max_abs_error": 8.940696716308594e-8,
+    "rmse": 1.84863587558612e-8,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+  "source_label": "[V]",
+  "source_tensor": {
+    "dtype": "BF16",
+    "header_sha256": "931bf5e2754636596a8f1032d56ff6db6d113d94f78c3a9a890bb2d9ab9b6eec",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "selected_block_bytes": 3276800,
+    "selected_block_sha256": "147147200fc01aae64644e4078c37b72a653ef9628fda74677f2b9ae58ba8444",
+    "selected_expert": 291,
+    "selected_row_count": 2560,
+    "selected_row_start": 0,
+    "selected_shard_full_hash_recomputed": false,
+    "shape": [
+      512,
+      2560,
+      640
+    ],
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00003-of-00131.safetensors",
+    "shard_name": "model-00003-of-00131.safetensors",
+    "shard_size": 1832518264,
+    "tensor_data_offsets": [
+      0,
+      1677721600
+    ],
+    "tensor_name": "model.language_model.layers.0.mlp.experts.down_proj"
+  },
+  "status": "PASSED"
+}

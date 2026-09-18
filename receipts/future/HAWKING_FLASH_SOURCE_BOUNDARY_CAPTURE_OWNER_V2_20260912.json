@@ -1,0 +1,126 @@
+{
+  "schema": "hawking.unification.flash_source_boundary_capture_owner.v2",
+  "status": "SOURCE_AND_NATIVE_CAPTURE_OWNERS_STATICALLY_GREEN__WITHHELD_PENDING_MACHINE_OWNER_AUTHORIZATION",
+  "observed_at_utc": "2026-09-12T18:55:04Z",
+  "specimen": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "hidden_size": 2560,
+    "hc_count": 4,
+    "hyper_connection_width": 10240
+  },
+  "supersession": {
+    "rejected_preflight": {
+      "path": "receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_20260912.json",
+      "schema": "hawking.flash.source_boundary_capture_preflight.v1",
+      "sha256": "888353ef23e1dad735df24f248989994aad50986a966df08757af6b354c1d7b2",
+      "seal_sha256": "9574dc51522eb98303625743d7e827b8f1e22932db926727d866dc4462e608ba",
+      "disposition": "REJECTED_WRONG_HYPER_CONNECTION_WIDTH_7680__NEVER_EXECUTE"
+    },
+    "rejected_owner_receipt": {
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_CAPTURE_OWNER_20260912.json",
+      "sha256": "b7a6046a70a5eb801cf78e5c9acbc86edcba43a332cd8bc159ca90e4c22397f7",
+      "seal_sha256": "bf086974580f39c59b827e87bddcd8e381c5ee6b2ed06a499df10696dd6f599e",
+      "disposition": "SUPERSEDED_AFTER_STATIC_GEOMETRY_CORRECTION__HISTORICAL_ONLY"
+    },
+    "reason": "Pinned source text_config declares hidden_size=2560 and hc_count=4; both source and native HyperConnection state therefore contain 10240 F32 elements. The earlier 7680 declaration cannot be used for capture or comparison."
+  },
+  "authoritative_preflight": {
+    "path": "receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V2_20260912.json",
+    "schema": "hawking.flash.source_boundary_capture_preflight.v2",
+    "sha256": "668007e149a1d04fb62aa1d6fc306fa79b24e7183f2b182f7a26c57867061f4c",
+    "seal_sha256": "dc510ba27473aa6bfc180e1d8317614d69e20cd0a473b63ee4f977e896452a04",
+    "status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION_AND_BOUNDARY_PAYLOADS"
+  },
+  "owners": {
+    "teacher_admission": {
+      "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+      "sha256": "affe8a56fc96c662c55f8bde3087383b78d9217647b0e38b65280456a7da8926",
+      "symbol": "load_external_reference_contract",
+      "role": "canonical exact-source, raw-logit, and detached machine-owner admission"
+    },
+    "capture_preflight": {
+      "path": "tools/odyssey/flash_source_boundary_preflight.py",
+      "sha256": "e4125e3218c973f75b1824c24ffc1e8ff08f755bb8618f92056a26de06262aff"
+    },
+    "source_capture_wrapper": {
+      "path": "tools/odyssey/flash_source_boundary_capture_mlx.py",
+      "sha256": "67b228624c86680522958ba3f7916bd5cf00165b38f17d73c68e5d5a846b7018",
+      "production_authority": false
+    },
+    "isolated_source_worker": {
+      "path": "tools/odyssey/flash_source_boundary_mlx_worker.py",
+      "sha256": "69099e51c778701c7f59bbf6fd221783798023e992d1cb3284fa1493b05724ba",
+      "production_authority": false
+    },
+    "native_capture_wrapper": {
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "49b2eaaa713a6d0bb952550678f68e4ebede0c4dca19c311dd6c3369cea55cb0"
+    },
+    "native_boundary_snapshot": {
+      "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "sha256": "3b31137e3700da3d4a683c5ab0dc32bf7697af969c16b70ea8d2df8d21c014c1",
+      "symbol": "StatefulLinearLayer::diagnostic_boundary_snapshot"
+    },
+    "native_capture_execution": {
+      "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+      "sha256": "3f72b93fd9d9f5be43b2ad5bef5f6139c3fa2368b031e8b3a0f30dbea31c91f5",
+      "symbol": "run_native_source_boundary_capture"
+    }
+  },
+  "capture_contract": {
+    "token_index": 0,
+    "token_id": 5423,
+    "layers": [0, 1, 2, 3, 4],
+    "ple_layer_ids": [1],
+    "continuous_seams": 13,
+    "route_seams": 1,
+    "layer4_cache_boundaries": ["pre_attention", "post_attention"],
+    "source_post_ple_injection_into_native_diagnostic": true,
+    "native_ple_implemented": false,
+    "ordinary_inference_dependency_allowed": false,
+    "full_body_executed": false,
+    "lm_head_executed": false,
+    "comparison_performed": false,
+    "promotion_allowed": false
+  },
+  "fail_closed_properties": {
+    "owner_admission_precedes_runtime_probe_output_reservation_binary_inspection_and_execution": true,
+    "fresh_source_and_native_output_namespaces_required": true,
+    "payload_hash_dtype_shape_and_extent_reverified": true,
+    "source_post_ple_width_is_exact_hc4": true,
+    "source_state_symlinks_and_hardlinks_rejected_by_native_consumer": true,
+    "native_executable_closure_rechecked_after_execution": true,
+    "protected_lane_ignores_only_current_invocation_and_its_direct_launcher": true,
+    "worker_cannot_self_admit": true
+  },
+  "validation": {
+    "python_focused": "30 passed, 0 failed",
+    "rust_check": "cargo check -p hawking-core --example flash_stateful_complete_token_session passed",
+    "rust_source_boundary_tests": "2 passed, 0 failed",
+    "source_dry_run": {
+      "status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+      "protected_native_lane_clean": true,
+      "output_namespace_exists": false,
+      "model_loaded": false
+    },
+    "native_dry_run": {
+      "status": "WITHHELD_PENDING_OWNER_AUTHORIZED_SOURCE_CAPTURE_AND_NATIVE_BUILD",
+      "protected_native_lane_clean": true,
+      "outputs_fresh": true,
+      "native_binary_exists": false,
+      "model_or_metal_started": false
+    }
+  },
+  "runtime_actions": {
+    "model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "Machine owner provisions the pinned Ed25519 public key and signs the exact existing V2 teacher request. Then run one bounded protected source capture, build the predeclared native diagnostic, capture its matching seams with the source post-PLE state injected only at the named diagnostic boundary, and compare in order before any 48-layer replay.",
+  "claim_boundary": "This proves corrected, statically validated, fail-closed source and native boundary-capture owners. It does not admit the unsigned teacher, execute either model path, implement native PLE, establish source parity, construct or admit a complete NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "seal_sha256": "4dc9a5143a1700a02f836e632d89d7c6d5322dbad35708c9072d2e38bef8fb1d"
+}

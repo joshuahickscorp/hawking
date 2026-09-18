@@ -1,5 +1,5 @@
 //! The plan domain (Bible sec 14, ch.02 Appendix A.1): a durable, host-owned
-//! plan record and its HCLI/HIDE protocol `plan` projection.
+//! plan record and its HAWKING/HIDE protocol `plan` projection.
 //!
 //! The kernel emits a plan-as-data ([`hide_kernel::plan::schema::Plan`]) into the
 //! event log, but that schema is execution-shaped and immutable to the host (it
@@ -31,7 +31,7 @@ use hide_kernel::plan::schema::{Plan as KernelPlan, PlanStep as KernelStep, Step
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-/// The canonical projection name consumed by HCLI/HIDE protocol clients.
+/// The canonical projection name consumed by HAWKING/HIDE protocol clients.
 pub const PLAN_PROJECTION: &str = "plan";
 
 /// One PlanCard row. Carries everything the card renders per step: the declared

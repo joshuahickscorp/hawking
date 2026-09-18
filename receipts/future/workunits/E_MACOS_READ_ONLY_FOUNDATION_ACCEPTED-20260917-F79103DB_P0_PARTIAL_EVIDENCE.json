@@ -1,0 +1,15 @@
+{
+  "accepted_findings": [
+    "root identity",
+    "Hawkingd/WebReleaseStore launcher ownership",
+    "hard $55 programme budget intent",
+    "historical fields must not overwrite the long-haul programme"
+  ],
+  "next": "one narrow read-only reconciliation WorkUnit targeted at the canonical long_haul_programme object",
+  "reason": "Kimi read real sources and returned a structured packet, but its bounded read saw stale top-level parent fields before the canonical long_haul_programme section.",
+  "schema": "hawking.long_haul.p0_partial_evidence.v1",
+  "unmet": [
+    "direct read of current long_haul_programme fields and exact accounting values"
+  ],
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-F79103DB"
+}

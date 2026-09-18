@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.hcli.daemon_delegation_ownership.v1",
+  "status": "STAGED__CONTROLLED_DAEMON_RESTART_REQUIRED",
+  "objective": "Keep delegated HCLI work inside the sovereign hawkingd process tree.",
+  "trigger": {
+    "mission": "f0cf23dacdff",
+    "observed_failure": "A client-spawned __delegate_exec Python process was reparented to pid 1 while waiting on the resident HTTP stream without an emitted unit or checkpoint.",
+    "recovery": "hcli abort f0cf23dacdff --reason resident HTTP stream emitted no unit/checkpoint; preserve one-daemon production ownership",
+    "result": "ABORTED"
+  },
+  "implementation": {
+    "daemon_owner": "hcli.serve.DaemonDelegationSupervisor",
+    "control_endpoint": "POST /hawkingd/delegations/start",
+    "workspace_boundary": "<repo>/.hcli/delegations/<mission> with an existing .hcli/mission/delegation_spec.json",
+    "child_lifecycle": "direct hawkingd child, no detached session, tracked and terminated/reaped during daemon shutdown",
+    "client_policy": "A configured localhost:8011 endpoint never falls back to a detached client worker when its daemon image lacks the supervision route."
+  },
+  "verification": {
+    "command": "python3 -m pytest -q hcli/test_daemon_delegation_supervisor.py hcli/test_delegate.py hcli/tests/test_serve_openai_surface.py hcli/test_hawkingd_daemon_name.py hcli/test_processes.py",
+    "result": "91 passed, 1 skipped",
+    "additional": [
+      "python3 -m py_compile hcli/serve.py hcli/delegate.py",
+      "git diff --check"
+    ]
+  },
+  "claim_boundary": "Staged source and focused tests only. The currently live hawkingd process image predates this endpoint, so live daemon-owned delegation requires a controlled restart. This receipt makes no model capability, TPS, or autonomous-write claim."
+}

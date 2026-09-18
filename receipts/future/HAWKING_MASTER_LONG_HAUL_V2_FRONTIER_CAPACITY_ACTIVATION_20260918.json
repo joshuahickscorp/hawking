@@ -1,0 +1,37 @@
+{
+  "capacity": {
+    "activation_boundary": "safe daemon restart after all active WorkUnits released",
+    "base_premium_workers": 4,
+    "base_remote_workers": 12,
+    "frontier_burst_factor": 1.25,
+    "live_configured_premium_workers": 5,
+    "live_configured_remote_workers": 15
+  },
+  "claim_boundary": "15/5 is the configured live gateway admission envelope after restart; actual useful dispatch still requires durable runnable contracts, provider health, budget, and disjoint scopes.",
+  "daemon": {
+    "claim_boundary": "native runtime remains withheld; this receipt covers remote gateway capacity only",
+    "endpoint": "http://127.0.0.1:8014",
+    "pid": 98601,
+    "status": "waiting_for_native_runtime"
+  },
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T04:01:11.618449+00:00",
+  "route_health": {
+    "arguments_present": true,
+    "claim_boundary": "transport/tool-call compatibility only; no provider tranche acceptance or hardware qualification",
+    "endpoint": "http://127.0.0.1:8014/v1/chat/completions",
+    "http_status": 200,
+    "model": "moonshotai/kimi-k3",
+    "tool_call_qualified": true,
+    "tool_name": "route_probe"
+  },
+  "schema": "hawking.long_haul.v2.frontier_capacity_activation.v1",
+  "status": "ACTIVE_SOURCE_POLICY_ROUTE_HEALTHY",
+  "verification": {
+    "compile": "passed",
+    "control_plane_tests": "14 passed",
+    "diff_check": "passed",
+    "source_capacity_tests": "39 passed"
+  }
+}

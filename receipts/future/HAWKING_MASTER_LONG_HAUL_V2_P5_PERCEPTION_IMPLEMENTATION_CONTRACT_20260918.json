@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P5_PERCEPTION_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-D02EFD75",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded bounded implementation contract only; no capability or production claim.",
+  "source_observation": {"owner": "hawking/perception/tools.py", "sha256": "3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106", "observed_focus_bytes": 4000},
+  "focused_tests": [
+    {"path": "hawking/test_tool_registry.py", "sha256": "d36afea53a8d8496c1218ec91a6dccb361f99d3768372d60eb929da74c326be9"},
+    {"path": "hawking/tests/test_sealed_capabilities_reach_the_backend.py", "sha256": "82ee2740819b5f07870231490f4d543ea46bcafef5c0c1c63c82e9b127690607"}
+  ],
+  "local_verification": {"command": "python3 -m pytest -q hawking/test_tool_registry.py hawking/tests/test_sealed_capabilities_reach_the_backend.py", "result": "18 passed"},
+  "next_seam": "Preserve the typed allowlist/register boundary and _open path escape guard; any mutation must remain inside the named perception owner and its focused tests.",
+  "falsifier": "A non-allowlisted tool becomes invocable or _open accepts a path outside projects_root, falsifying the bounded perception contract."
+}

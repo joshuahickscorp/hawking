@@ -1,0 +1,236 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 12,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search",
+      "receipt.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "8c2a4b721c92511e52ce04251f3fd93cd3dbd88fb306daf28ea1c941ba713b23",
+  "evidence": [
+    {
+      "at": "2026-09-18T03:38:53.340885+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:38:53.340896+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:38:53.344459+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"owner_map\",\"statement\":\"Canonical owners: Goal=hawking/goal.py+goal_bank.py; frontier reconciliation=hawking/goal_surface.py; WorkUnit=hawking/workunit_owner.py (dead-lettering, provider-output classifica",
+      "outcome": "CONTINUE",
+      "reply_chars": 5431,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T03:38:53.351545+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "EVIDENCE_RETURNED",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260917-28190B0B_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ]
+    },
+    {
+      "at": "2026-09-18T03:42:27.631519+00:00",
+      "calls_used": 13,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:42:27.631538+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:42:27.638728+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"owner_map\",\"claim\":\"WorkUnit owner = hawking/workunit_owner.py (315,628 B, 6,897 lines): Hawking-owned long-run workunit loop; reuses hawkingd chat tools, session compact/resume, canonical native role/art",
+      "outcome": "CONTINUE",
+      "reply_chars": 5399,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T03:45:26.350871+00:00",
+      "calls_used": 11,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:45:26.350880+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:45:26.354850+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"owner_map\",\"claim\":\"Goal owner: hawking/goal.py (WorkUnitDAG = compiler IR over canonical WorkUnit); disk projection hawking/dag_store.py (_unit_to_disk); frontier reconciliation hawking/goal_surface.py (",
+      "outcome": "CONTINUE",
+      "reply_chars": 5949,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T03:47:45.403106+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:47:45.403118+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:47:45.406727+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"claim\":\"Hawking owns Goal, WorkUnit, authority, effects, tests, Git evidence, continuation; providers are cognition-only workers whose mutations are validated/executed by the canonical repo.edit owner; child OUT",
+      "outcome": "CONTINUE",
+      "reply_chars": 5569,
+      "tool_less_continue_streak": 4,
+      "tool_signal": "none",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-18T03:47:45.408734+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "CONTINUE",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260917-28190B0B_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ]
+    },
+    {
+      "at": "2026-09-18T03:50:05.921958+00:00",
+      "calls_used": 12,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:50:05.921968+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:50:05.926249+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"claim\":\"Goal owner: hawking/goal.py GoalCompiler turns goal text into implement/validate WorkUnits; WorkUnitDAG is compiler IR only, wrapping workunit.py identify_ready/transition_status, persisted via dag_store",
+      "outcome": "CONTINUE",
+      "reply_chars": 5427,
+      "tool_less_continue_streak": 5,
+      "tool_signal": "theater",
+      "turn": 5
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[{\"id\":\"O1\",\"claim\":\"Goal owner: hawking/goal.py GoalCompiler turns goal text into implement/validate WorkUnits; WorkUnitDAG is compiler IR only, wrapping workunit.py identify_ready/transition_status, persisted via dag_store.py atomic writer; it is not the mission ledger (ledger.py). goal_surface.py owns dependency-aware frontier reconciliation.\",\"evidence\":\"hawking/goal.py:1-12; V1 handoff section 3\"},{\"id\":\"O2\",\"claim\":\"WorkUnit owner is split: hawking/workunit.py holds the durable WorkUnit dataclass, readiness, transitions, repair policy (MAX_REPAIR_DEPTH=3, MAX_REPAIRS_PER_ROOT=6, RESUME_POLICY=rerun); hawking/workunit_owner.py is the lease-resolved long-run loop with 15 explicit states incl. OUTPUT_UNUSABLE, NEEDS_REDECOMPOSITION, RECONCILIATION_REQUIRED; child dead-lettering and authority-gated mutation. tools/odyssey/kimi_workunit_longrun.py is non-authority.\",\"evidence\":\"hawking/workunit.py:1-60; hawking/workunit_owner.py:1-50\"},{\"id\":\"O3\",\"claim\":\"Auto owner: hawking/auto_orchestration.py; Auto is a control-plane decision not a provider prompt; emits inspectable CognitionPlan + redacted Worker Packet; pool bounded BASE 12 remote/4 premium with FRONTIER_BURST_FACTOR 1.25 => configured 15/5; admission (budget, provider health, dependency readiness, disjoint writer leases) stays authoritative over the planner.\",\"evidence\":\"hawking/auto_orchestration.py:1-60\"},{\"id\":\"O4\",\"claim\":\"Supervision owner: hawking/supervisor_watcher.py (objective-digest caching, compact fingerprints, delta-only decisions). Runtime owner: single sovereign hawkingd process tree (hawkingd.py, runtime.py, canonical_runtime.py). remote_cognition.py::_workunit_completion_contract is the single completion-contract normalization point.\",\"evidence\":\"V1 handoff section 3; campaign_state continuation active_specimen\"},{\"id\":\"O5\",\"claim\":\"V2 frontier capacity configured 15/5 but live 12/4 with pending_capacity_activation=true, deferred_until_safe_daemon_boundary; claim boundary forbids live 15/5 claim until safe daemon restart + route health check; five activation gates named.\",\"evidence\":\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_FRONTIER_CAPACITY_20260918.json\"},{\"id\":\"O6\",\"claim\":\"Collapse frontier is named in source, not a subsystem: Auto must not collapse audit/review into one unit (auto_orchestration.py:319); web_projection.py:98 keeps the full parallel frontier visible; canonical V1 lesson: compute a runnable frontier, never let one next_workunit serialize the programme. Flattening seams are Auto planning, frontier reconciliation, web projection, and completion-contract normalization.\",\"evidence\":\"fs.search 'collapse' over hawking/*.py; handoff section 9\"},{\"id\":\"O7\",\"claim\":\"V1 carry-forward into V2: E_MACOS_CAPTURE_OCR (no qualified live extraction receipt), P1_PROVIDER_TOOL_RECEIPT_CONTINUATION_REPAIR, and Auto/frontier re-decomposition into larger coherent tranches; provider dead letters must not be blindly replayed.\",\"evidence\":\"V1 handoff sections 5,6,10\"}],\"sources\":[\"hawking/goal.py:1-60\",\"hawking/workunit.py:1-60\",\"hawking/workunit_owner.py:1-80\",\"hawking/auto_orchestration.py:1-80\",\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md\",\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_FRONTIER_CAPACITY_20260918.json\",\"campaign_state GOAL-A52AB48501\",\"fs.search collapse/control-plane over hawking source\"],\"recommendations\":[{\"id\":\"R1\",\"tranche\":\"Smallest independently actionable tranche: activate configured 15/5 frontier capacity at the next safe daemon boundary (restart hawkingd + provider route health check, then flip pending_capacity_activation). Config and tests already landed (39 passed, compile passed).\",\"falsifier\":\"If after a safe restart and route health check live counts remain 12/4, or any of the five gates fails, the tranche is falsified and the blocker is the specific failed gate, not the config.\"},{\"id\":\"R2\",\"tranche\":\"Disjoint follow-on: enforce require_structured_result against the final response body in _tool_trace_co",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-5a45dd1526fc4d05",
+  "worker_id": "hawking-worker-fdf55613e5854a54",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260917-28190B0B"
+}

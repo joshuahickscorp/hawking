@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P10_NX_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-2F1B6586",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded NX contract only; no artifact promotion, hardware, or production qualification claim.",
+  "source_observation": {"owner":"tools/nx_genome.py","sha256":"c795b171e56d3ca6a2f41be3c73942999ab1918e76d5403469df8bf42c6eace0"},
+  "focused_tests": [
+    {"path":"hawking/test_nx_promotion.py","sha256":"700b36f9c6e09fd8060330f2a212fc082d6c40158f572e429587e38d64be4f87"},
+    {"path":"hawking/test_nrnx_discipline.py","sha256":"c9036b6b164acf26092ff3c3f817614158a434c37f368c2d9cce74eacdc0e2fe"},
+    {"path":"tools/future/nx_promotion.py","sha256":"9631430701cd762b872a96ab2eabdc5c112045df9e5b98823c52684303fbfdb3"}
+  ],
+  "local_verification": {"command":"python3 -m pytest -q hawking/test_nx_promotion.py hawking/test_nrnx_discipline.py","result":"13 passed"},
+  "next_seam":"Preserve machine_genome digest inputs, bound_kernels intersection, lowers_nr_section NR content hash, and fail-closed genome/refusal checks.",
+  "falsifier":"A machine with a different genome passes the seal, or a seal lists a kernel outside the decode/shader intersection."
+}

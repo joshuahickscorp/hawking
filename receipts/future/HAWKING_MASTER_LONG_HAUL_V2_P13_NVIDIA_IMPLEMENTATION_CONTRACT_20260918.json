@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-7AA53DDC",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded CUDA/NVIDIA boundary contract only; no NVIDIA hardware or backend qualification claim.",
+  "source_observation": {"owners":["tools/accelerator/backend_contract.py","tools/accelerator/cuda_runtime.py"],"sha256":{"backend_contract.py":"04a096f63bc8d832e166b2d1d51b4f5560ccb8841f6a54fcd9794ec5dc9db69f","cuda_runtime.py":"51d152dfe6d1158d90a8605e1de757e42e61a7d8f5bd1b215adff424fa2f5461"}},
+  "focused_tests": ["tools/accelerator/test_backend_contract.py","tools/accelerator/test_hardware_doctor.py","tools/accelerator/test_air.py"],
+  "local_verification": {"command":"python3 -m pytest -q tools/accelerator/test_backend_contract.py tools/accelerator/test_hardware_doctor.py tools/accelerator/test_air.py","result":"122 passed, 34 skipped"},
+  "next_seam":"Keep CUDA named-but-unregistered and preserve evidence-tier separation, FPGA hardware refusal, and snapshot-vs-alias safety.",
+  "falsifier":"CUDA enters BACKEND_IDS or FPGA/model output is promoted to HARDWARE_MEASURED without physical evidence."
+}

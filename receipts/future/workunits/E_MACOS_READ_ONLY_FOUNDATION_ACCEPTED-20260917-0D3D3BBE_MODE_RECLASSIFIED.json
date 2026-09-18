@@ -1,0 +1,11 @@
+{
+  "at": 1789633922.5436249,
+  "claim_boundary": "changes only the next execution mode; prior evidence remains durable",
+  "contract_path": "/Users/scammermike/Downloads/hawking/.hawking/goals/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE.contract.json",
+  "from": "discrete_goal",
+  "goal_id": "GOAL-B33C69F193",
+  "reason": "P0_BIND_RECONCILE is a read-only programme reconciliation WorkUnit. It inherited the parent discrete engineering mode and was incorrectly required to perform repo.edit despite no admitted mutation plan.",
+  "schema": "hawking.workunit.mode_reclassification.v1",
+  "to": "worker_research",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE"
+}

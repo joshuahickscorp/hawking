@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.gravity.rust-core-admission.v1",
+  "status": "ACTIVE_FOUNDATION",
+  "claim": "Gravity now has Rust-owned complete-representation accounting, deterministic candidate selection, and safetensors byte-closure inventory primitives.",
+  "implemented": {
+    "manifest": {
+      "source": "crates/hawking-core/src/gravity_manifest.rs",
+      "properties": [
+        "charges codebooks, indices, scales, generators, and residuals as explicit persisted parts",
+        "keeps active bytes/token separate from persistent bytes",
+        "calculates complete EBPW in integer millionths of a bit",
+        "refuses empty or unattested payload-only accounting before policy selection"
+      ]
+    },
+    "policy": {
+      "source": "crates/hawking-core/src/gravity_policy.rs",
+      "properties": [
+        "integer-only auditable scoring",
+        "input-order-independent selection",
+        "explicit dynamic policy inputs",
+        "fail-closed direct/source-independent/verified requirements"
+      ]
+    },
+    "inventory": {
+      "source": "crates/hawking-core/src/safetensors_inventory.rs",
+      "properties": [
+        "lexically sorted shards and tensors",
+        "header-only operation",
+        "dtype/shape/offset geometry validation",
+        "exact contiguous payload closure",
+        "overflow and malformed-source refusal"
+      ],
+      "native_command": "cargo run -q -p hawking-core --example gravity_safetensors_inventory -- <model-directory>"
+    }
+  },
+  "real_source_validation": {
+    "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "shard_count": 131,
+    "tensor_count": 1658,
+    "file_bytes": 360000192888,
+    "header_bytes": 229760,
+    "payload_bytes": 359999963128,
+    "closure": "file_bytes == header_bytes + payload_bytes",
+    "payload_read": false,
+    "matches_existing_python_complete_anatomy_closure": true
+  },
+  "verification": {
+    "commands": [
+      "cargo fmt --check",
+      "cargo test -p hawking-core safetensors_inventory --lib",
+      "cargo test -p hawking-core gravity_policy --lib",
+      "cargo run -q -p hawking-core --example gravity_safetensors_inventory -- /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+    ],
+    "focused_tests": "9 passed"
+  },
+  "non_claims": [
+    "This is not complete-model admission.",
+    "This does not execute a source tensor or model.",
+    "This does not replace the Python exploratory science harness yet.",
+    "This does not establish capability, direct-execution, resident, or TPS evidence."
+  ],
+  "next_rust_owner": "Reusable artifact/representation ledger and decoder ABI, then measured direct compact kernels. Python experiments are ported only after a receipt establishes their algorithm and acceptance test."
+}

@@ -9,6 +9,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from tools.odyssey import modellake as ml
 from tools.odyssey import modellake_lineage as lin
 from tools.odyssey.product_boundary import load_config, safe_defaults
@@ -22,6 +24,12 @@ def _tiny_safetensors(path: Path, names: list[str]) -> None:
     }
     raw = json.dumps(header).encode()
     path.write_bytes(len(raw).to_bytes(8, "little") + raw + b"\x00\x00\x00\x00")
+
+
+def _safetensors_with_descriptors(path: Path, descriptors: dict[str, dict]) -> None:
+    raw = json.dumps(descriptors).encode()
+    body_bytes = max(spec["data_offsets"][1] for spec in descriptors.values())
+    path.write_bytes(len(raw).to_bytes(8, "little") + raw + b"\x00" * body_bytes)
 
 
 def _boundary(tmp: Path, *, with_source: bool = True) -> dict:
@@ -99,6 +107,185 @@ def test_fingerprint_calls_recognizer_recognize():
     assert "recognize" in lin.architecture_fingerprint.__code__.co_names or \
         "_recognize" in lin.architecture_fingerprint.__code__.co_names
     assert "recognize" in lin._recognize.__code__.co_names
+
+
+def test_selected_tensor_headers_are_index_bound_and_payload_free(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    selected_name = "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight"
+    unselected_name = "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+    _safetensors_with_descriptors(
+        root / "model-00001-of-00002.safetensors",
+        {selected_name: {"dtype": "BF16", "shape": [2, 160], "data_offsets": [0, 640]}},
+    )
+    # The unselected indexed shard intentionally does not exist.  A target-only
+    # capture must not fan out into a generic specimen-header scan.
+    (root / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {
+        selected_name: "model-00001-of-00002.safetensors",
+        unselected_name: "model-00002-of-00002.safetensors",
+    }}))
+    witness = lin.selected_tensor_headers_from_specimen(root, [selected_name])
+    assert witness["schema"] == lin.SELECTED_TENSOR_HEADERS_SCHEMA
+    assert witness["headers"] == [
+        {
+            "name": selected_name,
+            "shard": "model-00001-of-00002.safetensors",
+            "dtype": "BF16",
+            "shape": [2, 160],
+            "data_offsets": [0, 640],
+            "header_descriptor_sha256": witness["headers"][0]["header_descriptor_sha256"],
+        }
+    ]
+    assert len(witness["headers"][0]["header_descriptor_sha256"]) == 64
+    assert witness["headers"][0]["header_descriptor_sha256"] == lin._canonical_json_sha256(
+        {
+            "name": selected_name,
+            "shard": "model-00001-of-00002.safetensors",
+            "dtype": "BF16",
+            "shape": [2, 160],
+            "data_offsets": [0, 640],
+        }
+    )
+    assert witness["header_bytes_read"] > 0
+    assert witness["tensor_payload_bytes_read"] == 0
+    assert witness["loaded_weights"] is False
+
+    with pytest.raises(lin.LineageError, match="does not bind"):
+        lin.selected_tensor_headers_from_specimen(root, ["missing.weight"])
+
+
+def test_selected_tensor_headers_refuse_oversized_multi_shard_request(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    names = [f"model.layers.{index}.weight" for index in range(lin.SELECTED_TENSOR_HEADER_MAX_SHARDS + 1)]
+    (root / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {
+        name: f"model-{index + 1:05d}-of-00009.safetensors"
+        for index, name in enumerate(names)
+    }}))
+
+    with pytest.raises(lin.LineageError, match="8-shard cap"):
+        lin.selected_tensor_headers_from_specimen(root, names)
+
+
+def test_selected_tensor_headers_reserve_an_aggregate_header_budget(tmp_path, monkeypatch):
+    root = tmp_path / "source"
+    root.mkdir()
+    names = ["model.layers.0.weight", "model.layers.1.weight"]
+    by_shard = {
+        "model-00001-of-00002.safetensors": names[0],
+        "model-00002-of-00002.safetensors": names[1],
+    }
+    for shard in by_shard:
+        (root / shard).write_bytes(b"placeholder")
+    (root / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {
+        name: shard for shard, name in by_shard.items()
+    }}))
+    observed_caps = []
+
+    def fake_read_header(path, *, use_cache, header_cap):
+        assert use_cache is False
+        observed_caps.append(header_cap)
+        name = by_shard[Path(path).name]
+        return {
+            "touched_weight_bytes": False,
+            "bytes_read": 200,
+            "header_bytes": 200,
+            "file_bytes": 1_000,
+            "tensors": {name: {"dtype": "BF16", "shape": [2, 2], "data_offsets": [0, 8]}},
+        }
+
+    monkeypatch.setattr(lin, "read_header", fake_read_header)
+    witness = lin.selected_tensor_headers_from_specimen(root, names)
+    assert observed_caps == [
+        lin.SELECTED_TENSOR_HEADER_MAX_BYTES - 8,
+        lin.SELECTED_TENSOR_HEADER_MAX_BYTES - 200 - 8,
+    ]
+    assert witness["header_bytes_read"] == 400
+    assert witness["header_bytes_read"] <= lin.SELECTED_TENSOR_HEADER_MAX_BYTES
+
+
+def test_single_shard_passport_traits_keep_every_header_read_bounded(tmp_path, monkeypatch):
+    root = tmp_path / "source"
+    root.mkdir()
+    name = "model.language_model.embed_tokens.weight"
+    (root / "config.json").write_text(json.dumps({"model_type": "qwen4_exp"}))
+    _safetensors_with_descriptors(
+        root / "model.safetensors",
+        {name: {"dtype": "BF16", "shape": [2, 2], "data_offsets": [0, 8]}},
+    )
+    actual_read_header = lin.read_header
+    observed_caps = []
+
+    def bounded_read_header(*args, **kwargs):
+        observed_caps.append(kwargs["header_cap"])
+        return actual_read_header(*args, **kwargs)
+
+    monkeypatch.setattr(lin, "read_header", bounded_read_header)
+    traits = lin.passport_static_traits_from_specimen(
+        root, repo="fixture/flash", rev="fixture-revision", exact_tensor_names=[name]
+    )
+    assert traits["selected_tensor_headers"]["source_classification"] == (
+        lin.SINGLE_SHARD_SELECTED_HEADERS
+    )
+    assert observed_caps == [
+        lin.SELECTED_TENSOR_HEADER_MAX_BYTES - 8,
+        lin.SELECTED_TENSOR_HEADER_MAX_BYTES - 8,
+    ]
+
+
+def test_selected_tensor_headers_refuse_oversized_single_shard_header(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    name = "model.language_model.embed_tokens.weight"
+    # The capped reader rejects from the length prefix without reading a body.
+    (root / "model.safetensors").write_bytes(
+        (lin.SELECTED_TENSOR_HEADER_MAX_BYTES - 7).to_bytes(8, "little")
+    )
+    with pytest.raises(lin.LineageError, match="outside the bounded range"):
+        lin.selected_tensor_headers_from_specimen(root, [name])
+
+
+def test_selected_tensor_headers_refuse_symlinked_shards_and_out_of_file_offsets(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    name = "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight"
+    outside = tmp_path / "outside.safetensors"
+    _safetensors_with_descriptors(
+        outside, {name: {"dtype": "BF16", "shape": [2, 160], "data_offsets": [0, 640]}}
+    )
+    (root / "linked.safetensors").symlink_to(outside)
+    (root / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {
+        name: "linked.safetensors",
+    }}))
+    with pytest.raises(lin.LineageError, match="non-symlink regular file"):
+        lin.selected_tensor_headers_from_specimen(root, [name])
+
+    (root / "linked.safetensors").unlink()
+    raw = json.dumps({name: {"dtype": "BF16", "shape": [2, 160], "data_offsets": [0, 640]}}).encode()
+    # The descriptor reaches 640 bytes into a body that has only eight bytes.
+    (root / "linked.safetensors").write_bytes(len(raw).to_bytes(8, "little") + raw + b"\x00" * 8)
+    with pytest.raises(lin.LineageError, match="invalid data offsets"):
+        lin.selected_tensor_headers_from_specimen(root, [name])
+
+
+def test_passport_static_traits_use_selected_headers_without_changing_generic_index(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    name = "model.language_model.embed_tokens.weight"
+    (root / "config.json").write_text(json.dumps({"model_type": "qwen4_exp"}))
+    _safetensors_with_descriptors(
+        root / "model-00001-of-00001.safetensors",
+        {name: {"dtype": "BF16", "shape": [2, 2], "data_offsets": [0, 8]}},
+    )
+    (root / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {
+        name: "model-00001-of-00001.safetensors",
+    }}))
+    traits = lin.passport_static_traits_from_specimen(
+        root, repo="fixture/flash", rev="fixture-revision", exact_tensor_names=[name]
+    )
+    assert traits["selected_tensor_headers"]["headers"][0]["shape"] == [2, 2]
+    assert traits["selected_tensor_headers"]["tensor_payload_bytes_read"] == 0
+    assert traits["identity"]["tensor_header_manifest_sha256"]
 
 
 def test_express_lineage_calls_the_pieces():

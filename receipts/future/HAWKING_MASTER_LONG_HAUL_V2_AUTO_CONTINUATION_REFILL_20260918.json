@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.long_haul.v2.auto_continuation_refill.v1",
+  "recorded_at": "2026-09-18T10:28:53Z",
+  "goal_id": "GOAL-A52AB48501",
+  "status": "ADMITTED_AND_RUNNING",
+  "diagnosis": {
+    "active_workunits_before": 0,
+    "graph_runnable_frontier_before": 0,
+    "cause": "The V2 refill seam was admission-only and the preplanned queue had exhausted its read-evidence and terminal entries.",
+    "objective_digest_compared": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+    "full_objective_reread": false
+  },
+  "control_plane_change": {
+    "source": [
+      "hawking/auto_orchestration.py",
+      "hawking/tests/test_auto_orchestration.py"
+    ],
+    "schema": "hawking.auto.continuation.v1",
+    "opt_in": true,
+    "max_generated_per_refill": 10,
+    "claim_boundary": "Auto-generated bounded continuation contracts only; provider output, hardware qualification, and release acceptance remain gated.",
+    "focused_tests": "17 passed",
+    "git_diff_check": "PASS"
+  },
+  "admitted_workunits": [
+    {"tranche": "P18_TUNNEL_HTTP200_FOCUSED_AUDIT_V4_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-17BD955F", "writer_scope": "auto-continuation/p18_tunnel_http200_focused_audit_v4"},
+    {"tranche": "P15_AUTOTUNING_FOCUSED_CONTRACT_V4_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-73953C79", "writer_scope": "auto-continuation/p15_autotuning_focused_contract_v4"},
+    {"tranche": "P5_PERCEPTION_FOCUSED_AUDIT_V4_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-A941CB8B", "writer_scope": "auto-continuation/p5_perception_focused_audit_v4"},
+    {"tranche": "P12_APPLE_IMPLEMENTATION_CONTRACT_V2_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-78D2FF2B", "writer_scope": "auto-continuation/p12_apple_implementation_contract_v2"},
+    {"tranche": "P14_PCIE_IMPLEMENTATION_CONTRACT_V2_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-B917A4E6", "writer_scope": "auto-continuation/p14_pcie_implementation_contract_v2"},
+    {"tranche": "P17_COLLAPSE_IMPLEMENTATION_CONTRACT_V2_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-BEF16746", "writer_scope": "auto-continuation/p17_collapse_implementation_contract_v2"},
+    {"tranche": "P19_SANDBOX_EXECUTION_AUDIT_V3_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-6B18C6C9", "writer_scope": "auto-continuation/p19_sandbox_execution_audit_v3"},
+    {"tranche": "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-1CEE092F", "writer_scope": "auto-continuation/p13_nvidia_implementation_contract_v2"},
+    {"tranche": "P16_MODELLAKE_EXECUTION_BOUNDARY_V3_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-DE893168", "writer_scope": "auto-continuation/p16_modellake_execution_boundary_v3"},
+    {"tranche": "P4_AUTO_SPOOL_HARDENING_V3_AUTO_IMPLEMENTATION_V1", "workunit_id": "WORKUNIT-20260918-23EA7218", "writer_scope": "auto-continuation/p4_auto_spool_hardening_v3"}
+  ],
+  "execution_policy": {
+    "provider_terminal_outcomes_are_not_replayed": true,
+    "hardware_quiescence_is_not_weakened": true,
+    "provider_output_is_not_acceptance": true,
+    "codex_worker_launches": 0
+  }
+}

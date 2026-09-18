@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "444af7255e2dd2d9efdc4cc475d76c234b775d292d404ddbf4aa52e54f0b01b9",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:08:38.193236+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:08:38.193246+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:08:38.195671+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First read-only observation targeted the admitted focus file hawking/goal_surface.py (resolved path /Users/scammermike/Downloads/hawking/hawking/goal_surface.py): 66504 bytes, sha256 0dc5abf7329d6bbdae02a8958acf910f39f89cc",
+      "outcome": "CONTINUE",
+      "reply_chars": 4880,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First read-only observation targeted the admitted focus file hawking/goal_surface.py (resolved path /Users/scammermike/Downloads/hawking/hawking/goal_surface.py): 66504 bytes, sha256 0dc5abf7329d6bbdae02a8958acf910f39f89cc3e23704d18f26e878ec0dc570; the read returned the first 4000 bytes (6.0%) with an explicit truncation note, so nothing is concluded about the unobserved 94%.\",\"Module docstring observed: 'Gate 6: worker-agnostic discrete Goal operator surface for h web / hawkingd', confirming goal_surface.py is the discrete-Goal operator surface named by the P17_CODEBASE_COLLAPSE objective.\",\"Observed schema constants: GOAL_SCHEMA='hawking.discrete_goal.v1', RESULT_SCHEMA='hawking.discrete_goal_result.v1', GOAL_CONTRACT_SCHEMA='hawking.discrete_goal_contract.v1', GOALS_DIRNAME='goals', and import of atomic_write_json from hawking.persist.\",\"Observed a self-contained, stateless helper cluster: WEIGHT_ARTIFACT_SUFFIXES tuple, _is_remote_openrouter_model(), and _openrouter_model_id(), which recognize OpenRouter provider/model ids while excluding absolute paths and local weight/artifact suffixes; these reference only stdlib imports and no Goal-surface state.\",\"Observed _normalize_attachment_refs(): a pure validation/normalization function enforcing a bounded contract \u2014 at most 8 attachments, artifact_id must match regex artifact-[0-9a-f]{64}, digest must match [0-9a-f]{64}, and read_path is zeroed unless it starts with '.hawking/web-artifacts/' or '.hawking/H-NOTES/', explicitly preventing a Goal packet from granting arbitrary filesystem authority.\",\"The admitted test files (hawking/tests/test_auto_orchestration.py, hawking/tests/test_serve_openai_surface.py, hawking/test_tool_registry.py) were not read in this bounded pass, so RED/GREEN test ownership below is proposed, not confirmed.\",\"No files were mutated, no tests were run, no child workers were spawned, and no production or release claim is made.\"],\"sources\":[\"hawking/goal_surface.py (66504 bytes, first 4000 observed, sha256 0dc5abf7329d6bbdae02a8958acf910f39f89cc3e23704d18f26e878ec0dc570)\"],\"recommendations\":[\"Bounded collapse contract (proposed, grounded in the observed 6%): extract the self-contained helper cluster \u2014 WEIGHT_ARTIFACT_SUFFIXES, _is_remote_openrouter_model, _openrouter_model_id, _normalize_attachment_refs \u2014 from hawking/goal_surface.py into a new module hawking/goal_attachments.py, with goal_surface.py re-importing the names so Gate 6 surface behavior is unchanged.\",\"Exact seam: the contiguous block from the WEIGHT_ARTIFACT_SUFFIXES definition through the end of _normalize_attachment_refs in hawking/goal_surface.py; the block uses only json/re/typing imports and no module-level Goal state, so the cut is bounded and behavior-preserving.\",\"RED test (owner to be confirmed by reading admitted tests, proposed hawking/tests/test_auto_orchestration.py or a new focused test): assert hawking.goal_attachments exposes the extracted helpers and that goal_surface re-exports them; fails pre-collapse because the module does not exist.\",\"GREEN test: the admitted suites hawking/tests/test_auto_orchestration.py, hawking/tests/test_serve_openai_surface.py, and hawking/test_tool_registry.py must pass unchanged after the move, proving the Gate 6 surface contract (schemas, attachment validation, OpenRouter id recognition) is preserved.\",\"Protected resources: the three schema constants and GOALS_DIRNAME remain in goal_surface.py; the artifact_id/digest regexes, the 8-attachment cap, and the read_path allowlist ('.hawking/web-artifacts/', '.hawking/H-NOTES/') must move verbatim with no semantic drift; atomic_write_json persistence stays untouched.\",\"Writer scope: exactly one new file hawking/goal_attachments.py plus the import/re-export edit in hawking/goal_surface.py; no other files in scope.\",\"Falsifier: the contract is falsified if, after the move, _normalize_attachment_refs accepts an artifact_id not matching artifact-[0-9a-f]{64}, accepts a digest not matchin",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-545c718bdc4e43bf",
+  "worker_id": "hawking-worker-d2cd3a3da65a4465",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-D5B5685A"
+}

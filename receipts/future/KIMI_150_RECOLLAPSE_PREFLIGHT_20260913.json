@@ -1,0 +1,165 @@
+{
+  "schema": "hawking.future.kimi_150_recollapse_preflight.v1",
+  "generated_at": "2026-09-13T08:50:00-04:00",
+  "status": "P4_P5_RUNTIME_BELOW_TARGET_P6_COMPILE_REFUSED_PRESERVE_EXPERIMENTAL",
+  "objective": "Build one cheaper directly executable Kimi derivative and test the >=150 generated TPS target without touching KIMI_P0_OPERATIONAL.",
+  "control": {
+    "artifact_id": "KIMI_P0_OPERATIONAL",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "bytes": 17856321839,
+    "quantization": {
+      "bits": 8,
+      "group_size": 64,
+      "mode": "affine"
+    },
+    "steady_decode_tps_reused": {
+      "operational_cross_context_median": 73.00105389709667,
+      "raw_direct_median": 85.38968210971538
+    },
+    "capability": "existing KIMI_P0_OPERATIONAL worker envelope; candidate must be compared, never self-certified"
+  },
+  "gravity_reuse": {
+    "architecture": "DeepSeek-V2-style MLA plus 64 routed experts, top-6 routed and 2 shared",
+    "canonical_query": "python3 tools/foundry/query_gravity_methods.py --tags moe,routed_experts,quantization,low_rank,direct_execution --json",
+    "selected_registry_method": "M-teacher-route-union-compact-experts",
+    "registry_boundary": "PROVEN_FLASH_SCOPED; not transferred as a live Kimi route/capability claim",
+    "direct_moe_owner": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs",
+    "kimi_direct_owner": "mlx_vlm.models.switch_layers.QuantizedSwitchLinear -> mx.gather_qmm",
+    "sealed_negatives_skipped": [
+      "generic shared basis/PQ/additive codebooks",
+      "compact coordinate generators",
+      "uniform low-rank allocation",
+      "dense-rematerializing three-projection factor paths"
+    ],
+    "reason": "Existing Kimi receipts already show these families either fail capability or lose physical performance."
+  },
+  "candidate": {
+    "id": "KIMI_150_MIXED48_STAGED",
+    "source_control": "KIMI_P0_OPERATIONAL",
+    "representation": "mlx_vlm mixed_4_8 affine group-64 quantization",
+    "recipe_observed": {
+      "quantized_module_count": 269,
+      "bits": {
+        "4": 242,
+        "8": 27
+      },
+      "q8_islands": [
+        "embedding and lm_head",
+        "selected periodic/edge down projections",
+        "selected periodic/edge value projections"
+      ],
+      "router": "non-quantized",
+      "boundary": "Built-in mlx_vlm mixed_4_8 predicate; most attention and shared-expert projections are q4, so this is not an all-sensitive-islands-protected claim."
+    },
+    "direct_consumer": "existing QuantizedSwitchLinear / fused mx.gather_qmm",
+    "dense_rematerialization": false,
+    "new_artifact_path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p1-mixed48",
+    "artifact_revision": "db5082f85b2f424cd2cc974e000b087db6045090910534cbdf0a9909e2725b00",
+    "complete_array_bytes": 11366714592,
+    "shard_bytes": [5352982403, 5283235728, 730662145],
+    "conversion_command": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/bin/python -m mlx_vlm.convert --hf-path /Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c --mlx-path /Users/scammermike/hawking-agents/kimi-vl-a3b-p1-mixed48 --quantize --q-group-size 64 --q-bits 4 --quant-predicate mixed_4_8 --trust-remote-code"
+  },
+  "conversion": {
+    "gpu_attempt": {
+      "status": "FAILED_STAGING_CONTENTION",
+      "error": "Metal command-buffer execution timed out while P0/U001 were resident",
+      "p0_touched": false,
+      "artifact_preserved_at": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p1-mixed48.failed-metal-timeout-20260913"
+    },
+    "cpu_attempt": {
+      "status": "PASS",
+      "default_device": "cpu",
+      "p0_touched": false,
+      "candidate_complete_array_bytes": 11366714592
+    },
+    "claim_boundary": "Artifact identity and byte accounting are verified; runtime throughput and capability remain unqualified."
+  },
+  "static_accounting": {
+    "method": "q8 safetensors headers; q4 changes packed weight payload only; scales and biases billed unchanged",
+    "control_complete_bytes": 17856023776,
+    "candidate_estimated_complete_bytes": 11366714592,
+    "control_complete_ebpw": 8.706190253245564,
+    "candidate_estimated_complete_ebpw": 5.542150986901471,
+    "estimated_resident_reduction": 0.36342408956254746,
+    "claim_boundary": "static estimate reconciled to CPU conversion output; resident size and TPS remain runtime measurements"
+  },
+  "active_traffic_estimate": {
+    "method": "one decode token: six of 64 routed experts plus both shared experts; all other per-token weight arrays counted once",
+    "control_weight_bytes_per_token": 2743744768,
+    "candidate_weight_bytes_per_token": 1773615360,
+    "estimated_reduction": 0.3535785905870381,
+    "traffic_only_linear_projection_vs_operational_median": 112.930127,
+    "traffic_only_linear_projection_vs_raw_direct_median": 132.094933,
+    "claim_boundary": "static weight-read estimate; not measured GPU traffic or TPS"
+  },
+  "physical_pre_gate": {
+    "direct_consumer_exists": "PASS_STATIC",
+    "dense_rematerialization_absent": "PASS_STATIC",
+    "selected_expert_traffic_falls": "PASS_STATIC_35_PERCENT_ESTIMATE",
+    "representative_kernel_throughput": "PENDING_P1_RUNTIME",
+    "cpu_gpu_synchronization": "PENDING_P1_RUNTIME",
+    "disposition": "P1_MAY_RUN_AS_SEPARATE_RESIDENT; DO_NOT_REPLACE_P0_BEFORE_COMPARISON"
+  },
+  "protected_boundary": {
+    "workunit_id": "KIMI-U001",
+    "job_id": null,
+    "owner_pid": 60730,
+    "driver_pid": null,
+    "background_pid": 57933,
+    "state": "RUNNING",
+    "resource_class": "GPU_YIELDABLE",
+    "reason": "P0 and KIMI-U001 remain live on port 8014. P1 conversion completed CPU-only; P1 runtime may share GPU by explicit user authorization, but P0 remains the immutable rollback control.",
+    "operational_control_touched": false,
+    "flash_lease_touched": false
+  },
+  "runtime_measurement": {
+    "p1_receipt": "receipts/future/KIMI_P1_MIXED48_TPS_20260913.json",
+    "p0_shared_gpu_control_receipt": "receipts/future/KIMI_P0_SHARED_GPU_CONTROL_20260913.json",
+    "p1_endpoint": "http://127.0.0.1:8024",
+    "p1_daemon_pid": 61606,
+    "p1_provider_pid": 61615,
+    "p1_daemon_state": "STOPPED_AFTER_MEASUREMENT",
+    "p1_decode_tps_by_context": {
+      "context_0": 73.83920494641146,
+      "context_64": 56.395897525746406,
+      "context_256": 75.93977281306105
+    },
+    "p1_decode_tps_median": 73.83920494641146,
+    "p1_peak_memory_gib": {
+      "min": 13.449736292,
+      "max": 13.664405162
+    },
+    "p0_shared_gpu_decode_tps_by_context": {
+      "context_0": 99.57195262008437,
+      "context_64": 92.37301575821859,
+      "context_256": 100.49917869297987
+    },
+    "target_150": "FAIL",
+    "claim_boundary": "P1 is a measured staging resident, not a qualified Kimi worker or promotion candidate. P0 remains the control."
+  },
+  "capability_smoke": {
+    "status": "NO_GROSS_COLLAPSE_OBSERVED_NOT_QUALIFICATION",
+    "p1_exact_structured_cases": "2/2",
+    "p1_reasoning_case": "matched P0 wording class",
+    "tools_or_writes": false,
+    "claim_boundary": "Three short endpoint smoke cases only; this does not replace the existing P0 capability, authorization, epistemic, or HCLI batteries."
+  },
+  "disposition": {
+    "promotion": "REJECT_FOR_150_TARGET",
+    "artifact": "PRESERVE_EXPERIMENTAL",
+    "reason": "The built-in mixed_4_8 recipe reduced resident bytes but measured 56.4-75.9 decode TPS, below both the >=150 target and the shared-GPU P0 control. Its broad q4 coverage includes most attention/shared-expert projections, so the result does not establish a routed-expert-only traffic win.",
+    "second_candidate": "P2_ROUTE4_MEASURED_BELOW_P0_PRESERVE_EXPERIMENTAL",
+    "runtime_frontier_receipt": "receipts/future/KIMI_P4_P6_RUNTIME_FRONTIER_20260913.json",
+    "two_hundred_tps": "200_TPS_REQUIRES_BODY_CHANGE_AND_NATIVE_ROUTE_MAJOR_CONSUMER",
+    "next_frontier": "Do not run another quantization permutation. A native route-major q4/g64 gate_up+down consumer with persistent buffers is the only remaining credible Kimi-specific physical path; otherwise return the GPU to Flash/Pulsar source-bound work."
+  },
+  "runtime_frontier": {
+    "p4_q8_gateup": "receipts/future/KIMI_P4_GATEUP_TPS_20260913.json",
+    "p5_route4_q4_gateup": "receipts/future/KIMI_P5_ROUTE4_GATEUP_TPS_20260913.json",
+    "p6_modelstep_compile": "refused_on_BatchKVCache_and_fell_back_to_stock",
+    "p0_replaced": false,
+    "temporary_residents_stopped": true
+  },
+  "next_safe_action": "Keep P0 on port 8014 and KIMI-U001 live. Preserve P1/P2/P4/P5 artifacts and receipts. Do not spend another GPU window on a quantization permutation; only a native route-major consumer merits reopening this tranche."
+}

@@ -6,28 +6,30 @@ and receipts rather than from a status file. Status files on this box have repor
 dead lanes as running and logged healthy ticks while five separate faults starved
 the loop, so liveness comes from the process table and the resident health socket.
 
-    genesis_peek.py
+    hawking genesis-peek
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
 REPO = Path(__file__).resolve().parent.parent
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 LINEAGE = REPO / "receipts" / "ascent-2026-08-16" / "GENESIS_LINEAGE_CURRENT.json"
 DAEMON_LOG = REPO / "workspace" / "ops" / "ascent-daemon.log"
-RESIDENT_CLIENT = REPO / "tools" / "agentos" / "genesis_resident.py"
 GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
 TASKS = Path.home() / ".claude-grok" / "tasks"
 WORKER_REGISTRY = REPO / "workspace" / "ops" / "genesis-workers.json"
 CANDIDATE_ROOT = REPO / "workspace" / "ops" / "genesis-candidates"
 LIFECYCLE_CONTROLLER = REPO / "workspace" / "ops" / "genesis-lifecycle-controller.json"
-AGENTOS_CONTROLLER = REPO / "workspace" / "ops" / "genesis-agentos-controller.json"
+WORKER_CONTROLLER = REPO / "workspace" / "ops" / "genesis-worker-controller.json"
+LEGACY_WORKER_CONTROLLER = REPO / "workspace" / "ops" / "genesis-agentos-controller.json"
 
 
 def sh(cmd: str) -> str:
@@ -119,12 +121,9 @@ def resident_pids(rows: list[dict[str, Any]]) -> list[int]:
 def resident_health() -> dict[str, Any] | None:
     """Ask the existing body for health; this never starts or stops it."""
     try:
-        spec = importlib.util.spec_from_file_location("_genesis_resident_peek", RESIDENT_CLIENT)
-        if spec is None or spec.loader is None:
-            return None
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        info = module.health(module.default_socket(REPO), timeout=0.75)
+        from hawking import genesis_resident
+
+        info = genesis_resident.health(genesis_resident.default_socket(REPO), timeout=0.75)
     except Exception:  # status must survive a broken or mid-update client
         return None
     return info if isinstance(info, dict) else None
@@ -244,7 +243,7 @@ def _gib(value: Any) -> str | None:
         return None
 
 
-def agentos_status() -> dict[str, Any]:
+def worker_status() -> dict[str, Any]:
     """Read worker state and cross-check any dispatched turn with the kernel."""
     workers: list[dict[str, Any]] = []
     if WORKER_REGISTRY.is_file():
@@ -276,9 +275,10 @@ def agentos_status() -> dict[str, Any]:
         except (OSError, ValueError, TypeError):
             controller = {"status": "UNREADABLE"}
     dispatch: dict[str, Any] | None = None
-    if AGENTOS_CONTROLLER.is_file():
+    controller_path = WORKER_CONTROLLER if WORKER_CONTROLLER.is_file() else LEGACY_WORKER_CONTROLLER
+    if controller_path.is_file():
         try:
-            value = json.loads(AGENTOS_CONTROLLER.read_text())
+            value = json.loads(controller_path.read_text())
             if isinstance(value, dict):
                 dispatch = dict(value)
                 pid = _safe_int(dispatch.get("pid"))
@@ -303,7 +303,16 @@ def agentos_status() -> dict[str, Any]:
     }
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    raw_args = list(sys.argv[1:] if argv is None else argv)
+    if raw_args in (["-h"], ["--help"]):
+        print("usage: hawking genesis-peek")
+        print("\nRead-only one-screen status for the Hawking Genesis control plane.")
+        return 0
+    if raw_args:
+        print("usage: hawking genesis-peek", file=sys.stderr)
+        return 2
+
     print("=" * 66)
     print("HAWKING GENESIS")
     print("=" * 66)
@@ -406,8 +415,16 @@ def main() -> int:
     proposing = bool(rows and any("genesis-propose" in str(r.get("command")) for r in rows))
     print(f"  genesis proposing {'yes' if proposing else 'no'}")
 
-    agentos = agentos_status()
-    workers = agentos["workers"]
+    worker = worker_status()
+    if not isinstance(worker, Mapping):
+        worker = {}
+    workers_value = worker.get("workers")
+    workers = workers_value if isinstance(workers_value, list) else []
+    worker_state = str(worker.get("state") or "UNKNOWN")
+    inbox = worker.get("inbox")
+    active = worker.get("active")
+    inbox_count = len(inbox) if isinstance(inbox, list) else 0
+    active_count = len(active) if isinstance(active, list) else 0
     if workers:
         bindings = []
         for worker in workers:
@@ -416,27 +433,27 @@ def main() -> int:
             bindings.append(
                 f"{worker.get('worker_id', '?')}:{worker.get('state', '?')}@G{generation}"
             )
-        print(f"  AgentOS workers    {', '.join(bindings)}")
+        print(f"  Hawking workers    {', '.join(bindings)}")
     else:
-        print(f"  AgentOS workers    {agentos['state']}")
+        print(f"  Hawking workers    {worker_state}")
     print(
-        f"  candidate inbox    {len(agentos['inbox'])} queued, {len(agentos['active'])} active"
+        f"  candidate inbox    {inbox_count} queued, {active_count} active"
     )
-    controller = agentos.get("controller")
+    controller = worker.get("controller")
     if isinstance(controller, dict):
         print(
             f"  lifecycle control  {controller.get('status', 'unknown')} "
             f"pid {controller.get('pid', 'unknown')}"
         )
-    dispatch = agentos.get("dispatch")
+    dispatch = worker.get("dispatch")
     if isinstance(dispatch, dict):
         print(
-            f"  AgentOS turn       {dispatch.get('runtime_state', 'UNKNOWN')} "
+            f"  Hawking turn       {dispatch.get('runtime_state', 'UNKNOWN')} "
             f"worker {dispatch.get('worker_id', 'unknown')} "
             f"pid {dispatch.get('pid', 'unknown')}"
         )
     else:
-        print("  AgentOS turn       no dispatch record")
+        print("  Hawking turn       no dispatch record")
 
     if DAEMON_LOG.is_file():
         age = time.time() - DAEMON_LOG.stat().st_mtime

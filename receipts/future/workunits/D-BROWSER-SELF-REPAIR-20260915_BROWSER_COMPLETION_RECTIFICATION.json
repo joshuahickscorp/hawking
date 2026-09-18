@@ -1,0 +1,23 @@
+{
+  "schema": "hawking.workunit.completion_rectification.v1",
+  "workunit_id": "D-BROWSER-SELF-REPAIR-20260915",
+  "goal_id": "GOAL-B33C69F193",
+  "at": "2026-09-16T01:16:11.315337+00:00",
+  "supersedes_completion_claim": "D-BROWSER-SELF-REPAIR-20260915_SEAL_B1 does not establish browser self-repair acceptance.",
+  "preserved_evidence": [
+    "receipts/future/workunits/D-BROWSER-SELF-REPAIR-20260915_SEAL_B1.json",
+    ".hawking/browser-world/sessions/BROWSER-B33C69F193.json"
+  ],
+  "observed": {
+    "html_repair": "The disposable fixture handler was repaired from idle to done.",
+    "focused_test": "PASS",
+    "browser_initial_verify": false,
+    "browser_post_repair_click": "NOT_OBSERVED",
+    "browser_post_repair_verify": "NOT_OBSERVED"
+  },
+  "conclusion": "INCOMPLETE: source/test repair evidence is retained, but a later positive browser.verify was not observed. The root Goal remains RUNNING and requires a browser verification WorkUnit.",
+  "next_workunit": "D-BROWSER-POST_REPAIR-VERIFY-20260915",
+  "remote_cost_usd": 0.0005497548,
+  "initial_failed_admission_cost_usd": 0.0,
+  "authority": "Hawking receipt correction; no provider prose or raw click result is acceptance authority."
+}

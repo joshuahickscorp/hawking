@@ -12,7 +12,7 @@ seal. The watcher log must still exist: a missing log would read as
 "nothing is downloading" rather than "the watcher is not running".
 
 On a newly observed seal, the six S027 §22 triggers are emitted as
-WorkUnits through the canonical HCLI WorkUnit emitter. Seeing the same seal
+WorkUnits through the canonical HAWKING WorkUnit emitter. Seeing the same seal
 twice emits once.
 
     python3 tools/future/modellake_events.py --build
@@ -40,7 +40,7 @@ from tools.future import modellake_scheduler_view as mv
 from tools.future import negative_index as ni
 from tools.future import specimen_load_cost as lc
 from tools.future import specimen_registry as sr
-from tools.future.workunit_species import emit_hcli_workunit
+from tools.future.workunit_species import emit_hawking_workunit
 
 
 RECORDED_BY = "tools/future/modellake_events.py"
@@ -398,8 +398,8 @@ def _trigger_copy(
 
 
 def _item(**kwargs: Any) -> dict[str, Any]:
-    """Construct the same proposal through the canonical HCLI WorkUnit shape."""
-    return emit_hcli_workunit(
+    """Construct the same proposal through the canonical HAWKING WorkUnit shape."""
+    return emit_hawking_workunit(
         id=str(kwargs["id"]),
         role=str(kwargs["species"]),
         description=f"{kwargs['title']}: {kwargs['detail']}",
@@ -436,7 +436,7 @@ def emit_trigger(
     scars: dict[str, Any] | None = None,
     **overrides: Any,
 ) -> dict[str, Any]:
-    """One S027 trigger as a canonical HCLI WorkUnit proposal."""
+    """One S027 trigger as a canonical HAWKING WorkUnit proposal."""
     kwargs = _trigger_kwargs(specimen, trigger, cost=cost, family=family, scars=scars)
     kwargs.update(overrides)
     return _item(**kwargs)
@@ -514,7 +514,7 @@ def consume(ledger: set[str] | None = None) -> list[dict[str, Any]]:
                 "not implied by this event: sealed means the bytes are "
                 "verified on disk, not that this specimen should load. Full "
                 "residency, organ extraction, a partial/native artifact, or "
-                "deferral are all still open - that choice belongs to HCLI, "
+                "deferral are all still open - that choice belongs to HAWKING, "
                 "not to this consumer."
             ),
             "detection": "lake_manifest",
@@ -558,7 +558,7 @@ def build() -> dict[str, Any]:
         "question": "When a model seals, does anything happen without a human noticing?",
         "answer": (
             "yes, now: a lake manifest appearing emits the six S027 §22 "
-            "triggers as HCLI WorkUnit proposals, with no "
+            "triggers as HAWKING WorkUnit proposals, with no "
             "conversational boundary. Before this consumer, MODEL_SEALED "
             "triggered nothing."
         ),

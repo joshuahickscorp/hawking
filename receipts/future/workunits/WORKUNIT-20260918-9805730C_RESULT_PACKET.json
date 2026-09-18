@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "94811785d3b212534e5c093fb90d227df0151a9089141b54e074ef0b99d88aa9",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:56:23.540958+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:56:23.540978+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:56:23.543408+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Observed tools/future/kimi_operator_live_evidence.py with full-file sha256 1db6773e8d5ac5f22d7138b28a708a7f92df356a384f20c9a53f0741486f82d5 and 22679 bytes; the admitted read returned only the first 4000 bytes, so later de",
+      "outcome": "CONTINUE",
+      "reply_chars": 3515,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Observed tools/future/kimi_operator_live_evidence.py with full-file sha256 1db6773e8d5ac5f22d7138b28a708a7f92df356a384f20c9a53f0741486f82d5 and 22679 bytes; the admitted read returned only the first 4000 bytes, so later definitions and focused tests were not observed.\",\"The module docstring states it binds live causal receipts to specific KIMI candidate ids and that unmeasured candidates are marked unqualified.\",\"The module defines SCHEMA = \\\"hawking.kimi.operator_live_evidence.v1\\\".\",\"The module defines CANDIDATES = (\\\"OPA\\\", \\\"OPB\\\", \\\"OPC\\\", \\\"OPD\\\", \\\"OPE\\\", \\\"OPF\\\", \\\"OPG\\\", \\\"OPH\\\").\",\"The module defines _op_id(method) returning f\\\"KIMI_OPERATOR_CANDIDATE_{method}\\\", which is the observed candidate identity binding pattern.\",\"The module defines SOURCE as receipts/future/KIMI_REFUSAL_LOCALITY_HELDOUT_MOE_L26E23_20260910.json.\",\"CANDIDATE_LIVE_SOURCES includes twelve observed receipt paths: OPA_ALL_L26, OPB_ALL_L26, OPC_L26, OPD_L26, OPE_L26, OPE_EXPANDED32_L26_RECLASSIFIED, OPF_EXPANDED32_L26E23, HELDOUT_MOE_L26E23_SHARED, OPG_EXPANDED32_L26E23_SHARED, OPH_ROUTER_RUN_FAILURE, OPH_DEVICE_BUSY, and OPH_ROUTER_LIVE, all under receipts/future/.\",\"Additional observed candidate-specific sources include KIMI_CANDIDATE_OPE_HCLI_LIVE_20260910.json, KIMI_CANDIDATE_OPE_EPISTEMIC_LIVE_20260910.json, KIMI_CANDIDATE_OPE_PHYSICAL_LIVE_20260910.json, and KIMI_SERVING_CANDIDATE_HCLI_CONTRACT_LIVE_20260910.json.\",\"P8 NOVA is not observed in the admitted excerpt; no candidate-specific P8 NOVA identity binding or receipt path was observed.\",\"The clean-process/refusal boundary is only partially observed: the docstring says unmeasured candidates are marked unqualified, and the primary source is a refusal-locality heldout receipt, but the exact clean-process enforcement logic was not in the shown excerpt.\"],\"sources\":[{\"path\":\"tools/future/kimi_operator_live_evidence.py\",\"sha256\":\"1db6773e8d5ac5f22d7138b28a708a7f92df356a384f20c9a53f0741486f82d5\",\"bytes\":22679,\"observed_bytes\":4000,\"truncated\":true,\"note\":\"Only first 4000 bytes observed; later definitions and focused tests not observed.\"}],\"recommendations\":[{\"next_action\":\"Continue bounded read-only inspection of the remaining file content and focused tests, then verify whether the observed candidate receipt paths exist and bind to the expected candidate ids.\",\"reason\":\"The admitted excerpt establishes the candidate identity pattern and receipt list but does not show P8 NOVA, the full clean-process/refusal logic, or focused test assertions.\",\"expected_evidence\":\"Exact source/test citations for P8 NOVA candidate identity, required receipts, clean-process/refusal boundary, and cheapest next gate.\",\"tool_family\":\"read_only_research\"},{\"falsifier\":\"If a candidate-specific receipt path is absent or its candidate id does not equal KIMI_OPERATOR_CANDIDATE_{method}, the live-evidence binding is falsified and the result must fail closed as refusal rather than inferred success.\"}],\"unresolved_questions\":[\"What exact candidate identity binds P8 NOVA, if any, in the unobserved remainder of the module or focused tests?\",\"Which receipt paths are required for P8 NOVA specifically, and are they present?\",\"What is the exact clean-process/refusal boundary implementation beyond the docstring statement that unmeasured candidates are unqualified?\",\"What is the cheapest next gate that can distinguish a valid candidate-specific live-evidence binding from a refusal?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-23d6505474b440ad",
+  "worker_id": "hawking-worker-fc8784b0b9744893",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-9805730C"
+}

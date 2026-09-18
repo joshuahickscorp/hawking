@@ -85,9 +85,9 @@ def test_no_acceptance_criterion_was_altered():
         ],
         text=True,
     ).strip()
-    # `hcli/` is deliberately NOT checked here. The live daemon develops in this
+    # `hawking/` is deliberately NOT checked here. The live daemon develops in this
     # working tree and permanently holds ~110 uncommitted files there, so a
-    # working-tree cleanliness check over hcli/ can never pass and says nothing
+    # working-tree cleanliness check over hawking/ can never pass and says nothing
     # about this lane. The intent of this guard is anti-cheat -- that an
     # acceptance lane did not edit the AUDITOR, the catalog or a sibling lane to
     # manufacture its own pass -- and those live under the three paths above.

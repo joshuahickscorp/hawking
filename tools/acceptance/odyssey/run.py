@@ -2,7 +2,7 @@
 
 Calls each gate's own implementing symbol (an import is not a call). Writes
 ``receipts/acceptance/<GATE>.json`` recording the real run. Never writes
-ModelLake, ``hcli/``, ``tools/roadmap``, ``tools/audit``, ``tools/theia``, or
+ModelLake, ``hawking/``, ``tools/roadmap``, ``tools/audit``, ``tools/theia``, or
 ``receipts/future``. Never mutates live Odyssey state (``mutate=False``).
 """
 from __future__ import annotations
@@ -94,20 +94,20 @@ def git_ls_count(prefix: str) -> int:
 
 
 def ensure_hcli_importable() -> dict[str, Any]:
-    """This sparse cone does not materialise ``hcli/``. Import from the primary
+    """This sparse cone does not materialise ``hawking/``. Import from the primary
     checkout as a fallback so ``load_qualification_queue`` can be called, not
     reimplemented. Never writes there."""
     try:
-        import hcli  # noqa: F401
+        import hawking  # noqa: F401
 
-        return {"ok": True, "source": "sys.path", "path": getattr(hcli, "__file__", None)}
+        return {"ok": True, "source": "sys.path", "path": getattr(hawking, "__file__", None)}
     except ImportError:
         pass
-    hcli_dir = PRIMARY / "hcli"
+    hcli_dir = PRIMARY / "hawking"
     if hcli_dir.is_dir() and str(PRIMARY) not in sys.path:
         sys.path.append(str(PRIMARY))
     try:
-        import hcli  # noqa: F401
+        import hawking  # noqa: F401
 
         return {"ok": True, "source": "primary_checkout", "path": str(hcli_dir)}
     except ImportError as exc:
@@ -445,13 +445,13 @@ def run_odyssey_ii() -> dict[str, Any]:
         "load_qualification_queue; load_qualification_queue(path)\""
     )
     t0 = time.time()
-    hcli = ensure_hcli_importable()
+    hawking = ensure_hcli_importable()
     queue_run: dict[str, Any]
-    if not hcli.get("ok"):
+    if not hawking.get("ok"):
         queue_run = {
             "ok": False,
-            "error": "hcli not importable in this sparse cone and primary fallback failed",
-            "hcli": hcli,
+            "error": "hawking not importable in this sparse cone and primary fallback failed",
+            "hawking": hawking,
         }
     else:
         from tools.future.qualification_pipeline import load_qualification_queue
@@ -469,7 +469,7 @@ def run_odyssey_ii() -> dict[str, Any]:
         cands = q.get("candidates") or []
         queue_run = {
             "ok": True,
-            "hcli": hcli,
+            "hawking": hawking,
             "loaded_from": q.get("_loaded_from"),
             "schema": q.get("schema"),
             "n_candidates": len(cands),

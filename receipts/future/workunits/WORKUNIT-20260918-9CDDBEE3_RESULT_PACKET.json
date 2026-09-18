@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:30:31.460476+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:30:31.460485+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:30:31.460488+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5882,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:30:31.460504+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def tunnel_operation_permission(operation: str) -> str:\\n    \\\"\\\"\\\"Return the permission required for a tunnel operation.\\n\\n    Unknown operations fail closed with an explicit :class:`ShareError`\\n    (HTTP 400) instead of silently defaulting to a permissive scope, so a\\n    caller can never reach a tunnel handler without a declared permission.\\n    \\\"\\\"\\\"\\n    if not isinstance(operation, str):\\n        raise ShareError(\\\"tunnel operation must be a string\\\", status=400)\\n    try:\\n        return TUNNEL_OPERATION_PERMISSIONS[operation]\\n    except KeyError:\\n        raise ShareError(\\n            f\\\"unknown tunnel operation: {operation!r}\\\", status=400\\n        ) from None\\n\\n\\ndef tunnel_operation_allowed(record: Mapping[str, Any], operation: str) -> bool:\\n    \\\"\\\"\\\"Return whether a share record grants the permission for ``operation``.\\n\\n    The tunnel session record carries the capability's granted permissions in\\n    ``permissions``.  A tunnel handler must consult this predicate before\\n    dispatching an operation so that a read-only capability can never reach a\\n    ``prompt`` or ``build`` handler.  Unknown operations fail closed (the\\n    permission lookup raises :class:`ShareError`), and a record whose\\n    ``permissions`` field is missing, malformed, or empty is treated as\\n    read-only rather than as an unrestricted capability.\\n    \\\"\\\"\\\"\\n    required = tunnel_operation_permission(operation)\\n    if not isinstance(record, Mapping):\\n        return False\\n    granted = _permissions(",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/tests/test_auto_p18_tunnel_implementation_contract_v2_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789752631.001008, \"n_stdout_chars\": 98, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789752630.7947881, \"stderr\": \"\", \"stdout\": \"........                                                                 [100%]\\n8 passed in 0.07s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/share_bridge.py\", \"sha256_after\": \"0ab6a955cb9384ce7a0ab8217fae6b9b736973b65c4534b8a744a3c44ff399ab\", \"sha256_before\": \"49562339fc4fb25bd3e16860d4d277917d5b878c7b282775165a505951d4944e\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p18_tunnel_implementation_contract_v2_regression.py\", \"sha256_after\": \"c9db0fe543c45d182d6a81028b690ce492d20134a90160ce71a8bc2820c59365\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/share_bridge.py\", \"sha256_after\": \"0ab6a955cb9384ce7a0ab8217fae6b9b736973b65c4534b8a744a3c44ff399ab\", \"sha256_before\": \"49562339fc4fb25bd3e16860d4d277917d5b878c7b282775165a505951d4944e\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p18_tunnel_implementation_contract_v2_regression.py\", \"sha256_after\": \"c9db0fe543c45d182d6a81028b690ce492d20134a90160ce71a8bc2820c59365\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/share_bridge.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/tests/test_auto_p18_tunnel_implementation_contract_v2_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 8, \"executed\": 8, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 8, \"requested\": \"hawking/tests/test_auto_p18_tunnel_implementation_contra",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:30:31.463760+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"operations\":[{\"op\":\"replace\",\"path\":\"hawking/share_bridge.py\",\"old_text\":\"def tunnel_operation_permission(operation: str) -> str:\\n    \\\"\\\"\\\"Return the permission required for a tunnel operation.\\n\\n    Unknow",
+      "outcome": "CONTINUE",
+      "reply_chars": 5882,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/share_bridge.py",
+        "hawking/tests/test_auto_p18_tunnel_implementation_contract_v2_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-9CDDBEE3_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/share_bridge.py",
+    "hawking/tests/test_auto_p18_tunnel_implementation_contract_v2_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P18_TUNNEL_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-9CDDBEE3_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-9CDDBEE3"
+}

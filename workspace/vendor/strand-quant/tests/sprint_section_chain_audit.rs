@@ -41,7 +41,9 @@ impl Drop for TmpFile {
 }
 
 fn weights(n: usize, seed: u64) -> Vec<f32> {
-    (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
+    (0..n)
+        .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
+        .collect()
 }
 
 fn two_tensor_archive() -> Vec<u8> {
@@ -81,7 +83,13 @@ fn two_tensor_archive() -> Vec<u8> {
 
 fn sample_outl() -> Vec<Option<OutlierWire>> {
     vec![
-        Some(OutlierWire::from_selection(1024, vec![700, 3, 511], vec![-127, 5, 127], 0.3125, 8)),
+        Some(OutlierWire::from_selection(
+            1024,
+            vec![700, 3, 511],
+            vec![-127, 5, 127],
+            0.3125,
+            8,
+        )),
         None,
     ]
 }
@@ -89,7 +97,10 @@ fn sample_outl() -> Vec<Option<OutlierWire>> {
 /// Every block's scale_q in archive tensor/block order — the stream SDSQ codes.
 fn archive_scale_q(buf: &[u8]) -> Vec<i32> {
     let hdr = strand_quant::format::read_strand_v2_header(buf).unwrap();
-    hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect()
+    hdr.tensors
+        .iter()
+        .flat_map(|t| t.table.iter().map(|r| r.scale_q))
+        .collect()
 }
 
 /// BASELINE (must pass today): OUTL then SPRV. Both sections must remain readable
@@ -110,12 +121,28 @@ fn outl_then_sprv_both_readable() {
     // file_len, and the SPRV appender pads only its START to a page (no tail pad). So a
     // sealed file is NOT page-aligned at EOF (matches `outl_then_sprv_is_the_canonical_
     // live_stack` in sprint_section_stacking.rs, which asserts the same `!= 0`).
-    assert_ne!(on_disk.len() % PAGE, 0, "a SPRV-sealed file ends at the seal, not a page boundary");
-    assert_eq!(&on_disk[..buf.len()], &buf[..], "stacking must not touch v2 bytes");
+    assert_ne!(
+        on_disk.len() % PAGE,
+        0,
+        "a SPRV-sealed file ends at the seal, not a page boundary"
+    );
+    assert_eq!(
+        &on_disk[..buf.len()],
+        &buf[..],
+        "stacking must not touch v2 bytes"
+    );
 
-    let outl = read_outl_bytes(&on_disk, true).expect("outl read").expect("outl present under sprv");
-    assert_eq!(outl.tensors, sample_outl(), "OUTL must survive under the SPRV trailer");
-    let sprv = read_sprv_bytes(&on_disk, true).expect("sprv read").expect("sprv outermost");
+    let outl = read_outl_bytes(&on_disk, true)
+        .expect("outl read")
+        .expect("outl present under sprv");
+    assert_eq!(
+        outl.tensors,
+        sample_outl(),
+        "OUTL must survive under the SPRV trailer"
+    );
+    let sprv = read_sprv_bytes(&on_disk, true)
+        .expect("sprv read")
+        .expect("sprv outermost");
     assert_eq!(sprv.tensors.len(), 2);
 }
 
@@ -158,12 +185,27 @@ fn outl_survives_sdsq_sandwiched_under_sprv() {
         "OUTL must remain readable with SDSQ sandwiched under SPRV (read_outl_bytes \
          must step over the SDSQ trailer, else it silently drops the outlier channel)"
     );
-    assert_eq!(outl.unwrap().tensors, sample_outl(), "OUTL payload intact under SDSQ+SPRV");
+    assert_eq!(
+        outl.unwrap().tensors,
+        sample_outl(),
+        "OUTL payload intact under SDSQ+SPRV"
+    );
     let sdsq = read_sdsq_bytes(&on_disk, true).unwrap();
     assert!(sdsq.is_some(), "SDSQ readable beneath the SPRV seal");
-    assert_eq!(sdsq.unwrap().scale_q, archive_scale_q(&buf), "SDSQ scale_q intact");
-    assert!(read_sprv_bytes(&on_disk, true).unwrap().is_some(), "SPRV readable (outermost)");
+    assert_eq!(
+        sdsq.unwrap().scale_q,
+        archive_scale_q(&buf),
+        "SDSQ scale_q intact"
+    );
+    assert!(
+        read_sprv_bytes(&on_disk, true).unwrap().is_some(),
+        "SPRV readable (outermost)"
+    );
 
     // v2 core bytes (the seek table included) are byte-stable under the whole stack.
-    assert_eq!(&on_disk[..buf.len()], &buf[..], "v2 prefix must be untouched by the chain");
+    assert_eq!(
+        &on_disk[..buf.len()],
+        &buf[..],
+        "v2 prefix must be untouched by the chain"
+    );
 }

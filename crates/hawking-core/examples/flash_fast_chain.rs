@@ -149,6 +149,9 @@ mod macos {
                 state_out: state.clone(),
                 state_output: Some(state.clone()),
                 base_state: previous_state.clone(),
+                // Fast-chain never emits a per-layer source-MoE bridge; that
+                // bounded handoff remains an explicit source-control action.
+                source_moe_bridge_out: None,
                 compact_experts,
                 device_resident,
                 deep_verification,

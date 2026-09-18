@@ -1,4 +1,3 @@
-
 use std::fs;
 use std::io::Write as _;
 use std::path::Path;
@@ -6,11 +5,11 @@ use std::path::Path;
 use crate::codebook::codebook_lut;
 use crate::format::{read_strand_v2_header, OwnedTensorV2, PAGE};
 use crate::outlier_wire::{read_outl_bytes, OutlierWire};
-use crate::sideinfo_wire::read_strand_v2_applied;
 use crate::provenance::{
     block_hashes, descriptor_digest, make_test_vectors, model_root_from_tensor_roots,
     outlier_digest, tensor_root_from_hashes, verify_test_vectors, ProvenanceVector,
 };
+use crate::sideinfo_wire::read_strand_v2_applied;
 use crate::trellis::TrellisConfig;
 
 fn live_descriptor_digest(t: &OwnedTensorV2, wire: Option<&OutlierWire>) -> [u8; 32] {
@@ -54,36 +53,33 @@ pub const SPRV_VECTOR_BYTES: usize = 40;
 pub const DEFAULT_VECTORS_PER_TENSOR: usize = 8;
 
 pub mod sprv_flags {
-    
+
     pub const LEAF_LISTS: u32 = 1 << 0;
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SprvTensor {
-    
     pub tensor_root: [u8; 32],
-    
+
     pub descriptor_digest: [u8; 32],
-    
+
     pub n_blocks: u64,
-    
+
     pub vectors: Vec<ProvenanceVector>,
-    
+
     pub leaves: Option<Vec<[u8; 32]>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Sprv {
-    
     pub flags: u32,
-    
+
     pub model_root: [u8; 32],
-    
+
     pub tensors: Vec<SprvTensor>,
 }
 
 impl Sprv {
-    
     pub fn has_leaf_lists(&self) -> bool {
         self.flags & sprv_flags::LEAF_LISTS != 0
     }
@@ -91,9 +87,8 @@ impl Sprv {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum VerifyDepth {
-    
     Vectors,
-    
+
     Full,
 }
 
@@ -193,7 +188,11 @@ pub fn build_sprv(
     let model_root =
         model_root_from_tensor_roots(named_roots.iter().map(|(n, r)| (n.as_str(), *r)));
     Ok(Sprv {
-        flags: if include_leaves { sprv_flags::LEAF_LISTS } else { 0 },
+        flags: if include_leaves {
+            sprv_flags::LEAF_LISTS
+        } else {
+            0
+        },
         model_root,
         tensors: records,
     })
@@ -210,11 +209,10 @@ fn sprv_section_bytes(sprv: &Sprv) -> Result<Vec<u8>, String> {
     o.extend_from_slice(&(sprv.tensors.len() as u32).to_le_bytes());
     o.extend_from_slice(&sprv.flags.to_le_bytes());
     o.extend_from_slice(&sprv.model_root);
-    o.extend_from_slice(&[0u8; 16]); 
+    o.extend_from_slice(&[0u8; 16]);
     debug_assert_eq!(o.len(), SPRV_HEADER_BYTES);
 
     for (i, t) in sprv.tensors.iter().enumerate() {
-        
         match (&t.leaves, want_leaves) {
             (Some(l), true) => {
                 if l.len() as u64 != t.n_blocks {
@@ -258,7 +256,7 @@ fn sprv_section_bytes(sprv: &Sprv) -> Result<Vec<u8>, String> {
         o.extend_from_slice(&t.descriptor_digest);
         o.extend_from_slice(&t.n_blocks.to_le_bytes());
         o.extend_from_slice(&(t.vectors.len() as u32).to_le_bytes());
-        o.extend_from_slice(&0u32.to_le_bytes()); 
+        o.extend_from_slice(&0u32.to_le_bytes());
         for v in &t.vectors {
             o.extend_from_slice(&v.block_index.to_le_bytes());
             o.extend_from_slice(&v.block_hash);
@@ -307,11 +305,13 @@ pub fn append_sprv(path: impl AsRef<Path>, sprv: &Sprv) -> Result<(), String> {
     }
 
     let section = sprv_section_bytes(sprv)?;
-    let prov_bytes: u32 = section
-        .len()
-        .try_into()
-        .map_err(|_| format!("sprv: section is {} bytes — exceeds the u32 prov_bytes field", section.len()))?;
-    
+    let prov_bytes: u32 = section.len().try_into().map_err(|_| {
+        format!(
+            "sprv: section is {} bytes — exceeds the u32 prov_bytes field",
+            section.len()
+        )
+    })?;
+
     let prov_offset = page_align(buf.len());
     let pad = prov_offset - buf.len();
 
@@ -326,14 +326,12 @@ pub fn append_sprv(path: impl AsRef<Path>, sprv: &Sprv) -> Result<(), String> {
         .append(true)
         .open(path)
         .map_err(|e| format!("sprv: open {path:?} for append: {e}"))?;
-    f.write_all(&tail).map_err(|e| format!("sprv: append to {path:?}: {e}"))?;
+    f.write_all(&tail)
+        .map_err(|e| format!("sprv: append to {path:?}: {e}"))?;
     Ok(())
 }
 
-pub fn append_sprv_computed(
-    path: impl AsRef<Path>,
-    include_leaves: bool,
-) -> Result<Sprv, String> {
+pub fn append_sprv_computed(path: impl AsRef<Path>, include_leaves: bool) -> Result<Sprv, String> {
     let path = path.as_ref();
     let buf = fs::read(path).map_err(|e| format!("sprv: read {path:?}: {e}"))?;
     let sprv = build_sprv(
@@ -392,7 +390,10 @@ fn parse_sprv_section(buf: &[u8], prov_offset: usize, prov_bytes: usize) -> Resu
 
     let v2 = read_strand_v2_header(buf)?;
 
-    let mut r = Rd { b: &buf[prov_offset..prov_offset + prov_bytes], p: 0 };
+    let mut r = Rd {
+        b: &buf[prov_offset..prov_offset + prov_bytes],
+        p: 0,
+    };
     if r.take(4)? != &SPRV_MAGIC[..] {
         return Err("sprv: bad PROV header magic".into());
     }
@@ -451,7 +452,10 @@ fn parse_sprv_section(buf: &[u8], prov_offset: usize, prov_bytes: usize) -> Resu
                 }
             }
             prev = Some(block_index);
-            vectors.push(ProvenanceVector { block_index, block_hash });
+            vectors.push(ProvenanceVector {
+                block_index,
+                block_hash,
+            });
         }
         let leaves = if has_leaves {
             let mut l = Vec::with_capacity(desc.n_blocks);
@@ -462,16 +466,26 @@ fn parse_sprv_section(buf: &[u8], prov_offset: usize, prov_bytes: usize) -> Resu
         } else {
             None
         };
-        tensors.push(SprvTensor { tensor_root, descriptor_digest, n_blocks, vectors, leaves });
+        tensors.push(SprvTensor {
+            tensor_root,
+            descriptor_digest,
+            n_blocks,
+            vectors,
+            leaves,
+        });
     }
-    
+
     if r.p != prov_bytes {
         return Err(format!(
             "sprv: {} trailing bytes after the last record",
             prov_bytes - r.p
         ));
     }
-    Ok(Sprv { flags, model_root, tensors })
+    Ok(Sprv {
+        flags,
+        model_root,
+        tensors,
+    })
 }
 
 pub fn read_sprv_bytes(buf: &[u8], strict: bool) -> Result<Option<Sprv>, String> {
@@ -558,7 +572,6 @@ pub fn verify_archive_with(
                 ));
             }
             for v in &rec.vectors {
-                
                 if leaves[v.block_index as usize] != v.block_hash {
                     return Err(format!(
                         "sprv: tensor {name:?}: stored vector for block {} disagrees with \
@@ -608,7 +621,7 @@ pub fn verify_archive_with(
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -652,12 +665,16 @@ mod tests {
         let cfg = TrellisConfig::for_bpw(3.0);
         let enc_a = encode_tensor_with(&test_weights(1024, 11), &cfg, &EncodeOpts::default());
         let enc_b = encode_tensor_with(
-            &test_weights(900, 23), 
+            &test_weights(900, 23),
             &cfg,
-            &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
+            &EncodeOpts {
+                tail_biting: true,
+                affine_min: true,
+                ..Default::default()
+            },
         );
         let shape_a = [4u64, 256u64];
-        let shape_b = [900u64]; 
+        let shape_b = [900u64];
         let tensors = [
             PackedTensorV2 {
                 base: PackedTensor {
@@ -695,14 +712,21 @@ mod tests {
         let _guard = TmpFile(path.clone());
         std::fs::write(&path, &buf).unwrap();
 
-        assert_eq!(read_sprv(&path).unwrap(), None, "plain v2 file must read as absent");
+        assert_eq!(
+            read_sprv(&path).unwrap(),
+            None,
+            "plain v2 file must read as absent"
+        );
 
         let written = append_sprv_computed(&path, false).expect("append");
         assert_eq!(written.tensors.len(), 2);
         assert!(!written.has_leaf_lists());
-        
+
         for t in &written.tensors {
-            assert_eq!(t.vectors.len(), (t.n_blocks as usize).min(DEFAULT_VECTORS_PER_TENSOR));
+            assert_eq!(
+                t.vectors.len(),
+                (t.n_blocks as usize).min(DEFAULT_VECTORS_PER_TENSOR)
+            );
         }
 
         let back = read_sprv(&path).unwrap().expect("trailer must be found");
@@ -710,7 +734,11 @@ mod tests {
 
         let trailered = std::fs::read(&path).unwrap();
         assert!(trailered.len() > buf.len());
-        assert_eq!(&trailered[..buf.len()], &buf[..], "append must not touch v2 bytes");
+        assert_eq!(
+            &trailered[..buf.len()],
+            &buf[..],
+            "append must not touch v2 bytes"
+        );
         let h0 = read_strand_v2_header(&buf).unwrap();
         let h1 = read_strand_v2_header(&trailered).expect("v2 header parse of trailered file");
         assert_eq!(h0.source_sha256, h1.source_sha256);
@@ -723,7 +751,10 @@ mod tests {
         }
         let full = read_strand_v2(&trailered).expect("v2 full read of trailered file");
         for (t, enc) in full.iter().zip(encs.iter()) {
-            assert_eq!(&t.base.enc, enc, "EncodedTensor must round-trip under the trailer");
+            assert_eq!(
+                &t.base.enc, enc,
+                "EncodedTensor must round-trip under the trailer"
+            );
         }
 
         verify_archive(&path, VerifyDepth::Vectors).expect("vector verify");
@@ -765,8 +796,11 @@ mod tests {
         let mut t1 = clean.clone();
         t1[hdr.tensors[0].payload_offset] ^= 1;
         std::fs::write(&path, &t1).unwrap();
-        assert!(read_sprv(&path).unwrap().is_some(), "trailer chain must still parse");
-        
+        assert!(
+            read_sprv(&path).unwrap().is_some(),
+            "trailer chain must still parse"
+        );
+
         let err = verify_archive(&path, VerifyDepth::Full).unwrap_err();
         assert!(
             err.contains("MISMATCH") || err.contains("disagrees"),
@@ -787,7 +821,7 @@ mod tests {
             u64::from_le_bytes(t[0..8].try_into().unwrap()) as usize
         };
         let mut t3 = clean.clone();
-        t3[sprv_off + 16] ^= 0xFF; 
+        t3[sprv_off + 16] ^= 0xFF;
         std::fs::write(&path, &t3).unwrap();
         let err = verify_archive(&path, VerifyDepth::Vectors).unwrap_err();
         assert!(err.contains("model_root"), "err was: {err}");
@@ -803,7 +837,7 @@ mod tests {
         let clean = std::fs::read(&path).unwrap();
 
         let mut c1 = clean.clone();
-        let pb_pos = c1.len() - 8; 
+        let pb_pos = c1.len() - 8;
         c1[pb_pos] ^= 0xFF;
         assert!(read_sprv_bytes(&c1, true).is_err());
         assert_eq!(read_sprv_bytes(&c1, false).unwrap(), None);
@@ -813,7 +847,7 @@ mod tests {
             u64::from_le_bytes(t[0..8].try_into().unwrap()) as usize
         };
         let mut c2 = clean.clone();
-        c2[sprv_off + 4] ^= 0xFF; 
+        c2[sprv_off + 4] ^= 0xFF;
         assert!(read_sprv_bytes(&c2, true).is_err());
 
         let mut c3 = clean.clone();
@@ -845,7 +879,11 @@ mod tests {
 
         let err = append_sprv(&path, &written).unwrap_err();
         assert!(err.contains("already has"), "err was: {err}");
-        assert_eq!(std::fs::read(&path).unwrap(), after_first, "file must be untouched");
+        assert_eq!(
+            std::fs::read(&path).unwrap(),
+            after_first,
+            "file must be untouched"
+        );
     }
 
     #[test]
@@ -873,9 +911,11 @@ mod tests {
         let buf_a = build(0xA5A5_DEAD_BEEF_0001);
         let buf_b = build(0xA5A5_DEAD_BEEF_0002);
         assert_eq!(buf_a.len(), buf_b.len());
-        let seed_diff: Vec<usize> =
-            (0..buf_a.len()).filter(|&i| buf_a[i] != buf_b[i]).collect();
-        assert!(!seed_diff.is_empty(), "seed must live in the descriptor bytes");
+        let seed_diff: Vec<usize> = (0..buf_a.len()).filter(|&i| buf_a[i] != buf_b[i]).collect();
+        assert!(
+            !seed_diff.is_empty(),
+            "seed must live in the descriptor bytes"
+        );
 
         let path = tmp_path("r2-tamper");
         let _guard = TmpFile(path.clone());
@@ -894,12 +934,18 @@ mod tests {
         }
         std::fs::write(&path, &t_seed).unwrap();
         let err = verify_archive(&path, VerifyDepth::Vectors).unwrap_err();
-        assert!(err.contains("descriptor digest"), "seed tamper must fail R2: {err}");
+        assert!(
+            err.contains("descriptor digest"),
+            "seed tamper must fail R2: {err}"
+        );
         let err = verify_archive(&path, VerifyDepth::Full).unwrap_err();
-        assert!(err.contains("descriptor digest"), "seed tamper must fail R2 (full): {err}");
+        assert!(
+            err.contains("descriptor digest"),
+            "seed tamper must fail R2 (full): {err}"
+        );
 
         let buf_c = {
-            let shape_c = [8u64, 128u64]; 
+            let shape_c = [8u64, 128u64];
             let pt = PackedTensorV2 {
                 base: PackedTensor {
                     name: "model.layers.0.q_proj",
@@ -936,7 +982,7 @@ mod tests {
         assert_eq!(&outl_trailer[12..16], b"OUTL");
         let outl_off = u64::from_le_bytes(outl_trailer[0..8].try_into().unwrap()) as usize;
         let mut t_outl = clean.clone();
-        
+
         t_outl[outl_off + 32 + 24] ^= 0x40;
         std::fs::write(&path, &t_outl).unwrap();
         assert!(
@@ -959,21 +1005,21 @@ mod tests {
         let mut s1 = good.clone();
         s1.tensors.pop();
         assert!(append_sprv(&path, &s1).is_err());
-        
+
         let mut s2 = good.clone();
         s2.tensors[0].n_blocks += 1;
         assert!(append_sprv(&path, &s2).is_err());
-        
+
         let mut s3 = good.clone();
         s3.tensors[0].leaves = Some(vec![[0u8; 32]; s3.tensors[0].n_blocks as usize]);
         assert!(append_sprv(&path, &s3).is_err());
-        
+
         let mut s4 = good.clone();
         s4.tensors[0].vectors.reverse();
         assert!(append_sprv(&path, &s4).is_err());
-        
+
         assert_eq!(std::fs::read(&path).unwrap(), buf);
-        
+
         append_sprv(&path, &good).expect("good section appends");
         assert_eq!(read_sprv(&path).unwrap().unwrap(), good);
     }

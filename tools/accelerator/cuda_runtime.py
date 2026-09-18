@@ -34,7 +34,20 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from c2m import C2MRefusal, translate
+
+__all__ = [
+    "may_delete_copies",
+    "unsafe_reason",
+    "CudaRuntimeRefusal",
+    "runtime_contract_version",
+    "runtime_contract_digest",
+    "runtime_contract_manifest",
+    "runtime_contract_manifest_v2",
+    "runtime_contract_manifest_v3",
+    "runtime_contract_manifest_v2_digest",
+]
+
+
 
 # Host statement forms this subset understands. Everything else is refused.
 _MALLOC = re.compile(r"cudaMalloc\s*\(\s*\(?\s*void\s*\*\*\s*\)?\s*&\s*(\w+)\s*,")

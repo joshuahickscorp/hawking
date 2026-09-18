@@ -1,4 +1,4 @@
-//! hide-sdk: the generated protocol SDK and codegen for the HCLI backend.
+//! hide-sdk: the generated protocol SDK and codegen for the HAWKING backend.
 //!
 //! Bible sec 15.7 states the rule this crate exists to enforce: "One source
 //! must generate Rust types, TypeScript types, JSON Schema, OpenAPI
@@ -15,7 +15,7 @@
 //! - [`client`]: a thin async client over a [`client::Transport`] trait, with a
 //!   [`client::MockTransport`] for tests and typed helper methods that build
 //!   `hide-protocol` [`Method`](crate::Method) requests and parse typed
-//!   results for HCLI or future external clients.
+//!   results for HAWKING or future external clients.
 //! - [`fixtures`]: canonical Notification/Item JSON fixtures the compatibility
 //!   tests round-trip through `hide-protocol` serde.
 //!
@@ -23,7 +23,7 @@
 //!
 //! Everything here is deterministic codegen and in-memory transport plumbing
 //! over fixtures. It never runs a model or opens a socket. The real transport
-//! that carries these requests to a live HCLI backend is DEFERRED_MODEL_REQUIRED
+//! that carries these requests to a live HAWKING backend is DEFERRED_MODEL_REQUIRED
 //! -adjacent (a running agent server is required to exercise it end to end) and
 //! is deliberately out of scope; see [`client::Transport`] for the seam and
 //! [`client::MockTransport`] for the deterministic stand-in used in tests.
@@ -40,7 +40,7 @@ pub mod client {
     //! # DEFERRED_MODEL_REQUIRED
     //!
     //! The [`Transport`] trait is the seam to a live agent server. The real
-    //! loopback / HTTP transport that carries these requests to a running HCLI
+    //! loopback / HTTP transport that carries these requests to a running HAWKING
     //! backend and streams notifications back needs a model-bearing server to
     //! answer them, so it is out of scope here and not implemented. Everything in
     //! this crate exercises the client over [`MockTransport`], a deterministic

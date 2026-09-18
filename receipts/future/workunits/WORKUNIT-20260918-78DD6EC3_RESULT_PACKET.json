@@ -1,0 +1,156 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:31:18.692213+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:31:18.692223+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:31:18.692225+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "rejected",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5231,
+          "turn": 1,
+          "typed_proposal": true
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5372,
+          "turn": 2,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:31:18.692245+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"intent_status\": \"NOT_STARTED\", \"mutation_request\": {\"allowed_paths\": [\"hawking/sandbox_world.py\", \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\"], \"budget\": {\"authority\": \"existing Hawking Goal/ledger\", \"cap_usd\": null}, \"canonical_root\": \"/Users/scammermike/Downloads/hawking\", \"capability_id\": \"repo.edit\", \"capability_schema\": \"hawking.mutation.request.v1\", \"created_at\": 1789752672.24959, \"expected_base_hashes\": {\"hawking/sandbox_world.py\": \"8e68d56b8e1eb73781441929c2683b37e9b6d7a1d443236107d272a734f3d3c0\", \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\": null}, \"goal_id\": \"GOAL-A52AB48501\", \"lease_id\": \"LEASE-70af0b9a6fce4d05b1a581c5f4971fc1\", \"operation_sha256\": \"de7fe7012ca77584a712594b9d739c9565e5fdaa46209097a2791edc5304f181\", \"operations\": [{\"new_text\": \"def _bounded_text(value: object, field: str, limit: int) -> str:\\n    \\\"\\\"\\\"Coerce a world field to text and enforce a hard length bound.\\n\\n    Fails closed on non-strings and on empty or over-long values so a\\n    restart-readable S0 record can never carry an unbounded field.\\n    \\\"\\\"\\\"\\n    text = _text(value)\\n    if not text:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} must be non-empty\\\", status=400\\n        )\\n    if len(text) > limit:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} exceeds {limit} characters\\\", status=400\\n        )\\n    return text\\n\\n\\ndef _bounded_identifier(value: object, field: str, pattern: str) -> str:\\n    \\\"\\\"\\\"Coer",
+          "ok": false,
+          "reason": "Deterministic validation failed: failing_checks=[{'kind': 'test', 'reason': 'TEST_FAILED', 'exit_code': 1, 'requested': 'hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py', 'output_tail': '_______________ test_bounded_identifier_accepts_declared_shapes ________________\\nhawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py:25: in test_bounded_identifier_",
+          "tool": "repo.edit",
+          "verdict": "rejected"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"intent_status\": \"NOT_STARTED\", \"mutation_request\": {\"allowed_paths\": [\"hawking/sandbox_world.py\", \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\"], \"budget\": {\"authority\": \"existing Hawking Goal/ledger\", \"cap_usd\": null}, \"canonical_root\": \"/Users/scammermike/Downloads/hawking\", \"capability_id\": \"repo.edit\", \"capability_schema\": \"hawking.mutation.request.v1\", \"created_at\": 1789752672.24959, \"expected_base_hashes\": {\"hawking/sandbox_world.py\": \"8e68d56b8e1eb73781441929c2683b37e9b6d7a1d443236107d272a734f3d3c0\", \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\": null}, \"goal_id\": \"GOAL-A52AB48501\", \"lease_id\": \"LEASE-70af0b9a6fce4d05b1a581c5f4971fc1\", \"operation_sha256\": \"de7fe7012ca77584a712594b9d739c9565e5fdaa46209097a2791edc5304f181\", \"operations\": [{\"new_text\": \"def _bounded_text(value: object, field: str, limit: int) -> str:\\n    \\\"\\\"\\\"Coerce a world field to text and enforce a hard length bound.\\n\\n    Fails closed on non-strings and on empty or over-long values so a\\n    restart-readable S0 record can never carry an unbounded field.\\n    \\\"\\\"\\\"\\n    text = _text(value)\\n    if not text:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} must be non-empty\\\", status=400\\n        )\\n    if len(text) > limit:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} exceeds {limit} characters\\\", status=400\\n        )\\n    return text\\n\\n\\ndef _bounded_identifier(value: object, field: str, pattern: str) -> str:\\n    \\\"\\\"\\\"Coer",
+          "ok": false,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"from __future__ import annotations\\n\\nimport re\\nimport threading\", \"old_text\": \"from __future__ import annotations\\n\\nimport threading\", \"op\": \"replace\", \"path\": \"hawking/sandbox_world.py\"}, {\"new_text\": \"def _bounded_text(value: object, field: str, limit: int) -> str:\\n    \\\"\\\"\\\"Coerce a world field to text and enforce a hard length bound.\\n\\n    Fails closed on non-strings and on empty or over-long values so a\\n    restart-readable S0 record can never carry an unbounded field.\\n    \\\"\\\"\\\"\\n    text = _text(value)\\n    if not text:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} must be non-empty\\\", status=400\\n        )\\n    if len(text) > limit:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} exceeds {limit} characters\\\", status=400\\n        )\\n    return text\\n\\n\\ndef _bounded_identifier(value: object, field: str, pattern: str) -> str:\\n    \\\"\\\"\\\"Coerce a world identifier to text and enforce its declared shape.\\n\\n    Identifiers are the restart-readable join keys of the S0 record, so a\\n    malformed value must fail closed at the boundary rather than be persisted\\n    and only discovered when a later reader cannot resolve the reference.\\n    \\\"\\\"\\\"\\n    text = _bounded_text(value, field, 96)\\n    if re.fullmatch(pattern, text) is None:\\n        raise SandboxWorldError(\\n            f\\\"sandbox world field {field} is not a valid identifier\\\", status=400\\n        )\\n    return text\", \"old_text\": \"def _bounded_text(value: object, field",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789752678.233161, \"n_stdout_chars\": 98, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789752678.032972, \"stderr\": \"\", \"stdout\": \"........                                                                 [100%]\\n8 passed in 0.06s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/sandbox_world.py\", \"sha256_after\": \"e5f25724dc9e1f355dfd88e5b8030f22d86093a23ac51b88e620b802b129fd2b\", \"sha256_before\": \"8e68d56b8e1eb73781441929c2683b37e9b6d7a1d443236107d272a734f3d3c0\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\", \"sha256_after\": \"27d9b2eed131998a1f8af91371cbf6d7a55953355ac1328c1ec2035cf437399c\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/sandbox_world.py\", \"sha256_after\": \"e5f25724dc9e1f355dfd88e5b8030f22d86093a23ac51b88e620b802b129fd2b\", \"sha256_before\": \"8e68d56b8e1eb73781441929c2683b37e9b6d7a1d443236107d272a734f3d3c0\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\", \"sha256_after\": \"27d9b2eed131998a1f8af91371cbf6d7a55953355ac1328c1ec2035cf437399c\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/sandbox_world.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 8, \"executed\": 8, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 8, \"requested\": \"hawking/tests/test_auto_p19_sandbox_implementation_contract",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:31:18.695884+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"goal_id\": \"GOAL-A52AB48501\", \"workunit_id\": \"WORKUNIT-20260918-78DD6EC3\", \"operations\": [{\"op\": \"replace\", \"path\": \"hawking/sandbox_world.py\", \"old_text\": \"from __future__ import annotations\\n\\nimport thread",
+      "outcome": "CONTINUE",
+      "reply_chars": 5372,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/sandbox_world.py",
+        "hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-78DD6EC3_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/sandbox_world.py",
+    "hawking/tests/test_auto_p19_sandbox_implementation_contract_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P19_SANDBOX_IMPLEMENTATION_CONTRACT beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-78DD6EC3_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-78DD6EC3"
+}

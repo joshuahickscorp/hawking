@@ -1,0 +1,2458 @@
+{
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
+  "checks": {
+    "fact_hash_present": true,
+    "mission_completed": true,
+    "model_not_acceptance_authority": true,
+    "native_cognition_called": true,
+    "receipt_exists": true,
+    "result_verdict_accept": true,
+    "typed_read_ok": true,
+    "typed_write_ok": true,
+    "unit_completed": true,
+    "verifier_passed": true
+  },
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
+  "deterministic_fact": {
+    "bytes": 22,
+    "content": "native-mission-marker\n",
+    "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt",
+    "sha256": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+    "source": "Hawking.invoke_tool(fs.read)"
+  },
+  "direct_observation": "checks={fact_hash_present=True, mission_completed=True, model_not_acceptance_authority=True, native_cognition_called=True, receipt_exists=True, result_verdict_accept=True, typed_read_ok=True, typed_write_ok=True, unit_completed=True, verifier_passed=True}; unmet=[]; verifier.outcome_ok={'ok': True, 'exit_code': 0, 'command': 'test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7', 'output': '', 'acceptance_source': 'workunit_verifier'}; acceptance_source='workunit_verifier'; native_call_count=2; envelope.verdict='ACCEPT'; error=None",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
+  "finished_at": 1789725581.274156,
+  "interpretation": "typed tools, native cognition call, verifier, and result envelope all held",
+  "mission": {
+    "goal": "Use native cognition to report the already-read marker; the deterministic verifier must decide acceptance.",
+    "id": "1ad3d49f-11ef-4ab8-af9c-7e8649cf379b",
+    "result": {
+      "accepted": 1,
+      "cancelled": false,
+      "evidence": [
+        {
+          "accepted": true,
+          "at": 1789725581.071938,
+          "child_workunits": [],
+          "unit_id": "native-tool-verifier",
+          "validation": {
+            "acceptance_source": "workunit_verifier",
+            "command": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          }
+        }
+      ],
+      "failed_units": [],
+      "mission_id": "1ad3d49f-11ef-4ab8-af9c-7e8649cf379b",
+      "no_progress_warning": null,
+      "reason": null,
+      "state": "VERIFIED",
+      "status": "completed",
+      "verdict": "ACCEPT"
+    },
+    "unit": {
+      "assigned_backend": "resident",
+      "assigned_runtime": null,
+      "attempts": 1,
+      "author": null,
+      "backend_task_id": null,
+      "capability_lease": null,
+      "classification": null,
+      "content_hash": "492ed9423d0dcef00c11fe4bb13e6791775066a69b940673e55772d5d29c4de2",
+      "context_packet_digest": null,
+      "dependencies": [],
+      "description": "Return one short answer confirming the typed read found the marker. Do not propose a mutation; the fixed verifier owns acceptance.",
+      "effect_class": null,
+      "execution_identity": "910c644655fd2590597de77a2855d3214a59b8485545efcba2c0dd7b2d23ffaf",
+      "failure_context": null,
+      "finished_at": 1789725581.07216,
+      "id": "native-tool-verifier",
+      "preferred_backend": "resident",
+      "provider": "resident",
+      "ready_at": 1789725481.143965,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "required_capabilities": [],
+      "resource_class": "TEST",
+      "role": "generalist",
+      "running_at": 1789725481.1638,
+      "status": "completed",
+      "tool": null,
+      "tool_arguments": null,
+      "verification": {
+        "acceptance_source": "workunit_verifier",
+        "command": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+        "exit_code": 0,
+        "ok": true,
+        "output": ""
+      },
+      "verifier": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+      "worker_attempt_id": null,
+      "worker_id": null,
+      "workspace": null
+    }
+  },
+  "model_claim_boundary": "native model proposes; typed tool and deterministic verifier decide",
+  "model_proof": {
+    "engine_receipt": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/.hawking/receipts/a222da6a-1c1b-4e93-ac09-d5ce271f03fa.json",
+    "model_calls": [
+      {
+        "checkpoint_missed": false,
+        "checkpoint_restored_tokens": 0,
+        "completion_tokens": 193,
+        "endpoint": "hawking-native://sealed-3.14/resident",
+        "finish_reason": "stop",
+        "grammar_enforced": true,
+        "layers": 64,
+        "max_new_tokens_granted": 256,
+        "max_tokens": 64,
+        "max_tokens_source": "env",
+        "payload_max_tokens_received": 256,
+        "prefill_attribution": {
+          "cannot_settle": "which kernel. Shape narrows the field; only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP.",
+          "dispatches_per_layer_per_step": 9.84,
+          "dispatches_per_step": 630.0,
+          "gpu_growth_last_over_first": 0.0617,
+          "gpu_share_of_wall": 0.982,
+          "host_bound": false,
+          "host_control_share_of_wall": 0.006,
+          "implicates": "warmup, clock ramp, or first-token allocation, not sequence work",
+          "lever": "BATCH THE PREFILL. Per-layer dispatch count is already tight, so cutting kernels buys nothing; stepping N tokens together turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must be advanced chunk-wise rather than per position.",
+          "next_discriminator": "discard the first bucket and re-shape; the tail is the steady state",
+          "shape": "FALLING_WITH_POSITION",
+          "structural": "prefill stepped 193 tokens one at a time for 121,581 dispatches. Prompt tokens are being paid for at decode prices.",
+          "total_dispatches": 121581,
+          "wall_growth_last_over_first": 0.0629,
+          "wall_ns_first_bucket": 459652427.0833333,
+          "wall_ns_last_bucket": 28913209.0
+        },
+        "prefill_profile": {
+          "buckets": [
+            {
+              "dispatches_mean": 981.7083333333334,
+              "encode_ns_mean": 553402.7083333334,
+              "from_step": 0,
+              "gpu_ns_mean": 455259674.5833333,
+              "steps": 24,
+              "submit_ns_mean": 10610.916666666666,
+              "to_step": 23,
+              "wait_ns_mean": 458650456.5416667,
+              "wall_ns_mean": 459652427.0833333
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 473156.2083333333,
+              "from_step": 24,
+              "gpu_ns_mean": 27045246.041666668,
+              "steps": 24,
+              "submit_ns_mean": 6456.75,
+              "to_step": 47,
+              "wait_ns_mean": 27649036.625,
+              "wall_ns_mean": 28133618.0
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 470260.4166666667,
+              "from_step": 48,
+              "gpu_ns_mean": 27170374.416666668,
+              "steps": 24,
+              "submit_ns_mean": 5477.458333333333,
+              "to_step": 71,
+              "wait_ns_mean": 27702187.583333332,
+              "wall_ns_mean": 28183020.875
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 471661.4583333333,
+              "from_step": 72,
+              "gpu_ns_mean": 27342162.583333332,
+              "steps": 24,
+              "submit_ns_mean": 5661.5,
+              "to_step": 95,
+              "wait_ns_mean": 27979987.75,
+              "wall_ns_mean": 28462359.458333332
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 489423.375,
+              "from_step": 96,
+              "gpu_ns_mean": 27473509.833333332,
+              "steps": 24,
+              "submit_ns_mean": 6145.833333333333,
+              "to_step": 119,
+              "wait_ns_mean": 27942404.458333332,
+              "wall_ns_mean": 28443017.333333332
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 474599.0,
+              "from_step": 120,
+              "gpu_ns_mean": 27634923.083333332,
+              "steps": 24,
+              "submit_ns_mean": 5546.916666666667,
+              "to_step": 143,
+              "wait_ns_mean": 28269836.708333332,
+              "wall_ns_mean": 28755659.666666668
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 479625.0416666667,
+              "from_step": 144,
+              "gpu_ns_mean": 27792207.708333332,
+              "steps": 24,
+              "submit_ns_mean": 6527.75,
+              "to_step": 167,
+              "wait_ns_mean": 28355807.333333332,
+              "wall_ns_mean": 28847487.708333332
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 475045.2916666667,
+              "from_step": 168,
+              "gpu_ns_mean": 27938169.791666668,
+              "steps": 24,
+              "submit_ns_mean": 5984.291666666667,
+              "to_step": 191,
+              "wait_ns_mean": 28540293.291666668,
+              "wall_ns_mean": 29026783.083333332
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 524750.0,
+              "from_step": 192,
+              "gpu_ns_mean": 28067208.0,
+              "steps": 1,
+              "submit_ns_mean": 5000.0,
+              "to_step": 192,
+              "wait_ns_mean": 28380209.0,
+              "wall_ns_mean": 28913209.0
+            }
+          ],
+          "prefill_steps": 193,
+          "totals": {
+            "dispatches": 121581.0,
+            "encode_ns": 93816914.0,
+            "gpu_ns": 15571817641.0,
+            "submit_ns": 1262874.0,
+            "wait_ns": 15750540456.0,
+            "wall_ns": 15857018166.0
+          }
+        },
+        "prefill_step_count": 1,
+        "prefill_tokens_stepped": 810,
+        "prefix_key": "2499f5223c0ee928063c1efe",
+        "prefix_reused_tokens": 0,
+        "prefix_source": "cold",
+        "profile_max_seq_len": 8192,
+        "prompt_token_count_source": "estimated_without_transformers",
+        "prompt_tokens": 810,
+        "prompt_tokens_used_for_budget": 1066,
+        "rendered_prompt_chars": 3197,
+        "resident_context_tokens_before": 0,
+        "runtime_index": 0,
+        "shared_prefix_tokens": 0,
+        "stop_reason": "constraint_done",
+        "timing_unit": "ns",
+        "wall_ns": 18201259875,
+        "wall_s": 18.201
+      },
+      {
+        "checkpoint_missed": false,
+        "checkpoint_restored_tokens": 0,
+        "completion_tokens": 71,
+        "endpoint": "hawking-native://sealed-3.14/resident",
+        "finish_reason": "stop",
+        "grammar_enforced": true,
+        "layers": 64,
+        "max_new_tokens_granted": 256,
+        "max_tokens": 64,
+        "max_tokens_source": "env",
+        "payload_max_tokens_received": 256,
+        "prefill_attribution": {
+          "cannot_settle": "which kernel. Shape narrows the field; only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP.",
+          "dispatches_per_layer_per_step": 9.06,
+          "dispatches_per_step": 580.0,
+          "gpu_growth_last_over_first": 1.6853,
+          "gpu_share_of_wall": 0.9696,
+          "host_bound": false,
+          "host_control_share_of_wall": 0.0157,
+          "implicates": "full-attention scaling over a growing KV",
+          "lever": "BATCH THE PREFILL. Per-layer dispatch count is already tight, so cutting kernels buys nothing; stepping N tokens together turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must be advanced chunk-wise rather than per position.",
+          "next_discriminator": "re-run one prompt with HAWKING_TRACE_DISPATCH=1 and compare the GQA attention kernel's share in the first and last position bucket; DeltaNet and the MLP GEMMs must stay flat if this is attention",
+          "shape": "RISING_WITH_POSITION",
+          "structural": "prefill stepped 2452 tokens one at a time for 1,422,160 dispatches. Prompt tokens are being paid for at decode prices.",
+          "total_dispatches": 1422160,
+          "wall_growth_last_over_first": 1.6626,
+          "wall_ns_first_bucket": 23472005.879084967,
+          "wall_ns_last_bucket": 39024177.0
+        },
+        "prefill_profile": {
+          "buckets": [
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 469240.99673202616,
+              "from_step": 0,
+              "gpu_ns_mean": 22513528.336601306,
+              "steps": 306,
+              "submit_ns_mean": 4263.611111111111,
+              "to_step": 305,
+              "wait_ns_mean": 22993809.06862745,
+              "wall_ns_mean": 23472005.879084967
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 469280.7745098039,
+              "from_step": 306,
+              "gpu_ns_mean": 24466922.74509804,
+              "steps": 306,
+              "submit_ns_mean": 4237.313725490196,
+              "to_step": 611,
+              "wait_ns_mean": 24912301.349673204,
+              "wall_ns_mean": 25390504.379084967
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 472343.81045751635,
+              "from_step": 612,
+              "gpu_ns_mean": 26555302.849673204,
+              "steps": 306,
+              "submit_ns_mean": 4214.738562091503,
+              "to_step": 917,
+              "wait_ns_mean": 26978871.816993464,
+              "wall_ns_mean": 27460006.816993464
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 478754.0522875817,
+              "from_step": 918,
+              "gpu_ns_mean": 28662818.954248365,
+              "steps": 306,
+              "submit_ns_mean": 4478.212418300654,
+              "to_step": 1223,
+              "wait_ns_mean": 29095924.539215688,
+              "wall_ns_mean": 29583789.738562092
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 482120.2679738562,
+              "from_step": 1224,
+              "gpu_ns_mean": 30667359.663398694,
+              "steps": 306,
+              "submit_ns_mean": 4398.437908496732,
+              "to_step": 1529,
+              "wait_ns_mean": 31134869.84640523,
+              "wall_ns_mean": 31626265.924836602
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 482383.3300653595,
+              "from_step": 1530,
+              "gpu_ns_mean": 32895625.31372549,
+              "steps": 306,
+              "submit_ns_mean": 4514.751633986928,
+              "to_step": 1835,
+              "wait_ns_mean": 33329596.633986928,
+              "wall_ns_mean": 33821435.86601307
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 477649.3888888889,
+              "from_step": 1836,
+              "gpu_ns_mean": 34891547.43464052,
+              "steps": 306,
+              "submit_ns_mean": 4435.058823529412,
+              "to_step": 2141,
+              "wait_ns_mean": 35326176.19281046,
+              "wall_ns_mean": 35813125.94444445
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 487656.85294117645,
+              "from_step": 2142,
+              "gpu_ns_mean": 37023027.68300653,
+              "steps": 306,
+              "submit_ns_mean": 4434.918300653595,
+              "to_step": 2447,
+              "wait_ns_mean": 37477003.277777776,
+              "wall_ns_mean": 37973842.07189543
+            },
+            {
+              "dispatches_mean": 580.0,
+              "encode_ns_mean": 540125.25,
+              "from_step": 2448,
+              "gpu_ns_mean": 37941374.75,
+              "steps": 4,
+              "submit_ns_mean": 5552.0,
+              "to_step": 2451,
+              "wait_ns_mean": 38473666.5,
+              "wall_ns_mean": 39024177.0
+            }
+          ],
+          "prefill_steps": 2452,
+          "totals": {
+            "dispatches": 1422160.0,
+            "encode_ns": 1170905920.0,
+            "gpu_ns": 72880662191.0,
+            "submit_ns": 10725183.0,
+            "wait_ns": 73975951800.0,
+            "wall_ns": 75169235554.0
+          }
+        },
+        "prefill_step_count": 2452,
+        "prefill_tokens_stepped": 2452,
+        "prefix_checkpoint_taken_at": 472,
+        "prefix_key": "2499f5223c0ee928063c1efe",
+        "prefix_reused_tokens": 0,
+        "prefix_source": "cold",
+        "profile_max_seq_len": 8192,
+        "prompt_token_count_source": "estimated_without_transformers",
+        "prompt_tokens": 2452,
+        "prompt_tokens_used_for_budget": 2573,
+        "rendered_prompt_chars": 7717,
+        "resident_context_tokens_before": 1003,
+        "runtime_index": 0,
+        "shared_prefix_tokens": 472,
+        "stop_reason": "constraint_done",
+        "timing_unit": "ns",
+        "wall_ns": 78818539334,
+        "wall_s": 78.819
+      }
+    ],
+    "native_call_count": 2,
+    "provider_profiles": {
+      "local": {
+        "artifact": {},
+        "capabilities": {
+          "features": {
+            "chat_template_kwargs": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "grammar": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "prefix_cache": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "response_format": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "slots": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "streaming": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "tool_calling": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "vision": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.0937028,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            }
+          },
+          "schema": "hawking.provider.capabilities.v1"
+        },
+        "compiler": {},
+        "environment": {},
+        "fallbacks": [],
+        "generation": {},
+        "hot_bytes": null,
+        "limits": {},
+        "machine_genome": {},
+        "metadata": {
+          "identity_snapshot": {},
+          "observed_at": 1789725581.093709
+        },
+        "model_id": "unknown",
+        "profile_id": "local",
+        "prompt_contract": {},
+        "provider": "Engine",
+        "qualification": {},
+        "receipts": [],
+        "representation": {},
+        "runtime": {},
+        "schema": "hawking.provider.profile.v1",
+        "tokenizer": {}
+      },
+      "native:qwen3.8-27b-sealed-3.14": {
+        "artifact": {
+          "artifact_inventory": {
+            "artifact_bytes": 10554328856,
+            "artifact_bytes_exact": true,
+            "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+            "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+            "mix_id": "mix_all_mlp_affine_g64_ls",
+            "n_tensors": 755
+          },
+          "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+          "model_bytes": 10554328856,
+          "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+        },
+        "capabilities": {
+          "features": {
+            "chat_template_kwargs": {
+              "enforcement": "enforced",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "supported"
+            },
+            "grammar": {
+              "enforcement": "enforced",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "supported"
+            },
+            "prefix_cache": {
+              "enforcement": "degraded",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "unsupported"
+            },
+            "response_format": {
+              "enforcement": "degraded",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "unsupported"
+            },
+            "slots": {
+              "enforcement": "degraded",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "unsupported"
+            },
+            "streaming": {
+              "enforcement": "degraded",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "unsupported"
+            },
+            "tool_calling": {
+              "enforcement": "degraded",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "unsupported"
+            },
+            "vision": {
+              "enforcement": "degraded",
+              "note": null,
+              "observed_at": 1789725581.093367,
+              "source": "backend.supports",
+              "state": "unsupported"
+            }
+          },
+          "schema": "hawking.provider.capabilities.v1"
+        },
+        "compiler": {
+          "language": "rust",
+          "profile": "release-fast",
+          "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+        },
+        "environment": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        },
+        "fallbacks": [
+          "transformers tokenizer fallback when unavailable"
+        ],
+        "generation": {
+          "do_sample": false,
+          "enable_thinking": false,
+          "max_new_tokens": 2048,
+          "temperature": 0.0,
+          "top_k": 1,
+          "top_p": 1.0
+        },
+        "hot_bytes": 10554328856,
+        "limits": {
+          "context": 8192,
+          "max_new_tokens": 2048,
+          "max_seq_len": 8192,
+          "n_slots": 1
+        },
+        "machine_genome": {},
+        "metadata": {
+          "identity_snapshot": {
+            "architecture": "unknown",
+            "artifact_inventory": {
+              "artifact_bytes": 10554328856,
+              "artifact_bytes_exact": true,
+              "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+              "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+              "mix_id": "mix_all_mlp_affine_g64_ls",
+              "n_tensors": 755
+            },
+            "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "backend": "noetic_native",
+            "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+            "binary_sha256_16": "e5ceb5e0a4765d3d",
+            "capabilities": {
+              "features": {
+                "grammar": "supported",
+                "response_format": "unsupported"
+              },
+              "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+            },
+            "compiler": {
+              "language": "rust",
+              "profile": "release-fast",
+              "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+            },
+            "context": 8192,
+            "current_runtime": {
+              "complete_tps_current_measured": 24.4086,
+              "complete_tps_historical_qualified": 34.0,
+              "fallbacks": 0
+            },
+            "executable_profile": "release-fast",
+            "fallbacks": [
+              "transformers tokenizer fallback when unavailable"
+            ],
+            "family": "qwen3.8",
+            "fusion_env": {
+              "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+              "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+              "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+              "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+            },
+            "generation": {
+              "do_sample": false,
+              "enable_thinking": false,
+              "max_new_tokens": 2048,
+              "temperature": 0.0,
+              "top_k": 1,
+              "top_p": 1.0
+            },
+            "hot_bytes": null,
+            "limits": {
+              "context": 8192,
+              "max_new_tokens": 2048
+            },
+            "machine_genome": {},
+            "max_seq_len": 8192,
+            "mode": "resident",
+            "model_bytes": 10554328856,
+            "model_id": "qwen3.8-27b-sealed-3.14",
+            "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "n_slots": 1,
+            "param_class": "?B",
+            "physical_ebpw": 3.1393,
+            "pid": 770,
+            "port": null,
+            "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+            "profile_schema": "hawking.provider.profile.v1",
+            "prompt_contract": {
+              "fallback_template": "qwen_closed_think",
+              "renderer": "qwen-chat-template-or-closed-think-fallback",
+              "token_count_authority": "native-resident"
+            },
+            "protocol": "hawking.qwen38.resident.v1",
+            "provider": "native",
+            "qualification": "capability 30/43 historical sealed contract",
+            "quantisation": "unknown",
+            "receipts": [
+              "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+              "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+            ],
+            "representation": {
+              "kind": "native-packed",
+              "physical_ebpw": 3.1393,
+              "weights_loaded_once": true
+            },
+            "require_fusion_env": true,
+            "resident_health": {
+              "model_open_count": 1,
+              "pid": 770,
+              "protocol": "hawking.qwen38.resident.v1",
+              "ready": true,
+              "resident_identity": "sealed-3.14",
+              "restart_count": 0,
+              "weight_upload_count": 1
+            },
+            "resident_identity": "sealed-3.14",
+            "restart_count": 0,
+            "runtime": "hawking-native",
+            "runtime_env": {},
+            "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+            "tokenizer_sha256_16": "0997f410c57a1f4e"
+          },
+          "observed_at": 1789725581.093556
+        },
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "profile_id": "native:qwen3.8-27b-sealed-3.14",
+        "prompt_contract": {
+          "fallback_template": "qwen_closed_think",
+          "renderer": "qwen-chat-template-or-closed-think-fallback",
+          "token_count_authority": "native-resident"
+        },
+        "provider": "native",
+        "qualification": {
+          "status": "capability 30/43 historical sealed contract"
+        },
+        "receipts": [
+          "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+          "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+        ],
+        "representation": {
+          "kind": "native-packed",
+          "physical_ebpw": 3.1393,
+          "quantisation": "unknown",
+          "require_fusion_env": true,
+          "weights_loaded_once": true
+        },
+        "runtime": {
+          "backend": "noetic_native",
+          "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+          "binary_sha256_16": "e5ceb5e0a4765d3d",
+          "current_runtime": {
+            "complete_tps_current_measured": 24.4086,
+            "complete_tps_historical_qualified": 34.0,
+            "fallbacks": 0
+          },
+          "mode": "resident",
+          "pid": 770,
+          "port": null,
+          "protocol": "hawking.qwen38.resident.v1",
+          "runtime": "hawking-native"
+        },
+        "schema": "hawking.provider.profile.v1",
+        "tokenizer": {
+          "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+          "tokenizer_sha256_16": "0997f410c57a1f4e"
+        }
+      },
+      "resident": {
+        "artifact": {},
+        "capabilities": {
+          "features": {
+            "chat_template_kwargs": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "grammar": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "prefix_cache": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "response_format": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "slots": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "streaming": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "tool_calling": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            },
+            "vision": {
+              "enforcement": "unknown",
+              "note": null,
+              "observed_at": 1789725581.093663,
+              "source": "backend has no supports()",
+              "state": "unknown"
+            }
+          },
+          "schema": "hawking.provider.capabilities.v1"
+        },
+        "compiler": {},
+        "environment": {},
+        "fallbacks": [],
+        "generation": {},
+        "hot_bytes": null,
+        "limits": {},
+        "machine_genome": {},
+        "metadata": {
+          "identity_snapshot": {},
+          "observed_at": 1789725581.0936708
+        },
+        "model_id": "unknown",
+        "profile_id": "resident",
+        "prompt_contract": {},
+        "provider": "Engine",
+        "qualification": {},
+        "receipts": [],
+        "representation": {},
+        "runtime": {},
+        "schema": "hawking.provider.profile.v1",
+        "tokenizer": {}
+      }
+    }
+  },
+  "probe_kind": "measured_flags",
+  "probe_performed": "one live native mission: Hawking.invoke_tool filesystem.write + fs.read, WorkUnit with shasum -a 256 verifier, Hawking.start_mission/run, acceptance from persisted WorkUnit.verification not model prose",
+  "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+  "qualification": "LIVE_NATIVE_TOOL_VERIFIER_RECEIPT",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/HAWKING_MASTER_LONG_HAUL_V2_NATIVE_MISSION_QUALIFICATION_20260918.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "result_envelope": {
+    "artifacts": [],
+    "blocker": null,
+    "changed_artifacts": [],
+    "claim": "Use native cognition to report the already-read marker; the deterministic verifier must decide acceptance.",
+    "completion": null,
+    "diff": {
+      "chars": 0,
+      "inspected": false,
+      "sha256": null
+    },
+    "evidence": [],
+    "failures": [],
+    "hypotheses": [],
+    "limitations": [],
+    "negative_controls": null,
+    "next_action": "re-run the named deterministic tests",
+    "receipt_paths": [],
+    "resource_usage": {
+      "model_calls": [
+        {
+          "checkpoint_missed": false,
+          "checkpoint_restored_tokens": 0,
+          "completion_tokens": 193,
+          "endpoint": "hawking-native://sealed-3.14/resident",
+          "finish_reason": "stop",
+          "grammar_enforced": true,
+          "layers": 64,
+          "max_new_tokens_granted": 256,
+          "max_tokens": 64,
+          "max_tokens_source": "env",
+          "payload_max_tokens_received": 256,
+          "prefill_attribution": {
+            "cannot_settle": "which kernel. Shape narrows the field; only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP.",
+            "dispatches_per_layer_per_step": 9.84,
+            "dispatches_per_step": 630.0,
+            "gpu_growth_last_over_first": 0.0617,
+            "gpu_share_of_wall": 0.982,
+            "host_bound": false,
+            "host_control_share_of_wall": 0.006,
+            "implicates": "warmup, clock ramp, or first-token allocation, not sequence work",
+            "lever": "BATCH THE PREFILL. Per-layer dispatch count is already tight, so cutting kernels buys nothing; stepping N tokens together turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must be advanced chunk-wise rather than per position.",
+            "next_discriminator": "discard the first bucket and re-shape; the tail is the steady state",
+            "shape": "FALLING_WITH_POSITION",
+            "structural": "prefill stepped 193 tokens one at a time for 121,581 dispatches. Prompt tokens are being paid for at decode prices.",
+            "total_dispatches": 121581,
+            "wall_growth_last_over_first": 0.0629,
+            "wall_ns_first_bucket": 459652427.0833333,
+            "wall_ns_last_bucket": 28913209.0
+          },
+          "prefill_profile": {
+            "buckets": [
+              {
+                "dispatches_mean": 981.7083333333334,
+                "encode_ns_mean": 553402.7083333334,
+                "from_step": 0,
+                "gpu_ns_mean": 455259674.5833333,
+                "steps": 24,
+                "submit_ns_mean": 10610.916666666666,
+                "to_step": 23,
+                "wait_ns_mean": 458650456.5416667,
+                "wall_ns_mean": 459652427.0833333
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 473156.2083333333,
+                "from_step": 24,
+                "gpu_ns_mean": 27045246.041666668,
+                "steps": 24,
+                "submit_ns_mean": 6456.75,
+                "to_step": 47,
+                "wait_ns_mean": 27649036.625,
+                "wall_ns_mean": 28133618.0
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 470260.4166666667,
+                "from_step": 48,
+                "gpu_ns_mean": 27170374.416666668,
+                "steps": 24,
+                "submit_ns_mean": 5477.458333333333,
+                "to_step": 71,
+                "wait_ns_mean": 27702187.583333332,
+                "wall_ns_mean": 28183020.875
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 471661.4583333333,
+                "from_step": 72,
+                "gpu_ns_mean": 27342162.583333332,
+                "steps": 24,
+                "submit_ns_mean": 5661.5,
+                "to_step": 95,
+                "wait_ns_mean": 27979987.75,
+                "wall_ns_mean": 28462359.458333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 489423.375,
+                "from_step": 96,
+                "gpu_ns_mean": 27473509.833333332,
+                "steps": 24,
+                "submit_ns_mean": 6145.833333333333,
+                "to_step": 119,
+                "wait_ns_mean": 27942404.458333332,
+                "wall_ns_mean": 28443017.333333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 474599.0,
+                "from_step": 120,
+                "gpu_ns_mean": 27634923.083333332,
+                "steps": 24,
+                "submit_ns_mean": 5546.916666666667,
+                "to_step": 143,
+                "wait_ns_mean": 28269836.708333332,
+                "wall_ns_mean": 28755659.666666668
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 479625.0416666667,
+                "from_step": 144,
+                "gpu_ns_mean": 27792207.708333332,
+                "steps": 24,
+                "submit_ns_mean": 6527.75,
+                "to_step": 167,
+                "wait_ns_mean": 28355807.333333332,
+                "wall_ns_mean": 28847487.708333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 475045.2916666667,
+                "from_step": 168,
+                "gpu_ns_mean": 27938169.791666668,
+                "steps": 24,
+                "submit_ns_mean": 5984.291666666667,
+                "to_step": 191,
+                "wait_ns_mean": 28540293.291666668,
+                "wall_ns_mean": 29026783.083333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 524750.0,
+                "from_step": 192,
+                "gpu_ns_mean": 28067208.0,
+                "steps": 1,
+                "submit_ns_mean": 5000.0,
+                "to_step": 192,
+                "wait_ns_mean": 28380209.0,
+                "wall_ns_mean": 28913209.0
+              }
+            ],
+            "prefill_steps": 193,
+            "totals": {
+              "dispatches": 121581.0,
+              "encode_ns": 93816914.0,
+              "gpu_ns": 15571817641.0,
+              "submit_ns": 1262874.0,
+              "wait_ns": 15750540456.0,
+              "wall_ns": 15857018166.0
+            }
+          },
+          "prefill_step_count": 1,
+          "prefill_tokens_stepped": 810,
+          "prefix_key": "2499f5223c0ee928063c1efe",
+          "prefix_reused_tokens": 0,
+          "prefix_source": "cold",
+          "profile_max_seq_len": 8192,
+          "prompt_token_count_source": "estimated_without_transformers",
+          "prompt_tokens": 810,
+          "prompt_tokens_used_for_budget": 1066,
+          "rendered_prompt_chars": 3197,
+          "resident_context_tokens_before": 0,
+          "runtime_index": 0,
+          "shared_prefix_tokens": 0,
+          "stop_reason": "constraint_done",
+          "timing_unit": "ns",
+          "wall_ns": 18201259875,
+          "wall_s": 18.201
+        },
+        {
+          "checkpoint_missed": false,
+          "checkpoint_restored_tokens": 0,
+          "completion_tokens": 71,
+          "endpoint": "hawking-native://sealed-3.14/resident",
+          "finish_reason": "stop",
+          "grammar_enforced": true,
+          "layers": 64,
+          "max_new_tokens_granted": 256,
+          "max_tokens": 64,
+          "max_tokens_source": "env",
+          "payload_max_tokens_received": 256,
+          "prefill_attribution": {
+            "cannot_settle": "which kernel. Shape narrows the field; only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP.",
+            "dispatches_per_layer_per_step": 9.06,
+            "dispatches_per_step": 580.0,
+            "gpu_growth_last_over_first": 1.6853,
+            "gpu_share_of_wall": 0.9696,
+            "host_bound": false,
+            "host_control_share_of_wall": 0.0157,
+            "implicates": "full-attention scaling over a growing KV",
+            "lever": "BATCH THE PREFILL. Per-layer dispatch count is already tight, so cutting kernels buys nothing; stepping N tokens together turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must be advanced chunk-wise rather than per position.",
+            "next_discriminator": "re-run one prompt with HAWKING_TRACE_DISPATCH=1 and compare the GQA attention kernel's share in the first and last position bucket; DeltaNet and the MLP GEMMs must stay flat if this is attention",
+            "shape": "RISING_WITH_POSITION",
+            "structural": "prefill stepped 2452 tokens one at a time for 1,422,160 dispatches. Prompt tokens are being paid for at decode prices.",
+            "total_dispatches": 1422160,
+            "wall_growth_last_over_first": 1.6626,
+            "wall_ns_first_bucket": 23472005.879084967,
+            "wall_ns_last_bucket": 39024177.0
+          },
+          "prefill_profile": {
+            "buckets": [
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 469240.99673202616,
+                "from_step": 0,
+                "gpu_ns_mean": 22513528.336601306,
+                "steps": 306,
+                "submit_ns_mean": 4263.611111111111,
+                "to_step": 305,
+                "wait_ns_mean": 22993809.06862745,
+                "wall_ns_mean": 23472005.879084967
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 469280.7745098039,
+                "from_step": 306,
+                "gpu_ns_mean": 24466922.74509804,
+                "steps": 306,
+                "submit_ns_mean": 4237.313725490196,
+                "to_step": 611,
+                "wait_ns_mean": 24912301.349673204,
+                "wall_ns_mean": 25390504.379084967
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 472343.81045751635,
+                "from_step": 612,
+                "gpu_ns_mean": 26555302.849673204,
+                "steps": 306,
+                "submit_ns_mean": 4214.738562091503,
+                "to_step": 917,
+                "wait_ns_mean": 26978871.816993464,
+                "wall_ns_mean": 27460006.816993464
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 478754.0522875817,
+                "from_step": 918,
+                "gpu_ns_mean": 28662818.954248365,
+                "steps": 306,
+                "submit_ns_mean": 4478.212418300654,
+                "to_step": 1223,
+                "wait_ns_mean": 29095924.539215688,
+                "wall_ns_mean": 29583789.738562092
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 482120.2679738562,
+                "from_step": 1224,
+                "gpu_ns_mean": 30667359.663398694,
+                "steps": 306,
+                "submit_ns_mean": 4398.437908496732,
+                "to_step": 1529,
+                "wait_ns_mean": 31134869.84640523,
+                "wall_ns_mean": 31626265.924836602
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 482383.3300653595,
+                "from_step": 1530,
+                "gpu_ns_mean": 32895625.31372549,
+                "steps": 306,
+                "submit_ns_mean": 4514.751633986928,
+                "to_step": 1835,
+                "wait_ns_mean": 33329596.633986928,
+                "wall_ns_mean": 33821435.86601307
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 477649.3888888889,
+                "from_step": 1836,
+                "gpu_ns_mean": 34891547.43464052,
+                "steps": 306,
+                "submit_ns_mean": 4435.058823529412,
+                "to_step": 2141,
+                "wait_ns_mean": 35326176.19281046,
+                "wall_ns_mean": 35813125.94444445
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 487656.85294117645,
+                "from_step": 2142,
+                "gpu_ns_mean": 37023027.68300653,
+                "steps": 306,
+                "submit_ns_mean": 4434.918300653595,
+                "to_step": 2447,
+                "wait_ns_mean": 37477003.277777776,
+                "wall_ns_mean": 37973842.07189543
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 540125.25,
+                "from_step": 2448,
+                "gpu_ns_mean": 37941374.75,
+                "steps": 4,
+                "submit_ns_mean": 5552.0,
+                "to_step": 2451,
+                "wait_ns_mean": 38473666.5,
+                "wall_ns_mean": 39024177.0
+              }
+            ],
+            "prefill_steps": 2452,
+            "totals": {
+              "dispatches": 1422160.0,
+              "encode_ns": 1170905920.0,
+              "gpu_ns": 72880662191.0,
+              "submit_ns": 10725183.0,
+              "wait_ns": 73975951800.0,
+              "wall_ns": 75169235554.0
+            }
+          },
+          "prefill_step_count": 2452,
+          "prefill_tokens_stepped": 2452,
+          "prefix_checkpoint_taken_at": 472,
+          "prefix_key": "2499f5223c0ee928063c1efe",
+          "prefix_reused_tokens": 0,
+          "prefix_source": "cold",
+          "profile_max_seq_len": 8192,
+          "prompt_token_count_source": "estimated_without_transformers",
+          "prompt_tokens": 2452,
+          "prompt_tokens_used_for_budget": 2573,
+          "rendered_prompt_chars": 7717,
+          "resident_context_tokens_before": 1003,
+          "runtime_index": 0,
+          "shared_prefix_tokens": 472,
+          "stop_reason": "constraint_done",
+          "timing_unit": "ns",
+          "wall_ns": 78818539334,
+          "wall_s": 78.819
+        }
+      ],
+      "runtime_provenance": [
+        {
+          "active": true,
+          "identity": {
+            "architecture": "unknown",
+            "artifact_inventory": {
+              "artifact_bytes": 10554328856,
+              "artifact_bytes_exact": true,
+              "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+              "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+              "mix_id": "mix_all_mlp_affine_g64_ls",
+              "n_tensors": 755
+            },
+            "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "backend": "noetic_native",
+            "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+            "binary_sha256_16": "e5ceb5e0a4765d3d",
+            "capabilities": {
+              "features": {
+                "grammar": "supported",
+                "response_format": "unsupported"
+              },
+              "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+            },
+            "compiler": {
+              "language": "rust",
+              "profile": "release-fast",
+              "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+            },
+            "context": 8192,
+            "current_runtime": {
+              "complete_tps_current_measured": 24.4086,
+              "complete_tps_historical_qualified": 34.0,
+              "fallbacks": 0
+            },
+            "executable_profile": "release-fast",
+            "fallbacks": [
+              "transformers tokenizer fallback when unavailable"
+            ],
+            "family": "qwen3.8",
+            "fusion_env": {
+              "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+              "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+              "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+              "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+            },
+            "generation": {
+              "do_sample": false,
+              "enable_thinking": false,
+              "max_new_tokens": 2048,
+              "temperature": 0.0,
+              "top_k": 1,
+              "top_p": 1.0
+            },
+            "hot_bytes": null,
+            "limits": {
+              "context": 8192,
+              "max_new_tokens": 2048
+            },
+            "machine_genome": {},
+            "max_seq_len": 8192,
+            "mode": "resident",
+            "model_bytes": 10554328856,
+            "model_id": "qwen3.8-27b-sealed-3.14",
+            "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "n_slots": 1,
+            "param_class": "?B",
+            "physical_ebpw": 3.1393,
+            "pid": 770,
+            "port": null,
+            "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+            "profile_schema": "hawking.provider.profile.v1",
+            "prompt_contract": {
+              "fallback_template": "qwen_closed_think",
+              "renderer": "qwen-chat-template-or-closed-think-fallback",
+              "token_count_authority": "native-resident"
+            },
+            "protocol": "hawking.qwen38.resident.v1",
+            "provider": "native",
+            "qualification": "capability 30/43 historical sealed contract",
+            "quantisation": "unknown",
+            "receipts": [
+              "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+              "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+            ],
+            "representation": {
+              "kind": "native-packed",
+              "physical_ebpw": 3.1393,
+              "weights_loaded_once": true
+            },
+            "require_fusion_env": true,
+            "resident_health": {
+              "model_open_count": 1,
+              "pid": 770,
+              "protocol": "hawking.qwen38.resident.v1",
+              "ready": true,
+              "resident_identity": "sealed-3.14",
+              "restart_count": 0,
+              "weight_upload_count": 1
+            },
+            "resident_identity": "sealed-3.14",
+            "restart_count": 0,
+            "runtime": "hawking-native",
+            "runtime_env": {},
+            "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+            "tokenizer_sha256_16": "0997f410c57a1f4e"
+          },
+          "index": 0,
+          "model_identity": null,
+          "pid": 770,
+          "port": null,
+          "profile": {
+            "artifact": {
+              "artifact_inventory": {
+                "artifact_bytes": 10554328856,
+                "artifact_bytes_exact": true,
+                "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+                "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+                "mix_id": "mix_all_mlp_affine_g64_ls",
+                "n_tensors": 755
+              },
+              "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+              "model_bytes": 10554328856,
+              "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+            },
+            "capabilities": {
+              "features": {
+                "chat_template_kwargs": {
+                  "enforcement": "enforced",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "supported"
+                },
+                "grammar": {
+                  "enforcement": "enforced",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "supported"
+                },
+                "prefix_cache": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "response_format": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "slots": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "streaming": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "tool_calling": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "vision": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                }
+              },
+              "schema": "hawking.provider.capabilities.v1"
+            },
+            "compiler": {
+              "language": "rust",
+              "profile": "release-fast",
+              "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+            },
+            "environment": {
+              "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+              "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+              "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+              "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+            },
+            "fallbacks": [
+              "transformers tokenizer fallback when unavailable"
+            ],
+            "generation": {
+              "do_sample": false,
+              "enable_thinking": false,
+              "max_new_tokens": 2048,
+              "temperature": 0.0,
+              "top_k": 1,
+              "top_p": 1.0
+            },
+            "hot_bytes": 10554328856,
+            "limits": {
+              "context": 8192,
+              "max_new_tokens": 2048,
+              "max_seq_len": 8192,
+              "n_slots": 1
+            },
+            "machine_genome": {},
+            "metadata": {
+              "identity_snapshot": {
+                "architecture": "unknown",
+                "artifact_inventory": {
+                  "artifact_bytes": 10554328856,
+                  "artifact_bytes_exact": true,
+                  "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+                  "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+                  "mix_id": "mix_all_mlp_affine_g64_ls",
+                  "n_tensors": 755
+                },
+                "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+                "backend": "noetic_native",
+                "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+                "binary_sha256_16": "e5ceb5e0a4765d3d",
+                "capabilities": {
+                  "features": {
+                    "grammar": "supported",
+                    "response_format": "unsupported"
+                  },
+                  "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+                },
+                "compiler": {
+                  "language": "rust",
+                  "profile": "release-fast",
+                  "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+                },
+                "context": 8192,
+                "current_runtime": {
+                  "complete_tps_current_measured": 24.4086,
+                  "complete_tps_historical_qualified": 34.0,
+                  "fallbacks": 0
+                },
+                "executable_profile": "release-fast",
+                "fallbacks": [
+                  "transformers tokenizer fallback when unavailable"
+                ],
+                "family": "qwen3.8",
+                "fusion_env": {
+                  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+                  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+                  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+                  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+                },
+                "generation": {
+                  "do_sample": false,
+                  "enable_thinking": false,
+                  "max_new_tokens": 2048,
+                  "temperature": 0.0,
+                  "top_k": 1,
+                  "top_p": 1.0
+                },
+                "hot_bytes": null,
+                "limits": {
+                  "context": 8192,
+                  "max_new_tokens": 2048
+                },
+                "machine_genome": {},
+                "max_seq_len": 8192,
+                "mode": "resident",
+                "model_bytes": 10554328856,
+                "model_id": "qwen3.8-27b-sealed-3.14",
+                "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+                "n_slots": 1,
+                "param_class": "?B",
+                "physical_ebpw": 3.1393,
+                "pid": 770,
+                "port": null,
+                "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+                "profile_schema": "hawking.provider.profile.v1",
+                "prompt_contract": {
+                  "fallback_template": "qwen_closed_think",
+                  "renderer": "qwen-chat-template-or-closed-think-fallback",
+                  "token_count_authority": "native-resident"
+                },
+                "protocol": "hawking.qwen38.resident.v1",
+                "provider": "native",
+                "qualification": "capability 30/43 historical sealed contract",
+                "quantisation": "unknown",
+                "receipts": [
+                  "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+                  "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+                ],
+                "representation": {
+                  "kind": "native-packed",
+                  "physical_ebpw": 3.1393,
+                  "weights_loaded_once": true
+                },
+                "require_fusion_env": true,
+                "resident_health": {
+                  "model_open_count": 1,
+                  "pid": 770,
+                  "protocol": "hawking.qwen38.resident.v1",
+                  "ready": true,
+                  "resident_identity": "sealed-3.14",
+                  "restart_count": 0,
+                  "weight_upload_count": 1
+                },
+                "resident_identity": "sealed-3.14",
+                "restart_count": 0,
+                "runtime": "hawking-native",
+                "runtime_env": {},
+                "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+                "tokenizer_sha256_16": "0997f410c57a1f4e"
+              },
+              "observed_at": 1789725581.110425
+            },
+            "model_id": "qwen3.8-27b-sealed-3.14",
+            "profile_id": "native:qwen3.8-27b-sealed-3.14",
+            "prompt_contract": {
+              "fallback_template": "qwen_closed_think",
+              "renderer": "qwen-chat-template-or-closed-think-fallback",
+              "token_count_authority": "native-resident"
+            },
+            "provider": "native",
+            "qualification": {
+              "status": "capability 30/43 historical sealed contract"
+            },
+            "receipts": [
+              "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+              "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+            ],
+            "representation": {
+              "kind": "native-packed",
+              "physical_ebpw": 3.1393,
+              "quantisation": "unknown",
+              "require_fusion_env": true,
+              "weights_loaded_once": true
+            },
+            "runtime": {
+              "backend": "noetic_native",
+              "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+              "binary_sha256_16": "e5ceb5e0a4765d3d",
+              "current_runtime": {
+                "complete_tps_current_measured": 24.4086,
+                "complete_tps_historical_qualified": 34.0,
+                "fallbacks": 0
+              },
+              "mode": "resident",
+              "pid": 770,
+              "port": null,
+              "protocol": "hawking.qwen38.resident.v1",
+              "runtime": "hawking-native"
+            },
+            "schema": "hawking.provider.profile.v1",
+            "tokenizer": {
+              "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+              "tokenizer_sha256_16": "0997f410c57a1f4e"
+            }
+          },
+          "provider": "native"
+        }
+      ]
+    },
+    "resource_use": {
+      "model_calls": [
+        {
+          "checkpoint_missed": false,
+          "checkpoint_restored_tokens": 0,
+          "completion_tokens": 193,
+          "endpoint": "hawking-native://sealed-3.14/resident",
+          "finish_reason": "stop",
+          "grammar_enforced": true,
+          "layers": 64,
+          "max_new_tokens_granted": 256,
+          "max_tokens": 64,
+          "max_tokens_source": "env",
+          "payload_max_tokens_received": 256,
+          "prefill_attribution": {
+            "cannot_settle": "which kernel. Shape narrows the field; only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP.",
+            "dispatches_per_layer_per_step": 9.84,
+            "dispatches_per_step": 630.0,
+            "gpu_growth_last_over_first": 0.0617,
+            "gpu_share_of_wall": 0.982,
+            "host_bound": false,
+            "host_control_share_of_wall": 0.006,
+            "implicates": "warmup, clock ramp, or first-token allocation, not sequence work",
+            "lever": "BATCH THE PREFILL. Per-layer dispatch count is already tight, so cutting kernels buys nothing; stepping N tokens together turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must be advanced chunk-wise rather than per position.",
+            "next_discriminator": "discard the first bucket and re-shape; the tail is the steady state",
+            "shape": "FALLING_WITH_POSITION",
+            "structural": "prefill stepped 193 tokens one at a time for 121,581 dispatches. Prompt tokens are being paid for at decode prices.",
+            "total_dispatches": 121581,
+            "wall_growth_last_over_first": 0.0629,
+            "wall_ns_first_bucket": 459652427.0833333,
+            "wall_ns_last_bucket": 28913209.0
+          },
+          "prefill_profile": {
+            "buckets": [
+              {
+                "dispatches_mean": 981.7083333333334,
+                "encode_ns_mean": 553402.7083333334,
+                "from_step": 0,
+                "gpu_ns_mean": 455259674.5833333,
+                "steps": 24,
+                "submit_ns_mean": 10610.916666666666,
+                "to_step": 23,
+                "wait_ns_mean": 458650456.5416667,
+                "wall_ns_mean": 459652427.0833333
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 473156.2083333333,
+                "from_step": 24,
+                "gpu_ns_mean": 27045246.041666668,
+                "steps": 24,
+                "submit_ns_mean": 6456.75,
+                "to_step": 47,
+                "wait_ns_mean": 27649036.625,
+                "wall_ns_mean": 28133618.0
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 470260.4166666667,
+                "from_step": 48,
+                "gpu_ns_mean": 27170374.416666668,
+                "steps": 24,
+                "submit_ns_mean": 5477.458333333333,
+                "to_step": 71,
+                "wait_ns_mean": 27702187.583333332,
+                "wall_ns_mean": 28183020.875
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 471661.4583333333,
+                "from_step": 72,
+                "gpu_ns_mean": 27342162.583333332,
+                "steps": 24,
+                "submit_ns_mean": 5661.5,
+                "to_step": 95,
+                "wait_ns_mean": 27979987.75,
+                "wall_ns_mean": 28462359.458333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 489423.375,
+                "from_step": 96,
+                "gpu_ns_mean": 27473509.833333332,
+                "steps": 24,
+                "submit_ns_mean": 6145.833333333333,
+                "to_step": 119,
+                "wait_ns_mean": 27942404.458333332,
+                "wall_ns_mean": 28443017.333333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 474599.0,
+                "from_step": 120,
+                "gpu_ns_mean": 27634923.083333332,
+                "steps": 24,
+                "submit_ns_mean": 5546.916666666667,
+                "to_step": 143,
+                "wait_ns_mean": 28269836.708333332,
+                "wall_ns_mean": 28755659.666666668
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 479625.0416666667,
+                "from_step": 144,
+                "gpu_ns_mean": 27792207.708333332,
+                "steps": 24,
+                "submit_ns_mean": 6527.75,
+                "to_step": 167,
+                "wait_ns_mean": 28355807.333333332,
+                "wall_ns_mean": 28847487.708333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 475045.2916666667,
+                "from_step": 168,
+                "gpu_ns_mean": 27938169.791666668,
+                "steps": 24,
+                "submit_ns_mean": 5984.291666666667,
+                "to_step": 191,
+                "wait_ns_mean": 28540293.291666668,
+                "wall_ns_mean": 29026783.083333332
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 524750.0,
+                "from_step": 192,
+                "gpu_ns_mean": 28067208.0,
+                "steps": 1,
+                "submit_ns_mean": 5000.0,
+                "to_step": 192,
+                "wait_ns_mean": 28380209.0,
+                "wall_ns_mean": 28913209.0
+              }
+            ],
+            "prefill_steps": 193,
+            "totals": {
+              "dispatches": 121581.0,
+              "encode_ns": 93816914.0,
+              "gpu_ns": 15571817641.0,
+              "submit_ns": 1262874.0,
+              "wait_ns": 15750540456.0,
+              "wall_ns": 15857018166.0
+            }
+          },
+          "prefill_step_count": 1,
+          "prefill_tokens_stepped": 810,
+          "prefix_key": "2499f5223c0ee928063c1efe",
+          "prefix_reused_tokens": 0,
+          "prefix_source": "cold",
+          "profile_max_seq_len": 8192,
+          "prompt_token_count_source": "estimated_without_transformers",
+          "prompt_tokens": 810,
+          "prompt_tokens_used_for_budget": 1066,
+          "rendered_prompt_chars": 3197,
+          "resident_context_tokens_before": 0,
+          "runtime_index": 0,
+          "shared_prefix_tokens": 0,
+          "stop_reason": "constraint_done",
+          "timing_unit": "ns",
+          "wall_ns": 18201259875,
+          "wall_s": 18.201
+        },
+        {
+          "checkpoint_missed": false,
+          "checkpoint_restored_tokens": 0,
+          "completion_tokens": 71,
+          "endpoint": "hawking-native://sealed-3.14/resident",
+          "finish_reason": "stop",
+          "grammar_enforced": true,
+          "layers": 64,
+          "max_new_tokens_granted": 256,
+          "max_tokens": 64,
+          "max_tokens_source": "env",
+          "payload_max_tokens_received": 256,
+          "prefill_attribution": {
+            "cannot_settle": "which kernel. Shape narrows the field; only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP.",
+            "dispatches_per_layer_per_step": 9.06,
+            "dispatches_per_step": 580.0,
+            "gpu_growth_last_over_first": 1.6853,
+            "gpu_share_of_wall": 0.9696,
+            "host_bound": false,
+            "host_control_share_of_wall": 0.0157,
+            "implicates": "full-attention scaling over a growing KV",
+            "lever": "BATCH THE PREFILL. Per-layer dispatch count is already tight, so cutting kernels buys nothing; stepping N tokens together turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must be advanced chunk-wise rather than per position.",
+            "next_discriminator": "re-run one prompt with HAWKING_TRACE_DISPATCH=1 and compare the GQA attention kernel's share in the first and last position bucket; DeltaNet and the MLP GEMMs must stay flat if this is attention",
+            "shape": "RISING_WITH_POSITION",
+            "structural": "prefill stepped 2452 tokens one at a time for 1,422,160 dispatches. Prompt tokens are being paid for at decode prices.",
+            "total_dispatches": 1422160,
+            "wall_growth_last_over_first": 1.6626,
+            "wall_ns_first_bucket": 23472005.879084967,
+            "wall_ns_last_bucket": 39024177.0
+          },
+          "prefill_profile": {
+            "buckets": [
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 469240.99673202616,
+                "from_step": 0,
+                "gpu_ns_mean": 22513528.336601306,
+                "steps": 306,
+                "submit_ns_mean": 4263.611111111111,
+                "to_step": 305,
+                "wait_ns_mean": 22993809.06862745,
+                "wall_ns_mean": 23472005.879084967
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 469280.7745098039,
+                "from_step": 306,
+                "gpu_ns_mean": 24466922.74509804,
+                "steps": 306,
+                "submit_ns_mean": 4237.313725490196,
+                "to_step": 611,
+                "wait_ns_mean": 24912301.349673204,
+                "wall_ns_mean": 25390504.379084967
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 472343.81045751635,
+                "from_step": 612,
+                "gpu_ns_mean": 26555302.849673204,
+                "steps": 306,
+                "submit_ns_mean": 4214.738562091503,
+                "to_step": 917,
+                "wait_ns_mean": 26978871.816993464,
+                "wall_ns_mean": 27460006.816993464
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 478754.0522875817,
+                "from_step": 918,
+                "gpu_ns_mean": 28662818.954248365,
+                "steps": 306,
+                "submit_ns_mean": 4478.212418300654,
+                "to_step": 1223,
+                "wait_ns_mean": 29095924.539215688,
+                "wall_ns_mean": 29583789.738562092
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 482120.2679738562,
+                "from_step": 1224,
+                "gpu_ns_mean": 30667359.663398694,
+                "steps": 306,
+                "submit_ns_mean": 4398.437908496732,
+                "to_step": 1529,
+                "wait_ns_mean": 31134869.84640523,
+                "wall_ns_mean": 31626265.924836602
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 482383.3300653595,
+                "from_step": 1530,
+                "gpu_ns_mean": 32895625.31372549,
+                "steps": 306,
+                "submit_ns_mean": 4514.751633986928,
+                "to_step": 1835,
+                "wait_ns_mean": 33329596.633986928,
+                "wall_ns_mean": 33821435.86601307
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 477649.3888888889,
+                "from_step": 1836,
+                "gpu_ns_mean": 34891547.43464052,
+                "steps": 306,
+                "submit_ns_mean": 4435.058823529412,
+                "to_step": 2141,
+                "wait_ns_mean": 35326176.19281046,
+                "wall_ns_mean": 35813125.94444445
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 487656.85294117645,
+                "from_step": 2142,
+                "gpu_ns_mean": 37023027.68300653,
+                "steps": 306,
+                "submit_ns_mean": 4434.918300653595,
+                "to_step": 2447,
+                "wait_ns_mean": 37477003.277777776,
+                "wall_ns_mean": 37973842.07189543
+              },
+              {
+                "dispatches_mean": 580.0,
+                "encode_ns_mean": 540125.25,
+                "from_step": 2448,
+                "gpu_ns_mean": 37941374.75,
+                "steps": 4,
+                "submit_ns_mean": 5552.0,
+                "to_step": 2451,
+                "wait_ns_mean": 38473666.5,
+                "wall_ns_mean": 39024177.0
+              }
+            ],
+            "prefill_steps": 2452,
+            "totals": {
+              "dispatches": 1422160.0,
+              "encode_ns": 1170905920.0,
+              "gpu_ns": 72880662191.0,
+              "submit_ns": 10725183.0,
+              "wait_ns": 73975951800.0,
+              "wall_ns": 75169235554.0
+            }
+          },
+          "prefill_step_count": 2452,
+          "prefill_tokens_stepped": 2452,
+          "prefix_checkpoint_taken_at": 472,
+          "prefix_key": "2499f5223c0ee928063c1efe",
+          "prefix_reused_tokens": 0,
+          "prefix_source": "cold",
+          "profile_max_seq_len": 8192,
+          "prompt_token_count_source": "estimated_without_transformers",
+          "prompt_tokens": 2452,
+          "prompt_tokens_used_for_budget": 2573,
+          "rendered_prompt_chars": 7717,
+          "resident_context_tokens_before": 1003,
+          "runtime_index": 0,
+          "shared_prefix_tokens": 472,
+          "stop_reason": "constraint_done",
+          "timing_unit": "ns",
+          "wall_ns": 78818539334,
+          "wall_s": 78.819
+        }
+      ],
+      "runtime_provenance": [
+        {
+          "active": true,
+          "identity": {
+            "architecture": "unknown",
+            "artifact_inventory": {
+              "artifact_bytes": 10554328856,
+              "artifact_bytes_exact": true,
+              "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+              "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+              "mix_id": "mix_all_mlp_affine_g64_ls",
+              "n_tensors": 755
+            },
+            "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "backend": "noetic_native",
+            "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+            "binary_sha256_16": "e5ceb5e0a4765d3d",
+            "capabilities": {
+              "features": {
+                "grammar": "supported",
+                "response_format": "unsupported"
+              },
+              "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+            },
+            "compiler": {
+              "language": "rust",
+              "profile": "release-fast",
+              "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+            },
+            "context": 8192,
+            "current_runtime": {
+              "complete_tps_current_measured": 24.4086,
+              "complete_tps_historical_qualified": 34.0,
+              "fallbacks": 0
+            },
+            "executable_profile": "release-fast",
+            "fallbacks": [
+              "transformers tokenizer fallback when unavailable"
+            ],
+            "family": "qwen3.8",
+            "fusion_env": {
+              "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+              "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+              "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+              "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+            },
+            "generation": {
+              "do_sample": false,
+              "enable_thinking": false,
+              "max_new_tokens": 2048,
+              "temperature": 0.0,
+              "top_k": 1,
+              "top_p": 1.0
+            },
+            "hot_bytes": null,
+            "limits": {
+              "context": 8192,
+              "max_new_tokens": 2048
+            },
+            "machine_genome": {},
+            "max_seq_len": 8192,
+            "mode": "resident",
+            "model_bytes": 10554328856,
+            "model_id": "qwen3.8-27b-sealed-3.14",
+            "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "n_slots": 1,
+            "param_class": "?B",
+            "physical_ebpw": 3.1393,
+            "pid": 770,
+            "port": null,
+            "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+            "profile_schema": "hawking.provider.profile.v1",
+            "prompt_contract": {
+              "fallback_template": "qwen_closed_think",
+              "renderer": "qwen-chat-template-or-closed-think-fallback",
+              "token_count_authority": "native-resident"
+            },
+            "protocol": "hawking.qwen38.resident.v1",
+            "provider": "native",
+            "qualification": "capability 30/43 historical sealed contract",
+            "quantisation": "unknown",
+            "receipts": [
+              "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+              "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+            ],
+            "representation": {
+              "kind": "native-packed",
+              "physical_ebpw": 3.1393,
+              "weights_loaded_once": true
+            },
+            "require_fusion_env": true,
+            "resident_health": {
+              "model_open_count": 1,
+              "pid": 770,
+              "protocol": "hawking.qwen38.resident.v1",
+              "ready": true,
+              "resident_identity": "sealed-3.14",
+              "restart_count": 0,
+              "weight_upload_count": 1
+            },
+            "resident_identity": "sealed-3.14",
+            "restart_count": 0,
+            "runtime": "hawking-native",
+            "runtime_env": {},
+            "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+            "tokenizer_sha256_16": "0997f410c57a1f4e"
+          },
+          "index": 0,
+          "model_identity": null,
+          "pid": 770,
+          "port": null,
+          "profile": {
+            "artifact": {
+              "artifact_inventory": {
+                "artifact_bytes": 10554328856,
+                "artifact_bytes_exact": true,
+                "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+                "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+                "mix_id": "mix_all_mlp_affine_g64_ls",
+                "n_tensors": 755
+              },
+              "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+              "model_bytes": 10554328856,
+              "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+            },
+            "capabilities": {
+              "features": {
+                "chat_template_kwargs": {
+                  "enforcement": "enforced",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "supported"
+                },
+                "grammar": {
+                  "enforcement": "enforced",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "supported"
+                },
+                "prefix_cache": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "response_format": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "slots": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "streaming": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "tool_calling": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                },
+                "vision": {
+                  "enforcement": "degraded",
+                  "note": null,
+                  "observed_at": 1789725581.1102479,
+                  "source": "backend.supports",
+                  "state": "unsupported"
+                }
+              },
+              "schema": "hawking.provider.capabilities.v1"
+            },
+            "compiler": {
+              "language": "rust",
+              "profile": "release-fast",
+              "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+            },
+            "environment": {
+              "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+              "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+              "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+              "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+            },
+            "fallbacks": [
+              "transformers tokenizer fallback when unavailable"
+            ],
+            "generation": {
+              "do_sample": false,
+              "enable_thinking": false,
+              "max_new_tokens": 2048,
+              "temperature": 0.0,
+              "top_k": 1,
+              "top_p": 1.0
+            },
+            "hot_bytes": 10554328856,
+            "limits": {
+              "context": 8192,
+              "max_new_tokens": 2048,
+              "max_seq_len": 8192,
+              "n_slots": 1
+            },
+            "machine_genome": {},
+            "metadata": {
+              "identity_snapshot": {
+                "architecture": "unknown",
+                "artifact_inventory": {
+                  "artifact_bytes": 10554328856,
+                  "artifact_bytes_exact": true,
+                  "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+                  "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+                  "mix_id": "mix_all_mlp_affine_g64_ls",
+                  "n_tensors": 755
+                },
+                "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+                "backend": "noetic_native",
+                "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+                "binary_sha256_16": "e5ceb5e0a4765d3d",
+                "capabilities": {
+                  "features": {
+                    "grammar": "supported",
+                    "response_format": "unsupported"
+                  },
+                  "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+                },
+                "compiler": {
+                  "language": "rust",
+                  "profile": "release-fast",
+                  "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+                },
+                "context": 8192,
+                "current_runtime": {
+                  "complete_tps_current_measured": 24.4086,
+                  "complete_tps_historical_qualified": 34.0,
+                  "fallbacks": 0
+                },
+                "executable_profile": "release-fast",
+                "fallbacks": [
+                  "transformers tokenizer fallback when unavailable"
+                ],
+                "family": "qwen3.8",
+                "fusion_env": {
+                  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+                  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+                  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+                  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+                },
+                "generation": {
+                  "do_sample": false,
+                  "enable_thinking": false,
+                  "max_new_tokens": 2048,
+                  "temperature": 0.0,
+                  "top_k": 1,
+                  "top_p": 1.0
+                },
+                "hot_bytes": null,
+                "limits": {
+                  "context": 8192,
+                  "max_new_tokens": 2048
+                },
+                "machine_genome": {},
+                "max_seq_len": 8192,
+                "mode": "resident",
+                "model_bytes": 10554328856,
+                "model_id": "qwen3.8-27b-sealed-3.14",
+                "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+                "n_slots": 1,
+                "param_class": "?B",
+                "physical_ebpw": 3.1393,
+                "pid": 770,
+                "port": null,
+                "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+                "profile_schema": "hawking.provider.profile.v1",
+                "prompt_contract": {
+                  "fallback_template": "qwen_closed_think",
+                  "renderer": "qwen-chat-template-or-closed-think-fallback",
+                  "token_count_authority": "native-resident"
+                },
+                "protocol": "hawking.qwen38.resident.v1",
+                "provider": "native",
+                "qualification": "capability 30/43 historical sealed contract",
+                "quantisation": "unknown",
+                "receipts": [
+                  "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+                  "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+                ],
+                "representation": {
+                  "kind": "native-packed",
+                  "physical_ebpw": 3.1393,
+                  "weights_loaded_once": true
+                },
+                "require_fusion_env": true,
+                "resident_health": {
+                  "model_open_count": 1,
+                  "pid": 770,
+                  "protocol": "hawking.qwen38.resident.v1",
+                  "ready": true,
+                  "resident_identity": "sealed-3.14",
+                  "restart_count": 0,
+                  "weight_upload_count": 1
+                },
+                "resident_identity": "sealed-3.14",
+                "restart_count": 0,
+                "runtime": "hawking-native",
+                "runtime_env": {},
+                "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+                "tokenizer_sha256_16": "0997f410c57a1f4e"
+              },
+              "observed_at": 1789725581.110425
+            },
+            "model_id": "qwen3.8-27b-sealed-3.14",
+            "profile_id": "native:qwen3.8-27b-sealed-3.14",
+            "prompt_contract": {
+              "fallback_template": "qwen_closed_think",
+              "renderer": "qwen-chat-template-or-closed-think-fallback",
+              "token_count_authority": "native-resident"
+            },
+            "provider": "native",
+            "qualification": {
+              "status": "capability 30/43 historical sealed contract"
+            },
+            "receipts": [
+              "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+              "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+            ],
+            "representation": {
+              "kind": "native-packed",
+              "physical_ebpw": 3.1393,
+              "quantisation": "unknown",
+              "require_fusion_env": true,
+              "weights_loaded_once": true
+            },
+            "runtime": {
+              "backend": "noetic_native",
+              "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+              "binary_sha256_16": "e5ceb5e0a4765d3d",
+              "current_runtime": {
+                "complete_tps_current_measured": 24.4086,
+                "complete_tps_historical_qualified": 34.0,
+                "fallbacks": 0
+              },
+              "mode": "resident",
+              "pid": 770,
+              "port": null,
+              "protocol": "hawking.qwen38.resident.v1",
+              "runtime": "hawking-native"
+            },
+            "schema": "hawking.provider.profile.v1",
+            "tokenizer": {
+              "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+              "tokenizer_sha256_16": "0997f410c57a1f4e"
+            }
+          },
+          "provider": "native"
+        }
+      ]
+    },
+    "schema": "hawking.agentos.result.v1",
+    "tests": {
+      "checks": [
+        {
+          "acceptance_source": "workunit_verifier",
+          "ok": true,
+          "unit_id": "native-tool-verifier"
+        }
+      ]
+    },
+    "uncertainty": [],
+    "verdict": "ACCEPT",
+    "verification": {
+      "checks": [
+        {
+          "acceptance_source": "workunit_verifier",
+          "ok": true,
+          "unit_id": "native-tool-verifier"
+        }
+      ],
+      "diff_inspected": false,
+      "validation_ok": true
+    },
+    "verified_facts": []
+  },
+  "schema": "hawking.native_mission_gate.v1",
+  "started_at": 1789725481.097186,
+  "status": "PASSED",
+  "tool_results": {
+    "read": {
+      "artifact": {
+        "bytes": 22,
+        "kind": "file",
+        "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt",
+        "sha256": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+        "sha256_scope": "full_file"
+      },
+      "deterministic": true,
+      "elapsed_ns": 157625,
+      "elapsed_s": 0.000157625,
+      "error": null,
+      "failure_class": null,
+      "finished_at": 1789725481.127148,
+      "invocation_id": "tool-106cac51-3426-42c0-a16e-c54b3c738a28",
+      "mutation": "read_only",
+      "ok": true,
+      "provenance": {
+        "observed_at": 1789725481.127148,
+        "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/.hawking/receipts/tools/tool-106cac51-3426-42c0-a16e-c54b3c738a28.json",
+        "source": "hawking.tool_registry"
+      },
+      "schema": "hawking.agentos.tool.result.v1",
+      "started_at": 1789725481.127019,
+      "timing_unit": "ns",
+      "tool": "fs.read",
+      "value": {
+        "artifact": {
+          "bytes": 22,
+          "kind": "file",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt",
+          "sha256": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+          "sha256_scope": "full_file"
+        },
+        "bytes": 22,
+        "content": "native-mission-marker\n",
+        "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt",
+        "sha256": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+        "sha256_scope": "full_file",
+        "shown_bytes": 22,
+        "truncated": false
+      }
+    },
+    "write": {
+      "artifact": null,
+      "deterministic": true,
+      "elapsed_ns": 2776958,
+      "elapsed_s": 0.002776958,
+      "error": null,
+      "failure_class": null,
+      "finished_at": 1789725481.1258008,
+      "invocation_id": "tool-881f1d67-c002-4403-80ca-6bb22e66f31b",
+      "mutation": "reversible_repo",
+      "ok": true,
+      "provenance": {
+        "observed_at": 1789725481.1258008,
+        "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/.hawking/receipts/tools/tool-881f1d67-c002-4403-80ca-6bb22e66f31b.json",
+        "source": "hawking.tool_registry"
+      },
+      "schema": "hawking.agentos.tool.result.v1",
+      "started_at": 1789725481.123255,
+      "timing_unit": "ns",
+      "tool": "filesystem.write",
+      "value": {
+        "atomic_publish": true,
+        "before_sha256": null,
+        "bytes": 22,
+        "changed": true,
+        "changed_files": [
+          {
+            "changed": true,
+            "path": "verified-marker.txt",
+            "sha256_after": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+            "sha256_before": null
+          }
+        ],
+        "files": [
+          {
+            "changed": true,
+            "path": "verified-marker.txt",
+            "sha256_after": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+            "sha256_before": null
+          }
+        ],
+        "intent_status": "VERIFIED",
+        "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt",
+        "request": {
+          "allowed_paths": [
+            "verified-marker.txt"
+          ],
+          "budget": {
+            "authority": "existing Hawking Goal/ledger",
+            "cap_usd": null
+          },
+          "canonical_root": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_",
+          "capability_id": "filesystem.write",
+          "capability_schema": "hawking.mutation.request.v1",
+          "created_at": 1789725481.1241112,
+          "expected_base_hashes": {
+            "verified-marker.txt": null
+          },
+          "goal_id": "",
+          "lease_id": null,
+          "operation_sha256": "3eac36e13a558c11e6300ff5aee65a0f11663c73fdba1e1c52b34bc55f20757f",
+          "operations": [
+            {
+              "new_text": "native-mission-marker\n",
+              "op": "create",
+              "path": "verified-marker.txt"
+            }
+          ],
+          "payload_ref": "3eac36e13a558c11e6300ff5aee65a0f11663c73fdba1e1c52b34bc55f20757f",
+          "request_id": "REQ-3c1cfd403316463695c60c4550ece77c",
+          "resource_reservation": {
+            "authority": "hawking.resources.ResourceLimits",
+            "class": "MUTATION",
+            "slots": 1
+          },
+          "schema": "hawking.mutation.request.v1",
+          "verification_obligations": {
+            "inspect_diff": true,
+            "result_packet": true,
+            "tests": []
+          },
+          "worker_attempt_id": "ATTEMPT-97f4b3da6a7b4810944d05b77489e579",
+          "worktree_id": "worktree-b336f2a6b5f723eb",
+          "workunit_id": ""
+        },
+        "sha256": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+        "verification": {
+          "bytes_match": true,
+          "status": "VERIFIED"
+        }
+      }
+    }
+  },
+  "verifier": {
+    "acceptance_source": "workunit_verifier",
+    "command": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+    "outcome": {
+      "acceptance_source": "workunit_verifier",
+      "command": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
+      "exit_code": 0,
+      "ok": true,
+      "output": ""
+    }
+  },
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-native-mission-9a9u7wm_"
+}

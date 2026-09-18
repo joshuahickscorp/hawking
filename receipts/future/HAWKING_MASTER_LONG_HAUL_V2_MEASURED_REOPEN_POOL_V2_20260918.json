@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.v2.measured_reopen_pool.v2",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T11:22:00-04:00",
+  "claim_boundary": "Queued-route rebinding only; active WorkUnits were not interrupted and no provider or implementation acceptance is claimed.",
+  "changes": [
+    {"path":"hawking/auto_orchestration.py","result":"Measured route reopen accepts an Auto sentinel, selects from qualified DeepSeek/Kimi evidence by task-class performance, and binds model-specific route receipts."},
+    {"path":"hawking/goal_surface.py","result":"Queued Auto sentinels use measured selection instead of being rejected as non-provider ids."},
+    {"path":"hawking/tests/test_auto_orchestration.py","result":"69 focused tests pass, including measured reopen and queued Auto override coverage."}
+  ],
+  "durable_goal_update": {
+    "route_reopen_model": "hawking-auto",
+    "qualified_model_pool": ["deepseek/deepseek-v4.1-flash","moonshotai/kimi-k3"],
+    "ready_entries_rebound": 29,
+    "active_entries_interrupted": 0,
+    "glm_policy": "general Auto trial pool; mutation reopen awaits model-specific route qualification"
+  },
+  "verification": {"focused_tests":"69 passed in 1.33s","py_compile":"passed","git_diff_check":"passed"},
+  "next_action":"Allow current active lanes to drain; Auto will refill queued route entries through measured qualified selection."
+}

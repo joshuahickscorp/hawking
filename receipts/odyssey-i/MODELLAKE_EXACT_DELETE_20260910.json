@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.modellake.exact_delete_receipt.v1",
+  "action": "REMOVE_EXACT_SPECIMEN",
+  "status": "COMPLETED",
+  "authorized_by": "explicit user directive in active task",
+  "completed_on": "2026-09-10",
+  "target": {
+    "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+    "allocated_bytes_before_delete": 360024432640,
+    "open_file_handles_observed_before_delete": false,
+    "canonical_lake_manifest_present_before_delete": false,
+    "reason": "The community abliterated copy caused probe problems and had no canonical lake manifest."
+  },
+  "replacement": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "manifest": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "verified_present_before_delete": true
+  },
+  "postcondition": {
+    "target_exists_after_delete": false,
+    "catalog_path": "/Volumes/corpdrive/hawking-modellake/index/catalog.json",
+    "catalog_specimen_count_after_delete": 55,
+    "catalog_partial_count_after_delete": 0,
+    "orphaned_bodies_after_delete": [],
+    "bodies_without_lake_manifest_after_delete": [],
+    "tier2_overage_bytes_after_delete": 852666459500,
+    "authority_path": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "0713a7cb3fc363fd43801c345d5a2fd332e9b04cdb7c43a25b2a1115a79099dd",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:51:37.104216+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:51:37.104239+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:51:37.107976+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"docs/NOETIC_NR_NX_CONTRACT.md (sha256 87c125f0f85eddd4906b8dc36f0ea28b452141bc6e53609f303f5843e321db7b, 1172 bytes) defines the canonical pipeline: SourceSpecimen -> Doctor -> Gravity search -> NR (.nr) -> Noetic compiler ",
+      "outcome": "CONTINUE",
+      "reply_chars": 3643,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"docs/NOETIC_NR_NX_CONTRACT.md (sha256 87c125f0f85eddd4906b8dc36f0ea28b452141bc6e53609f303f5843e321db7b, 1172 bytes) defines the canonical pipeline: SourceSpecimen -> Doctor -> Gravity search -> NR (.nr) -> Noetic compiler -> NX (.nx).\",\"NR is declared the transient, portable representation space owning representation identity, shard maps, codec families, semantic provenance, and portable kernel requirements.\",\"NR is contractually forbidden from containing a machine, shader, dispatch geometry, occupancy, residency, TPS, or token timing claim; the doc names tools/nr_container.py as the enforcing validator.\",\"NX is declared the final machine-bound Noetic executable derived from an NR, owning compiled kernel bindings, layout, scheduling, residency, machine genome, and loadability checks.\",\"The doc names tools/nx_genome.py as binding an NX to the exact NR content hash and rejecting a mismatched machine genome.\",\"The .gravity suffix is retained only as a compatibility view for sealed historical artifacts; new NR shards should be emitted as .nr and promoted executables as .nx, with no in-place rename of historical files.\",\"Only the contract document was observed in this pass; the admitted focus files hawking/test_lowrank_nr.py, hawking/test_nrnx_discipline.py, and tools/flash_complete_nr.py were not read, and the admitted focus tests were not executed, so no deterministic test result is claimed.\"],\"sources\":[{\"path\":\"docs/NOETIC_NR_NX_CONTRACT.md\",\"sha256\":\"87c125f0f85eddd4906b8dc36f0ea28b452141bc6e53609f303f5843e321db7b\",\"bytes\":1172,\"sha256_scope\":\"full_file\",\"role\":\"canonical NR/NX boundary contract\"}],\"recommendations\":[\"Next bounded seam: read tools/nr_container.py and tools/nx_genome.py to confirm the contract's named owners actually enforce the NR-forbidden-field set and the NX-to-NR content-hash binding, then run the admitted focus tests hawking/test_lowrank_nr.py and hawking/test_nrnx_discipline.py to obtain deterministic pass/fail evidence.\",\"Falsifier: if tools/nr_container.py accepts an NR payload containing any of machine, shader, dispatch geometry, occupancy, residency, TPS, or token timing fields, or if tools/nx_genome.py accepts an NX whose bound NR content hash does not match the source NR, the contract's stated invariants are falsified.\",\"Do not claim artifact promotion or hardware qualification; the contract explicitly separates NR (portable) from NX (machine-bound) and no promotion evidence was observed.\"],\"unresolved_questions\":[\"Does tools/nr_container.py actually reject every NR-forbidden field enumerated in the contract, and with what refusal semantics?\",\"Does tools/nx_genome.py bind NX to the exact NR content hash and reject mismatched machine genomes as stated?\",\"What are the deterministic results of hawking/test_lowrank_nr.py and hawking/test_nrnx_discipline.py?\",\"What does tools/flash_complete_nr.py do at the NR/Noetic boundary, and does it respect the .nr vs .nx emission rule?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\",\"next_action\":\"Read tools/nr_container.py and tools/nx_genome.py, then execute the admitted focus tests hawking/test_lowrank_nr.py and hawking/test_nrnx_discipline.py.\",\"reason\":\"Contract doc names these as the enforcing owners but their source and the admitted tests were not observed in this pass, so the hash/refusal invariants remain unverified.\",\"expected_evidence\":\"Exact source excerpts from tools/nr_container.py and tools/nx_genome.py showing forbidden-field refusal and NR-content-hash binding, plus deterministic pass/fail output from the two admitted focus tests.\",\"tool_family\":\"fs.read, test.runner\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-c6247e348b954754",
+  "worker_id": "hawking-worker-4ba322e8c5764413",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-0DBE5BC9"
+}

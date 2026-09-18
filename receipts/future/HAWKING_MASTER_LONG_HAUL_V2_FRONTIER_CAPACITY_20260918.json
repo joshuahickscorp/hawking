@@ -1,0 +1,41 @@
+{
+  "goal_id": "GOAL-A52AB48501",
+  "live_boundary": {
+    "claim_boundary": "no live 15/5 claim until a safe daemon restart and route health check",
+    "daemon_pid": 57119,
+    "endpoint": "http://127.0.0.1:8014",
+    "live_premium_workers": 4,
+    "live_remote_workers": 12,
+    "pending_capacity_activation": true
+  },
+  "policy": {
+    "activation": "deferred_until_safe_daemon_boundary",
+    "base_premium_workers": 4,
+    "base_remote_workers": 12,
+    "configured_premium_workers": 5,
+    "configured_remote_workers": 15,
+    "frontier_burst_factor": 1.25,
+    "gates": [
+      "qualified provider route",
+      "dependency-valid durable contract",
+      "disjoint writer/effect scope",
+      "budget and gateway admission",
+      "fresh focused acceptance evidence"
+    ],
+    "trigger": "running Goal with a non-empty durable runnable frontier"
+  },
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T03:46:15.946095+00:00",
+  "schema": "hawking.long_haul.v2.frontier_capacity.v1",
+  "verification": {
+    "changed_files": [
+      "hawking/auto_orchestration.py",
+      "hawking/remote_cognition.py",
+      "hawking/tests/test_auto_orchestration.py",
+      "hawking/tests/test_arsenal_contracts.py"
+    ],
+    "compile": "passed",
+    "git_diff_check": "passed",
+    "tests": "39 passed"
+  }
+}

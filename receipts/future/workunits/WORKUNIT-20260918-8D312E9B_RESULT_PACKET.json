@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "0160129c57c50d9d119d5585bc3367b787cab7bfd0d9b32c5d847ff1cb375577",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:26:47.885690+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:26:47.885709+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:26:47.889269+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"hawking/frontier_scheduler.py is a scheduler module that owns frontier switching and explicitly never executes science, never decides frontier content, and writes nothing.\",\n    \"The module distinguishes WAITING (",
+      "outcome": "CONTINUE",
+      "reply_chars": 3629,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"hawking/frontier_scheduler.py is a scheduler module that owns frontier switching and explicitly never executes science, never decides frontier content, and writes nothing.\",\n    \"The module distinguishes WAITING (legitimately blocked on an external condition, with a structural wake_condition) from STUCK (a scheduler failure mode where a non-runnable frontier is repeatedly proposed while others are ELIGIBLE).\",\n    \"select_next is documented to always prefer an ELIGIBLE frontier over an idle report, making the STUCK failure unreachable as long as at least one probe returns ELIGIBLE.\",\n    \"A parked frontier is modeled as SLEEPING, not dead, and becomes re-eligible when a probe reports its wake condition met.\",\n    \"The module defines probes for SUB2, HAWKING_SELF, RESIDENT_SPEED, ODYSSEY, MODELLAKE, and FORBIDDEN_FRUIT, each grounded in a real producer receipt or on-disk queue.\",\n    \"A probe whose receipt is missing or unreadable reports UNKNOWN rather than raising, and snapshot() catches any probe exception individually so one broken probe cannot sink the other five.\",\n    \"The module is runnable via pytest hawking/test_frontier_scheduler.py and via python3 -m hawking.frontier_scheduler.\",\n    \"The admitted observation of hawking/frontier_scheduler.py was truncated at 4000 of 16163 bytes (24.7%), so the remaining implementation, including any autotuning or cross-backend scheduling seam, was not observed.\",\n    \"The admitted focus tests hawking/test_frontier_scheduler.py, hawking/tests/test_gpu_lane_defers_not_blocks.py, and hawking/tests/test_control_plane_performance.py were not observed in this pass.\",\n    \"No P15 cross-backend autotuning contract owner, scheduling seam, RED/GREEN tests, protected resource leases, or falsifier can be source-grounded from the observed bytes alone.\"\n  ],\n  \"sources\": [\n    {\n      \"path\": \"hawking/frontier_scheduler.py\",\n      \"sha256\": \"22b07d365b0e96c4bbcc8b9d5c07c07e272d6b2a9e35f1358479bdaded246273\",\n      \"sha256_scope\": \"full_file\",\n      \"bytes\": 16163,\n      \"observed_bytes\": 4000,\n      \"truncated\": true\n    }\n  ],\n  \"recommendations\": [\n    \"Continue the bounded read-only inspection of hawking/frontier_scheduler.py beyond byte 4000 to locate the exact scheduling seam that would own a P15 cross-backend autotuning contract.\",\n    \"Inspect hawking/test_frontier_scheduler.py to identify existing RED/GREEN test patterns and the exact test owner for scheduler behavior.\",\n    \"Inspect hawking/tests/test_gpu_lane_defers_not_blocks.py and hawking/tests/test_control_plane_performance.py to identify protected resource leases and no-phase-barrier / unbounded dependency-valid refill assertions.\",\n    \"Derive the P15 contract only after observing the full scheduler source and the three admitted focus tests, so owner, seam, tests, leases, and falsifier are all source-grounded.\"\n  ],\n  \"unresolved_questions\": [\n    \"What is the exact owner symbol or class in hawking/frontier_scheduler.py that would own a P15 cross-backend autotuning contract?\",\n    \"What is the nonconflicting scheduling seam that preserves unbounded dependency-valid refill and no-phase-barrier behavior?\",\n    \"Which existing tests in the three admitted focus test files already assert deferral, lease protection, or refill behavior, and which are RED for a P15 contract?\",\n    \"What protected resource leases (GPU lane, control-plane, or receipt-backed leases) must the P15 contract respect?\",\n    \"What single falsifier would disprove the P15 cross-backend autotuning contract?\"\n  ],\n  \"child_worker_ids\": [],\n  \"status\": \"STRUCTURED_RESULT_READY\"\n}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-2dfbf80e6e1e4d89",
+  "worker_id": "hawking-worker-5670532657ec4891",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-8D312E9B"
+}

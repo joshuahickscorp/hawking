@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "321266ee4348a3efc7d823129255268d2ae3fda38e8435f70d19b7b0ad216d02",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:18:20.220349+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:18:20.220368+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:18:20.227428+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"The closeout document identifies old root GOAL-B33C69F193, disposition CLOSED_WITH_CARRY_FORWARD, replacement programme HAWKING_MASTER_LONG_HAUL_V2, source revision 6a86a5cd49fbe9211ec11e133e9d70a4e2044238, and governing-o",
+      "outcome": "CONTINUE",
+      "reply_chars": 3315,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"The closeout document identifies old root GOAL-B33C69F193, disposition CLOSED_WITH_CARRY_FORWARD, replacement programme HAWKING_MASTER_LONG_HAUL_V2, source revision 6a86a5cd49fbe9211ec11e133e9d70a4e2044238, and governing-objective digest ddbed4ef3f253418b2bd92d518ee2aa3fbdde8aad760351f22d4d46e4bcca1a1.\",\"Accepted architecture states Hawking owns Goal, WorkUnit, authority, effects, tests, Git evidence, and continuation; providers are cognition workers; mutation proposals are validated and executed by the canonical repo.edit owner.\",\"Frontier reconciliation, worker leases, and event-driven supervision remain canonical Hawking seams.\",\"Accepted source changes include dependency-aware frontier reconciliation in hawking/goal_surface.py; objective-digest caching, compact state fingerprints, and delta-only supervision in hawking/supervisor_watcher.py; and bounded work-class concurrency recommendation with admission still authoritative in hawking/auto_orchestration.py.\",\"Unresolved work includes E_MACOS_CAPTURE_OCR, P1_PROVIDER_TOOL_RECEIPT_CONTINUATION_REPAIR, and V2 re-decomposition into larger coherent tranches rather than more micro-audits.\",\"Protected resources listed are Flash, Pulsar, ModelLake canonical artifacts, Odyssey sealed receipts, protected model artifacts, credentials, and unrelated dirty work.\",\"Items that must not be retried blindly include E_MACOS_CAPTURE_OCR-20260918-REOPEN, E_MACOS_CAPTURE_OCR-20260918-BOUND, and F_AUTO_FRONTIER-20260... as truncated in the observed range.\",\"No explicit P20 handoff/reconciliation owner or P20 bounded contract was observed in lines 1-80; the file has 82 total lines, so lines 81-82 were not observed.\"],\"sources\":[{\"path\":\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md\",\"line_range\":\"1-80\",\"sha256\":\"6fc245eb367a7471d28d711a3d70747afe1a57ffdc5c545fa2c14e2a7518336e\",\"total_lines\":82,\"truncated\":true,\"note\":\"Observed range only; lines 81-82 not observed.\"}],\"recommendations\":[\"Do not claim a P20 owner or bounded contract from the observed range alone; the P20 token was not present in lines 1-80.\",\"Admit-ready bounded contract candidate: read-only search/range reads only; scope is to locate the canonical P20 handoff/reconciliation owner and smallest bounded contract in HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md, docs/HANDOFF.md, and docs/CURRENT_ARCHITECTURE.md; protected resources are Flash, Pulsar, ModelLake canonical artifacts, Odyssey sealed receipts, protected model artifacts, credentials, and unrelated dirty work; falsifier is that if no P20 token exists in those admitted sources, the P20 owner cannot be identified from them.\",\"Next action capsule: next_action=search/range-read remaining closeout lines and the two docs for P20, handoff, reconciliation, owner, and contract; reason=current observation did not contain P20; expected_evidence=exact line citations naming the P20 owner and smallest bounded contract; tool_family=read-only search/range read.\"],\"unresolved_questions\":[\"What is the canonical P20 handoff/reconciliation owner?\",\"What is the smallest bounded contract for P20?\",\"Do docs/HANDOFF.md or docs/CURRENT_ARCHITECTURE.md define P20?\",\"Are lines 81-82 of HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md relevant to P20?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-325ffe1de9814564",
+  "worker_id": "hawking-worker-5424a9a7bbf7409d",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-8DD7AF5A"
+}

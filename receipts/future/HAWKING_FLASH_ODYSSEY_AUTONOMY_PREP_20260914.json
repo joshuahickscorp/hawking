@@ -1,0 +1,133 @@
+{
+  "schema": "hawking.flash_odyssey.autonomy_prep.v1",
+  "status": "READY_BEHIND_MACHINE_OWNER_AND_PROTECTED_LANE_GATES",
+  "observed_at": "2026-09-14T09:32:57-04:00",
+  "claim_boundary": "Static and header-only preparation. No owner authorization was fabricated, no protected source/native capture was executed, no model was loaded, no GPU/Metal workload was started, no ModelLake acquisition or deletion occurred, and no Pulsar promotion is claimed.",
+  "source_gate": {
+    "trust_anchor": {
+      "path": "/Library/Application Support/Hawking/owner_ed25519_public_key",
+      "present": false
+    },
+    "reference_candidate": {
+      "path": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+      "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f"
+    },
+    "preflight": {
+      "path": "receipts/future/FLASH_SOURCE_BOUNDARY_AUTONOMY_PREFLIGHT_20260914.json",
+      "sha256": "b90afe027f13b5d13805f973fe20151dd7b82185cad7ab0dc5f6c2da8405b4d6",
+      "status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION_AND_BOUNDARY_PAYLOADS"
+    },
+    "executable_closure": {
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_PLE_I64_GUARD_20260912.json",
+      "sha256": "555afea4d799a7cd6898395284c98e1f805a5985fe39a636a184732119739d0a",
+      "status": "EXACT_EXECUTABLE_CLOSURE_PRESENT"
+    },
+    "selected_binaries": {
+      "native": {
+        "path": "target/source-boundary-ple-i64-guard-20260912/release/examples/flash_stateful_complete_token_session",
+        "sha256": "7098bd66f08166283973280c34978cbb1751d2a44d95d94d1365be5cfda6db15"
+      },
+      "hawking_metric_owner": {
+        "path": "target/source-boundary-ple-i64-guard-20260912/release/hawking",
+        "sha256": "002b475e652e53ee8857f9447f48a34e6aee1bc1ae3e1cb2fcdc40670fb630c5"
+      }
+    },
+    "dry_run": {
+      "status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+      "outputs_fresh": true,
+      "gpu_lease_path": "/tmp/hawking-gpu-lane.lock",
+      "gpu_lease_free_at_observation": true,
+      "protected_native_lane_clean": false,
+      "protected_native_lane_matches": [
+        {"pid": 65439, "marker": "mlx_vlm.server"},
+        {"pid": 65419, "marker": "hawkingd"}
+      ],
+      "model_or_metal_started": false,
+      "promotion_allowed": false
+    },
+    "next_transaction": "After legitimate owner authorization and a safe Kimi/P1 boundary, invoke flash_source_boundary_transaction.py once with the explicit selected binaries; capture one 0..4/token-0 source/native seam and stop at the first ordered difference.",
+    "command_template": [
+      "python3",
+      "tools/odyssey/flash_source_boundary_transaction.py",
+      "--execute",
+      "--root", "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "--reference-contract", "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+      "--owner-authorization", "<owner-authorized V2 request>",
+      "--preflight", "receipts/future/FLASH_SOURCE_BOUNDARY_AUTONOMY_PREFLIGHT_20260914.json",
+      "--executable-closure", "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_PLE_I64_GUARD_20260912.json",
+      "--native-binary", "target/source-boundary-ple-i64-guard-20260912/release/examples/flash_stateful_complete_token_session",
+      "--hawking-binary", "target/source-boundary-ple-i64-guard-20260912/release/hawking",
+      "--source-out-dir", "<fresh source output directory>",
+      "--native-out", "<fresh native receipt>",
+      "--comparison-out", "<fresh ordered comparison receipt>",
+      "--transaction-out", "<fresh transaction receipt>"
+    ]
+  },
+  "flash_static_frontier": {
+    "model_type": "qwen4_exp",
+    "tensor_count": 1658,
+    "classification": "STATIC_STREAMABLE",
+    "organs": [
+      "embed",
+      "gqa_attention",
+      "lm_head",
+      "mm_projector",
+      "moe_expert",
+      "moe_router",
+      "recurrent_state",
+      "rmsnorm",
+      "shared_expert",
+      "vision_encoder"
+    ],
+    "passport_receipt": "receipts/future/FLASH_AUTONOMY_ORGAN_PASSPORT_20260914.json",
+    "header_census_receipt": "receipts/future/HAWKING_ODYSSEY_HEADER_CENSUS_20260914.json"
+  },
+  "gravity_frontier": {
+    "registry_validation": "valid",
+    "e02": "SEALED_FIXED_TOP8_PAIR_REPLICATION_NEGATIVE__ORIGINAL_PAIR_BOUNDED_SIGNAL_ONLY",
+    "e06": "SEALED_FIXED_ROW_NORM_CONDITIONAL_INFORMATION_PREFILTER_NEGATIVE",
+    "e13": "WITHHELD_BROADER_WIKIMEDIA_CONTROL_UNDERPOWERED__DESIGN_REVIEW_REQUIRED",
+    "source_bound_method_families": [
+      "function/program",
+      "state/history",
+      "NOVA"
+    ],
+    "do_not_reopen": [
+      "uniform/global PLE PQ",
+      "PQ plus sparse repair",
+      "shard-local PQ",
+      "residual/additive PQ",
+      "smooth address generator",
+      "additive-hash PLE",
+      "fixed shared expert vectors",
+      "fixed shared input basis",
+      "fixed INT4 router",
+      "exact HC quotient",
+      "common-left-subspace",
+      "static co-route grouping"
+    ]
+  },
+  "modellake": {
+    "census_receipt": "receipts/future/HAWKING_ODYSSEY_MODELLAKE_CENSUS_20260914.json",
+    "status": "PASSED_NO_ACQUISITION",
+    "capacity_free_bytes": 451817222144,
+    "pinned_flash_revision_exact": true,
+    "pinned_flash_remote_file_count": 144,
+    "pinned_flash_remote_declared_bytes": 360023286454,
+    "target_whole_tree_verified": false,
+    "header_only_specimen_count": 46,
+    "header_only_failed_count": 9,
+    "header_bytes_read": 108344236,
+    "active_download_jobs": 0,
+    "watcher_p0_done": true,
+    "deletion": "not performed"
+  },
+  "odyssey": {
+    "scheduling_authority": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "campaign_phase": "FLASH_NEXT_PULSAR_PASS",
+    "selection_policy": "DYNAMIC_TRANSFER_VALUE_FIRST",
+    "post_pulsar_first_cohort": "pending dynamic selection from canonical authority; no model was admitted early",
+    "scheduler_contract": "MODEL_SEALED triggers remain declared but not wired; no false autonomous-work claim"
+  },
+  "next_authoritative_boundary": "owner authorization -> protected seam transaction -> first-divergence classification -> functional/program/state/NOVA work -> complete NR -> native resident qualification -> Pulsar -> Odyssey"
+}

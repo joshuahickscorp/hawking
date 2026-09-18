@@ -1,0 +1,84 @@
+{
+ "at": "2026-09-09T21:51:40Z",
+ "window_note": "",
+ "hawking_processes": [
+  {
+   "pid": 98085,
+   "ppid": 98083,
+   "etime": "02:55:10",
+   "cpu": 0.0,
+   "rss_gib": 0.12,
+   "command": "hawkingd serve :8011 [hawking-native.sealed-3.14]          ",
+   "owner": "hawking",
+   "role": "serve wrapper, not a compute owner",
+   "cpu_samples": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "verdict": "IDLE, HOLDS NOTHING"
+  },
+  {
+   "pid": 98088,
+   "ppid": 98085,
+   "etime": "02:55:10",
+   "cpu": 1.1,
+   "rss_gib": 0.34,
+   "command": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident --artifact-root /Users/scammermike/noetic/NOETIC_PARENT_A --tokenizer /Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json --max-seq-len 8192 --resident-identity sealed-3.14",
+   "owner": "hawking",
+   "role": "sealed-3.14 resident (Rust, Metal)",
+   "cpu_samples": [
+    1.2,
+    1.1,
+    1.1
+   ],
+   "verdict": "IDLE, HOLDS NOTHING"
+  }
+ ],
+ "foreign_model_servers": [
+  {
+   "pid": 3551,
+   "ppid": 3491,
+   "etime": "02-02:58:25",
+   "cpu": 0.0,
+   "rss_gib": 0.01,
+   "command": "/Applications/Ollama.app/Contents/Resources/ollama serve",
+   "owner": "foreign",
+   "role": "Ollama stack, separate runtime",
+   "cpu_samples": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "verdict": "IDLE, HOLDS NOTHING"
+  },
+  {
+   "pid": 15230,
+   "ppid": 1,
+   "etime": "07:11:41",
+   "cpu": 0.0,
+   "rss_gib": 0.01,
+   "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp8a4008ep/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}",
+   "owner": "foreign",
+   "role": "MLX stack, separate runtime",
+   "cpu_samples": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "verdict": "IDLE, HOLDS NOTHING"
+  }
+ ],
+ "MEASURABLE_WITHOUT_PRIVILEGE": [
+  "which model servers exist and who owns them",
+  "resident memory held by each",
+  "%CPU over an interval, which separates LOADED-AND-IDLE from ACTIVE",
+  "whether a foreign server has any model loaded or any client attached"
+ ],
+ "NOT_MEASURABLE_WITHOUT_PRIVILEGE": [
+  "per-process GPU residency and utilization (sudo powermetrics only)",
+  "GPU power draw",
+  "dispatch counts and command-buffer occupancy from outside the process"
+ ],
+ "THE_RULE": "A saturated GPU proves SOMETHING is computing. Hawking Accelerator evidence requires naming the owning process, its runtime, its representation, and that the plan was SELECTED AND LOWERED by Hawking. Absent that, report UNATTRIBUTED."
+}

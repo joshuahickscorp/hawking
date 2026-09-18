@@ -52,8 +52,8 @@ def test_counts_the_lines():
 
 
 def _engine():
-    from hcli.engine import Engine
-    from hcli.workspace import Workspace
+    from hawking.engine import Engine
+    from hawking.workspace import Workspace
 
     class _Pool:
         model_path = "sealed-3.14"

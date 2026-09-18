@@ -1,0 +1,122 @@
+{
+  "capture": {
+    "capture_path": "actual complete-session native body, not a synthetic perturbation or reset per token",
+    "layer": 0,
+    "persistent_state_authority": "the bound session receipt owns recurrence/KV persistence and token acceptance; this manifest owns only captured F32 boundary states",
+    "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+    "state_width": 10240,
+    "trajectory_boundary": "The current native session does not embed the source PLE formula. These are real stateful native contexts, not upstream PLE-inclusive source-model trajectory parity.",
+    "upstream_PLE_inclusive_source_trajectory": false
+  },
+  "claim_boundary": "This exports real source-bound native-session pre-PLE boundary states for a later formula/generator discriminator. The native body does not yet embed PLE, so the states are not upstream PLE-inclusive source-model trajectory parity. It is not independent source PLE-output parity, a native PLE runtime, a compact representation, complete EBPW, capability, qualified TPS, or promotion evidence.",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "prompt_length": 5,
+  "schema": "hawking.flash.ple_pre_layer_state_bank.v1",
+  "seal_sha256": "ace1030309678ebdbeaaa50107f4b88aa1a35cb0405564a4dbf16b2a9c4217ca",
+  "session_receipt": {
+    "bytes": 255681,
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.json",
+    "schema": "hawking.flash.stateful_complete_token_session.v1",
+    "seal_sha256": "55b34ffd0545bdb4aa623294ad41f61b8148da08a83e37aab759c3b629a71b8b",
+    "sha256": "38126cf6b3d20be89b924345ee533a741d511629f33e5fb3b21e179581a71b2e",
+    "status": "CANDIDATE_ROUTE_EXACT_TERMINAL_ACCEPTED_STATE_HASH_WITHHELD"
+  },
+  "states": [
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000000.f32",
+      "sha256": "7cc502dd41e4bfdd0ef96c1d3ef7ed204a875617f91891fa257713b178767f13",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 0,
+      "token_id": 5423
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000001.f32",
+      "sha256": "84941b9274094b534e838a327e5c51ee43caf1d613030fbe73fbaa368c6e0b33",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 1,
+      "token_id": 799
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000002.f32",
+      "sha256": "f3c39f27c490fbaafd9854a09bb70905523e6ec2c9c42a30af1f739c5332c648",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 2,
+      "token_id": 4581
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000003.f32",
+      "sha256": "3f4a8008dd8d78da9f453c9c7dc6f606eefa86f3dac5e1f4a79fbe8b567f2382",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 3,
+      "token_id": 3817
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000004.f32",
+      "sha256": "4fbc0438c41a9d7a1e7491dadf59d17f2da7c0fe9b6d57391ae2c875862b5b21",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 4,
+      "token_id": 13
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000005.f32",
+      "sha256": "1f96c5508da95dc190e56bb612e67ff1177bad86aa5673842a84a6fccf427935",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 5,
+      "token_id": 271
+    },
+    {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "finite": true,
+      "layer": 0,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_TOKEN_MAJOR_CLEAN_REPLAY_CURRENT_GRAPH_WHOLE_TOKEN_HC_COMBINE_VEC4_20260915.ple_pre_layer_state_bank/state-step-000006.f32",
+      "sha256": "1603dc47d16f42fd8f8b00eb04bcf84064253e4e90667411c5d1b7d8aec4f5ec",
+      "state_role": "source layer-0 output used as the bounded pre-PLE input boundary",
+      "step": 6,
+      "token_id": 248045
+    }
+  ],
+  "status": "EXPORTED_SOURCE_BOUND_NATIVE_PRE_PLE_STATE_BANK__FORMULA_ONLY",
+  "token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13,
+    271,
+    248045
+  ]
+}

@@ -25,8 +25,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from hcli.tool_registry import default_tool_registry  # noqa: E402
-from hcli.engine import Engine  # noqa: E402
+from hawking.tool_registry import default_tool_registry  # noqa: E402
+from hawking.engine import Engine  # noqa: E402
 
 LIMIT = int(Engine.CLOSED_OBSERVATION_CHARS)
 SKIP_PREFIX = ("web.", "github.", "huggingface.", "grok.", "benchmark", "accelerator")

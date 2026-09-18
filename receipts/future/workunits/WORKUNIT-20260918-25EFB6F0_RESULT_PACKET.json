@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "594210894cf639f0f6798c28a555effd85063d9c2a0371a620c410c754eb3f40",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:18:30.025878+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:18:30.025894+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:18:30.030045+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"FRANKENSTEIN_PROGRAM_PLAN.json is 5678 bytes; only the first 4000 bytes (70.4%) were observed, with an explicit truncation note warning not to conclude anything about the unshown tail (full-file sha256 fe8ffffeec19463df0ba",
+      "outcome": "CONTINUE",
+      "reply_chars": 2809,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"FRANKENSTEIN_PROGRAM_PLAN.json is 5678 bytes; only the first 4000 bytes (70.4%) were observed, with an explicit truncation note warning not to conclude anything about the unshown tail (full-file sha256 fe8ffffeec19463df0ba15291117567486331344ddf318e9f34e918f48fbde6e).\",\"The observed programme_phases array runs P0 (Plan seals) through P8 (stage 3, title beginning 'Odyssey\u2026', flagged owner_gated: true) and is cut off mid-entry at P8; P9 DARKMATTER falls entirely within the unshown tail.\",\"No authoritative owner for P9 DARKMATTER was observed in the shown portion; the only ownership signal visible is P8's 'owner_gated': true and P5's 'human': true, neither of which pertains to P9.\",\"The mutation report referenced by the objective was not observed in this session, so no cross-source confirmation of a P9 owner exists in the gathered evidence.\",\"Falsifier for any claim that P9 DARKMATTER has an authoritative owner: a line-range read of the file's final ~1678 bytes (and the mutation report) showing no 'owner' field on the P9 entry would falsify the claim; conversely an explicit owner field there would falsify the claim that ownership is undetermined.\"],\"sources\":[\"research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json (bytes 0-4000 of 5678, truncated; sha256 fe8ffffeec19463df0ba15291117567486331344ddf318e9f34e918f48fbde6e)\"],\"recommendations\":[\"Admit-ready bounded contract: perform one narrow line-range read of FRANKENSTEIN_PROGRAM_PLAN.json covering the final ~1678 bytes (the programme_phases tail containing P8-P9 and any top-level keys after it) to extract the P9 DARKMATTER entry verbatim, including any owner/owner_gated/human fields.\",\"Run a targeted search for 'DARKMATTER' and 'P9' across the mutation report and the frankenstein data directory, then read only the matching line ranges, to corroborate or refute plan-file ownership.\",\"Protected resources: do not mutate FRANKENSTEIN_PROGRAM_PLAN.json, the mutation report, or any file under research/hawking-experiments/frankenstein/; do not claim phase or release completion; treat the plan's non_goals (implementation_in_this_lane, runtime_edits, push_pr_remote) as binding.\",\"Report the P9 entry with exact byte/line citations and the file sha256 so Hawking can verify against the preseal hash 35153c494b4ede54b77001102f16b062a766f291b070d628b43b6fd466560e9f recorded in the plan.\"],\"unresolved_questions\":[\"Does the P9 DARKMATTER entry in the unshown tail of FRANKENSTEIN_PROGRAM_PLAN.json carry an explicit owner, owner_gated, or human flag?\",\"Does the mutation report name an authoritative owner for P9 DARKMATTER, and does it agree with the plan file?\",\"If P9 is owner_gated like P8, which named role or human holds the gate?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-3ec64a2521344c7b",
+  "worker_id": "hawking-worker-442d18fb6ba84cb4",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-25EFB6F0"
+}

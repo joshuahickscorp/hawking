@@ -8,8 +8,8 @@
 //! `blocked`/`unavailable` facts rather than synthetic benchmark values.
 
 use crate::{
-    hcli_profile::HcliProfile, hcli_sources::HcliSourceContext, host::turn_kernel_autonomy,
-    BackendHost, HttpModelProvider,
+    hawking_profile::HawkingProfile, hawking_sources::HawkingSourceContext,
+    host::turn_kernel_autonomy, BackendHost, HttpModelProvider,
 };
 use hide_core::event::Event;
 use hide_core::ids::{now_ms, SessionId};
@@ -37,15 +37,15 @@ pub struct HeadlessRunConfig {
     /// Outer transition cap for the driver. The kernel's own governor remains
     /// authoritative for steps, wall-clock, effects, and tool calls.
     pub max_transitions: u32,
-    /// Named, finite HCLI compute profile. This is applied to the freshly
+    /// Named, finite HAWKING compute profile. This is applied to the freshly
     /// created [`AgentState`] before its first transition, so the receipt's
     /// budget is a statement about the run that actually happened rather than
     /// a display-only preset.
-    pub profile: HcliProfile,
+    pub profile: HawkingProfile,
     /// Explicit bounded local evidence derivatives for this run. They are
     /// injected only into actual agent act-model prompts as untrusted reference
     /// material; they do not alter the durable user objective or grant tools.
-    pub source_context: Option<HcliSourceContext>,
+    pub source_context: Option<HawkingSourceContext>,
 }
 
 impl Default for HeadlessRunConfig {
@@ -55,7 +55,7 @@ impl Default for HeadlessRunConfig {
             model_url: None,
             session_id: None,
             max_transitions: 200,
-            profile: HcliProfile::Balanced,
+            profile: HawkingProfile::Balanced,
             source_context: None,
         }
     }
@@ -234,7 +234,7 @@ pub async fn run_headless_audit(
         None => Vec::new(),
     };
     let integrity = host.services.event_integrity.verify_chain(&events)?;
-    let duration_ms = started.elapsed().as_millis() as u64;
+    let duration_ns = started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
     let agent = state
         .as_ref()
         .map(|live_state| agent_summary(live_state, &session_events, transitions));
@@ -251,7 +251,9 @@ pub async fn run_headless_audit(
         "status": status.as_str(),
         "started_ms": started_ms,
         "finished_ms": now_ms(),
-        "wall_elapsed_ms": duration_ms,
+        "timing_unit": "ns",
+        "wall_elapsed_ns": duration_ns,
+        "wall_elapsed_ms": duration_ns / 1_000_000,
         "driver": {
             "max_transitions_requested": config.max_transitions,
             "max_transitions_effective": max_transitions,
@@ -315,7 +317,7 @@ pub async fn run_headless_audit(
             "explicit_local_evidence_attachment": config.source_context.is_some(),
             "literal_unlimited": false,
             "status": if config.source_context.is_some() { "bounded_local_source_attached_or_pending_runtime" } else { "not_requested" },
-            "note": "HCLI can attach an explicit bounded local object-store derivative pack to agent act-model prompts. It has no HTTP attachment upload route, no implicit cross-turn retention, and no unlimited-upload claim.",
+            "note": "HAWKING can attach an explicit bounded local object-store derivative pack to agent act-model prompts. It has no HTTP attachment upload route, no implicit cross-turn retention, and no unlimited-upload claim.",
             "declared_storage_budget": {
                 "max_local_bytes": storage.max_local_bytes,
                 "max_cloud_bytes": storage.max_cloud_bytes,
@@ -327,7 +329,7 @@ pub async fn run_headless_audit(
         "event_chain": integrity,
         "failure": failure,
         "limitations": [
-            "A V4 TPS result is valid only when the runtime context identifies a loadable deepseek_v4 artifact and its per-call decode metrics include completed_decode_forwards plus decode_ms.",
+            "A V4 TPS result is valid only when the runtime context identifies a loadable deepseek_v4 artifact and its per-call decode metrics include completed_decode_forwards plus decode_ns.",
             "Agent wall time includes planning, verification, tool dispatch, filesystem work, and scheduling; it is not model decode TPS.",
             "Kernel packed-context injection is evidenced only when kernel_grounding.status is injected; a missing/empty pack is not treated as a long-context retention result.",
             "Only explicitly selected local evidence derivatives can reach this agent's act-model prompts; HTTP uploads, arbitrary URLs, and unlimited capacity are not implemented.",
@@ -424,7 +426,7 @@ fn context_snapshot(info: Option<crate::model_provider::ContextInfo>) -> Value {
 /// reported as injected merely because it was parsed: an act-model observation
 /// must exist after the live state received the supplemental context.
 fn source_context_receipt(
-    source_context: Option<&HcliSourceContext>,
+    source_context: Option<&HawkingSourceContext>,
     state: Option<&AgentState>,
     events: &[Event],
     omitted_for_live_window: bool,
@@ -469,7 +471,7 @@ fn agent_summary(state: &AgentState, events: &[Event], transitions: u32) -> Valu
     let mut model_calls = Vec::new();
     let mut input_tokens = 0u64;
     let mut output_tokens = 0u64;
-    let mut decode_ms = 0.0f64;
+    let mut decode_ns = 0u64;
     let mut completed_decode_forwards = 0u64;
     let mut complete_metric_calls = 0u64;
     let mut parsed_model_tool_calls = 0u64;
@@ -498,16 +500,17 @@ fn agent_summary(state: &AgentState, events: &[Event], transitions: u32) -> Valu
             .get("output_tokens")
             .and_then(Value::as_u64)
             .unwrap_or(0);
-        let call_decode_ms = payload.get("decode_ms").and_then(Value::as_f64);
+        let call_decode_ns = payload_decode_ns(payload);
+        let call_decode_ms = call_decode_ns.map(|nanoseconds| nanoseconds as f64 / 1_000_000.0);
         let call_forwards = payload
             .get("completed_decode_forwards")
             .and_then(Value::as_u64);
         let call_tps = payload.get("decode_tps").and_then(Value::as_f64);
         input_tokens = input_tokens.saturating_add(input);
         output_tokens = output_tokens.saturating_add(output);
-        if let (Some(ms), Some(forwards)) = (call_decode_ms, call_forwards) {
-            if ms > 0.0 && forwards > 0 {
-                decode_ms += ms;
+        if let (Some(nanoseconds), Some(forwards)) = (call_decode_ns, call_forwards) {
+            if nanoseconds > 0 && forwards > 0 {
+                decode_ns = decode_ns.saturating_add(nanoseconds);
                 completed_decode_forwards = completed_decode_forwards.saturating_add(forwards);
                 complete_metric_calls = complete_metric_calls.saturating_add(1);
             }
@@ -525,14 +528,16 @@ fn agent_summary(state: &AgentState, events: &[Event], transitions: u32) -> Valu
             "stage": stage,
             "input_tokens": input,
             "output_tokens": output,
+            "timing_unit": "ns",
+            "decode_ns": call_decode_ns,
             "decode_ms": call_decode_ms,
             "completed_decode_forwards": call_forwards,
             "decode_tps": call_tps,
         }));
     }
 
-    let aggregate_decode_tps = (decode_ms > 0.0 && completed_decode_forwards > 0)
-        .then(|| completed_decode_forwards as f64 / (decode_ms / 1_000.0));
+    let aggregate_decode_tps = (decode_ns > 0 && completed_decode_forwards > 0)
+        .then(|| completed_decode_forwards as f64 * 1_000_000_000.0 / decode_ns as f64);
     let plan = state.plan.as_ref().map(|plan| {
         json!({
             "id": plan.id,
@@ -575,12 +580,18 @@ fn agent_summary(state: &AgentState, events: &[Event], transitions: u32) -> Valu
             "ledger_output_tokens": state.ledger.output_tokens,
             "complete_forward_metric_call_count": complete_metric_calls,
             "completed_decode_forwards": completed_decode_forwards,
-            "decode_ms": if complete_metric_calls > 0 { Some(decode_ms) } else { None },
+            "timing_unit": "ns",
+            "decode_ns": if complete_metric_calls > 0 { Some(decode_ns) } else { None },
+            "decode_ms": if complete_metric_calls > 0 {
+                Some(decode_ns as f64 / 1_000_000.0)
+            } else {
+                None
+            },
             "aggregate_complete_forward_tps": aggregate_decode_tps,
             "tps_authority": if aggregate_decode_tps.is_some() {
-                "sum(completed_decode_forwards) / sum(decode_ms)"
+                "sum(completed_decode_forwards) / sum(decode_ns)"
             } else {
-                "unavailable: runtime did not supply both completed_decode_forwards and decode_ms for one or more claims"
+                "unavailable: runtime did not supply both completed_decode_forwards and decode_ns for one or more claims"
             },
         },
         "tool_activity": {
@@ -594,6 +605,25 @@ fn agent_summary(state: &AgentState, events: &[Event], transitions: u32) -> Valu
             "last_verdict_count": state.last_verdicts.len(),
         },
     })
+}
+
+/// Read the canonical integer duration from a model-metrics payload. Older
+/// event records may contain only floating-point milliseconds; accepting that
+/// field here keeps historical receipts readable without making it the
+/// producer-side representation.
+fn payload_decode_ns(payload: &Value) -> Option<u64> {
+    payload
+        .get("decode_ns")
+        .and_then(Value::as_u64)
+        .filter(|nanoseconds| *nanoseconds > 0)
+        .or_else(|| {
+            let milliseconds = payload.get("decode_ms").and_then(Value::as_f64)?;
+            if !milliseconds.is_finite() || milliseconds <= 0.0 {
+                return None;
+            }
+            let nanoseconds = milliseconds * 1_000_000.0;
+            (nanoseconds <= u64::MAX as f64).then(|| nanoseconds.round() as u64)
+        })
 }
 
 #[cfg(test)]
@@ -643,6 +673,17 @@ mod tests {
                 .pointer("/runtime/model_tps_claim")
                 .and_then(Value::as_str),
             Some("not_measured")
+        );
+        let elapsed_ns = result
+            .receipt
+            .get("wall_elapsed_ns")
+            .and_then(Value::as_u64)
+            .expect("headless wall timing is nanosecond-native");
+        assert!(elapsed_ns > 0);
+        assert_eq!(result.receipt["timing_unit"], "ns");
+        assert_eq!(
+            result.receipt["wall_elapsed_ms"],
+            Value::from(elapsed_ns / 1_000_000)
         );
         assert!(result
             .receipt
@@ -715,9 +756,9 @@ mod tests {
     async fn selected_local_evidence_is_receipted_only_after_an_agent_act_model_call() {
         let temp = tempfile::tempdir().unwrap();
         let source_path = temp.path().join("agent-evidence.txt");
-        let selected_fact = "HCLI_AGENT_SELECTED_FACT_41f2";
+        let selected_fact = "HAWKING_AGENT_SELECTED_FACT_41f2";
         std::fs::write(&source_path, selected_fact).unwrap();
-        let sources = crate::hcli_sources::HcliSourceStore::open(temp.path()).unwrap();
+        let sources = crate::hawking_sources::HawkingSourceStore::open(temp.path()).unwrap();
         let ingested = sources.ingest_file(&source_path, None, None).unwrap();
         let source_context = sources
             .select_context(&[ingested.reference.id.as_str().to_string()])

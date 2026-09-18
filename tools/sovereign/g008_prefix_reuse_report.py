@@ -22,8 +22,8 @@ REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "receipts/runtime/PREFIX_REUSE_SIX_NUMBERS.json"
 sys.path.insert(0, str(REPO))
 
-from hcli.hawking_native import HawkingNativeConnector, config_for_model_path
-from hcli.engine import _exact_tokenizer
+from hawking.hawking_native import HawkingNativeConnector, config_for_model_path
+from hawking.engine import _exact_tokenizer
 
 tok = _exact_tokenizer()
 F = ("Botanical taxonomy distinguishes bryophytes from tracheophytes by vascular tissue. "

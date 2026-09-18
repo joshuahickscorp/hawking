@@ -1,0 +1,85 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "6c9007b3a5aace46de2d7f28fdd1e6dbb05b8a96b0c6d9ee5c34436007daba1a",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:08:06.612537+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:08:06.612557+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:08:06.616226+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\": [\"fs.read succeeded on hawking/auto_orchestration.py (invocation_id tool-0852f565-a02e-4fff-8150-f75832fccd96, ok=true, mutation=read_only, deterministic=true, provenance.source=hawking.tool_registry).\", \"File metadata: pat",
+      "outcome": "CONTINUE",
+      "reply_chars": 3162,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "fs.read succeeded on hawking/auto_orchestration.py (invocation_id tool-0852f565-a02e-4fff-8150-f75832fccd96, ok=true, mutation=read_only, deterministic=true, provenance.source=hawking.tool_registry).",
+    "File metadata: path=/Users/scammermike/Downloads/hawking/hawking/auto_orchestration.py, bytes=46103, total_lines=1045, sha256=a924e7c465ed8893768931058f26a0cd86cdf94afcb49d3785df84ce779bdfa9.",
+    "Requested window lines 900-1020 was TRUNCATED: 4000 of 6020 bytes (66.4%) shown; no conclusion can be drawn about the unshown remainder.",
+    "Observed content is a tranche-selection/dispatch routine: it builds `candidates` as (negative_priority, index, item) tuples from a `queue`, skipping entries with reasons missing_tranche_id, not_graph_runnable, known_terminal_or_admitted, missing_objective, missing_acceptance.",
+    "State gating observed: only states in {READY, RUNNABLE, PENDING} are considered; graph_bound entries must be in graph_frontier; terminal/admitted tranches are skipped unless `_has_fresh_reopen_evidence(item)` is true.",
+    "`_has_fresh_reopen_evidence` (partially shown) accepts a Mapping tool_call with http_status==200, tool_call_count>0, arguments_present, or route_receipt['live_gateway_probes'] entries with accepted is True, gateway_status==200, and tool_name or generated_text present.",
+    "Dispatch loop observed: iterates sorted candidates, respects a `slots` budget, computes writer_scope (item.writer_scope or mutation_plan.writer_scope or tranche) and skips on writer_scope_conflict against active_scopes, parses budget_usd (default goal.budget_authorized_usd or 0.5) and skips on invalid_budget.",
+    "Observed call into `dispatch_child_workunit(root, goal_id, objective=..., acceptance=..., focus_files=..., focus_tests=..., budget_usd=..., required_capabilities=..., external_roots=...)`; the argument list is cut off by truncation mid-expression."
+  ],
+  "provider_status": "TERMINAL",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [
+    "Re-read the same file in narrower windows (900-960, 960-1020) to recover the truncated 33.6% before drawing conclusions about dispatch semantics.",
+    "Read the full definitions of `_has_fresh_reopen_evidence` and `dispatch_child_workunit` to confirm reopen-evidence and child-dispatch contracts.",
+    "Treat this as a single-observation read-only probe; no implementation, production, or hardware behavior is claimed."
+  ],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [
+    {
+      "end_line": "1020",
+      "invocation_id": "tool-0852f565-a02e-4fff-8150-f75832fccd96",
+      "observed_at": "1789711663.143253",
+      "path": "hawking/auto_orchestration.py",
+      "sha256": "a924e7c465ed8893768931058f26a0cd86cdf94afcb49d3785df84ce779bdfa9",
+      "shown_bytes": "4000",
+      "start_line": "900",
+      "tool": "fs.read",
+      "total_bytes": "6020",
+      "truncated": "True"
+    }
+  ],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.read"
+  ],
+  "unresolved_questions": [
+    "What are the full arguments and return handling of the `dispatch_child_workunit` call (cut off by truncation)?",
+    "What is the complete body of `_has_fresh_reopen_evidence` above line 900?",
+    "How are `active_scopes`, `admitted_tranches`, `terminal_tranches`, and `graph_frontier` populated and updated?",
+    "What happens to the `skipped` list after the loop (reporting vs. retry)?"
+  ],
+  "worker_attempt_id": "hawking-attempt-8543d7b7c7124f3a",
+  "worker_id": "hawking-worker-bbf2fedd33fa47b7",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-9F9548FE"
+}

@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:46:21.089535+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:46:21.089546+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:46:21.089548+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 2671,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:46:21.089560+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def _spec_bits(spec: str) -> int | None:\\n    # None means \\\"this spec carries no precision information\\\", which is NOT the\\n    # same as q4. Returning a default here made an unrunnable string\\n    # indistinguishable from a measured 4-bit candidate and fed a number nobody\\n    # measured into the search order.\\n    m = re.search(r\\\"q(\\\\d+)\\\", spec)\\n    if not m:\\n        return None\\n    bits = int(m.group(1))\\n    # A precision of zero bits is not a representation: it cannot store any\\n    # magnitude, so treating it as a measured candidate would let a degenerate\\n    # spec (e.g. \\\"q0\\\") enter the frontier as if it were runnable. Reject it the\\n    # same way an absent precision is rejected.\\n    return bits if bits > 0 else None\", \"old_text\": \"def _spec_bits(spec: str) -> int | None:\\n    # None means \\\"this spec carries no precision information\\\", which is NOT the\\n    # same as q4. Returning a default here made an unrunnable string\\n    # indistinguishable from a measured 4-bit candidate and fed a number nobody\\n    # measured into the search order.\\n    m = re.search(r\\\"q(\\\\d+)\\\", spec)\\n    return int(m.group(1)) if m else None\", \"op\": \"replace\", \"path\": \"hawking/gravity_gauntlet.py\"}, {\"new_text\": \"\\\"\\\"\\\"Focused regression for the P6 gravity implementation contract v2.\\n\\nExercises the observable behavior of ``_spec_bits`` in\\n``hawking.gravity_gauntlet``: a spec that carries no precision information and a\\nspec that carries a degenerate zero-bit precision must both be reported as\\n\\\"n",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/test_auto_p6_gravity_implementation_contract_v2_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789753580.633433, \"n_stdout_chars\": 98, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789753580.474725, \"stderr\": \"\", \"stdout\": \"........                                                                 [100%]\\n8 passed in 0.03s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/gravity_gauntlet.py\", \"sha256_after\": \"38394375f1f332e2e2f127478bdca4305e86d7219cdf120da30092e62f76b8cb\", \"sha256_before\": \"3e0c5bfa0b0ecec85129bc2c6a22d290e404b4ca9cf402982befe4155d8e0541\"}, {\"changed\": true, \"path\": \"hawking/test_auto_p6_gravity_implementation_contract_v2_regression.py\", \"sha256_after\": \"2f92e3d3039999e4563ed4c7d40980fec9918db8a746d4dacc3b52f95360b292\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/gravity_gauntlet.py\", \"sha256_after\": \"38394375f1f332e2e2f127478bdca4305e86d7219cdf120da30092e62f76b8cb\", \"sha256_before\": \"3e0c5bfa0b0ecec85129bc2c6a22d290e404b4ca9cf402982befe4155d8e0541\"}, {\"changed\": true, \"path\": \"hawking/test_auto_p6_gravity_implementation_contract_v2_regression.py\", \"sha256_after\": \"2f92e3d3039999e4563ed4c7d40980fec9918db8a746d4dacc3b52f95360b292\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/gravity_gauntlet.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/test_auto_p6_gravity_implementation_contract_v2_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 8, \"executed\": 8, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 8, \"requested\": \"hawking/test_auto_p6_gravity_implementation_contract_v2_regres",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:46:21.091591+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"operations\": [{\"op\": \"replace\", \"path\": \"hawking/gravity_gauntlet.py\", \"old_text\": \"def _spec_bits(spec: str) -> int | None:\\n    # None means \\\"this spec carries no precision information\\\", which is NOT the",
+      "outcome": "CONTINUE",
+      "reply_chars": 2671,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/gravity_gauntlet.py",
+        "hawking/test_auto_p6_gravity_implementation_contract_v2_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-CBF72AA1_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/gravity_gauntlet.py",
+    "hawking/test_auto_p6_gravity_implementation_contract_v2_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P6_GRAVITY_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-CBF72AA1_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-CBF72AA1"
+}

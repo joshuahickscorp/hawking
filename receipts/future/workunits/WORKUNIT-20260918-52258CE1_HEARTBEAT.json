@@ -1,0 +1,62 @@
+{
+  "active_job": "job-c64bcc73-19b6-46ce-a065-178fd4652d0b",
+  "blocker": {
+    "pid": 59741,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.004978112,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260918-52258CE1",
+    "tool_less_continue_streak": 2
+  },
+  "context_packet_digest": "8af447c381b01446077e6069f627fbf92a595202c3b453eb6dbf6fcb893ee218",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 59741,
+  "exact_next_action": "Hawking rejected the typed effect before a canonical write; preserve the receipt and route a fresh bounded WorkUnit.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 4,
+  "latest_real_seal": "",
+  "objective": "Advance P2_PRODUCT_COMMANDS_HWEB beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay termina",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-198505cc9c6b4b9780cd77fd:tool-2",
+    "gen-1789755108-FPUNtAlARIhSaQ43S76s",
+    "gateway-557bf03a5d9c490b9e448945:tool-2",
+    "gen-1789755180-9ZeCVn2pSuUdEsGOlbsL"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "z-ai/glm-5.3"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T18:13:02.545125+00:00",
+  "worker_attempt_id": "hawking-attempt-39a8a052651d4c53",
+  "worker_cost_usd": 0.004978112,
+  "worker_id": "hawking-worker-91f85b34c4534759",
+  "worker_kill_reason": "unaccepted_effect_proposal",
+  "worker_last_heartbeat_at": 1789755177.8572989,
+  "worker_spawned_at": 1789755100.638505,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260918-52258CE1"
+}

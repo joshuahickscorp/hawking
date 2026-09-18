@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.long_haul.v2.unbounded_fanout_boundaries.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T04:48:21Z",
+  "removed_count_ceilings": [
+    {
+      "file": "hawking/resident.py",
+      "boundary": "verified evidence child WorkUnit admission",
+      "old": 8,
+      "new": null
+    },
+    {
+      "file": "hawking/mission.py",
+      "boundary": "child proposal evidence preservation",
+      "old": 8,
+      "new": null
+    },
+    {
+      "file": "hawking/escalation.py",
+      "boundary": "default swarm lane count",
+      "old": 4,
+      "new": null
+    }
+  ],
+  "retained_guards": [
+    "dependency and cycle checks",
+    "central scheduler admission",
+    "writer/effect-scope serialization",
+    "provider health",
+    "budget authority",
+    "real OS/process/resource limits",
+    "per-item description and transport-size limits"
+  ],
+  "verification": {
+    "resident_daemon_tests": "8 passed",
+    "unbounded_swarm_test": "1 passed",
+    "compileall": "passed",
+    "git_diff_check": "passed",
+    "baseline_note": "unrelated escalation Grok registration/dry-run failures remain outside this count-policy change"
+  },
+  "claim_boundary": "Fan-out admission policy evidence only; no provider output or architectural tranche completion is promoted."
+}

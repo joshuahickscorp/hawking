@@ -12,18 +12,22 @@
    "id": "R-sparse-active-expert-gather",
    "conditions": [
     "kind == moe",
-    "experts_per_tok << experts",
+    "expert_mass / total_params is HIGH (>= ~0.9) -- this is the binding condition",
+    "experts_per_tok << experts (necessary, NOT sufficient)",
     "sparse_active_path"
    ],
    "then": "candidate native expert-gather (move only active experts, not the full inventory)",
    "supporting_patients": [
+    "O003",
     "O005"
    ],
-   "negative_patients": [],
+   "negative_patients": [
+    "Qwen3.8-Flash-Next"
+   ],
    "confidence": "INFERRED",
    "reopen_if": "active-byte reduction fails to move TPS because decode is kernel-bound not bandwidth-bound (A3B tps_caveat; Qwen3.8 same pattern)",
    "physical_rationale": "O005: 8/128 experts/token, 3.353B active of 30.5B (11%). mlx specimen 29.3 TPS is ~dense \u2014 gather is the lever, not a smaller codec.",
-   "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005)"
+   "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005) | O003 (Kimi-VL, DeepSeek-V3-style router, 64 experts/6-top-k+2-shared) CONFIRMED via primitive_design_attempt: ratio_selected_over_full=0.1212 (12.12%% of full expert body moved per token), mlx SwitchGLU/SwitchLinear gather_mm confirmed. See receipts/odyssey-i/O003_NX_gather.json. POPULATION TRANSFER TEST (12 measured MoE bodies, see receipts/odyssey-i/O00X_GATHER_RULE_TRANSFER_TEST.json): transferred on 10 of 12 (4.6-13.5% active) and FAILED on Qwen3.8-Flash-Next at 32.8% active -- which has the SPARSEST top-k ratio in the population (10/512). Cause: the rule assumed the expert organ is most of the model. Refined law, validated to 0.04pp against independent tensor arithmetic: active_fraction = non_expert_fraction + expert_fraction*(k/E). Gather's ceiling is 1 - non_expert_fraction, so the binding condition is EXPERT MASS FRACTION (Kimi-K3 96.2%, GLM-4.5-Air 92.2%, Qwen3.8-Flash-Next only 68.5%), not k << E."
   },
   {
    "id": "R-uniform-routing-no-cold-compress",
@@ -81,12 +85,14 @@
     "P(E_t | E_{t-1}) peaked"
    ],
    "then": "candidate prefetch of the next hot expert set",
-   "supporting_patients": [],
+   "supporting_patients": [
+    "O003"
+   ],
    "negative_patients": [],
-   "confidence": "HYPOTHESIS",
+   "confidence": "MEASURED",
    "reopen_if": "transitions are near-uniform (A1 on O005 may confirm or kill)",
    "physical_rationale": "bible \u00a764 / \u00a757. Frequency being uniform does not imply transitions are memoryless.",
-   "_evidence": "HYPOTHESIS (bible \u00a764; O005 P(E_t|E_t-1) UNKNOWN \u2014 A1)"
+   "_evidence": "HYPOTHESIS (bible \u00a764; O005 P(E_t|E_t-1) UNKNOWN \u2014 A1) | O003 MEASURED: transition_stability=0.4049 (4.32x chance 0.0938), p_e_t_given_e_t_minus_1=0.3819 (4.07x chance), 2340 transition-events -- see receipts/odyssey-i/O003_ROUTE_PREDICTABILITY_TEST.json"
   },
   {
    "id": "R-organ-inversion",
@@ -151,7 +157,21 @@
    "claim": "Recurrent-state organs (Mamba/SSM, linear/delta attention) hold a CONSTANT cache independent of context length; full-attention organs hold a KV cache that grows linearly. Resident-memory crossover = state_bytes_constant / kv_bytes_per_token. Below it the SSM state floor dominates; above it KV dominates. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
    "family": "hybrid/SSM",
    "origin": "O001 (Falcon-H1-7B), measured O001_NX_state.json",
-   "_evidence": "INFERRED from A5 multi-arch config accounting; see receipts/odyssey-i/O001_A5_SSM_RULE.json"
+   "_evidence": "INFERRED from A5 multi-arch config accounting; see receipts/odyssey-i/O001_A5_SSM_RULE.json",
+   "conditions": [
+    "architecture is hybrid or pure recurrent (Mamba/SSM, linear or delta attention)",
+    "the body mixes constant-size recurrent state with growing attention KV",
+    "context length is known or bounded"
+   ],
+   "then": "compute the resident-memory crossover as state_bytes_constant / kv_bytes_per_token. Below it the constant SSM state floor dominates and weight-quant levers do not touch it; above it KV dominates and eviction/KV compression is the target. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
+   "confidence": "INFERRED",
+   "supporting_patients": [
+    "O001"
+   ],
+   "negative_patients": [],
+   "reopen_if": "a hybrid body is found whose recurrent state is NOT context-independent, or where measured resident memory diverges from the crossover this predicts",
+   "physical_rationale": "Recurrent-state organs (Mamba/SSM, linear/delta attention) hold a CONSTANT cache independent of context length; full-attention organs hold a KV cache that grows linearly. Resident-memory crossover = state_bytes_constant / kv_bytes_per_token. Below it the SSM state floor dominates; above it KV dominates. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
+   "_schema_note": "normalised into the rulebase's own conditions/then/confidence schema. It was authored with title/claim/family/origin instead, so any consumer iterating rule['conditions'] raised KeyError on this one entry -- found by exactly that crash. Original fields retained; nothing dropped."
   },
   {
    "id": "R-heterogeneous-organ-allocation-aggressive-only",
@@ -172,6 +192,261 @@
    "reopen_if": "a future MoE patient shows the gain vanish or reverse at q2, or a non-MoE patient with a genuinely low-marginal-value redundant organ (not attn/mlp) shows the same rescue effect",
    "physical_rationale": "O006: q2 uniform 0/12 -> q2-experts-only 10/12 for +0.07 bpw (2.95->3.02). O005: q2 uniform 0/12 -> q2-experts-only 11/12 for +0.08 bpw (3.00->3.08). Vanishes by q3+ (uniform already survivable). O001 (non-MoE) shows the identical strategic move gives NO benefit and is worse in mixed schemes -- the redundancy MoE experts offer (many near-interchangeable low-marginal-value units) has no equivalent in attn+mlp.",
    "_evidence": "MEASURED (O006, O005 Gravity receipts, existing on disk) + negative control MEASURED (O001)"
+  },
+  {
+   "id": "R-tied-embedding-dedup-verify",
+   "conditions": [
+    "config declares tied embeddings/head",
+    "CHECK whether a separate head tensor physically exists -- roughly half of surveyed checkpoints ship one and half do not"
+   ],
+   "then": "verify the tie is genuine with a full byte-exact tensor comparison (not shape-only), then reclaim the duplicate lm_head.weight from stored bytes -- alias/reference it to embed_tokens.weight at load/pack time instead of storing a second physical copy. Zero capability cost: this is exact redundancy elimination, not a quantization tradeoff, so it does not compete for the same error budget as any Gravity codec search.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "CAND-iLLaDA-8B (GSAI-ML/iLLaDA-8B-Base): tie_word_embeddings=true, lm_head.weight present as a separate on-disk tensor in shard 4, full-tensor SHA256 verified IDENTICAL to embed_tokens.weight in shard 1 (not just matching shape) -- 1212.0 MiB (0.635B params) duplicated for one logical weight, 7.55%% of the checkpoint stored bytes. See receipts/odyssey-i/CAND_iLLaDA-8B_ODYSSEY_I.json.",
+    "CAND-Qwen3-0.6B (Qwen/Qwen3-0.6B): SECOND independent confirmation, unrelated model family (Qwen vs GSAI-ML/LLaDA) -- tie_word_embeddings=true, lm_head.weight present as a separate on-disk tensor, full-tensor SHA256 verified IDENTICAL to embed_tokens.weight. 155.6 MiB (0.156B params) duplicated, 10.9%% of checkpoint stored bytes. Also independently reconciles the SAME raw-vs-name gap mechanism as iLLaDA: raw stored params were 25.27%% over the 0.6B name, deduplicating brings it to 0.66%%. See receipts/odyssey-i/CAND_Qwen3-0.6B_ODYSSEY_I.json.",
+    "CAND-pi0_base and CAND-ModernBERT-large: BOTH declare tie_word_embeddings/tied heads and BOTH store the tied matrix ONCE (no separate head tensor exists in either checkpoint) -- the CLEAN counter-examples.",
+    "SMALL-BODY COHORT (tests 5-8): LFM2.5-2.6B-Base and Qwen3-Embedding-0.6B are CLEAN (tied, stored once); Falcon3-1B-Instruct and LFM2.5-1.2B-Instruct are NOT TIED at all. Campaign tally now 8 specimens: 2 wasteful, 4 clean, 2 untied. See receipts/odyssey-i/CAND_SMALL_BODY_COHORT_ODYSSEY_I.json."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a specimen with tie_word_embeddings=true is found where the on-disk tensors are NOT byte-identical (the flag would be vestigial there, the way Dream-v0s use_cache=true turned out to be vestigial this same session -- ALWAYS VERIFY, never trust the config flag alone) -- OR a loader/runtime is found that already dedups tied weights transparently, making this a known-solved problem rather than a live opportunity.",
+   "physical_rationale": "tie_word_embeddings is a common HF transformers setting (NOT specific to diffusion LMs -- Dream-v0 in the same census has the flag FALSE, so this is a general checkpoint-packaging question, not an architecture-family one). A checkpoint author may still ship a materialized lm_head.weight for loader compatibility with code that expects it as a distinct tensor, even though the two are logically one weight -- pure storage waste recoverable with zero risk to capability.",
+   "_evidence": "DISCOVERY-PHASE ONLY (single candidate, not yet an admitted O0XX Odyssey patient) -- full byte-exact SHA256 verification, not a shape-only inference. Not yet added to TRANSFER_MATRIX.json (that instrument tracks the 14 formal O000-O013 curriculum patients; this finding has no O0XX support yet, so a matrix row would be unearned). Re-evaluate once a second tied-embedding specimen is discovered or one of O000-O013 is found to have the flag. UPDATE: now 2 independent specimens across 2 unrelated model families (GSAI-ML/LLaDA, Qwen) both confirm the wasteful-duplicate pattern, while pi0_base (also tied) stored its equivalent weight only once -- a real per-checkpoint choice, not universal either way, but no longer single-specimen evidence. Still discovery-phase only, no O0XX patient support, so still no TRANSFER_MATRIX row. FOURTH DATA POINT: the rule now stands at 4 tied-embedding specimens, 2 wasteful (iLLaDA-8B, Qwen3-0.6B -- verified byte-identical duplicates on disk) and 2 clean (pi0_base, ModernBERT-large -- stored once). That 2/2 split is the real finding: this is a per-checkpoint PACKAGING choice, not a family, framework or format property, so the config flag alone predicts NOTHING. The rule earns its keep entirely through its VERIFY step. DECISIVE WITHIN-VENDOR COUNTER-EXAMPLE: Qwen3-0.6B physically DUPLICATES its tied matrix (byte-identical lm_head, 10.9% of its checkpoint) while Qwen3-Embedding-0.6B -- same vendor, same 0.6B class, same qwen3 model_type -- stores it ONCE. Two checkpoints from one lab at one scale land on opposite sides, which forecloses any explanation by family, framework, format or scale. It is a per-export packaging accident. Confidence raised INFERRED -> MEASURED: the rule is now a measurement procedure with 8 data points, and its entire value is the verify step, because the config flag has zero predictive power."
+  },
+  {
+   "id": "R-specialist-body-single-organ",
+   "conditions": [
+    "body is a non-language-decoder specialist (vision / video / depth / audio / time-series)",
+    "measured parameter share shows one backbone/encoder >= 90% of total params"
+   ],
+   "then": "do NOT spend search budget on organ-heterogeneity levers -- there is only one organ. Attack the backbone directly, and take the free bf16 cast first if the checkpoint ships F32.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "Measured this session across 5 specialist bodies: Depth-Anything-V2-L backbone 90.8%, SmolVLM2-2.2B model 95.5%, sam2.1-hiera-large vision_encoder 94.8%, vjepa2-vitg encoder 97.8%, timesfm-2.0-500m decoder 99.0%. All 5 also ship F32 while every decoder LM surveyed ships BF16/F16 -- 7 non-decoder-LM specimens now, all F32. See receipts/odyssey-i/CAND_SPECIALIST_COHORT_ODYSSEY_I.json and CAND_sam2.1-hiera-large_ODYSSEY_I.json."
+   ],
+   "confidence": "INFERRED",
+   "reopen_if": "a specialist body is found whose parameters are NOT backbone-concentrated -- musicgen-large is the live candidate (three sub-models incl. a full audio codec) and could not be measured because it ships legacy pickle rather than safetensors. Also reopen if a bf16 cast is shown to cost capability on any of these, since the 'F32 is convention' half rests on zero capability measurement.",
+   "physical_rationale": "specialist heads are tiny by construction: a depth head is 0.1% of the body, a JEPA predictor 2.2%. Compressing them cannot move the total however aggressive the codec, so any budget spent there is wasted regardless of result.",
+   "_evidence": "MEASURED per-component parameter shares from safetensors headers, 5 bodies, no GPU. DISCOVERY-PHASE ONLY: no O0XX patient support, so no TRANSFER_MATRIX row."
+  },
+  {
+   "id": "R-gravity-headroom-needs-redundancy",
+   "conditions": [
+    "body is DENSE (no expert organ)",
+    "total params below ~1B",
+    "the EBPW ladder (<2.5) is the target"
+   ],
+   "then": "do NOT spend a Gravity search expecting the ladder. Measure the ceiling first with a generous codec; if 8-bit grouped affine is already only ~0.98 top-1, the body has no redundancy to give and the achievable win is ~2-4x off bf16, not a ladder rung.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B across 28 configurations, four representation classes, with a verified-adequate magnitude-sensitive verifier (0.01xW rejected at 2550x perplexity, top-1 0.000). Best complete EBPW at top-1 >= 0.90 was 6.500; best at top-1 >= 0.70 was 4.250; NOTHING at or below 2.5 EBPW survived -- all collapsed 5-8 orders of magnitude in perplexity. See receipts/odyssey-i/O00X_GRAVITY_Qwen3-0.6B.json."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a sub-1B DENSE body reaches <=2.5 complete EBPW at usable capability under any representation class, or a class not searched here (learned codebooks, structured sparsity, cross-layer bases, procedural generation) rescues one. Only four classes were searched and only one body was tested.",
+   "physical_rationale": "the ladder targets were earned on large MoE bodies where one organ holds ~95% of the mass and only a few percent of it fires per token -- enormous redundancy to spend. A 0.6B dense body is small precisely because its weights are load-bearing; there is nothing to give back.",
+   "_evidence": "MEASURED, single dense patient, CPU. DISCOVERY-PHASE: no O0XX admission, so no TRANSFER_MATRIX row."
+  },
+  {
+   "id": "R-grouping-beats-bit-width-on-outlier-bodies",
+   "conditions": [
+    "weight distribution has significant per-tensor outlier range",
+    "a quantisation budget is being chosen"
+   ],
+   "then": "spend the first metadata on GROUPING before spending it on bit-width. Track local range with per-group scale+zero; per-tensor scaling on an outlier-heavy body is catastrophic at low bits.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B: per-tensor uniform at 4 bits gives perplexity 6,325,960x fp32 and top-1 0.000; per-GROUP affine at the SAME 4 bits gives 1.19x and top-1 0.748. Identical payload budget, roughly five-million-fold difference in damage."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a body is found where per-tensor and per-group scaling perform comparably at low bits -- that would indicate a benign weight distribution and make the grouping metadata pure waste.",
+   "physical_rationale": "a single scale must span the tensor's extreme values, so a few outliers consume the entire code space and the bulk of the distribution collapses into one or two levels. Grouping bounds the range each scale must cover.",
+   "_evidence": "MEASURED. Metadata cost is counted in the complete EBPW throughout, so the comparison is like-for-like: g16 buys top-1 0.820 but carries 2 bits/weight of metadata (33% of budget)."
+  },
+  {
+   "id": "R-organ-sensitivity-is-not-mass",
+   "conditions": [
+    "heterogeneous per-organ precision is being allocated"
+   ],
+   "then": "rank organs by MEASURED sensitivity, never by mass. Also check for a FLOOR: a tolerant organ crushed too far can cap achievable quality no matter how many bits the others get.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B: MLP is the DOMINANT organ (44.3% of linear mass) and at 2 bits costs 2218x perplexity; the embedding organ (26.1%) at 2 bits costs 2.33x -- ~1000x apart at the same budget, with the dominant organ being the sensitive one. AND the floor: embeddings at 2 bits cap quality at ~1.95x perplexity / top-1 0.593 even with attention and MLP left at 8 bits."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "an organ ranking derived from mass matches one derived from measured sensitivity on any body -- so far they were inverted.",
+   "physical_rationale": "mass says how many bytes an organ holds, not how much the output depends on each of them. Those are independent quantities and this body shows them anti-correlated.",
+   "_evidence": "MEASURED across 28 configurations with a verified-adequate verifier."
+  },
+  {
+   "id": "R-spectral-randomness-predicts-structural-failure",
+   "conditions": [
+    "a STRUCTURAL representation class is being considered (low-rank, shared basis, codebook, hot/cold, sparse residual)",
+    "the target organ's top-k singular-value energy is within ~2x of a matched random Gaussian"
+   ],
+   "then": "do NOT implement the structural class on that organ. It has no exploitable structure and will cost metadata for nothing. Spend the budget on bit-width, or on an organ with a higher ratio.",
+   "supporting_patients": [],
+   "negative_patients": [
+    "Qwen3-0.6B attention (kurtosis 6.76, hot/cold still failed)"
+   ],
+   "discovery_phase_evidence": [
+    "MEASURED on Qwen3-0.6B. MLP tensors: top-64 SV energy 1.32-1.69x a matched random Gaussian, kurtosis 3.70-4.00 (Gaussian is exactly 3.0). Embedding/lm_head: 3.15x. TWO structural classes were then tested and BOTH failed on the MLP exactly as the ratio predicts -- hot/cold with 1/2/5% outlier channels preserved was WORSE than uniform at LOWER EBPW (top-1 0.5734 vs 0.7476 at 4.334 vs 4.500), and low-rank r64+3b was worse on both axes (4.648 / 0.5695). The same low-rank class on the higher-ratio embedding organ was merely NEUTRAL rather than harmful (4.502 / 0.7339), so the ratio ranks tolerance correctly. See receipts/odyssey-i/O00X_MLP_SENSITIVITY_MECHANISM.json.",
+    "STRENGTHENED by G028: hot/cold was then tested on ATTENTION, the organ with the heaviest tail in the body (q_proj kurtosis 6.76 against the MLP's 3.7-4.0), on the explicit expectation that it would pay. It did NOT -- hot 10% + cold 3b gives top-1 0.6419 at EBPW 4.573 against the control's 0.7476 at 4.500. Product/vector codebooks (dim 2 and 4, 256-entry, codebook counted) also failed: top-1 0.3992 and 0.0059. SEVEN classes now tested on this body and not one beats plain grouped affine at matched EBPW. The threshold is therefore not merely 'ratio <~2 fails' -- kurtosis 6.76 was also insufficient, so heavy-tailedness alone does not license an outlier-preserving class."
+   ],
+   "confidence": "MEASURED",
+   "reopen_if": "a structural class pays on an organ whose spectral ratio is below ~2, or a ratio above ~3 produces a genuine WIN rather than the neutral result seen here -- the threshold is calibrated on ONE body and the embedding result shows 3.15x is still not sufficient.",
+   "physical_rationale": "structural compression classes all assume the information is concentrated -- in a few directions, a few channels, or a reusable dictionary. An organ whose spectrum matches random has its information spread uniformly across every weight, so any structural factorisation pays metadata to capture something that is not there.",
+   "_evidence": "MEASURED with a matched random-matrix control, which is what makes the ratio meaningful rather than an absolute SV number that varies with shape."
+  },
+  {
+   "id": "R-calibration-overfit-inflates-activation-aware-wins",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "An activation-aware codec scored on the SAME tokens its Hessian was calibrated on overstates its win by roughly 5x. Measured at 4 bits on Qwen3-0.6B MLP: +0.112 top-1 in-sample, +0.0196 on a disjoint corpus; KL reduction 89% in-sample, 29% held-out. Every activation-aware number must be reported held-out or it is not a number.",
+   "mechanism": "H = E[x x^T] is a property of the calibration corpus. Error compensation optimises the reconstruction against that corpus, so scoring on it measures fit to the calibration set, not preserved capability.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
+  },
+  {
+   "id": "R-activation-covariance-can-be-full-rank-while-anisotropic",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "Low-rank and error-compensating activation-aware methods ask different questions of H and can disagree. On Qwen3-0.6B MLP, H is near-full-rank (99.9% of energy needs 88% of hidden dims) so activation-aware LOW-RANK is dead, while H is strongly anisotropic (top 60% of directions hold 99%) so activation-aware PLACEMENT wins at identical bytes. Refuting one does not refute the other.",
+   "mechanism": "Rank asks how many directions may be DELETED; anisotropy asks where error may be PUT. A full-rank matrix with a steep spectrum answers 'none' and 'plenty' at the same time.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
+  },
+  {
+   "id": "R-error-compensation-inverts-below-three-bits",
+   "status": "MEASURED, and SPECIMEN-DEPENDENT (2 specimens)",
+   "specimens": [
+    "Qwen3-0.6B",
+    "LFM2.5-1.2B-Instruct"
+   ],
+   "statement": "GPTQ-style error compensation helps at 4 and 3 bits and is actively harmful at 2 (held-out top-1 0.0029 vs RTN 0.0459). Do not carry an activation-aware win down the bit ladder on the assumption it holds.",
+   "mechanism": "Compensation assumes a small perturbation and a locally quadratic loss. At 2 bits the residual is comparable to the weight, so propagated error is injected rather than absorbed.",
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json",
+   "amendment": "the inversion point is not fixed at 2 bits. On Qwen3-0.6B compensation helps at 4 and 3 and inverts at 2. On LFM2.5-1.2B EVERY arm is already worse than round-to-nearest at 3 bits (-0.0147, -0.0714, -0.0948). A whole bit earlier. Treat 'where it inverts' as a per-specimen measurement, not a constant."
+  },
+  {
+   "id": "R-residual-readers-align-writers-do-not",
+   "status": "UNIVERSAL CANDIDATE (7 architecture families, 0 violations)",
+   "specimens": [
+    "Qwen--Qwen3-0.6B",
+    "answerdotai--ModernBERT-large",
+    "microsoft--bitnet-b1.58-2B-4T-bf16",
+    "LiquidAI--LFM2.5-2.6B-Base",
+    "state-spaces--mamba3-mimo-1.5b",
+    "RWKV--RWKV7-13.3B-20260805",
+    "GSAI-ML--iLLaDA-8B-Base"
+   ],
+   "statement": "Cross-layer subspace alignment splits by RESIDUAL-STREAM SIDE. Organs that READ the residual align 1.37-7.51x above a matched random null; organs that read a per-layer space and WRITE into the residual sit at 0.98-2.23x. Within every specimen scored, every reader beats every writer: 7/7 across dense decoder, bidirectional encoder, native ternary, hybrid conv+attention, state-space, RWKV7 and a diffusion LM. Holds on bodies with no attention mechanism at all.",
+   "mechanism": "The residual stream is one shared object every layer reads, so it carries a preferred basis its readers partially align to. Per-layer spaces are not shared and have no common basis to align to.",
+   "falsifier": "a specimen whose writers align as well as its readers",
+   "cost_to_test": "weights only, no forward pass, 28-109s CPU",
+   "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json",
+   "superseded_form": "The first form said the split was input DIMENSION (in_dim == hidden_size). Refuted by its own transfer test: o_proj's input is n_heads*head_dim which usually EQUALS hidden_size, and those organs sit at chance on three of four new specimens.",
+   "falsifiers_run": "RWKV7 and iLLaDA were chosen BEFORE running as the likeliest breakers -- neither has a conventional attention block. Both hold.",
+   "caveat": "classify by role name informed by architecture, not by suffix: RWKV names both a reader (att.value) and a writer (ffn.value) 'value', and the dimension test (in_dim == hidden) is wrong because o_proj's input usually equals hidden too."
+  },
+  {
+   "id": "R-shared-basis-breakeven-is-set-by-dimensions-not-alignment",
+   "status": "MEASURED (derivation + 7 organs across 4 specimens)",
+   "specimens": [
+    "Qwen3-0.6B",
+    "bitnet-b1.58-2B",
+    "mamba3-mimo-1.5b",
+    "ModernBERT-large"
+   ],
+   "kind": "SEARCH POLICY -- removes an experiment class from future specimens",
+   "statement": "Sharing one input basis V (d x R) across n same-role layers of shape (m, d) costs d*R + n*m*R against a dense n*m*d, so break-even is R* = n*m*d/(d + n*m). Since every realistic body has n*m >> d, R* -> d: measured at 0.86-0.99 of full rank across 7 organs. Cross-layer alignment strength does not enter the formula, so a 5.6x-aligned organ is exactly as unpayable as a 1.0x one.",
+   "consequence": "Shared-input-basis cross-layer factorisation can be ruled out on any specimen by one line of arithmetic, before any SVD, calibration set or GPU window. Do not spend a search on it again.",
+   "does_not_rule_out": "forms whose cost is not governed by n*m/(d + n*m): a shared codebook (cost independent of layer count), cross-layer weight prediction (no basis stored), or alignment used as a prior to narrow an activation-aware search.",
+   "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json"
+  },
+  {
+   "id": "R-a-format-gap-is-not-a-negative-result",
+   "status": "MEASURED",
+   "specimens": [
+    "mamba3-mimo-1.5b"
+   ],
+   "kind": "METHOD",
+   "statement": "A prober that cannot OPEN a specimen reports the same thing as a specimen with no structure. mamba3-mimo returned zero roles because it ships pytorch_model.bin and the prober only opened safetensors; recorded as a negative it would have said 'the SSM family has no cross-layer structure'. Re-run after closing the format gap it gave the STRONGEST reader alignment of any specimen (5.26-5.38x).",
+   "rule": "an empty measurement is UNMEASURED until the instrument is shown to work on that input",
+   "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json"
+  },
+  {
+   "id": "R-sparse-correction-must-buy-its-budget-from-the-bulk",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "kind": "SEARCH POLICY -- removes an experiment class",
+   "statement": "At a matched EBPW equal to the bulk codec's own rate, a sparse correction has no budget except what it takes from the bulk. Buying 2.6% fp16 corrections (41 bits each with honest indices) costs a full bit on the other 97.4%. Measured: top-1 0.6266 vs 0.8231 at 4.5 EBPW, 0.0557 vs 0.5904 at 3.5. Independent of index encoding, because the budget can only come from the bulk.",
+   "consequence": "Do not search bulk+sparse at a target equal to the bulk rate. It is only worth testing where the budget EXCEEDS the bulk codec's rate, or where weight error is measurably concentrated.",
+   "cheap_precheck": "top-k error mass vs a matched random control; flat means do not bother",
+   "evidence": "receipts/odyssey-i/O00X_SPARSE_RESIDUAL_G049.json"
+  },
+  {
+   "id": "R-concentration-searches-fail-together-reallocation-does-not",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "Four representation classes failed on one body for one reason. Low-rank, activation-aware low-rank, cross-layer shared basis and sparse residual each look for CONCENTRATION in a different basis -- weight spectrum, activation eigenbasis, cross-layer basis, individual weight magnitude -- and the information is spread in all four. The only method that won never looks for concentration: error-compensating quantization reallocates the error it is already forced to make.",
+   "consequence": "When one concentration search fails on a specimen with a near-random spectrum, expect the others to fail too, and go straight to reallocation methods.",
+   "evidence": "receipts/odyssey-i/O00X_SPARSE_RESIDUAL_G049.json"
+  },
+  {
+   "id": "R-error-compensation-is-per-organ-gated-on-input-concentration",
+   "status": "THRESHOLD REFUTED BY PRE-REGISTERED TEST (3 specimens). Ordering survives as a RANKING only.",
+   "specimens": [
+    "Qwen3-0.6B",
+    "Falcon3-1B-Instruct",
+    "LFM2.5-1.2B-Instruct"
+   ],
+   "kind": "COMPILER RULE -- changes what the codec does, not just what is known",
+   "statement": "Error-compensating quantization helps only where the ORGAN'S INPUT COVARIANCE IS CONCENTRATED, and hurts where it is not. On Qwen3-0.6B, down_proj (input r99 = 40.2% of its dimension) gains +0.0216 held-out top-1 at 4 bits and +0.0215 at 3; gate/up (input r99 = 60.5%, the residual stream) LOSE 0.0107 and 0.0166. Applying it everywhere averages a win and a loss together and is strictly worse than applying it where it belongs.",
+   "how_to_use": "Eigendecompose H per input site, take r99 as a fraction of the input dimension, and run the compensating pass only on organs below the line (~50% here). Costs one eigendecomposition per site, seconds.",
+   "payoff": "At 3 bits, writer-only scores ppl 19.906 / KL 557.3 vs all-MLP's 20.887 / 591.2 -- better at identical bytes and a third of the compute.",
+   "why_it_is_evidence_and_not_a_story": "The prediction was derived from the stage-1 anisotropy measurement and written down BEFORE the arms were run, and it points the opposite way to the intuitive 'the residual stream is the structured object'.",
+   "evidence": "receipts/odyssey-i/O00X_PREREG_ORGAN_GATE_THRESHOLD.json + receipts/odyssey-i/O00X_ORGAN_GATE_THRESHOLD_REFUTED_LFM2.json",
+   "refutation": "Carried to Falcon3-1B the WITHIN-MODEL ORDERING holds at 4 bits (predicted gainer +0.0079, predicted loser -0.0029) and INVERTS at 3 (+0.0019 against +0.0137). And the practical advice reverses: on Qwen3-0.6B writer-only beat all-MLP at 3 bits, while on Falcon3-1B all-MLP is best at both widths. A rule that reverses at a bit width and gives opposite advice on two bodies is not the rule as stated.",
+   "weaker_form_NOT_YET_TESTED": "an ABSOLUTE threshold on r99 rather than a within-model ranking fits all four measurements: Qwen down_proj 0.402 gains, Qwen gate/up 0.605 loses, Falcon down_proj 0.094 gains, Falcon gate/up 0.287 gains -- so a threshold between 0.287 and 0.605. Falcon's organs are BOTH concentrated by Qwen's standard, which would explain why both gain and all-MLP wins there. FITTED AFTER SEEING THE POINTS. It is a hypothesis for a third specimen and the threshold must be declared before that run or the test is worthless.",
+   "the_honest_alternative": "the r99 signal may simply be weak, with Falcon's -0.0029 to +0.0137 inside run-to-run noise on one corpus. A third specimen decides between 'threshold' and 'no rule'.",
+   "what_still_stands": "activation-aware placement beats round-to-nearest at byte-identical cost on BOTH bodies -- that is unaffected. What is refuted is the claim about WHICH ORGANS to apply it to.",
+   "prereg_outcome": "A threshold of 0.35 was DECLARED IN ADVANCE and committed (50a5559d8) before the LFM2.5-1.2B run. LFM2's w1/w3 sit at r99 0.345 -- below the threshold, so predicted to gain -- and LOST 0.0117 held-out top-1 at 4 bits. Refuted by 0.005 of r99. A threshold of 0.30 would have passed, which is precisely why it was pre-registered; it is NOT being moved.",
+   "what_survives": "the within-model ORDERING only: the organ with lower r99 gains more than the organ with higher r99. Holds 3/3 at 4 bits, 2/3 at 3 bits (Falcon inverts at 3b). It ranks organs; it does not decide whether to treat any of them.",
+   "configuration_does_not_transfer_at_all": "three specimens, three answers to 'which organs to treat': Qwen writer-only wins at 3b, Falcon all-MLP wins at both widths, LFM2 all-MLP is WORST at both widths.",
+   "prescribed_procedure": "compute r99 per organ as a cheap RANKING (seconds), then run a 4-arm matched-EBPW sweep per specimen to decide what to treat. Do not inherit another body's configuration, and do not spend a GPU window on organ selection."
+  },
+  {
+   "id": "R-a-near-random-spectrum-does-not-license-a-random-draw",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "kind": "GUARD -- blocks a wrong inference from an earlier rule",
+   "statement": "A near-random SPECTRUM says the second-order structure is unexploitable. It does NOT say the values are arbitrary. Measured: replacing ONE of 84 MLP tensors with a seeded draw matched on per-group mean and standard deviation costs MORE quality (top-1 0.7312, KL 300.4) than 4-bit quantizing all 84 (0.8231, 136.6). Norm-matching changes nothing (0.7312), so it is not a magnitude artefact.",
+   "why_it_matters": "The spectral-randomness rule is the most reusable finding on this body and its most natural misreading is 'so the weights are noise'. They are not. A coarse quantization of every entry preserves the function; any summary that reproduces only the statistics does not.",
+   "evidence": "receipts/odyssey-i/O00X_PROCEDURAL_G050.json"
+  },
+  {
+   "id": "R-prior-knowledge-injection-can-make-a-small-body-worse",
+   "status": "MEASURED (1 agent, 2 conditions)",
+   "specimens": [
+    "Phi-4-mini-instruct as agent"
+   ],
+   "kind": "AGENT / WORKUNIT DESIGN",
+   "statement": "Handing a small instruct body a block of general prior rules made its classification accuracy go DOWN, 1/4 to 0/4. The rules named no specimen. It applied the most salient one indiscriminately, answering 'iterative diffusion denoising' for a ternary decoder and a bidirectional encoder.",
+   "consequence": "Do not assume knowledge transfer into the prompt is free. On a small body it acts as a prior strong enough to override the evidence in the same prompt. Test the injected version against the bare one on a calibration set before adopting it.",
+   "does_not_generalise_to": "larger bodies, or tasks with a closed answer set",
+   "evidence": "receipts/hcli-census/AGENT_QUALIFICATION.json"
   }
  ]
 }

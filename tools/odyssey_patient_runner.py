@@ -4051,7 +4051,7 @@ def validate_packet(
 def maybe_machine_note() -> dict:
     note = {"clean_box_ok": None, "reason": "machine_state not imported", "snapshot": None}
     try:
-        from tools.agentos.machine_state import clean_box_ok, snapshot
+        from hawking.machine_state import clean_box_ok, snapshot
 
         snap = snapshot()
         ok, reason = clean_box_ok(snap)

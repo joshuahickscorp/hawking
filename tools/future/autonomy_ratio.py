@@ -35,7 +35,7 @@ CONTENTION = ROOT / "receipts" / "future" / "CONTENTION_DECISIONS.jsonl"
 GOAL_START = "2026-09-07 02:00:00"
 
 sys.path.insert(0, str(ROOT))
-from hcli.engine import (  # noqa: E402  the authority, not a copy
+from hawking.engine import (  # noqa: E402  the authority, not a copy
     is_accepted_work,
     is_accepted_measurement,
 )

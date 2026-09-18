@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.flash_e13.wikimedia_corpus_materialization.v2",
+  "status": "PINNED_UTF8_CORPUS_MATERIALIZED__E13_OCCUPANCY_NOT_YET_INSPECTED",
+  "recorded_at": "2026-09-12T18:10:00Z",
+  "predeclaration": {
+    "path": "receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_CORPUS_PREDECLARATION_20260912.json",
+    "file_sha256": "531a4c2e4249064f69d5a3fbb516a40c0072786d19de2a48b73ae88122bdfb43",
+    "seal_sha256": "02ee682014e44046c9cf487025f0f8ca80f33866e37d0f3f29a74053e9e02fb0"
+  },
+  "transform": {
+    "owner": "tools/future/flash_e13_wikinews_corpus.py",
+    "owner_sha256": "76b8c5c5f229a667e354a5ce0b3433816c3ac1f46f31a6b577c2641cdc4c1efb",
+    "runtime": "Python 3 stdlib only",
+    "wall_seconds": 12.918094583
+  },
+  "sources": [
+    {
+      "dump_name": "enwikinews-20260901-pages-articles.xml.bz2",
+      "bytes": 47538740,
+      "upstream_sha1": "abc9721f42340c8fc073078a44d98ee8d3a74959",
+      "sha256": "68d2902cda5673cb912b084a1a2ff965f27f695cdb9dde7fe6989d44f49b7d9d",
+      "pages_seen": 112577,
+      "namespace_zero_pages": 43916,
+      "redirects_excluded": 21587,
+      "pages_emitted": 22329,
+      "emitted_utf8_bytes": 84970485,
+      "emitted_utf8_byte_limit_reached": false
+    },
+    {
+      "dump_name": "zhwiki-20260901-pages-articles1.xml-p1p187712.bz2",
+      "bytes": 254212741,
+      "upstream_sha1": "ce426a867d72952f189562683f0e2e119dea3845",
+      "sha256": "71f216ffbd5d6ba64d1a7c5570519c2e412e6f7163304287399d1f5e9c1af0df",
+      "pages_seen_before_bound": 20750,
+      "namespace_zero_pages_before_bound": 18992,
+      "redirects_excluded_before_bound": 5134,
+      "pages_emitted": 13857,
+      "emitted_utf8_bytes": 299962198,
+      "predeclared_emitted_utf8_byte_limit": 300000000,
+      "emitted_utf8_byte_limit_reached": true
+    }
+  ],
+  "corpus": {
+    "path": "/Users/scammermike/Library/Caches/Hawking/e13-wikimedia-broader-20260901/flash-e13-wikimedia-broader-corpus-20260901.txt",
+    "bytes": 384932683,
+    "sha256": "d0410eeee1f2527d7d36ee5da1a761fe8d802fb58947e0be86432c0a5d7d2776",
+    "utf8": true,
+    "pages_emitted": 36186,
+    "redistributed": false
+  },
+  "runtime_boundary": {
+    "model_loaded": false,
+    "tensor_payload_bytes_read": 0,
+    "row_extraction_performed": false,
+    "gpu_or_ane_execution": false,
+    "provider_started": false,
+    "daemon_or_web_restart": false,
+    "modellake_mutated": false
+  },
+  "next": "Run the unchanged frozen declaration through hawking gravity e13-evidence exactly once. Admit success or seal refusal without threshold tuning or a third corpus.",
+  "claim_boundary": "This verifies and materializes the sole broader corpus retry only. It does not establish cell occupancy, authorize tensor-row extraction, execute E13, establish a representation, construct a complete NR, measure EBPW/TPS/capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "1bc146183b9ab7bcdb0612d89eed71a9aa6af16618fd086f082a98cf822a8d49"
+}

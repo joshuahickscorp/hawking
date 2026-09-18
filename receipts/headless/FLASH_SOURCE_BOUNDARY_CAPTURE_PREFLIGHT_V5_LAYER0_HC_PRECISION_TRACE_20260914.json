@@ -1,0 +1,443 @@
+{
+  "admission_claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion.",
+  "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+  "capture_contract": {
+    "cache_payloads": "raw pre/post layer-4 cache arrays normalized to F32, with original dtype and shape retained",
+    "execution_scope": "one token through embedding and source layers 0..4 only",
+    "fresh_output_namespaces_required": true,
+    "initial_cache": "empty; source Qwen GDN defines both layer-4 cache slots as implicit zeros",
+    "layer0_trace": [
+      {
+        "layer": 0,
+        "ordinal": 0,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "attention_hyper_connection_normalized"
+      },
+      {
+        "layer": 0,
+        "ordinal": 1,
+        "shape": [
+          1,
+          1,
+          320
+        ],
+        "stage": "attention_hyper_connection_down_projection"
+      },
+      {
+        "layer": 0,
+        "ordinal": 2,
+        "shape": [
+          1,
+          1,
+          320
+        ],
+        "stage": "attention_hyper_connection_low_rank_activation"
+      },
+      {
+        "layer": 0,
+        "ordinal": 3,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "attention_hyper_connection_up_projection"
+      },
+      {
+        "layer": 0,
+        "ordinal": 4,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "attention_hyper_connection_mix_weights"
+      },
+      {
+        "layer": 0,
+        "ordinal": 5,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_hyper_connection_mixed"
+      },
+      {
+        "layer": 0,
+        "ordinal": 6,
+        "shape": [
+          1,
+          1,
+          4
+        ],
+        "stage": "attention_block_injection_weights"
+      },
+      {
+        "layer": 0,
+        "ordinal": 7,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_branch"
+      },
+      {
+        "layer": 0,
+        "ordinal": 8,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "post_attention_state"
+      }
+    ],
+    "layer0_trace_contract_version": 5,
+    "layer4_cache": {
+      "post_attention": [
+        {
+          "initialization": "PROVIDER_MATERIALIZED_AFTER_ATTENTION",
+          "shape": [
+            1,
+            3,
+            10240
+          ],
+          "state_role": "conv_state"
+        },
+        {
+          "initialization": "PROVIDER_MATERIALIZED_AFTER_ATTENTION",
+          "shape": [
+            1,
+            48,
+            128,
+            128
+          ],
+          "state_role": "recurrent_state"
+        }
+      ],
+      "pre_attention": [
+        {
+          "initialization": "IMPLICIT_SOURCE_ZERO_STATE_MATERIALIZED_BY_CAPTURE",
+          "shape": [
+            1,
+            3,
+            10240
+          ],
+          "state_role": "conv_state"
+        },
+        {
+          "initialization": "IMPLICIT_SOURCE_ZERO_STATE_MATERIALIZED_BY_CAPTURE",
+          "shape": [
+            1,
+            48,
+            128,
+            128
+          ],
+          "state_role": "recurrent_state"
+        }
+      ]
+    },
+    "native_manifest_required": true,
+    "payload_format": "raw little-endian F32 plus shape, byte count, and SHA-256 per seam",
+    "route_payloads": "exact ordered top-10 expert ids and F32 weights at layer 4",
+    "seams": [
+      {
+        "layer": null,
+        "ordinal": 0,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "embedding_hc_tiled"
+      },
+      {
+        "layer": 0,
+        "ordinal": 1,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 1,
+        "ordinal": 2,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "pre_ple"
+      },
+      {
+        "layer": 1,
+        "ordinal": 3,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "ple_additive_output"
+      },
+      {
+        "layer": 1,
+        "ordinal": 4,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 2,
+        "ordinal": 5,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 3,
+        "ordinal": 6,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection_layer4_input"
+      },
+      {
+        "layer": 4,
+        "ordinal": 7,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_hyper_connection_mixed"
+      },
+      {
+        "layer": 4,
+        "ordinal": 8,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_branch"
+      },
+      {
+        "layer": 4,
+        "ordinal": 9,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "attention_injection"
+      },
+      {
+        "layer": 4,
+        "ordinal": 10,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "mlp_hyper_connection_mixed"
+      },
+      {
+        "layer": 4,
+        "ordinal": 11,
+        "shape": [
+          10
+        ],
+        "stage": "router_top10_ids_and_weights"
+      },
+      {
+        "layer": 4,
+        "ordinal": 12,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "mlp_route_and_experts"
+      },
+      {
+        "layer": 4,
+        "ordinal": 13,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection_layer4_output"
+      }
+    ],
+    "source_checkpoint_mutation_allowed": false,
+    "source_manifest_required": true,
+    "source_semantics": "installed Qwen4-Exp provider math with layer-1 PLE and immutable source rows",
+    "token_id": 5423,
+    "token_index": 0
+  },
+  "claim_boundary": "Static fail-closed capture preflight only. Admission (owner-authorized or local-canonical) does not establish source/native parity, execute a model, qualify an NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "comparison_contract": {
+    "cache_hashes_are_not_hidden_states": true,
+    "continuous_metrics": [
+      "finite",
+      "max_abs",
+      "relative_l2",
+      "cosine",
+      "exact_sha256"
+    ],
+    "discrete_metrics": [
+      "ordered_route_ids_exact"
+    ],
+    "order": "compare the predeclared layer-0 trace in ordinal order, then canonical seams and layer-4 cache arrays; stop semantic attribution at the first differing payload",
+    "threshold_policy": "diagnostic only until matched provider/native dtype and reduction-order controls establish a predeclared numerical acceptance bound; exact hashes and routes may localize but cannot alone qualify semantics"
+  },
+  "existing_capture_inventory": {
+    "final_cache_identity_only": true,
+    "intermediate_hidden_payloads": 0,
+    "raw_f32_logits_steps": 2,
+    "sufficient_for_boundary_comparison": false
+  },
+  "native_frontier": {
+    "bytes": 36693,
+    "layer": 4,
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/PULSAR_LAYER4_HANDOFF_INITIALIZATION_CONTROL_20260912.json",
+    "raw_intermediate_payloads_present": false,
+    "reuse_boundary": "initialization and deterministic-scratch controls only; the historical suffix and non-PLE trajectory are not source-teacher evidence",
+    "seal_sha256": "667127b7d1731518ebc9c5fea467d96e5c3561e2589711ce395c65f649d1cb73",
+    "sha256": "596796516d64fb722daf2496b13377abd219bcea9ea0ad8f899250e1499d121e",
+    "status": "PASSED_LAYER4_HANDOFF_INITIALIZATION_CONTROLS",
+    "token_id": 5423,
+    "token_index": 0
+  },
+  "next_safe_action": "Provenance admission is ready (owner-authorized or local-canonical); science_status=UNEARNED. Perform one fresh protected 0..4/token-0 source capture and matching bounded native capture; stop at the first exact payload/route difference. Do not run another 48-layer replay first.",
+  "observed_unix_ns": 1789420334254665000,
+  "owner_admission": {
+    "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+    "authorization": {
+      "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+      "authorization_scope": "admit_external_greedy_reference_v2",
+      "claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion.",
+      "contract_status_vocabulary_note": "EXTERNAL_REFERENCE_STATUS names a sealed-complete source greedy reference; authority is admission_class, and science_status remains UNEARNED until ordered compare.",
+      "historical_git_snapshot": "a9c8b603fe2f06311324582ca722c55fd32aefb8",
+      "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+      "owner_signature_present": false,
+      "owner_signature_required": false,
+      "path": null,
+      "policy_note": "Detached machine-owner Ed25519 is not required for provenance-complete canonical local source captures. Scientific correctness remains unearned and is established only by later source/native comparison.",
+      "producer_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+      "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+      "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+      "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "schema": "hawking.flash.external_greedy_reference_local_canonical_admission.v1",
+      "science_status": "UNEARNED",
+      "science_unearned": true,
+      "sha256": null,
+      "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "sibling_capture": {
+        "hawking_packager_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+        "hawking_packager_sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6",
+        "historical_owner_authorization_required_suffix": true,
+        "historical_suffix_policy": "CAPTURED_...__OWNER_AUTHORIZATION_REQUIRED remains a sealed historical label; local-canonical admission supersedes the Ed25519 mandate without mutating capture.json.",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+        "sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+        "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED"
+      }
+    },
+    "authorization_present": false,
+    "science_status": "UNEARNED",
+    "source_input_identity": {
+      "config": {
+        "bytes": 4745,
+        "file": "config.json",
+        "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+      },
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "model_lake_manifest": {
+        "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+        "repo": "Qwen/Qwen3.8-Flash-Next",
+        "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+        "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+      },
+      "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "safetensors_index": {
+        "bytes": 170726,
+        "file": "model.safetensors.index.json",
+        "sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"
+      },
+      "schema": "hawking.flash.source_input_identity.v1",
+      "tokenizer": {
+        "bytes": 12809320,
+        "file": "tokenizer.json",
+        "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+      }
+    },
+    "status": "ADMITTED_LOCAL_CANONICAL_CAPTURE"
+  },
+  "reference_candidate": {
+    "bytes": 3393,
+    "candidate_only_until_admitted": true,
+    "generated_token_ids": [
+      271,
+      248045
+    ],
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "prompt_token_ids": [
+      5423,
+      799,
+      4581,
+      3817,
+      13
+    ],
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f"
+  },
+  "runtime_actions": {
+    "daemon_restarted": false,
+    "gpu_or_metal_started": false,
+    "kimi_loaded": false,
+    "model_loaded": false
+  },
+  "schema": "hawking.flash.source_boundary_capture_preflight.v2",
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "seal_sha256": "11cfef02c012886d9a29708f074267c2a2a1467cb1342e9f517e8587129294b5",
+  "source": {
+    "layer_types_0_through_4": [
+      "linear_attention",
+      "linear_attention",
+      "linear_attention",
+      "full_attention",
+      "linear_attention"
+    ],
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "ple_layer_ids": [
+      1
+    ]
+  },
+  "status": "WITHHELD_MISSING_SOURCE_AND_NATIVE_BOUNDARY_PAYLOADS"
+}

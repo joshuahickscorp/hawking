@@ -26,7 +26,7 @@ FLASH_SPECIMEN = Path(
     "Qwen--Qwen3.8-Flash-Next@34567a4712bc"
 )
 # Roadmap-documented Flash-Next pre-runtime audit numbers (H-ROADMAP.md:360)
-# and hcli.flash_next.EXPECTED_SAFETENSOR_SHARDS.
+# and hawking.flash_next.EXPECTED_SAFETENSOR_SHARDS.
 REQUIRED_SHARDS = 131
 REQUIRED_TENSORS = 1658
 REQUIRED_INDEXED_PAYLOAD_BYTES = 359_999_963_128
@@ -34,7 +34,6 @@ EBPW_THRESHOLD = 1.0
 TPS_THRESHOLD = 50.0
 PINNED_REVISION = "34567a4712bc9766c4449e2e98e4468bfa24d915"
 SCHEMA = "hawking.acceptance.gate.v1"
-HCLI_EXTRACT = Path("/tmp/acc5-hcli-src")
 
 ASSIGNED = (
     "FLASH_SOURCE_VERIFIED",
@@ -61,28 +60,8 @@ def _git_head() -> str:
     return (raw.stdout or "").strip()
 
 
-def _ensure_hcli() -> Path:
-    marker = HCLI_EXTRACT / "hcli" / "flash_next.py"
-    if marker.is_file():
-        return HCLI_EXTRACT
-    HCLI_EXTRACT.mkdir(parents=True, exist_ok=True)
-    archive = subprocess.run(
-        ["git", "-C", str(REPO), "archive", "HEAD", "hcli"],
-        capture_output=True,
-        check=True,
-    )
-    subprocess.run(
-        ["tar", "-x", "-C", str(HCLI_EXTRACT)],
-        input=archive.stdout,
-        check=True,
-    )
-    return HCLI_EXTRACT
-
-
-def _prepare_hcli_import() -> None:
-    root = str(_ensure_hcli())
-    if root not in sys.path:
-        sys.path.insert(0, root)
+def _prepare_hawking_import() -> None:
+    """Use the live Hawking package, never an archived former package."""
     repo = str(REPO)
     if repo not in sys.path:
         sys.path.insert(0, repo)
@@ -287,8 +266,8 @@ def accept_source_verified() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def call_run_flash_science_gate(emit: Path) -> dict[str, Any]:
-    _prepare_hcli_import()
-    from hcli.agentos.flash_science import run_flash_science_gate
+    _prepare_hawking_import()
+    from hawking.agentos.flash_science import run_flash_science_gate
 
     report = run_flash_science_gate(
         repo_root=str(REPO), emit=str(emit), timeout_s=20.0
@@ -372,7 +351,7 @@ def accept_first_gravity_organ() -> dict[str, Any]:
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
         },
         symbol={
-            "module": "hcli.agentos.flash_science",
+            "module": "hawking.agentos.flash_science",
             "name": "run_flash_science_gate",
             "kind": "call",
             "also_called": "tools.flash_gravity_doctor_cycle.main",
@@ -380,7 +359,7 @@ def accept_first_gravity_organ() -> dict[str, Any]:
         },
         command=cycle_ran["command"]
         + [
-            "hcli.agentos.flash_science.run_flash_science_gate",
+            "hawking.agentos.flash_science.run_flash_science_gate",
             f"--emit={science_path}",
         ],
         returncode=cycle_ran["returncode"],
@@ -440,8 +419,8 @@ def accept_first_gravity_organ() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def call_run_flash_graph_component(emit: Path) -> dict[str, Any]:
-    _prepare_hcli_import()
-    from hcli.agentos.flash_graph_component import run_flash_graph_component
+    _prepare_hawking_import()
+    from hawking.agentos.flash_graph_component import run_flash_graph_component
 
     cache = Path(__file__).resolve().parent / "_cache" / "receipts" / "headless"
     if not (cache / "FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json").is_file():
@@ -560,7 +539,7 @@ def accept_native_nf_kernel() -> dict[str, Any]:
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
         },
         symbol={
-            "module": "hcli.agentos.flash_graph_component",
+            "module": "hawking.agentos.flash_graph_component",
             "name": "run_flash_graph_component",
             "kind": "call",
             "also_called": "flash_noetic_q4_kernel_parity (Metal example)",
@@ -622,8 +601,8 @@ def accept_native_nf_kernel() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def call_run_flash_router_representation_ab(emit: Path) -> dict[str, Any]:
-    _prepare_hcli_import()
-    from hcli.agentos.flash_router_representation_ab import (
+    _prepare_hawking_import()
+    from hawking.agentos.flash_router_representation_ab import (
         run_flash_router_representation_ab,
     )
 
@@ -676,13 +655,13 @@ def accept_dense_vs_nf_ab() -> dict[str, Any]:
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
         },
         symbol={
-            "module": "hcli.agentos.flash_router_representation_ab",
+            "module": "hawking.agentos.flash_router_representation_ab",
             "name": "run_flash_router_representation_ab",
             "kind": "call",
             "file": "tools/acceptance/flash/run_gates.py",
         },
         command=[
-            "hcli.agentos.flash_router_representation_ab.run_flash_router_representation_ab",
+            "hawking.agentos.flash_router_representation_ab.run_flash_router_representation_ab",
             f"--root={FLASH_SPECIMEN}",
             f"--emit={run_path}",
         ],
@@ -775,8 +754,8 @@ def call_noetic_compiler() -> dict[str, Any]:
 
 def call_run_flash_executable_scaffold(emit: Path) -> dict[str, Any]:
     """Call the catalog module inside a temp repo so telemetry cannot dirty receipts/headless."""
-    _prepare_hcli_import()
-    from hcli.agentos.flash_executable import run_flash_executable_scaffold
+    _prepare_hawking_import()
+    from hawking.agentos.flash_executable import run_flash_executable_scaffold
 
     cache = Path(__file__).resolve().parent / "_cache" / "receipts" / "headless"
     science = ACCEPT / "FLASH_FIRST_GRAVITY_ORGAN.science.json"
@@ -880,7 +859,7 @@ def accept_full_noetic_executable() -> dict[str, Any]:
         },
         command=[
             "tools.odyssey.noetic_compiler.round_trip",
-            "hcli.agentos.flash_executable.run_flash_executable_scaffold",
+            "hawking.agentos.flash_executable.run_flash_executable_scaffold",
         ],
         returncode=0,
         stdout=stdout,

@@ -1,0 +1,69 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "68791470a9b6d69dff07b187e94e0ef2c22687a725f5bdedd875312ea5c04214",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:27:51.121630+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:27:51.121650+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:27:51.125788+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"fs.read on tools/accelerator/backend_contract.py lines 1007-1145 (file sha256 04a096f63bc8d832e166b2d1d51b4f5560ccb8841f6a54fcd9794ec5dc9db69f, 47273 bytes, 1364 total lines) returned a truncated window (4000 of 5644 bytes",
+      "outcome": "CONTINUE",
+      "reply_chars": 3768,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "fs.read on tools/accelerator/backend_contract.py lines 1007-1145 (file sha256 04a096f63bc8d832e166b2d1d51b4f5560ccb8841f6a54fcd9794ec5dc9db69f, 47273 bytes, 1364 total lines) returned a truncated window (4000 of 5644 bytes, 70.9%); visible content is the FPGA-HWIR backend section headed 'FPGA-HWIR (declared only; never HARDWARE_MEASURED)'.",
+    "FpgaHwirBackend declares backend_id=FPGA_BACKEND_ID, product='FPGA-HWIR', domain_kind=DomainKind.FPGA_HBM; execution_domain() returns declared_fpga_hbm_domain(); capabilities() sets physical=False, present=False, evidence_tier=fpga_evidence_tier(COST_MODEL), devices=(DECLARED_FPGA_HBM,), atlas_name='fpga', with notes 'declared FPGA-HWIR domain; no board on this machine', 'costs are COST_MODEL knobs; execute is FUNCTIONAL_SIM of HWIR', 'HARDWARE_MEASURED is refused on every path'.",
+    "cost() composes a two-hop COST_MODEL: host UMA hop via _law_bandwidth(law, METAL_DECLARED_BW_GB_S) with METAL_DECLARED_LATENCY_S, plus declared host-to-FPGA bridge hop via DECLARED_BRIDGE_BW_GB_S and DECLARED_BRIDGE_LATENCY_S; combined cost_model uses all_hops_physical=False and note 'FPGA-HWIR two-hop COST_MODEL: host UMA feature + declared bridge. Not a board timing claim.'",
+    "lower() validates the program, raises BackendContractError on refusal, imports tools.future.hwir, and emits HwirGraph with qualification='STATIC_ONLY', semantics_consumed='backend_contract_typed_program', one compute HwirNode, and DeviceBudget(device_id='declared-fpga-hwir', declared_not_measured=True); the window truncates mid-notes at 'low\u2026', so the tail of lower() and any following code are unobserved.",
+    "Bounded falsifier: a code path in this window yielding a hardware-measured or non-declared FPGA evidence tier, or physical=True/present=True. Not observed in the visible 70.9%; every visible FPGA path is declared/COST_MODEL/STATIC_ONLY with physical=False and present=False, so the hardware-withheld claim boundary is preserved and no qualification or release claim is supported."
+  ],
+  "provider_status": "TERMINAL",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [
+    "Keep all FPGA-HWIR claims at COST_MODEL / STATIC_ONLY / FUNCTIONAL_SIM tier; do not promote to HARDWARE_MEASURED or qualification.",
+    "If the truncated tail is required, re-read the same file with a narrower window (e.g. start_line 1100) rather than inferring from the 70.9% view."
+  ],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [
+    "tools/accelerator/backend_contract.py lines 1007-1145 (sha256 04a096f63bc8d832e166b2d1d51b4f5560ccb8841f6a54fcd9794ec5dc9db69f), single fs.read tool result, read_only, deterministic=true, observed_at 1789712853.704333"
+  ],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.read"
+  ],
+  "unresolved_questions": [
+    "What are the remaining notes entries and any post-lower() code in the truncated tail of lines ~1120-1145?",
+    "Does fpga_evidence_tier(COST_MODEL) ever return a tier above declared/COST_MODEL, and is such a tier reachable on the execute path?",
+    "Is 'HARDWARE_MEASURED is refused on every path' enforced by an explicit guard elsewhere in the file, or only asserted in notes?"
+  ],
+  "worker_attempt_id": "hawking-attempt-c648bb6968844e71",
+  "worker_id": "hawking-worker-1a82a600dccc4d57",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-ADFD23E4"
+}

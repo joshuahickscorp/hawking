@@ -313,3 +313,122 @@ permission-gated download. Don't force either without cause.
   lose `function=` too, then double up `=`). Fix the general pattern
   (optional tokens, required minimal anchor), not the one instance observed
   first, and keep watching for the next one.
+
+---
+
+# S007 STRUCTURAL INTERVENTION — EXPERIMENT 1 CLOSED, EXPERIMENT 2 RUNNING
+
+Everything above describes EXPERIMENT 1: an open-ended selfdev loop that ran
+66 cycles over ~10 hours and produced **zero** self-authored edits. That run is
+preserved, not deleted — `.hcli/selfdev/EXPERIMENT_1_PRESERVATION.json` holds
+the parent objective verbatim, the checkpoint, session state, process topology,
+resident identity, and a per-file sha256 of all 66 cycle transcripts, so a later
+reader can prove the restructuring destroyed nothing.
+
+## What experiment 1 actually proved
+
+Not that the substrate was broken — it was healthy by then. The finding is
+sharper: **nothing on the chat path ever required action.** A reply with no
+hypothesis, no test and no edit is a well-formed chat completion, so the harness
+logged "reachable 11/11" and moved on, 66 times.
+
+The discriminator is the comparison: the SAME body, on the bounded WorkUnit path
+(`Engine.execute` + a compiled WorkerPacket), wrote a function AND its test and
+had them accepted — commit `390842354`, receipt
+`receipts/future/G004_ACCEPTED_UNIT.json`. There a reply that is not a mutation
+FAILS THE UNIT. The deciding difference is whether not-acting is allowed to
+succeed.
+
+Measured, in `receipts/SELFDEV_EXPERIMENT_1_DIAGNOSIS.json`: 378 tool calls
+across 66 cycles, 100% read-only, `repo.edit` called zero times; 49 of 66 replies
+truncated before their tail (so the cycle-to-cycle handoff was scraped from
+noise); `MAX_CALLS=3` all spent reading; 65 plans across 70 turns, none
+executing; the `phase` field existed and only ever held `"developing"`.
+
+**One hypothesis was REFUTED and the refutation is worth as much as the finding.**
+"repo.edit was never in the menu" was disproved three ways: the session recorded
+`authority: write` (a runtime receipt that the engine existed), executing
+serve.py's own `openai_schemas(registry, builder_menu(True))` emits `repo.edit`
+with full typed parameters, and `hcli build` injects `--write` at cli.py:426.
+Acting on it would have "fixed" a gate that was never shut.
+
+## The four structural repairs
+
+1. **`fs.read` told the truth.** An out-of-range window returned `ok=True`,
+   `content:""`, `truncated:false`, with `end_line` BEFORE `start_line` — failure
+   reported as success. That is why a false belief survived 15 consecutive cycles
+   and cycle 47 walked a 247-line file toward line 1720. `truncated` cannot carry
+   this (past EOF nothing was cut), so the window now reports itself.
+2. **The loop can FAIL a cycle.** A phase machine
+   (ORIENT → HYPOTHESIS_REQUIRED → DISCRIMINATOR_REQUIRED → ACT_REQUIRED → VERIFY)
+   in the `phase` field that was already there and inert. A cycle that does not
+   produce what its phase demands is recorded FAILED and named back verbatim.
+   ACT is satisfied ONLY by the server's executed-tool trace showing `repo.edit`,
+   never by prose — cycle 66 echoed the literal words "repo.edit" while calling
+   nothing, and that string is now a negative control in the self-check.
+   Markers are read from the reply HEAD because generation is left-to-right and
+   74% of replies died before their tail.
+3. **The body can run its own discriminator.** The registry carries 109 tools;
+   the chat surface offered 11 and not one executed anything, while `/health`
+   advertised `TEST: "run admitted tests"`. `tests.run` existed and was
+   unreachable, so "write a RED discriminator" was an instruction with no
+   executable step. Exposed as a write-authority door only.
+4. **RED is earned, not asserted.** The DISCRIMINATOR phase asks the body to RUN
+   its test and answer `RED:` or `REFUTED:`; the harness records whether a RED was
+   EXECUTED (a `tests.run` call in the tool trace) or merely CLAIMED. A `REFUTED:`
+   closes the arc as a real result and retires the dead hypothesis into a
+   carried-forward do-not-repropose list — without that path the loop would have
+   demanded an edit for a defect just shown not to exist.
+
+## Two writers, two trees
+
+HCLI now develops in `.worktrees/hcli-selfdev` on branch `hcli-selfdev`; Claude's
+Odyssey science stays in the primary checkout. Proved on a live commit: an
+Odyssey commit moved main `a00ea4048 -> 4c7cfc71e` while the selfdev worktree
+stayed at `a00ea4048`. All 9 "HEAD MOVED (edit accepted)" events in experiment 1
+were Claude commits landing mid-cycle; the trailer check fixed the measurement,
+this removes the contamination.
+
+`harness.py` splits `ROOT` (the tree HCLI edits) from `CAMPAIGN` (the supervisor
+record, canonical in the primary checkout so it survives whatever happens to the
+worktree).
+
+## Deploy model (unchanged, and it bites)
+
+The daemon serves from the INSTALLED SNAPSHOT (`~/.local/share/hcli/current`),
+never the repo tree. A `chat_tools`/`tool_registry` change needs
+`PYTHONPATH=. python3.12 -m hcli install-shims` **and** a full surface restart.
+Start the surface FROM the worktree so `RepoContext.detect` resolves there —
+verified, and worth verifying again, because a worktree's `.git` is a FILE and a
+detector requiring a directory would escape upward and fail silently.
+
+## Where experiment 2 stands
+
+Restarted 11:25:55, snapshot `build-20260909-152444`, resumed from durable state
+with no objective reconstruction. Cycles 67 and 68 both advanced on evidence:
+
+- 67: `ORIENT -> DISCRIMINATOR_REQUIRED` — a falsifiable hypothesis naming
+  `hcli/engine.py`'s `Engine._validate` / `check_rust_file` and the exact test.
+- 68: `DISCRIMINATOR_REQUIRED -> ACT_REQUIRED` — discriminator named.
+
+Two evidence-driven transitions in two cycles, against zero in sixty-six. Note
+the hypothesis is FALSE (that test passes 4/4, checked independently) — which is
+a healthy falsifiable result, and exactly why the `REFUTED:` path had to exist
+before the body reached ACT.
+
+**G004 and G005 remain open and cannot be forced.** Claude's structural repairs
+explicitly do not count. If the repaired structure also produces a large
+population of non-transitioning cycles, S007 says re-diagnose rather than wait —
+the harness logs a loud `!! STUCK` line after 4 consecutive same-phase failures
+to force that.
+
+## Odyssey
+
+The ModelLake census is COMPLETE: 53 distinct specimens carry a real
+measurement, 0 remain classification-only, 2 resist static measurement entirely
+(evo2_40b split `.pt`, mamba3-mimo `.bin`) and are recorded as such.
+`receipts/odyssey-i/MODELLAKE_MARCH_SYNTHESIS.json` distils it into nine laws and
+six method traps — read that before touching specimen 46. What remains gated is
+execution and only execution: no capability battery, Gravity codec search,
+NR/NX build or physical run has happened, because all need the GPU the resident
+holds.

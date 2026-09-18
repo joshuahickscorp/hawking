@@ -329,6 +329,16 @@ impl Tokenizer {
         self.inner.get_vocab_size(true)
     }
 
+    /// Return the tokenizer's exact wire surface for one addressable id.
+    ///
+    /// This is deliberately distinct from [`Self::decode_one`]: byte-level
+    /// tokenizers can encode a surface such as `Ġ` while decoding it to a
+    /// leading space.  Evidence producers sometimes need both identities and
+    /// must not reconstruct the raw surface by reparsing `tokenizer.json`.
+    pub fn raw_token_surface(&self, id: u32) -> Option<String> {
+        self.inner.id_to_token(id)
+    }
+
     pub fn bos_id(&self) -> Option<u32> {
         self.bos_id
     }

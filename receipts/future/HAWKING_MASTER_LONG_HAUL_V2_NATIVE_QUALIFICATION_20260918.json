@@ -1,0 +1,286 @@
+{
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
+  "checks": {
+    "A1_direct_resident": true,
+    "A2_hawking_native_backend": true,
+    "A3_provider_abstraction": true,
+    "A4_hawking_plain_cognition": true,
+    "A5_hawking_structured_cognition": true,
+    "A6_full_hawking_task": false
+  },
+  "claim_kind": "measured_unmet",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "n_stages=6; n_errors=0; stage_rows=[{'stage': 'A1_direct_resident', 'status': 'PASSED', 'passed': None, 'backend_class': 'subprocess-resident', 'error': None}, {'stage': 'A2_hawking_native_backend', 'status': 'PASSED', 'passed': None, 'backend_class': 'HawkingNativeConnector', 'error': None}, {'stage': 'A3_provider_abstraction', 'status': 'PASSED', 'passed': None, 'backend_class': 'NoeticNativeBackend', 'error': None}, {'stage': 'A4_hawking_plain_cognition', 'status': 'PASSED', 'passed': None, 'backend_class': 'Controller/Engine.complete_text', 'error': None}, {'stage': 'A5_hawking_structured_cognition', 'status': 'PASSED', 'passed': None, 'backend_class': 'Controller/Engine.execute', 'error': None}, {'stage': 'A6_full_hawking_task', 'status': 'FAILED', 'passed': None, 'backend_class': 'hawking-command', 'error': None}]; checks={A1_direct_resident=True, A2_hawking_native_backend=True, A3_provider_abstraction=True, A4_hawking_plain_cognition=True, A5_hawking_structured_cognition=True, A6_full_hawking_task=False}; unmet=['A6_full_hawking_task']",
+  "elapsed_ns": 65611015084,
+  "errors": [],
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
+  "finished_at": 1789725234.4504871,
+  "interpretation": "required ladder stages unmet: ['A6_full_hawking_task']",
+  "probe_kind": "measured_flags",
+  "probe_performed": "live native reproduction ladder: A1 subprocess-resident, A2 HawkingNativeConnector.complete_payload, A3 NoeticNativeBackend.complete, A4 Controller.complete_text, A5 structured cognition, A6 hawking CLI task; profile /Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+  "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+  "prompt": "Reply with exactly HAWKING_OK.",
+  "prompt_contract": {
+    "chars": 99,
+    "estimated_tokens": 33,
+    "fallback_template": "qwen_closed_think",
+    "thinking_qualified": false,
+    "token_count_source": "estimated_without_transformers"
+  },
+  "qualification": "LIVE_NATIVE_HAWKING_LADDER",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/HAWKING_MASTER_LONG_HAUL_V2_NATIVE_QUALIFICATION_20260918.json",
+  "schema": "hawking.native_gate.v1",
+  "stages": [
+    {
+      "backend_class": "subprocess-resident",
+      "elapsed_ns": 3377543542,
+      "elapsed_s": 3.378,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "pid": 93449,
+      "ready": {
+        "completion_tokens": null,
+        "error": null,
+        "fallbacks": 0,
+        "finish_reason": null,
+        "generated_tokens": null,
+        "id": null,
+        "new_token_ids_len": null,
+        "prompt_tokens": null,
+        "status": "ready",
+        "text_len": null,
+        "text_preview": null
+      },
+      "request_id": "native-gate-a1",
+      "response": {
+        "completion_tokens": 6,
+        "error": null,
+        "fallbacks": 0,
+        "finish_reason": null,
+        "generated_tokens": 6,
+        "id": "native-gate-a1",
+        "new_token_ids_len": 6,
+        "prompt_tokens": 21,
+        "status": "ok",
+        "text_len": 10,
+        "text_preview": "'HAWKING_OK'"
+      },
+      "stage": "A1_direct_resident",
+      "status": "PASSED",
+      "timing_unit": "ns"
+    },
+    {
+      "backend_class": "HawkingNativeConnector",
+      "elapsed_ns": 3361710917,
+      "elapsed_s": 3.362,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "pid": 93517,
+      "response": {
+        "completion_tokens": 6,
+        "error": null,
+        "fallbacks": null,
+        "finish_reason": "stop",
+        "generated_tokens": null,
+        "id": "hawking-chat-c5d4ce4c-dbe3-4a3f-b1be-884a0df87ff1",
+        "new_token_ids_len": null,
+        "prompt_tokens": 21,
+        "status": null,
+        "text_len": 10,
+        "text_preview": "'HAWKING_OK'"
+      },
+      "stage": "A2_hawking_native_backend",
+      "status": "PASSED",
+      "timing_unit": "ns"
+    },
+    {
+      "backend_class": "NoeticNativeBackend",
+      "completion_result": {
+        "degraded": [],
+        "finish_reason": "stop"
+      },
+      "elapsed_ns": 3381248875,
+      "elapsed_s": 3.381,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "pid": 93581,
+      "response": {
+        "completion_tokens": 6,
+        "error": null,
+        "fallbacks": null,
+        "finish_reason": "stop",
+        "generated_tokens": null,
+        "id": "hawking-chat-54ee88c9-c266-4290-bc7f-055c439c6d1f",
+        "new_token_ids_len": null,
+        "prompt_tokens": 21,
+        "status": null,
+        "text_len": 10,
+        "text_preview": "'HAWKING_OK'"
+      },
+      "stage": "A3_provider_abstraction",
+      "status": "PASSED",
+      "timing_unit": "ns"
+    },
+    {
+      "backend_class": "Controller/Engine.complete_text",
+      "elapsed_ns": 24578807375,
+      "elapsed_s": 24.579,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "stage": "A4_hawking_plain_cognition",
+      "status": "PASSED",
+      "text_len": 10,
+      "text_preview": "'HAWKING_OK'",
+      "timing_unit": "ns"
+    },
+    {
+      "backend_class": "Controller/Engine.execute",
+      "elapsed_ns": 30539860750,
+      "elapsed_s": 30.54,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "receipt": "/Users/scammermike/Downloads/hawking/.hawking/receipts/d649f80d-675f-4157-92f4-1f53685f6bb8.json",
+      "result": {
+        "content": "HAWKING_OK",
+        "error": null,
+        "kind": "answer",
+        "receipt": "/Users/scammermike/Downloads/hawking/.hawking/receipts/d649f80d-675f-4157-92f4-1f53685f6bb8.json",
+        "status": "completed"
+      },
+      "stage": "A5_hawking_structured_cognition",
+      "status": "PASSED",
+      "timing_unit": "ns"
+    },
+    {
+      "backend_class": "hawking-command",
+      "command": [
+        "/Users/scammermike/.local/bin/hawking",
+        "--model",
+        "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+        "--task",
+        "Reply with exactly HAWKING_OK."
+      ],
+      "elapsed_ns": 54680541,
+      "elapsed_s": 0.055,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "returncode": 2,
+      "stage": "A6_full_hawking_task",
+      "status": "FAILED",
+      "stderr": "usage: hawking [-h] [--task TASK] [--task-file TASK_FILE] [--model MODEL]\n               [--plain] [--debug] [--workspace WORKSPACE]\n               [n_or_prompt] [prompt]\nhawking: error: --model '/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json' does not name an admitted Hawking-native artifact for execute; use an immutable admitted artifact id or profile\n",
+      "stdout": "",
+      "timing_unit": "ns"
+    }
+  ],
+  "started_at": 1789725168.8391922,
+  "status": "FAILED",
+  "timing_unit": "ns"
+}

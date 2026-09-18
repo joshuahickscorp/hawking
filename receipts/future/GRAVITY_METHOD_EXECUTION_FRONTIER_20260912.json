@@ -1,0 +1,98 @@
+{
+  "schema": "hawking.odyssey.gravity_method_execution_frontier.v1",
+  "artifact_kind": "current_execution_checkpoint",
+  "status": "REORDERED_PARTIAL_SEAL__E05_OWNER_ADMISSION_BLOCKED__E06_SEALED",
+  "date": "2026-09-12",
+  "purpose": "Record the dependency-ordered E frontier and the maximum scope sealed from current evidence without starting another broad campaign.",
+  "canonical_registry": {
+    "path": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+    "sha256": "f86009efac85e43e4cb990433a76dad1c05bb416ba3fa17df136e4efa06ec131"
+  },
+  "audit": {
+    "receipt_path": "receipts/future/GRAVITY_METHOD_FRONTIER_AUDIT_20260912.json",
+    "receipt_sha256": "908b666b8e7378edd830e4cbb1c0784edce90e3613ccf089f612bc81c0ee9db0",
+    "report_path": "docs/reports/GRAVITY_METHOD_FRONTIER_AUDIT_20260912.md",
+    "report_sha256": "fbf1825985a17c62d9c5d7e71dfa201e1c38ad10e623ef0ffeaf6c24ef1f4f08"
+  },
+  "sealed_at_current_scope": [
+    {
+      "id": "E01",
+      "state": "SEALED_FIXED_SHARED_VECTOR_CODE_NEGATIVE",
+      "evidence": "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json"
+    },
+    {
+      "id": "E02",
+      "state": "SEALED_FIXED_TOP8_PAIR_REPLICATION_NEGATIVE__ORIGINAL_PAIR_BOUNDED_SIGNAL_ONLY",
+      "evidence": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json"
+    },
+    {
+      "id": "E03",
+      "state": "SEALED_FIXED_ROUTER_NEGATIVE",
+      "evidence": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json"
+    },
+    {
+      "id": "E04",
+      "state": "SEALED_SYMBOLIC_FULL_RANK_NEGATIVE",
+      "evidence": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json"
+    },
+    {
+      "id": "E06",
+      "state": "SEALED_FIXED_ROW_NORM_CONDITIONAL_INFORMATION_PREFILTER_NEGATIVE",
+      "evidence": "receipts/headless/FLASH_E06_CONDITIONAL_INFORMATION_PREFILTER_BOUND_20260912.json"
+    },
+    {
+      "id": "E07",
+      "state": "SEALED_APPLY_NEGATIVE_TRANSFER_WITHOUT_INVOCATION",
+      "evidence": "receipts/future/GRAVITY_METHOD_FRONTIER_AUDIT_20260912.json"
+    }
+  ],
+  "carry_forward": [],
+  "native_lane": {
+    "id": "E05",
+    "state": "CAPTURED_EXTERNAL_PLE_TEACHER_CANDIDATE_AWAITING_MACHINE_OWNER_ADMISSION",
+    "session_receipt": {
+      "path": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+      "sha256": "8c248203f284f1f8889ba4bba3bc28c628fa9101a7cb0bbf07b2d744dabc9c05",
+      "status": "PASSED_COMPLETE_FORWARD_REFERENCE_REJECTED",
+      "accepted_generation_tokens": 0,
+      "first_rejection": {
+        "expected_token_id": 2972,
+        "predicted_token_id": 271,
+        "input_state_index": 4
+      }
+    },
+    "state_bank_manifest": {
+      "path": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/manifest.json",
+      "sha256": "3eaeff6ee49096f37210c7cfdec92db17d4062fc7dd10519027b7bf445487244",
+      "state_count": 7,
+      "state_width": 10240,
+      "upstream_PLE_inclusive_source_trajectory": false,
+      "claim": "diagnostic source-bound native boundary bank only"
+    },
+    "external_reference_candidate": {
+      "path": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+      "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "generated_token_ids": [271, 248045],
+      "admitted": false,
+      "blocked_only_on": "detached machine-admin Ed25519 owner authorization"
+    },
+    "next": "Admit the exact captured external PLE-inclusive teacher through the machine-owner gate, then localize source parity from layer 4 / token 0; do not launch another full replay first."
+  },
+  "remaining_cpu_static": [
+    {
+      "id": "E13",
+      "state": "WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN",
+      "evidence": "receipts/headless/FLASH_E13_VOCABULARY_PARTITION_FRONTIER_20260912.json",
+      "next": "Provide frequency, decoded-script, disjoint split, shuffled-null controls and an admitted canonical evidence producer before payload extraction."
+    }
+  ],
+  "parked_by_dependency": {
+    "E08_E09": "E05 accepted state bank and provenance classification",
+    "E10_E11": "source-realizable route/input or gate-preactivation bank",
+    "E12_E14": "boundary perturbation or query/KV control bank",
+    "E15": "adequate closed-function control bank and bounded grammar",
+    "E16": "E15 survivor plus genuine held-out task-family data"
+  },
+  "transition_checkpoint": "E02 and E06 are dispositioned. After E05 source-teacher admission/parity resolution and E13 disposition, perform the Endgame retrospective and return the released frontier to Odyssey. Do not force parked experiments merely to visit every label.",
+  "claim_boundary": "This checkpoint records experiment state and evidence scope. It is not a complete EBPW, capability, direct full-body execution, TPS, promotion, or Odyssey admission claim."
+}

@@ -1,0 +1,60 @@
+{
+  "active_job": "job-a0af3550-6ae9-4a87-83d0-8c8a383a83d8",
+  "blocker": {
+    "pid": 59762,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0006444816,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "D-BROWSER-POST_REPAIR-VERIFY-20260915",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "96013e180de53ed1a669cf6611b0beaa58b8651a9087383c1041204fd7880fb8",
+  "current_phase": "COMPLETE",
+  "driver_alive": false,
+  "driver_pid": 59762,
+  "exact_next_action": "Goal complete; durable result packet is available",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "receipts/future/workunits/D-BROWSER-POST_REPAIR-VERIFY-20260915_SEAL_B1.json",
+  "last_outcome": "COMPLETE",
+  "last_tool_dispatch": null,
+  "last_turn": 1,
+  "latest_real_seal": "receipts/future/workunits/D-BROWSER-POST_REPAIR-VERIFY-20260915_SEAL_B1.json",
+  "objective": "Close the documented browser verification gap in the existing disposable linked worktree. Use only .worktrees/browser-world-self-repair-20260915/browser_self_repair_fixture.html and .worktrees/browser-world-self-repair-20260915/test_browser_self_repair_fixture.py. The previous WorkUnit repaired the click handler and passing test but did not prove a later positive browser verification; its correction receipt is receipts/future/workunits/D-BROWSER-SELF-REPAIR-20260915_BROWSER_COMPLETION_RECTIFICAT",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-d6a1f748c41e4b26bb2a4eb9:tool-8",
+    "gen-1789521640-7OAhgrd5377FIbcGkSBy"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "COMPLETE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T01:20:44.668029+00:00",
+  "worker_attempt_id": "hawking-attempt-4e82bf2bc9f64a2a",
+  "worker_cost_usd": 0.0006444816,
+  "worker_id": "hawking-worker-2baafd6eb2f147fc",
+  "worker_kill_reason": "goal_complete",
+  "worker_last_heartbeat_at": 1789521583.3139489,
+  "worker_spawned_at": 1789521582.953202,
+  "worker_status": "RELEASED",
+  "workunit_id": "D-BROWSER-POST_REPAIR-VERIFY-20260915"
+}

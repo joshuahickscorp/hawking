@@ -1,4 +1,3 @@
-
 #[cfg(not(target_os = "macos"))]
 fn main() {
     eprintln!("gate-tropical: Metal-only gate (macOS / Apple Silicon). Nothing to do here.");
@@ -22,14 +21,53 @@ mod mac {
     use strand_quant::TrellisConfig;
 
     const OPT_COMBOS: [(&str, EncodeOpts); 4] = [
-        ("default", EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
-        ("tail", EncodeOpts { adaptive: true, tail_biting: true, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
-        ("affine", EncodeOpts { adaptive: true, tail_biting: false, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
-        ("tail+affine", EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
+        (
+            "default",
+            EncodeOpts {
+                adaptive: true,
+                tail_biting: false,
+                affine_min: false,
+                silence_bonus: 0.0,
+                entropy_bonus_scale: 0.0,
+                entropy_bonus_two_pass: false,
+            },
+        ),
+        (
+            "tail",
+            EncodeOpts {
+                adaptive: true,
+                tail_biting: true,
+                affine_min: false,
+                silence_bonus: 0.0,
+                entropy_bonus_scale: 0.0,
+                entropy_bonus_two_pass: false,
+            },
+        ),
+        (
+            "affine",
+            EncodeOpts {
+                adaptive: true,
+                tail_biting: false,
+                affine_min: true,
+                silence_bonus: 0.0,
+                entropy_bonus_scale: 0.0,
+                entropy_bonus_two_pass: false,
+            },
+        ),
+        (
+            "tail+affine",
+            EncodeOpts {
+                adaptive: true,
+                tail_biting: true,
+                affine_min: true,
+                silence_bonus: 0.0,
+                entropy_bonus_scale: 0.0,
+                entropy_bonus_two_pass: false,
+            },
+        ),
     ];
 
     fn for_each_case(mut check: impl FnMut(String, &[f32], &TrellisConfig, &EncodeOpts)) {
-        
         let mut seed = 0x7209_1CA1u64;
         for k in [1u32, 2, 3, 4] {
             for l in [4u32, 5, 6, 7] {
@@ -66,7 +104,9 @@ mod mac {
             for (oname, opts) in &OPT_COMBOS[..2] {
                 check(
                     format!("k={k} L={l} outlier-shaped n=4096 opts={oname}"),
-                    &w, &cfg, opts,
+                    &w,
+                    &cfg,
+                    opts,
                 );
             }
         }
@@ -76,17 +116,28 @@ mod mac {
             let vals = [0.0f32, 0.5, -0.5, 0.25];
             let w: Vec<f32> = (0..2048).map(|i| vals[i % vals.len()]).collect();
             for (oname, opts) in &OPT_COMBOS[..2] {
-                check(format!("k={k} L={l} tie-cyclic n=2048 opts={oname}"), &w, &cfg, opts);
+                check(
+                    format!("k={k} L={l} tie-cyclic n=2048 opts={oname}"),
+                    &w,
+                    &cfg,
+                    opts,
+                );
             }
             let base = normal_vec(2048, 0x71E5_0000 + (k as u64) << 16 | l as u64);
             let enc = encode_tensor_with_lut_metric(
-                &base, &cfg, &OPT_COMBOS[0].1, codebook_lut(cfg.l_bits), true,
+                &base,
+                &cfg,
+                &OPT_COMBOS[0].1,
+                codebook_lut(cfg.l_bits),
+                true,
             );
             let snapped = strand_quant::decode::decode_tensor(&enc, &cfg);
             for (oname, opts) in &OPT_COMBOS[..2] {
                 check(
                     format!("k={k} L={l} tie-snapped n=2048 opts={oname}"),
-                    &snapped, &cfg, opts,
+                    &snapped,
+                    &cfg,
+                    opts,
                 );
             }
         }
@@ -95,12 +146,27 @@ mod mac {
             let cfg = TrellisConfig::new(7, 3, 256);
             let zeros = vec![0.0f32; 300];
             for (oname, opts) in &OPT_COMBOS {
-                check(format!("k=3 L=7 all-zeros n=300 opts={oname}"), &zeros, &cfg, opts);
+                check(
+                    format!("k=3 L=7 all-zeros n=300 opts={oname}"),
+                    &zeros,
+                    &cfg,
+                    opts,
+                );
             }
             let consts = vec![0.37f32; 512];
-            check("k=3 L=7 constant n=512 opts=tail".into(), &consts, &cfg, &OPT_COMBOS[1].1);
+            check(
+                "k=3 L=7 constant n=512 opts=tail".into(),
+                &consts,
+                &cfg,
+                &OPT_COMBOS[1].1,
+            );
             let one = [1.25f32];
-            check("k=3 L=7 n=1 opts=default".into(), &one, &cfg, &OPT_COMBOS[0].1);
+            check(
+                "k=3 L=7 n=1 opts=default".into(),
+                &one,
+                &cfg,
+                &OPT_COMBOS[0].1,
+            );
         }
     }
 
@@ -114,13 +180,17 @@ mod mac {
         let mut fails = 0usize;
         let mut skipped = 0usize;
         for_each_case(|label, w, cfg, opts| {
-            
             let lanes: [(&str, Option<_>, _); 2] = [
                 (
                     "full-gpu",
                     gpu.encode_tensor(w, cfg, opts),
                     encode_tensor_with_lut_metric_search(
-                        w, cfg, opts, codebook_lut(cfg.l_bits), true, true,
+                        w,
+                        cfg,
+                        opts,
+                        codebook_lut(cfg.l_bits),
+                        true,
+                        true,
                     ),
                 ),
                 (
@@ -138,7 +208,7 @@ mod mac {
                 cases += 1;
                 if gpu_enc != cpu_enc {
                     fails += 1;
-                    
+
                     let bit_diff = gpu_enc
                         .bits
                         .iter()
@@ -187,7 +257,9 @@ mod mac {
     }
 
     fn cpu_threads() -> usize {
-        std::thread::available_parallelism().map(|p| p.get()).unwrap_or(1)
+        std::thread::available_parallelism()
+            .map(|p| p.get())
+            .unwrap_or(1)
     }
 
     fn cpu_mt_mws(n_per_thread: usize, cfg: &TrellisConfig, f32_metric: bool, seed: u64) -> f64 {
@@ -200,7 +272,11 @@ mod mac {
                 hs.push(s.spawn(move || {
                     let w = normal_vec(n_per_thread, seed + t as u64);
                     let e = encode_tensor_with_lut_metric(
-                        &w, &cfg, &EncodeOpts::default(), codebook_lut(cfg.l_bits), f32_metric,
+                        &w,
+                        &cfg,
+                        &EncodeOpts::default(),
+                        codebook_lut(cfg.l_bits),
+                        f32_metric,
                     );
                     e.bits.len()
                 }));
@@ -212,7 +288,11 @@ mod mac {
         println!(
             "    cpu {}T {:<22} {mws:9.3} Mw/s aggregate  ({dt:.2}s, sink={sink})",
             nt,
-            if f32_metric { "(f32 metric)" } else { "(canon f64)" },
+            if f32_metric {
+                "(f32 metric)"
+            } else {
+                "(canon f64)"
+            },
         );
         mws
     }
@@ -226,10 +306,24 @@ mod mac {
         println!("   => death arithmetic.\n");
 
         let configs: [(&str, u32, u32, usize, usize, u32); 4] = [
-            ("k=3 L=7  (3-bit product geometry)", 3, 7, 8 << 20, 1 << 19, 2),
+            (
+                "k=3 L=7  (3-bit product geometry)",
+                3,
+                7,
+                8 << 20,
+                1 << 19,
+                2,
+            ),
             ("k=2 L=7", 2, 7, 8 << 20, 1 << 19, 2),
             ("k=2 L=10 (envelope edge)", 2, 10, 2 << 20, 1 << 17, 2),
-            ("k=2 L=12 (2-bit op point, stretch)", 2, 12, 2 << 20, 1 << 16, 2),
+            (
+                "k=2 L=12 (2-bit op point, stretch)",
+                2,
+                12,
+                2 << 20,
+                1 << 16,
+                2,
+            ),
         ];
 
         for (name, k, l, n_gpu, n_cpu1, iters) in configs {
@@ -240,7 +334,11 @@ mod mac {
             let w = normal_vec(n_gpu, 0x90D0_0000 + l as u64);
             let mut gpu_full_mws = 0.0f64;
             for full_lane in [true, false] {
-                let label = if full_lane { "full-gpu (f32 search)" } else { "prep-cpu (f64 search)" };
+                let label = if full_lane {
+                    "full-gpu (f32 search)"
+                } else {
+                    "prep-cpu (f64 search)"
+                };
                 let run = |ww: &[f32]| -> usize {
                     let e = if full_lane {
                         gpu.encode_tensor(ww, &cfg, &opts)
@@ -249,7 +347,7 @@ mod mac {
                     };
                     e.map(|e| e.bits.len()).unwrap_or(0)
                 };
-                let _ = run(&w[..(1 << 16)]); 
+                let _ = run(&w[..(1 << 16)]);
                 let t0 = Instant::now();
                 let mut sink = 0usize;
                 for _ in 0..iters {
@@ -271,21 +369,31 @@ mod mac {
                 let mut sink = 0usize;
                 for _ in 0..iters {
                     sink += encode_tensor_with_lut_metric(
-                        &w1, &cfg, &opts, codebook_lut(cfg.l_bits), m,
+                        &w1,
+                        &cfg,
+                        &opts,
+                        codebook_lut(cfg.l_bits),
+                        m,
                     )
                     .bits
                     .len();
                 }
                 let dt = t0.elapsed().as_secs_f64();
                 let mws = (n_cpu1 as f64 * iters as f64) / dt / 1e6;
-                println!("    cpu  1T {label:<22} {mws:9.3} Mw/s            ({dt:.2}s, sink={sink})");
+                println!(
+                    "    cpu  1T {label:<22} {mws:9.3} Mw/s            ({dt:.2}s, sink={sink})"
+                );
             }
 
             let mt_f32 = cpu_mt_mws(n_cpu1, &cfg, true, 0xFA57_0000 + l as u64);
             let mt_f64 = cpu_mt_mws(n_cpu1, &cfg, false, 0xFA58_0000 + l as u64);
             let vs_f32 = gpu_full_mws / mt_f32;
             let vs_f64 = gpu_full_mws / mt_f64;
-            let verdict = if vs_f64 >= 2.0 { "PASS (>= 2x bar)" } else { "BELOW the 2x kill bar" };
+            let verdict = if vs_f64 >= 2.0 {
+                "PASS (>= 2x bar)"
+            } else {
+                "BELOW the 2x kill bar"
+            };
             println!(
                 "    -> full-gpu = {vs_f32:.2}x all-cores-f32, {vs_f64:.2}x all-cores-canon-f64   [{verdict}]\n"
             );
@@ -294,7 +402,14 @@ mod mac {
 
     fn run_diag(gpu: &TropicalEncoder) {
         println!("== DIAG: search vs Viterbi split (adaptive sub-scales ON vs OFF) ==");
-        let no_adapt = EncodeOpts { adaptive: false, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false };
+        let no_adapt = EncodeOpts {
+            adaptive: false,
+            tail_biting: false,
+            affine_min: false,
+            silence_bonus: 0.0,
+            entropy_bonus_scale: 0.0,
+            entropy_bonus_two_pass: false,
+        };
         let def = EncodeOpts::default();
         for (k, l, n_gpu, n_cpu) in [(3u32, 7u32, 8usize << 20, 1usize << 19)] {
             let cfg = TrellisConfig::new(l, k, 256);
@@ -302,7 +417,10 @@ mod mac {
             let w1 = normal_vec(n_cpu, 0xD1A6_1111 + l as u64);
             for (oname, opts) in [("adaptive", &def), ("no-adapt", &no_adapt)] {
                 let t0 = Instant::now();
-                let s = gpu.encode_tensor(&w, &cfg, opts).map(|e| e.bits.len()).unwrap_or(0);
+                let s = gpu
+                    .encode_tensor(&w, &cfg, opts)
+                    .map(|e| e.bits.len())
+                    .unwrap_or(0);
                 let g = n_gpu as f64 / t0.elapsed().as_secs_f64() / 1e6;
                 let t0 = Instant::now();
                 let sp = gpu
@@ -334,7 +452,6 @@ mod mac {
             ok = run_identity(&gpu);
         }
         if !ok {
-            
             std::process::exit(1);
         }
         if mode == "bench" || mode == "all" {

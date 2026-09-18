@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.long_haul.v2.research_packet_recovery.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:54:31Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "endpoint": "http://127.0.0.1:8014/v1/chat/completions",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "workunit_shaped_probe": {
+    "initial_tool": "fs.read",
+    "tool_call_count": 1,
+    "terminal_tool_count": 0,
+    "terminal_packet_chars": 3711,
+    "completion": {
+      "complete": true,
+      "unmet": [],
+      "successful_tools": ["fs.read"],
+      "continuation_turns": 1,
+      "calls_used": 1,
+      "reason": "evidence_contract_satisfied"
+    }
+  },
+  "tool_call_qualified": true,
+  "claim_boundary": "Provider/workunit protocol recovery only. The probe does not accept any P tranche or promote provider output."
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P20_NATIVE_RUNTIME_RECONCILIATION_V1",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-P20-NATIVE-RUNTIME-RECONCILIATION-20260918",
+  "owner": "local P20 release reconciler",
+  "reconciled_at": "2026-09-18T10:02:00Z",
+  "inputs": [
+    "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_P20_FINAL_HANDOFF_FOCUSED_REVIEW_20260918.json",
+    "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_NATIVE_ARTIFACT_BUILD_20260918.json",
+    "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_NATIVE_QUALIFICATION_20260918.json",
+    "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_NATIVE_MISSION_QUALIFICATION_20260918.json",
+    "workspace/campaign/odyssey/gravity-artifacts.json",
+    "hawking/hawking-native.sealed-3.14.json"
+  ],
+  "stale_claims_retired": [
+    {
+      "claim": "native artifact is missing",
+      "current_evidence": "release-fast ascension_qwen38_hybrid_greedy and ascension_qwen38_resident now exist and passed CLI entry checks"
+    },
+    {
+      "claim": "model payload is missing",
+      "current_evidence": "profile artifact_root /Users/scammermike/noetic/NOETIC_PARENT_A exists with catalog.hq38m20, tokenizer.json, and 9.9G payload"
+    }
+  ],
+  "current_evidence": {
+    "native_gate": "A1-A5 PASSED; A6 failed only at the public CLI selector",
+    "native_mission": "PASSED all typed-tool, native-cognition, deterministic-verifier, WorkUnit, and result-envelope checks",
+    "cloud_auto_residency": "model-free after explicit native probe; hawkingd remains hawking-auto with resident null",
+    "provider_workunits_launched": 0
+  },
+  "intentional_boundary_preserved": {
+    "normal_selector": "gravity_only",
+    "sealed_profile": "archived from the normal selector by explicit registry policy",
+    "reason": "sealed-3.14 is legacy Qwen3.8/Ascension and is not part of the current single-body operational surface",
+    "interpretation": "A6 public CLI refusal is a catalog-policy boundary, not evidence that the native binary or local runtime is broken."
+  },
+  "remaining_release_conditions": [
+    "Do not promote sealed-3.14 into Cloud Auto or the normal catalog without an explicit qualified artifact/admission decision.",
+    "Broader physical/runtime/hardware qualification remains incomplete.",
+    "P20 final handoff and the remaining objective acceptance matrix remain incomplete."
+  ],
+  "claim_boundary": "Current P20 reconciliation accepts the fresh local native evidence and retires stale artifact-missing claims. It does not claim P20 completion, normal-catalog promotion, public CLI release, hardware qualification, or full-objective completion.",
+  "falsifier": "A current artifact census or native mission showing missing binaries, failed A1-A5, verifier failure, unintended Cloud Auto residency, or a changed catalog policy invalidates this reconciliation."
+}

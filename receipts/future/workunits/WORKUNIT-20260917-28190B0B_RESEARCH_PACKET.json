@@ -1,0 +1,241 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "8c2a4b721c92511e52ce04251f3fd93cd3dbd88fb306daf28ea1c941ba713b23",
+  "evidence": [
+    {
+      "at": "2026-09-18T03:38:53.340885+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:38:53.340896+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:38:53.344459+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"owner_map\",\"statement\":\"Canonical owners: Goal=hawking/goal.py+goal_bank.py; frontier reconciliation=hawking/goal_surface.py; WorkUnit=hawking/workunit_owner.py (dead-lettering, provider-output classifica",
+      "outcome": "CONTINUE",
+      "reply_chars": 5431,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T03:38:53.351545+00:00",
+      "kind": "research_worker_partial_packet",
+      "parent_terminal": false,
+      "provider_status": "EVIDENCE_RETURNED",
+      "reason": "provider_nonterminal_after_read_evidence",
+      "result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/WORKUNIT-20260917-28190B0B_RESEARCH_PACKET.json",
+      "status": "PARTIAL",
+      "successful_read_tools": [
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ]
+    },
+    {
+      "at": "2026-09-18T03:42:27.631519+00:00",
+      "calls_used": 13,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:42:27.631538+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:42:27.638728+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"owner_map\",\"claim\":\"WorkUnit owner = hawking/workunit_owner.py (315,628 B, 6,897 lines): Hawking-owned long-run workunit loop; reuses hawkingd chat tools, session compact/resume, canonical native role/art",
+      "outcome": "CONTINUE",
+      "reply_chars": 5399,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T03:45:26.350871+00:00",
+      "calls_used": 11,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:45:26.350880+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:45:26.354850+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"owner_map\",\"claim\":\"Goal owner: hawking/goal.py (WorkUnitDAG = compiler IR over canonical WorkUnit); disk projection hawking/dag_store.py (_unit_to_disk); frontier reconciliation hawking/goal_surface.py (",
+      "outcome": "CONTINUE",
+      "reply_chars": 5949,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T03:47:45.403106+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:47:45.403118+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:47:45.406727+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"claim\":\"Hawking owns Goal, WorkUnit, authority, effects, tests, Git evidence, continuation; providers are cognition-only workers whose mutations are validated/executed by the canonical repo.edit owner; child OUT",
+      "outcome": "CONTINUE",
+      "reply_chars": 5569,
+      "tool_less_continue_streak": 4,
+      "tool_signal": "none",
+      "turn": 4
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    {
+      "claim": "Hawking owns Goal, WorkUnit, authority, effects, tests, Git evidence, continuation; providers are cognition-only workers whose mutations are validated/executed by the canonical repo.edit owner; child OUTPUT_UNUSABLE does not fail the root.",
+      "evidence": "HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md \u00a72, sha256 6fc245eb",
+      "id": "O1"
+    },
+    {
+      "claim": "WorkUnit owner: hawking/workunit_owner.py \u2014 child dead-lettering, PROVIDER_OUTPUT_UNUSABLE classification, authority-gated mutation flow, parent-liveness isolation; dead letters in .hawking/provider-dead-letters/ must not be blindly replayed.",
+      "evidence": "V1 closeout \u00a73, \u00a75",
+      "id": "O2"
+    },
+    {
+      "claim": "Goal/frontier owner: hawking/goal_surface.py (dependency-aware frontier reconciliation); supervision owner: hawking/supervisor_watcher.py (objective-digest caching, delta-only decisions); Auto owner: hawking/auto_orchestration.py recommends bounded concurrency only, admission stays authoritative elsewhere, and must not collapse audit/review separation (line 319).",
+      "evidence": "V1 closeout \u00a73; fs.search hit auto_orchestration.py:319",
+      "id": "O3"
+    },
+    {
+      "claim": "Runtime owner: one sovereign hawkingd process tree; hawking/hawkingd.py holds a crash-safe flock DaemonLease at ~/.hawking/hawkingd.lock; ownership by pid + process start token, never argv; canonical providers are daemon-created native children or IPC peers.",
+      "evidence": "hawking/hawkingd.py lines 1-~120, sha256 3457debe",
+      "id": "O4"
+    },
+    {
+      "claim": "Role resolver: hawking/canonical_runtime.py maps pulsar/magnetar/themis/hawking-auto to Gravity-admitted noetic_native artifacts only; missing qualification is structured withholding (RuntimeRoleUnavailable, ROLE_WITHHELD), never a fallback; machine is serial single-resident, co-residency unearned.",
+      "evidence": "hawking/canonical_runtime.py lines 1-~90, sha256 2aacd449",
+      "id": "O5"
+    },
+    {
+      "claim": "V2 collapse-frontier bottleneck is decomposition, not micro-audits: handoff mandates re-decomposition into larger coherent tranches; carry-forward debts E_MACOS_CAPTURE_OCR and P1_PROVIDER_TOOL_RECEIPT_CONTINUATION_REPAIR are on the do-not-blindly-retry list.",
+      "evidence": "V1 closeout \u00a76, \u00a79, \u00a710",
+      "id": "O6"
+    },
+    {
+      "claim": "Live campaign state: active continuation is GOAL-F4F72EFC0A/t14 on hawking/remote_cognition.py::_workunit_completion_contract; zero-measurement depth axis is nx_disposition (30 REFUSED, 26 OWED, 0 MEASURED); 31 priors live; latest V2 receipts are AUTO_REFILL/THROUGHPUT/PROVIDER_ROUTE_QUALIFICATION_20260918.",
+      "evidence": "campaign.state result tool-c91d7eaa",
+      "id": "O7"
+    },
+    {
+      "claim": "Baseline: 2000 passed, 20 skipped, 28 subtests passed in 62.36s at V1 closeout; V1 budget $55.00 authorized, $0.665 spent, $54.34 remaining.",
+      "evidence": "V1 closeout \u00a74, \u00a78",
+      "id": "O8"
+    }
+  ],
+  "provider_status": "CONTINUE",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [
+    {
+      "boundary": "read-only; no mutation; no dead-letter replay; no protected resources",
+      "claim": "Smallest independently actionable next tranche: read hawking/goal_surface.py frontier reconciliation and hawking/auto_orchestration.py admission boundary, then produce a tranche map where each V2 tranche names one owner file, one falsifier, one receipt path. Disjoint from sealed E_MACOS_CAPTURE_OCR and P1_PROVIDER_TOOL_RECEIPT_CONTINUATION_REPAIR debts and from active GOAL-F4F72EFC0A completion-contract work.",
+      "falsifier": "Falsified if goal_surface.py already exposes a runnable multi-tranche frontier with per-tranche owners and receipt paths; then the bottleneck claim is wrong and the work reduces to wiring Auto admission to it.",
+      "id": "R1",
+      "tranche": "V2-TRANCHE-FRONTIER-REDECOMPOSITION"
+    },
+    {
+      "claim": "Do not retune sealed gates (KIMI_P0 blind-write scar, E_MACOS_CAPTURE_OCR); both are frozen/parked by sovereign-goal and handoff \u00a710.",
+      "evidence": "campaign.state authoritative_parent; V1 closeout \u00a710",
+      "id": "R2"
+    }
+  ],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [
+    "HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md sha256 6fc245eb367a7471d28d711a3d70747afe1a57ffdc5c545fa2c14e2a7518336e",
+    "hawking/hawkingd.py sha256 3457debe706e1a0f13ea5f1103dea18330d30346e2a462c78713575040a4f45c",
+    "hawking/canonical_runtime.py sha256 2aacd449b3cb9edfe127f99c82dcb1a9d506511ee0702f8761cde139f8ba1458",
+    "hawking/auto_orchestration.py:319 via fs.search 'collapse'",
+    "campaign.state tool result tool-c91d7eaa-6892-400b-b105-b1e9d54d8b86"
+  ],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.list",
+    "fs.read",
+    "fs.search"
+  ],
+  "unresolved_questions": [
+    "Does goal_surface.py already compute a runnable parallel frontier, or is that still aspiration? Not verified in this bounded pass.",
+    "Which component is the exact admission authority auto_orchestration.py defers to (workunit_owner, supervisor_watcher, or hawkingd)? Not pinned by direct read.",
+    "Is nx_disposition zero-measurement status a producer gap or a gate-definition gap? Requires odyssey.read op=priors before proposing."
+  ],
+  "worker_attempt_id": "hawking-attempt-5a45dd1526fc4d05",
+  "worker_id": "hawking-worker-fdf55613e5854a54",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260917-28190B0B"
+}

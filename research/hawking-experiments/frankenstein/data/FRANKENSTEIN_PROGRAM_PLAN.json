@@ -36,7 +36,18 @@
       "stream_portion_and_average_weights",
       "direct_weight_transplant",
       "hold_two_donors_resident"
-    ]
+    ],
+    "p9_darkmatter_core": {
+      "admission_rule": "a fusion plan is admissible only when every declared donor revision is a pinned 40-hex commit and no donor is marked PIN_AT_DOWNLOAD_TIME",
+      "blocked_reason": "unpinned_donor_revision",
+      "required_donor_roles": [
+        "deepseek_v4_flash",
+        "glm_5_2_stage1_donor",
+        "kimi_k3",
+        "qwen3_coder_30b_a3b"
+      ],
+      "unpinned_marker": "PIN_AT_DOWNLOAD_TIME"
+    }
   },
   "model_card_pins": {
     "deepseek_v4_flash": {

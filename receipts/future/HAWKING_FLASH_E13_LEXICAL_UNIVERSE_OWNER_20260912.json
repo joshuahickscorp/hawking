@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.flash_e13.lexical_universe_owner.receipt.v1",
+  "status": "CANONICAL_CORPUS_FREE_STRUCTURAL_DISCRIMINATOR_VERIFIED",
+  "recorded_at": "2026-09-12T18:27:31Z",
+  "repository_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "owner": {
+    "source": "crates/hawking-core/src/flash_e13_vocabulary_evidence.rs",
+    "source_sha256": "19bf8254fcefbf97b6cd684ccae73c5cb028bdce9ae4222a4f58820e53e44f66",
+    "source_lines": 850,
+    "entry_point": "inspect_e13_lexical_universe",
+    "cli": "hawking gravity e13-universe",
+    "cli_source_sha256": "ff0024df9db1e0e4726bfdd82149a5ab7f44d8fdc2d68b7844759297e20d41f9",
+    "tokenizer_owner": "crates/hawking-core/src/tokenizer.rs::Tokenizer"
+  },
+  "owned_contract": [
+    "exact tokenizer SHA-256 and eligible lexical row binding",
+    "Hawking-core decoding of every eligible lexical token",
+    "canonical Latin/Han primary-script classification",
+    "predeclared short/long UTF-8 byte bands",
+    "per-cell structural capacity against the exact fit-plus-heldout requirement",
+    "explicit corpus/model/tensor/GPU non-use boundaries"
+  ],
+  "measured_result": {
+    "receipt": "receipts/headless/FLASH_E13_LEXICAL_UNIVERSE_CENSUS_20260912.json",
+    "receipt_file_sha256": "fa39158eb054090790ec3f1d3b503b7893305041784dbf2f5193dedf4483bd1f",
+    "receipt_seal_sha256": "226da98d8cabd096a57622356ed8bdb73ca2144cce5d9e4d71dd8e7562844b34",
+    "status": "STRUCTURALLY_CAPABLE__CORPUS_FREQUENCY_UNPROVEN",
+    "required_rows_per_cell": 512,
+    "cells": {
+      "latin-short": 12369,
+      "latin-long": 125872,
+      "han-short": 5426,
+      "han-long": 49909
+    },
+    "wall_seconds": 2.862735042,
+    "corpus_opened": false,
+    "tensor_payload_bytes_read": 0
+  },
+  "scientific_disposition": {
+    "wikinews_failure_mechanism": "CORPUS_COVERAGE_NOT_TOKENIZER_GEOMETRY",
+    "broader_control_result": "rare-latin-short 330/512 under unchanged absolute count thresholds",
+    "current_e13_boundary": "WITHHELD_PENDING_FREQUENCY_DESIGN_REVIEW",
+    "third_corpus_authorized": false,
+    "threshold_tuning_authorized": false,
+    "tensor_row_extraction_authorized": false
+  },
+  "validation": {
+    "native_unit_tests": "3 passed, 0 failed",
+    "focused_python_tests": "66 passed, 0 failed",
+    "cargo_check_hawking": "passed",
+    "fast_rust_core_lane": "passed across 135 direct integration sources in 10 packages",
+    "registry_frontier": "valid and bound to both corpus refusals plus this census",
+    "complete_nr_accounting": "V6 valid; complete NR EBPW remains null",
+    "json_and_diff_checks": "passed"
+  },
+  "distillation": {
+    "future_model_cognition_eliminated": "Workers no longer need to infer from corpus failure whether an E13 script/byte cell is impossible in the tokenizer. One bounded Rust command answers that question before corpus acquisition or tokenization.",
+    "measured_source_pass_reduction": "The structural discriminator opens zero corpus bytes and completed in 2.86 seconds. It does not replace the separate corpus-frequency measurement when geometry passes.",
+    "remaining_authority_conflict": "Absolute count==1 rarity is unstable enough across the two measured mixed corpora to require a separately predeclared scientific design review. No replacement policy is yet canonical."
+  },
+  "runtime": {
+    "model_loaded": false,
+    "tensor_payload_bytes_read": 0,
+    "row_extraction_performed": false,
+    "gpu_or_ane_execution": false,
+    "provider_started": false,
+    "daemon_or_web_restart": false,
+    "deployment": false,
+    "kimi_process_present": false,
+    "flash_process_present": false
+  },
+  "claim_boundary": "This proves the tokenizer-only structural discriminator and records the two fixed corpus refusals. It does not supply a revised frequency design, execute E13 tensor rows, establish a representation, construct a complete NR, measure complete EBPW or TPS, qualify capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "17016036a0c68243a1fa4ddd8e20dc7b45a2a9d474ea0893c8615421d09ac42b"
+}

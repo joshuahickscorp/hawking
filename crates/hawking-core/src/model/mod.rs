@@ -65,6 +65,7 @@ pub mod qwen_complete_binary;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;
+mod source_safetensors;
 pub mod weights;
 // Non-frontier model adapters (gemma2, phi3, olmoe, mamba2, mixtral) were extracted to the
 // hawking-adapters-extra pack (CLEAN SLATE C2); the shipping engine ships the Qwen/RWKV/DeepSeek/

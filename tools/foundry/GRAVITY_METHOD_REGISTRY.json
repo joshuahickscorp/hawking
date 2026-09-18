@@ -1,6 +1,779 @@
 {
   "created_at": "2026-07-20T19:29:43+00:00",
   "current_generation": "GRAVITY_METHOD_V2",
+  "method_library_policy": {
+    "owner": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+    "purpose": "Canonical cross-model index of Gravity methods, their implementation owner, applicability, controls, accounting, evidence, claim boundary, and reopen condition.",
+    "selection_rule": "A query returns candidates only. A method becomes a target-model conclusion only after that model satisfies the listed controls and emits its own receipt.",
+    "do_not_duplicate": [
+      "model-specific markdown cookbook",
+      "unbound receipt list",
+      "unscoped cross-model performance claim"
+    ],
+    "updated_at": "2026-09-12T21:45:00Z"
+  },
+  "execution_frontier": {
+    "updated_at": "2026-09-12T13:03:20-04:00",
+    "source_audit": "receipts/future/GRAVITY_METHOD_FRONTIER_AUDIT_20260912.json",
+    "ordering_rule": "Run the cheapest independent falsifier first; seal only evidence already earned; keep native-bank descendants behind their named controls; do not spend another GPU session on a dead or unqualified family.",
+    "sealed_now": [
+      {
+        "id": "E01",
+        "state": "SEALED_FIXED_SHARED_VECTOR_CODE_NEGATIVE",
+        "evidence": [
+          "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json",
+          "receipts/headless/FLASH_NR_ACCOUNTING_BASELINE_20260911.nr.json"
+        ],
+        "boundary": "The tested fixed shared vector-code family is source-output distortive at its scoped low-rate points. This closes that family only; it does not reject learned or output-aware expert functions."
+      },
+      {
+        "id": "E02",
+        "state": "SEALED_FIXED_TOP8_PAIR_REPLICATION_NEGATIVE__ORIGINAL_PAIR_BOUNDED_SIGNAL_ONLY",
+        "evidence": [
+          "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json",
+          "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json"
+        ],
+        "boundary": "The original [411,334] pair reproduces and two of three new disjoint top-eight route pairs survive, but [291,106] reverses the matched-null advantage. The fixed pairwise atom-sharing form does not replicate across the preregistered bank; broader learned/output-aware lawful sharing remains open."
+      },
+      {
+        "id": "E03",
+        "state": "SEALED_FIXED_ROUTER_NEGATIVE",
+        "evidence": [
+          "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json",
+          "receipts/headless/FLASH_NR_ACCOUNTING_BASELINE_20260911.nr.json"
+        ],
+        "boundary": "The fixed rowwise INT4 router candidate changes source route identity. Router failure is not evidence against non-router tail organs."
+      },
+      {
+        "id": "E04",
+        "state": "SEALED_SYMBOLIC_FULL_RANK_NEGATIVE",
+        "evidence": [
+          "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json"
+        ],
+        "boundary": "The declared HyperConnection consumer set has full joint stream rank, so no exact quotient is available for that formula set."
+      },
+      {
+        "id": "E06",
+        "state": "SEALED_FIXED_ROW_NORM_CONDITIONAL_INFORMATION_PREFILTER_NEGATIVE",
+        "evidence": [
+          "receipts/headless/FLASH_E06_CONDITIONAL_INFORMATION_PREFILTER_BOUND_20260912.json"
+        ],
+        "boundary": "At the fixed layer-0 gate/up row-norm scope, maximum held-out code occupancy is below 0.20, conditional saving is below 10%, and the measured predictor/decoder obligation erases the gain. This does not reject other source-bound code families."
+      },
+      {
+        "id": "E07",
+        "state": "SEALED_APPLY_NEGATIVE_TRANSFER_WITHOUT_INVOCATION",
+        "evidence": [
+          "receipts/future/GRAVITY_METHOD_FRONTIER_AUDIT_20260912.json",
+          "tools/foundry/query_gravity_methods.py"
+        ],
+        "boundary": "The typed query's required traits select the Fourier candidate, while the supplied Scar excludes invocation. This is a selection/transfer result, not a model experiment."
+      }
+    ],
+    "carry_forward": [],
+    "active_native_lane": [
+      {
+        "id": "E05",
+        "state": "CAPTURED_EXTERNAL_PLE_TEACHER_CANDIDATE_AWAITING_MACHINE_OWNER_ADMISSION",
+        "evidence": [
+          "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+          "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/manifest.json",
+          "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json"
+        ],
+        "next": "Machine-owner admit the exact captured external chain [271, 248045], then localize parity from layer 4 / token 0 before another full replay."
+      }
+    ],
+    "ready_without_native_bank": [],
+    "withheld_without_native_bank": [
+      {
+        "id": "E13",
+        "state": "WITHHELD_BROADER_WIKIMEDIA_CONTROL_UNDERPOWERED__DESIGN_REVIEW_REQUIRED",
+        "evidence": [
+          "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json",
+          "receipts/headless/FLASH_E13_WIKINEWS_FIXED_CORPUS_REFUSAL_20260912.json",
+          "receipts/headless/FLASH_E13_LEXICAL_UNIVERSE_CENSUS_20260912.json",
+          "receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_FIXED_CORPUS_REFUSAL_20260912.json"
+        ],
+        "next": "The exact lexical/added/tensor-tail partition and canonical Rust owners are resolved. Tokenizer geometry can fill every script/byte cell, but two predeclared corpora failed different count==1 cells: Wikinews rare-Han-short 166/512, broader Wikimedia rare-Latin-short 330/512. Do not tune thresholds or acquire a third corpus. Revisit and predeclare the corpus-frequency design before any further occupancy inspection; no embedding/head payload read is authorized."
+      }
+    ],
+    "after_named_controls": [
+      {
+        "ids": ["E08", "E09"],
+        "requires": "E05 accepted state bank and provenance classification"
+      },
+      {
+        "ids": ["E10", "E11"],
+        "requires": "source-realizable route/input or gate-preactivation bank in addition to E05 where applicable"
+      },
+      {
+        "ids": ["E12", "E14"],
+        "requires": "correct boundary perturbation or query/KV control bank"
+      },
+      {
+        "ids": ["E15"],
+        "requires": "adequate closed-function control bank and bounded grammar"
+      },
+      {
+        "ids": ["E16"],
+        "requires": "E15 survivor plus genuine held-out task-family data; last, not a default next run"
+      }
+    ],
+    "transition_checkpoint": [
+      "E01, E03, E04, E06, and E07 are sealed at their stated scope.",
+      "E02's fixed top-eight pairwise replication is sealed negative; preserve the original pair only as a bounded non-generalized signal.",
+      "E05 is either formula-screened after accepted-bank capture or sealed as a negative/blocked scientific result with its precise boundary.",
+      "E06 and E13 are either sealed by independent CPU/static falsifiers or explicitly withheld for missing source controls.",
+      "Then perform the Endgame retrospective and return the released frontier to Odyssey; do not force E08-E16 merely to make the checklist look complete."
+    ]
+  },
+  "canonical_owners": {
+    "contract": "These are the living Gravity owners. Model-specific experiments, architecture adapters, receipts, and compatibility surfaces must extend or reference one of them unless a new architecture demonstrably requires unique execution logic.",
+    "discover_identify": {
+      "python": "tools/odyssey/arch_recognizer.py",
+      "rust": "crates/hawking-core/src/gravity_manifest.rs",
+      "evidence": "workspace/campaign/odyssey/TRANSFER_MATRIX.json"
+    },
+    "methods_representations": {
+      "registry": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "query": "tools/foundry/query_gravity_methods.py",
+      "compiler": "tools/odyssey/noetic_compiler.py",
+      "source_function_geometry": {
+        "formula": "tools/odyssey/ple_source_output_control.py",
+        "screen": "tools/odyssey/ple_context_response_screen.py",
+        "native_context_state_bank": {
+          "exporter": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+          "formula_bank": "tools/odyssey/ple_real_state_bank_formula.py",
+          "contract": "A source-bound native context bank must bind every F32 boundary payload and its one-process accepted session. Because the current native body does not embed PLE, its formula evaluation is explicitly not upstream PLE-inclusive source-trajectory parity."
+        },
+        "shared_expert_vector_code": {
+          "screen": "tools/odyssey/expert_vector_code_screen.py",
+          "pq_owner": "tools/odyssey/sharded_lookup_pq_screen.py",
+          "contract": "A selected stacked expert family may share vector codebooks only after disjoint source-row training, held-out weight scoring, and a sealed source activation plus route output control. Screen-time row materialization is diagnostic and never establishes direct execution or complete NR closure."
+        },
+        "routed_expert_atom_sharing": {
+          "screen": "tools/odyssey/expert_atom_sharing_screen.py",
+          "source_loader": "tools/odyssey/stacked_expert_lowrank_sparse_repair.py",
+          "contract": "A selected gated-MoE expert pair may share complete neuron triples only under common permutation and lawful reciprocal up plus down scaling, with source-output matched-null evidence and every descriptor byte billed."
+        },
+        "hyperconnection_closure": {
+          "symbolic_screen": "tools/odyssey/hyperconnection_closure_screen.py",
+          "formula_owner": "crates/hawking-core/shaders/qwen_next.metal",
+          "contract": "A stream quotient must close simultaneously across every declared HC consumer and input-dependent coefficient generator; symbolic full rank rejects an exact quotient before numeric fitting."
+        },
+        "source_router_output": {
+          "screen": "tools/odyssey/flash_router_source_output_screen.py",
+          "seam_diagnostic": "tools/flash_router_sensitivity_map.py",
+          "contract": "A router representation is admissible only when a sealed source MLP input recomputes the authoritative top-k route IDs and weights under the declared tie-break and complete scoped accounting; router failure does not establish a tail or whole-model result."
+        }
+      }
+    },
+    "account_verify": {
+      "rust": "crates/hawking-core/src/token_ns",
+      "nr_manifest": "crates/hawking-core/src/gravity_manifest.rs",
+      "python": "tools/future/complete_ebpw.py",
+      "flash_adapter": "tools/flash_complete_nr.py",
+      "campaign_gate": "tools/flash_stateful_gate.py",
+      "contract": "A complete EBPW claim bills every persistent representation part against original logical weights, declares external dependencies, and reports active bytes per token plus mutable state and scratch separately. An open body may receive a rate budget but never a runnable-NR or complete-EBPW claim."
+    },
+    "execute_physical": {
+      "rust_runtime": "crates/hawking-core/src/model/gravity_engine.rs",
+      "rust_kernel": "crates/hawking-core/src/kernels/megakernel.rs",
+      "rust_latency": "crates/hawking-core/src/startup_timing.rs",
+      "physical_graph": "tools/odyssey/physical_graph_compiler.py",
+        "ane_contract": "hawking/ane_provider.py",
+      "direct_packed_moe": {
+        "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "runtime": "crates/hawking-core/src/kernels/mod.rs",
+        "candidate_discriminator": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs",
+        "route_authority_contract": {
+          "implementation": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs",
+          "symbol": "resolve_fused_route_selection"
+        }
+      }
+    },
+    "learn_odyssey": {
+      "campaign": "workspace/campaign/odyssey/TRANSFER_MATRIX.json",
+      "specimen_registry": "tools/odyssey/modellake.py",
+      "laws_and_failures": "tools/odyssey/known_failures.py"
+    },
+    "organ_passports": {
+      "registry": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "section": "organ_passports",
+        "static_trait_source": {
+          "config_and_names": "tools/odyssey/arch_recognizer.py",
+          "target_only_exact_shapes": "tools/odyssey/modellake_lineage.py"
+        },
+      "query": "tools/foundry/query_gravity_methods.py",
+      "accounting": "crates/hawking-core/src/gravity_manifest.rs",
+        "contract": "The registry owns passport semantics, method links, and scoped Scar predicates. Architecture recognition contributes config-and-header facts; selected tensor shapes require an opt-in index-bound header witness and never widen generic ModelLake scans. ModelLake does not select scientific methods, and passports do not establish dynamic behavior, accounting, runtime, capability, or TPS."
+    },
+    "admission_rule": "A new model-specific runner is a thin adapter only: it names the architecture-specific seam, invokes the relevant canonical owner, emits a source-bound receipt, and adds an applicability or negative-transfer entry."
+  },
+  "organ_passports": {
+    "schema": "hawking.gravity.organ_passport_catalog.v1",
+    "policy": {
+      "owner": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "static_trait_source": "tools/odyssey/arch_recognizer.py",
+      "selector": "tools/foundry/query_gravity_methods.py:assess_passports",
+      "execution": "tools/foundry/query_gravity_methods.py:reuse_method",
+      "accounting": "crates/hawking-core/src/gravity_manifest.rs",
+      "boundary": "One passport is a source-bound semantic map, not a model result. Static config/header traits can recognize an organ but cannot establish dynamic source behavior, state parity, byte accounting, native execution, capability, or TPS."
+    },
+    "entries": [
+      {
+        "id": "flash.routed-moe.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "Selects ten routed gated-MoE expert triples per language token; source route identity and nonlinear output are separate contracts.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "identity_equals", "path": "config_sha256", "value": "e9b3cec7ec732a18386ce5bf8a29755ac8a45485f6d7e001187aa71241ee1083"},
+            {"kind": "config_equals", "path": "model_type", "value": "qwen4_exp"},
+            {"kind": "config_equals", "path": "text_config.num_experts", "value": 512},
+            {"kind": "static_feature", "value": "routed_moe"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.mlp.experts.gate_up_proj"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "moe", "routed_experts", "gated_mlp"],
+          "static_features": ["qwen4_exp_text", "routed_moe", "routed_experts", "gated_mlp"],
+          "facts": [
+            {"id": "expert_count", "status": "OBSERVED_STATIC", "value": 512, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "experts_per_token", "status": "OBSERVED_STATIC", "value": 10, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "active_bytes_per_token", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {
+          "selectors": ["layers.*.mlp.experts.gate_up_proj", "layers.*.mlp.experts.down_proj"],
+          "shape_contract": "Stacked BF16 expert tensors; exact layer/expert shapes must be bound before representation or native dispatch.",
+          "producer_consumer": "router-selected hidden state -> gate/up SiLU product -> down projection -> residual/HyperConnection consumer"
+        },
+        "state_contract": {"status": "ROUTE_DYNAMIC", "contract": "Route IDs/weights are per-token source behavior and cannot be inferred from expert tensor headers."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 241591910400, "source_percent": 67.1089, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Preserve the declared top-10 route selection and gated nonlinear formula.", "Bill selected expert bodies, descriptors, repair, routing dependencies, and runtime closure."],
+        "approximation_contract": {"exact": "No route/output replacement is exact without source-bound route and output controls.", "status": "NO_COMPACT_REPRESENTATION_ADMITTED"},
+        "method_ids": ["M-source-expert-shared-vector-code-screen", "M-source-expert-shared-input-basis-screen", "M-source-expert-lawful-nonlinear-atom-sharing-screen", "M-teacher-route-union-compact-experts", "M-route-major-packed-q4-routed-moe"],
+        "law_ids": ["L-flash-shared-expert-vector-code-fails-output-control", "L-flash-shared-input-basis-fails-output-control", "L-flash-lawful-atom-sharing-source-output-survives-null"],
+        "scar_ids": ["flash.routed-moe.fixed-shared-vector-code", "flash.routed-moe.fixed-shared-input-basis", "flash.routed-moe.fixed-pairwise-atom-sharing"],
+        "scoped_scars": [
+          {"id": "flash.routed-moe.fixed-shared-vector-code", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.routed_expert.layer0", "representation_family": "shared_bf16_product_vector_code", "tested_contract": "shared_bf16_product_vector_code_selected10_subdim_32_64_card_2_4_8_even_odd_v1", "rate_scope": "complete_scoped_ebpw_0.034197265625_to_0.119822265625", "control_id": "source_moe_output", "control_sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f"}, "evidence": "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "2d0ae111bfe5039d96b15ca159b2ca973e8dc818cca2f796a2962d7a1c43402b", "verdict": "For the sealed layer-0 top-10 route/output control, the fixed shared BF16 product-vector-code grid bottoms out at 0.812955 route-weighted source-output relative-L2 at 0.119822265625 scoped EBPW.", "does_not_rule_out": "Learned or output-aware expert functions, other layers, other rate contracts, and direct decoders remain separate questions.", "reopen_if": "A materially different function allocation has disjoint train/held-out rows and a sealed route/output matched-null control."},
+          {"id": "flash.routed-moe.fixed-shared-input-basis", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.routed_expert.layer0", "representation_family": "shared_input_basis", "tested_contract": "shared_bf16_input_basis_selected10_rank_4_8_16_32_even_odd_v1", "rate_scope": "complete_scoped_ebpw_0.046072265625_to_0.256072265625", "control_id": "source_moe_output", "control_sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f"}, "evidence": "receipts/headless/FLASH_EXPERT_SHARED_BASIS_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "2fdfa1c888db1b65000ae0996a970e980721539f6c77dbb64ac56a93fecb200c", "verdict": "For the sealed layer-0 top-10 route/output control, the fixed shared BF16 input-basis grid remains distortive: rank 32 reaches 0.903899 route-weighted source-output relative-L2 at 0.256072265625 scoped EBPW.", "does_not_rule_out": "Learned, output-aware, cross-layer, or different expert-function allocations remain separate questions.", "reopen_if": "A new function family changes its information allocation and passes disjoint held-out rows plus a sealed route/output matched-null control."},
+          {"id": "flash.routed-moe.fixed-pairwise-atom-sharing", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.routed_expert.top8_pairs", "representation_family": "fixed_pairwise_atom_sharing", "tested_contract": "fixed_pairwise_atom_sharing_predeclared_top8_adjacent_disjoint_all_three_replication_v1", "rate_scope": "complete_scoped_ebpw_8.2703125", "control_id": "source_moe_output", "control_sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f"}, "evidence": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json", "evidence_sha256": "e610ab44f639536a15861100d35b52c55b709eb334a3763d076ec5a0f57bab30", "verdict": "The preregistered all-three top-eight adjacent-pair replication rule fails: pair [291,106] is FIXED_FAMILY_NEGATIVE, so the fixed form does not replicate across the bank.", "does_not_rule_out": "The original pair and two independent survivors, a different pair/bank, or learned/output-aware sharing are not rejected.", "reopen_if": "A materially different representation predeclares an independent route/output matched-null replication bank."}
+        ],
+        "reference_controls": [
+          {"id": "source_moe_output", "evidence": "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json", "scope": "sealed source activation, route, nonlinear output, and matched null"},
+          {"id": "complete_selected_expert_accounting", "evidence": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json", "scope": "selected triple descriptors and all retained support bytes"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/expert_atom_sharing_screen.py", "receipt": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json", "scope": "CPU/source-row discriminator only; not direct execution"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/kernels/mod.rs", "symbol": "silu_mul", "scope": "canonical gated-MLP primitive"},
+          {"file": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs", "symbol": "resolve_fused_route_selection", "scope": "route-authority diagnostic"}
+        ],
+        "bottlenecks": ["route-union coverage", "source output preservation", "complete expert-body accounting", "native route-major dispatch"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_ARCHITECTURE_RECOGNITION_20260911.json", "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json", "receipts/headless/FLASH_EXPERT_SHARED_BASIS_SOURCE_OUTPUT_SCREEN.json", "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json"],
+        "claim_boundary": "This passport recognizes the routed-MoE organ and its scoped negative results. It does not establish a complete expert representation, complete NR, capability, native worker, or TPS.",
+        "reopen_if": ["A candidate supplies fresh route/output controls and complete accounting.", "A native complete-body admission binds this organ to the same source identity and execution schedule."]
+      },
+      {
+        "id": "flash.router.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "Produces the routed-expert top-10 selection; its identity is semantic, not an auxiliary path-only weight reference.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "config_equals", "path": "model_type", "value": "qwen4_exp"},
+            {"kind": "static_feature", "value": "moe_router"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.mlp.gate.weight"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "router"],
+          "static_features": ["qwen4_exp_text", "moe_router"],
+          "facts": [
+            {"id": "route_width", "status": "OBSERVED_STATIC", "value": 10, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "route_identity_control", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.mlp.gate.weight", "layers.*.mlp.shared_expert_gate.weight"], "shape_contract": "Header-level router tensors; bind exact layer matrix shape before a candidate executes.", "producer_consumer": "normalized hidden state -> router logits -> deterministic top-10 IDs/weights -> routed expert execution"},
+        "state_contract": {"status": "STATELESS_PER_TOKEN", "contract": "The router matrix is persistent; route identity is token-dependent and must be measured."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 128450560, "source_percent": 0.0357, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Exact top-k identity, ordering, tie behavior, and weights are the route contract.", "A low byte share does not allow a route change."],
+        "approximation_contract": {"exact": "Source route identity must hold on the sealed MLP input.", "status": "FIXED_INT4_FAMILY_SEALED_NEGATIVE"},
+        "method_ids": ["M-flash-router-source-output-fixed-int4"],
+        "law_ids": ["L-flash-fixed-int4-router-route-identity-fails"],
+        "scar_ids": ["flash.router.fixed-rowwise-int4"],
+        "scoped_scars": [
+          {"id": "flash.router.fixed-rowwise-int4", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.router.layer0", "representation_family": "rowwise_symmetric_int4_router", "tested_contract": "rowwise_symmetric_int4_bf16_maxabs_div7_scale__stable_top10_v1", "rate_scope": "not_applicable__one_sealed_route_identity_control", "control_id": "source_route_identity", "control_sha256": "f8cab70df002694266c960770b34debdb8e722837004a08bc3df24efd401571f"}, "evidence": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "ec2c0d5893f742b3dd41b3a2f1665d25fe5155815012e6ddc844804d93da6617", "verdict": "The rowwise symmetric INT4/BF16-maxabs-scale candidate changes all ten ordered source route positions and has a top-10 symmetric difference of 16 on the sealed control.", "does_not_rule_out": "Higher-fidelity router treatment and non-router tail organs remain separately open.", "reopen_if": "A materially different router representation passes the exact source route-ID/weight control."}
+        ],
+        "reference_controls": [
+          {"id": "source_route_identity", "evidence": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json", "scope": "sealed MLP input, top-10 IDs, weights, tie semantics, and scoped accounting"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/flash_router_source_output_screen.py", "receipt": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json", "scope": "source-output discriminator only"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/examples/flash_noetic_routed_expert_dispatch.rs", "symbol": "resolve_fused_route_selection", "scope": "canonical route-selection diagnostic"},
+          {"file": "crates/hawking-core/src/gravity_manifest.rs", "symbol": "GravityManifest", "scope": "complete byte accounting owner"}
+        ],
+        "bottlenecks": ["route-ID sensitivity", "tie semantics", "high-fidelity router storage"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json"],
+        "claim_boundary": "The router passport seals one fixed INT4 representation family only. It does not make the router or tail compact, executable, or qualified.",
+        "reopen_if": ["A changed router representation has a fresh exact route control.", "A complete NR bills the retained router separately from expert payloads."]
+      },
+      {
+        "id": "flash.ple.hashed-ngram.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "The configured PLE id 2, implemented in zero-indexed tensor block 1: hash/index/addressed shard lookup, projection/norm/gate, convolutional state, and additive hidden injection.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "identity_equals", "path": "config_sha256", "value": "e9b3cec7ec732a18386ce5bf8a29755ac8a45485f6d7e001187aa71241ee1083"},
+            {"kind": "identity_equals", "path": "tensor_manifest_sha256", "value": "0cf05c2ba0f0e5423890d006731d7f713f8757997d1fa1a0e0921ef691b00943"},
+            {"kind": "identity_equals", "path": "tensor_header_index_sha256", "value": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"},
+            {"kind": "config_contains", "path": "text_config.ple_layer_ids", "value": 2},
+            {"kind": "static_feature", "value": "hashed_ngram"},
+            {"kind": "static_feature", "value": "sharded_lookup"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.ple.ple_embedding.ngram_embedding.shard_*.weight"},
+            {"kind": "tensor_header_exact", "name": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight", "dtype": "BF16", "shape": [2500012, 160]}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder"],
+          "static_features": ["qwen4_exp_text", "positional_local_embedding", "hashed_ngram", "sharded_lookup", "hyperconnection", "persistent_decode_state"],
+          "facts": [
+            {"id": "ple_config_layer_id", "status": "OBSERVED_STATIC", "value": 2, "evidence": "receipts/future/FLASH_NEXT_PLE_STATIC_SCREEN_20260911.json"},
+            {"id": "ple_tensor_block_index", "status": "OBSERVED_STATIC", "value": 1, "evidence": "receipts/headless/FLASH_PLE_LAYER1_BOS_LTR_F32_REDUCTION_CONTROL_20260912.json"},
+            {"id": "ple_embed_dim", "status": "OBSERVED_STATIC", "value": 2560, "evidence": "receipts/future/FLASH_NEXT_PLE_STATIC_SCREEN_20260911.json"},
+            {"id": "source_framework_persistent_state_parity", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_*.weight", "model.language_model.layers.1.ple.*proj*.weight", "model.language_model.layers.1.ple.*norm*.weight"], "shape_contract": "The selected source-header witness must bind shard_0 exactly as [2500012,160] BF16; every selected source row/projection/norm shape remains bound by its source control.", "producer_consumer": "token/history address -> shard rows -> projections/norm/gate -> convolution state -> additive layer hidden injection"},
+        "state_contract": {"status": "SOURCE_TRAJECTORY_UNQUALIFIED", "contract": "Native LTR F32 formula reproduces its own BOS injection/cache bytes; the source-framework persistent state trajectory remains unadmitted until the owner-signed source teacher transaction."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 102466171160, "source_percent": 28.4628, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Carry exact address/history semantics, physical shard identity, and persistent convolution state.", "Keep LTR F32 as a native diagnostic policy, not an undocumented source-framework equivalence claim."],
+        "approximation_contract": {"exact": "Source PLE-inclusive greedy/state reference is required for composed trajectory claims.", "status": "NO_COMPACT_PLE_REPRESENTATION_ADMITTED"},
+        "method_ids": ["M-source-bound-ple-access-trace", "M-source-bound-ple-output-control", "M-reference-ple-formula-oracle", "M-source-ple-output-pq-sparse-repair-screen", "M-source-ple-shard-local-pq-output-screen", "M-source-ple-additive-pq-output-screen", "M-source-ple-address-generator-screen", "M-source-ple-additive-hash-factor-screen", "M-source-ple-context-response-tangent-screen", "M-source-ple-native-context-state-bank-formula"],
+        "law_ids": ["L-flash-ple-uniform-pq-fixed-repair", "L-flash-ple-fixed-shard-local-pq", "L-flash-ple-fixed-greedy-additive-pq", "L-flash-ple-address-only-generator", "L-flash-ple-additive-hash-address-prior", "L-flash-ple-local-tangent-is-not-state-bank", "L-flash-native-context-bank-is-not-upstream-ple-parity"],
+        "scar_ids": ["flash.ple.uniform-pq-fixed-sparse-repair", "flash.ple.fixed-shard-local-pq", "flash.ple.fixed-greedy-additive-pq", "flash.ple.smooth-address-only-generator", "flash.ple.fixed-additive-hash-address-prior"],
+        "scoped_scars": [
+          {"id": "flash.ple.uniform-pq-fixed-sparse-repair", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.ple.bos", "representation_family": "shared_product_quantization_plus_exact_sparse_repair", "tested_contract": "fixed_global_bf16_pq_fixed_sparse_repair_subone_grid_v1", "rate_scope": "projected_complete_table_ebpw_0.09376065994883225_to_0.8000110624469002", "control_id": "source_ple_output", "control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"}, "evidence": "receipts/headless/FLASH_PLE_LOOKUP_PQ_SOURCE_OUTPUT_REPAIR_SCREEN.json", "evidence_sha256": "9abf99cad126f6cdae6ad69d867e8962453961f87478745654e5c68c1d7cffa7", "verdict": "On the sealed BOS PLE output control, global BF16 PQ plus fixed exact per-row sparse repair reaches 0.850550 output relative-L2 at its best <=0.5 point (0.487511 projected complete-table EBPW) and remains grossly distortive through the tested sub-one grid.", "does_not_rule_out": "Learned or output-aware repair allocation, state-conditioned or generated functions, different hierarchies, and Nova-trained functions remain separate questions.", "reopen_if": "A materially different information allocation passes fresh source output/state controls; do not reopen with another fixed PQ/repair sweep."},
+          {"id": "flash.ple.fixed-shard-local-pq", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.ple.bos", "representation_family": "physical_shard_local_product_quantization", "tested_contract": "fixed_128_physical_shard_local_bf16_pq_no_repair_subone_grid_v1", "rate_scope": "projected_complete_table_ebpw_0.09381209970192143_to_0.5001132994561626", "control_id": "source_ple_output", "control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"}, "evidence": "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "2d4b79aa7a83b985b04845c75368a26ae190d19f73f1ced9f0fbc5c0338016f2", "verdict": "On the sealed BOS PLE output control, fixed per-physical-shard BF16 PQ without repair reaches 0.859731 output relative-L2 at 0.375062 projected complete-table EBPW, with no useful sub-one curve.", "does_not_rule_out": "Cross-shard learned bases or residuals, context-conditioned/generative functions, and Nova-trained functions remain separate questions.", "reopen_if": "A hierarchy changes the function or information allocation and passes fresh source output/state controls; do not reopen by another fixed shard-local PQ sweep."},
+          {"id": "flash.ple.fixed-greedy-additive-pq", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.ple.bos", "representation_family": "global_residual_additive_product_quantization", "tested_contract": "fixed_global_shared_bf16_two_stage_greedy_residual_pq_no_repair_subone_grid_v1", "rate_scope": "projected_complete_table_ebpw_0.06251045994979224_to_0.5000106599488322", "control_id": "source_ple_output", "control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"}, "evidence": "receipts/headless/FLASH_PLE_ADDITIVE_PQ_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "cfd90c676ea171642347b80733ebe8257bb58df7cc85676f8fd3ac6da5d04c01", "verdict": "On the sealed BOS PLE output control, fixed two-stage greedy global BF16 residual PQ reaches 0.861647 output relative-L2 at 0.400011 projected complete-table EBPW and has no useful sub-one curve.", "does_not_rule_out": "Jointly trained/output-loss additive codebooks, context-conditioned/generative functions, and Nova-trained functions remain separate questions.", "reopen_if": "A materially different learned or contextual allocation passes fresh source output/state controls; do not reopen by stage, cardinality, seed, or grid retuning."},
+          {"id": "flash.ple.smooth-address-only-generator", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.ple.bos", "representation_family": "address_conditioned_fourier_row_generator", "tested_contract": "bf16_fourier_address_generator_ridge_1e-3_feature_grid_5_9_17_33_65_129", "rate_scope": "target_projected_table_ebpw_grid_0.01_0.025_0.05_0.1_0.25_0.5_0.75_1.0", "control_id": "source_ple_output", "control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"}, "evidence": "receipts/headless/FLASH_PLE_ADDRESS_GENERATOR_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "731f0448b6eba3f96251566c41d37e52e59447a38167737c393b95a6abb9a850", "verdict": "The fixed BF16 Fourier address-only generator reaches 0.953283 PLE-output relative-L2 and 1.035783 held-out row relative-L2 at its best tested point, despite projected complete-table EBPW below 0.000008.", "does_not_rule_out": "Token/history-conditioned, hierarchical, learned-routing, or repair-bearing functions remain separate hypotheses.", "reopen_if": "A new function changes conditioning or representation and passes fresh source output/state controls."},
+          {"id": "flash.ple.fixed-additive-hash-address-prior", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.ple.bos", "representation_family": "address_conditioned_additive_hash_factor_generator", "tested_contract": "three_term_additive_hash_bf16_factor_generator_bucket_grid_8_16_32_64_128_ridge_1e-3", "rate_scope": "target_projected_table_ebpw_grid_0.01_0.025_0.05_0.1_0.25_0.5_0.75_1.0", "control_id": "source_ple_output", "control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"}, "evidence": "receipts/headless/FLASH_PLE_ADDITIVE_HASH_FUNCTION_SOURCE_OUTPUT_SCREEN.json", "evidence_sha256": "73f76b47845789e87c6959c5c183622d941dbc670824bd2d1eb7cab575996d55", "verdict": "The fixed three-term additive-hash address prior reaches only 0.979713 PLE-output relative-L2 and 1.095700 held-out row relative-L2 at its best tested 64-bucket point (0.000010330 projected complete-table EBPW).", "does_not_rule_out": "Real history/context, learned routing/topology, a distinct hierarchy, honestly billed sparse exceptions, and Nova-trained functions remain separate questions.", "reopen_if": "A materially different function allocation passes fresh source output/state controls; do not reopen by bucket, seed, or ridge retuning."}
+        ],
+        "reference_controls": [
+          {"id": "source_ple_access_trace", "evidence": "receipts/headless/FLASH_PLE_NATIVE_SOURCE_ROWS_PROMPT_BOUNDARY_V2_20260912.json", "scope": "pinned address/history and source row identities"},
+          {"id": "reference_ple_formula_oracle", "evidence": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json", "scope": "independent framework injection boundary"},
+          {"id": "ple_inclusive_source_state_teacher", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "owner-admitted PLE-inclusive source trajectory; currently withheld pending machine authorization"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/ple_source_output_control.py", "receipt": "receipts/headless/FLASH_PLE_LAYER1_BOS_LTR_F32_REDUCTION_CONTROL_20260912.json", "scope": "CPU formula/reduction-policy discriminator; no model/GPU action"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/flash_ple.rs", "symbol": "FlashPleNumericalState", "scope": "PLE address, source-row, F32 formula, and state owner"},
+          {"file": "crates/hawking-core/src/flash_boundary_compare.rs", "symbol": "compare_flash_boundary_payloads", "scope": "ordered source/native boundary comparator"}
+        ],
+        "bottlenecks": ["trusted PLE-inclusive source teacher", "persistent-state semantics", "complete 95+ GiB table accounting", "source-independent function replacement"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json", "receipts/future/HAWKING_FLASH_NATIVE_PLE_FRONTIER_V2_20260912.json", "receipts/headless/FLASH_PLE_LOOKUP_PQ_SOURCE_OUTPUT_REPAIR_SCREEN.json", "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_SOURCE_OUTPUT_SCREEN.json", "receipts/headless/FLASH_PLE_ADDITIVE_PQ_SOURCE_OUTPUT_SCREEN.json", "receipts/headless/FLASH_PLE_ADDRESS_GENERATOR_SOURCE_OUTPUT_SCREEN.json", "receipts/headless/FLASH_PLE_ADDITIVE_HASH_FUNCTION_SOURCE_OUTPUT_SCREEN.json"],
+        "claim_boundary": "This passport records the exact PLE anatomy and current LTR reduction seam. It does not turn formula parity into source-state parity, PLE compression, complete EBPW, capability, or TPS.",
+        "reopen_if": ["The machine owner admits the exact source teacher and one protected transaction records a PLE-inclusive trajectory.", "A candidate passes fresh source output/state controls and bills its full table/function closure."]
+      },
+      {
+        "id": "flash.hyperconnection.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "Four-stream HyperConnection read-mix/combine machinery whose consumers jointly define whether an exact stream quotient exists.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "config_equals", "path": "text_config.hc_count", "value": 4},
+            {"kind": "static_feature", "value": "hyperconnection"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.*hyper_connection*"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "hyperconnection", "stream_state", "gated_residual"],
+          "static_features": ["qwen4_exp_text", "hyperconnection"],
+          "facts": [
+            {"id": "stream_count", "status": "OBSERVED_STATIC", "value": 4, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "joint_consumer_rank", "status": "OBSERVED_STATIC", "value": 4, "evidence": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json"},
+            {"id": "dynamic_stream_trajectory", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.attn_hyper_connection.*", "layers.*.mlp_hyper_connection.*", "hyper_connection_mixer.*"], "shape_contract": "Four-stream axis (hc_count=4); per-projection shapes remain source-header facts that must bind a candidate.", "producer_consumer": "stream state -> read mix -> attention/MLP consumers -> combine/residual stream state"},
+        "state_contract": {"status": "PERSISTENT_STREAM_STATE", "contract": "All declared consumers and coefficient generators must preserve the same stream ABI."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 1320796160, "source_percent": 0.3669, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Exact quotient requires closure across every consumer, not a convenient subset.", "The direct residual-stream identity is a consumer."],
+        "approximation_contract": {"exact": "Declared four-stream quotient is symbolically full rank.", "status": "EXACT_QUOTIENT_SEALED_NEGATIVE"},
+        "method_ids": ["M-flash-hyperconnection-symbolic-closure-screen"],
+        "law_ids": ["L-flash-hyperconnection-stream-quotient-fails-full-rank"],
+        "scar_ids": ["flash.hyperconnection.exact-stream-quotient"],
+        "scoped_scars": [
+          {"id": "flash.hyperconnection.exact-stream-quotient", "scope": {"source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915", "organ_scope": "language.hyperconnection.stream4", "representation_family": "exact_stream_quotient", "tested_contract": "canonical_hc_read_mix_combine_all_declared_consumers_symbolic_probe_v1", "rate_scope": "not_applicable__exact_symbolic_joint_rank", "control_id": "symbolic_consumer_rank", "control_sha256": "52eca5331535a03a03ae0b8ca240aa8919d467b5eede9bd84b69102ff42c7e78"}, "evidence": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json", "evidence_sha256": "52eca5331535a03a03ae0b8ca240aa8919d467b5eede9bd84b69102ff42c7e78", "verdict": "The declared consumer set has full joint stream rank; no nontrivial exact quotient is available.", "does_not_rule_out": "Approximate, differently scoped, or redesigned mechanisms require their own controls.", "reopen_if": "A changed formula/consumer set is declared and symbolically closed before numeric fitting."}
+        ],
+        "reference_controls": [
+          {"id": "symbolic_consumer_rank", "evidence": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json", "scope": "canonical read/combine formula and every declared stream consumer"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/hyperconnection_closure_screen.py", "receipt": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json", "scope": "static symbolic closure only"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/shaders/qwen_next.metal", "symbol": "HyperConnection formulas", "scope": "native formula owner"},
+          {"file": "crates/hawking-core/src/flash_boundary_compare.rs", "symbol": "compare_flash_boundary_payloads", "scope": "stream-boundary verifier"}
+        ],
+        "bottlenecks": ["full consumer closure", "stream-state ABI", "source/native state comparison"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json"],
+        "claim_boundary": "The passport closes only the exact quotient branch for the declared formula set; it does not prove an approximate compression, execution, or whole-model result.",
+        "reopen_if": ["A changed consumer/formula contract receives a fresh symbolic closure.", "A native state path binds the same stream ABI to an owner-admitted source boundary."]
+      },
+      {
+        "id": "flash.deltanet-linear-attention.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "The repeated linear-attention/DeltaNet body and its per-layer recurrent state across 36 of 48 language layers.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "config_contains", "path": "text_config.layer_types", "value": "linear_attention"},
+            {"kind": "static_feature", "value": "deltanet_linear_attention"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.linear_attn.*"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "stateful_decoder"],
+          "static_features": ["qwen4_exp_text", "deltanet_linear_attention", "persistent_decode_state"],
+          "facts": [
+            {"id": "linear_attention_layers", "status": "OBSERVED_STATIC", "value": 36, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "complete_state_trajectory", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.linear_attn.A_log", "layers.*.linear_attn.conv1d.weight", "layers.*.linear_attn.*proj*.weight"], "shape_contract": "Config declares key heads=16x128 and value heads=48x128; exact tensor headers bind the native kernel ABI.", "producer_consumer": "hidden input -> linear-attention projections/convolution -> recurrent state update -> layer output"},
+        "state_contract": {"status": "PERSISTENT_RECURRENT_STATE", "contract": "State continuity must be checked across accepted decoding, not inferred from a static tensor census."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 4173020928, "source_percent": 1.1592, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Preserve recurrence state ownership and token order.", "State-cache bytes, scratch, and active traffic are separate from source bytes."],
+        "approximation_contract": {"exact": "No source-bound DeltaNet state parity is claimed.", "status": "UNQUALIFIED"},
+        "method_ids": ["M-stateful-repeated-accepted-decode", "M-device-state-handoff"],
+        "law_ids": [],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "accepted_decode_state_boundary", "evidence": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json", "scope": "accepted-token state boundary and executable identity"},
+          {"id": "ple_inclusive_source_state_teacher", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "source authority required before full composed state claim"}
+        ],
+        "reproduction_bundle": {"entrypoint": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs", "receipt": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json", "scope": "native-context diagnostic; source PLE trajectory remains withheld"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs", "symbol": "Qwen38DeltaNetStateParity", "scope": "native recurrent-state parity carrier"},
+          {"file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs", "symbol": "qwen38_dn_state_uses_fused_ba", "scope": "state-kernel policy"}
+        ],
+        "bottlenecks": ["source state teacher", "recurrent-state parity", "complete active-byte measurement"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json"],
+        "claim_boundary": "Static DeltaNet recognition and native-context state artifacts do not establish a PLE-inclusive source trajectory, executable NR, capability, or TPS.",
+        "reopen_if": ["An owner-admitted source trajectory reaches this organ with state boundaries.", "A complete native decode proves state continuity under declared workload conditions."]
+      },
+      {
+        "id": "flash.full-attention.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "The periodic full-attention path at the four-layer interval, with KV/cache behavior distinct from the recurrent linear-attention state.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "config_contains", "path": "text_config.layer_types", "value": "full_attention"},
+            {"kind": "static_feature", "value": "full_attention"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.self_attn.q_proj.weight"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "stateful_decoder", "autoregressive_decoder"],
+          "static_features": ["qwen4_exp_text", "full_attention", "persistent_decode_state", "tokenization_sampling_boundary"],
+          "facts": [
+            {"id": "full_attention_interval", "status": "OBSERVED_STATIC", "value": 4, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "kv_state_bytes_per_token", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.self_attn.q_proj.weight", "layers.*.self_attn.k_proj.weight", "layers.*.self_attn.v_proj.weight", "layers.*.self_attn.o_proj.weight"], "shape_contract": "Config declares 24 query heads, 2 KV heads, and head_dim=256; exact headers bind per-layer projections.", "producer_consumer": "hidden input -> Q/K/V plus RoPE -> KV state/read -> attention mix -> output projection"},
+        "state_contract": {"status": "PERSISTENT_KV_STATE", "contract": "KV context/state and full-attention scheduling must remain distinct from linear-attention recurrence."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 1337609728, "source_percent": 0.3716, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Full-attention cadence is part of the execution schedule.", "KV cache, RoPE policy, and context lengths are explicit workload controls."],
+        "approximation_contract": {"exact": "No full-attention source-parity or KV closure is admitted.", "status": "UNQUALIFIED"},
+        "method_ids": ["M-stateful-repeated-accepted-decode", "M-device-state-handoff"],
+        "law_ids": [],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "accepted_decode_state_boundary", "evidence": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json", "scope": "accepted token and state boundary"},
+          {"id": "source_boundary_kv_route_logit", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "owner-admitted ordered seam comparison"}
+        ],
+        "reproduction_bundle": {"entrypoint": "crates/hawking-core/examples/flash_full_attention_layer3.rs", "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-3-attention.json", "scope": "bounded layer diagnostic only"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs", "symbol": "generate_greedy", "scope": "native incremental decode carrier"},
+          {"file": "crates/hawking-core/src/kernels/mod.rs", "symbol": "rope_inplace", "scope": "native rotary primitive"}
+        ],
+        "bottlenecks": ["KV state closure", "full/recurrent schedule", "source route/logit parity"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/flash_stateful_complete_token_session/layer-3-attention.json"],
+        "claim_boundary": "This passport recognizes the periodic full-attention body but contains no complete attention/KV parity or performance claim.",
+        "reopen_if": ["An owner-admitted source trace supplies the required full-attention state/logit boundary.", "A native complete worker proves the declared context and generation workload."]
+      },
+      {
+        "id": "flash.embedding-lm-head.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "Input embedding and terminal vocabulary head; row geometry and tokenizer addressability are a single contract, not an implicit truncation policy.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "static_feature", "value": "embedding_lm_head"},
+            {"kind": "tensor_glob", "value": "model.language_model.embed_tokens.weight"},
+            {"kind": "tensor_glob", "value": "lm_head.weight"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "autoregressive_decoder"],
+          "static_features": ["qwen4_exp_text", "embedding_lm_head", "tokenization_sampling_boundary"],
+          "facts": [
+            {"id": "tensor_vocab_rows", "status": "OBSERVED_STATIC", "value": 248320, "evidence": "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json"},
+            {"id": "tokenizer_tail_contract", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["model.language_model.embed_tokens.weight", "lm_head.weight"], "shape_contract": "248320 source rows by hidden_size=2560 are declared; tokenizer addressability is separately withheld.", "producer_consumer": "token ID -> embedding -> model body -> logits over exact tensor-row/tokenizer contract"},
+        "state_contract": {"status": "STATELESS_WEIGHTS_DYNAMIC_SAMPLING", "contract": "Sampling and vocabulary addressability are dynamic consumer behavior, not header facts."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "embedding_source_bytes": 1271398400, "head_source_bytes": 1271398400, "each_source_percent": 0.3532, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Never silently truncate 248320 tensor rows to tokenizer-visible rows.", "Tokenization/template/sampling identity travels with the artifact and worker request."],
+        "approximation_contract": {"exact": "Vocabulary/tail-row contract remains an explicit E13 gate.", "status": "WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN"},
+        "method_ids": ["M-closed-nr-rate-accounting"],
+        "law_ids": ["L-complete-representation-accounting"],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "vocabulary_tail_contract", "evidence": "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json", "scope": "tensor-row/tokenizer addressability and tail disposition"},
+          {"id": "source_greedy_tokenization", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "pinned prompt boundary and deterministic source greedy selection"}
+        ],
+        "reproduction_bundle": {"entrypoint": "hawking/agentos/flash_vocabulary_prefilter.py", "receipt": "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json", "scope": "static vocabulary proof/control gate; no embedding/head extraction"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/tokenizer.rs", "symbol": "Tokenizer", "scope": "canonical tokenizer owner"},
+          {"file": "crates/hawking-core/src/kernels/mod.rs", "symbol": "embed_lookup", "scope": "native embedding primitive"}
+        ],
+        "bottlenecks": ["exact tokenizer/tail-row contract", "complete head accounting", "greedy/sampling parity"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json"],
+        "claim_boundary": "This passport records embedding/head geometry only. E13 remains withheld, and no vocabulary compression, sampling parity, capability, or TPS is claimed.",
+        "reopen_if": ["The exact tokenizer/tail-row control plan is independently admitted.", "A complete NR preserves the same tokenizer, template, head, and sampler contract."]
+      },
+      {
+        "id": "flash.shared-expert-gates.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "Per-layer shared gated expert and its gate, separate from routed experts despite adjacent execution.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "static_feature", "value": "shared_expert_gates"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.mlp.shared_expert.gate_proj.weight"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "moe", "routed_experts", "gated_mlp"],
+          "static_features": ["qwen4_exp_text", "shared_expert_gates", "gated_mlp"],
+          "facts": [
+            {"id": "shared_expert_intermediate_size", "status": "OBSERVED_STATIC", "value": 640, "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "shared_gate_function_control", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.mlp.shared_expert.gate_proj.weight", "layers.*.mlp.shared_expert.up_proj.weight", "layers.*.mlp.shared_expert.down_proj.weight", "layers.*.mlp.shared_expert_gate.weight"], "shape_contract": "Config declares shared_expert_intermediate_size=640; exact gate/up/down headers must bind each candidate.", "producer_consumer": "hidden state -> shared-expert gate -> gated MLP contribution -> layer residual"},
+        "state_contract": {"status": "STATELESS_PER_TOKEN", "contract": "The shared expert is persistent weight state; its gate/output remains token-dependent."},
+        "source_accounting": {"status": "OBSERVED_STATIC_SPLIT", "source_bytes": 471859200, "source_percent": 0.1311, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json"},
+        "invariants": ["Do not bill shared experts as routed-expert bytes or omit their gates.", "Preserve the gated nonlinear formula."],
+        "approximation_contract": {"exact": "No shared-expert source-output representation result is admitted.", "status": "UNQUALIFIED"},
+        "method_ids": ["M-source-expert-lawful-nonlinear-atom-sharing-screen", "M-closed-nr-rate-accounting"],
+        "law_ids": ["L-flash-lawful-atom-sharing-source-output-survives-null", "L-complete-representation-accounting"],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "shared_expert_source_output", "evidence": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json", "scope": "gated nonlinear source output with separate shared-expert scope"},
+          {"id": "complete_shared_expert_accounting", "evidence": "receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "scope": "shared expert and gate source bytes"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/expert_atom_sharing_screen.py", "receipt": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json", "scope": "routed-expert discriminator is evidence only; it does not qualify shared experts"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/kernels/mod.rs", "symbol": "silu_mul", "scope": "gated MLP primitive"},
+          {"file": "crates/hawking-core/src/gravity_manifest.rs", "symbol": "GravityManifest", "scope": "separate persistent-byte accounting"}
+        ],
+        "bottlenecks": ["shared-gate source behavior", "separate accounting", "output control"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_COMPLETE_ORGAN_BYTE_ANATOMY_20260911.json", "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json"],
+        "claim_boundary": "This passport prevents shared experts/gates from disappearing into routed-expert accounting. It does not transfer routed-expert evidence into a shared-expert result.",
+        "reopen_if": ["A shared-expert-specific source output control is sealed.", "A candidate bills gate, up, down, routing dependencies, and support explicitly."]
+      },
+      {
+        "id": "flash.rmsnorm.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "RMS normalization weights and epsilon policy distributed through the language body and PLE path.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "static_feature", "value": "rmsnorm"},
+            {"kind": "tensor_glob", "value": "model.language_model.layers.*.*norm.weight"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp"],
+          "static_features": ["qwen4_exp_text", "rmsnorm"],
+          "facts": [
+            {"id": "rms_norm_eps", "status": "OBSERVED_STATIC", "value": 0.000001, "evidence": "receipts/future/FLASH_NEXT_PLE_STATIC_SCREEN_20260911.json"},
+            {"id": "normalization_active_bytes", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.input_layernorm.weight", "layers.*.post_attention_layernorm.weight", "layers.*.*norm.weight"], "shape_contract": "Normalization vectors are hidden_size-aligned; exact header shape and epsilon bind numerical execution.", "producer_consumer": "residual/PLE or sublayer activations -> RMS normalization -> attention/MLP/HC consumers"},
+        "state_contract": {"status": "STATELESS_PER_TOKEN", "contract": "Numerical reduction and epsilon policy are execution semantics, not an optional formatting choice."},
+        "source_accounting": {"status": "UNSEPARATED_IN_CURRENT_ANATOMY", "source_bytes": null, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "reason": "Current Flash anatomy records normalization inside broader organs; do not invent a byte split."},
+        "invariants": ["Keep declared epsilon and F32/BF16 numerical policy explicit.", "Do not infer source reduction-tree parity from a tolerance pass."],
+        "approximation_contract": {"exact": "PLE formula injection has an independent oracle; composed source state does not.", "status": "PARTIAL_SEAM_ONLY"},
+        "method_ids": ["M-source-bound-ple-output-control", "M-reference-ple-formula-oracle"],
+        "law_ids": [],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "reference_ple_formula_oracle", "evidence": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json", "scope": "independent PLE injection numerical control"},
+          {"id": "ple_inclusive_source_state_teacher", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "required before composed state conclusions"}
+        ],
+        "reproduction_bundle": {"entrypoint": "crates/hawking-core/examples/flash_ple_formula_control.rs", "receipt": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json", "scope": "BOS formula control only"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/kernels/mod.rs", "symbol": "rmsnorm", "scope": "canonical native RMSNorm primitive"},
+          {"file": "crates/hawking-core/src/flash_ple.rs", "symbol": "FlashPleBf16Support", "scope": "source PLE norm support"}
+        ],
+        "bottlenecks": ["reduction-policy fidelity", "composed-state validation", "unseparated accounting"],
+        "evidence_refs": ["receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json", "receipts/future/HAWKING_FLASH_NATIVE_PLE_FRONTIER_V2_20260912.json"],
+        "claim_boundary": "This passport records normalization as an explicit numerical organ. It has no stand-alone byte, capability, or complete-runtime qualification.",
+        "reopen_if": ["A full source/native state comparison isolates an RMSNorm seam.", "A complete accounting owner separates its persistent bytes without double counting."]
+      },
+      {
+        "id": "flash.terminal-hc-mixer.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "The terminal HyperConnection mixer that consumes the final stream state before the language head path.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "static_feature", "value": "terminal_hc_mixer"},
+            {"kind": "tensor_glob", "value": "model.language_model.hyper_connection_mixer.*"}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "hyperconnection", "stream_state", "gated_residual"],
+          "static_features": ["qwen4_exp_text", "hyperconnection", "terminal_hc_mixer"],
+          "facts": [
+            {"id": "terminal_mixer_present", "status": "OBSERVED_STATIC", "value": true, "evidence": "receipts/future/FLASH_NEXT_ARCHITECTURE_RECOGNITION_20260911.json"},
+            {"id": "terminal_stream_output_control", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["language_model.hyper_connection_mixer.*"], "shape_contract": "Terminal HC mix consumes the declared four-stream hidden-state geometry; no separate byte/shape split is inferred.", "producer_consumer": "final four-stream state -> terminal HC mix/norm -> language head input"},
+        "state_contract": {"status": "TERMINAL_STREAM_CONSUMER", "contract": "It is a separate HC consumer and must remain in any closure or terminal-logit comparison."},
+        "source_accounting": {"status": "UNSEPARATED_WITHIN_HC", "source_bytes": null, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "reason": "Current anatomy reports HyperConnection as one organ; no terminal-mixer split is inferred."},
+        "invariants": ["Do not omit the terminal mixer from the HC consumer set.", "Terminal logits must bind the same stream output semantics."],
+        "approximation_contract": {"exact": "No terminal-mixer representation or output parity claim is admitted.", "status": "UNQUALIFIED"},
+        "method_ids": ["M-flash-hyperconnection-symbolic-closure-screen"],
+        "law_ids": ["L-flash-hyperconnection-stream-quotient-fails-full-rank"],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "symbolic_consumer_rank", "evidence": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json", "scope": "terminal mixer included in declared HC consumers"},
+          {"id": "terminal_logit_boundary", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "owner-admitted terminal boundary required for composed claims"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/hyperconnection_closure_screen.py", "receipt": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json", "scope": "symbolic consumer inventory only"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/shaders/qwen_next.metal", "symbol": "HyperConnection formulas", "scope": "terminal stream-mix formula owner"},
+          {"file": "crates/hawking-core/src/flash_boundary_compare.rs", "symbol": "compare_flash_boundary_payloads", "scope": "terminal payload comparison"}
+        ],
+        "bottlenecks": ["terminal stream ABI", "head/logit boundary", "unseparated mixer bytes"],
+        "evidence_refs": ["receipts/future/FLASH_NEXT_ARCHITECTURE_RECOGNITION_20260911.json", "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json"],
+        "claim_boundary": "The terminal mixer is made explicit as an HC consumer. No terminal-logit, compression, capability, or runtime result follows from its static recognition.",
+        "reopen_if": ["A source/native terminal boundary names this mixer explicitly.", "A representation bills a measured mixer split or declares it within HC without double counting."]
+      },
+      {
+        "id": "flash.decode-state-kv.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "The composite mutable decode state: recurrent linear-attention state, full-attention KV state, PLE convolution state, and HyperConnection stream state.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "static_feature", "value": "persistent_decode_state"},
+            {"kind": "config_equals", "path": "text_config.use_cache", "value": true}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "stateful_decoder", "autoregressive_decoder"],
+          "static_features": ["qwen4_exp_text", "persistent_decode_state", "tokenization_sampling_boundary"],
+          "facts": [
+            {"id": "source_state_components", "status": "OBSERVED_STATIC", "value": ["linear_attention", "full_attention", "ple", "hyperconnection"], "evidence": "receipts/future/FLASH_NEXT_LAYER1_STATIC_ANATOMY_20260911.json"},
+            {"id": "source_ple_inclusive_state_teacher", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["layers.*.linear_attn.*", "layers.*.self_attn.*", "layers.2.ple.*", "layers.*.*hyper_connection*"], "shape_contract": "State shape is a composed ABI over recurrent heads, KV heads, PLE cache, and four HC streams; it must be captured at a named boundary.", "producer_consumer": "accepted token -> all mutable state updates -> next-token execution"},
+        "state_contract": {"status": "MULTI_ORGAN_MUTABLE_STATE", "contract": "State updates must be ordered and compared by explicit boundary identity; component success never implies combined state parity."},
+        "source_accounting": {"status": "RUNTIME_MEASUREMENT_REQUIRED", "persistent_source_bytes": null, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "reason": "Mutable state, scratch, and active bytes are not source-weight bytes and must be measured separately."},
+        "invariants": ["Never substitute native non-PLE states for the PLE-inclusive source teacher.", "Bind token/order/state boundary identity to every accepted decode comparison."],
+        "approximation_contract": {"exact": "One source-bound complete decode contract is required.", "status": "SOURCE_TEACHER_AUTHORIZATION_PENDING"},
+        "method_ids": ["M-stateful-repeated-accepted-decode", "M-device-state-handoff", "M-source-ple-native-context-state-bank-formula"],
+        "law_ids": ["L-flash-native-context-bank-is-not-upstream-ple-parity"],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "accepted_decode_state_boundary", "evidence": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json", "scope": "native accepted-state diagnostic"},
+          {"id": "ple_inclusive_source_state_teacher", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "required authoritative source trajectory"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/flash_source_boundary_transaction.py", "receipt": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "static transaction contract; actual run requires machine-owner authorization and lease"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/flash_boundary_compare.rs", "symbol": "compare_flash_boundary_payloads", "scope": "ordered state/route/logit comparison"},
+          {"file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs", "symbol": "Qwen38PrefixCheckpoint", "scope": "native checkpoint identity carrier"}
+        ],
+        "bottlenecks": ["owner signature", "PLE-inclusive teacher", "layer-4/token-0 first divergence", "complete mutable-state accounting"],
+        "evidence_refs": ["receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json", "receipts/future/HAWKING_FLASH_NATIVE_PLE_FRONTIER_V2_20260912.json"],
+        "claim_boundary": "This passport names the complete state obligation but does not claim its resolution. The only currently authoritative next action remains the owner-admitted bounded source transaction.",
+        "reopen_if": ["Machine owner provisions the verified key and signs the exact V2 request.", "One lease-owned transaction supplies fresh source/native ordered state evidence."]
+      },
+      {
+        "id": "flash.tokenization-sampling.v1",
+        "schema": "hawking.gravity.organ_passport.v1",
+        "semantic_role": "Pinned tokenizer/template boundary, exact prompt tokenization, raw logits, and deterministic greedy token selection.",
+        "recognition": {
+          "all": [
+            {"kind": "identity_equals", "path": "artifact_id", "value": "Qwen/Qwen3.8-Flash-Next"},
+            {"kind": "identity_equals", "path": "revision", "value": "34567a4712bc9766c4449e2e98e4468bfa24d915"},
+            {"kind": "static_feature", "value": "tokenization_sampling_boundary"},
+            {"kind": "config_equals", "path": "text_config.vocab_size", "value": 248320}
+          ]
+        },
+        "trait_projection": {
+          "architecture_tags": ["flash_qwen4_exp", "autoregressive_decoder"],
+          "static_features": ["qwen4_exp_text", "tokenization_sampling_boundary"],
+          "facts": [
+            {"id": "declared_vocab_rows", "status": "OBSERVED_STATIC", "value": 248320, "evidence": "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json"},
+            {"id": "complete_prompt_token_boundary", "status": "UNKNOWN", "value": null, "evidence": null}
+          ]
+        },
+        "tensor_contract": {"selectors": ["tokenizer.json", "tokenizer_config.json", "lm_head.weight"], "shape_contract": "Tokenizer addressability and 248320 logits/head rows must be resolved as one explicit contract.", "producer_consumer": "request/template -> exact token IDs -> model logits -> deterministic greedy or declared sampler -> next token"},
+        "state_contract": {"status": "REQUEST_AND_DECODE_BOUNDARY", "contract": "Tokenization and selection identities bind every source/native trajectory and cannot be reconstructed from generated text alone."},
+        "source_accounting": {"status": "RUNTIME_AND_ARTIFACT_CLOSURE_REQUIRED", "persistent_source_bytes": null, "active_bytes_per_token": null, "compute_per_token": null, "active_measurement_status": "UNMEASURED", "reason": "Tokenizer/config/template/sampler assets must be declared separately from weights."},
+        "invariants": ["Keep raw F32 logits where the source gate requires them.", "Declare deterministic greedy selection and complete prompt/token boundary."],
+        "approximation_contract": {"exact": "No source token chain becomes authoritative without exact identity and owner admission.", "status": "SOURCE_TEACHER_AUTHORIZATION_PENDING"},
+        "method_ids": ["M-stateful-repeated-accepted-decode", "M-closed-nr-rate-accounting"],
+        "law_ids": ["L-complete-representation-accounting"],
+        "scar_ids": [],
+        "scoped_scars": [],
+        "reference_controls": [
+          {"id": "vocabulary_tail_contract", "evidence": "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json", "scope": "exact tensor-row/tokenizer partition"},
+          {"id": "source_greedy_tokenization", "evidence": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "pinned source identity, prompt/token boundary, raw logits, and greedy selection"}
+        ],
+        "reproduction_bundle": {"entrypoint": "tools/odyssey/flash_source_boundary_transaction.py", "receipt": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json", "scope": "preflight contract only; no fallback source teacher"},
+        "native_primitives": [
+          {"file": "crates/hawking-core/src/tokenizer.rs", "symbol": "Tokenizer", "scope": "native tokenizer owner"},
+          {"file": "crates/hawking-core/src/kernels/mod.rs", "symbol": "argmax_f32", "scope": "deterministic greedy primitive"}
+        ],
+        "bottlenecks": ["exact vocabulary/tail rows", "source tokenizer identity", "prompt boundary", "raw logits and selection policy"],
+        "evidence_refs": ["receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json", "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json"],
+        "claim_boundary": "This passport does not authorize a historical token chain or redefine vocabulary. It keeps tokenization/sampling as an explicit source-teacher and worker gate.",
+        "reopen_if": ["The owner-admitted source transaction seals exact tokenizer/prompt/logit/selection evidence.", "A complete native worker demonstrates the same declared tokenizer/template/sampler contract."]
+      }
+    ]
+  },
   "generations": {
     "GRAVITY_METHOD_V1": {
       "candidate_priors": {
@@ -301,5 +1074,1336 @@
       "supersedes": "GRAVITY_METHOD_V1"
     }
   },
-  "schema": "hawking.foundry.gravity_method_registry.v1"
+  "methods": [
+    {
+      "id": "M-closed-nr-rate-accounting",
+      "title": "Closed Noetic Representation accounting and rate budget",
+      "family": "representation_accounting",
+      "implementation_owner": "crates/hawking-core/src/gravity_manifest.rs + tools/future/complete_ebpw.py",
+      "applicability": {
+        "architecture_tags": ["any_model", "portable_nr"],
+        "required_features": ["logical_weight_denominator", "declared_persistent_parts"],
+        "excluded_features": ["payload_only_accounting", "implicit_source_or_runtime_dependencies"]
+      },
+      "required_controls": [
+        "complete_persistent_part_ledger",
+        "external_dependency_declaration",
+        "direct_execution_or_explicit_withholding",
+        "active_bytes_per_token_measured_or_withheld",
+        "mutable_state_and_scratch_measured_or_withheld",
+        "integer_ceiling_rate_budget"
+      ],
+      "accounting": [
+        "logical_weights",
+        "complete_persistent_bytes",
+        "complete_ebpw_ppm",
+        "active_bytes_per_token",
+        "mutable_state_bytes",
+        "scratch_bytes",
+        "dependency_closure",
+        "target_persistent_bytes_ceiling"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NR_ACCOUNTING_BASELINE_20260911.nr.json",
+        "receipts/headless/FLASH_ORGAN_CENSUS.json"
+      ],
+      "status": "PROVEN_ACCOUNTING_CONTRACT__FLASH_OPEN_BASELINE",
+      "laws": [
+        {
+          "id": "L-complete-representation-accounting",
+          "statement": "Every persistent representation part and external dependency is billed against the original logical-weight denominator; an open dependency withholds runnable-NR and complete-EBPW claims."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-complete-nr-accounting-v1",
+            "architecture_tags": [
+              "flash_qwen4_exp"
+            ],
+            "runner": {
+              "kind": "flash_complete_nr.v1",
+              "path": "tools/flash_complete_nr.py",
+              "timeout_seconds": 120
+            },
+            "required_inputs": [
+              "receipts/headless/FLASH_ORGAN_CENSUS.json",
+              "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json"
+            ],
+            "verifier": {
+              "kind": "nr_container_validate.v1",
+              "path": "tools/nr_container.py",
+              "symbol": "validate"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "The contract proves how Hawking charges a representation and refuses an open NR runnable claim. The Flash receipt is a source-control and target-budget baseline only; it does not establish a compact full-body representation, capability, direct full-body execution, or TPS.",
+      "reopen_if": "A representation needs a previously unmodelled persistent decoder/state class, or a target architecture uses a non-scalar denominator that cannot be mapped to original logical weights."
+    },
+    {
+      "id": "M-stateful-repeated-accepted-decode",
+      "title": "Stateful repeated accepted decode",
+      "family": "execution_state",
+      "implementation_owner": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+      "applicability": {
+        "architecture_tags": ["autoregressive_decoder"],
+        "required_features": ["source_bound_reference_contract", "persistent_model_state"],
+        "excluded_features": []
+      },
+      "required_controls": [
+        "exact_source_identity_and_revision",
+        "independent_reference_per_accepted_token",
+        "source_reset_or_reprefill_absent",
+        "state_memory_growth_measured",
+        "component_level_failure_diagnosis"
+      ],
+      "accounting": [
+        "accepted_token_sequence",
+        "persistent_state_bytes",
+        "source_load_ns",
+        "execution_ns",
+        "gpu_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_DENSE_ROUTE_TRACE_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.json"
+      ],
+      "status": "PROVEN_FLASH_SCOPED",
+      "claim_boundary": "Proves repeated accepted stateful decode for the named Flash source-bound controls. It neither establishes a warm resident whole-model TPS result nor transfers state semantics to another architecture without that architecture's own reference-bound control.",
+      "reopen_if": "A target model exposes a different state representation or cannot preserve an independently checked sequence without a source reset."
+    },
+    {
+      "id": "M-teacher-route-union-compact-experts",
+      "title": "Teacher-bound routed-expert union compaction",
+      "family": "moe_representation",
+      "implementation_owner": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts"],
+        "required_features": ["teacher_oracle_for_route_control", "expert_row_addressability"],
+        "excluded_features": ["claiming_live_router_generalization_from_teacher_routes"]
+      },
+      "required_controls": [
+        "exact_teacher_route_trace",
+        "route_union_census",
+        "full_dense_source_control",
+        "accepted_terminal_reference",
+        "complete_representation_accounting"
+      ],
+      "accounting": [
+        "selected_rows_over_total_rows",
+        "compact_bytes",
+        "source_bytes",
+        "representation_decode_overhead",
+        "no_live_router_or_global_tps_claim"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_ROUTE_UNION_CENSUS.json",
+        "receipts/headless/FLASH_ROUTE_UNION_COMPACT_CONTROL.json"
+      ],
+      "status": "PROVEN_FLASH_SCOPED",
+      "claim_boundary": "The Flash route union is an exact teacher-bound representation control. It is not a live-routing capability result, a whole-model complete-EBPW result, or a TPS claim.",
+      "reopen_if": "A target MoE has a different routing contract, inaccessible expert rows, or its measured route union does not offer sufficient active-byte reduction."
+    },
+    {
+      "id": "M-device-only-immutable-weight-release",
+      "title": "Release immutable source weights after device upload",
+      "family": "physical_residency",
+      "implementation_owner": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs + crates/hawking-core/examples/flash_full_attention_layer3.rs",
+      "applicability": {
+        "architecture_tags": ["metal", "autoregressive_decoder"],
+        "required_features": ["device_weight_upload", "reconstructible_or_pinned_source", "resident_device_buffers"],
+        "excluded_features": ["claiming_complete_residency_before_all_weight_owners_are_measured"]
+      },
+      "required_controls": [
+        "source_weights_explicitly_dropped_after_upload",
+        "host_source_weight_retention_receipt",
+        "device_weight_bytes_receipt",
+        "process_rss_observation",
+        "accepted_decode_control"
+      ],
+      "accounting": [
+        "device_weight_bytes",
+        "host_source_weight_bytes",
+        "observed_process_rss_bytes",
+        "source_load_ns",
+        "execution_ns",
+        "gpu_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_LINEAR_RESIDENT_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_BANK_CONTROL.json",
+        "receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.TIMING_CENSUS.json"
+      ],
+      "status": "PROVEN_FLASH_SCOPED",
+      "claim_boundary": "Flash controls demonstrate release of the measured linear source tensors and all twelve full-attention source tensors after Metal upload. Linear banks remain process-lifetime resident; full-attention banks are reused across their layer-major token pass, not yet across a token-major whole body. This is not a complete long-lived resident model or warm-token TPS result.",
+      "reopen_if": "A target has an immutable weight owner that cannot be released after upload, retains hidden host copies during its token loop, or requires a different lifetime to obtain a fair warm-token measurement."
+    },
+    {
+      "id": "M-device-state-handoff",
+      "title": "Device-resident state handoff between execution organs",
+      "family": "physical_execution",
+      "implementation_owner": "crates/hawking-core/examples/flash_fast_chain.rs",
+      "applicability": {
+        "architecture_tags": ["metal", "multi_organ_decoder"],
+        "required_features": ["compatible_device_buffer_abi", "device_to_device_state_transition"],
+        "excluded_features": ["treating_single_token_chain_timing_as_streaming_tps"]
+      },
+      "required_controls": [
+        "device_handoff_receipt",
+        "terminal_reference_check",
+        "explicit_host_snapshot_boundary",
+        "token_major_repetition_before_tps_claim"
+      ],
+      "accounting": [
+        "device_handoff_count",
+        "host_snapshot_boundary",
+        "elapsed_ns",
+        "persistent_state_bytes"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+        "receipts/headless/FLASH_FAST_FUSED_L0_L47_V1"
+      ],
+      "status": "PROVEN_COMPONENT_SCOPED",
+      "claim_boundary": "Proves a no-host-snapshot device handoff across the recorded Flash chain. It does not by itself prove repeated state continuity, complete-model residency, or streaming TPS.",
+      "reopen_if": "A target organ boundary requires host-visible state, has incompatible layouts, or a repeated token control exposes state drift."
+    },
+    {
+      "id": "M-source-activation-rate-distortion",
+      "title": "Sealed source-activation representation rate--distortion screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/stacked_expert_lowrank_sparse_repair.py",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "source_activation_control"],
+        "required_features": [
+          "addressable_expert_matrix",
+          "sealed_source_activation",
+          "source_receipt_hash_binding",
+          "declared_scoped_accounting"
+        ],
+        "excluded_features": [
+          "treating_one_teacher_activation_as_held_out_capability",
+          "treating_a_teacher_control_as_an_nr_dependency"
+        ]
+      },
+      "required_controls": [
+        "passed_source_layer_receipt",
+        "activation_payload_sha256",
+        "source_route_membership",
+        "BF16_factor_and_repair_rounding",
+        "explicit_teacher_only_boundary"
+      ],
+      "accounting": [
+        "factor_bytes",
+        "sparse_value_and_index_bytes",
+        "decoder_support_bytes",
+        "scoped_ebpw",
+        "source_activation_matvec_error"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json"
+      ],
+      "status": "PROVEN_DISCRIMINATOR__TESTED_LOWRANK_SPARSE_SUBSTRATE_NEGATIVE",
+      "claim_boundary": "The method binds a selected source activation to a small matrix representation screen and exposes executed matvec distortion without laundering the teacher vector into an NR dependency. On Flash layer-0 source-selected expert 411, the best tested <=0.5 scoped point had source-activation relative-L2 0.697437. This is a negative result for the tested BF16 low-rank plus sparse-repair substrate on that control, not a full-expert, held-out, whole-model, or capability impossibility claim.",
+      "reopen_if": "A materially different representation adds multi-activation/held-out evidence, learned repair, a non-low-rank base, or a source-bound function objective that changes the tested information allocation."
+    },
+    {
+      "id": "M-sharded-lookup-heldout-pq-screen",
+      "title": "Held-out shared-PQ rate--distortion screen for sharded lookup tables",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/sharded_lookup_pq_screen.py",
+      "applicability": {
+        "architecture_tags": ["sharded_lookup", "lookup_table"],
+        "required_features": [
+          "indexed_or_addressable_sharded_2d_tensors",
+          "deterministic_disjoint_row_sampling",
+          "shared_codebook_candidate"
+        ],
+        "excluded_features": [
+          "claiming_projected_table_bytes_are_a_materialized_artifact",
+          "claiming_row_reconstruction_is_lookup_semantics_or_capability"
+        ]
+      },
+      "required_controls": [
+        "source_index_hash",
+        "train_heldout_row_separation",
+        "BF16_rounded_codebooks",
+        "codebook_and_decoder_accounting",
+        "projected_full_table_byte_closure"
+      ],
+      "accounting": [
+        "all_logical_table_rows",
+        "packed_subspace_codes",
+        "shared_BF16_codebooks",
+        "metadata",
+        "decoder_support",
+        "projected_table_ebpw",
+        "range_read_bytes",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json"
+      ],
+      "status": "PROVEN_DISCRIMINATOR__TESTED_UNIFORM_GLOBAL_PQ_NEGATIVE",
+      "claim_boundary": "The method is a bounded, held-out row discriminator. For Flash's 128-shard n-gram table, shared PQ reaches 0.093761 projected table EBPW but has 0.964632 held-out global relative-L2; the best tested <=0.5 projected point is 0.375011 EBPW with 0.847257 error. This rejects uniform global PQ as an escalation candidate at those tested rates. It does not establish full-table lookup semantics, active-token fidelity, direct execution, complete NR EBPW, or capability.",
+      "reopen_if": "A source PLE output/hidden-state control paired with an actual lookup-access trace justifies selective hot-row repair, a learned/generative representation, a different source distribution, or a non-uniform/shared-hierarchy representation that changes the tested hypothesis."
+    },
+    {
+      "id": "M-source-ple-output-pq-sparse-repair-screen",
+      "title": "Function-aware global-PQ plus fixed sparse-repair screen for PLE lookup tables",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/ple_lookup_pq_output_screen.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "reference_formula_parity"],
+        "required_features": [
+          "source_bound_lookup_access_trace",
+          "sealed_pre_ple_hidden_state",
+          "reference_checked_PLE_formula_control",
+          "globally_billed_lookup_table_geometry",
+          "offline_encoder_can_select_fixed_residual_offsets",
+          "candidate_uniform_pq_fixed_sparse_repair"
+        ],
+        "excluded_features": [
+          "treating_active_row_repair_as_a_complete_table_artifact",
+          "treating_one_source_control_as_PLE_or_model_capability",
+          "rerunning_uniform_PQ_plus_local_top_error_repair_after_a_scoped_negative"
+        ]
+      },
+      "required_controls": [
+        "source_config_checkpoint_and_reference_formula_hashes",
+        "source_range_read_row_hashes",
+        "reference_formula_parity_for_the_bound_control",
+        "disjoint_train_heldout_codebook_rows",
+        "global_codebook_code_metadata_and_decoder_accounting",
+        "fixed_offset_and_exact_BF16_residual_accounting"
+      ],
+      "accounting": [
+        "all_logical_lookup_rows",
+        "packed_PQ_codes",
+        "shared_BF16_codebooks",
+        "packed_residual_offsets",
+        "exact_BF16_residual_values",
+        "complete_projected_table_ebpw",
+        "active_representation_bytes_for_bound_control",
+        "PLE_output_relative_l2",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_LOOKUP_PQ_SOURCE_OUTPUT_REPAIR_SCREEN.json"
+      ],
+      "status": "PROVEN_FUNCTION_AWARE_DISCRIMINATOR__UNIFORM_PQ_PLUS_FIXED_LOCAL_REPAIR_NEGATIVE_AT_SUB_ONE_SCREEN",
+      "laws": [
+        {
+          "id": "L-flash-ple-uniform-pq-fixed-repair",
+          "statement": "For the sealed Flash BOS PLE control, uniformly shared PQ plus fixed per-row local-error BF16 repair remains grossly distortive below 1.0 projected table EBPW. Do not re-invoke that exact composition on Flash; reopen only with a materially different function, hierarchy, or learned repair allocation."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-output-pq-sparse-repair-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_lookup_pq_output_screen.py",
+            "argv": ["--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+            ],
+            "verifier": "sealed JSON receipt: source PLE PQ plus sparse-repair screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_lookup_pq_output_screen.v1",
+              "status": "SOURCE_PLE_OUTPUT_PQ_PLUS_SPARSE_REPAIR_RATE_DISTORTION_ONLY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For one sealed, independently reference-checked Flash BOS PLE formula control, this method bills a projected full 320,001,536-row table and applies its exact encoded representation to the 16 active source rows. The best tested <=0.5 point is 0.487511 projected table EBPW (d16/k8 plus two repaired BF16 entries/row) but its PLE output has 0.850550 relative-L2 and 0.538099 cosine; the best <=1.0 point remains 0.727215 relative-L2. This rejects that exact uniform-PQ plus fixed local-error repair composition from broader escalation at the tested rates. It does not establish PLE irreducibility, a materialized table, broader state behavior, a native compact runtime, complete NR EBPW, or capability.",
+      "reopen_if": "A materially different function representation changes the information allocation: state-conditioned or generated rows, output-aware/learned residual allocation, a learned PLE replacement, a different hierarchy, or Nova repair. A target without the required source PLE output and reference-parity controls must not select this method."
+    },
+    {
+      "id": "M-source-ple-shard-local-pq-output-screen",
+      "title": "Function-aware physical-shard-local PQ screen for PLE lookup tables",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/ple_lookup_pq_output_screen.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "reference_formula_parity"],
+        "required_features": [
+          "source_bound_lookup_access_trace",
+          "sealed_pre_ple_hidden_state",
+          "reference_checked_PLE_formula_control",
+          "globally_billed_lookup_table_geometry",
+          "physical_numeric_PLE_shard_layout",
+          "candidate_shard_local_pq"
+        ],
+        "excluded_features": [
+          "treating_one_source_control_as_PLE_or_model_capability",
+          "treating_projected_local_codebooks_as_a_materialized_artifact",
+          "rerunning_fixed_shard_local_PQ_after_a_scoped_negative"
+        ]
+      },
+      "required_controls": [
+        "source_config_checkpoint_and_reference_formula_hashes",
+        "canonical_numeric_shard_layout",
+        "source_range_read_row_hashes",
+        "reference_formula_parity_for_the_bound_control",
+        "disjoint_train_heldout_rows_within_each_physical_shard",
+        "BF16_local_codebook_code_directory_and_decoder_accounting"
+      ],
+      "accounting": [
+        "all_logical_lookup_rows",
+        "packed_PQ_codes",
+        "all_physical_shard_local_BF16_codebooks",
+        "per_shard_codebook_directory",
+        "metadata",
+        "decoder_support",
+        "active_code_and_distinct_codebook_bytes_for_bound_control",
+        "complete_projected_table_ebpw",
+        "heldout_row_relative_l2",
+        "PLE_output_relative_l2",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_FUNCTION_AWARE_DISCRIMINATOR__FIXED_SHARD_LOCAL_PQ_NEGATIVE_AT_SUB_ONE_SCREEN",
+      "laws": [
+        {
+          "id": "L-flash-ple-fixed-shard-local-pq",
+          "statement": "For the sealed Flash BOS PLE control, independently fitted BF16 PQ codebooks for the 128 physical PLE shards do not yield a useful sub-one function curve. At <=0.5 projected table EBPW, the best tested local point is 0.375062 EBPW with 0.859731 PLE-output relative-L2, worse than the already-billed global-plus-fixed-repair point at 0.487511 EBPW and 0.850550 relative-L2. Do not re-invoke this fixed shard-local PQ family; reopen only with a hierarchy that changes the function or information allocation."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-shard-local-pq-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_lookup_pq_output_screen.py",
+            "argv": ["--codebook-scope", "shard_local", "--rows-per-partition", "16", "--repair-counts", "0", "--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+            ],
+            "verifier": "sealed JSON receipt: source PLE physical-shard-local PQ screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_lookup_pq_output_screen.v1",
+              "status": "SOURCE_PLE_OUTPUT_SHARD_LOCAL_PQ_RATE_DISTORTION_ONLY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For one sealed reference-checked Flash BOS PLE formula control, this method keeps deterministic train/held-out rows inside their exact numeric source shard, bills 128 separately fitted BF16 PQ codebook families and every projected table code, and applies the local codebook selected by each of the 16 active source rows. Its best <=0.5 point is 0.375062 projected table EBPW with 0.859731 PLE-output relative-L2; the d8/k16 point is 0.500113 EBPW with 0.816312 error and is still grossly distortive. This rejects the fixed physical-shard-local PQ family from broader escalation. It does not reject other hierarchical, state-conditioned, generated, learned, or Nova PLE functions, nor establish a materialized table, direct execution, full PLE state behavior, complete NR EBPW, or capability.",
+      "reopen_if": "A materially different hierarchy changes the local representation rather than merely rerunning fixed BF16 PQ: cross-shard learned bases or residuals, context-conditioned codebooks, output-aware learned allocation, generated rows, a learned PLE replacement, or Nova repair. A target without source PLE output and reference-parity controls must not select this method."
+    },
+    {
+      "id": "M-source-ple-additive-pq-output-screen",
+      "title": "Function-aware greedy additive residual-PQ screen for PLE lookup tables",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/ple_lookup_pq_output_screen.py + tools/odyssey/sharded_lookup_pq_screen.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "reference_formula_parity"],
+        "required_features": [
+          "source_bound_lookup_access_trace",
+          "sealed_pre_ple_hidden_state",
+          "reference_checked_PLE_formula_control",
+          "globally_billed_lookup_table_geometry",
+          "candidate_residual_additive_pq"
+        ],
+        "excluded_features": [
+          "treating_one_source_control_as_PLE_or_model_capability",
+          "treating_projected_additive_codebooks_as_a_materialized_artifact",
+          "rerunning_fixed_greedy_additive_PQ_after_a_scoped_negative"
+        ]
+      },
+      "required_controls": [
+        "source_config_checkpoint_and_reference_formula_hashes",
+        "source_range_read_row_hashes",
+        "reference_formula_parity_for_the_bound_control",
+        "disjoint_train_heldout_codebook_rows",
+        "BF16_rounded_additive_stage_codebooks",
+        "all_stage_code_and_decoder_accounting"
+      ],
+      "accounting": [
+        "all_logical_lookup_rows",
+        "packed_codes_for_every_additive_stage",
+        "all_global_BF16_stage_codebooks",
+        "metadata",
+        "decoder_support",
+        "complete_projected_table_ebpw",
+        "heldout_row_relative_l2",
+        "PLE_output_relative_l2",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_ADDITIVE_PQ_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_FUNCTION_AWARE_DISCRIMINATOR__FIXED_GREEDY_ADDITIVE_PQ_NEGATIVE_AT_SUB_ONE_SCREEN",
+      "laws": [
+        {
+          "id": "L-flash-ple-fixed-greedy-additive-pq",
+          "statement": "For the sealed Flash BOS PLE control, two greedily decoded BF16 residual-PQ stages do not provide a useful sub-one PLE function curve. The best <=0.5 point is 0.400011 projected table EBPW with 0.861647 PLE-output relative-L2, worse than the existing 0.487511 global-plus-fixed-repair point at 0.850550; the d8/k4 two-stage point is 0.500011 EBPW with 0.814410 error and remains grossly distortive. Do not re-invoke this fixed greedy additive-PQ family; reopen only with a materially different learned/contextual function or allocation."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-additive-pq-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_lookup_pq_output_screen.py",
+            "argv": ["--quantizer-family", "residual_additive", "--residual-stages", "2", "--repair-counts", "0", "--candidates", "32:2,32:4,16:2,16:4,10:4,8:2,8:4", "--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+            ],
+            "verifier": "sealed JSON receipt: source PLE greedy additive residual-PQ screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_lookup_pq_output_screen.v1",
+              "status": "SOURCE_PLE_OUTPUT_ADDITIVE_PQ_RATE_DISTORTION_ONLY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For one sealed reference-checked Flash BOS PLE formula control, this method fits each BF16 PQ stage to the residual reconstructed by prior BF16-decoded stages, bills every stage codebook and packed stage code, and applies no copied source-BF16 repair. The best <=0.5 point is 0.400011 projected table EBPW with 0.861647 PLE-output relative-L2; it is not a source-control survivor. This rejects the fixed greedy two-stage additive construction, not jointly trained/additive, context-conditioned, generated, learned, or Nova PLE functions, nor a materialized table, direct execution, full PLE state behavior, complete NR EBPW, or capability.",
+      "reopen_if": "A materially different function changes the allocation rather than merely changing PQ stage/card settings: jointly trained/additive codebooks under output loss, context-conditioned or generated PLE contributions, learned routing, hierarchical latent functions, a learned PLE replacement, or Nova repair. A target without source PLE output and reference-parity controls must not select this method."
+    },
+    {
+      "id": "M-source-ple-address-generator-screen",
+      "title": "Address-conditioned generated-row discriminator for PLE lookup tables",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/ple_address_generator_screen.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "reference_formula_parity"],
+        "required_features": [
+          "canonical_combined_lookup_row_address",
+          "source_bound_lookup_access_trace",
+          "sealed_pre_PLE_hidden_state",
+          "reference_checked_PLE_formula_control",
+          "source_independent_generator_candidate",
+          "candidate_address_only_generator"
+        ],
+        "excluded_features": [
+          "treating_address_only_row_generation_as_context_conditioned_generation",
+          "treating_one_source_control_as_PLE_or_model_capability",
+          "rerunning_smooth_address_only_generators_after_a_scoped_negative"
+        ]
+      },
+      "required_controls": [
+        "source_config_checkpoint_and_reference_formula_hashes",
+        "canonical_numeric_shard_layout",
+        "disjoint_train_heldout_address_row_bindings",
+        "BF16_generator_coefficient_rounding",
+        "generator_metadata_and_runtime_support_accounting",
+        "reference_formula_parity_for_the_bound_control"
+      ],
+      "accounting": [
+        "all_logical_lookup_rows",
+        "BF16_generator_coefficients",
+        "generator_metadata",
+        "runtime_support_bytes",
+        "projected_complete_table_ebpw",
+        "active_representation_bytes_per_token",
+        "heldout_row_relative_l2",
+        "PLE_output_relative_l2",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_ADDRESS_GENERATOR_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_FUNCTION_AWARE_DISCRIMINATOR__SMOOTH_ADDRESS_ONLY_GENERATOR_NEGATIVE",
+      "laws": [
+        {
+          "id": "L-flash-ple-address-only-generator",
+          "statement": "For the sealed Flash BOS PLE control, a smooth address-only Fourier generator has no usable held-out row or PLE-output fidelity. Do not re-invoke smooth address-only variants on Flash; reopen only with token/history conditioning, hierarchy, learned routing, or Nova repair."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-address-generator-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_address_generator_screen.py",
+            "argv": ["--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+            ],
+            "verifier": "sealed JSON receipt: source PLE address-generator screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_address_generator_screen.v1",
+              "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For one sealed reference-checked Flash BOS PLE control, this method replaces the lookup table with a directly computable BF16 Fourier generator of the canonical combined row address. Its best tested output point costs 0.000007130 projected table EBPW but has held-out row relative-L2 1.035783 and PLE-output relative-L2 0.953283. This rejects the tested smooth address-only generator prior as an escalation candidate. It does not reject context-conditioned/generated rows, a learned PLE replacement, a materialized artifact, direct execution, complete NR EBPW, or capability.",
+      "reopen_if": "A target changes the PLE address layout or formula. For Flash, only a materially different generator that uses token/history state, a hierarchy, learned routing, or Nova repair may reopen the function-search branch; do not repeat address-only smooth-coordinate variants."
+    },
+    {
+      "id": "M-source-ple-additive-hash-factor-screen",
+      "title": "Source-bound discontinuous additive-hash PLE row-function screen",
+      "family": "function_generated_representation_discriminator",
+      "implementation_owner": "tools/odyssey/ple_address_generator_screen.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "reference_formula_parity"],
+        "required_features": [
+          "source_bound_lookup_access_trace",
+          "sealed_pre_PLE_hidden_state",
+          "reference_checked_PLE_formula_control",
+          "source_independent_generator_candidate",
+          "candidate_additive_hash_factor_generator"
+        ],
+        "excluded_features": [
+          "rerunning_fixed_additive_hash_factor_after_a_scoped_negative",
+          "treating_factor_buckets_as_retained_source_rows",
+          "treating_one_source_control_as_stateful_or_capability_evidence"
+        ]
+      },
+      "required_controls": [
+        "sealed_source_control_and_reference_formula_parity",
+        "deterministic_disjoint_train_heldout_rows_from_every_source_shard",
+        "explicit_hash_program_constants_and_BF16_coefficient_billing",
+        "active_source_lookup_row_and_PLE_output_measurement",
+        "no_full_lookup_table_materialization"
+      ],
+      "accounting": [
+        "all_logical_lookup_rows",
+        "BF16_shared_factor_coefficients",
+        "hash_program_metadata_and_runtime_support",
+        "projected_complete_table_ebpw",
+        "active_representation_bytes_per_token",
+        "heldout_row_relative_l2",
+        "PLE_output_relative_l2",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_ADDITIVE_HASH_FUNCTION_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_FUNCTION_AWARE_DISCRIMINATOR__FIXED_ADDITIVE_HASH_ADDRESS_PRIOR_NEGATIVE",
+      "laws": [
+        {
+          "id": "L-flash-ple-additive-hash-address-prior",
+          "statement": "For Flash's sealed BOS PLE control, a discontinuous three-term additive-hash address-factor generator reaches only 0.979713 PLE-output relative-L2 at its best tested point (64 buckets, 0.000010330 projected table EBPW), while its held-out row relative-L2 is 1.095700. Do not retry fixed address-only hash mixing or bucket sweeps; the tested factor family does not preserve useful table function."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-additive-hash-factor-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_address_generator_screen.py",
+            "argv": ["--family", "additive-hash", "--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+            ],
+            "verifier": "sealed JSON receipt: source PLE additive-hash row-function screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_address_generator_screen.v1",
+              "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For one sealed Flash BOS PLE control, this method represents every combined row address through a bias plus three independently mixed shared bucket-factor vectors, with all BF16 coefficients and runtime constants billed. The best tested candidate is exceptionally small as a projected table description but fails both held-out row and PLE-output fidelity. It rejects this fixed discontinuous address-only factor prior, not context/history-conditioned functions, hierarchical/generative expert mechanisms, a materialized artifact, direct execution, complete NR EBPW, or capability.",
+      "reopen_if": "A materially different function must use real context/history state, learned non-fixed routing/topology, a hierarchy not reducible to bucket-count/mix-constant changes, sparse exceptions honestly billed, or Nova-trained replacement. Do not rerun this fixed additive-hash family merely with another bucket count, seed, or ridge."
+    },
+    {
+      "id": "M-source-ple-context-response-tangent-screen",
+      "title": "Source-bound address/context PLE tangent-geometry screen",
+      "family": "function_geometry_discriminator",
+      "implementation_owner": "tools/odyssey/ple_context_response_screen.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "reference_formula_parity"],
+        "required_features": [
+          "source_bound_lookup_access_trace",
+          "sealed_pre_ple_hidden_state",
+          "reference_checked_PLE_formula_control",
+          "candidate_address_context_state_function",
+          "historical_address_trace_with_verified_native_session_binding"
+        ],
+        "excluded_features": [
+          "treating_synthetic_context_plane_as_source_trajectory_distribution",
+          "treating_tangent_rank_as_complete_representation_ebpw",
+          "rerunning_zero_state_tangent_without_real_state_bank_followup"
+        ]
+      },
+      "required_controls": [
+        "source_control_and_reference_formula_parity_seals",
+        "fresh_source_range_reads_that_match_sealed_address_trace",
+        "exact_zero_history_batch_reproduction_of_sealed_source_control",
+        "explicit_synthetic_context_construction_and_seed",
+        "sealed_native_session_binding_with_explicit_non_PLE_trajectory_boundary",
+        "no_source_lookup_table_materialization"
+      ],
+      "accounting": [
+        "source_support_payload_bytes_materialized",
+        "source_range_read_bytes_and_hashes",
+        "context_count_and_direction_count",
+        "local_response_spectrum",
+        "symmetric_curvature",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_CONTEXT_RESPONSE_SCREEN.json"
+      ],
+      "status": "PROVEN_SOURCE_FORMULA_GEOMETRY_DISCRIMINATOR__SYNTHETIC_TANGENT_ONLY",
+      "laws": [
+        {
+          "id": "L-flash-ple-local-tangent-is-not-state-bank",
+          "statement": "For Flash's sealed BOS PLE control, the exact zero-history formula responds through a compact spectrum over the declared eight-direction synthetic local plane (cross-address rank 6 at 90% energy), but that plane is not a source trajectory distribution. Do not claim a context-conditioned PLE replacement, stateful fidelity, complete EBPW, or capability from it; require a real source multi-context state bank before learned function training."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-context-response-tangent-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_context_response_screen.py",
+            "argv": ["--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+              "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
+            ],
+            "verifier": "sealed JSON receipt: source PLE context-response tangent screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_context_response_screen.v1",
+              "status": "SOURCE_PLE_CONTEXT_RESPONSE_TANGENT_ONLY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For Flash's sealed BOS PLE source formula control, this method first proves a zero-history batch form reproduces the exact sealed injection, then probes eight real hashed addresses over a deterministic eight-direction synthetic local context plane. It measured cross-address response rank 6 at 90% energy, 7 at 95%, and 10 at 99%. The historical stateful-session receipt that supplies the address sequence has a valid native compact-UTF8 seal and is bound as accepted-session provenance only. It still does not contain PLE-inclusive source-model states, so this screen is not a real source-state bank, learned function, representation, direct execution, complete EBPW, capability, or TPS result.",
+      "reopen_if": "The canonical native state-bank exporter and formula-bank adapter now implement the next stricter control, but a fresh sealed source-bound bank is still required before their evidence exists. Then train/evaluate a materially new (address, context, persistent PLE state) contribution function under held-out functional and capability gates. A changed PLE formula/address contract also requires a new tangent screen."
+    },
+    {
+      "id": "M-source-ple-native-context-state-bank-formula",
+      "title": "Source-bound native-context PLE formula bank",
+      "family": "function_geometry_discriminator",
+      "implementation_owner": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs + tools/odyssey/ple_real_state_bank_formula.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder", "source_ple_output_control", "native_stateful_session"],
+        "required_features": [
+          "one_process_source_bound_accepted_stateful_session",
+          "capturable_pre_PLE_native_boundary",
+          "versioned_source_PLE_formula",
+          "addressable_source_lookup_rows",
+          "persistent_PLE_convolution_state"
+        ],
+        "excluded_features": [
+          "treating_native_context_formula_evaluation_as_upstream_PLE_inclusive_trajectory_parity",
+          "treating_raw_state_bank_payload_as_a_compact_representation",
+          "claiming_complete_EBPW_or_capability_before_a_closed_executable_representation"
+        ]
+      },
+      "required_controls": [
+        "native_compact_UTF8_session_seal_and_source_identity",
+        "one_process_no_reset_or_reprefill_persistence_contract",
+        "per-token_F32_state_payload_hashes_and_finiteness",
+        "exact_source_PLE_formula_and_support_tensor_bindings",
+        "explicit_non_PLE_inclusive_native_trajectory_boundary",
+        "no_full_lookup_table_materialization"
+      ],
+      "accounting": [
+        "state_bank_payload_bytes",
+        "source_support_payload_bytes_materialized",
+        "source_lookup_range_read_bytes",
+        "persistent_PLE_convolution_state_bytes",
+        "state_and_injection_delta_spectra",
+        "formula_construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.json",
+        "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+        "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/manifest.json"
+      ],
+      "status": "CAPTURED_NATIVE_CONTEXT_BANK__FORMULA_WITHHELD_BY_REFERENCE_REJECTION",
+      "latest_attempt": {
+        "status": "CAPTURED_BUT_REFERENCE_TOKEN_REJECTED_BEFORE_ACCEPTED_GENERATION",
+        "observed_error": "Complete 48-layer forward predicted token 271 where the supplied first continuation token was 2972.",
+        "session_receipt": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+        "state_bank_manifest": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_20260912/manifest.json",
+        "native_model_execution": true,
+        "states_captured": 7,
+        "accepted_generation_tokens": 0,
+        "source_reset_or_reprefill": false,
+        "interpretation": "A real source-bound seven-slot state bank was captured in one native process, but the session did not earn the accepted-continuation contract. The bank is diagnostic only and cannot feed the formula-bank adapter as an accepted stateful control.",
+        "reopen_condition": "Rerun the pinned source-bound session with the recorded preceding argmax token 271, then continue with the next independently recorded argmax and require at least two accepted generation tokens. Do not synthesize acceptance from the captured bank."
+      },
+      "laws": [
+        {
+          "id": "L-flash-native-context-bank-is-not-upstream-ple-parity",
+          "statement": "A real stateful native context bank is stronger than a synthetic tangent plane, but its current Flash native body omits PLE. Formula outputs over that bank may train or falsify a conditional contribution function, never establish upstream PLE-inclusive trajectory parity, a compact representation, capability, or TPS by themselves."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-ple-native-context-formula-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/ple_real_state_bank_formula.py",
+            "argv": ["--state-bank", "{state_bank_manifest}", "--output", "{artifact_path}"],
+            "required_inputs": [
+              "sealed native pre-PLE state-bank manifest",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+              "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+            ],
+            "verifier": "sealed JSON receipt: native-context stateful PLE source-formula bank",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.ple_real_state_bank_formula.v1",
+              "status": "SOURCE_BOUND_NATIVE_CONTEXT_STATEFUL_PLE_FORMULA_BANK__NO_SOURCE_PLE_TRAJECTORY_PARITY"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "A fresh source-bound native-context bank is now captured and binds all seven F32 boundary payloads, but its session rejected the first supplied continuation and accepted zero generated tokens. The bank therefore remains diagnostic only; the formula adapter is withheld. Since the current native body omits PLE, any later formula result remains a conditional-function discriminator, not upstream PLE-inclusive source-model parity, a direct compact execution result, complete EBPW, capability, qualified TPS, or promotion evidence.",
+      "reopen_if": "After a source-bound session receipt with at least two independently accepted continuation tokens, run the strict formula-bank adapter. Fit only a materially distinct address/context/history-conditioned contribution candidate and test it on disjoint native contexts. A stronger source-parity claim additionally requires native PLE integration and independent upstream/source trajectory comparison."
+    },
+    {
+      "id": "M-source-expert-shared-vector-code-screen",
+      "title": "Source-bound shared expert vector-code output screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/expert_vector_code_screen.py + tools/odyssey/sharded_lookup_pq_screen.py",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "stacked_expert_bank", "source_activation_control"],
+        "required_features": [
+          "stacked_3d_source_expert_tensor",
+          "sealed_source_moe_activation_and_route_control",
+          "deterministic_disjoint_train_heldout_source_rows",
+          "shared_bf16_vector_codebook_candidate"
+        ],
+        "excluded_features": [
+          "treating_screen_time_source_row_materialization_as_direct_execution",
+          "treating_one_source_activation_as_whole_model_capability",
+          "claiming_projected_expert_scope_is_complete_nr_ebpw"
+        ]
+      },
+      "required_controls": [
+        "source_index_hash_and_revision_binding",
+        "exact_selected_expert_payload_reads",
+        "sealed_source_activation_hash",
+        "source_route_membership_and_weight_sum",
+        "disjoint_even_odd_train_heldout_rows",
+        "bf16_rounded_shared_codebooks",
+        "full_vector_code_and_directory_decoder_accounting",
+        "route_weighted_source_output_metrics"
+      ],
+      "accounting": [
+        "all_selected_expert_vector_codes",
+        "shared_bf16_codebooks",
+        "expert_directory",
+        "metadata",
+        "decoder_support",
+        "complete_scoped_expert_ebpw",
+        "heldout_weight_error",
+        "source_output_error",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_SOURCE_OUTPUT_DISCRIMINATOR__FIXED_SHARED_VECTOR_CODE_NEGATIVE",
+      "laws": [
+        {
+          "id": "L-flash-shared-expert-vector-code-fails-output-control",
+          "statement": "On the sealed Flash layer-0 source route, a fixed shared BF16 product-vector-code family is arithmetically tiny but highly distortive: the densest tested selected-expert family is 0.034197 scoped EBPW with 0.848695 route-weighted source-output relative-L2, while the best route-output point is 0.119822 scoped EBPW with 0.812955 error. Do not retune this fixed shared-PQ family as a substitute for a materially different expert function representation."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-source-expert-shared-vector-code-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/expert_vector_code_screen.py",
+            "argv": ["--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+              "pinned Flash safetensors index and selected expert payloads"
+            ],
+            "verifier": "sealed JSON receipt: source-bound shared expert vector-code screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.expert_vector_code_screen.v1",
+              "status": "SOURCE_BOUND_EXPERT_VECTOR_CODE_FANOUT_COMPLETE"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For ten exact source-selected Flash layer-0 gate/up experts under one sealed source activation and route control, this method fits shared BF16 product codebooks from disjoint even source rows, measures held-out odd-row weight distortion and route-weighted source matvec distortion, and bills codes, codebooks, directory, metadata, and decoder support. The screen materializes candidate rows for evaluation. It establishes no production direct decoder, dense-parent-free runtime, full-body EBPW, PLE closure, capability, TPS, or promotion result.",
+      "reopen_if": "A materially different expert hypothesis changes the information allocation: a learned shared generator, output-aware multi-activation residual, expert-conditioned program, cross-layer functional basis, or native source-bound direct decoder. Do not reopen by merely changing this fixed screen's card, seed, or iteration sweep."
+    },
+    {
+      "id": "M-source-expert-shared-input-basis-screen",
+      "title": "Source-bound shared expert input-basis output screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/expert_vector_code_screen.py",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "stacked_expert_bank", "source_activation_control", "shared_basis"],
+        "required_features": [
+          "stacked_3d_source_expert_tensor",
+          "sealed_source_moe_activation_and_route_control",
+          "deterministic_disjoint_train_heldout_source_rows",
+          "shared_input_basis_factor_candidate"
+        ],
+        "excluded_features": [
+          "treating_screen_time_source_row_materialization_as_direct_execution",
+          "treating_one_source_activation_as_whole_model_capability",
+          "claiming_projected_expert_scope_is_complete_nr_ebpw"
+        ]
+      },
+      "required_controls": [
+        "source_index_hash_and_revision_binding",
+        "exact_selected_expert_payload_reads",
+        "sealed_source_activation_hash",
+        "source_route_membership_and_weight_sum",
+        "disjoint_even_odd_train_heldout_rows",
+        "bf16_shared_basis_and_row_coefficient_rounding",
+        "complete_basis_coefficient_directory_decoder_accounting",
+        "direct_factor_formula_source_output_metrics"
+      ],
+      "accounting": [
+        "shared_bf16_basis",
+        "bf16_row_coefficients",
+        "expert_directory",
+        "metadata",
+        "decoder_support",
+        "complete_scoped_expert_ebpw",
+        "heldout_weight_error",
+        "source_output_error",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_EXPERT_SHARED_BASIS_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_SOURCE_OUTPUT_DISCRIMINATOR__FIXED_SHARED_INPUT_BASIS_NEGATIVE",
+      "laws": [
+        {
+          "id": "L-flash-shared-input-basis-fails-output-control",
+          "statement": "On the sealed Flash layer-0 source route, a shared BF16 input-basis factor formula remains highly distortive: rank 4 reaches 0.046072 scoped EBPW with 0.986917 route-weighted source-output relative-L2, while rank 32 reaches 0.256072 with 0.903899 error. Do not increase rank or retune randomized-basis settings as a substitute for a materially different expert-family function hypothesis."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-source-expert-shared-input-basis-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/expert_vector_code_screen.py",
+            "argv": ["--family", "shared-basis", "--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+              "pinned Flash safetensors index and selected expert payloads"
+            ],
+            "verifier": "sealed JSON receipt: source-bound shared expert input-basis screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.expert_vector_code_screen.v1",
+              "status": "SOURCE_BOUND_EXPERT_VECTOR_CODE_FANOUT_COMPLETE"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For ten exact source-selected Flash layer-0 gate/up experts under one sealed source activation and route control, this method learns a shared input basis from even source rows, stores BF16 per-row coefficients, measures odd-row reconstruction and route-weighted source matvec distortion, and bills basis, coefficients, directory, metadata, and decoder support. The source output uses the direct factor formula, but the screen does not establish a production kernel, full-body EBPW, PLE closure, capability, TPS, or promotion.",
+      "reopen_if": "A materially different expert hypothesis changes the information allocation: lawful nonlinear atom sharing, a learned shared generator, output-aware multi-activation residual, expert-conditioned program, or a native source-bound direct decoder. Do not reopen by merely increasing rank or retuning the randomized basis."
+    },
+    {
+      "id": "M-source-expert-lawful-nonlinear-atom-sharing-screen",
+      "title": "Source-bound lawful nonlinear gated-MoE atom-sharing screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/expert_atom_sharing_screen.py + tools/odyssey/stacked_expert_lowrank_sparse_repair.py",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "gated_mlp", "stacked_expert_bank", "source_activation_control"],
+        "required_features": [
+          "stacked_gate_up_and_down_source_tensors",
+          "sealed_source_moe_activation_and_route_control",
+          "actual_silu_gated_mlp_formula",
+          "complete_selected_triple_descriptor_accounting",
+          "independent_atom_id_shuffled_matched_null"
+        ],
+        "excluded_features": [
+          "arbitrary_gate_scaling_or_non_function_preserving_transforms",
+          "treating_selected_triple_scope_as_complete_expert_or_model_ebpw",
+          "treating_screen_materialization_as_production_direct_execution",
+          "treating_one_source_activation_as_capability_preservation"
+        ]
+      },
+      "required_controls": [
+        "source_index_hash_and_revision_binding",
+        "exact_gate_up_and_down_expert_payload_reads",
+        "sealed_source_activation_hash",
+        "source_route_membership_and_route_weights",
+        "common_neuron_assignment_descriptor",
+        "lawful_reciprocal_up_down_scaling_with_billed_folded_scale",
+        "source_selected_triple_and_full_expert_output_metrics",
+        "byte_identical_independent_atom_id_null",
+        "deterministic_synthetic_function_probe_metrics"
+      ],
+      "accounting": [
+        "shared_bf16_atom_dictionary",
+        "packed_non_dictionary_atom_assignments",
+        "selected_neuron_indices",
+        "expert_directory",
+        "metadata",
+        "decoder_support",
+        "complete_scoped_selected_triple_ebpw",
+        "source_output_error",
+        "matched_null_error",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json"
+      ],
+      "status": "PROVEN_SOURCE_OUTPUT_DISCRIMINATOR__REPLICATION_REQUIRED",
+      "laws": [
+        {
+          "id": "L-flash-lawful-atom-sharing-source-output-survives-null",
+          "statement": "On one sealed Flash layer-0 source route, lawful matching of 128 complete gated-MoE neuron triples across experts 411 and 334 beat an independent atom-ID null on the selected-triple and full-expert source outputs, while the completely billed selected scope reached 8.270313 EBPW with 48.31% byte reduction. The synthetic function-probe control did not repeat the advantage and the absolute matched source error remains high; this is a discriminator survivor requiring independent replication, not a capable or complete representation."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-source-expert-lawful-atom-sharing-v1",
+            "architecture_tags": ["flash_qwen4_exp"],
+            "runner": "tools/odyssey/expert_atom_sharing_screen.py",
+            "argv": ["--output", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+              "pinned Flash safetensors index and exact gate_up/down selected expert payloads"
+            ],
+            "verifier": "sealed JSON receipt: source-bound lawful nonlinear gated-MoE atom-sharing screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.expert_atom_sharing_screen.v1",
+              "status": "SOURCE_BOUND_NONLINEAR_ATOM_SHARING_SCREEN_COMPLETE"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "For two exact source-selected Flash layer-0 gated-MoE experts and 128 selected neuron triples, this method canonicalizes only reciprocal up/down scaling, assigns complete triples against a shared dictionary, compares source selected/full outputs with a byte-identical independent-ID null, and bills the selected scope. The other neurons are exact only in the diagnostic full-output control. It establishes no complete expert/model EBPW, capability, production direct decoder, TPS, PLE closure, or promotion result.",
+      "reopen_if": "Replicate the same method on a second source layer or materially broader source-output bank with an independent source control. If the source-output advantage survives, add a direct formula audit and measure a runtime kernel before any representation expansion. Do not reopen by sweeping atom count, matching seed, or arbitrary gate transforms."
+    },
+    {
+      "id": "M-flash-router-source-output-fixed-int4",
+      "title": "Flash source-bound fixed INT4 router route-identity screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/flash_router_source_output_screen.py + tools/flash_router_sensitivity_map.py",
+      "applicability": {
+        "architecture_tags": ["flash_qwen4_exp", "moe", "router", "source_output_control"],
+        "required_features": [
+          "source_router_matrix",
+          "sealed_source_mlp_input",
+          "exact_top10_route_semantics",
+          "source_route_identity_control"
+        ],
+        "excluded_features": [
+          "treating_router_route_identity_as_whole_model_capability",
+          "blaming_router_route_failure_on_expert_representation",
+          "claiming_tail_compression_from_router_only",
+          "sweeping_int4_variants_after_a_fixed_family_rejection"
+        ]
+      },
+      "required_controls": [
+        "source_revision_and_router_tensor_hash",
+        "sealed_source_activation_hash",
+        "source_route_ids_and_selected_weights",
+        "float32_softmax_and_stable_top10_recompute",
+        "rowwise_int4_packed_payload_and_bf16_scales",
+        "complete_router_scope_accounting",
+        "same_budget_column_permutation_null",
+        "near_tie_margin_and_order_metrics"
+      ],
+      "accounting": [
+        "packed_int4_payload",
+        "row_scale_bf16_payload",
+        "metadata",
+        "decoder_support",
+        "complete_scoped_router_ebpw",
+        "source_logit_error",
+        "route_identity_error",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json"
+      ],
+      "status": "PROVEN_SOURCE_ROUTER_ROUTE_GATE_NEGATIVE__FIXED_INT4_REJECTED",
+      "laws": [
+        {
+          "id": "L-flash-fixed-int4-router-route-identity-fails",
+          "statement": "On the sealed Flash layer-0 source MLP input, the source router recomputes to all ten authoritative route IDs, but one completely billed rowwise INT4 candidate at 4.4078125 scoped EBPW changes 8 of 10 route identities (16-ID symmetric difference) with 0.346322 router-logit relative-L2. Close this fixed router family for the tested control and retain high-fidelity router selection while non-router tail gates remain independently withheld."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-router-source-output-fixed-int4-v1",
+            "architecture_tags": ["flash_qwen4_exp", "router"],
+            "runner": "tools/odyssey/flash_router_source_output_screen.py",
+            "argv": ["--out", "{artifact_path}"],
+            "required_inputs": [
+              "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+              "pinned Flash safetensors index and model.language_model.layers.0.mlp.gate.weight"
+            ],
+            "verifier": "sealed JSON receipt: fixed source-bound Flash router source-output screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.flash_router_source_output_screen.v1",
+              "status": "FIXED_INT4_ROUTER_ROUTE_GATE_REJECTED"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "This method evaluates one rowwise signed-INT4 router candidate against one sealed source MLP input and exact source route identity, with complete scoped accounting and a same-budget column-address null. It establishes no other tail representation, complete NR, direct runtime, capability, TPS, or promotion result.",
+      "reopen_if": "Reopen only with a materially different router representation or a disjoint source-input bank, preserving exact route/top-k semantics. Do not reopen by sweeping rowwise INT4 scales, seeds, or nearby bit widths merely because this fixed candidate failed."
+    },
+    {
+      "id": "M-flash-hyperconnection-symbolic-closure-screen",
+      "title": "Flash HyperConnection simultaneous stream-closure rank screen",
+      "family": "representation_discriminator",
+      "implementation_owner": "tools/odyssey/hyperconnection_closure_screen.py + crates/hawking-core/shaders/qwen_next.metal",
+      "applicability": {
+        "architecture_tags": ["hyperconnection", "stream_state", "gated_residual", "symbolic_closure"],
+        "required_features": [
+          "declared_stream_axis",
+          "canonical_read_mix_formula",
+          "canonical_combine_formula",
+          "enumerable_stream_consumers"
+        ],
+        "excluded_features": [
+          "treating_symbolic_rank_as_numeric_source_state_parity",
+          "fitting_a_smaller_state_after_full_rank_falsification",
+          "claiming_ebpw_or_capability_from_consumer_algebra"
+        ]
+      },
+      "required_controls": [
+        "canonical_shader_formula_binding",
+        "input_dependent_sigmoid_read_mix_coefficients",
+        "direct_residual_stream_consumer",
+        "joint_observable_matrix_rank",
+        "explicit_nullity_and_reopen_condition"
+      ],
+      "accounting": [
+        "stream_axis_geometry",
+        "read_mix_probe_matrix",
+        "combine_residual_jacobian",
+        "joint_singular_values",
+        "symbolic_construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json"
+      ],
+      "status": "PROVEN_SYMBOLIC_FULL_RANK__EXACT_QUOTIENT_REJECTED",
+      "laws": [
+        {
+          "id": "L-flash-hyperconnection-stream-quotient-fails-full-rank",
+          "statement": "The canonical Flash HyperConnection read-mix and combine consumers have joint observable rank 4/4 for the four-stream axis; the direct residual-stream identity consumer alone blocks a nontrivial exact quotient. Close this symbolic quotient branch without a model load."
+        }
+      ],
+      "automation": {
+        "adapters": [
+          {
+            "id": "flash-hyperconnection-symbolic-closure-v1",
+            "architecture_tags": ["flash_qwen4_exp", "hyperconnection"],
+            "runner": "tools/odyssey/hyperconnection_closure_screen.py",
+            "argv": ["--streams", "4", "--output", "{artifact_path}"],
+            "required_inputs": [
+              "canonical Flash HyperConnection formulas in crates/hawking-core/shaders/qwen_next.metal"
+            ],
+            "verifier": "sealed JSON receipt: symbolic Flash HyperConnection closure screen",
+            "verification": {
+              "kind": "sealed_json",
+              "schema": "hawking.odyssey.hyperconnection_closure_screen.v1",
+              "status": "SYMBOLIC_FULL_JOINT_RANK__QUOTIENT_REJECTED"
+            }
+          }
+        ]
+      },
+      "claim_boundary": "This method algebraically checks the declared Flash HC read-mix and combine stream consumers and proves full joint observable rank for m=4. It establishes no numeric source-state replay, approximate quotient, serialized representation, direct runtime, EBPW, physical latency, capability, or promotion result.",
+      "reopen_if": "Reopen only if the canonical graph changes to remove or alter a stream consumer, or if a source-approved approximate error contract explicitly permits a different objective. A full-rank symbolic result is not reopened by fitting another projection basis."
+    },
+    {
+      "id": "M-source-bound-ple-access-trace",
+      "title": "Source-bound PLE n-gram token-to-row access trace",
+      "family": "architecture_contract",
+      "implementation_owner": "tools/odyssey/ple_access_trace.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "stateful_decoder"],
+        "required_features": [
+          "versioned_reference_algorithm",
+          "addressable_concatenated_lookup_checkpoint",
+          "bounded_token_sequence_or_explicit_control",
+          "persistent_token_context"
+        ],
+        "excluded_features": [
+          "treating_token_to_row_addressing_as_lookup_output_parity",
+          "treating_referenced_active_rows_as_complete_representation_bytes",
+          "using_unbound_hotness_as_a_selective_repair_justification"
+        ]
+      },
+      "required_controls": [
+        "reference_implementation_hash",
+        "source_config_hash",
+        "checkpoint_index_and_numeric_shard_order",
+        "eos_aware_stateful_history",
+        "range_read_source_row_hashes",
+        "explicit_PLE_output_boundary"
+      ],
+      "accounting": [
+        "lookup_events_per_token",
+        "unique_source_rows",
+        "source_row_bytes",
+        "referenced_bytes_across_events",
+        "range_read_bytes",
+        "construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
+      ],
+      "status": "PROVEN_ADDRESS_CONTRACT__FORMULA_OUTPUT_CONTROL_AVAILABLE",
+      "claim_boundary": "For Flash's pinned Qwen4-Exp PLE configuration, this method binds the 16 EOS-aware hashed lookup rows per accepted token to real concatenated checkpoint rows. The first accepted seven-token trace covers 112 unique rows and 35,840 source bytes. It does not execute PLE projections, gates, norms, convolution, hidden-state inputs, direct lookup runtime, complete EBPW, or capability.",
+      "reopen_if": "A target uses a different n-gram hash, checkpoint layout, state rule, or PLE layer ordering. Pair this address method with a source PLE output/hidden-state control before escalating to selective repair."
+    },
+    {
+      "id": "M-source-bound-ple-output-control",
+      "title": "Source-bound PLE formula and pre-layer activation control",
+      "family": "architecture_contract",
+      "implementation_owner": "tools/odyssey/ple_source_output_control.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "sharded_lookup", "hyperconnection", "stateful_decoder"],
+        "required_features": [
+          "source_bound_pre_layer_hidden_state",
+          "versioned_PLE_reference_formula",
+          "addressable_source_lookup_rows",
+          "source_projection_norm_and_convolution_payloads"
+        ],
+        "excluded_features": [
+          "treating_formula_evaluation_as_independent_source_model_output_parity",
+          "treating_active_lookup_rows_as_complete_artifact_bytes",
+          "claiming_native_runtime_or_capability_without_later_gates"
+        ]
+      },
+      "required_controls": [
+        "sealed_source_pre_layer_state_hash",
+        "source_config_and_reference_hashes",
+        "source_BF16_support_payload_hashes",
+        "source_lookup_row_hashes",
+        "reference_constant_parity_for_hash_multipliers_and_offsets",
+        "persistent_PLE_convolution_state",
+        "explicit_independent_output_parity_boundary"
+      ],
+      "accounting": [
+        "active_lookup_bytes",
+        "support_payload_bytes",
+        "post_injection_state_bytes",
+        "persistent_convolution_state_bytes",
+        "formula_construction_ns"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+        "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+      ],
+      "status": "PROVEN_SOURCE_FORMULA_CONTROL__REFERENCE_PARITY_ONE_SEALED_INPUT",
+      "claim_boundary": "For the sealed Flash BOS pre-layer state, this method evaluates the documented PLE formula with exact source BF16 lookup rows and support payloads, emits a post-injection state and the persistent PLE convolution state, and matches the pinned Transformers PLE implementation within 4.47e-8 max-abs / 1.50e-7 relative-L2. It remains one control, not full checkpoint forward parity, a native PLE runtime, repeated token proof, full Flash fidelity, complete NR EBPW, TPS, or capability.",
+      "reopen_if": "Use this control to evaluate a materially different lookup/repair representation, expand it to independent source inputs/token boundaries, or develop a native execution path. Escalate to a complete token graph only after direct PLE execution and broader output comparison are available."
+    },
+    {
+      "id": "M-reference-ple-formula-oracle",
+      "title": "Reference-framework PLE formula parity oracle",
+      "family": "verification",
+      "implementation_owner": "tools/odyssey/ple_reference_formula_oracle.py",
+      "applicability": {
+        "architecture_tags": ["hashed_ngram", "hyperconnection", "stateful_decoder"],
+        "required_features": [
+          "installed_pinned_reference_framework",
+          "source_bound_formula_control",
+          "small_placeholder_embedding_or_equivalent_no_full_table_allocation"
+        ],
+        "excluded_features": [
+          "full_source_model_loading_as_a_requirement",
+          "claiming_one_control_is_full_model_parity"
+        ]
+      },
+      "required_controls": [
+        "source_control_receipt_hash",
+        "reference_implementation_hash",
+        "candidate_output_hash",
+        "reference_output_hash",
+        "numerical_thresholds"
+      ],
+      "accounting": [
+        "max_abs",
+        "rmse",
+        "relative_l2",
+        "cosine",
+        "reference_output_bytes"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+      ],
+      "status": "PROVEN_ONE_CONTROL_REFERENCE_FORMULA_PARITY",
+      "claim_boundary": "The oracle validates the canonical PLE formula against the pinned Transformers PLE layer while substituting an exact source-row embedding for the uninstantiated giant lookup table. It does not validate source model loading, later layer behavior, native runtime, repeated state, complete NR EBPW, TPS, or capability.",
+      "reopen_if": "A reference version, precision path, PLE topology, source input control, or token/state boundary changes. Run the smallest matching source control before declaring broader parity."
+    },
+    {
+      "id": "M-route-major-packed-q4-routed-moe",
+      "title": "Route-major direct packed Q4 routed-MoE execution",
+      "family": "physical_execution",
+      "implementation_owner": "crates/hawking-core/shaders/qwen_uniform_q4.metal + crates/hawking-core/src/kernels/mod.rs",
+      "applicability": {
+        "architecture_tags": ["moe", "routed_experts", "metal", "uniform_q4_group64"],
+        "required_features": [
+          "compatible_selected_expert_gate_up_and_down_geometry",
+          "route_major_device_activation_abi",
+          "persisted_independent_q4_g64_bodies"
+        ],
+        "excluded_features": [
+          "treating_candidate_space_parity_as_source_model_parity",
+          "dense_weight_rematerialization"
+        ]
+      },
+      "required_controls": [
+        "candidate_cpu_oracle_for_the_exact_packed_bodies",
+        "distinct_route_major_activation_check",
+        "repeated_output_determinism",
+        "source_router_selection_parity_or_explicit_withholding",
+        "source_native_route_binding_to_persisted_q4_bodies",
+        "sealed_source_layer_activation_and_route_control",
+        "source_routed_sum_distortion_measurement",
+        "explicit_non_nr_teacher_dependency_boundary"
+      ],
+      "accounting": [
+        "selected_expert_count",
+        "packed_code_and_scale_bytes",
+        "active_bytes_per_route",
+        "baseline_and_fused_dispatch_count",
+        "gpu_ns",
+        "host_launch_wall_ns",
+        "source_route_overlap",
+        "source_activation_hash",
+        "source_routed_sum_error",
+        "complete_ebpw_boundary"
+      ],
+      "evidence": [
+        "receipts/headless/FLASH_NOETIC_ROUTED_GATE_UP_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_DOWN_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_MOE_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_ROUTES_FUSED_NATIVE_20260911.json",
+        "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_SOURCE_BRIDGE_CONTROL.json",
+        "receipts/headless/FLASH_NOETIC_LAYER0_SOURCE_MOE_BRIDGE.json",
+        "receipts/headless/FLASH_NOETIC_ROUTED_MOE_SOURCE_LAYER_BRIDGE_FUSED_NATIVE.json"
+      ],
+      "status": "PROVEN_SOURCE_LAYER_ACTIVATION_CONTROL__CANDIDATE_COMPONENT_SCOPED",
+      "claim_boundary": "The named Flash discriminator proves a direct Q4/G64 route-major MoE primitive: ten selected gate/up launches and ten route-aware down launches become two device-chained launches with deterministic candidate-body output parity. The sealed layer-0 bridge binds the actual source MLP activation and all ten source-selected routes to persisted Q4/G64 bodies without a source-tensor or source-weight read in candidate execution. On that control, Q4 candidate GPU-to-CPU parity passes while the source-BF16 routed-sum difference is measured at cosine 0.995096, RMSE 0.001571, and max absolute error 0.005515; it has no declared capability threshold. This does not establish source-BF16 output parity, a native weighted-sum kernel, complete EBPW, complete-layer/token performance, or qualified model TPS.",
+      "reopen_if": "A target uses incompatible route-specific activations, non-Q4/G64 body layout, a different group-aligned column geometry, lacks source-route body coverage, cannot seal an exact source activation/route/routed-sum control, or requires a declared capability threshold for its measured source-output distortion."
+    }
+  ],
+  "schema": "hawking.foundry.gravity_method_registry.v2"
 }

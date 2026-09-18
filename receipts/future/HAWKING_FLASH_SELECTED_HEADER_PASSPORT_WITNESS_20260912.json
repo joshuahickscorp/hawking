@@ -1,0 +1,135 @@
+{
+  "schema": "hawking.gravity.selected_tensor_header_passport_witness.v1",
+  "status": "STATIC_PLE_HEADER_WITNESS_VALIDATED__DYNAMIC_SOURCE_CONTROLS_WITHHELD",
+  "recorded_at": "2026-09-12T21:20:39Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "purpose": "Make the PLE passport's exact source tensor ABI machine-verifiable without converting the generic ModelLake census into a shard-header scan or reading source payloads.",
+  "source": {
+    "artifact_id": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "config_file_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "config_canonical_sha256": "e9b3cec7ec732a18386ce5bf8a29755ac8a45485f6d7e001187aa71241ee1083",
+    "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "header_tensor_manifest_sha256": "0cf05c2ba0f0e5423890d006731d7f713f8757997d1fa1a0e0921ef691b00943",
+    "classification": "CONFIG_AND_SELECTED_SAFETENSORS_HEADER_DESCRIPTORS_ONLY",
+    "loaded_weights": false
+  },
+  "selected_header_witness": {
+    "schema": "hawking.gravity.selected_tensor_headers.v1",
+    "index_name": "model.safetensors.index.json",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "headers": [
+      {
+        "data_offsets": [1755878424, 2555882264],
+        "dtype": "BF16",
+        "header_descriptor_sha256": "408e12fd03c9027b0daad2ef956360b079b79762750590326f545c3f05eaf9ec",
+        "name": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight",
+        "shape": [2500012, 160],
+        "shard": "model-00005-of-00131.safetensors"
+      }
+    ],
+    "header_bytes_read": 2400,
+    "tensor_payload_bytes_read": 0,
+    "loaded_weights": false,
+    "source_classification": "INDEX_BOUND_SELECTED_SAFETENSORS_HEADERS_ONLY"
+  },
+  "static_trait_binding": {
+    "configured_ple_layer_id": 2,
+    "tensor_block_index": 1,
+    "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight",
+    "tensor_header_manifest_sha256": "7b72653c8a9abdb49f396d335c1b8afcc720cc1617733bc7a64e093830c72e6e",
+    "tensor_header_manifest_identity_algorithm": "canonical-json-utf8-sha256.v1",
+    "tensor_header_index_name": "model.safetensors.index.json",
+    "tensor_header_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "tensor_header_source_classification": "INDEX_BOUND_SELECTED_SAFETENSORS_HEADERS_ONLY",
+    "selection_limits": {
+      "max_tensor_names": 16,
+      "max_shards": 8,
+      "max_header_bytes": 524288,
+      "actual_tensor_names": 1,
+      "actual_shards": 1,
+      "actual_header_bytes": 2400
+    }
+  },
+  "canonical_owners": {
+    "selected_header_capture": {
+      "path": "tools/odyssey/modellake_lineage.py",
+      "symbols": [
+        "selected_tensor_headers_from_specimen",
+        "passport_static_traits_from_specimen"
+      ],
+      "sha256": "43adf4ad63df14a164d81a2e1ef988531575340e7f07665376b71595a62b3be2",
+      "contract": "Exact index-bound names only; non-symlink containment; one canonical witness validator; at most 16 names, 8 shards, and 524288 aggregate header bytes; exact descriptor digests; zero tensor payload bytes; trusted immutable ModelLake root only."
+    },
+    "static_trait_projection": {
+      "path": "tools/odyssey/arch_recognizer.py",
+      "symbol": "static_trait_projection",
+      "sha256": "ec9d5eb71166bab301ab7d5d05f1157f7b17ad2f9f8467182f8f01f5d1c84244",
+      "contract": "Consumes the canonical selected-header validator before projection, carries manifest/index identity, and leaves default ModelLake traits config/name-only."
+    },
+    "passport_query": {
+      "path": "tools/foundry/query_gravity_methods.py",
+      "symbol": "assess_passports",
+      "sha256": "7b829ca38fb071839f03463d21bcc13521c9370f182817d72b836878f6825efe",
+      "contract": "Uses the canonical selected-header validator, binds witness manifest/index to static identity, and makes absence a static mismatch while malformed or tampered evidence is an error."
+    },
+    "passport_catalog": {
+      "path": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "sha256": "983e47bcdc58f157b1de3922626b389f97653a0dcee883f7d95933eb8c29ed5a",
+      "change": "The PLE passport distinguishes configured layer id 2 from zero-indexed tensor block 1 and binds exact shard_0 BF16 shape, complete tensor-name manifest, and selected index identity."
+    }
+  },
+  "assessment": {
+    "name_only_generic_model_lake_traits": {
+      "selected_tensor_headers_present": false,
+      "ple_source_identity_verified": true,
+      "ple_static_projection_verified": true,
+      "ple_recognized": false,
+      "ple_status": "WITHHELD_STATIC_TRAIT_MISMATCH"
+    },
+    "explicit_selected_header_traits": {
+      "ple_source_identity_verified": true,
+      "ple_static_projection_verified": true,
+      "ple_recognized": true,
+      "ple_status": "WITHHELD_MISSING_CONTROL",
+      "missing_reference_controls": [
+        "ple_inclusive_source_state_teacher",
+        "reference_ple_formula_oracle",
+        "source_ple_access_trace"
+      ]
+    },
+    "policy": "The targeted witness proves only one static source ABI. It does not synthesize any dynamic control or authorize a method execution."
+  },
+  "preserved_boundaries": {
+    "generic_modellake": "scan_specimen never calls the selected-header capture; persisted generic traits contain no selected tensor headers.",
+    "source_teacher": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION; a static tensor header is not a PLE-inclusive source greedy/state teacher.",
+    "native_ple": "NATIVE_PLE_REDUCTION_POLICY_SEAM_EXACT__SOURCE_PERSISTENT_STATE_AUTHORITY_UNQUALIFIED remains unchanged.",
+    "source_root": "The static helper is scoped to the trusted immutable ModelLake source root; it is not a hostile-tree source-admission primitive.",
+    "runtime": "No source model, GPU, Metal, provider, Hawkingd, Web, or Kimi process was launched or restarted.",
+    "modellake": "No ModelLake file, index, artifact, or source payload was mutated."
+  },
+  "validation": {
+    "focused_tests": "99 passed: Foundry passport query, architecture recognizer, ModelLake lineage/index, and PLE source-formula controls.",
+    "python_compile": "passed",
+    "registry_json": "jq empty: passed",
+    "static_actual_source_witness": "passed: one exact PLE shard header, 2400 header bytes, zero tensor payload bytes, exact descriptor digest, complete tensor-name manifest, selected index identity, and PLE header predicate matched.",
+    "name_only_negative_control": "passed: the same source traits without a selected-header witness yielded WITHHELD_STATIC_TRAIT_MISMATCH for PLE.",
+    "aggregate_header_cap_control": "passed: target-only capture refuses over-8-shard requests and reserves the remaining aggregate header budget before every later shard read.",
+    "malformed_witness_controls": "passed: stale descriptor hash, zero header accounting, over-16 descriptor count, over-8 unique shard count, and outer-manifest tampering were rejected before assessment.",
+    "identity_rebinding_controls": "passed: a changed complete tensor-name manifest or selected index identity yields WITHHELD_SOURCE_IDENTITY_MISMATCH; absent optional witness remains WITHHELD_STATIC_TRAIT_MISMATCH.",
+    "diff_check": "passed",
+    "protected_model_run_started": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded_or_restarted": false
+  },
+  "prior_passport_integration": {
+    "receipt": "receipts/future/HAWKING_FLASH_ORGAN_PASSPORTS_20260912.json",
+    "receipt_sha256": "5e973fdf4a5cbf65c18d1487595b83a1f9c55eeb2a8d9186bb745c03d32128ac",
+    "receipt_seal_sha256": "4ab8bfc5c790f740df23763e15e4a43dfb0667f7740da4366697e47f3539fc60",
+    "relationship": "This is an additive stricter witness over the earlier names/config passport projection; it does not overwrite its historical evidence."
+  },
+  "next_safe_action": "The machine owner provisions the existing trust anchor and detached V2 authorization, then the already-owned lease transaction captures one fresh PLE-inclusive source/native boundary. Do not substitute this static shape witness for that teacher or start a replay.",
+  "claim_boundary": "This receipt proves a payload-free selected source header and fail-closed passport recognition only. It does not prove source output/state parity, PLE compression, a complete NR, EBPW, native TPS, capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "30ee88ffe30fd4e742ccb2c440602f3fd304dd0a2be23426a3dc74306f66295b"
+}

@@ -1,0 +1,67 @@
+{
+  "bounded_follow_on": {
+    "reason": "The canonical V2 graph still has P10_NX behind P9_DARKMATTER_CORE; no new graph node or invented queue entry was created from provider prose.",
+    "recommendation": "Read the 31 priors before proposing the first nx_disposition measurement; any mutation must use its existing receipt/axis gate and remain dependency-valid.",
+    "state": "NOT_QUEUED"
+  },
+  "claim_boundary": "Read-only source map accepted; no P3 mutation completion, qualification, or production claim.",
+  "focused_verification": {
+    "commands": [
+      "python3 -m pytest -q hawking/test_knowledge_store.py hawking/tests/test_actionable_first_output.py hawking/tests/test_truncation_must_be_unmissable.py hawking/tests/test_ledger_rows_match_their_receipts.py",
+      "odyssey.priors read via default_tool_registry(show=40)",
+      "jq ledger state count for nx_disposition"
+    ],
+    "tests": "41 passed"
+  },
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "Memory owners are separated across session state, bounded worker packet/context, mission context cache, and cross-specimen knowledge store.",
+    "Artifact admission is owned by the Gravity registry; canonical runtime resolves admitted identities; chat tools expose scoped artifact read/search.",
+    "Source/context and controller ownership is distributed across repo_context, source_tools, context_budget, frontier_scheduler, controller, remote_cognition, goal_surface, supervisor_watcher, and workunit_owner.",
+    "The read-only odyssey.priors tool returned 31 priors; the G034 ledger independently counts nx_disposition as 26 OWED and 30 REFUSED."
+  ],
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T03:50:33.367806+00:00",
+  "result_packet": "receipts/future/workunits/WORKUNIT-20260917-CD8CE753_RESULT_PACKET.json",
+  "schema": "hawking.long_haul.v2.read_evidence_acceptance.v1",
+  "source_hashes": {
+    "hawking/architecture.py": "9a66504f84863272d46b30958f0d118f2af76d9cb4c7ea1217109d0a07fbe0d1",
+    "hawking/auto_orchestration.py": "fc07ac76419dc874fb5d85448e2cdf854a612c96ab6ebe3d29fa2942003ff60f",
+    "hawking/canonical_runtime.py": "2aacd449b3cb9edfe127f99c82dcb1a9d506511ee0702f8761cde139f8ba1458",
+    "hawking/catalog.py": "0cbdaefe63a11152abe114264f5485aa5d142c053713dbd0cfef677f58adf37c",
+    "hawking/chat_state.py": "aaab985b41ad2a157193f1b6f8f3eb6fd7e40e48532b0990aac2119efb91b8a6",
+    "hawking/chat_tools.py": "4143f6750317d172b7ff9acab2a053069c716e6e06f21eaab27093c6620016fe",
+    "hawking/context_budget.py": "3119d876684145c3c7cfb049ae7f255fdbb309b80cad362d2864a971a0b14401",
+    "hawking/controller.py": "867e4a9d0b1e1cdb7cf0b1d33436f94319264bc9871897c8011ee2456515142f",
+    "hawking/executors.py": "173b396bed3009b86ef3508d1ae798adfc3ef568f2f44f852508a8337a5b5193",
+    "hawking/frontier_scheduler.py": "22b07d365b0e96c4bbcc8b9d5c07c07e272d6b2a9e35f1358479bdaded246273",
+    "hawking/genesis_resident.py": "4a144db78218bc4470bf3ff153daa860b2a539a6951822747905e5c3cb595582",
+    "hawking/goal_surface.py": "026eefc2b45f721451de22defc89c7421a4c1bebc72eea55417a90371b9eff4c",
+    "hawking/knowledge_store.py": "2fd25dc9f6293efcb2f4e50629357cd57158dda8dc5be611178f8878e26f00fe",
+    "hawking/mission.py": "c99886d000661fb67eca65915e10e7157fb44637e8ad48daca12f6485ddbfb19",
+    "hawking/supervisor_watcher.py": "7ce978c6b0e8d46192f384faf0cf8f62aa71a1ce0812da2001d7a3145c392c3e"
+  },
+  "sources": [
+    "hawking/knowledge_store.py",
+    "hawking/chat_state.py",
+    "hawking/controller.py",
+    "hawking/mission.py",
+    "hawking/executors.py",
+    "hawking/auto_orchestration.py",
+    "hawking/catalog.py",
+    "hawking/canonical_runtime.py",
+    "hawking/chat_tools.py",
+    "hawking/architecture.py",
+    "hawking/context_budget.py",
+    "hawking/genesis_resident.py",
+    "hawking/frontier_scheduler.py",
+    "hawking/goal_surface.py",
+    "hawking/supervisor_watcher.py",
+    "hawking/tool_registry.py:3673",
+    "receipts/future/G034_ODYSSEY_LEDGER.json",
+    "receipts/future/workunits/WORKUNIT-20260917-CD8CE753_RESULT_PACKET.json"
+  ],
+  "status": "REMOTE_READ_EVIDENCE_ACCEPTED",
+  "tranche": "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT",
+  "workunit_id": "WORKUNIT-20260917-CD8CE753"
+}

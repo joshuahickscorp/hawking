@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.v2.provider_mutation_handoff_fix.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T11:00:00-04:00",
+  "claim_boundary": "Hawking mutation-boundary fix and focused verification only; no phase, hardware, release, or provider qualification claim.",
+  "changes": [
+    {
+      "path": "hawking/remote_cognition.py",
+      "result": "typed proposals close immediately after Hawking-owned repo.edit/tests/status/diff evidence; mixed content-plus-tool-call envelopes are parsed before direct-call handling"
+    },
+    {
+      "path": "hawking/mutation.py",
+      "result": "provider JSON edit/file/anchor dialect is coerced into canonical guarded operations; omitted canonical_root binds to the engine workspace"
+    },
+    {
+      "path": "hawking/auto_orchestration.py",
+      "result": "explicit continuation_version creates fresh non-replay spool generations after protocol repair"
+    }
+  ],
+  "verification": {
+    "focused_tests": "66 passed",
+    "git_diff_check": "passed",
+    "synthetic_mixed_envelope": {
+      "proposal_executions": 1,
+      "followup_provider_decodes": 0,
+      "completion": true,
+      "evidence_edges": ["repo.edit", "tests.run", "git.status", "git.diff"]
+    }
+  },
+  "live_observation": {
+    "daemon": "model-free waiting_for_native_runtime on 127.0.0.1:8014",
+    "resident_model": null,
+    "provider_children_resident": false,
+    "current_batch": "V4 lanes are provider-transport saturated before response; bounded retry/dead-letter policy remains active"
+  },
+  "next_action": "Allow current bounded provider attempts to drain, then refill only through the repaired continuation route and accept implementation only from fresh Hawking evidence."
+}

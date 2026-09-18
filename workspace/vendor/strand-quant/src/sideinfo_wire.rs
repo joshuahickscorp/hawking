@@ -145,10 +145,12 @@ fn sdsq_section_bytes(block_counts: &[usize], scale_q: &[i32]) -> Result<Vec<u8>
     }
 
     let stream = encode_scale_q(scale_q);
-    let stream_len: u32 = stream
-        .len()
-        .try_into()
-        .map_err(|_| format!("sdsq: scale_q stream is {} bytes — exceeds the u32 field", stream.len()))?;
+    let stream_len: u32 = stream.len().try_into().map_err(|_| {
+        format!(
+            "sdsq: scale_q stream is {} bytes — exceeds the u32 field",
+            stream.len()
+        )
+    })?;
     o.extend_from_slice(&stream_len.to_le_bytes());
     o.extend_from_slice(&stream);
     Ok(o)
@@ -200,10 +202,12 @@ pub fn append_sdsq(path: impl AsRef<Path>, scale_q: &[i32]) -> Result<(), String
     }
 
     let section = sdsq_section_bytes(&block_counts, scale_q)?;
-    let sdsq_bytes: u32 = section
-        .len()
-        .try_into()
-        .map_err(|_| format!("sdsq: section is {} bytes — exceeds the u32 field", section.len()))?;
+    let sdsq_bytes: u32 = section.len().try_into().map_err(|_| {
+        format!(
+            "sdsq: section is {} bytes — exceeds the u32 field",
+            section.len()
+        )
+    })?;
 
     let sdsq_offset = page_align(buf.len());
     let lead_pad = sdsq_offset - buf.len();
@@ -222,7 +226,8 @@ pub fn append_sdsq(path: impl AsRef<Path>, scale_q: &[i32]) -> Result<(), String
         .append(true)
         .open(path)
         .map_err(|e| format!("sdsq: open {path:?} for append: {e}"))?;
-    f.write_all(&tail).map_err(|e| format!("sdsq: append to {path:?}: {e}"))?;
+    f.write_all(&tail)
+        .map_err(|e| format!("sdsq: append to {path:?}: {e}"))?;
     Ok(())
 }
 
@@ -283,7 +288,10 @@ fn parse_sdsq_section(
 
     let mut p = SDSQ_HEADER_BYTES;
     let take = |p: &mut usize, n: usize| -> Result<&[u8], String> {
-        let end = p.checked_add(n).filter(|&e| e <= s.len()).ok_or("sdsq: section truncated")?;
+        let end = p
+            .checked_add(n)
+            .filter(|&e| e <= s.len())
+            .ok_or("sdsq: section truncated")?;
         let sl = &s[*p..end];
         *p = end;
         Ok(sl)
@@ -304,7 +312,10 @@ fn parse_sdsq_section(
     let stream_len = u32::from_le_bytes(take(&mut p, 4)?.try_into().unwrap()) as usize;
     let stream = take(&mut p, stream_len)?;
     if p != sdsq_bytes {
-        return Err(format!("sdsq: {} trailing bytes after the scale_q stream", sdsq_bytes - p));
+        return Err(format!(
+            "sdsq: {} trailing bytes after the scale_q stream",
+            sdsq_bytes - p
+        ));
     }
 
     let mut spos = 0usize;
@@ -322,7 +333,10 @@ fn parse_sdsq_section(
             scale_q.len()
         ));
     }
-    Ok(SdsqSection { block_counts, scale_q })
+    Ok(SdsqSection {
+        block_counts,
+        scale_q,
+    })
 }
 
 /// Read the SDSQ section from a buffer, walking back through any SPRV / OUTL /
@@ -389,10 +403,7 @@ pub fn read_sdsq(path: impl AsRef<Path>) -> Result<Option<SdsqSection>, String> 
 /// unchanged. This is the reference apply the loader uses when an SDSQ section is
 /// present; it touches only the in-memory `scale_q` field, never the seek-table
 /// bytes on disk.
-pub fn apply_sdsq_to_header(
-    hdr: &mut StrandV2Header,
-    sdsq: &SdsqSection,
-) -> Result<(), String> {
+pub fn apply_sdsq_to_header(hdr: &mut StrandV2Header, sdsq: &SdsqSection) -> Result<(), String> {
     if hdr.tensors.len() != sdsq.block_counts.len() {
         return Err(format!(
             "sdsq apply: header has {} tensors, SDSQ has {}",
@@ -533,7 +544,9 @@ mod tests {
     }
 
     fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
+        (0..n)
+            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
+            .collect()
     }
 
     fn build_test_archive() -> Vec<u8> {
@@ -574,7 +587,10 @@ mod tests {
     /// The exact per-block scale_q the producer would feed `append_sdsq`.
     fn archive_scale_q(buf: &[u8]) -> Vec<i32> {
         let hdr = read_strand_v2_header(buf).unwrap();
-        hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect()
+        hdr.tensors
+            .iter()
+            .flat_map(|t| t.table.iter().map(|r| r.scale_q))
+            .collect()
     }
 
     #[test]
@@ -584,22 +600,40 @@ mod tests {
         let _guard = TmpFile(path.clone());
         std::fs::write(&path, &buf).unwrap();
 
-        assert_eq!(read_sdsq(&path).unwrap(), None, "plain v2 must read as absent");
+        assert_eq!(
+            read_sdsq(&path).unwrap(),
+            None,
+            "plain v2 must read as absent"
+        );
 
         let scale_q = archive_scale_q(&buf);
         assert!(!scale_q.is_empty(), "fixture must have blocks");
         append_sdsq(&path, &scale_q).expect("append sdsq");
 
         let back = read_sdsq(&path).unwrap().expect("section found");
-        assert_eq!(back.scale_q, scale_q, "SDSQ scale_q must round-trip byte-identically");
+        assert_eq!(
+            back.scale_q, scale_q,
+            "SDSQ scale_q must round-trip byte-identically"
+        );
         let hdr = read_strand_v2_header(&buf).unwrap();
-        assert_eq!(back.block_counts, hdr.tensors.iter().map(|t| t.n_blocks).collect::<Vec<_>>());
+        assert_eq!(
+            back.block_counts,
+            hdr.tensors.iter().map(|t| t.n_blocks).collect::<Vec<_>>()
+        );
 
         // append must not touch the v2 bytes (the seek table included), and the v2
         // reader still works under the SDSQ trailer.
         let trailered = std::fs::read(&path).unwrap();
-        assert_eq!(&trailered[..buf.len()], &buf[..], "append must not touch v2 bytes");
-        assert_eq!(trailered.len() % PAGE, 0, "SDSQ end must be page-aligned (stacking)");
+        assert_eq!(
+            &trailered[..buf.len()],
+            &buf[..],
+            "append must not touch v2 bytes"
+        );
+        assert_eq!(
+            trailered.len() % PAGE,
+            0,
+            "SDSQ end must be page-aligned (stacking)"
+        );
         let full = read_strand_v2(&trailered).expect("full v2 read under SDSQ trailer");
         assert_eq!(full.len(), 2);
 
@@ -633,7 +667,10 @@ mod tests {
         let want = read_strand_v2_header(&buf).unwrap();
         for (t, w) in hdr.tensors.iter().zip(want.tensors.iter()) {
             for (rec, wr) in t.table.iter().zip(w.table.iter()) {
-                assert_eq!(rec.scale_q, wr.scale_q, "scale_q must be byte-identical post-apply");
+                assert_eq!(
+                    rec.scale_q, wr.scale_q,
+                    "scale_q must be byte-identical post-apply"
+                );
             }
         }
     }
@@ -663,7 +700,11 @@ mod tests {
         let mut scale_q = archive_scale_q(&buf);
         scale_q.push(123); // one too many
         assert!(append_sdsq(&path, &scale_q).is_err());
-        assert_eq!(std::fs::read(&path).unwrap(), buf, "rejected append leaves file intact");
+        assert_eq!(
+            std::fs::read(&path).unwrap(),
+            buf,
+            "rejected append leaves file intact"
+        );
     }
 
     #[test]
@@ -680,7 +721,11 @@ mod tests {
         let pb_pos = c1.len() - 8;
         c1[pb_pos] ^= 0xFF;
         assert!(read_sdsq_bytes(&c1, true).is_err());
-        assert_eq!(read_sdsq_bytes(&c1, false).unwrap(), None, "lenient degrades to None");
+        assert_eq!(
+            read_sdsq_bytes(&c1, false).unwrap(),
+            None,
+            "lenient degrades to None"
+        );
 
         // corrupt a header byte inside the section
         let sdsq_off = {

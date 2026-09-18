@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 5,
+    "complete": true,
+    "continuation_turns": 3,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.list",
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "7e24d20dbf92225a115a91f01959cbbe2f4d5bc84ad7c3f0d9dc56b71a7c7259",
+  "evidence": [
+    {
+      "at": "2026-09-17T09:01:08.065186+00:00",
+      "calls_used": 5,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-17T09:01:08.065205+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-17T09:01:08.073028+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Root Goal GOAL-B33C69F193.json (sha256 77d058eaac3d549b4f1f12f85695cca4e66bf820aba9e9f2573d3e321b11bc0c, 12081 bytes, 325 lines) read via fs.read lines 1-130, 130-260, 260-325; status=RUNNING, schema=hawking.discrete_goal.",
+      "outcome": "CONTINUE",
+      "reply_chars": 4306,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Root Goal GOAL-B33C69F193.json (sha256 77d058eaac3d549b4f1f12f85695cca4e66bf820aba9e9f2573d3e321b11bc0c, 12081 bytes, 325 lines) read via fs.read lines 1-130, 130-260, 260-325; status=RUNNING, schema=hawking.discrete_goal.v1.\",\"long_haul_programme observed: schema=hawking.long_haul_programme.v1, status=RUNNING, current_phase=P0_BIND_RECONCILE, next_workunit=P0_BIND_RECONCILE_RETRY, phase_order P0..P17 (18 phases), updated_at=1789633480.277803.\",\"long_haul_programme.budget: authorized_usd=55.0, spent_usd=0.02422998, remaining_usd=54.97577002, reserve_usd=5.5, programme_start=2026-09-17.\",\"Supervisor binding verified: supervisor_artifact_id/supervisor_digest=81b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393 matches fs.read of the pasted HAWKING_LONG_HAUL_SUPERVISOR.md artifact (sha256 identical, 32378 bytes); artifact authorizes OPENROUTER_PROGRAMME_BUDGET_USD=55 hard ceiling, consistent with Goal budget.\",\"Historical E phase distinguished: previous_root_state phase=E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED, budget 30.0, next_workunit=E_MACOS_WORLDSTATE_READ_ONLY_FOUNDATION, production_plan_next_workunit=E_MACOS_CAPTURE_OCR; legacy auto_plan (hawking.arsenal.production_plan.v1) shows E_MACOS_WORLD_INTERFACE with D ACCEPTED, E-L QUEUED \u2014 historical only, superseded by long_haul_programme.\",\"Root next_workunit=P0_BIND_RECONCILE_RETRY matches long_haul_programme; root budget_authorized_usd=55.0 (raised from 30.0).\",\"last_invalidation_receipt=E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE_PARENT_TERMINAL_INVALIDATED.json motivates P0_BIND_RECONCILE_RETRY.\",\"Runtime owner: owner_job job-f3adfb78-3c00-4a45-8dc0-515a0e4c6dbd, hawking.workunit_owner run --workunit-id E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-58D4B6F9, pid 90971, state=RUNNING; active_workunit_id matches this WorkUnit.\",\"No duplicate root Goal: .hawking/goals listing shows exactly one GOAL-B33C69F193.json + one contract + one result; other Goal ids are distinct.\",\"Lineage: 22 workunit_ids; last_workunit E_MACOS_SEMANTIC_ACTION_LEASE-20260915-205B3579 COMPLETE; capture_ocr_status=DEFERRED_NO_CANONICAL_OWNER_MUTATION.\",\"No mutation: all tool results mutation=read_only; no macOS authority used; no receipts written; no children spawned.\"],\"sources\":[\"fs.read GOAL-B33C69F193.json L1-130 (tool-6d3eb589)\",\"fs.read GOAL-B33C69F193.json L130-260 (tool-b5e96e9c)\",\"fs.read GOAL-B33C69F193.json L260-325 (tool-56ddf677)\",\"fs.read .hawking/H-NOTES/pasted/81/b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393 (tool-b07edf9f)\",\"fs.list .hawking/goals (tool-27f41e67)\"],\"recommendations\":[\"Steer only from long_haul_programme: phase P0_BIND_RECONCILE, next WorkUnit P0_BIND_RECONCILE_RETRY; ignore historical production_plan E-phase fields for steering.\",\"Launch P0_BIND_RECONCILE_RETRY under existing root Goal GOAL-B33C69F193; do not create a new root Goal.\",\"Enforce the $55.00 hard ceiling; spent 0.02422998, remaining 54.97577002, keep ~10% reserve per supervisor rules.\",\"Keep E_MACOS_CAPTURE_OCR deferred (DEFERRED_NO_CANONICAL_OWNER_MUTATION) until a canonical owner mutation path exists.\"],\"unresolved_questions\":[\"Whether the P0_BIND_RECONCILE_RETRY WorkUnit contract has been minted yet; not observed in .hawking/goals listing.\",\"Whether the invalidated parent terminal receipt 0D3D3BBE_PARENT_TERMINAL_INVALIDATED.json requires any further reconciliation action beyond the retry.\"],\"child_worker_ids\":[],\"status\":\"COMPLETE\",\"reusable_root\":\"GOAL-B33C69F193\",\"historical_phase\":\"E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED\",\"programme_phase\":\"P0_BIND_RECONCILE\",\"budget\":{\"authorized_usd\":55.0,\"spent_usd\":0.02422998,\"remaining_usd\":54.97577002,\"reserve_usd\":5.5,\"programme_start\":\"2026-09-17\",\"source\":\"long_haul_programme.budget\"},\"runtime_owner\":\"hawking.workunit_owner job-f3adfb78-3c00-4a45-8dc0-515a0e4c6dbd (pid 90971, RUNNING) for WorkUnit E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-58D4B6F9\",\"next_workunit\":\"P0_BIND_RECONCILE_RETRY\",\"evidence_",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-971fd9a58cc8407e",
+  "worker_id": "hawking-worker-c5417aa170d146b9",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-58D4B6F9"
+}

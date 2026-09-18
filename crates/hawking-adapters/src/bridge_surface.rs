@@ -125,7 +125,7 @@ const SURFACE: [SurfaceEndpoint; 15] = [
         tests: &[],
     },
     SurfaceEndpoint {
-        endpoint: "SDK Transport -> HCLI",
+        endpoint: "SDK Transport -> Hawking",
         status: EndpointStatus::NotImplemented,
         entry_path:
             "hide-protocol::sdk::client::Transport (MockTransport only; real transport deferred)",

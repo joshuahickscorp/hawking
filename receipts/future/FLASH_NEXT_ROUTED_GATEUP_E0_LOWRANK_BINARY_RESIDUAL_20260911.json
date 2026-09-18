@@ -1,0 +1,115 @@
+{
+  "claim_boundary": "One selected source expert and complete scoped byte accounting with BF16 factor and residual-scale rounding. No held-out output objective, routing, activation/capability, direct execution, full-body EBPW, runtime, or TPS claim.",
+  "generated_at": "2026-09-11T16:32:29.778814+00:00",
+  "matrix_shape": [
+    1280,
+    2560
+  ],
+  "next_gate": "A Pareto survivor earns a held-out routed-output discriminator only after the resource/runtime gate remains satisfied.",
+  "representation": {
+    "base": "BF16 left/right low-rank factors with singular values absorbed into left",
+    "billed": {
+      "decoder_support_bytes": 65536,
+      "factor_bytes_per_value": 2,
+      "metadata_bytes": 128,
+      "residual_code_bits": 1,
+      "residual_scale_bytes": 2
+    },
+    "residual": "dense per-row BF16 mean-abs scale plus packed 1-bit sign stream"
+  },
+  "rows": [
+    {
+      "complete_bytes": 485504,
+      "complete_scoped_ebpw": 1.1853125,
+      "decoder_support_bytes": 65536,
+      "factor_bytes": 7680,
+      "lowrank_base_relative_l2": 0.9979106187820435,
+      "metadata_bytes": 128,
+      "rank": 1,
+      "relative_l2": 0.6181367635726929,
+      "residual_code_bits": 1,
+      "residual_code_bytes": 409600,
+      "residual_scale_bytes": 2560
+    },
+    {
+      "complete_bytes": 493184,
+      "complete_scoped_ebpw": 1.2040625,
+      "decoder_support_bytes": 65536,
+      "factor_bytes": 15360,
+      "lowrank_base_relative_l2": 0.9959201812744141,
+      "metadata_bytes": 128,
+      "rank": 2,
+      "relative_l2": 0.6168127059936523,
+      "residual_code_bits": 1,
+      "residual_code_bytes": 409600,
+      "residual_scale_bytes": 2560
+    },
+    {
+      "complete_bytes": 508544,
+      "complete_scoped_ebpw": 1.2415625,
+      "decoder_support_bytes": 65536,
+      "factor_bytes": 30720,
+      "lowrank_base_relative_l2": 0.9920509457588196,
+      "metadata_bytes": 128,
+      "rank": 4,
+      "relative_l2": 0.61421138048172,
+      "residual_code_bits": 1,
+      "residual_code_bytes": 409600,
+      "residual_scale_bytes": 2560
+    },
+    {
+      "complete_bytes": 539264,
+      "complete_scoped_ebpw": 1.3165625,
+      "decoder_support_bytes": 65536,
+      "factor_bytes": 61440,
+      "lowrank_base_relative_l2": 0.9845679402351379,
+      "metadata_bytes": 128,
+      "rank": 8,
+      "relative_l2": 0.609138548374176,
+      "residual_code_bits": 1,
+      "residual_code_bytes": 409600,
+      "residual_scale_bytes": 2560
+    },
+    {
+      "complete_bytes": 600704,
+      "complete_scoped_ebpw": 1.4665625,
+      "decoder_support_bytes": 65536,
+      "factor_bytes": 122880,
+      "lowrank_base_relative_l2": 0.9701932668685913,
+      "metadata_bytes": 128,
+      "rank": 16,
+      "relative_l2": 0.5994941592216492,
+      "residual_code_bits": 1,
+      "residual_code_bytes": 409600,
+      "residual_scale_bytes": 2560
+    },
+    {
+      "complete_bytes": 723584,
+      "complete_scoped_ebpw": 1.7665625,
+      "decoder_support_bytes": 65536,
+      "factor_bytes": 245760,
+      "lowrank_base_relative_l2": 0.9432535171508789,
+      "metadata_bytes": 128,
+      "rank": 32,
+      "relative_l2": 0.5816091299057007,
+      "residual_code_bits": 1,
+      "residual_code_bytes": 409600,
+      "residual_scale_bytes": 2560
+    }
+  ],
+  "schema": "hawking.odyssey.stacked_expert_lowrank_binary_residual.v1",
+  "source": {
+    "dtype": "BF16",
+    "expert": 0,
+    "payload_bytes_read": 6553600,
+    "source_file": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00004-of-00131.safetensors",
+    "stacked_shape": [
+      512,
+      1280,
+      2560
+    ]
+  },
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "status": "STATIC_RATE_DISTORTION_ONLY",
+  "tensor": "model.language_model.layers.1.mlp.experts.gate_up_proj"
+}

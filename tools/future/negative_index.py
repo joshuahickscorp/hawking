@@ -107,6 +107,7 @@ NAME_TOKENS = ("negativ", "dead_lever", "graveyard", "refuted")
 
 # Longer / more specific model patterns first.
 MODEL_RULES: tuple[tuple[str, str], ...] = (
+    (r"kimi[_ .-]?base|kimi[-_. ]?vl[-_. ]?a3b", "kimi-vl-a3b-instruct"),
     (r"qwen3[-_. ]?235b", "qwen3-235b-a22b"),
     (r"qwen3[-_ ]?80b|\bq80\b|qwen80|qwen3_next_hybrid|qwen3[-_]next", "qwen3-80b"),
     (r"qwen3[-_ ]?30b|\bq30\b|qwen30|qwen3_moe|qwen3-coder-30b", "qwen3-30b-a3b"),
@@ -158,6 +159,10 @@ ORGAN_SLUGS = {
 }
 
 FAMILY_SLUGS = {
+    "kimi_refusal_intervention_family": "kimi_refusal_intervention",
+    "refusal_intervention_family": "kimi_refusal_intervention",
+    "learned_weight_refusal_intervention": "kimi_refusal_intervention",
+    "refusal_behavior_projection": "kimi_refusal_intervention",
     "cross_expert_and_cross_layer_tying": "cross_expert_structure",
     "cross_expert_structure": "cross_expert_structure",
     "cross_expert": "cross_expert_structure",

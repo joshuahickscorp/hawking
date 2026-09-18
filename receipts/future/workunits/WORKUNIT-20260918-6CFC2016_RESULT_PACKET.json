@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "33ff3830100cf318107f83d0b0ca04f69c8eccdee32fd690c5cc6a6ae632afb1",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:57:58.559654+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:57:58.559664+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:57:58.561468+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"tools/accelerator/backend_contract.py defines class FpgaHwirBackend(Backend) with backend_id=FPGA_BACKEND_ID, product=\\\"FPGA-HWIR\\\", and domain_kind=DomainKind.FPGA_HBM.\",\n    \"FpgaHwirBackend.capabilities() retur",
+      "outcome": "CONTINUE",
+      "reply_chars": 4202,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"tools/accelerator/backend_contract.py defines class FpgaHwirBackend(Backend) with backend_id=FPGA_BACKEND_ID, product=\\\"FPGA-HWIR\\\", and domain_kind=DomainKind.FPGA_HBM.\",\n    \"FpgaHwirBackend.capabilities() returns a Capability with physical=False, present=False, evidence_tier=fpga_evidence_tier(COST_MODEL), devices=(DECLARED_FPGA_HBM,), and atlas_name=\\\"fpga\\\".\",\n    \"The capabilities notes state: 'declared FPGA-HWIR domain; no board on this machine', 'costs are COST_MODEL knobs; execute is FUNCTIONAL_SIM of HWIR', and 'HARDWARE_MEASURED is refused on every path'.\",\n    \"FpgaHwirBackend.cost() composes a two-hop COST_MODEL: a host UMA hop using METAL_DECLARED_LATENCY_S with note 'host UMA hop; COST_MODEL (feature may be a consumed Metal measurement)', plus a declared host-to-fpga bridge hop using DECLARED_BRIDGE_BW_GB_S and DECLARED_BRIDGE_LATENCY_S with note 'declared host-to-fpga interconnect; COST_MODEL knob'.\",\n    \"The combined cost is built with all_hops_physical=False and note 'FPGA-HWIR two-hop COST_MODEL: host UMA feature + declared bridge. Not a board timing claim.'\",\n    \"FpgaHwirBackend.lower() validates the program, raises BackendContractError on failure, and emits an hwir.HwirGraph with qualification=\\\"STATIC_ONLY\\\", semantics_consumed=\\\"backend_contract_typed_program\\\", and DeviceBudget(device_id=\\\"declared-fpga-hwir\\\", declared_not_measured=True).\",\n    \"The lower() path uses tier=fpga_evidence_tier(STATIC), confirming the lowering evidence tier is STATIC, distinct from the COST_MODEL tier used in capabilities() and cost().\",\n    \"The observed slice of lines 1007-1145 was truncated at 4000 of 5644 bytes (70.9%), so the tail of lower() and any immediately following code were not observed.\",\n    \"The accelerator queue/spec boundary was not inspected in this session, so no evidence about its admission rules or tier gating is available.\"\n  ],\n  \"sources\": [\n    \"tools/accelerator/backend_contract.py lines 1007-1145 (sha256 04a096f63bc8d832e166b2d1d51b4f5560ccb8841f6a54fcd9794ec5dc9db69f, 47273 bytes, total_lines 1364); observed slice truncated at 4000/5644 bytes.\"\n  ],\n  \"recommendations\": [\n    \"P14_PCIE_FPGA bounded contract proposal (hardware-withheld): treat FPGA-HWIR as a declared-only backend whose admissible evidence tiers are STATIC_ONLY (lowering), FUNCTIONAL_SIM (execute), and COST_MODEL (cost/capabilities); refuse HARDWARE_MEASURED on every path.\",\n    \"Protected resources: DECLARED_FPGA_HBM device declaration, DECLARED_BRIDGE_BW_GB_S and DECLARED_BRIDGE_LATENCY_S knobs, METAL_DECLARED_BW_GB_S and METAL_DECLARED_LATENCY_S host features, and the hwir.HwirGraph qualification=\\\"STATIC_ONLY\\\" marker must remain immutable and never be promoted to measured status.\",\n    \"Writer/effect scope: read-only inspection of backend_contract.py and the accelerator queue/spec boundary; no file mutation, no hardware invocation, no receipt writing, and no qualification claim.\",\n    \"Focused tests (proposed, not run): assert capabilities().physical is False and present is False; assert evidence_tier equals fpga_evidence_tier(COST_MODEL) in capabilities/cost and fpga_evidence_tier(STATIC) in lower; assert cost().cost.all_hops_physical is False; assert lower() emits qualification=\\\"STATIC_ONLY\\\" and declared_not_measured=True; assert any HARDWARE_MEASURED request is refused.\",\n    \"Falsifier: if any code path in FpgaHwirBackend returns evidence_tier=HARDWARE_MEASURED, sets physical=True or present=True, or sets all_hops_physical=True, the hardware-withheld contract is falsified.\"\n  ],\n  \"unresolved_questions\": [\n    \"The accelerator queue/spec boundary was not inspected; its admission rules, tier gating, and refusal semantics remain unverified.\",\n    \"The tail of FpgaHwirBackend.lower() and any code after line 1145 were truncated and not observed.\",\n    \"Whether fpga_evidence_tier() itself enforces the HARDWARE_MEASURED refusal or merely maps inputs was not observed.\",\n    \"Whether the queue/spec ",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-6138b41490cc4c1c",
+  "worker_id": "hawking-worker-d85687ce84534245",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-6CFC2016"
+}

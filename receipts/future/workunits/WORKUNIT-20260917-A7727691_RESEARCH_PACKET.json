@@ -1,0 +1,127 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "ea04a7adfd21c68d2443153f0a82614ed9e5eb8097cd51fc254c27e220b5f01f",
+  "evidence": [
+    {
+      "at": "2026-09-18T03:19:07.903607+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:child_worker_ids,observations,recommendations,sources,status,unresolved_questions",
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:19:07.903617+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:19:07.904533+00:00",
+      "has_tool_json": false,
+      "head": "{\".\": \"toolcall:fs_search\", \"parameters\": {\"corpus\": \"all-authorized\", \"max_per_file\": 5, \"max_results\": 60, \"pattern\": \"accelerator|backend\"}}",
+      "outcome": "CONTINUE",
+      "reply_chars": 143,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T03:23:09.057228+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:23:09.057238+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:23:09.058767+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\": [{\"id\": \"O1\", \"kind\": \"owner\", \"statement\": \"ANE-side owner of the Apple accelerator backend contract is hawking/ane_provider.py (15932 bytes, sha256 86ab120e8b7e70825ca969e956282e1c3f1974f1188325b2ec5e631516e280da). Module",
+      "outcome": "CONTINUE",
+      "reply_chars": 5495,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T03:23:46.703319+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:23:46.703337+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:23:46.703635+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\": [\"Executing real read-only tool calls now: parallel fs.search for alternative backend terminology and fs.list on native/ and crates/ directories.\"], \"sources\": [], \"recommendations\": [], \"unresolved_questions\": [], \"child_w",
+      "outcome": "CONTINUE",
+      "reply_chars": 429,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "none",
+      "turn": 3
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "Executing real read-only tool calls now: parallel fs.search for alternative backend terminology and fs.list on native/ and crates/ directories."
+  ],
+  "provider_status": "CONTINUE",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.list",
+    "fs.search"
+  ],
+  "unresolved_questions": [],
+  "worker_attempt_id": "hawking-attempt-5909ada8d50c47c9",
+  "worker_id": "hawking-worker-122356c4b13e4bc1",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260917-A7727691"
+}

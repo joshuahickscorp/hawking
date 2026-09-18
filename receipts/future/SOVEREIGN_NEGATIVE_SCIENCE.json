@@ -1,6 +1,6 @@
 {
  "command": "python3 tools/sovereign/g014_negative_science.py",
- "produced_at": "2026-09-02T08:13:29Z",
+ "produced_at": "2026-09-11T07:02:15Z",
  "produced_by": "tools/sovereign/g014_negative_science.py",
  "purpose": "Scars landed into tools/future/negative_index.py so refuse_if_dead can key them. Named in negative_index.SEED_SOURCES because SKIP_PREFIXES excludes receipts/future/ from the discovery sweep.",
  "scars": [
@@ -67,6 +67,43 @@
    "reopen": "a draft tier costing under 15.063 ms/token at K=4 on this machine; or any draft whose NON-GEMV cost falls too, not just its GEMV; or verify-side amortization better than 2.57x; or a draft of a different shape.",
    "source_receipts": [
     "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "evidence_tier": "measured_numerical",
+   "family": "kimi refusal intervention family",
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "Refusal-related state is strongly decodable in the tested representation, but the tested writer, routed-expert, residual, subspace, and router-logit interventions did not establish a clean held-out causal control surface. OPA--OPG were null or inconsistent against their matched controls; OPH completed with no compliant comparison rows and therefore could not establish a sufficient causal sample.",
+   "not": "KIMI_BASE / moonshotai Kimi-VL-A3B-Instruct under the recorded OPA--OPH batteries, layers, expert selections, folds, and intervention definitions. This closes nearby reparameterizations of that tested causal family, including another layer, strength, projection-rank, or expert-id sweep. It does NOT claim refusal is non-causal, does NOT condemn a materially different causal mechanism, and does NOT downgrade the separately measured resident HCLI serving contract.",
+   "object": "Does refusal-separable state in KIMI_BASE expose a clean, held-out causal control surface through the tested writer, routed-expert, residual, subspace, or router-logit interventions?",
+   "organ": "whole_model",
+   "parent": "KIMI_BASE / Kimi-VL-A3B-Instruct",
+   "physical_claim": false,
+   "reopen": "a materially different causal hypothesis names a distinct mechanism and a pre-registered falsifier capable of beating matched nulls on held-out rows. A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or another projection of the same refusal-separable state is not a reopen condition.",
+   "source_receipts": [
+    "receipts/future/KIMI_OPERATOR_LIVE_EVIDENCE_20260910.json",
+    "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPE_EXPANDED32_L26_RECLASSIFIED_20260910.json",
+    "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPF_EXPANDED32_L26E23_20260910.json",
+    "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPG_EXPANDED32_L26E23_SHARED_20260910.json",
+    "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPH_ROUTER_LIVE_20260910.json"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "evidence_tier": "runtime_behavior",
+   "family": "kimi p0 blind autonomous repository writing",
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "The current body can orient, inspect, research, invoke tools and consume evidence, but it did not convert that evidence into a grounded accepted mutation plus proving test. Repeated synthetic retry now spends the primary campaign on a known body/task boundary rather than useful Odyssey work.",
+   "not": "KIMI_P0_OPERATIONAL with unchanged dense KIMI_BASE weights, the current HCLI serving/tool contract, and objective-only autonomous repository-write missions. NOT conversational use, read/research tool work, receipt analysis, hypothesis generation, experiment planning, or supervised proposals. NOT a claim that a stronger descendant or a policy prompted by a real Odyssey blocker cannot earn write authority.",
+   "object": "Can the current KIMI_P0_OPERATIONAL body independently complete an objective-only repository mutation and focused proving test through the real HCLI contract?",
+   "organ": "hcli_agent_loop",
+   "parent": "KIMI_P0_OPERATIONAL / Kimi-VL-A3B-Instruct",
+   "physical_claim": false,
+   "reopen": "a materially stronger body, representation-native restoration, or mission policy learned from a real Odyssey blocker independently produces a relevant evidence-grounded edit and focused passing test from an objective-only brief; not another retry or prompt tuning pass on this bootstrap body.",
+   "source_receipts": [
+    "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+    "receipts/future/KIMI_BOOTSTRAP_CLOSEOUT_20260911.json"
    ],
    "status": "MEASURED_NEGATIVE"
   }

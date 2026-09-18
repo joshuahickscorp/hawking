@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P4_AUTO_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-411B1485",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded bounded implementation contract only; no mutation, promotion, or release claim.",
+  "source_observation": {
+    "owner": "hawking/auto_orchestration.py",
+    "sha256": "cbbc1e5f62eac5c0d7feeea37c836408ecfee4433bb3c753188b0b35d4a24a1c",
+    "observed_focus": "Auto plan/routing/refill and unbounded-concurrency admission seams were observed by the worker; full implementation remains locally authoritative."
+  },
+  "focused_tests": [
+    {"path": "hawking/tests/test_auto_orchestration.py", "sha256": "a4f401c9562e6afda6e13692b73529c110ee357094f1f41735126d654aa2a00f"},
+    {"path": "hawking/tests/test_discrete_goal_completion_state.py", "sha256": "264ee9c26107a166ab3ed5af705003c2d92e214aaf199995c41aced1ce9db177"}
+  ],
+  "local_verification": {"command": "python3 -m pytest -q hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py", "result": "24 passed"},
+  "next_seam": "Keep Auto refill as a projection/admission boundary: admit only durable queue contracts, preserve terminal states, and route measured models without making Codex the planner.",
+  "falsifier": "A terminal provider/output node reappearing in graph_runnable_frontier without fresh reopen evidence, or a fixed concurrency ceiling blocking a dependency-valid lane, falsifies this contract."
+}

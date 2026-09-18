@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 3,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "45b56db7303391be263389e3f0b1c46b770f8ef8c9e6d6852a7631a6b4fdc62a",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:55:12.288626+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:55:12.288644+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:55:12.293595+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"tools/future/kimi_operator_evaluation.py exists (6692 bytes, sha256 603fcbf0b914d60343a6dae1f23f32d09e637ec5b08c8c44b52ead7c2a8423e4); its module docstring identifies it as 'Functional-simulation evaluation for the KIMI op",
+      "outcome": "CONTINUE",
+      "reply_chars": 5867,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 3
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"tools/future/kimi_operator_evaluation.py exists (6692 bytes, sha256 603fcbf0b914d60343a6dae1f23f32d09e637ec5b08c8c44b52ead7c2a8423e4); its module docstring identifies it as 'Functional-simulation evaluation for the KIMI operator matrix', a cheap candidate gate between registration and a clean-process live model run that 'intentionally does not call a model, score capability, or create an artifact'.\",\"kimi_operator_evaluation.py builds a deterministic synthetic numpy fixture (np.random.default_rng(20260910)) with fake weight tensors, directions, input_directions, and subspaces; no real model weights are loaded, so the no-weight-load and hardware-withheld boundaries hold by construction.\",\"The observed per-candidate pass condition in evaluate_candidates requires: base weights byte-identical after apply_candidate (immutable-parent check via np.array_equal against a pre-copy snapshot), output changed, receipt['weights_written'] is False, receipt['promotion'] == 'NOT_PERFORMED', and receipt['source_model'] == 'KIMI_BASE' \u2014 an executable local check with promotion withheld by construction.\",\"tools/future/kimi_operator_gate.py exists (17448 bytes, sha256 7bc78fb519fab9bb337e583d68171b57d34029322409abba1fff4b9002cc6171); its docstring identifies it as a 'Fail-closed promotion gate for KIMI operator candidates' that 'consumes receipts; it does not edit model weights or invoke an operator' and treats missing evidence as 'a failed gate, never an inferred pass'.\",\"kimi_operator_gate.py binds fixed receipt paths under receipts/future/ (KIMI_OPERATOR_CANDIDATE_CATALOG.json, KIMI_HCLI_REFUSAL_RUBRIC.json, KIMI_HCLI_LIVE_EVAL_20260909.json, KIMI_HCLI_ENGINE_LIVE_RETRY3_20260910.json, KIMI_OPERATOR_EVIDENCE_20260910.json, KIMI_OPERATOR_EVALUATION_SIM_20260910.json, KIMI_OPERATOR_LIVE_EVIDENCE_20260910.json) and hashes them via a SHA-256 helper.\",\"The gate's _live_causal_ready check is candidate-specific ('never a global signal') and requires status == 'QUALIFIED', causal_effect_established is True, causal_sample_sufficient is True, and crossfit_consistent is True for operator_kind values starting with 'crossfit_'.\",\"A partially visible comment in the gate's evaluate() begins 'A single split with two held-out refusals is retained as evidence but is' \u2014 cut off before the consequence, so the held-out refusal handling rule was not fully observed.\",\"Only the first 4000 bytes of each file were observable (59.8% of the evaluation module, 22.9% of the gate module); all conclusions are limited to the shown portions and nothing is claimed about unshown content.\",\"The exact strings 'authority_stratified_target_shuffle', 'maximum_effective_dead_end_refusals', 'maximum_unsafe_demo_indicators', 'P8', 'NOVA', and 'policy-adapter' were NOT observed in any shown portion of either file; the canonical held-out policy-adapter evaluator for P8 NOVA was not located within the admitted evidence.\",\"No focused tests for either module were observed; no test file paths, test owners, or test-level falsifiers can be cited from the admitted evidence.\",\"No files were mutated, no weights loaded, no hardware accessed, no tests executed, no child workers spawned, and no promotion claimed during this WorkUnit.\"],\"sources\":[{\"path\":\"tools/future/kimi_operator_evaluation.py\",\"sha256\":\"603fcbf0b914d60343a6dae1f23f32d09e637ec5b08c8c44b52ead7c2a8423e4\",\"bytes\":6692,\"observed_bytes\":4000,\"coverage\":\"first 59.8% only\"},{\"path\":\"tools/future/kimi_operator_gate.py\",\"sha256\":\"7bc78fb519fab9bb337e583d68171b57d34029322409abba1fff4b9002cc6171\",\"bytes\":17448,\"observed_bytes\":4000,\"coverage\":\"first 22.9% only\"}],\"recommendations\":[\"Read the remaining portions of both files in bounded line ranges to capture the full evaluate() logic of the gate, the consequence of the truncated held-out-refusal comment, and the evaluation module's output schema and CLI.\",\"Search the repository for the exact identifiers 'authority_stratified_target_shuffle', 'maximum_effective_dead_end_refusal",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-01473ea6a7174f2c",
+  "worker_id": "hawking-worker-edca4bb783b94f3e",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-122A4A9E"
+}

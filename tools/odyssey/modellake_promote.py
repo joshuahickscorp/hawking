@@ -29,6 +29,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -37,6 +38,7 @@ MODEL_ROOT = Path("/Volumes/corpdrive/hawking-modellake")
 PARTIAL_ROOT = MODEL_ROOT / "partial"
 SPECIMEN_ROOT = MODEL_ROOT / "specimens"
 MANIFEST_DIR = REPO / "workspace" / "campaign" / "odyssey" / "watch-manifests"
+LAKE_MANIFEST_ROOT = MODEL_ROOT / "manifests"
 
 
 def _manifest(tag: str) -> Optional[Dict[str, Any]]:
@@ -48,6 +50,75 @@ def _manifest(tag: str) -> Optional[Dict[str, Any]]:
     if not isinstance(doc, dict) or "files" not in doc or "sizes" not in doc:
         return None
     return doc
+
+
+def _lake_manifest_compatible(tag: str, doc: Dict[str, Any]) -> Tuple[bool, str]:
+    """Check the canonical lake manifest without overwriting an identity."""
+    path = LAKE_MANIFEST_ROOT / f"{tag}.json"
+    if not path.exists():
+        return True, "MISSING"
+    try:
+        existing = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False, "INVALID_EXISTING_LAKE_MANIFEST"
+    if not isinstance(existing, dict):
+        return False, "INVALID_EXISTING_LAKE_MANIFEST"
+    for key in ("repo", "revision", "resolved_sha"):
+        if existing.get(key) != doc.get(key):
+            return False, "LAKE_MANIFEST_CONFLICT"
+    return True, "PRESENT"
+
+
+def _publish_lake_manifest(tag: str, doc: Dict[str, Any], destination: Path) -> Tuple[bool, str]:
+    """Publish the retirement/index manifest atomically after promotion.
+
+    The watch manifest is a scheduler cache. This second manifest is the
+    durable lake record that makes a promoted specimen queryable and safely
+    re-acquirable. Existing compatible manifests are preserved byte-for-byte.
+    """
+    compatible, state = _lake_manifest_compatible(tag, doc)
+    if not compatible:
+        return False, state
+    path = LAKE_MANIFEST_ROOT / f"{tag}.json"
+    if state == "PRESENT":
+        return True, state
+    try:
+        LAKE_MANIFEST_ROOT.mkdir(parents=True, exist_ok=True)
+        sizes = {str(name): int(size) for name, size in doc.get("sizes", {}).items()}
+        files = [str(name) for name in doc.get("files", [])]
+        payload = {
+            "schema": "hawking.modellake.manifest.v1",
+            "repo": doc.get("repo"),
+            "revision": doc.get("revision"),
+            "resolved_sha": doc.get("resolved_sha"),
+            "path": str(destination),
+            "bytes": sum(sizes.get(name, 0) for name in files),
+            "bytes_are": "sum of st_size over regular files outside .cache",
+            "bytes_allocated": sum(
+                p.stat().st_blocks * 512 for p in destination.rglob("*")
+                if p.is_file() and not p.is_symlink()
+            ),
+            "n_files": len(files),
+            "files": files,
+            "sizes": sizes,
+            "mode": doc.get("mode"),
+            "acquired_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "reacquisition": (
+                f"hf download {doc.get('repo')} --revision {doc.get('revision')} "
+                "--local-dir <dest>"
+            ),
+            "source_watch_manifest": str(MANIFEST_DIR / f"{tag}.json"),
+        }
+        tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+        try:
+            tmp.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8")
+            os.replace(tmp, path)
+        finally:
+            if tmp.exists():
+                tmp.unlink()
+    except (OSError, TypeError, ValueError) as exc:
+        return False, f"LAKE_MANIFEST_WRITE_FAILED:{type(exc).__name__}:{exc}"
+    return True, "PUBLISHED"
 
 
 def _verify_dir(root: Path, tag: str) -> Tuple[bool, str, Dict[str, Any]]:
@@ -96,6 +167,7 @@ def promote(tag: str, *, go: bool = False) -> Dict[str, Any]:
     source = PARTIAL_ROOT / tag
     destination = SPECIMEN_ROOT / tag
     result: Dict[str, Any] = {"tag": tag, "source": str(source), "destination": str(destination)}
+    doc = _manifest(tag)
 
     if not source.is_dir():
         if not destination.is_dir():
@@ -107,6 +179,12 @@ def promote(tag: str, *, go: bool = False) -> Dict[str, Any]:
         complete, reason, detail = _verify_dir(destination, tag)
         result.update(complete=complete, detail=detail)
         if complete:
+            if doc is not None:
+                published, publish_reason = _publish_lake_manifest(tag, doc, destination)
+                if not published:
+                    result["action"] = "ALREADY_PROMOTED_LAKE_MANIFEST_ERROR"
+                    result["reason"] = publish_reason
+                    return result
             result["action"] = "ALREADY_PROMOTED"
         else:
             result["action"] = "REFUSED"
@@ -125,6 +203,12 @@ def promote(tag: str, *, go: bool = False) -> Dict[str, Any]:
         result["action"] = "REFUSED"
         result["reason"] = "DESTINATION_EXISTS"
         return result
+    if doc is not None:
+        compatible, manifest_state = _lake_manifest_compatible(tag, doc)
+        if not compatible:
+            result["action"] = "REFUSED"
+            result["reason"] = manifest_state
+            return result
     if not go:
         result["action"] = "WOULD_PROMOTE"
         return result
@@ -142,6 +226,12 @@ def promote(tag: str, *, go: bool = False) -> Dict[str, Any]:
     result["verified_at_destination"] = not after_missing
     if after_missing:
         result["missing_after_move"] = after_missing[:5]
+    if result["verified_at_destination"] and doc is not None:
+        published, publish_reason = _publish_lake_manifest(tag, doc, destination)
+        result["lake_manifest"] = publish_reason
+        if not published:
+            result["action"] = "PROMOTED_LAKE_MANIFEST_ERROR"
+            result["reason"] = publish_reason
     return result
 
 

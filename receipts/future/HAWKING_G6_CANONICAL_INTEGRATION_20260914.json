@@ -1,0 +1,54 @@
+{
+  "schema": "hawking.g6.canonical_integration.receipt.v1",
+  "recorded_at": "2026-09-14T03:48:59-0400",
+  "status": "G6_STAGING_SEALED_CANONICAL_SOURCE_INTEGRATED_NO_DEPLOY",
+  "claim_boundary": "The G6 mutation-bundle owner and Goal/Web surface are integrated into the existing dirty canonical checkout after disposable-worktree validation. This does not qualify Flash/Pulsar, establish source parity, construct an NR, restart a daemon/Web, load a model, or run a GPU/ANE workload.",
+  "canonical": {
+    "before_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+    "worktree": "/Users/scammermike/Downloads/hawking",
+    "dirty_frontier_preserved": true,
+    "landing_method": "disposable integration worktree from canonical HEAD plus canonical dirty diff; semantic G6 delta applied only after clean git apply check, followed by removal of unrelated P1 prefix/menu changes exposed by canonical liveness tests",
+    "production_restart": false
+  },
+  "staging_goal": {
+    "goal_id": "GOAL-EF8338B8A5",
+    "workunit_id": "GOAL-EF8338B8A5",
+    "resident": "KIMI_P1_RESIDENT_CANDIDATE",
+    "status": "COMPLETE",
+    "seal": "/Users/scammermike/Downloads/hawking-grok-staging/worker-integration-snapshot/receipts/future/workunits/GOAL-EF8338B8A5_SEAL_B1.json",
+    "result_packet": "/Users/scammermike/Downloads/hawking-grok-staging/worker-integration-snapshot/receipts/future/workunits/GOAL-EF8338B8A5_RESULT_PACKET.json",
+    "engine_evidence": "/Users/scammermike/Downloads/hawking-grok-staging/worker-integration-snapshot/.hcli/pastes/paste_20260914_032932_928eb578.txt",
+    "bundle": "accepted source mutation plus required regression test; pre 9/10 red and post 10/10 green; rolled_back=false; focused validation ok"
+  },
+  "integrated_paths": {
+    "hcli/agentos/goal_surface.py": "cc7a50b22bc16ae88c0db2ed94e70c353f0cf3f29d74d89d3e1a44322726e6e6",
+    "hcli/agentos/seal_pipeline.py": "2417d0910d73d297289ebb0d59eda6b3a49349011bd1f2334853e96009f1b520",
+    "hcli/agentos/workunit_owner.py": "163f270fb71cb415c771e938091dd04f41c38b7f38b29a9b090363d7a6ef4307",
+    "hcli/agentos_cli.py": "dfa1951fa7cc705c518bbf11312b99d9cdd6e8e334990a115ccb198fa9abd7ee",
+    "hcli/chat_state.py": "c84274bcd2f989911b78c857967adace94f7e5163f1742193b6a71debe807441",
+    "hcli/chat_tools.py": "5b1a436c778b4c0119771e9d29c4809b6d703f7c51d44e7a863a8bda5d1d8f83",
+    "hcli/engine.py": "c0a0f9524a9e2898e5cf9866af2695f5db3d4b50059701de396c30245509217e",
+    "hcli/serve.py": "acf9be60f5891b2a3f3ade1ebc57fbc82231076fe352e0b580382ac4d68bdd02",
+    "hcli/web.py": "4a2f61719fc63cff724da646617f574503a0b238d1961c31200ec659fa4183db",
+    "hcli/test_web_surface.py": "5310f04968be29c1a8590c5c85536c516832ac440198b358eba88362fcf24bab",
+    "hcli/tests/test_mutation_bundle_completeness.py": "a0f05a2d3292becb4817a08dde6cc6717011985df7abc460256436525bcca0ae"
+  },
+  "validation": {
+    "disposable_integration": "21 focused tests passed; selected py_compile and git diff --check passed",
+    "canonical_g6": "19 focused mutation-bundle/Web tests passed",
+    "canonical_action_serve": "112 passed across action/serve, resolved-action, G6 mutation bundle, and Web surface; no policy weakening applied",
+    "canonical_worker_tool_regressions": "281 passed across chat/tools, worker identity/status, tool loop, and persistence suites",
+    "static": "selected py_compile, compileall, and git diff --check passed",
+    "rust": "cargo check --workspace --all-targets passed; rust_test_fast.sh verify topology passed (135 direct sources across 10 packages); effective_policy passed (11/11)",
+    "serve_failures": [],
+    "regression_correction": "The first landing attempt imported unrelated P1 prefix/menu changes from the staging worktree. They were removed semantically; both liveness assertions pass in the canonical checkout and in the pre-G6 disposable comparison."
+  },
+  "preserved_frontier": {
+    "flash": "No P0/Flash source-bound capture, ModelLake, NR, or GPU work was touched.",
+    "source_correctness": "E05 remains blocked pending an independently admitted PLE-inclusive source greedy teacher before another expensive replay.",
+    "e06": "Canonical occupancy/entropy plus predictor-cost and shuffled-null producer remains missing.",
+    "e13": "Vocabulary/tail-row contract remains withheld; no truncation or vocabulary redefinition.",
+    "resident": "Staging Kimi daemon remains isolated; no canonical resident restart was performed."
+  },
+  "next_safe_action": "At a safe runtime boundary, inspect live process ownership and perform only the minimum canonical Hawking smoke. Then resume Flash source-bound correctness with the admitted PLE-inclusive teacher; do not label G6 as full campaign qualification or promote Pulsar without its independent gates."
+}

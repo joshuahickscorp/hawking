@@ -1,0 +1,3392 @@
+{
+  "accepted_generation_tokens": 2,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple Metal",
+    "recorded_at": "unix-ms:1789156508031",
+    "recorded_by": "flash_stateful_complete_token_session",
+    "rule": "S032 §3 -- complete-session timing is not a promotion benchmark",
+    "state": "UNKNOWN"
+  },
+  "candidate_token_id": 2972,
+  "claim_boundary": "A complete 48-layer stateful Flash forward retained linear recurrent and full-attention KV state across multiple caller-supplied reference continuation tokens in one native process, checking each token against its preceding terminal argmax. Cross-species seams still use host diagnostic vectors; this does not prove source-independent NX, TPS, EBPW, capability, or HCLI residency.",
+  "complete_system_ebpw": null,
+  "execution": {
+    "cross_species_activation_handoff": "host diagnostic vectors",
+    "elapsed_wall_ns": 2094786747875,
+    "fallback_count": 0,
+    "full_attention_kv_segments": true,
+    "linear_recurrence_segments": true,
+    "process_boundary": "one native process",
+    "reference_contract": "each caller-supplied continuation token is independently compared with the terminal argmax of its preceding exact 48-layer state",
+    "source_independent": false,
+    "source_payload_bytes_per_session_token": 35546625133,
+    "source_payload_bytes_read": 248826375936,
+    "source_reset_or_reprefill": false,
+    "state_memory": {
+      "full_attention_persistent_bytes": 344064,
+      "growth_bytes_per_additional_token": 49152,
+      "linear_persistent_bytes": 117669888,
+      "session_token_slots": 7,
+      "total_persistent_bytes": 118013952
+    },
+    "state_reset_scope": "linear species reset only before session token zero; full-attention KV buffers allocated once per layer and indexed by the advancing token position",
+    "terminal_executor": {
+      "device": "Apple M3 Ultra",
+      "lifetime": "one session",
+      "lm_head_reused": true,
+      "readout_weights_reused": true,
+      "source_index_reused": true,
+      "source_payload_bytes_read": 1284526080
+    }
+  },
+  "first_physical_failure_boundary": null,
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Run clean repeated timing, then census state/dispatch/bytes-per-token before selecting the highest-value physical or representation optimization.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "reference_generated_token_ids": [
+    2972,
+    96125
+  ],
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.stateful_complete_token_session.v1",
+  "seal_sha256": "3c1401ef3339040f35747d675e3e317c83122bcdac79f06107b0d571f78f8a28",
+  "segments": [
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        0,
+        2
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 15563915584,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "3b3b4b534bec3b5702a96f7495aea8a00dd6a6fc3de8722c4f10ca012d152f1a",
+          "finite": true,
+          "gpu_ns": 20159249,
+          "layer": 0,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 110229333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "2dbdc30e4a9f7f1a65ffc564212f502f149a8fbb88f73cd73d9bbbb01e4dc5b8",
+          "finite": true,
+          "gpu_ns": 138484125,
+          "layer": 1,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 140247792
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "4623033df49ea875bfa2b4b7075cf37ee0fd6d01201b48d791c02c66439b8b20",
+          "finite": true,
+          "gpu_ns": 164936374,
+          "layer": 2,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 165441250
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "7e140b191cedb95f652df699db3481e631117690fc7379e92121cb58cefe669e",
+          "finite": true,
+          "gpu_ns": 16625249,
+          "layer": 0,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17737625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5825dfab0fabe3c88f28dc15dc3210b13518bf71f2a39849d8fd37c9d213f0bb",
+          "finite": true,
+          "gpu_ns": 16884999,
+          "layer": 1,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17294833
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "779ad7757c149d656661d991508acc8bcfa1175224e06a126dcf75d6d0fa6e28",
+          "finite": true,
+          "gpu_ns": 16601041,
+          "layer": 2,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 16928334
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "f99dc2b43a0b3b83281674d4a4aca27ac07469b215e6181a9b73ab452222344a",
+          "finite": true,
+          "gpu_ns": 16710999,
+          "layer": 0,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17051000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "e0288806f1d8c6d9685dd71efb42a6c4aa86546d28950c0a3b2b727fc16948b1",
+          "finite": true,
+          "gpu_ns": 16622749,
+          "layer": 1,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17082584
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f8cff1c53b1aded872b9af92df5e5a14324fc1b5ce183a17f403afc6dbfd0107",
+          "finite": true,
+          "gpu_ns": 16604749,
+          "layer": 2,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17121209
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "a01727b942b3c9601670fa564ca6d522b5eb65766d37da342116c979e663f006",
+          "finite": true,
+          "gpu_ns": 17089958,
+          "layer": 0,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 18395375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "75256a64702d967f52edd66e2d8d5412e87562ee132a8ea53247cb3014c9c8a2",
+          "finite": true,
+          "gpu_ns": 16591416,
+          "layer": 1,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16967208
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c4f9518eac62ce8d9eda601b478b9c8689e0c0a2a6ec81c36f48bda2c3aef2f8",
+          "finite": true,
+          "gpu_ns": 16935250,
+          "layer": 2,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17321667
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d82135f682350db6a6c8348d112ca760cbc2025a0c7d30b6eab69646e8d0c75a",
+          "finite": true,
+          "gpu_ns": 16656499,
+          "layer": 0,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17020625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "0bd8958781dd525bfd5334ab5c2e091042b270f974e0c9d8d2ea9e32a41eb043",
+          "finite": true,
+          "gpu_ns": 16777666,
+          "layer": 1,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17135125
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c8cdfbefaf20b788fc02186b762df379acd4870b405252052c1de77e422cebf8",
+          "finite": true,
+          "gpu_ns": 16580875,
+          "layer": 2,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16950459
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "b0a536f3b713388f2776138070babe70d5c428f6d93a315b5f5bf8d1105f8d3b",
+          "finite": true,
+          "gpu_ns": 16724833,
+          "layer": 0,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17092416
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "3281f394515b1d35987f1c07596f2e89bc81ea4d5196801b3524921473624053",
+          "finite": true,
+          "gpu_ns": 16605166,
+          "layer": 1,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16954791
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5bb2c5a1e46c8a35905f5d3cf0905d5a888e39060772a05b2c4bf226ed4bb5e5",
+          "finite": true,
+          "gpu_ns": 16691000,
+          "layer": 2,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17127916
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "07a792fc61b466bab24588a6445d30c62dfa03dd9ce6e8a7b601ccc06fd84c16",
+          "finite": true,
+          "gpu_ns": 17032749,
+          "layer": 0,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 18300375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d57f2bac49da4b7e4de051fa8aa03e8fa9cadeb109d785c0411bb39bc7f6a63f",
+          "finite": true,
+          "gpu_ns": 16571208,
+          "layer": 1,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16914542
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "8d6d3d6733c355a7d7a436e658968834394d06309246077c648db0bac38473d4",
+          "finite": true,
+          "gpu_ns": 16867500,
+          "layer": 2,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17230041
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 624753654,
+        "execution_wall_ns": 790839625,
+        "host_and_unattributed_ns": 101790846,
+        "layer_source_and_device_prepare_ns": 123138152167,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 790839625
+    },
+    {
+      "layer": 3,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-3-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        4,
+        6
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 31127831168,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "bccc236fedafd7d5ab0758928b83a2f1b4be86fd2650d8e8fdfe29f094cb4cdc",
+          "finite": true,
+          "gpu_ns": 22260499,
+          "layer": 4,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 136109875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "4e9faacfd20bbbfd27566c34fe9c7261571e2a8e3d8f9965d57118d1d7c8173b",
+          "finite": true,
+          "gpu_ns": 190427708,
+          "layer": 5,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 191046875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "b99c40c46aef91d9399fc5e0178e1bad775519e7495adbbb45f416f7f90045fb",
+          "finite": true,
+          "gpu_ns": 144114333,
+          "layer": 6,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 144756625
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "b42e4139a7cd6350c298739e465ee3e4d0e3d4a5a1066d9dae92eee14f90a0a4",
+          "finite": true,
+          "gpu_ns": 16782249,
+          "layer": 4,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17708417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "0c7c6cf4d7ea53a7d111ac5ca40f0026710129fb1a6969fe7c77fa073360de72",
+          "finite": true,
+          "gpu_ns": 16606166,
+          "layer": 5,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 16973458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "dfbfdd2da0414f19932b8fc94b5d05264df58c90fcff8b1ac46069d5744bdcf7",
+          "finite": true,
+          "gpu_ns": 16835250,
+          "layer": 6,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17185000
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "045489493e37ac746f224b853273e6fe354b671c88e607604c71002502cf0d38",
+          "finite": true,
+          "gpu_ns": 16605125,
+          "layer": 4,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16930292
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d8d22b6e2dc7a031d13bc5df84ef1be8d5193604c0cb726ab4b4c074d7ca4d9e",
+          "finite": true,
+          "gpu_ns": 16929999,
+          "layer": 5,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17363292
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "107750b35eb2d34747e3f0b955a5bd6fab8a5ed2ff5d4673edbd3046e67afbec",
+          "finite": true,
+          "gpu_ns": 16588500,
+          "layer": 6,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16958917
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "e49b984c200454768f2b3f8da289e8c03046dbb4f187cc6959a94191c8bd0bc9",
+          "finite": true,
+          "gpu_ns": 17006624,
+          "layer": 4,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17355834
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "478df0f95ec38945f4e7577174521becb8b1f4e2713cc3b297e87ba67d1befea",
+          "finite": true,
+          "gpu_ns": 16598958,
+          "layer": 5,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16978042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5c3053bcbb8fc9edd83075ba53a3a1b535defbbf5d4086eaa0b9b87c1a8d0126",
+          "finite": true,
+          "gpu_ns": 17027166,
+          "layer": 6,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17400000
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "0f5c5b2e4c585215f897692aee24e430eb46aa9375f1ed243d07d8ec19587d86",
+          "finite": true,
+          "gpu_ns": 16669708,
+          "layer": 4,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17015250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "3a34c0704d05f1776a75cb0301459f1600b152781b8d16ecee5768f4e673c375",
+          "finite": true,
+          "gpu_ns": 16948125,
+          "layer": 5,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17307583
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d3bd68255d03ca71e419727d5e4c31a28660f3c92e1dffbfee64ea9e76ea3849",
+          "finite": true,
+          "gpu_ns": 16584208,
+          "layer": 6,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16923667
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "68c4f7b40889065bc2d53c8cdbc9fe3e1235da32574f86ecc405e16188dd2cca",
+          "finite": true,
+          "gpu_ns": 16933874,
+          "layer": 4,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17303833
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "00c4a1dd78408741de9a8cde0f4a79291613191c2f4be39c8ab78c7d3dfe93d2",
+          "finite": true,
+          "gpu_ns": 16566791,
+          "layer": 5,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16929625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ed42c3dc209a9dec6508cade480cdbb41fa60e92f9b579682db5f12cf0a83d72",
+          "finite": true,
+          "gpu_ns": 16822000,
+          "layer": 6,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17190208
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "7178db54f652bc576f17443f2ce9cb2599adb29dfde1d9bfab898e08e75b1aef",
+          "finite": true,
+          "gpu_ns": 16629291,
+          "layer": 4,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16981041
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "58a89f56aa3d1ebcd366a77046f031a8e9facbf76a6d4175337a0daf8086fb61",
+          "finite": true,
+          "gpu_ns": 16955750,
+          "layer": 5,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17257458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "62d27f6a7b4ba630c6d815e42a28258eb2b19564fc36d2e23b1cabb3bccbe5e7",
+          "finite": true,
+          "gpu_ns": 16542625,
+          "layer": 6,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16871000
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 658434949,
+        "execution_wall_ns": 787490500,
+        "host_and_unattributed_ns": 122111343,
+        "layer_source_and_device_prepare_ns": 129795259792,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 787490500
+    },
+    {
+      "layer": 7,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-7-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        8,
+        10
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 46691746752,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "8089e5fa2fd345fc6dbf603af9ffbfdc8ae4d7d86b62f9a050c1fa2e39e3227e",
+          "finite": true,
+          "gpu_ns": 22389750,
+          "layer": 8,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 591370042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "0a79c2b20561bdb374ca2411152a4d5cf35a465caa18df0c89a3f376eb38aa9d",
+          "finite": true,
+          "gpu_ns": 556128124,
+          "layer": 9,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 556846917
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "8e1a509c22927956335c0d07d855a1b58e0f649b1eef781df50f0e9ffaef4b5d",
+          "finite": true,
+          "gpu_ns": 118205250,
+          "layer": 10,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 118844667
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "1c93dc6ba004e8da70616b15ed0079a3e4aab3e005e5cff1c50adfb4e08fa552",
+          "finite": true,
+          "gpu_ns": 17034124,
+          "layer": 8,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 18128833
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "780bd370d6fdf07f01b1693f4495dcc56aa6c375f9e2f68b57be62e05ac37e64",
+          "finite": true,
+          "gpu_ns": 16562375,
+          "layer": 9,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 16985542
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "dec59af0ef064060bb656702d69283ea4fd4f8cc6a4fa91e80f589d13fddcf33",
+          "finite": true,
+          "gpu_ns": 16991958,
+          "layer": 10,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17381625
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d0ec7e12421d98d32d141e4829394cbe373c1afb3fec1f769745d9845d99d96e",
+          "finite": true,
+          "gpu_ns": 16635916,
+          "layer": 8,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17025125
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5ff1d1e62c39c438d86eb67eb8cd5e6d1469040114603a0047add1d356348ec2",
+          "finite": true,
+          "gpu_ns": 16929749,
+          "layer": 9,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17294042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "bd6eed5c90bb790158101dc6b109badd723d856d903080635a83d3197962adcf",
+          "finite": true,
+          "gpu_ns": 16574624,
+          "layer": 10,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16930084
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "1b8a9729744e58cdbf5bc2fd7f0f0af96227342d62e56ab25686acc4e43d5218",
+          "finite": true,
+          "gpu_ns": 16947249,
+          "layer": 8,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17317208
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "cab422b116306d662296962d3e32c034090844af145f66bdcd5a11a9ca68489c",
+          "finite": true,
+          "gpu_ns": 16574499,
+          "layer": 9,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17024208
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "81f91c74355affcd275307a337c82537b12ca1ef92495cc39217850ad78a1b6f",
+          "finite": true,
+          "gpu_ns": 16834000,
+          "layer": 10,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17383084
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "73bd9304c3519622d0a4411ab97c59882424eb236d6280a2312b681b6eaafbda",
+          "finite": true,
+          "gpu_ns": 16683166,
+          "layer": 8,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17016000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "a043a2da8797a30b2c05440c4205938935edd8c0d413b902122ff5694d1814d2",
+          "finite": true,
+          "gpu_ns": 16613749,
+          "layer": 9,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16988792
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f7229856b855aa69fd2d861467e0e901bcadac355ecb85c3a3dec9e32c57fdac",
+          "finite": true,
+          "gpu_ns": 16593499,
+          "layer": 10,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16945500
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "98cae128ec0afb57260af7104f096f7eaf451f3aac063265ea5a406670ab1b30",
+          "finite": true,
+          "gpu_ns": 16714166,
+          "layer": 8,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17069000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "dfe37e27b62d8b9cc9c320643d4f9db3de34786fd5fc66ac67645be1bf121c1e",
+          "finite": true,
+          "gpu_ns": 16656124,
+          "layer": 9,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17113709
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "20832543f588517e609debf4bd4b8085580a5f132703b99d010dcd6f885cd2c5",
+          "finite": true,
+          "gpu_ns": 16596125,
+          "layer": 10,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16891584
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "e99fe0f1a414e7682b398e2a26d472da1ba05d23d2c6d95e8c617f43a9a6e98e",
+          "finite": true,
+          "gpu_ns": 16682041,
+          "layer": 8,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17008917
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "1180f0b005dad7ca06f383a2f643464b7713a79d204667be4954f3f86e51de71",
+          "finite": true,
+          "gpu_ns": 16562708,
+          "layer": 9,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16905708
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5aad08ddbd9b1ba73f95708b48a4f7d687cf8897490442e2e5514141a1ae81ed",
+          "finite": true,
+          "gpu_ns": 16702833,
+          "layer": 10,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17061042
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 997612029,
+        "execution_wall_ns": 1596604000,
+        "host_and_unattributed_ns": 577919600,
+        "layer_source_and_device_prepare_ns": 126897308917,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 1596604000
+    },
+    {
+      "layer": 11,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-11-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        12,
+        14
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 62255662336,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "fa561ac6152b3fd33a118c3b3460f8be3a9f61317b39c871d4587ac9e2af8286",
+          "finite": true,
+          "gpu_ns": 19294249,
+          "layer": 12,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 870192375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "66600d8a9483b3a5c61c30184f578895c2551293f7935f3c601bc40256944f6f",
+          "finite": true,
+          "gpu_ns": 897903874,
+          "layer": 13,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 898657791
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "1f2465f02bf1a47355331ecfe4c115de2a904a1c163d6eb7f4aacdf434ec7e59",
+          "finite": true,
+          "gpu_ns": 433864541,
+          "layer": 14,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 434417042
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "4353fc902b1655ddab2d11f6751617931781f5afe4406d475d35600f18aaee72",
+          "finite": true,
+          "gpu_ns": 16649333,
+          "layer": 12,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 143298000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "90d1459632d6e1e7863c7ad541a2c832e17b263f73a4a98372112ef7d8071121",
+          "finite": true,
+          "gpu_ns": 16803375,
+          "layer": 13,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17185750
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c9b3caffefddf6972f0e2f5b1cfb7b785703b9dc33e9a09a55d303836ae5ed35",
+          "finite": true,
+          "gpu_ns": 16568749,
+          "layer": 14,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 16942667
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "a9840a451a8f5214aa68d090f8271cdb0a796aa7ea0d3e4fd96e134d7b805c0f",
+          "finite": true,
+          "gpu_ns": 16683041,
+          "layer": 12,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16987458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "01100f42ce975b02be2d81f55cf15f51049052ccc94874e21b240643d17ceba5",
+          "finite": true,
+          "gpu_ns": 16594125,
+          "layer": 13,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16927958
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "2e909511cc1ee2d87d60ed3ec3e433995b7289a2be962056fd7101f71d4efe0f",
+          "finite": true,
+          "gpu_ns": 16632083,
+          "layer": 14,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16998209
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d5e4bc495a7bddff7e2cf878ef8d5436752fe460f21dc0b5d312054984506b55",
+          "finite": true,
+          "gpu_ns": 16664708,
+          "layer": 12,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16990875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "8e47f28d3fc22d446084ca663c12b019fc7318d8f4e9bbc7ed6cf5ba7d1ec0c8",
+          "finite": true,
+          "gpu_ns": 16600624,
+          "layer": 13,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16958333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "b858bb0409c8d3e303d352bf4a715e4b0be832f1df21cd6e97c8c639ace61fdd",
+          "finite": true,
+          "gpu_ns": 16567875,
+          "layer": 14,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17144375
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "22fd622012602642a3b6e21fd6ba58c6479d73e0d445311c4a69ded9335a2250",
+          "finite": true,
+          "gpu_ns": 16675416,
+          "layer": 12,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17005000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "aa82bee08e616033596a5b87349a9a32471ec2b0235bbbae4cc645a68c1f4430",
+          "finite": true,
+          "gpu_ns": 16805125,
+          "layer": 13,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17129792
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "cab57c20babfb322b1332a1c2b74d49c29819ab4bffb4225309bfed2c10f999e",
+          "finite": true,
+          "gpu_ns": 16580750,
+          "layer": 14,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16926208
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "5929e640037e69374111d526cf3a69d9e1bd00d654ec31babab9402e08113578",
+          "finite": true,
+          "gpu_ns": 16837916,
+          "layer": 12,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17188500
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "608a5aedf6a45c509230b4c7d0750dc07139e7da84787bed4b89a0081bb278de",
+          "finite": true,
+          "gpu_ns": 16568083,
+          "layer": 13,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16872334
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "887827ca6d9fb829dc9fcd9fec601ebf08e0898f237da1a500d2d26c3c11fb87",
+          "finite": true,
+          "gpu_ns": 16884458,
+          "layer": 14,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17204542
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "b211c4ad8dd5278ab4bc8d0fdd44c3dab7621095d9a9f2def4161b5c27d3196b",
+          "finite": true,
+          "gpu_ns": 16625208,
+          "layer": 12,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16964458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "4620b16f0031861ed1facace117a04f68f8f8bc6bf00c0ee2b1ac0d0edc1232a",
+          "finite": true,
+          "gpu_ns": 16976208,
+          "layer": 13,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17271375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "a14daec5f12cb30278ff5969b4dbfdcbe43e7b299c208ea93d3933f9ff2092cf",
+          "finite": true,
+          "gpu_ns": 16577250,
+          "layer": 14,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16914709
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1651356991,
+        "execution_wall_ns": 2643769292,
+        "host_and_unattributed_ns": 984820760,
+        "layer_source_and_device_prepare_ns": 126902478625,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2643769292
+    },
+    {
+      "layer": 15,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-15-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        16,
+        18
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 77819577920,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "1ee9dcb781cbf311e0c81de164408efc4587c652da0e2466e3ea397da12da1b7",
+          "finite": true,
+          "gpu_ns": 19239000,
+          "layer": 16,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 648150917
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "b5ec037b7e8183487419950ce3091ebddd7eab4e586e0ab30b376ea2c6d534aa",
+          "finite": true,
+          "gpu_ns": 872174625,
+          "layer": 17,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 872787334
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "11a48b3c33fc0008bb5d671fae4b1bf2fca69832c6f8031c090bc04705420b4c",
+          "finite": true,
+          "gpu_ns": 516639916,
+          "layer": 18,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 517294167
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "f4a0213f638e7bede7f67b260f8d278ccf68ba780ae9865317bdd369368fc93d",
+          "finite": true,
+          "gpu_ns": 16707000,
+          "layer": 16,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 106791667
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "7bdaea7dc0c48d3e11230687752aa188aa1e7d05a3ed59fbbf143ab193993af7",
+          "finite": true,
+          "gpu_ns": 16612583,
+          "layer": 17,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17027917
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d430dd3081a9658a59f37e1d196c79f84968ab3e6d24b12fccea15ab878ad46c",
+          "finite": true,
+          "gpu_ns": 16611208,
+          "layer": 18,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17022792
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "515d6b74f2f14d3cd0cdd829fab8c3011b369c81dfe4db1087b37da1367cc278",
+          "finite": true,
+          "gpu_ns": 16841749,
+          "layer": 16,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17221292
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c72a18f0c017274a0f17ded79c5fdb031904167133b966852f53fe4340877875",
+          "finite": true,
+          "gpu_ns": 16575916,
+          "layer": 17,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16950917
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "09626c4d262dc8eac870dc0c021d32657253bbfa4420cba5fa6473a730c49f67",
+          "finite": true,
+          "gpu_ns": 16897791,
+          "layer": 18,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17247167
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d4f16de1a668fe2b95f23228b1015c3f7b5f12710b61f33317565240e58700b1",
+          "finite": true,
+          "gpu_ns": 16643291,
+          "layer": 16,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17247666
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "8536017ce0b15bc56f45652be71173c39aeda66b698cb3ccb077c31abb646aba",
+          "finite": true,
+          "gpu_ns": 16989499,
+          "layer": 17,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17336375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "bab1911b9250805a4b30ad2a7e82c40e31e59cd2b2e7529f75c5746aa90294a4",
+          "finite": true,
+          "gpu_ns": 16624791,
+          "layer": 18,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16961208
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "3a9732986a23ae23b0ee4b37f5f99726c58b3df0a85f36889f3d934be5a56506",
+          "finite": true,
+          "gpu_ns": 16997541,
+          "layer": 16,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17348875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "32f759998b4154a0c7d9dd633593028f1b48d158f8e2d05a957d7f5b05496d89",
+          "finite": true,
+          "gpu_ns": 16532124,
+          "layer": 17,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16865042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ee0d0b877e0eb087a5e92a44f6d5df1fb637a373b670a26cb90ae06d8aa2c825",
+          "finite": true,
+          "gpu_ns": 17003958,
+          "layer": 18,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17365916
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "0014776052000b2c4527bc6edbc750f900112d2a89dfb7cca495715d03b198c5",
+          "finite": true,
+          "gpu_ns": 16662374,
+          "layer": 16,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17031333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "3485786ba9e716ea5dbd85592bb1e288112135f916a6d0e0b2ceb584e309ec70",
+          "finite": true,
+          "gpu_ns": 16788166,
+          "layer": 17,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17139541
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "9a0468583d65c824a7e99f7d6b09edcf4ea45fbb9265d546b33b8419571794a6",
+          "finite": true,
+          "gpu_ns": 16562374,
+          "layer": 18,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16937292
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "84eade51da126e2063253fda23877d9bd700053bdf56b3bbf251b32a7bf422d8",
+          "finite": true,
+          "gpu_ns": 16978708,
+          "layer": 16,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17317958
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d72514e58c1f1c9a152cf1e606c39ae77ad1af858045ebf30c2f6efb7a3f0b08",
+          "finite": true,
+          "gpu_ns": 16521416,
+          "layer": 17,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16873209
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5b445b3c33a0872a7110899c22eb2388ff37db5a5e50c4b2fca1de0ef9cca11b",
+          "finite": true,
+          "gpu_ns": 16834375,
+          "layer": 18,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17210375
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1709438405,
+        "execution_wall_ns": 2443530500,
+        "host_and_unattributed_ns": 726690555,
+        "layer_source_and_device_prepare_ns": 131514042209,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2443530500
+    },
+    {
+      "layer": 19,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-19-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        20,
+        22
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 93383493504,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "9d981c45779387b71d756b9e76d7bd857bacf5e05309d26337f43e129426c6b5",
+          "finite": true,
+          "gpu_ns": 17953541,
+          "layer": 20,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 754761459
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "4ec14c848381bc6d85809ae62daa63cfb96f4b208dac9654dda4380c1be1ad46",
+          "finite": true,
+          "gpu_ns": 915852124,
+          "layer": 21,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 916621875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "31530bd460558ccafe273ed10ddb5fed6105976e24ba8796230e8ef1c7b88aeb",
+          "finite": true,
+          "gpu_ns": 440568999,
+          "layer": 22,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 441199250
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "1000a4a533da4f42d2a928dd4db2df348d2a4440457c3d72f5e7a516bf8007d2",
+          "finite": true,
+          "gpu_ns": 16796625,
+          "layer": 20,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 114928833
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "74b7186bc55173050b437d1dcf375aadf389eef43a86c94c3796e552fbd6d076",
+          "finite": true,
+          "gpu_ns": 16608291,
+          "layer": 21,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17024333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "baf5083a85c372535198e088dd996922d73804b23a0fa2ed4b285c0f84821f64",
+          "finite": true,
+          "gpu_ns": 16646624,
+          "layer": 22,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17047333
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "434c988d8d4ae68211989e87f2bee5df42697c6184e14eeb1e346b1e079c5a8d",
+          "finite": true,
+          "gpu_ns": 16662291,
+          "layer": 20,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17037625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "77d68666a316a2f22cb7c44fb55b668308ddb89512c5263da0dd25cb93236319",
+          "finite": true,
+          "gpu_ns": 16533499,
+          "layer": 21,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17041166
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ab5aa042054fca7c09517205c65e7a4a8dbf0a4e9f54b5b5aa823f0aef75af93",
+          "finite": true,
+          "gpu_ns": 16603916,
+          "layer": 22,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16982417
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "b24810dd67b7ebcbe1e302a9f8bae601fa074f6d5a6eace6877df005e9908b2c",
+          "finite": true,
+          "gpu_ns": 16637249,
+          "layer": 20,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16949000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "418e7462c617b39544ea1691c78cd15f5e9e43f4baf9d02f9aa5bda9d2732cbb",
+          "finite": true,
+          "gpu_ns": 16599124,
+          "layer": 21,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16933916
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "b36e4a8ff0a1514183ebaa26c693f203d6a76ccfe2226a3d6bd74245ed9e2bc4",
+          "finite": true,
+          "gpu_ns": 16614000,
+          "layer": 22,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16962292
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "82da4e763d12e62837beafc8c9109f75aea3d17c17e529497244e9e9fb85b814",
+          "finite": true,
+          "gpu_ns": 16905083,
+          "layer": 20,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17211625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c1f296c6ada7b721270ad6cdbbe48163691dccdfaac828928e451a0d8982ff10",
+          "finite": true,
+          "gpu_ns": 16680916,
+          "layer": 21,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17070625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "3c06588cdcb5c222633f62e8406b661fe93d35a0e1c5008d9b01baf67fa5cf91",
+          "finite": true,
+          "gpu_ns": 16894500,
+          "layer": 22,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17233583
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "dac169b310e813e3e4b21d63955c03005e87faa6faa39c6bf97950e33a657d99",
+          "finite": true,
+          "gpu_ns": 16647625,
+          "layer": 20,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17047333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5dc366db08065aa09136d47789be572a13101cbc93d94037e032c1ba260c8d2b",
+          "finite": true,
+          "gpu_ns": 16976833,
+          "layer": 21,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17317333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "0e2d5d7b04ed6cb30db52dbd1e43db258c2a2aeeab54991c2c1c63b3b511072c",
+          "finite": true,
+          "gpu_ns": 16630750,
+          "layer": 22,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16993584
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "eeef3e5ac65dbbd037466c5399c12090472e4f696f6f6e10129753e96ea4f768",
+          "finite": true,
+          "gpu_ns": 17079625,
+          "layer": 20,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17429209
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "73cd07b3bfbb96bde9b1929c21a1717e7926618474deaeacc2125b2f61d824ca",
+          "finite": true,
+          "gpu_ns": 16633416,
+          "layer": 21,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17008958
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d1ef3547a4df0645d351990560ad679e50c4604d9774e4b37aec1fab1504b8e1",
+          "finite": true,
+          "gpu_ns": 16995375,
+          "layer": 22,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17349541
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1675520406,
+        "execution_wall_ns": 2525717500,
+        "host_and_unattributed_ns": 842630884,
+        "layer_source_and_device_prepare_ns": 128138040125,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2525717500
+    },
+    {
+      "layer": 23,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-23-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        24,
+        26
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 108947409088,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "01096a63270259497d80c81f802e44d06002529a10cc63e6ebc297791061b0ee",
+          "finite": true,
+          "gpu_ns": 21819291,
+          "layer": 24,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 838052292
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "4073757504aa0e820b59c5ec6e5e1904ee48cb3cde67923b6ae943727db12912",
+          "finite": true,
+          "gpu_ns": 968792874,
+          "layer": 25,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 969425292
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "2d6fd776b7ca926c751fa423babc81ec59bfcc0512e25cec44e79e3bb7d631c7",
+          "finite": true,
+          "gpu_ns": 506844458,
+          "layer": 26,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 507404250
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "4d9d58defa8c8cdf1752cef0ffe16a2508e272860bf85bd8030a2bf1489c1f8f",
+          "finite": true,
+          "gpu_ns": 17046791,
+          "layer": 24,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 164078042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f4cdb224b43a6b8929d6e1af17d13d7b7071a99a3e80330a63bd53f348edd969",
+          "finite": true,
+          "gpu_ns": 16628500,
+          "layer": 25,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17167208
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "77b45f5e317a7a8bc2fa891229313079892aee55a4519773820dd1ff84a05eca",
+          "finite": true,
+          "gpu_ns": 16930875,
+          "layer": 26,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17332583
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "47f6b1cb7942e50826513fce98493127cc0fd1b987247146788429180966fe07",
+          "finite": true,
+          "gpu_ns": 16658749,
+          "layer": 24,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17014916
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "1d6fae84547dc6052d7d58857b95d1e49feab6dcacc59e6083d6e4d6df11b50a",
+          "finite": true,
+          "gpu_ns": 16911166,
+          "layer": 25,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17295417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5671382e5fca3ce3a5d7c5ccf1a3f086022252cef874a380999a7a67b6265f59",
+          "finite": true,
+          "gpu_ns": 16532249,
+          "layer": 26,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16969333
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "11176b2f5ed344d6dc6031ab02b5e3527332c0729872022bf034b359d9c3c805",
+          "finite": true,
+          "gpu_ns": 16925250,
+          "layer": 24,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17304250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "0ac2699f9ca96203828b2b14db51767afff349bf2f3501e4bb1859df1d248aea",
+          "finite": true,
+          "gpu_ns": 16528416,
+          "layer": 25,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16869417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f0bd0fd80ab47514695af2ea5203a0de4b9d804f2145edf86efae0b26ed1eb5f",
+          "finite": true,
+          "gpu_ns": 16842875,
+          "layer": 26,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17161250
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "c60992f3744c6080b6e16cb4257a112c2eabd577e8be1807fc61498091841914",
+          "finite": true,
+          "gpu_ns": 16616124,
+          "layer": 24,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16948250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "de377bca40d9abfb4c139c63e61e83ea4e2970e48a17450749ae231aba33c98b",
+          "finite": true,
+          "gpu_ns": 16769583,
+          "layer": 25,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17207208
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d49aa55078b4656b1070f7492a34984c2443d2b8006083531429cba2dba81a9f",
+          "finite": true,
+          "gpu_ns": 16541749,
+          "layer": 26,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16879250
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "a9b2a81f723c5af1d052a465ae8e80b927d76c2cc0fa7138d3cfbf3a1500d874",
+          "finite": true,
+          "gpu_ns": 16802041,
+          "layer": 24,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17136500
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "31ea6b17e3457ae12936835ce7387dd1cf94e68bb654fde5e8d502ed160cd537",
+          "finite": true,
+          "gpu_ns": 16594166,
+          "layer": 25,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16966833
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "7e94554f165d5349dc33356d57ad526a20e85cafdfc467f846bcbeb8a6a55781",
+          "finite": true,
+          "gpu_ns": 16680750,
+          "layer": 26,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17018083
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "af1a6bb52938112ee507f3952b946f9afd181e37a505cf21dd3f2cb1c097f644",
+          "finite": true,
+          "gpu_ns": 16682333,
+          "layer": 24,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17035625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ecb6ab0e78833acd96f3debcbb4dad70bdc447efc595a8935b8247c50a1129e5",
+          "finite": true,
+          "gpu_ns": 16560000,
+          "layer": 25,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16903584
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "db5f86e2451a8b85ff290fc8be7a1c0d905783546f06d2e951111f9f2a018195",
+          "finite": true,
+          "gpu_ns": 16659208,
+          "layer": 26,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16999084
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1798367448,
+        "execution_wall_ns": 2776917875,
+        "host_and_unattributed_ns": 970801219,
+        "layer_source_and_device_prepare_ns": 128987268083,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2776917875
+    },
+    {
+      "layer": 27,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-27-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        28,
+        30
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 124511324672,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "3064feabd2727f46a6898575674d029f390ebbcb5d207ba438f2d835bddf7530",
+          "finite": true,
+          "gpu_ns": 19581291,
+          "layer": 28,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 746867417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "bd87002558c36ab9c0e3290768858704e81fd9c15c8c593613d2e2143f05d197",
+          "finite": true,
+          "gpu_ns": 995914083,
+          "layer": 29,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 996681167
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "109e36d64d64fad43da272ce2662d76e047146518cb1ae6ffccfb49998899a09",
+          "finite": true,
+          "gpu_ns": 550537750,
+          "layer": 30,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 551182833
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "1c01a31a922c99a674277b148cfe64945823fba92e3acc29c21e0e779f6c721c",
+          "finite": true,
+          "gpu_ns": 16713916,
+          "layer": 28,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 114942000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "09051c99b6079bdb8f4e0651f1189792a8117fbdedb42468b4f2b0cabb43d08d",
+          "finite": true,
+          "gpu_ns": 16644374,
+          "layer": 29,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17041709
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ebc9797d0350d4abe4d807f7241686bdf03279eff214365d1ed04842eae835cc",
+          "finite": true,
+          "gpu_ns": 16643374,
+          "layer": 30,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17049750
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "99e8ec0b609ab6b14fa2cd5f1bc344b156aa9b7eb22e9606fcc965674c525675",
+          "finite": true,
+          "gpu_ns": 16751249,
+          "layer": 28,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17070000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "91c76f31d00b7aab45b5605beb1083e0774c9e87f326d7edc32ebb52f0543e80",
+          "finite": true,
+          "gpu_ns": 16589208,
+          "layer": 29,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16978833
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c29d0887e40bbfae0d473a81d5f3efe8b54f20fc75a81ef83748e531bda84c0d",
+          "finite": true,
+          "gpu_ns": 16661750,
+          "layer": 30,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17013625
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "46d8783d9891ba57f8392533014daf85d41dd3a74e7ad0d386df8013996f7c0f",
+          "finite": true,
+          "gpu_ns": 16646874,
+          "layer": 28,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17011334
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "128a7b4b7bb869c611af61a5b99aa196106f7c72d28346acfa68691c8d7828f7",
+          "finite": true,
+          "gpu_ns": 16904625,
+          "layer": 29,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17245125
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "e22618bf446e0fc9566a57480702d247b98358cf52735df8789fc7d0168f220b",
+          "finite": true,
+          "gpu_ns": 16629833,
+          "layer": 30,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16992875
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "045bce685e24e11ed6e46128a9bdcdc41775b72b043d68259652334db1ad41eb",
+          "finite": true,
+          "gpu_ns": 16961458,
+          "layer": 28,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17367959
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ff30ef9ba9b73df0e7141e5a50b21444ad6d10786238ee69dad87b83a7c7ea66",
+          "finite": true,
+          "gpu_ns": 16498249,
+          "layer": 29,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16843625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "26cfaed7bd9c19ac508d9f45b25becef32b72e814548e91b0193b866b559590b",
+          "finite": true,
+          "gpu_ns": 17025125,
+          "layer": 30,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17382167
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "99216c4f0bd4a09d5408dd862dcb5939202af8f3deffa3d1404d36738e0926aa",
+          "finite": true,
+          "gpu_ns": 16605958,
+          "layer": 28,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16982583
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f2b4759e708b2a49d215e6763f32432c8861abd0dc9b1734c5a20d8056a8d2e2",
+          "finite": true,
+          "gpu_ns": 17021166,
+          "layer": 29,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17389917
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "1e23348494859cffc00b047bbf60cc866dd78c7ee9098f94fb063540053183c3",
+          "finite": true,
+          "gpu_ns": 16620166,
+          "layer": 30,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16977834
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "a51067be1460e0260741057aa6cb4b75349792517f57b342284e2b6891b97774",
+          "finite": true,
+          "gpu_ns": 16937249,
+          "layer": 28,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17311000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "a93edd1f33ffc4cb50fb0e80c6e522f5ef12001e69775b2990a88c9091bac7cc",
+          "finite": true,
+          "gpu_ns": 16599499,
+          "layer": 29,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16961250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "95a59428d6984be0a9c834b4e9ec5be88b2186ae7495dc71baa42bd3509764d6",
+          "finite": true,
+          "gpu_ns": 16923500,
+          "layer": 30,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17267125
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1867410697,
+        "execution_wall_ns": 2708168709,
+        "host_and_unattributed_ns": 833149431,
+        "layer_source_and_device_prepare_ns": 130351822584,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2708168709
+    },
+    {
+      "layer": 31,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-31-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        32,
+        34
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 140075240256,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "b9d3200e99d9077042e1f12291d174eb001ab76470b47e6a750894660c5c0b7e",
+          "finite": true,
+          "gpu_ns": 21659500,
+          "layer": 32,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 813356875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "d32c7b5967bf12c03cf85c54a4774da490ef9cf92bfbe85279d97896d1f1918e",
+          "finite": true,
+          "gpu_ns": 940691374,
+          "layer": 33,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 941423750
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "2f15c4fbf265e39921b5a36d4c5a62cb679c5f1b706f7dbcbe3d7d47184e07ff",
+          "finite": true,
+          "gpu_ns": 470213374,
+          "layer": 34,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 470829334
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "5ff06eb6ea5710f80589dcfc18c26a26273d0448b09a8b5217e3ec26c45a4be6",
+          "finite": true,
+          "gpu_ns": 16692416,
+          "layer": 32,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 130239084
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c36b5cb091d0b464fe80c1df711f37f5f15c9bb064c60eeaf45bb77e07a921b3",
+          "finite": true,
+          "gpu_ns": 16556000,
+          "layer": 33,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17041792
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "9588dd0ace5fd852e5bc3b92a77283d47730bbf58d9bc5f256bc367dc8a45990",
+          "finite": true,
+          "gpu_ns": 16643791,
+          "layer": 34,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17004542
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "0f5d7a11c7433440bba0320a922b93ee391b9692d65ee15383a2c1c5bc076463",
+          "finite": true,
+          "gpu_ns": 16651249,
+          "layer": 32,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16978042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "fb93aee37ba225ef66a2a062094a3c896621956af1b02ff0c1ddabbe76699395",
+          "finite": true,
+          "gpu_ns": 16761083,
+          "layer": 33,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17110416
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "02d9ab4ac9e69bc76c4efa26793242fcf5d8100e2779982540f2b443caf6b65e",
+          "finite": true,
+          "gpu_ns": 16574833,
+          "layer": 34,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16920459
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "4013635108221d9fd1e665c527270e6a5abc23c6f473fb72b524ff91e0aea409",
+          "finite": true,
+          "gpu_ns": 16911250,
+          "layer": 32,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17248708
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "7eea490c6a7645ac9564b2bb941298d0793abc67283aa447694bee6ae9f3727d",
+          "finite": true,
+          "gpu_ns": 16615041,
+          "layer": 33,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16983333
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "e02367d28bcf1d96a2fde4a47b683211c41c449b14a5065e94668115a3c72320",
+          "finite": true,
+          "gpu_ns": 16970583,
+          "layer": 34,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17433625
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "c56bc3f57f45ce5816155f76c95ff0eca33465995a8545fca831b9bef5055501",
+          "finite": true,
+          "gpu_ns": 16620416,
+          "layer": 32,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16979417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f44e16422a357c449b1748daa2cfd15fae714d07a97e9ed3263cd63f423b3094",
+          "finite": true,
+          "gpu_ns": 17153124,
+          "layer": 33,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17509417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5a3226ba9e0c88991328f26060dd04aeaf535cada893ca7c16cf0d4d3592fa8a",
+          "finite": true,
+          "gpu_ns": 16597875,
+          "layer": 34,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16951750
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "8437841c13c1043e7b4aefd79ae6c6da702b534b52987216eb03697c5107372d",
+          "finite": true,
+          "gpu_ns": 17025124,
+          "layer": 32,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17386167
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "43a66db9744a07819dd90874732ebfe61051b84c5d23cc7598d6e97e1f80e485",
+          "finite": true,
+          "gpu_ns": 16599041,
+          "layer": 33,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16954042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "196fceaea1acbedce4191daccf06645fb9f5d598986ffdbd6d7ae0d5e8847bf0",
+          "finite": true,
+          "gpu_ns": 16973874,
+          "layer": 34,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17328708
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "af1ce13399b5430249537d979c3b9f8cb2daf5bcf4e06f4a238655c69e3724f7",
+          "finite": true,
+          "gpu_ns": 16615625,
+          "layer": 32,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16952250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "2108f4ec5580f8c62fb02b02c77a840891963db2c66661b43dd3065445ca0609",
+          "finite": true,
+          "gpu_ns": 16876791,
+          "layer": 33,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17219125
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5e419b062a93afce76aba26380e4fade8f7b3b54db91f4f241496115f939e4cc",
+          "finite": true,
+          "gpu_ns": 16622208,
+          "layer": 34,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16963000
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1734024572,
+        "execution_wall_ns": 2654161500,
+        "host_and_unattributed_ns": 912789264,
+        "layer_source_and_device_prepare_ns": 129432546792,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2654161500
+    },
+    {
+      "layer": 35,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-35-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        36,
+        38
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 155639155840,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "36500a21920c4f0598d90283bc42acc7bde4057b17b7b5cfe306f3d6c4d83949",
+          "finite": true,
+          "gpu_ns": 22317374,
+          "layer": 36,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 758443417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "4815eccfdc7f2e6164b51dc83d0ea7fc2d02bdc6c879713f99042238b7b267c5",
+          "finite": true,
+          "gpu_ns": 884443624,
+          "layer": 37,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 885096375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "98d02d736aaf391239e0f79ab86b2ec3b04da12c16d14bf61ea7ac2fb679692e",
+          "finite": true,
+          "gpu_ns": 436482625,
+          "layer": 38,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 437368333
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "65917cda5e05c60222fa8b33a66f2239e3a2206d1bc8f2bc6fea512d9446eddb",
+          "finite": true,
+          "gpu_ns": 16797999,
+          "layer": 36,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 131062458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "a8fdd66ffaf471e0af1ed37bed9d7a1f55ca701aadb9a97a95a0de76124476c6",
+          "finite": true,
+          "gpu_ns": 16612000,
+          "layer": 37,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17052750
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "cf134ddffacb8e4e8ce068548594d982667798dfac4d242bd30bb046d6ae8641",
+          "finite": true,
+          "gpu_ns": 16793874,
+          "layer": 38,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17142250
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "97e86b77b332e6aa04954e4d149c22ad3cc6197766c7607a61886a09211a624f",
+          "finite": true,
+          "gpu_ns": 16638250,
+          "layer": 36,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16977875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "cfa8b2788084d1a916f9b66b7f6b7c843ae8667561e3605bce78ca8035aa39f3",
+          "finite": true,
+          "gpu_ns": 17008958,
+          "layer": 37,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17408042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "15612e9bc2f62dbcad621afc9578603c611c61d9edda3b15115ed8b5b06094c2",
+          "finite": true,
+          "gpu_ns": 16574999,
+          "layer": 38,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17001750
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "a01b43bf51531d4cea50085658cf5bebfb80ab3515c0027dc35bde1b3c4875f0",
+          "finite": true,
+          "gpu_ns": 17090583,
+          "layer": 36,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17403834
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "c5d6e8d2fd9736955ddb6b833a0082135cb0594bc7a1e9322e85e269a520f4fc",
+          "finite": true,
+          "gpu_ns": 16602208,
+          "layer": 37,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16956458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "f209244acced0264379c63e6e2ebf866beadc74439de0454eef180e600145d2e",
+          "finite": true,
+          "gpu_ns": 16951625,
+          "layer": 38,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17296209
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "ae138a7b80f7a0ea387accecf385cbe9f7c0978b56576ac38e84350f4be8470f",
+          "finite": true,
+          "gpu_ns": 16648125,
+          "layer": 36,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17010000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "22c443c821d9b89230b2d55ef4591c5758089d5a9e7a9a5b54efee70789a9ff1",
+          "finite": true,
+          "gpu_ns": 17021249,
+          "layer": 37,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17385875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "1757a45d24994b4059b076f774651976675d5de308a773b4b111a815b53676bc",
+          "finite": true,
+          "gpu_ns": 16565833,
+          "layer": 38,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16919375
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "b180003a7c46d0267a6a303683b718ad069bb7bf6246cda5fa3c859abf94d5c6",
+          "finite": true,
+          "gpu_ns": 16949416,
+          "layer": 36,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17306625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "6db9f49607fca73f9c76b346fe81d790edefacf13e1bb8e34302856ccb7ba1c4",
+          "finite": true,
+          "gpu_ns": 16609374,
+          "layer": 37,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16969209
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "72733658228e418a140ce441186c4c2b5b763e250cf19d85968a420901bb88f3",
+          "finite": true,
+          "gpu_ns": 16845249,
+          "layer": 38,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17219875
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "ef722c08f5906f8ddaca775225084b9b52aa5a16a152df7f9d1702dcc230a8de",
+          "finite": true,
+          "gpu_ns": 16627416,
+          "layer": 36,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17249500
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "996658533ae1f362c9ca163902dd7fc57d48729d6dc1b8ce0f29af8cc92e9648",
+          "finite": true,
+          "gpu_ns": 16866374,
+          "layer": 37,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17200875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5640b9a534ad49dd47944cc2fcee11d364847f1817fc2cdd59e9cb81df206998",
+          "finite": true,
+          "gpu_ns": 16541125,
+          "layer": 38,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16884458
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1644988280,
+        "execution_wall_ns": 2510605208,
+        "host_and_unattributed_ns": 858367263,
+        "layer_source_and_device_prepare_ns": 130486585708,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2510605208
+    },
+    {
+      "layer": 39,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-39-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        40,
+        42
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 171203071424,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "dff99c3870491e2c4ecb398ad36a87b8abf4bc4e408e5a18370d7a7a98cba36d",
+          "finite": true,
+          "gpu_ns": 22828874,
+          "layer": 40,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 661500375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "ce8d50b467e27b4c3b44f32566a67bb30d2d605b2daa8be384e4a092594c3e08",
+          "finite": true,
+          "gpu_ns": 905985875,
+          "layer": 41,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 906659083
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "a596b25678349f33bffd7a2acef328a74b224dd8aad9db02bd6dd42cd8c3fdfe",
+          "finite": true,
+          "gpu_ns": 453618625,
+          "layer": 42,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 454150291
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "0b5812e4f019c58660f8ba4fe7cc884602566b5c3cb5d6460db7e6e1089252d5",
+          "finite": true,
+          "gpu_ns": 17021208,
+          "layer": 40,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 107020792
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "57b41a87a530b05d6724ce8773f95491f731c0486050387ece723a65ddd5ef86",
+          "finite": true,
+          "gpu_ns": 16616791,
+          "layer": 41,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17045667
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "86a82e7b0128900d42fb3248943dc3d49159bc1deaf585a8c397cc1fa42a3efc",
+          "finite": true,
+          "gpu_ns": 16908416,
+          "layer": 42,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17317542
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "6735ffc9b05d92d678898aeef2efc316a11cd47c74a7c4e8f81a53a73984b0dd",
+          "finite": true,
+          "gpu_ns": 16670375,
+          "layer": 40,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17036291
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "b8c4c1e87738dc04b42f20e7a4990ba2504fe6b4e1c575d4e0c09e2a32408d4c",
+          "finite": true,
+          "gpu_ns": 16922416,
+          "layer": 41,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17294042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "9246e4dc660d1e34e66eac41d6d9e559d1fbb6ef45e5a9957bc3180558bd4b89",
+          "finite": true,
+          "gpu_ns": 16555000,
+          "layer": 42,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16914541
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "c754d2a7762add9de56e65e32244fabaff42b8306a347e8e6dfc186a926282d7",
+          "finite": true,
+          "gpu_ns": 16918249,
+          "layer": 40,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17257459
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "948e9d83f00d1c88544c9778ed31a9470e4bdd46ec58a36c1ad082382ad835c5",
+          "finite": true,
+          "gpu_ns": 16559541,
+          "layer": 41,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16847583
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "a1348812c50c5dcf5039aac7ea8d34a691ecabb4d86792bf08fbd3258fa61647",
+          "finite": true,
+          "gpu_ns": 16853958,
+          "layer": 42,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17417167
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "dd85414ee8b95d8dbe3baf3c59d1c9f15e9f9164418845926440f120b47535be",
+          "finite": true,
+          "gpu_ns": 16680249,
+          "layer": 40,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17035625
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "69782e1f7b46ff07cebbab56331a9dc744993e67305a991f22a97a018cba7818",
+          "finite": true,
+          "gpu_ns": 16589999,
+          "layer": 41,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16924417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "eabaaa6cb7c75814efeb9ad801b7b2679d1e0660ded0f38d2eb5c49171f6dc6d",
+          "finite": true,
+          "gpu_ns": 16595624,
+          "layer": 42,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16923416
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d93c7f00408daa221a080de52afe809a4e627d07cc2263882ed3193c830b6119",
+          "finite": true,
+          "gpu_ns": 16703375,
+          "layer": 40,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17077834
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "e4e46a5fbc989033ee79858d961373d22e500606b492fb56cb75d6b0a765ffd4",
+          "finite": true,
+          "gpu_ns": 16664499,
+          "layer": 41,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16998417
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "6f4c10787d05e8f7e973db8ae7e4e9a1391ae0c0708920c5d50fcdab3c5e7f93",
+          "finite": true,
+          "gpu_ns": 16573999,
+          "layer": 42,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16919000
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "970413d4d3cf5673c9405318d111167e567be0b9e64df0912ed2449e19244a03",
+          "finite": true,
+          "gpu_ns": 16858999,
+          "layer": 40,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17197167
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "2a9cba11ec61566af47372929f8387a42644cd8e9f3b477331513a7a290c2c10",
+          "finite": true,
+          "gpu_ns": 16594999,
+          "layer": 41,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16966334
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "6ea5a177f7bf23d2a2f84155dc7135eb572260eaba9eba5772c5587765642e7a",
+          "finite": true,
+          "gpu_ns": 16770999,
+          "layer": 42,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17093542
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1683492070,
+        "execution_wall_ns": 2427004791,
+        "host_and_unattributed_ns": 736104515,
+        "layer_source_and_device_prepare_ns": 130807595167,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2427004791
+    },
+    {
+      "layer": 43,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-43-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    },
+    {
+      "device_inter_layer_handoffs": 14,
+      "layers": [
+        44,
+        46
+      ],
+      "persistent_state": {
+        "growth_bytes_per_token": 0,
+        "layers": 3,
+        "per_layer_bytes": 3268608,
+        "reset_only_before_first_session_token": true,
+        "total_bytes": 9805824
+      },
+      "source_payload_bytes_read": 15563874624,
+      "source_payload_bytes_read_cumulative": 186766987008,
+      "species": "linear_attention",
+      "stateful_recurrence": true,
+      "steps": [
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "038f569888f8c6a34b9a70bada621ce76ed941724aec88b4971a5db33c42334b",
+          "finite": true,
+          "gpu_ns": 18045499,
+          "layer": 44,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 644248584
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "7079595008daf80e0fd7d367c28d05aba5182005d47324e61e620905a96e28e9",
+          "finite": true,
+          "gpu_ns": 921496666,
+          "layer": 45,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 922207458
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "0d36192f1ab67d56d78ba542ecb25d34da4454aa891023703bce29adf4bd4976",
+          "finite": true,
+          "gpu_ns": 498468125,
+          "layer": 46,
+          "step": 0,
+          "token_id": 5423,
+          "wall_ns": 499240166
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d9957894782ec194069c380fe996f2f149e01db0f0fe1b5a2502dc3eb9bef596",
+          "finite": true,
+          "gpu_ns": 16654458,
+          "layer": 44,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 122745250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "471952986f1d38a14819cd9734c5f0008f0c92dbeebd28b9e42459fc6b613195",
+          "finite": true,
+          "gpu_ns": 16617458,
+          "layer": 45,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 17024000
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "9790c1180fe4b2bd15578d0b77e8486cc70027ad7ec4e40e6abb18d24baf873e",
+          "finite": true,
+          "gpu_ns": 16614458,
+          "layer": 46,
+          "step": 1,
+          "token_id": 799,
+          "wall_ns": 16995334
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "16c9322a6a9e70127a6d32c242f4956bb10b503685c9af9e88c6fac89f7f46cb",
+          "finite": true,
+          "gpu_ns": 16695375,
+          "layer": 44,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 17024084
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "50a6c38981627bd272b43d220fc206517f1ca8dbfaa9d3fc66b22c3b3df6cf39",
+          "finite": true,
+          "gpu_ns": 16648041,
+          "layer": 45,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16969042
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "b0bc555466a1da70d26d53ee5b511afe07377c3ba25f4d138852b2cf63c981c3",
+          "finite": true,
+          "gpu_ns": 16609749,
+          "layer": 46,
+          "step": 2,
+          "token_id": 4581,
+          "wall_ns": 16994208
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "f68d1283c2877dd3ba6ed6571cf0ca93cf13a5f7e491921e3ee531cdedd31ad2",
+          "finite": true,
+          "gpu_ns": 16671666,
+          "layer": 44,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16988750
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "bceff55cdba7b28a92c3b2c25cef48544cde1a17e5f96302b9111d3f88c6f6e9",
+          "finite": true,
+          "gpu_ns": 16633416,
+          "layer": 45,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 16984875
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "374b76e36449b7b26d767aac29d50997762b519dc9c68d6a5cf5ce319bba00c0",
+          "finite": true,
+          "gpu_ns": 16692791,
+          "layer": 46,
+          "step": 3,
+          "token_id": 3817,
+          "wall_ns": 17008209
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "d32669bf3744ca13b27edfea1427eb1bc3599da84620eb3526c4838e205d0553",
+          "finite": true,
+          "gpu_ns": 16669916,
+          "layer": 44,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16999375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "74e3cf932a20f6daffea1e3fc54368b0a728876a9a7e3eec819e9b8cd2cba40b",
+          "finite": true,
+          "gpu_ns": 16817874,
+          "layer": 45,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 17141041
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "1f84e2135b7f94c095cc7c4a1e7671f82b740ec44676276c7a26653ce2660f12",
+          "finite": true,
+          "gpu_ns": 16541333,
+          "layer": 46,
+          "step": 4,
+          "token_id": 13,
+          "wall_ns": 16866125
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "bb399aa3597acce44dcefd832740c811605aaf9d3afebf8bef752d9177d60aad",
+          "finite": true,
+          "gpu_ns": 17003875,
+          "layer": 44,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17365375
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "85fee9f514c9d3c4b62642a9977cb2e994cb65ebd30e8f360bf028487423b06a",
+          "finite": true,
+          "gpu_ns": 16542625,
+          "layer": 45,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 16999791
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "5cbae5eb264d0bd3164def171d28284a156e4311c27a45838274fc7cbfd4106b",
+          "finite": true,
+          "gpu_ns": 17071124,
+          "layer": 46,
+          "step": 5,
+          "token_id": 2972,
+          "wall_ns": 17437750
+        },
+        {
+          "device_inter_layer_handoff": false,
+          "dispatches": 16,
+          "final_state_sha256": "2fd5685ff565ad93870a918d240487e4505e1c37716aad1fe370281310c68203",
+          "finite": true,
+          "gpu_ns": 16655083,
+          "layer": 44,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17050167
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "6cce054fd234e1b44d5ec09d1d9e2e08c83a273dfa5a49f1175bcbfece499b85",
+          "finite": true,
+          "gpu_ns": 16982125,
+          "layer": 45,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 17311250
+        },
+        {
+          "device_inter_layer_handoff": true,
+          "dispatches": 16,
+          "final_state_sha256": "391d640d98450753d2b19726ce01023de252e2cc9c74e6361b822a3cca7a1a39",
+          "finite": true,
+          "gpu_ns": 16541916,
+          "layer": 46,
+          "step": 6,
+          "token_id": 96125,
+          "wall_ns": 16897625
+        }
+      ],
+      "timing": {
+        "execution_dispatches": 336,
+        "execution_gpu_ns": 1738673573,
+        "execution_wall_ns": 2485839125,
+        "host_and_unattributed_ns": 739824886,
+        "layer_source_and_device_prepare_ns": 129993484833,
+        "layer_source_bytes_read": 15563874624
+      },
+      "wall_ns": 2485839125
+    },
+    {
+      "layer": 47,
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/layer-47-attention.json",
+      "source_payload_bytes_read": 5171656704,
+      "species": "full_attention",
+      "state_memory": {
+        "growth_bytes_per_token": 4096,
+        "key_cache_bytes": 14336,
+        "persistent_kv_bytes": 28672,
+        "value_cache_bytes": 14336
+      },
+      "stateful_kv": true
+    }
+  ],
+  "status": "PASSED_STATEFUL_REPEATED_ACCEPTED_DECODE",
+  "terminal": {
+    "candidate_accepted": true,
+    "final_reference": {
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/final-reference.state.terminal.json",
+      "state": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/final-reference.state.f32",
+      "token_id": 194121
+    },
+    "next_after_reference": 194121,
+    "predicted_candidate": 2972,
+    "prompt_final": {
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/reference-0-input.state.terminal.json",
+      "state": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/reference-0-input.state.f32",
+      "token_id": 2972
+    },
+    "reference_checks": [
+      {
+        "accepted": true,
+        "expected_token_id": 2972,
+        "generation_index": 0,
+        "input_state_index": 4,
+        "predicted_token_id": 2972,
+        "terminal": {
+          "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/reference-0-input.state.terminal.json",
+          "state": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/reference-0-input.state.f32",
+          "token_id": 2972
+        }
+      },
+      {
+        "accepted": true,
+        "expected_token_id": 96125,
+        "generation_index": 1,
+        "input_state_index": 5,
+        "predicted_token_id": 96125,
+        "terminal": {
+          "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/reference-1-input.state.terminal.json",
+          "state": "/Users/scammermike/Downloads/hawking/receipts/headless/flash_stateful_complete_token_session/terminal/reference-1-input.state.f32",
+          "token_id": 96125
+        }
+      }
+    ]
+  },
+  "token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13,
+    2972,
+    96125
+  ],
+  "vocab_size": 248320
+}

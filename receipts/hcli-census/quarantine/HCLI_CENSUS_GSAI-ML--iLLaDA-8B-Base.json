@@ -1,0 +1,61 @@
+{
+ "specimen": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+ "author": "hcli",
+ "note": "classification by the resident; the measurements were taken mechanically and every numeric claim in the verdict was checked against them before this receipt was written",
+ "measured_facts": {
+  "specimen": "GSAI-ML--iLLaDA-8B-Base",
+  "path": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+  "n_tensors": 291,
+  "tensor_bytes": 16500924416,
+  "tensor_gib": 15.37,
+  "on_disk_bytes": 16512920538,
+  "on_disk_gib": 15.38,
+  "matrix_params_b": 8.2502,
+  "dtype_bytes": {
+   "BF16": 16500924416
+  },
+  "per_container_gib": {
+   "model-00003-of-00004.safetensors": 4.66,
+   "model-00001-of-00004.safetensors": 4.62,
+   "model-00002-of-00004.safetensors": 4.58,
+   "model-00004-of-00004.safetensors": 1.51
+  },
+  "tensor_bytes_vs_disk": 0.999,
+  "coverage_warning": null,
+  "distinct_roles": 12,
+  "repeated_blocks": {
+   "model.layers.<L>.input_layernorm.weight": 32,
+   "model.layers.<L>.mlp.down_proj.weight": 32,
+   "model.layers.<L>.mlp.gate_proj.weight": 32,
+   "model.layers.<L>.mlp.up_proj.weight": 32,
+   "model.layers.<L>.post_attention_layernorm.weight": 32,
+   "model.layers.<L>.self_attn.k_proj.weight": 32,
+   "model.layers.<L>.self_attn.o_proj.weight": 32,
+   "model.layers.<L>.self_attn.q_proj.weight": 32,
+   "model.layers.<L>.self_attn.v_proj.weight": 32
+  },
+  "n_repeated_roles": 9,
+  "complete_ebpw_if_bf16": 16.001
+ },
+ "verdict": {
+  "architecture_family": "LLaMA-variant",
+  "execution_class": "high-throughput inference",
+  "dominant_organs": [
+   "self_attn.q_proj.weight",
+   "self_attn.k_proj.weight",
+   "mlp.down_proj.weight",
+   "mlp.gate_proj.weight",
+   "mlp.up_proj.weight"
+  ],
+  "state_or_kv": "dynamic",
+  "likely_bottleneck": "mlp.down_proj.weight",
+  "relevant_laws": [
+   "Hawking Law 7: Tensor repetition correlates with computational redundancy",
+   "Hawking Law 12: BF16 dtype implies optimized memory bandwidth usage",
+   "Hawking Law 9: Repeated blocks indicate modular design with shared parameters"
+  ],
+  "disposition": "RESEARCH SPECIMEN",
+  "next_experiment": "analyze tensor access patterns in self_attn.q_proj.weight",
+  "_agent": "Qwen3-4B-Instruct-2507"
+ }
+}

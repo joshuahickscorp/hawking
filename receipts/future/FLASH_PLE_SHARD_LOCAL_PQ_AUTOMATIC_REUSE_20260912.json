@@ -1,0 +1,191 @@
+{
+  "cheap_falsifier": {
+    "passed": true,
+    "required_inputs": [
+      "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+      "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json"
+    ]
+  },
+  "claim_boundary": "For one sealed reference-checked Flash BOS PLE formula control, this method keeps deterministic train/held-out rows inside their exact numeric source shard, bills 128 separately fitted BF16 PQ codebook families and every projected table code, and applies the local codebook selected by each of the 16 active source rows. Its best <=0.5 point is 0.375062 projected table EBPW with 0.859731 PLE-output relative-L2; the d8/k16 point is 0.500113 EBPW with 0.816312 error and is still grossly distortive. This rejects the fixed physical-shard-local PQ family from broader escalation. It does not reject other hierarchical, state-conditioned, generated, learned, or Nova PLE functions, nor establish a materialized table, direct execution, full PLE state behavior, complete NR EBPW, or capability.",
+  "invocation": {
+    "argv": [
+      "/Users/scammermike/Downloads/hawking/tools/odyssey/ple_lookup_pq_output_screen.py",
+      "--codebook-scope",
+      "shard_local",
+      "--rows-per-partition",
+      "16",
+      "--repair-counts",
+      "0",
+      "--output",
+      "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_AUTOMATIC_20260912.json"
+    ],
+    "returncode": 0
+  },
+  "invoked": true,
+  "laws": [
+    {
+      "id": "L-flash-ple-fixed-shard-local-pq",
+      "statement": "For the sealed Flash BOS PLE control, independently fitted BF16 PQ codebooks for the 128 physical PLE shards do not yield a useful sub-one function curve. At <=0.5 projected table EBPW, the best tested local point is 0.375062 EBPW with 0.859731 PLE-output relative-L2, worse than the already-billed global-plus-fixed-repair point at 0.487511 EBPW and 0.850550 relative-L2. Do not re-invoke this fixed shard-local PQ family; reopen only with a hierarchy that changes the function or information allocation."
+    }
+  ],
+  "method_assessment": [
+    {
+      "applicable": false,
+      "id": "M-closed-nr-rate-accounting",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'representation_accounting'",
+        "missing architecture tags: portable_nr",
+        "missing required features: declared_persistent_parts, logical_weight_denominator"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-stateful-repeated-accepted-decode",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'execution_state'",
+        "missing architecture tags: autoregressive_decoder",
+        "missing required features: persistent_model_state, source_bound_reference_contract"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-teacher-route-union-compact-experts",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'moe_representation'",
+        "missing architecture tags: moe, routed_experts",
+        "missing required features: expert_row_addressability, teacher_oracle_for_route_control"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-device-only-immutable-weight-release",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'physical_residency'",
+        "missing architecture tags: autoregressive_decoder, metal",
+        "missing required features: device_weight_upload, reconstructible_or_pinned_source, resident_device_buffers"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-device-state-handoff",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'physical_execution'",
+        "missing architecture tags: metal, multi_organ_decoder",
+        "missing required features: compatible_device_buffer_abi, device_to_device_state_transition"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-activation-rate-distortion",
+      "reasons": [
+        "missing architecture tags: moe, routed_experts, source_activation_control",
+        "missing required features: addressable_expert_matrix, declared_scoped_accounting, sealed_source_activation, source_receipt_hash_binding"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-sharded-lookup-heldout-pq-screen",
+      "reasons": [
+        "missing architecture tags: lookup_table",
+        "missing required features: deterministic_disjoint_row_sampling, indexed_or_addressable_sharded_2d_tensors, shared_codebook_candidate"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-ple-output-pq-sparse-repair-screen",
+      "reasons": [
+        "missing required features: candidate_uniform_pq_fixed_sparse_repair, offline_encoder_can_select_fixed_residual_offsets"
+      ]
+    },
+    {
+      "applicable": true,
+      "id": "M-source-ple-shard-local-pq-output-screen",
+      "reasons": []
+    },
+    {
+      "applicable": false,
+      "id": "M-source-ple-address-generator-screen",
+      "reasons": [
+        "missing required features: candidate_address_only_generator, canonical_combined_lookup_row_address, sealed_pre_PLE_hidden_state, source_independent_generator_candidate"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-bound-ple-access-trace",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'architecture_contract'",
+        "missing required features: addressable_concatenated_lookup_checkpoint, bounded_token_sequence_or_explicit_control, persistent_token_context, versioned_reference_algorithm"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-bound-ple-output-control",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'architecture_contract'",
+        "missing required features: addressable_source_lookup_rows, source_bound_pre_layer_hidden_state, source_projection_norm_and_convolution_payloads, versioned_PLE_reference_formula"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-reference-ple-formula-oracle",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'verification'",
+        "missing required features: installed_pinned_reference_framework, small_placeholder_embedding_or_equivalent_no_full_table_allocation, source_bound_formula_control"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-route-major-packed-q4-routed-moe",
+      "reasons": [
+        "objective_family='representation_discriminator' does not match 'physical_execution'",
+        "missing architecture tags: metal, moe, routed_experts, uniform_q4_group64",
+        "missing required features: compatible_selected_expert_gate_up_and_down_geometry, persisted_independent_q4_g64_bodies, route_major_device_activation_abi"
+      ]
+    }
+  ],
+  "new_evidence": {
+    "path": "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_AUTOMATIC_20260912.json",
+    "sha256": "bb8833334cdc80b0af246d18e53ae94bf61fcf87b934e83c922408456eb9be0d",
+    "status": "SOURCE_PLE_OUTPUT_SHARD_LOCAL_PQ_RATE_DISTORTION_ONLY"
+  },
+  "observation": {
+    "architecture_tags": [
+      "flash_qwen4_exp",
+      "hashed_ngram",
+      "sharded_lookup",
+      "hyperconnection",
+      "stateful_decoder",
+      "source_ple_output_control",
+      "reference_formula_parity"
+    ],
+    "artifact_id": "FLASH_QWEN4_EXP_PLE",
+    "candidate_levers": [
+      "ple_shard_local_pq"
+    ],
+    "features": [
+      "source_bound_lookup_access_trace",
+      "sealed_pre_ple_hidden_state",
+      "reference_checked_PLE_formula_control",
+      "globally_billed_lookup_table_geometry",
+      "physical_numeric_PLE_shard_layout",
+      "candidate_shard_local_pq"
+    ],
+    "invocation": {
+      "generation": "flash-ple-shard-local-pq-automatic-v1"
+    },
+    "objective_family": "representation_discriminator",
+    "schema": "hawking.gravity.observed_traits.v1"
+  },
+  "recorded_at": "2026-09-12T04:40:28Z",
+  "scars": [],
+  "schema": "hawking.gravity.method_reuse.v1",
+  "selected_adapter": "flash-ple-shard-local-pq-v1",
+  "selected_method": "M-source-ple-shard-local-pq-output-screen",
+  "status": "EXECUTED_VERIFIED",
+  "verification": {
+    "schema_matches": true,
+    "seal_matches": true,
+    "status_matches": true,
+    "verifier": "sealed JSON receipt: source PLE physical-shard-local PQ screen"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "claim_boundary": "tool access was proven; P0 programme reconciliation was not accepted from this result",
+  "preserved_result_path": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-D7513729_RESULT_PACKET.json",
+  "reason": "the generic research contract accepted a tool-call-shaped JSON object without the required P0 supervisor packet fields",
+  "reopen_condition": "structured_required_keys must be enforced and a retry must produce the P0 packet after grounded reads",
+  "schema": "hawking.long_haul.p0_acceptance_rejection.v1",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-D7513729"
+}

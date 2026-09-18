@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.long_haul.v2.morning_checkpoint.v3",
+  "generated_at": "2026-09-18T18:11:30Z",
+  "goal_id": "GOAL-A52AB48501",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "full_objective_reread": false,
+  "goal_status": "RUNNING",
+  "phase": "V2_ACCEPTANCE_HANDSHAKE_REPAIR",
+  "verified_progress_since_v2": [
+    {
+      "workunit": "WORKUNIT-20260918-A2E8C60C",
+      "state": "COMPLETE",
+      "classification": "accepted mutation canary",
+      "production_delta": "hawking/sandbox_world.py",
+      "focused_test": "hawking/tests/test_auto_p19_sandbox_implementation_contract_v2_regression.py",
+      "test_result": "5 passed",
+      "acceptance_evidence": "repo.edit, tests.run, git.status, git.diff verified; mutation intent status VERIFIED"
+    },
+    {
+      "repair": "Auto acceptance circuit recognizes VERIFIED mutation intents as accepted evidence",
+      "verification": "55 Auto/orchestration tests passed"
+    },
+    {
+      "repair": "final admission reconciles stale queue rows against current regression-test existence",
+      "verification": "55 Auto/orchestration tests passed"
+    },
+    {
+      "repair": "mutation serialization explicitly rejects no-op replace operations",
+      "verification": "covered by the existing 139-test focused gateway/contract run"
+    }
+  ],
+  "current_circuit": {
+    "state": "OPEN",
+    "reason": "several overlapping pre-repair canaries failed after the accepted sandbox canary; Auto is requiring a fresh post-failure canary",
+    "policy": "one mutation canary at a time; read-only/unrelated work remains eligible",
+    "latest_admission": "WORKUNIT-20260918-077331DC",
+    "latest_admission_outcome": "OUTPUT_UNUSABLE / MUTATION_PROPOSAL_UNACCEPTED due no-op source operation and missing required test operation"
+  },
+  "runtime": {
+    "daemon_pid": 49342,
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "requested_model": "hawking-auto",
+    "resident_model": null,
+    "provider_children_resident": false,
+    "health": "HTTP 200; waiting_for_native_runtime"
+  },
+  "economics": {
+    "goal_ledger_worker_provider_cost_usd": 1.59369871,
+    "accepted_read_evidence_cost_usd": 0.527760698,
+    "accepted_provider_tranche_cost_usd": 0.0575418,
+    "invoice_reconciliation": "NOT_YET_MEASURED"
+  },
+  "broad_mutation_fanout": "WITHHELD until a fresh canary succeeds after the latest failure sequence",
+  "ready_for_unattended_continuation": true
+}

@@ -1,7 +1,7 @@
 """Four BUILT gates had no test citing them. This is that test.
 
 FLASH_DENSE_VS_NF_AB, QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED,
-QWEN27_RUNTIME_IDENTITY_FROZEN and VMCP_RECEIPT_LAW are wired and
+QWEN27_RUNTIME_IDENTITY_FROZEN and PERCEPTION_RECEIPT_LAW are wired and
 acceptance-receipted, and nothing verified them -- the shape the
 defining-property law warns about, where the only evidence a capability works is
 a document nobody compared against the obligation.
@@ -27,8 +27,9 @@ import pytest
 # tests=0 with this very file committed until the imports were written out.
 # Same class of blindness as the sibling-import miss: the analyzer sees names,
 # not intentions.
-from hcli.agentos import flash_router_representation_ab, qwen27_mlp_diagnostic
-from hcli.agentos import qwen27_runtime_identity, vmcp_gate
+from hawking.agentos import flash_router_representation_ab, qwen27_mlp_diagnostic
+from hawking.agentos import qwen27_runtime_identity
+import hawking.perception_gate as perception_gate
 
 REPO = Path(__file__).resolve().parents[2]
 ACCEPTANCE = REPO / "receipts" / "acceptance"
@@ -37,15 +38,19 @@ ACCEPTANCE = REPO / "receipts" / "acceptance"
 # matches verifiers by the module a test cites, so a test that checks a
 # capability without naming it is invisible to the graph.
 GATES = {
-    "VMCP_RECEIPT_LAW": "hcli.agentos.vmcp_gate",
-    "QWEN27_RUNTIME_IDENTITY_FROZEN": "hcli.agentos.qwen27_runtime_identity",
-    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "hcli.agentos.qwen27_mlp_diagnostic",
-    "FLASH_DENSE_VS_NF_AB": "hcli.agentos.flash_router_representation_ab",
+    "PERCEPTION_RECEIPT_LAW": "hawking.perception_gate",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN": "hawking.agentos.qwen27_runtime_identity",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "hawking.agentos.qwen27_mlp_diagnostic",
+    "FLASH_DENSE_VS_NF_AB": "hawking.agentos.flash_router_representation_ab",
 }
+
+# This sealed historical receipt keeps its original filename.  Current code,
+# symbols, and public terminology use Hawking perception.
+RECEIPT_FILES = {"PERCEPTION_RECEIPT_LAW": "VMCP_RECEIPT_LAW.json"}
 
 
 def _receipt(gate: str) -> dict:
-    path = ACCEPTANCE / f"{gate}.json"
+    path = ACCEPTANCE / RECEIPT_FILES.get(gate, f"{gate}.json")
     if not path.is_file():
         pytest.skip(f"{gate} has no acceptance receipt on this host")
     return json.loads(path.read_text())
@@ -84,14 +89,14 @@ def _evidence_count(doc: dict) -> int:
 
 
 _MODULES = {
-    "VMCP_RECEIPT_LAW": vmcp_gate,
+    "PERCEPTION_RECEIPT_LAW": perception_gate,
     "QWEN27_RUNTIME_IDENTITY_FROZEN": qwen27_runtime_identity,
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": qwen27_mlp_diagnostic,
     "FLASH_DENSE_VS_NF_AB": flash_router_representation_ab,
 }
 
 _SYMBOLS = {
-    "VMCP_RECEIPT_LAW": "run_vmcp_gate",
+    "PERCEPTION_RECEIPT_LAW": "run_perception_gate",
     "QWEN27_RUNTIME_IDENTITY_FROZEN": "run_runtime_archaeology",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "run_qwen27_mlp_diagnostic_ab",
     "FLASH_DENSE_VS_NF_AB": "run_flash_router_representation_ab",

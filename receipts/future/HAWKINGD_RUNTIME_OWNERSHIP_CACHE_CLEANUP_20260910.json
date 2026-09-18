@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.hawkingd.runtime_ownership_cache_cleanup.v1",
+  "recorded_at": "2026-09-10T22:50:02Z",
+  "live": {
+    "daemon": {
+      "pid": 31117,
+      "process_title": "hawkingd serve :8011 [KIMI_P0_OPERATIONAL]",
+      "port": 8011,
+      "resident": "KIMI_P0_OPERATIONAL",
+      "authority": "write"
+    },
+    "provider": {
+      "pid": 31129,
+      "parent_pid": 31117,
+      "provider": "mlx_vlm.server",
+      "model_path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "status": "daemon_owned_transitional_backend"
+    },
+    "client_surfaces": [
+      {
+        "pid": 31297,
+        "parent_pid": 31117,
+        "port": 8080,
+        "owner": "hawkingd",
+        "role": "user_open_webui"
+      },
+      {
+        "pid": 31368,
+        "parent_pid": 31117,
+        "port": 8081,
+        "owner": "hawkingd",
+        "role": "temporary_blind_open_webui"
+      }
+    ],
+    "unowned_hawking_model_servers": [],
+    "hcli_web_launcher_processes": [],
+    "ascension_qwen38_live_processes": [],
+    "llama_cpp_live_processes": [],
+    "models_endpoint": ["KIMI_P0_OPERATIONAL"],
+    "tools_qualified": true
+  },
+  "runtime_policy": {
+    "preferred": "hawking_native_noetic",
+    "transitional": "mlx_only_when_no_native_loader_exists",
+    "llama_cpp": "disabled",
+    "model_lake_default": "hidden"
+  },
+  "cache_cleanup": {
+    "status": "MOVED_TO_RECOVERABLE_TRASH",
+    "trash_path": "/Users/scammermike/.Trash/storage-cleanup-hawking-20260910",
+    "approximate_bytes_staged": 16106127360,
+    "primary_targets": [
+      "/Users/scammermike/hawking-ssd-cache",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/ssd-xet-cache.sparseimage",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/ssd-xet-cache-large.sparseimage",
+      "rebuildable repository, UI, test, and Python bytecode caches"
+    ],
+    "preserved": [
+      "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "/Users/scammermike/Downloads/hawking/.hcli/flash-kernel-build",
+      "source, receipts, and historical Ascension/Qwen3.8 evidence"
+    ]
+  },
+  "claim_boundary": "hawkingd is the single long-lived Hawking owner and the parent of the provider and Open WebUI children. The provider remains MLX-VLM because a Kimi Hawking-native loader has not yet been earned; this receipt does not claim native Kimi execution or model promotion."
+}

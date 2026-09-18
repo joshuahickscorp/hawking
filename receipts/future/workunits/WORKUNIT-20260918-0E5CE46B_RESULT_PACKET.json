@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "54937179c516f5cd1d011b3568a0a3d9bc899f4795e492673f101aeae712cf75",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:58:54.413098+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:58:54.413116+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:58:54.415963+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9) states HAWKING owns planning, typed tool calls, lifecycle, and verification, while the Hawking Rust crates own execution and serving.\",\"RE",
+      "outcome": "CONTINUE",
+      "reply_chars": 2576,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9) states HAWKING owns planning, typed tool calls, lifecycle, and verification, while the Hawking Rust crates own execution and serving.\",\"README.md states receipts are evidence, not an additional source of architecture, and that a result without a receipt did not happen.\",\"README.md names docs/CURRENT_ARCHITECTURE.md as the detailed current ownership map for source authorities.\",\"README.md lists the verification surface: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check, tools/ci/rust_test_fast.sh compile, cargo test -p hawking-core --test q4k_fast_parity, and tools/ci/rust_test_fast.sh policy.\",\"README.md states the Rust fast lane compiles 135 integration sources through checked aggregate targets while preserving each named source file as an explicit isolated target for runtime work.\",\"README.md states model weights are local inputs and are not part of the repository, and that FPGA work is pre-board with no hardware results.\"],\"sources\":[{\"path\":\"README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"sha256_scope\":\"full_file\",\"bytes\":4340,\"note\":\"Only file actually read in this worker; truncated view shown (4000 of 4340 bytes).\"}],\"recommendations\":[\"Do not emit a P18_TUNNEL_IMPLEMENTATION_CONTRACT from this worker: the accepted P18_TUNNEL read evidence and the named current source/test owners were not present in the projected read-only surface observed here.\",\"Before any contract is authored, re-run the bounded read against docs/CURRENT_ARCHITECTURE.md and the specific P18_TUNNEL owner files named by the accepted read evidence, so the smallest safe mutation/verification seam is source-grounded rather than inferred from README.\",\"Keep the eventual contract read-only-planning only: name the single writer/effect scope, protected resources, focused RED/GREEN tests, deterministic acceptance evidence, and one falsifier, without mutating files or claiming production/release completion.\"],\"unresolved_questions\":[\"What exact files are the named current source/test owners for P18_TUNNEL per the accepted P18_TUNNEL read evidence?\",\"What is the smallest safe mutation or verification seam for P18_TUNNEL, and which single writer/effect scope owns it?\",\"Which focused RED/GREEN tests and deterministic acceptance evidence are already admitted for P18_TUNNEL?\",\"What protected resources and one falsifier must the contract preserve?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-61e84b5acd594c89",
+  "worker_id": "hawking-worker-8b4d0e804ef24bab",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-0E5CE46B"
+}

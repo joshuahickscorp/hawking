@@ -1,3 +1,4 @@
+use crate::{Error, Result};
 use half::f16;
 
 pub mod megakernel;
@@ -371,9 +372,69 @@ pub fn topk_softmax_batch(
     }
 }
 
+#[derive(Clone, Copy)]
+struct LlamaB9430Codec {
+    block_bytes: usize,
+    block_label: &'static str,
+}
+
+const LLAMA_B9430_Q4: LlamaB9430Codec = LlamaB9430Codec {
+    block_bytes: crate::quant::Q4_K_BLOCK_BYTES,
+    block_label: "Q4_K",
+};
+const LLAMA_B9430_Q6: LlamaB9430Codec = LlamaB9430Codec {
+    block_bytes: crate::quant::Q6_K_BLOCK_BYTES,
+    block_label: "Q6_K",
+};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct LlamaB9430WeightWindow {
+    offset: usize,
+    rows: usize,
+    cols: usize,
+}
+
+fn checked_llama_b9430_weight_window(
+    codec: LlamaB9430Codec,
+    buffer_len: usize,
+    offset: usize,
+    byte_size: usize,
+    rows: usize,
+    cols: usize,
+    kernel_name: &str,
+) -> Result<LlamaB9430WeightWindow> {
+    if cols % 256 != 0 {
+        return Err(Error::Kernel(format!(
+            "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+        )));
+    }
+    let expected = rows
+        .checked_mul(cols / 256)
+        .and_then(|blocks| blocks.checked_mul(codec.block_bytes))
+        .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
+    if byte_size != expected {
+        return Err(Error::Kernel(format!(
+            "{kernel_name} {} bytes: got {byte_size} expected {expected}",
+            codec.block_label
+        )));
+    }
+    let end = offset
+        .checked_add(byte_size)
+        .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
+    if end > buffer_len {
+        return Err(Error::Kernel(format!(
+            "{kernel_name} offset out of bounds: {offset}+{byte_size} > {buffer_len}"
+        )));
+    }
+    Ok(LlamaB9430WeightWindow { offset, rows, cols })
+}
+
 #[cfg(target_os = "macos")]
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
+    use super::{
+        checked_llama_b9430_weight_window, LlamaB9430WeightWindow, LLAMA_B9430_Q4, LLAMA_B9430_Q6,
+    };
     use crate::metal::{
         ArgLayout, CommandBatch, DecodeArena, KernelArgBuffer, MetalContext, PinnedBuffer,
         TokenCommandBuffer,
@@ -5957,24 +6018,27 @@ mod metal_dispatch {
             )));
         }
 
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let q_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             q_offset,
             q_byte_size,
             q_rows,
             cols,
             kernel_name,
         )?;
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let k_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             k_offset,
             k_byte_size,
             kv_rows,
             cols,
             kernel_name,
         )?;
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let v_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             v_offset,
             v_byte_size,
             kv_rows,
@@ -5997,12 +6061,9 @@ mod metal_dispatch {
             encode_llama_b9430_qkv_rope(
                 batch,
                 model_buf,
-                q_offset,
-                q_rows,
-                k_offset,
-                v_offset,
-                kv_rows,
-                cols,
+                q_window,
+                k_window,
+                v_window,
                 &x_buf,
                 &q_raw_buf,
                 &k_raw_buf,
@@ -6058,24 +6119,27 @@ mod metal_dispatch {
                 x.len(), gate.len(), up.len(), act.len(), out.len(),
             )));
         }
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let gate_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             gate_offset,
             gate_byte_size,
             intermediate,
             hidden,
             kernel_name,
         )?;
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let up_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             up_offset,
             up_byte_size,
             intermediate,
             hidden,
             kernel_name,
         )?;
-        validate_llama_b9430_q6_window(
-            model_buf,
+        let down_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q6,
+            model_buf.length() as usize,
             down_offset,
             down_byte_size,
             hidden,
@@ -6092,11 +6156,9 @@ mod metal_dispatch {
             encode_llama_b9430_ffn(
                 batch,
                 model_buf,
-                gate_offset,
-                up_offset,
-                down_offset,
-                hidden,
-                intermediate,
+                gate_window,
+                up_window,
+                down_window,
                 &x_buf,
                 &gate_buf,
                 &up_buf,
@@ -6108,74 +6170,6 @@ mod metal_dispatch {
         copy_f32_buffer(&up_buf, up);
         copy_f32_buffer(&act_buf, act);
         copy_f32_buffer(&out_buf, out);
-        Ok(())
-    }
-
-    fn validate_llama_b9430_q4_window(
-        model_buf: &PinnedBuffer,
-        offset: usize,
-        byte_size: usize,
-        rows: usize,
-        cols: usize,
-        kernel_name: &str,
-    ) -> Result<()> {
-        if cols % 256 != 0 {
-            return Err(Error::Kernel(format!(
-                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
-            )));
-        }
-        let expected = rows
-            .checked_mul(cols / 256)
-            .and_then(|blocks| blocks.checked_mul(144))
-            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
-        if byte_size != expected {
-            return Err(Error::Kernel(format!(
-                "{kernel_name} Q4_K bytes: got {byte_size} expected {expected}"
-            )));
-        }
-        let end = offset
-            .checked_add(byte_size)
-            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
-        if end > model_buf.length() as usize {
-            return Err(Error::Kernel(format!(
-                "{kernel_name} offset out of bounds: {offset}+{byte_size} > {}",
-                model_buf.length()
-            )));
-        }
-        Ok(())
-    }
-
-    fn validate_llama_b9430_q6_window(
-        model_buf: &PinnedBuffer,
-        offset: usize,
-        byte_size: usize,
-        rows: usize,
-        cols: usize,
-        kernel_name: &str,
-    ) -> Result<()> {
-        if cols % 256 != 0 {
-            return Err(Error::Kernel(format!(
-                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
-            )));
-        }
-        let expected = rows
-            .checked_mul(cols / 256)
-            .and_then(|blocks| blocks.checked_mul(210))
-            .ok_or_else(|| Error::Kernel(format!("{kernel_name} byte-size overflow")))?;
-        if byte_size != expected {
-            return Err(Error::Kernel(format!(
-                "{kernel_name} Q6_K bytes: got {byte_size} expected {expected}"
-            )));
-        }
-        let end = offset
-            .checked_add(byte_size)
-            .ok_or_else(|| Error::Kernel(format!("{kernel_name} offset overflow")))?;
-        if end > model_buf.length() as usize {
-            return Err(Error::Kernel(format!(
-                "{kernel_name} offset out of bounds: {offset}+{byte_size} > {}",
-                model_buf.length()
-            )));
-        }
         Ok(())
     }
 
@@ -6318,12 +6312,9 @@ mod metal_dispatch {
     fn encode_llama_b9430_qkv_rope(
         batch: &mut CommandBatch<'_>,
         model_buf: &PinnedBuffer,
-        q_offset: usize,
-        q_rows: usize,
-        k_offset: usize,
-        v_offset: usize,
-        kv_rows: usize,
-        cols: usize,
+        q_window: LlamaB9430WeightWindow,
+        k_window: LlamaB9430WeightWindow,
+        v_window: LlamaB9430WeightWindow,
         x_buf: &PinnedBuffer,
         q_raw_buf: &PinnedBuffer,
         k_raw_buf: &PinnedBuffer,
@@ -6336,16 +6327,40 @@ mod metal_dispatch {
         pos: u32,
         freq_base: f32,
     ) -> Result<()> {
-        encode_llama_b9430_q4_pinned(batch, model_buf, q_offset, q_rows, cols, x_buf, q_raw_buf)?;
-        encode_llama_b9430_q4_pinned(batch, model_buf, k_offset, kv_rows, cols, x_buf, k_raw_buf)?;
-        encode_llama_b9430_q4_pinned(batch, model_buf, v_offset, kv_rows, cols, x_buf, v_raw_buf)?;
+        encode_llama_b9430_q4_pinned(
+            batch,
+            model_buf,
+            q_window.offset,
+            q_window.rows,
+            q_window.cols,
+            x_buf,
+            q_raw_buf,
+        )?;
+        encode_llama_b9430_q4_pinned(
+            batch,
+            model_buf,
+            k_window.offset,
+            k_window.rows,
+            k_window.cols,
+            x_buf,
+            k_raw_buf,
+        )?;
+        encode_llama_b9430_q4_pinned(
+            batch,
+            model_buf,
+            v_window.offset,
+            v_window.rows,
+            v_window.cols,
+            x_buf,
+            v_raw_buf,
+        )?;
         encode_llama_b9430_rope(
             batch,
             q_raw_buf,
             q_rope_buf,
             positions_buf,
             factors_buf,
-            q_rows / head_dim,
+            q_window.rows / head_dim,
             head_dim,
             pos,
             freq_base,
@@ -6356,7 +6371,7 @@ mod metal_dispatch {
             k_rope_buf,
             positions_buf,
             factors_buf,
-            kv_rows / head_dim,
+            k_window.rows / head_dim,
             head_dim,
             pos,
             freq_base,
@@ -6367,11 +6382,9 @@ mod metal_dispatch {
     fn encode_llama_b9430_ffn(
         batch: &mut CommandBatch<'_>,
         model_buf: &PinnedBuffer,
-        gate_offset: usize,
-        up_offset: usize,
-        down_offset: usize,
-        hidden: usize,
-        intermediate: usize,
+        gate_window: LlamaB9430WeightWindow,
+        up_window: LlamaB9430WeightWindow,
+        down_window: LlamaB9430WeightWindow,
         x_buf: &PinnedBuffer,
         gate_buf: &PinnedBuffer,
         up_buf: &PinnedBuffer,
@@ -6381,28 +6394,28 @@ mod metal_dispatch {
         encode_llama_b9430_q4_pinned(
             batch,
             model_buf,
-            gate_offset,
-            intermediate,
-            hidden,
+            gate_window.offset,
+            gate_window.rows,
+            gate_window.cols,
             x_buf,
             gate_buf,
         )?;
         encode_llama_b9430_q4_pinned(
             batch,
             model_buf,
-            up_offset,
-            intermediate,
-            hidden,
+            up_window.offset,
+            up_window.rows,
+            up_window.cols,
             x_buf,
             up_buf,
         )?;
-        encode_llama_b9430_swiglu(batch, gate_buf, up_buf, act_buf, intermediate)?;
+        encode_llama_b9430_swiglu(batch, gate_buf, up_buf, act_buf, gate_window.rows)?;
         encode_llama_b9430_q6_pinned(
             batch,
             model_buf,
-            down_offset,
-            hidden,
-            intermediate,
+            down_window.offset,
+            down_window.rows,
+            down_window.cols,
             act_buf,
             out_buf,
         )
@@ -6507,8 +6520,9 @@ mod metal_dispatch {
         x_buf: &PinnedBuffer,
         out_buf: &PinnedBuffer,
     ) -> Result<()> {
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let _window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             w_offset,
             w_byte_size,
             rows,
@@ -6547,8 +6561,9 @@ mod metal_dispatch {
         out_buf: &PinnedBuffer,
         out_offset_bytes: usize,
     ) -> Result<()> {
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let _window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             w_offset,
             w_byte_size,
             rows,
@@ -6837,8 +6852,9 @@ mod metal_dispatch {
         x_batch_buf: &PinnedBuffer,
         y_batch_buf: &PinnedBuffer,
     ) -> Result<()> {
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let _window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             w_offset,
             w_byte_size,
             rows,
@@ -6901,16 +6917,18 @@ mod metal_dispatch {
         gate_out_buf: &PinnedBuffer,
         up_out_buf: &PinnedBuffer,
     ) -> Result<()> {
-        validate_llama_b9430_q4_window(
-            gate_buf,
+        let _gate_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            gate_buf.length() as usize,
             gate_offset,
             gate_byte_size,
             rows,
             cols,
             "gemm_q4_k_m_llama_b9430_pair_tcb gate",
         )?;
-        validate_llama_b9430_q4_window(
-            up_buf,
+        let _up_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            up_buf.length() as usize,
             up_offset,
             up_byte_size,
             rows,
@@ -6948,8 +6966,9 @@ mod metal_dispatch {
         x_buf: &PinnedBuffer,
         out_buf: &PinnedBuffer,
     ) -> Result<()> {
-        validate_llama_b9430_q6_window(
-            model_buf,
+        let _window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q6,
+            model_buf.length() as usize,
             w_offset,
             w_byte_size,
             rows,
@@ -6989,8 +7008,9 @@ mod metal_dispatch {
         out_buf: &PinnedBuffer,
         out_offset_bytes: usize,
     ) -> Result<()> {
-        validate_llama_b9430_q6_window(
-            model_buf,
+        let _window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q6,
+            model_buf.length() as usize,
             w_offset,
             w_byte_size,
             rows,
@@ -7446,24 +7466,27 @@ mod metal_dispatch {
                 "{kernel_name} factors must be finite and positive"
             )));
         }
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let q_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             q_offset,
             q_byte_size,
             q_rows,
             hidden,
             kernel_name,
         )?;
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let k_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             k_offset,
             k_byte_size,
             kv_rows,
             hidden,
             kernel_name,
         )?;
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let v_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             v_offset,
             v_byte_size,
             kv_rows,
@@ -7487,12 +7510,9 @@ mod metal_dispatch {
             encode_llama_b9430_qkv_rope(
                 batch,
                 model_buf,
-                q_offset,
-                q_rows,
-                k_offset,
-                v_offset,
-                kv_rows,
-                hidden,
+                q_window,
+                k_window,
+                v_window,
                 &x_norm_buf,
                 &q_raw_buf,
                 &k_raw_buf,
@@ -7549,24 +7569,27 @@ mod metal_dispatch {
         {
             return Err(Error::Kernel(format!("{kernel_name} shape mismatch")));
         }
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let gate_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             gate_offset,
             gate_byte_size,
             intermediate,
             hidden,
             kernel_name,
         )?;
-        validate_llama_b9430_q4_window(
-            model_buf,
+        let up_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q4,
+            model_buf.length() as usize,
             up_offset,
             up_byte_size,
             intermediate,
             hidden,
             kernel_name,
         )?;
-        validate_llama_b9430_q6_window(
-            model_buf,
+        let down_window = checked_llama_b9430_weight_window(
+            LLAMA_B9430_Q6,
+            model_buf.length() as usize,
             down_offset,
             down_byte_size,
             hidden,
@@ -7585,11 +7608,9 @@ mod metal_dispatch {
             encode_llama_b9430_ffn(
                 batch,
                 model_buf,
-                gate_offset,
-                up_offset,
-                down_offset,
-                hidden,
-                intermediate,
+                gate_window,
+                up_window,
+                down_window,
                 &x_norm_buf,
                 &gate_buf,
                 &up_buf,
@@ -12710,6 +12731,58 @@ mod metal_dispatch {
         )
     }
 
+    // v2t_gu_v4: paired-route variant with a 256-threadgroup geometry. Four
+    // simdgroups service four rows for each route, sharing the activation
+    // preload without v3's 512-thread occupancy cost.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_batched_gemv_fused_gu_v4_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        act_buf: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let gate_offset_u64 = gate_offset as u64;
+        let up_offset_u64 = up_offset as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let n_tg_x = (rows_u32 + 3) / 4;
+        let route_groups = (routes_u32 + 1) / 2;
+        let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "moe_batched_gemm_q4_indexed_v2t_gu_v4",
+            (n_tg_x * tg_size, route_groups, 1),
+            (tg_size, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), 0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(act_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u64>() as u64,
+                    &gate_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u64>() as u64,
+                    &up_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_u32(6, routes_u32);
+                enc.set_u32(7, rows_u32);
+                enc.set_u32(8, cols_u32);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     // Serial variant: dispatches one route at a time so each expert's weights
     // (gate+up = ~3MB) are read as a single sequential stream that fits in L2,
     // avoiding the cache-thrashing caused by 6 simultaneous scattered expert streams.
@@ -12760,6 +12833,122 @@ mod metal_dispatch {
             )?;
         }
         Ok(())
+    }
+
+    /// Opt-in Q8 routed-down consumer that keeps all route activations in
+    /// threadgroup memory and folds router weights/shared output/residual into
+    /// the final hidden write.  This is deliberately separate from the
+    /// historical routed-down + route-accumulate pair so the default remains
+    /// byte-for-byte unchanged while the route-major consumer is measured.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_q8_route_accumulate_fused_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        routed_act: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+        residual_buf: Option<&PinnedBuffer>,
+        out_buf: &PinnedBuffer,
+        routed_down_offset: usize,
+        hidden: usize,
+        routes: usize,
+        routed_mid: usize,
+        has_shared: bool,
+    ) -> Result<()> {
+        let base_offset_u64 = routed_down_offset as u64;
+        let routes_u32 = routes as u32;
+        let hidden_u32 = hidden as u32;
+        let routed_mid_u32 = routed_mid as u32;
+        let has_shared_u32 = u32::from(has_shared);
+        let has_residual_u32 = u32::from(residual_buf.is_some());
+        let n_tg_x = hidden_u32.div_ceil(8);
+        let shmem_bytes = (routes as u64)
+            .saturating_mul(routed_mid as u64)
+            .saturating_mul(std::mem::size_of::<f32>() as u64);
+        // The shader does not read the residual binding when the flag is zero;
+        // binding `out_buf` in that case keeps the argument table total without
+        // introducing a nullable Metal buffer.
+        let residual = residual_buf.unwrap_or(out_buf);
+        tcb.dispatch_threads(
+            "moe_batched_gemm_q8_0_route_accumulate_v2t",
+            (n_tg_x * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), 0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(route_weights_buf), 0);
+                enc.set_buffer(3, Some(routed_act), 0);
+                enc.set_buffer(4, Some(shared_out), 0);
+                enc.set_buffer(5, Some(residual), 0);
+                enc.set_buffer(6, Some(out_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u64>() as u64,
+                    &base_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_u32(8, routes_u32);
+                enc.set_u32(9, hidden_u32);
+                enc.set_u32(10, routed_mid_u32);
+                enc.set_u32(11, has_shared_u32);
+                enc.set_u32(12, has_residual_u32);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn encode_q4_0_route_accumulate_fused_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        routed_act: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+        residual_buf: Option<&PinnedBuffer>,
+        out_buf: &PinnedBuffer,
+        routed_down_offset: usize,
+        hidden: usize,
+        routes: usize,
+        routed_mid: usize,
+        has_shared: bool,
+    ) -> Result<()> {
+        let base_offset_u64 = routed_down_offset as u64;
+        let routes_u32 = routes as u32;
+        let hidden_u32 = hidden as u32;
+        let routed_mid_u32 = routed_mid as u32;
+        let has_shared_u32 = u32::from(has_shared);
+        let has_residual_u32 = u32::from(residual_buf.is_some());
+        let n_tg_x = hidden_u32.div_ceil(8);
+        let shmem_bytes = (routes as u64)
+            .saturating_mul(routed_mid as u64)
+            .saturating_mul(std::mem::size_of::<f32>() as u64);
+        let residual = residual_buf.unwrap_or(out_buf);
+        tcb.dispatch_threads(
+            "moe_batched_gemm_q4_0_route_accumulate_v2t",
+            (n_tg_x * TG_SIZE as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), 0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(route_weights_buf), 0);
+                enc.set_buffer(3, Some(routed_act), 0);
+                enc.set_buffer(4, Some(shared_out), 0);
+                enc.set_buffer(5, Some(residual), 0);
+                enc.set_buffer(6, Some(out_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u64>() as u64,
+                    &base_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_u32(8, routes_u32);
+                enc.set_u32(9, hidden_u32);
+                enc.set_u32(10, routed_mid_u32);
+                enc.set_u32(11, has_shared_u32);
+                enc.set_u32(12, has_residual_u32);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
     }
 
     fn encode_route_accumulate_tcb(
@@ -13127,6 +13316,63 @@ mod metal_dispatch {
         })
     }
 
+    /// Kimi noaux_tc router: sigmoid scores, learned choice correction bias,
+    /// normalized selected weights, and post-normalization routed scaling.
+    /// The current Kimi model has one expert group, so group filtering is a
+    /// no-op; keeping this as a distinct kernel prevents the legacy softmax
+    /// owner from silently changing expert identity or weight semantics.
+    pub fn moe_topk_gate_kimi_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        logits_buf: &PinnedBuffer,
+        correction_bias_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        n_experts: usize,
+        top_k: usize,
+        normalize_topk: bool,
+        routed_scaling_factor: f32,
+    ) -> Result<()> {
+        if top_k == 0 || n_experts == 0 {
+            return Err(Error::Kernel(
+                "moe_topk_gate_kimi: expert and top-k counts must be > 0".into(),
+            ));
+        }
+        if !routed_scaling_factor.is_finite() || routed_scaling_factor <= 0.0 {
+            return Err(Error::Kernel(
+                "moe_topk_gate_kimi: routed scaling factor must be finite and positive".into(),
+            ));
+        }
+        let n_experts_u32 = n_experts as u32;
+        let top_k_u32 = top_k.min(n_experts) as u32;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, n_experts_u32);
+        ab.set_u32(1, top_k_u32);
+        ab.set_u32(2, u32::from(normalize_topk));
+        ab.set_f32(3, routed_scaling_factor);
+        let shmem_bytes = (2 * n_experts * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            "moe_topk_gate_sigmoid_correction",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_buffer(1, Some(correction_bias_buf), 0);
+                enc.set_buffer(2, Some(route_ids_buf), 0);
+                enc.set_buffer(3, Some(route_weights_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// Qwen3-Next exact cached-decode Gated DeltaNet recurrence for the
     /// official 32×128×128 head geometry.  This is intentionally a parity
     /// baseline (one thread owns one head) so a future tiled kernel has a
@@ -13151,23 +13397,49 @@ mod metal_dispatch {
                 "qwen_next_gated_delta_decode_single requires Q80 32x128x128 or Qwen3.8 48x128x128, got {heads}x{key_dim}x{value_dim}"
             )));
         }
-        tcb.dispatch_threads(
-            "qwen_next_gated_delta_decode_single",
-            (heads as u32, 1, 1),
-            (TG_SIZE, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(state), 0);
-                enc.set_buffer(1, Some(query_l2_scaled), 0);
-                enc.set_buffer(2, Some(key_l2), 0);
-                enc.set_buffer(3, Some(value), 0);
-                enc.set_buffer(4, Some(decay_exp_g), 0);
-                enc.set_buffer(5, Some(beta_sigmoid_b), 0);
-                enc.set_buffer(6, Some(output), 0);
-                enc.set_u32(7, heads as u32);
-                enc.set_u32(8, key_dim as u32);
-                enc.set_u32(9, value_dim as u32);
-            },
-        )
+        // The `*_vi` kernels retain the source-order 128-term reductions,
+        // but expose independent value columns as separate threadgroups.
+        // Flash's 48x128x128 DeltaNet otherwise gives one threadgroup an
+        // entire 128-column head, which the physical trace identifies as the
+        // dominant decode bottleneck. This remains opt-in until full-body
+        // state/route/token parity admits it.
+        let use_vi_exact = crate::env_on("HAWKING_FLASH_DELTANET_VI_EXACT");
+        // The SIMD variant intentionally changes reduction association. It is
+        // Flash-only and candidate-only: the full resident state/route/token
+        // control decides whether it earns a tolerance contract.
+        let use_vi_simd = heads == 48 && crate::env_on("HAWKING_FLASH_DELTANET_VI_SIMD");
+        let use_vi = use_vi_exact || use_vi_simd;
+        let kernel = if use_vi_simd {
+            "qwen38_gated_delta_decode_vi_simd"
+        } else if use_vi_exact {
+            if heads == 48 {
+                "qwen38_gated_delta_decode_vi"
+            } else {
+                "qwen80_gated_delta_decode_vi"
+            }
+        } else {
+            "qwen_next_gated_delta_decode_single"
+        };
+        let grid = if use_vi {
+            (key_dim as u32, heads as u32, value_dim as u32)
+        } else {
+            (heads as u32, 1, 1)
+        };
+        tcb.dispatch_threads(kernel, grid, (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(state), 0);
+            enc.set_buffer(1, Some(query_l2_scaled), 0);
+            enc.set_buffer(2, Some(key_l2), 0);
+            enc.set_buffer(3, Some(value), 0);
+            enc.set_buffer(4, Some(decay_exp_g), 0);
+            enc.set_buffer(5, Some(beta_sigmoid_b), 0);
+            enc.set_buffer(6, Some(output), 0);
+            enc.set_u32(7, heads as u32);
+            enc.set_u32(8, key_dim as u32);
+            enc.set_u32(9, value_dim as u32);
+            if use_vi {
+                enc.set_threadgroup_memory_length(0, (key_dim * std::mem::size_of::<f32>()) as u64);
+            }
+        })
     }
 
     /// Offset-aware form of [`qwen_next_gated_delta_decode_single_tcb`] for a
@@ -13265,23 +13537,40 @@ mod metal_dispatch {
                     .into(),
             ));
         }
-        tcb.dispatch_threads(
-            "qwen_next_gated_delta_decode_single",
-            (heads as u32, 1, 1),
-            (TG_SIZE, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(state), state_offset_bytes as u64);
-                enc.set_buffer(1, Some(query_l2_scaled), 0);
-                enc.set_buffer(2, Some(key_l2), 0);
-                enc.set_buffer(3, Some(value), 0);
-                enc.set_buffer(4, Some(decay_exp_g), 0);
-                enc.set_buffer(5, Some(beta_sigmoid_b), 0);
-                enc.set_buffer(6, Some(output), 0);
-                enc.set_u32(7, heads as u32);
-                enc.set_u32(8, key_dim as u32);
-                enc.set_u32(9, value_dim as u32);
-            },
-        )
+        let use_vi_exact = crate::env_on("HAWKING_FLASH_DELTANET_VI_EXACT");
+        let use_vi_simd = heads == 48 && crate::env_on("HAWKING_FLASH_DELTANET_VI_SIMD");
+        let use_vi = use_vi_exact || use_vi_simd;
+        let kernel = if use_vi_simd {
+            "qwen38_gated_delta_decode_vi_simd"
+        } else if use_vi_exact {
+            if heads == 48 {
+                "qwen38_gated_delta_decode_vi"
+            } else {
+                "qwen80_gated_delta_decode_vi"
+            }
+        } else {
+            "qwen_next_gated_delta_decode_single"
+        };
+        let grid = if use_vi {
+            (key_dim as u32, heads as u32, value_dim as u32)
+        } else {
+            (heads as u32, 1, 1)
+        };
+        tcb.dispatch_threads(kernel, grid, (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(state), state_offset_bytes as u64);
+            enc.set_buffer(1, Some(query_l2_scaled), 0);
+            enc.set_buffer(2, Some(key_l2), 0);
+            enc.set_buffer(3, Some(value), 0);
+            enc.set_buffer(4, Some(decay_exp_g), 0);
+            enc.set_buffer(5, Some(beta_sigmoid_b), 0);
+            enc.set_buffer(6, Some(output), 0);
+            enc.set_u32(7, heads as u32);
+            enc.set_u32(8, key_dim as u32);
+            enc.set_u32(9, value_dim as u32);
+            if use_vi {
+                enc.set_threadgroup_memory_length(0, (key_dim * std::mem::size_of::<f32>()) as u64);
+            }
+        })
     }
 
     /// Convert a direct-packed Qwen3-Next `in_proj_ba` result into the exact
@@ -13365,13 +13654,14 @@ mod metal_dispatch {
     /// supplies the source tensor's native BF16 bytes and its explicit
     /// `[rows, cols]` geometry.  It is useful for Flash source tensors and
     /// other resident models without forcing a dense FP32 weight materialize.
-    pub fn native_bf16_gemv_seq_tcb(
+    fn native_bf16_gemv_seq_tcb_with_output_precision(
         tcb: &mut TokenCommandBuffer<'_>,
         weight_bf16: &PinnedBuffer,
         activation: &PinnedBuffer,
         output: &PinnedBuffer,
         rows: usize,
         cols: usize,
+        source_bf16_output: bool,
     ) -> Result<()> {
         if rows == 0 || rows > u32::MAX as usize || cols == 0 || cols > u32::MAX as usize {
             return Err(Error::Kernel(format!(
@@ -13398,14 +13688,33 @@ mod metal_dispatch {
                 "native_bf16_gemv_seq received a truncated buffer".into(),
             ));
         }
-        let (kernel, grid, tg) = if crate::env_on("HAWKING_FLASH_BF16_GEO") && cols % 4 == 0 {
+        // The source-boundary sibling deliberately stays on the scalar
+        // source-order kernel.  The resident/default path retains its
+        // existing opt-in GEO/vec4 selection and therefore its existing
+        // performance contract.
+        let (kernel, grid, tg) = if source_bf16_output {
+            (
+                "gemv_native_bf16_seq_source_bf16",
+                (rows as u32, 1, 1),
+                (1, 1, 1),
+            )
+        } else if crate::env_on("HAWKING_FLASH_BF16_GEO") && cols % 4 == 0 {
             (
                 "gemv_native_bf16_geo_vec4_tg128",
                 (rows.div_ceil(4) as u32 * 128, 1, 1),
                 (128, 1, 1),
             )
         } else if crate::env_on("HAWKING_FLASH_BF16_VEC4") && cols % 4 == 0 {
-            ("gemv_native_bf16_seq_vec4", (rows as u32, 1, 1), (1, 1, 1))
+            let threads_per_threadgroup = if crate::env_on("HAWKING_FLASH_HC_SPLIT") {
+                256
+            } else {
+                1
+            };
+            (
+                "gemv_native_bf16_seq_vec4",
+                (rows as u32, 1, 1),
+                (threads_per_threadgroup, 1, 1),
+            )
         } else {
             ("gemv_native_bf16_seq", (rows as u32, 1, 1), (1, 1, 1))
         };
@@ -13416,6 +13725,272 @@ mod metal_dispatch {
             enc.set_u32(3, rows as u32);
             enc.set_u32(4, cols as u32);
         })
+    }
+
+    /// Native BF16 row-major GEMV whose F32 carrier is materialized at a
+    /// declared source-BF16 output seam.  This is diagnostic-only: it keeps
+    /// the source left-to-right reduction and folds the precision cast into
+    /// the producer kernel instead of paying for a standalone cast launch.
+    pub fn native_bf16_gemv_seq_source_bf16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight_bf16: &PinnedBuffer,
+        activation: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        native_bf16_gemv_seq_tcb_with_output_precision(
+            tcb,
+            weight_bf16,
+            activation,
+            output,
+            rows,
+            cols,
+            true,
+        )
+    }
+
+    /// Native BF16 row-major GEMV with the established resident F32 output
+    /// contract.  The implementation is shared with the explicit diagnostic
+    /// sibling so validation and geometry cannot drift.
+    pub fn native_bf16_gemv_seq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight_bf16: &PinnedBuffer,
+        activation: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        native_bf16_gemv_seq_tcb_with_output_precision(
+            tcb,
+            weight_bf16,
+            activation,
+            output,
+            rows,
+            cols,
+            false,
+        )
+    }
+
+    /// Exact-order split HyperConnection down and block projections sharing
+    /// one normalized activation. This removes one launch without changing
+    /// either row's source-order BF16->F32 reduction.
+    pub fn qwen_next_hyperconnection_down_block_vec4_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        down_weight: &PinnedBuffer,
+        block_weight: &PinnedBuffer,
+        normalized: &PinnedBuffer,
+        low_rank: &PinnedBuffer,
+        block_logits: &PinnedBuffer,
+        down_rows: usize,
+        block_rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if down_rows == 0
+            || block_rows == 0
+            || down_rows > u32::MAX as usize
+            || block_rows > u32::MAX as usize
+            || cols == 0
+            || cols > u32::MAX as usize
+            || cols % 4 != 0
+        {
+            return Err(Error::Kernel(format!(
+                "qwen_next_hyperconnection_down_block_vec4 requires positive u32-sized rows, cols divisible by four; got down_rows={down_rows}, block_rows={block_rows}, cols={cols}"
+            )));
+        }
+        let weight_bytes = |rows: usize, label: &str| {
+            rows.checked_mul(cols)
+                .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+                .ok_or_else(|| {
+                    Error::Kernel(format!(
+                        "HyperConnection down/block {label} weight bytes overflowed"
+                    ))
+                })
+        };
+        let output_bytes = |rows: usize, label: &str| {
+            rows.checked_mul(std::mem::size_of::<f32>()).ok_or_else(|| {
+                Error::Kernel(format!(
+                    "HyperConnection down/block {label} output bytes overflowed"
+                ))
+            })
+        };
+        let activation_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("HyperConnection normalized bytes overflowed".into()))?;
+        if down_weight.length() < weight_bytes(down_rows, "down")? as u64
+            || block_weight.length() < weight_bytes(block_rows, "block")? as u64
+            || normalized.length() < activation_bytes as u64
+            || low_rank.length() < output_bytes(down_rows, "low-rank")? as u64
+            || block_logits.length() < output_bytes(block_rows, "block-logit")? as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_down_block_vec4 received a truncated buffer".into(),
+            ));
+        }
+        let rows = down_rows.max(block_rows);
+        tcb.dispatch_threads(
+            "qwen_next_hyperconnection_down_block_vec4",
+            (rows as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(down_weight), 0);
+                enc.set_buffer(1, Some(block_weight), 0);
+                enc.set_buffer(2, Some(normalized), 0);
+                enc.set_buffer(3, Some(low_rank), 0);
+                enc.set_buffer(4, Some(block_logits), 0);
+                enc.set_u32(5, down_rows as u32);
+                enc.set_u32(6, block_rows as u32);
+                enc.set_u32(7, cols as u32);
+            },
+        )
+    }
+
+    /// Exact-order split HyperConnection up projection plus read mix. Each
+    /// hidden output computes and stores its stream-local gate logits before
+    /// applying the existing left-to-right stream reduction.
+    pub fn qwen_next_hyperconnection_up_read_mix_vec4_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        up_weight: &PinnedBuffer,
+        low_rank_activation: &PinnedBuffer,
+        normalized: &PinnedBuffer,
+        gate_logits: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        streams: usize,
+        low_rank_width: usize,
+    ) -> Result<()> {
+        if hidden == 0
+            || hidden > u32::MAX as usize
+            || streams == 0
+            || streams > u32::MAX as usize
+            || low_rank_width == 0
+            || low_rank_width > u32::MAX as usize
+            || low_rank_width % 4 != 0
+        {
+            return Err(Error::Kernel(format!(
+                "qwen_next_hyperconnection_up_read_mix_vec4 requires positive u32-sized hidden/streams, low-rank width divisible by four; got hidden={hidden}, streams={streams}, low_rank_width={low_rank_width}"
+            )));
+        }
+        let up_elements = hidden
+            .checked_mul(streams)
+            .and_then(|elements| elements.checked_mul(low_rank_width))
+            .ok_or_else(|| Error::Kernel("HyperConnection up weight geometry overflowed".into()))?;
+        let up_bytes = up_elements
+            .checked_mul(std::mem::size_of::<u16>())
+            .ok_or_else(|| Error::Kernel("HyperConnection up weight bytes overflowed".into()))?;
+        let state_elements = hidden
+            .checked_mul(streams)
+            .ok_or_else(|| Error::Kernel("HyperConnection state geometry overflowed".into()))?;
+        let state_bytes = state_elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("HyperConnection state bytes overflowed".into()))?;
+        let activation_bytes = low_rank_width
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("HyperConnection activation geometry overflowed".into())
+            })?;
+        let output_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("HyperConnection output bytes overflowed".into()))?;
+        if up_weight.length() < up_bytes as u64
+            || low_rank_activation.length() < activation_bytes as u64
+            || normalized.length() < state_bytes as u64
+            || gate_logits.length() < state_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_up_read_mix_vec4 received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_hyperconnection_up_read_mix_vec4",
+            (hidden as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(up_weight), 0);
+                enc.set_buffer(1, Some(low_rank_activation), 0);
+                enc.set_buffer(2, Some(normalized), 0);
+                enc.set_buffer(3, Some(gate_logits), 0);
+                enc.set_buffer(4, Some(output), 0);
+                enc.set_u32(5, hidden as u32);
+                enc.set_u32(6, streams as u32);
+                enc.set_u32(7, low_rank_width as u32);
+            },
+        )
+    }
+
+    /// Candidate tiled BF16 GEMV whose FP32 input is transformed by the
+    /// Flash HyperConnection `SiLU(input / divisor)` at read time.  It keeps
+    /// the geo GEMV's multi-threadgroup projection shape and removes one
+    /// standalone activation launch; it is deliberately explicit because the
+    /// SIMD reduction association differs from source scalar accumulation.
+    pub fn native_bf16_gemv_geo_silu_scale_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight_bf16: &PinnedBuffer,
+        low_rank: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        divisor: f32,
+    ) -> Result<()> {
+        if rows == 0
+            || rows > u32::MAX as usize
+            || cols == 0
+            || cols > u32::MAX as usize
+            || cols % 4 != 0
+            || !divisor.is_finite()
+            || divisor == 0.0
+        {
+            return Err(Error::Kernel(format!(
+                "native_bf16_gemv_geo_silu_scale requires non-zero u32-sized rows, cols divisible by four, and finite non-zero divisor; got rows={rows}, cols={cols}, divisor={divisor}"
+            )));
+        }
+        let weight_bytes = rows
+            .checked_mul(cols)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_gemv_geo_silu_scale weight bytes overflow".into())
+            })?;
+        let activation_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_gemv_geo_silu_scale activation bytes overflow".into())
+            })?;
+        let output_bytes = rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_gemv_geo_silu_scale output bytes overflow".into())
+            })?;
+        if weight_bf16.length() < weight_bytes as u64
+            || low_rank.length() < activation_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "native_bf16_gemv_geo_silu_scale received a truncated buffer".into(),
+            ));
+        }
+        let groups = rows.div_ceil(4);
+        let grid = groups
+            .checked_mul(128)
+            .ok_or_else(|| Error::Kernel("native_bf16_gemv_geo_silu_scale grid overflow".into()))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "native_bf16_gemv_geo_silu_scale grid exceeds u32".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "gemv_native_bf16_geo_vec4_tg128_silu_scale",
+            (grid as u32, 1, 1),
+            (128, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(weight_bf16), 0);
+                enc.set_buffer(1, Some(low_rank), 0);
+                enc.set_buffer(2, Some(output), 0);
+                enc.set_u32(3, rows as u32);
+                enc.set_u32(4, cols as u32);
+                enc.set_f32(5, divisor);
+            },
+        )
     }
 
     /// Fused source-BF16 gate/up projections with exact SwiGLU.  The two
@@ -13569,6 +14144,88 @@ mod metal_dispatch {
             enc.set_u32(6, rows_b as u32);
             enc.set_u32(7, cols as u32);
         })
+    }
+
+    /// Source-boundary sibling of [`native_bf16_dual_seq_tcb`]. Both outputs
+    /// are materialized as BF16-representable F32 carriers while the shared
+    /// activation remains device-resident. This is diagnostic-only; the
+    /// resident dual path keeps its established F32 output and opt-in geometry
+    /// selection.
+    pub fn native_bf16_dual_seq_source_bf16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight_a_bf16: &PinnedBuffer,
+        weight_b_bf16: &PinnedBuffer,
+        activation: &PinnedBuffer,
+        output_a: &PinnedBuffer,
+        output_b: &PinnedBuffer,
+        rows_a: usize,
+        rows_b: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if rows_a == 0
+            || rows_b == 0
+            || rows_a > u32::MAX as usize
+            || rows_b > u32::MAX as usize
+            || cols == 0
+            || cols > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "native_bf16_dual_seq_source_bf16 requires non-zero u32-sized rows/cols; got rows_a={rows_a}, rows_b={rows_b}, cols={cols}"
+            )));
+        }
+        let weight_a_bytes = rows_a
+            .checked_mul(cols)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_dual_seq_source_bf16 weight A bytes overflow".into())
+            })?;
+        let weight_b_bytes = rows_b
+            .checked_mul(cols)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_dual_seq_source_bf16 weight B bytes overflow".into())
+            })?;
+        let activation_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_dual_seq_source_bf16 activation bytes overflow".into())
+            })?;
+        let output_a_bytes = rows_a
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_dual_seq_source_bf16 output A bytes overflow".into())
+            })?;
+        let output_b_bytes = rows_b
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("native_bf16_dual_seq_source_bf16 output B bytes overflow".into())
+            })?;
+        if weight_a_bf16.length() < weight_a_bytes as u64
+            || weight_b_bf16.length() < weight_b_bytes as u64
+            || activation.length() < activation_bytes as u64
+            || output_a.length() < output_a_bytes as u64
+            || output_b.length() < output_b_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "native_bf16_dual_seq_source_bf16 received a truncated buffer".into(),
+            ));
+        }
+        let max_rows = rows_a.max(rows_b);
+        tcb.dispatch_threads(
+            "gemv_native_bf16_dual_seq_source_bf16",
+            (max_rows as u32, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(weight_a_bf16), 0);
+                enc.set_buffer(1, Some(weight_b_bf16), 0);
+                enc.set_buffer(2, Some(activation), 0);
+                enc.set_buffer(3, Some(output_a), 0);
+                enc.set_buffer(4, Some(output_b), 0);
+                enc.set_u32(5, rows_a as u32);
+                enc.set_u32(6, rows_b as u32);
+                enc.set_u32(7, cols as u32);
+            },
+        )
     }
 
     /// Opt-in Flash router fusion: source-BF16 router GEMV, shared-expert
@@ -13912,7 +14569,7 @@ mod metal_dispatch {
     /// Source-BF16 output GEMV fused with the exact HyperConnection combine.
     /// The block output remains written for parity/diagnostics, while the
     /// final stream-major state is produced in the same launch.
-    pub fn native_bf16_gemv_hyperconnection_combine_tcb(
+    fn native_bf16_gemv_hyperconnection_combine_with_kernel(
         tcb: &mut TokenCommandBuffer<'_>,
         weight_bf16: &PinnedBuffer,
         activation: &PinnedBuffer,
@@ -13924,6 +14581,7 @@ mod metal_dispatch {
         cols: usize,
         streams: usize,
         divisor: f32,
+        kernel: &'static str,
     ) -> Result<()> {
         if hidden == 0
             || cols == 0
@@ -13988,22 +14646,51 @@ mod metal_dispatch {
                 "native_bf16_gemv_hyperconnection_combine received a truncated buffer".into(),
             ));
         }
-        tcb.dispatch_threads(
-            "gemv_native_bf16_hyperconnection_combine",
-            (hidden as u32, 1, 1),
-            (TG_SIZE, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(weight_bf16), 0);
-                enc.set_buffer(1, Some(activation), 0);
-                enc.set_buffer(2, Some(residual), 0);
-                enc.set_buffer(3, Some(block_logits), 0);
-                enc.set_buffer(4, Some(block_output), 0);
-                enc.set_buffer(5, Some(output), 0);
-                enc.set_u32(6, hidden as u32);
-                enc.set_u32(7, cols as u32);
-                enc.set_u32(8, streams as u32);
-                enc.set_f32(9, divisor);
-            },
+        tcb.dispatch_threads(kernel, (hidden as u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(weight_bf16), 0);
+            enc.set_buffer(1, Some(activation), 0);
+            enc.set_buffer(2, Some(residual), 0);
+            enc.set_buffer(3, Some(block_logits), 0);
+            enc.set_buffer(4, Some(block_output), 0);
+            enc.set_buffer(5, Some(output), 0);
+            enc.set_u32(6, hidden as u32);
+            enc.set_u32(7, cols as u32);
+            enc.set_u32(8, streams as u32);
+            enc.set_f32(9, divisor);
+        })
+    }
+
+    pub fn native_bf16_gemv_hyperconnection_combine_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight_bf16: &PinnedBuffer,
+        activation: &PinnedBuffer,
+        residual: &PinnedBuffer,
+        block_logits: &PinnedBuffer,
+        block_output: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        cols: usize,
+        streams: usize,
+        divisor: f32,
+    ) -> Result<()> {
+        let kernel = if crate::env_on("HAWKING_FLASH_BF16_VEC4") && cols % 4 == 0 {
+            "gemv_native_bf16_hyperconnection_combine_vec4"
+        } else {
+            "gemv_native_bf16_hyperconnection_combine"
+        };
+        native_bf16_gemv_hyperconnection_combine_with_kernel(
+            tcb,
+            weight_bf16,
+            activation,
+            residual,
+            block_logits,
+            block_output,
+            output,
+            hidden,
+            cols,
+            streams,
+            divisor,
+            kernel,
         )
     }
 
@@ -14176,6 +14863,91 @@ mod metal_dispatch {
                 enc.set_buffer(5, Some(beta), 0);
                 enc.set_u32(6, key_heads as u32);
                 enc.set_u32(7, values_per_key_head as u32);
+            },
+        )
+    }
+
+    /// Flash source-BF16 B/A projection plus DeltaNet-control materialization.
+    /// This preserves the projected B/A diagnostic buffers while removing the
+    /// dependent projection-to-control launch from the resident graph.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_next_ba_project_to_decay_beta_source_bf16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        weight_b: &PinnedBuffer,
+        weight_a: &PinnedBuffer,
+        input: &PinnedBuffer,
+        a_log_bf16: &PinnedBuffer,
+        dt_bias_bf16: &PinnedBuffer,
+        projected_b: &PinnedBuffer,
+        projected_a: &PinnedBuffer,
+        decay: &PinnedBuffer,
+        beta: &PinnedBuffer,
+        key_heads: usize,
+        values_per_key_head: usize,
+        input_dim: usize,
+    ) -> Result<()> {
+        if key_heads == 0
+            || key_heads > u32::MAX as usize
+            || values_per_key_head == 0
+            || values_per_key_head > u32::MAX as usize
+            || input_dim == 0
+            || input_dim > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "qwen_next_ba_project_to_decay_beta_source_bf16 requires positive u32-sized geometry; got key_heads={key_heads}, values/key={values_per_key_head}, input_dim={input_dim}"
+            )));
+        }
+        let value_heads = key_heads
+            .checked_mul(values_per_key_head)
+            .ok_or_else(|| Error::Kernel("Flash fused BA value-head geometry overflowed".into()))?;
+        let weight_elements = value_heads
+            .checked_mul(input_dim)
+            .ok_or_else(|| Error::Kernel("Flash fused BA weight geometry overflowed".into()))?;
+        let weight_bytes = weight_elements
+            .checked_mul(std::mem::size_of::<u16>())
+            .ok_or_else(|| Error::Kernel("Flash fused BA weight bytes overflowed".into()))?;
+        let input_bytes = input_dim
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Flash fused BA input bytes overflowed".into()))?;
+        let vector_bytes = value_heads
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Flash fused BA vector bytes overflowed".into()))?;
+        let source_bytes = value_heads
+            .checked_mul(std::mem::size_of::<u16>())
+            .ok_or_else(|| {
+                Error::Kernel("Flash fused BA source-control bytes overflowed".into())
+            })?;
+        if weight_b.length() < weight_bytes as u64
+            || weight_a.length() < weight_bytes as u64
+            || input.length() < input_bytes as u64
+            || a_log_bf16.length() < source_bytes as u64
+            || dt_bias_bf16.length() < source_bytes as u64
+            || projected_b.length() < vector_bytes as u64
+            || projected_a.length() < vector_bytes as u64
+            || decay.length() < vector_bytes as u64
+            || beta.length() < vector_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_ba_project_to_decay_beta_source_bf16 received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_ba_project_to_decay_beta_source_bf16",
+            (value_heads as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(weight_b), 0);
+                enc.set_buffer(1, Some(weight_a), 0);
+                enc.set_buffer(2, Some(input), 0);
+                enc.set_buffer(3, Some(a_log_bf16), 0);
+                enc.set_buffer(4, Some(dt_bias_bf16), 0);
+                enc.set_buffer(5, Some(projected_b), 0);
+                enc.set_buffer(6, Some(projected_a), 0);
+                enc.set_buffer(7, Some(decay), 0);
+                enc.set_buffer(8, Some(beta), 0);
+                enc.set_u32(9, key_heads as u32);
+                enc.set_u32(10, values_per_key_head as u32);
+                enc.set_u32(11, input_dim as u32);
             },
         )
     }
@@ -14471,6 +15243,7 @@ mod metal_dispatch {
         intermediate: usize,
         hidden: usize,
         source_experts: usize,
+        layer: usize,
     ) -> Result<()> {
         if compact_experts == 0
             || source_experts == 0
@@ -14530,31 +15303,91 @@ mod metal_dispatch {
                 "compact fused gate-up received a truncated buffer".into(),
             ));
         }
-        let kernel = if crate::env_on("HAWKING_FLASH_MOE_VEC4") && hidden % 4 == 0 {
-            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4"
+        // A cooperative reduction is intentionally restricted to an explicit
+        // layer when the caller sets the laboratory filter.  This lets the
+        // final layer be measured without allowing a non-associative partial
+        // sum to perturb a later router; an absent filter preserves the
+        // existing all-layer candidate behavior.
+        let geo_layer_selected = std::env::var("HAWKING_FLASH_MOE_GATEUP_GEO_LAYER")
+            .map(|value| {
+                value
+                    .trim()
+                    .parse::<usize>()
+                    .map(|wanted| wanted == layer)
+                    .unwrap_or(false)
+            })
+            .unwrap_or(true);
+        let use_geo_exact = crate::env_on("HAWKING_FLASH_MOE_GATEUP_GEO_EXACT")
+            && geo_layer_selected
+            && hidden % 32 == 0;
+        let use_geo =
+            crate::env_on("HAWKING_FLASH_MOE_GATEUP_GEO") && geo_layer_selected && hidden % 32 == 0;
+        let (kernel, grid, threadgroup) = if use_geo_exact {
+            let rows = intermediate
+                .checked_mul(top_k.checked_add(1).ok_or_else(|| {
+                    Error::Kernel("compact fused gate-up route count overflowed".into())
+                })?)
+                .ok_or_else(|| Error::Kernel("compact fused gate-up grid overflowed".into()))?;
+            let threads = rows.checked_mul(32).ok_or_else(|| {
+                Error::Kernel("compact fused gate-up exact SIMD grid overflowed".into())
+            })?;
+            if threads > u32::MAX as usize {
+                return Err(Error::Kernel(
+                    "compact fused gate-up exact SIMD grid exceeds u32".into(),
+                ));
+            }
+            (
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_exact_tg32",
+                (threads as u32, 1, 1),
+                (32, 1, 1),
+            )
+        } else if use_geo {
+            let rows = intermediate
+                .checked_mul(top_k.checked_add(1).ok_or_else(|| {
+                    Error::Kernel("compact fused gate-up route count overflowed".into())
+                })?)
+                .ok_or_else(|| Error::Kernel("compact fused gate-up grid overflowed".into()))?;
+            let threads = rows.checked_mul(32).ok_or_else(|| {
+                Error::Kernel("compact fused gate-up SIMD grid overflowed".into())
+            })?;
+            if threads > u32::MAX as usize {
+                return Err(Error::Kernel(
+                    "compact fused gate-up SIMD grid exceeds u32".into(),
+                ));
+            }
+            (
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_tg32",
+                (threads as u32, 1, 1),
+                (32, 1, 1),
+            )
+        } else if crate::env_on("HAWKING_FLASH_MOE_VEC4") && hidden % 4 == 0 {
+            (
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4",
+                (intermediate as u32, (top_k + 1) as u32, 1),
+                (1, 1, 1),
+            )
         } else {
-            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu"
+            (
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu",
+                (intermediate as u32, (top_k + 1) as u32, 1),
+                (1, 1, 1),
+            )
         };
-        tcb.dispatch_threads(
-            kernel,
-            (intermediate as u32, (top_k + 1) as u32, 1),
-            (1, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(gate_up_weights), 0);
-                enc.set_buffer(1, Some(route_ids), 0);
-                enc.set_buffer(2, Some(route_lut), 0);
-                enc.set_buffer(3, Some(input), 0);
-                enc.set_buffer(4, Some(routed_output), 0);
-                enc.set_buffer(5, Some(shared_gate_weights), 0);
-                enc.set_buffer(6, Some(shared_up_weights), 0);
-                enc.set_buffer(7, Some(shared_output), 0);
-                enc.set_u32(8, compact_experts as u32);
-                enc.set_u32(9, top_k as u32);
-                enc.set_u32(10, intermediate as u32);
-                enc.set_u32(11, hidden as u32);
-                enc.set_u32(12, source_experts as u32);
-            },
-        )
+        tcb.dispatch_threads(kernel, grid, threadgroup, |enc| {
+            enc.set_buffer(0, Some(gate_up_weights), 0);
+            enc.set_buffer(1, Some(route_ids), 0);
+            enc.set_buffer(2, Some(route_lut), 0);
+            enc.set_buffer(3, Some(input), 0);
+            enc.set_buffer(4, Some(routed_output), 0);
+            enc.set_buffer(5, Some(shared_gate_weights), 0);
+            enc.set_buffer(6, Some(shared_up_weights), 0);
+            enc.set_buffer(7, Some(shared_output), 0);
+            enc.set_u32(8, compact_experts as u32);
+            enc.set_u32(9, top_k as u32);
+            enc.set_u32(10, intermediate as u32);
+            enc.set_u32(11, hidden as u32);
+            enc.set_u32(12, source_experts as u32);
+        })
     }
 
     /// Compact routed expert down projection using the same source-ID LUT.
@@ -14956,6 +15789,40 @@ mod metal_dispatch {
         })
     }
 
+    /// Materialize a finite FP32 buffer through IEEE BF16 round-to-nearest,
+    /// ties-to-even while retaining an F32 carrier. This is a declared
+    /// diagnostic precision seam, never an implicit resident-path cast.
+    pub fn hawking_f32_bf16_roundtrip_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        elements: usize,
+    ) -> Result<()> {
+        if elements == 0 || elements > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "hawking_f32_bf16_roundtrip requires positive u32-sized elements".into(),
+            ));
+        }
+        let bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("BF16 round-trip byte size overflowed".into()))?;
+        if input.length() < bytes as u64 || output.length() < bytes as u64 {
+            return Err(Error::Kernel(
+                "hawking_f32_bf16_roundtrip received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "hawking_f32_bf16_roundtrip",
+            (elements as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(output), 0);
+                enc.set_u32(2, elements as u32);
+            },
+        )
+    }
+
     /// Exact Flash HyperConnection grouped RMSNorm over `[streams, hidden]`.
     pub fn qwen_next_hyperconnection_grouped_rmsnorm_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -14966,15 +15833,43 @@ mod metal_dispatch {
         streams: usize,
         eps: f32,
     ) -> Result<()> {
+        qwen_next_hyperconnection_grouped_rmsnorm_with_threadgroup_tcb(
+            tcb,
+            input,
+            weight_bf16,
+            output,
+            hidden,
+            streams,
+            eps,
+            TG_SIZE,
+        )
+    }
+
+    /// Encode the same grouped RMSNorm with an explicit power-of-two
+    /// threadgroup size. Ordinary callers use the `TG_SIZE` wrapper above;
+    /// this exists for bounded numerical-policy diagnostics only.
+    pub fn qwen_next_hyperconnection_grouped_rmsnorm_with_threadgroup_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        weight_bf16: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        streams: usize,
+        eps: f32,
+        threads_per_threadgroup: u32,
+    ) -> Result<()> {
         if hidden == 0
             || hidden > u32::MAX as usize
             || streams == 0
             || streams > u32::MAX as usize
             || !eps.is_finite()
             || eps <= 0.0
+            || threads_per_threadgroup == 0
+            || threads_per_threadgroup > 1024
+            || !threads_per_threadgroup.is_power_of_two()
         {
             return Err(Error::Kernel(
-                "qwen_next_hyperconnection_grouped_rmsnorm requires positive u32-sized geometry and finite positive eps".into(),
+                "qwen_next_hyperconnection_grouped_rmsnorm requires positive u32-sized geometry, finite positive eps, and a power-of-two threadgroup no larger than 1024".into(),
             ));
         }
         let elements = hidden
@@ -14995,7 +15890,7 @@ mod metal_dispatch {
             ));
         }
         let grid = streams
-            .checked_mul(TG_SIZE as usize)
+            .checked_mul(threads_per_threadgroup as usize)
             .ok_or_else(|| Error::Kernel("Flash HyperConnection norm grid overflowed".into()))?;
         if grid > u32::MAX as usize {
             return Err(Error::Kernel(
@@ -15005,6 +15900,143 @@ mod metal_dispatch {
         tcb.dispatch_threads(
             "qwen_next_hyperconnection_grouped_rmsnorm",
             (grid as u32, 1, 1),
+            (threads_per_threadgroup, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(weight_bf16), 0);
+                enc.set_buffer(2, Some(output), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_u32(4, streams as u32);
+                enc.set_f32(5, eps);
+                enc.set_threadgroup_memory_length(0, (threads_per_threadgroup as u64) * 4);
+            },
+        )
+    }
+
+    /// Exact source-order HyperConnection RMSNorm with parallel output
+    /// materialization.  Lane zero keeps the fused left-to-right reduction;
+    /// the full threadgroup then distributes only the independent writes.
+    pub fn qwen_next_hyperconnection_grouped_rmsnorm_serial_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        weight_bf16: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        streams: usize,
+        eps: f32,
+    ) -> Result<()> {
+        if hidden == 0
+            || hidden > u32::MAX as usize
+            || streams == 0
+            || streams > u32::MAX as usize
+            || !eps.is_finite()
+            || eps <= 0.0
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_grouped_rmsnorm_serial requires positive u32-sized geometry and finite positive eps".into(),
+            ));
+        }
+        let elements = hidden
+            .checked_mul(streams)
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection geometry overflowed".into()))?;
+        let f32_bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection f32 bytes overflowed".into()))?;
+        let bf16_bytes = elements
+            .checked_mul(std::mem::size_of::<u16>())
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection BF16 bytes overflowed".into()))?;
+        if input.length() < f32_bytes as u64
+            || weight_bf16.length() < bf16_bytes as u64
+            || output.length() < f32_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_grouped_rmsnorm_serial received a truncated buffer"
+                    .into(),
+            ));
+        }
+        const SERIAL_NORM_TG_SIZE: u32 = 512;
+        let grid = streams
+            .checked_mul(SERIAL_NORM_TG_SIZE as usize)
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection norm grid overflowed".into()))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "Flash HyperConnection norm grid exceeds Metal u32 geometry".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_hyperconnection_grouped_rmsnorm_serial",
+            (grid as u32, 1, 1),
+            (SERIAL_NORM_TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(weight_bf16), 0);
+                enc.set_buffer(2, Some(output), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_u32(4, streams as u32);
+                enc.set_f32(5, eps);
+                enc.set_threadgroup_memory_length(0, (SERIAL_NORM_TG_SIZE as u64) * 4);
+            },
+        )
+    }
+
+    /// Encode a bounded full-contiguous-pairwise F32 HyperConnection RMSNorm
+    /// reduction. This is an explicit source-boundary diagnostic profile, not
+    /// the ordinary resident schedule: it retains every square in
+    /// threadgroup memory so its reduction topology is observable and stable.
+    pub fn qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        weight_bf16: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        streams: usize,
+        eps: f32,
+    ) -> Result<()> {
+        const MAX_DIAGNOSTIC_HIDDEN: usize = 4_096;
+        if hidden == 0
+            || hidden > MAX_DIAGNOSTIC_HIDDEN
+            || streams == 0
+            || streams > u32::MAX as usize
+            || !eps.is_finite()
+            || eps <= 0.0
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise requires positive bounded hidden/stream geometry and finite positive eps".into(),
+            ));
+        }
+        let elements = hidden
+            .checked_mul(streams)
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection geometry overflowed".into()))?;
+        let f32_bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection f32 bytes overflowed".into()))?;
+        let bf16_bytes = elements
+            .checked_mul(std::mem::size_of::<u16>())
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection BF16 bytes overflowed".into()))?;
+        let scratch_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("Flash HyperConnection diagnostic scratch overflowed".into())
+            })?;
+        if input.length() < f32_bytes as u64
+            || weight_bf16.length() < bf16_bytes as u64
+            || output.length() < f32_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise received a truncated buffer".into(),
+            ));
+        }
+        let grid = streams
+            .checked_mul(TG_SIZE as usize)
+            .ok_or_else(|| Error::Kernel("Flash HyperConnection norm grid overflowed".into()))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(
+                "Flash HyperConnection norm grid exceeds Metal u32 geometry".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise",
+            (grid as u32, 1, 1),
             (TG_SIZE, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(input), 0);
@@ -15013,7 +16045,7 @@ mod metal_dispatch {
                 enc.set_u32(3, hidden as u32);
                 enc.set_u32(4, streams as u32);
                 enc.set_f32(5, eps);
-                enc.set_threadgroup_memory_length(0, (TG_SIZE as u64) * 4);
+                enc.set_threadgroup_memory_length(0, scratch_bytes as u64);
             },
         )
     }
@@ -15043,6 +16075,48 @@ mod metal_dispatch {
         }
         tcb.dispatch_threads(
             "qwen_next_hyperconnection_silu_scale",
+            (elements as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(output), 0);
+                enc.set_u32(2, elements as u32);
+                enc.set_f32(3, divisor);
+            },
+        )
+    }
+
+    /// Source-boundary diagnostic sibling of
+    /// [`qwen_next_hyperconnection_silu_scale_tcb`]. The output remains an
+    /// F32 carrier but is rounded exactly as a BF16 source activation before
+    /// the next producer consumes it.
+    pub fn qwen_next_hyperconnection_silu_scale_source_bf16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        elements: usize,
+        divisor: f32,
+    ) -> Result<()> {
+        if elements == 0 || elements > u32::MAX as usize || !divisor.is_finite() || divisor == 0.0 {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_silu_scale_source_bf16 requires positive u32-sized elements and finite non-zero divisor".into(),
+            ));
+        }
+        let bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "Flash HyperConnection source-BF16 activation bytes overflowed".into(),
+                )
+            })?;
+        if input.length() < bytes as u64 || output.length() < bytes as u64 {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_silu_scale_source_bf16 received a truncated buffer"
+                    .into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_hyperconnection_silu_scale_source_bf16",
             (elements as u32, 1, 1),
             (TG_SIZE, 1, 1),
             |enc| {
@@ -15090,6 +16164,60 @@ mod metal_dispatch {
         }
         tcb.dispatch_threads(
             "qwen_next_hyperconnection_read_mix",
+            (hidden as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(normalized), 0);
+                enc.set_buffer(1, Some(gate_logits), 0);
+                enc.set_buffer(2, Some(output), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_u32(4, streams as u32);
+            },
+        )
+    }
+
+    /// Source-boundary diagnostic sibling of the HyperConnection read mix.
+    /// It keeps the BF16 sigmoid and elementwise-product seams in the
+    /// producer, while retaining the existing F32 resident kernel unchanged.
+    pub fn qwen_next_hyperconnection_read_mix_source_bf16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        normalized: &PinnedBuffer,
+        gate_logits: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: usize,
+        streams: usize,
+    ) -> Result<()> {
+        if hidden == 0 || hidden > u32::MAX as usize || streams == 0 || streams > u32::MAX as usize
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_read_mix_source_bf16 requires positive u32-sized geometry".into(),
+            ));
+        }
+        let elements = hidden.checked_mul(streams).ok_or_else(|| {
+            Error::Kernel("Flash HyperConnection source-BF16 read geometry overflowed".into())
+        })?;
+        let state_bytes = elements
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel("Flash HyperConnection source-BF16 read bytes overflowed".into())
+            })?;
+        let output_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(
+                    "Flash HyperConnection source-BF16 read output bytes overflowed".into(),
+                )
+            })?;
+        if normalized.length() < state_bytes as u64
+            || gate_logits.length() < state_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(
+                "qwen_next_hyperconnection_read_mix_source_bf16 received a truncated buffer".into(),
+            ));
+        }
+        tcb.dispatch_threads(
+            "qwen_next_hyperconnection_read_mix_source_bf16",
             (hidden as u32, 1, 1),
             (TG_SIZE, 1, 1),
             |enc| {
@@ -15277,10 +16405,15 @@ mod metal_dispatch {
                 "qwen_next_hyperconnection_input_fused_with_block received a truncated buffer or unsupported stream count".into(),
             ));
         }
+        let threadgroup_size = if crate::env_on("HAWKING_FLASH_HC_TG512") {
+            512u32
+        } else {
+            TG_SIZE
+        };
         tcb.dispatch_threads(
             "qwen_next_hyperconnection_input_fused_with_block",
-            (TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
+            (threadgroup_size, 1, 1),
+            (threadgroup_size, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(input), 0);
                 enc.set_buffer(1, Some(norm_weight), 0);
@@ -15336,6 +16469,7 @@ mod metal_dispatch {
         eps: f32,
         divisor: f32,
         normalize_topk: bool,
+        compact_outputs: bool,
     ) -> Result<()> {
         if hidden == 0
             || streams == 0
@@ -15435,13 +16569,22 @@ mod metal_dispatch {
                 "qwen_next_hyperconnection_input_fused_with_block_router_topk received a truncated buffer".into(),
             ));
         }
-        let tg_size = TG_SIZE as usize;
-        let stage_offset = streams.checked_add(hidden).ok_or_else(|| {
+        let tg_size = if crate::env_on("HAWKING_FLASH_HC_TG512") {
+            512usize
+        } else {
+            TG_SIZE as usize
+        };
+        let stage_offset = streams;
+        let low_rank_offset = stage_offset.checked_add(hidden).ok_or_else(|| {
             Error::Kernel("fused HyperConnection/router staging geometry overflowed".into())
         })?;
-        let work_offset = stage_offset.checked_add(3).ok_or_else(|| {
-            Error::Kernel("fused HyperConnection/router scratch overflowed".into())
-        })? / 4
+        let work_offset = low_rank_offset
+            .checked_add(low_rank_width)
+            .and_then(|value| value.checked_add(3))
+            .ok_or_else(|| {
+                Error::Kernel("fused HyperConnection/router scratch overflowed".into())
+            })?
+            / 4
             * 4;
         let red_val_offset = work_offset.checked_add(n_experts).ok_or_else(|| {
             Error::Kernel("fused HyperConnection/router reduction geometry overflowed".into())
@@ -15465,8 +16608,8 @@ mod metal_dispatch {
         let tie_epsilon = crate::moe::route_tie_epsilon();
         tcb.dispatch_threads(
             "qwen_next_hyperconnection_input_fused_with_block_router_topk",
-            (TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
+            (tg_size as u32, 1, 1),
+            (tg_size as u32, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(input), 0);
                 enc.set_buffer(1, Some(norm_weight), 0);
@@ -15494,6 +16637,7 @@ mod metal_dispatch {
                 enc.set_u32(23, top_k as u32);
                 enc.set_f32(24, tie_epsilon);
                 enc.set_u32(25, u32::from(normalize_topk));
+                enc.set_u32(26, u32::from(compact_outputs));
                 enc.set_threadgroup_memory_length(0, scratch_bytes);
             },
         )
@@ -16347,6 +17491,1068 @@ mod metal_dispatch {
         })
     }
 
+    /// Direct Q4/G64 gate/up + SwiGLU projection.  `rows` may represent one
+    /// body or a row-major concatenation of compatible selected-expert bodies;
+    /// all rows consume the same input activation.  The output remains device
+    /// resident for a following routed-down dispatch.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_gate_up_swiglu_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_codes: &PinnedBuffer,
+        gate_scales_f16: &PinnedBuffer,
+        up_codes: &PinnedBuffer,
+        up_scales_f16: &PinnedBuffer,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str = "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
+        if rows == 0 || cols == 0 || cols % GROUP_SIZE != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero rows and a group-64-aligned column count"
+            )));
+        }
+        if rows > u32::MAX as usize || cols > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let groups_per_row = cols / GROUP_SIZE;
+        let group_count = rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let input_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} input byte count overflows usize")))?;
+        let output_bytes = rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output byte count overflows usize")))?;
+        if gate_codes.length() < code_bytes as u64
+            || gate_scales_f16.length() < scale_bytes as u64
+            || up_codes.length() < code_bytes as u64
+            || up_scales_f16.length() < scale_bytes as u64
+            || input.length() < input_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated direct-Q4 body or activation buffer"
+            )));
+        }
+        let threadgroup = 128u32;
+        let grid = (rows as u32)
+            .div_ceil(2)
+            .checked_mul(threadgroup)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} grid overflows Metal uint ABI")))?;
+        tcb.dispatch_threads(KERNEL, (grid, 1, 1), (threadgroup, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_codes), 0);
+            enc.set_buffer(1, Some(gate_scales_f16), 0);
+            enc.set_buffer(2, Some(up_codes), 0);
+            enc.set_buffer(3, Some(up_scales_f16), 0);
+            enc.set_buffer(4, Some(input), 0);
+            enc.set_buffer(5, Some(output), 0);
+            enc.set_u32(6, rows as u32);
+            enc.set_u32(7, cols as u32);
+            enc.set_u32(8, groups_per_row as u32);
+        })
+    }
+
+    /// Direct Q4/G64 routed down projection.  Bodies, activations, and outputs
+    /// are all route-major: route `r` occupies contiguous rows and consumes
+    /// only activation `r`.  It is the canonical no-dense-rematerialization
+    /// counterpart to [`qwen_uniform_q4_group64_gate_up_swiglu_tcb`].
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_routed_down_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        codes: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        route_inputs: &PinnedBuffer,
+        route_outputs: &PinnedBuffer,
+        routes: usize,
+        rows_per_route: usize,
+        cols: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str = "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128";
+        if routes == 0 || rows_per_route == 0 || cols == 0 || cols % GROUP_SIZE != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero route geometry and group-64-aligned columns"
+            )));
+        }
+        if routes > u32::MAX as usize
+            || rows_per_route > u32::MAX as usize
+            || cols > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let groups_per_row = cols / GROUP_SIZE;
+        let total_rows = routes
+            .checked_mul(rows_per_route)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} total row count overflows usize")))?;
+        let group_count = total_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let input_bytes = routes
+            .checked_mul(cols)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} input byte count overflows usize")))?;
+        let output_bytes = total_rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output byte count overflows usize")))?;
+        if codes.length() < code_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || route_inputs.length() < input_bytes as u64
+            || route_outputs.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated direct-Q4 body or route-major activation buffer"
+            )));
+        }
+        let threadgroup = 128u32;
+        let grid = (total_rows as u32)
+            .div_ceil(2)
+            .checked_mul(threadgroup)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} grid overflows Metal uint ABI")))?;
+        tcb.dispatch_threads(KERNEL, (grid, 1, 1), (threadgroup, 1, 1), |enc| {
+            enc.set_buffer(0, Some(codes), 0);
+            enc.set_buffer(1, Some(scales_f16), 0);
+            enc.set_buffer(2, Some(route_inputs), 0);
+            enc.set_buffer(3, Some(route_outputs), 0);
+            enc.set_u32(4, routes as u32);
+            enc.set_u32(5, rows_per_route as u32);
+            enc.set_u32(6, cols as u32);
+            enc.set_u32(7, groups_per_row as u32);
+        })
+    }
+
+    /// Compact-union Q4/G64 gate/up + SwiGLU projection with an explicit
+    /// source-expert-to-compact-slot LUT.  The packed banks are laid out as
+    /// `[compact_expert, gate/up row, hidden]`, while the route ids, input,
+    /// and output are route-major.  A missing LUT entry is a defined zero
+    /// route, which keeps the device contract fail-closed without requiring a
+    /// dense expert reconstruction.
+    ///
+    /// This is a route-aware compact primitive only; it does not imply a
+    /// complete-body loader, EBPW closure, or resident qualification.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_compact_gate_up_swiglu_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_codes: &PinnedBuffer,
+        gate_scales_f16: &PinnedBuffer,
+        up_codes: &PinnedBuffer,
+        up_scales_f16: &PinnedBuffer,
+        route_ids: &PinnedBuffer,
+        route_lut: &PinnedBuffer,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        compact_experts: usize,
+        top_k: usize,
+        intermediate: usize,
+        hidden: usize,
+        source_experts: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str = "qwen_uniform_q4_group64_compact_gate_up_swiglu_geo_tpr64_tg128";
+        if compact_experts == 0
+            || top_k == 0
+            || intermediate == 0
+            || hidden == 0
+            || source_experts == 0
+            || hidden % GROUP_SIZE != 0
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero geometry and a group-64-aligned hidden size"
+            )));
+        }
+        if compact_experts > u32::MAX as usize
+            || top_k > u32::MAX as usize
+            || intermediate > u32::MAX as usize
+            || hidden > u32::MAX as usize
+            || source_experts > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let packed_rows = compact_experts
+            .checked_mul(intermediate)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed row count overflows usize")))?;
+        if packed_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} packed row count exceeds Metal uint indexing"
+            )));
+        }
+        let total_rows = top_k
+            .checked_mul(intermediate)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output row count overflows usize")))?;
+        if total_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} output row count exceeds Metal uint indexing"
+            )));
+        }
+        let groups_per_row = hidden / GROUP_SIZE;
+        let group_count = packed_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let input_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} input byte count overflows usize")))?;
+        let output_bytes = total_rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output byte count overflows usize")))?;
+        let route_ids_bytes = top_k
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route id byte count overflows usize"))
+            })?;
+        let route_lut_bytes = source_experts
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route LUT byte count overflows usize"))
+            })?;
+        if code_bytes > u64::MAX as usize
+            || scale_bytes > u64::MAX as usize
+            || input_bytes > u64::MAX as usize
+            || output_bytes > u64::MAX as usize
+            || route_ids_bytes > u64::MAX as usize
+            || route_lut_bytes > u64::MAX as usize
+            || gate_codes.length() < code_bytes as u64
+            || gate_scales_f16.length() < scale_bytes as u64
+            || up_codes.length() < code_bytes as u64
+            || up_scales_f16.length() < scale_bytes as u64
+            || route_ids.length() < route_ids_bytes as u64
+            || route_lut.length() < route_lut_bytes as u64
+            || input.length() < input_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated compact-Q4 route body or activation buffer"
+            )));
+        }
+        let threadgroup = 128u32;
+        let grid = total_rows
+            .div_ceil(2)
+            .checked_mul(threadgroup as usize)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} grid overflows usize")))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} grid exceeds Metal uint ABI"
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (grid as u32, 1, 1), (threadgroup, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_codes), 0);
+            enc.set_buffer(1, Some(gate_scales_f16), 0);
+            enc.set_buffer(2, Some(up_codes), 0);
+            enc.set_buffer(3, Some(up_scales_f16), 0);
+            enc.set_buffer(4, Some(route_ids), 0);
+            enc.set_buffer(5, Some(route_lut), 0);
+            enc.set_buffer(6, Some(input), 0);
+            enc.set_buffer(7, Some(output), 0);
+            enc.set_u32(8, compact_experts as u32);
+            enc.set_u32(9, top_k as u32);
+            enc.set_u32(10, intermediate as u32);
+            enc.set_u32(11, hidden as u32);
+            enc.set_u32(12, groups_per_row as u32);
+            enc.set_u32(13, source_experts as u32);
+        })
+    }
+
+    /// Compact routed Q4/G64 gate/up plus shared BF16 gate/up + SwiGLU in a
+    /// single device launch.  The route-major outputs are written to separate
+    /// carriers so the following down/HyperConnection epilogue can remain
+    /// fully device resident.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_codes: &PinnedBuffer,
+        gate_scales_f16: &PinnedBuffer,
+        up_codes: &PinnedBuffer,
+        up_scales_f16: &PinnedBuffer,
+        route_ids: &PinnedBuffer,
+        route_lut: &PinnedBuffer,
+        input: &PinnedBuffer,
+        routed_output: &PinnedBuffer,
+        shared_gate_weights: &PinnedBuffer,
+        shared_up_weights: &PinnedBuffer,
+        shared_output: &PinnedBuffer,
+        compact_experts: usize,
+        top_k: usize,
+        intermediate: usize,
+        hidden: usize,
+        source_experts: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str =
+            "qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_geo_tpr64_tg128";
+        if compact_experts == 0
+            || top_k == 0
+            || intermediate == 0
+            || hidden == 0
+            || source_experts == 0
+            || hidden % GROUP_SIZE != 0
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero geometry and a group-64-aligned hidden size"
+            )));
+        }
+        if compact_experts > u32::MAX as usize
+            || top_k > u32::MAX as usize
+            || intermediate > u32::MAX as usize
+            || hidden > u32::MAX as usize
+            || source_experts > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let packed_rows = compact_experts
+            .checked_mul(intermediate)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed row count overflows usize")))?;
+        if packed_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} packed row count exceeds Metal uint indexing"
+            )));
+        }
+        let total_rows = top_k
+            .checked_add(1)
+            .and_then(|routes| routes.checked_mul(intermediate))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output row count overflows usize")))?;
+        if total_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} output row count exceeds Metal uint indexing"
+            )));
+        }
+        let groups_per_row = hidden / GROUP_SIZE;
+        let group_count = packed_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let input_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} input byte count overflows usize")))?;
+        let routed_bytes = top_k
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} routed output bytes overflow")))?;
+        let shared_bytes = intermediate
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} shared output bytes overflow")))?;
+        let shared_weight_bytes = intermediate
+            .checked_mul(hidden)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} shared weight bytes overflow")))?;
+        let route_ids_bytes = top_k
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route id byte count overflows usize"))
+            })?;
+        let route_lut_bytes = source_experts
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route LUT byte count overflows usize"))
+            })?;
+        if gate_codes.length() < code_bytes as u64
+            || gate_scales_f16.length() < scale_bytes as u64
+            || up_codes.length() < code_bytes as u64
+            || up_scales_f16.length() < scale_bytes as u64
+            || route_ids.length() < route_ids_bytes as u64
+            || route_lut.length() < route_lut_bytes as u64
+            || input.length() < input_bytes as u64
+            || routed_output.length() < routed_bytes as u64
+            || shared_gate_weights.length() < shared_weight_bytes as u64
+            || shared_up_weights.length() < shared_weight_bytes as u64
+            || shared_output.length() < shared_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated compact-Q4/shared body or activation buffer"
+            )));
+        }
+        let threadgroup = 128u32;
+        let grid = total_rows
+            .div_ceil(2)
+            .checked_mul(threadgroup as usize)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} grid overflows usize")))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} grid exceeds Metal uint ABI"
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (grid as u32, 1, 1), (threadgroup, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_codes), 0);
+            enc.set_buffer(1, Some(gate_scales_f16), 0);
+            enc.set_buffer(2, Some(up_codes), 0);
+            enc.set_buffer(3, Some(up_scales_f16), 0);
+            enc.set_buffer(4, Some(route_ids), 0);
+            enc.set_buffer(5, Some(route_lut), 0);
+            enc.set_buffer(6, Some(input), 0);
+            enc.set_buffer(7, Some(routed_output), 0);
+            enc.set_buffer(8, Some(shared_gate_weights), 0);
+            enc.set_buffer(9, Some(shared_up_weights), 0);
+            enc.set_buffer(10, Some(shared_output), 0);
+            enc.set_u32(11, compact_experts as u32);
+            enc.set_u32(12, top_k as u32);
+            enc.set_u32(13, intermediate as u32);
+            enc.set_u32(14, hidden as u32);
+            enc.set_u32(15, source_experts as u32);
+            enc.set_u32(16, groups_per_row as u32);
+        })
+    }
+
+    /// Compact-union Q4/G64 routed-down projection with an explicit
+    /// source-expert-to-compact-slot LUT.  The packed bank is laid out as
+    /// `[compact_expert, hidden row, intermediate]`; activations and outputs
+    /// remain route-major.  Missing LUT entries deterministically produce a
+    /// zero route.
+    ///
+    /// This is the down-projection companion to
+    /// [`qwen_uniform_q4_group64_compact_gate_up_swiglu_tcb`].
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_compact_down_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        codes: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        route_ids: &PinnedBuffer,
+        route_lut: &PinnedBuffer,
+        activated: &PinnedBuffer,
+        output: &PinnedBuffer,
+        compact_experts: usize,
+        top_k: usize,
+        intermediate: usize,
+        hidden: usize,
+        source_experts: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str = "qwen_uniform_q4_group64_compact_down_geo_tpr64_tg128";
+        if compact_experts == 0
+            || top_k == 0
+            || intermediate == 0
+            || hidden == 0
+            || source_experts == 0
+            || intermediate % GROUP_SIZE != 0
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero geometry and a group-64-aligned intermediate size"
+            )));
+        }
+        if compact_experts > u32::MAX as usize
+            || top_k > u32::MAX as usize
+            || intermediate > u32::MAX as usize
+            || hidden > u32::MAX as usize
+            || source_experts > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let packed_rows = compact_experts
+            .checked_mul(hidden)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed row count overflows usize")))?;
+        if packed_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} packed row count exceeds Metal uint indexing"
+            )));
+        }
+        let total_rows = top_k
+            .checked_mul(hidden)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output row count overflows usize")))?;
+        if total_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} output row count exceeds Metal uint indexing"
+            )));
+        }
+        let groups_per_row = intermediate / GROUP_SIZE;
+        let group_count = packed_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let activated_bytes = top_k
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} activation byte count overflows usize"))
+            })?;
+        let output_bytes = total_rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output byte count overflows usize")))?;
+        let route_ids_bytes = top_k
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route id byte count overflows usize"))
+            })?;
+        let route_lut_bytes = source_experts
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route LUT byte count overflows usize"))
+            })?;
+        if code_bytes > u64::MAX as usize
+            || scale_bytes > u64::MAX as usize
+            || activated_bytes > u64::MAX as usize
+            || output_bytes > u64::MAX as usize
+            || route_ids_bytes > u64::MAX as usize
+            || route_lut_bytes > u64::MAX as usize
+            || codes.length() < code_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || route_ids.length() < route_ids_bytes as u64
+            || route_lut.length() < route_lut_bytes as u64
+            || activated.length() < activated_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated compact-Q4 route body or activation buffer"
+            )));
+        }
+        let threadgroup = 128u32;
+        let grid = total_rows
+            .div_ceil(2)
+            .checked_mul(threadgroup as usize)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} grid overflows usize")))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} grid exceeds Metal uint ABI"
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (grid as u32, 1, 1), (threadgroup, 1, 1), |enc| {
+            enc.set_buffer(0, Some(codes), 0);
+            enc.set_buffer(1, Some(scales_f16), 0);
+            enc.set_buffer(2, Some(route_ids), 0);
+            enc.set_buffer(3, Some(route_lut), 0);
+            enc.set_buffer(4, Some(activated), 0);
+            enc.set_buffer(5, Some(output), 0);
+            enc.set_u32(6, compact_experts as u32);
+            enc.set_u32(7, top_k as u32);
+            enc.set_u32(8, intermediate as u32);
+            enc.set_u32(9, hidden as u32);
+            enc.set_u32(10, source_experts as u32);
+            enc.set_u32(11, groups_per_row as u32);
+        })
+    }
+
+    /// Compact Q4/G64 routed down projection fused with the shared BF16 down
+    /// projection, route weighting, shared sigmoid gate, and HyperConnection
+    /// write.  It preserves the full diagnostic epilogue surface while
+    /// keeping the Q4 candidate at one device launch for this stage.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_compact_down_shared_direct_hc_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        codes: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        route_ids: &PinnedBuffer,
+        route_lut: &PinnedBuffer,
+        activated: &PinnedBuffer,
+        selected_weights: &PinnedBuffer,
+        shared_down_weights: &PinnedBuffer,
+        shared_activation: &PinnedBuffer,
+        shared_gate_logit: &PinnedBuffer,
+        routed_sum_out: &PinnedBuffer,
+        shared_output_out: &PinnedBuffer,
+        shared_gated_out: &PinnedBuffer,
+        output: &PinnedBuffer,
+        residual: &PinnedBuffer,
+        block_logits: &PinnedBuffer,
+        final_output: &PinnedBuffer,
+        compact_experts: usize,
+        top_k: usize,
+        intermediate: usize,
+        hidden: usize,
+        source_experts: usize,
+        streams: usize,
+        divisor: f32,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        const KERNEL: &str =
+            "qwen_uniform_q4_group64_compact_down_shared_direct_hc_geo_tpr64_tg128";
+        if compact_experts == 0
+            || top_k == 0
+            || intermediate == 0
+            || hidden == 0
+            || source_experts == 0
+            || streams == 0
+            || intermediate % GROUP_SIZE != 0
+            || !divisor.is_finite()
+            || divisor == 0.0
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero geometry, group-64-aligned intermediate, and finite non-zero divisor"
+            )));
+        }
+        if compact_experts > u32::MAX as usize
+            || top_k > u32::MAX as usize
+            || intermediate > u32::MAX as usize
+            || hidden > u32::MAX as usize
+            || source_experts > u32::MAX as usize
+            || streams > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let packed_rows = compact_experts
+            .checked_mul(hidden)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed row count overflows usize")))?;
+        if packed_rows > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} packed row count exceeds Metal uint indexing"
+            )));
+        }
+        let groups_per_row = intermediate / GROUP_SIZE;
+        let group_count = packed_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let route_bytes = top_k
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} route byte count overflows usize")))?;
+        let lut_bytes = source_experts
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} route LUT byte count overflows usize"))
+            })?;
+        let activation_bytes = top_k
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} activation byte count overflows usize"))
+            })?;
+        let hidden_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} hidden byte count overflows usize")))?;
+        let state_bytes = hidden
+            .checked_mul(streams)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} state byte count overflows usize")))?;
+        let shared_down_bytes = hidden
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} shared down byte count overflows usize"))
+            })?;
+        let shared_activation_bytes = intermediate
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!(
+                    "{KERNEL} shared activation byte count overflows usize"
+                ))
+            })?;
+        let logits_bytes = streams
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} block-logit byte count overflows usize"))
+            })?;
+        if codes.length() < code_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || route_ids.length() < route_bytes as u64
+            || route_lut.length() < lut_bytes as u64
+            || activated.length() < activation_bytes as u64
+            || selected_weights.length() < route_bytes as u64
+            || shared_down_weights.length() < shared_down_bytes as u64
+            || shared_activation.length() < shared_activation_bytes as u64
+            || shared_gate_logit.length() < std::mem::size_of::<f32>() as u64
+            || routed_sum_out.length() < hidden_bytes as u64
+            || shared_output_out.length() < hidden_bytes as u64
+            || shared_gated_out.length() < hidden_bytes as u64
+            || output.length() < hidden_bytes as u64
+            || residual.length() < state_bytes as u64
+            || block_logits.length() < logits_bytes as u64
+            || final_output.length() < state_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated compact-Q4/shared HC buffer"
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (hidden as u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(codes), 0);
+            enc.set_buffer(1, Some(scales_f16), 0);
+            enc.set_buffer(2, Some(route_ids), 0);
+            enc.set_buffer(3, Some(route_lut), 0);
+            enc.set_buffer(4, Some(activated), 0);
+            enc.set_buffer(5, Some(selected_weights), 0);
+            enc.set_buffer(6, Some(shared_down_weights), 0);
+            enc.set_buffer(7, Some(shared_activation), 0);
+            enc.set_buffer(8, Some(shared_gate_logit), 0);
+            enc.set_buffer(9, Some(routed_sum_out), 0);
+            enc.set_buffer(10, Some(shared_output_out), 0);
+            enc.set_buffer(11, Some(shared_gated_out), 0);
+            enc.set_buffer(12, Some(output), 0);
+            enc.set_buffer(13, Some(residual), 0);
+            enc.set_buffer(14, Some(block_logits), 0);
+            enc.set_buffer(15, Some(final_output), 0);
+            enc.set_u32(16, compact_experts as u32);
+            enc.set_u32(17, top_k as u32);
+            enc.set_u32(18, intermediate as u32);
+            enc.set_u32(19, hidden as u32);
+            enc.set_u32(20, source_experts as u32);
+            enc.set_u32(21, streams as u32);
+            enc.set_f32(22, divisor);
+            enc.set_u32(23, groups_per_row as u32);
+        })
+    }
+
+    /// Compact-union Q8/G32 gate/up plus shared BF16 gate/up + SwiGLU.
+    ///
+    /// The ABI deliberately mirrors the Q4 sibling: the only representation
+    /// change is one offset-binary signed byte per weight instead of two
+    /// four-bit values per byte.  Keeping the route-LUT, activation, and
+    /// shared/control surfaces identical makes this a body-fidelity falsifier
+    /// rather than a second execution topology.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_codes: &PinnedBuffer,
+        gate_scales_f16: &PinnedBuffer,
+        up_codes: &PinnedBuffer,
+        up_scales_f16: &PinnedBuffer,
+        route_ids: &PinnedBuffer,
+        route_lut: &PinnedBuffer,
+        input: &PinnedBuffer,
+        routed_output: &PinnedBuffer,
+        shared_gate_weights: &PinnedBuffer,
+        shared_up_weights: &PinnedBuffer,
+        shared_output: &PinnedBuffer,
+        gate_residual_row_ptr: &PinnedBuffer,
+        gate_residual_indices: &PinnedBuffer,
+        gate_residual_values: &PinnedBuffer,
+        up_residual_row_ptr: &PinnedBuffer,
+        up_residual_indices: &PinnedBuffer,
+        up_residual_values: &PinnedBuffer,
+        compact_experts: usize,
+        top_k: usize,
+        intermediate: usize,
+        hidden: usize,
+        source_experts: usize,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 32;
+        const KERNEL: &str =
+            "qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_geo_tpr64_tg128";
+        if compact_experts == 0
+            || top_k == 0
+            || intermediate == 0
+            || hidden == 0
+            || source_experts == 0
+            || hidden % GROUP_SIZE != 0
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero geometry and a group-32-aligned hidden size"
+            )));
+        }
+        if compact_experts > u32::MAX as usize
+            || top_k > u32::MAX as usize
+            || intermediate > u32::MAX as usize
+            || hidden > u32::MAX as usize
+            || source_experts > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let packed_rows = compact_experts
+            .checked_mul(intermediate)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed row count overflows usize")))?;
+        let total_rows = top_k
+            .checked_add(1)
+            .and_then(|routes| routes.checked_mul(intermediate))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} output row count overflows usize")))?;
+        let groups_per_row = hidden / GROUP_SIZE;
+        let group_count = packed_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(GROUP_SIZE)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let route_ids_bytes = top_k
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} route id bytes overflow")))?;
+        let route_lut_bytes = source_experts
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} route LUT bytes overflow")))?;
+        let input_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} input bytes overflow")))?;
+        let routed_bytes = top_k
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} routed output bytes overflow")))?;
+        let shared_bytes = intermediate
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} shared output bytes overflow")))?;
+        let shared_weight_bytes = intermediate
+            .checked_mul(hidden)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} shared weight bytes overflow")))?;
+        let residual_row_ptr_bytes = packed_rows
+            .checked_add(1)
+            .and_then(|rows| rows.checked_mul(std::mem::size_of::<u32>()))
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} residual row-pointer bytes overflow"))
+            })?;
+        if packed_rows > u32::MAX as usize
+            || total_rows > u32::MAX as usize
+            || gate_codes.length() < code_bytes as u64
+            || gate_scales_f16.length() < scale_bytes as u64
+            || up_codes.length() < code_bytes as u64
+            || up_scales_f16.length() < scale_bytes as u64
+            || route_ids.length() < route_ids_bytes as u64
+            || route_lut.length() < route_lut_bytes as u64
+            || input.length() < input_bytes as u64
+            || routed_output.length() < routed_bytes as u64
+            || shared_gate_weights.length() < shared_weight_bytes as u64
+            || shared_up_weights.length() < shared_weight_bytes as u64
+            || shared_output.length() < shared_bytes as u64
+            || gate_residual_row_ptr.length() < residual_row_ptr_bytes as u64
+            || gate_residual_indices.length() < std::mem::size_of::<u16>() as u64
+            || gate_residual_values.length() < std::mem::size_of::<f32>() as u64
+            || up_residual_row_ptr.length() < residual_row_ptr_bytes as u64
+            || up_residual_indices.length() < std::mem::size_of::<u16>() as u64
+            || up_residual_values.length() < std::mem::size_of::<f32>() as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated compact-Q8/shared body or activation buffer"
+            )));
+        }
+        let threadgroup = 128u32;
+        let grid = total_rows
+            .div_ceil(2)
+            .checked_mul(threadgroup as usize)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} grid overflows usize")))?;
+        if grid > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} grid exceeds Metal uint ABI"
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (grid as u32, 1, 1), (threadgroup, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_codes), 0);
+            enc.set_buffer(1, Some(gate_scales_f16), 0);
+            enc.set_buffer(2, Some(up_codes), 0);
+            enc.set_buffer(3, Some(up_scales_f16), 0);
+            enc.set_buffer(4, Some(route_ids), 0);
+            enc.set_buffer(5, Some(route_lut), 0);
+            enc.set_buffer(6, Some(input), 0);
+            enc.set_buffer(7, Some(routed_output), 0);
+            enc.set_buffer(8, Some(shared_gate_weights), 0);
+            enc.set_buffer(9, Some(shared_up_weights), 0);
+            enc.set_buffer(10, Some(shared_output), 0);
+            enc.set_buffer(11, Some(gate_residual_row_ptr), 0);
+            enc.set_buffer(12, Some(gate_residual_indices), 0);
+            enc.set_buffer(13, Some(gate_residual_values), 0);
+            enc.set_buffer(14, Some(up_residual_row_ptr), 0);
+            enc.set_buffer(15, Some(up_residual_indices), 0);
+            enc.set_buffer(16, Some(up_residual_values), 0);
+            enc.set_u32(17, compact_experts as u32);
+            enc.set_u32(18, top_k as u32);
+            enc.set_u32(19, intermediate as u32);
+            enc.set_u32(20, hidden as u32);
+            enc.set_u32(21, source_experts as u32);
+            enc.set_u32(22, groups_per_row as u32);
+        })
+    }
+
+    /// Compact Q8/G32 routed down projection fused with shared BF16 down,
+    /// route weighting, the shared sigmoid gate, and the HyperConnection
+    /// write.  This is the Q8 companion to the resident Q4 epilogue.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q8_group32_compact_down_shared_direct_hc_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        codes: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        route_ids: &PinnedBuffer,
+        route_lut: &PinnedBuffer,
+        activated: &PinnedBuffer,
+        selected_weights: &PinnedBuffer,
+        shared_down_weights: &PinnedBuffer,
+        shared_activation: &PinnedBuffer,
+        shared_gate_logit: &PinnedBuffer,
+        routed_sum_out: &PinnedBuffer,
+        shared_output_out: &PinnedBuffer,
+        shared_gated_out: &PinnedBuffer,
+        output: &PinnedBuffer,
+        residual: &PinnedBuffer,
+        block_logits: &PinnedBuffer,
+        final_output: &PinnedBuffer,
+        residual_row_ptr: &PinnedBuffer,
+        residual_indices: &PinnedBuffer,
+        residual_values: &PinnedBuffer,
+        compact_experts: usize,
+        top_k: usize,
+        intermediate: usize,
+        hidden: usize,
+        source_experts: usize,
+        streams: usize,
+        divisor: f32,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 32;
+        const KERNEL: &str =
+            "qwen_uniform_q8_group32_compact_down_shared_direct_hc_geo_tpr64_tg128";
+        if compact_experts == 0
+            || top_k == 0
+            || intermediate == 0
+            || hidden == 0
+            || source_experts == 0
+            || streams == 0
+            || intermediate % GROUP_SIZE != 0
+            || !divisor.is_finite()
+            || divisor == 0.0
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires non-zero geometry, group-32-aligned intermediate, and finite non-zero divisor"
+            )));
+        }
+        if compact_experts > u32::MAX as usize
+            || top_k > u32::MAX as usize
+            || intermediate > u32::MAX as usize
+            || hidden > u32::MAX as usize
+            || source_experts > u32::MAX as usize
+            || streams > u32::MAX as usize
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} dimensions exceed Metal uint ABI"
+            )));
+        }
+        let packed_rows = compact_experts
+            .checked_mul(hidden)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed row count overflows usize")))?;
+        let groups_per_row = intermediate / GROUP_SIZE;
+        let group_count = packed_rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(GROUP_SIZE)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale byte count overflows usize")))?;
+        let route_bytes = top_k
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} route bytes overflow")))?;
+        let lut_bytes = source_experts
+            .checked_mul(std::mem::size_of::<u32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} route LUT bytes overflow")))?;
+        let activation_bytes = top_k
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} activation bytes overflow")))?;
+        let hidden_bytes = hidden
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} hidden bytes overflow")))?;
+        let state_bytes = hidden
+            .checked_mul(streams)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} state bytes overflow")))?;
+        let shared_down_bytes = hidden
+            .checked_mul(intermediate)
+            .and_then(|elements| elements.checked_mul(std::mem::size_of::<u16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} shared down bytes overflow")))?;
+        let shared_activation_bytes = intermediate
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} shared activation bytes overflow")))?;
+        let logits_bytes = streams
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} block-logit bytes overflow")))?;
+        let residual_row_ptr_bytes = packed_rows
+            .checked_add(1)
+            .and_then(|rows| rows.checked_mul(std::mem::size_of::<u32>()))
+            .ok_or_else(|| {
+                Error::Kernel(format!("{KERNEL} residual row-pointer bytes overflow"))
+            })?;
+        if packed_rows > u32::MAX as usize
+            || codes.length() < code_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || route_ids.length() < route_bytes as u64
+            || route_lut.length() < lut_bytes as u64
+            || activated.length() < activation_bytes as u64
+            || selected_weights.length() < route_bytes as u64
+            || shared_down_weights.length() < shared_down_bytes as u64
+            || shared_activation.length() < shared_activation_bytes as u64
+            || shared_gate_logit.length() < std::mem::size_of::<f32>() as u64
+            || routed_sum_out.length() < hidden_bytes as u64
+            || shared_output_out.length() < hidden_bytes as u64
+            || shared_gated_out.length() < hidden_bytes as u64
+            || output.length() < hidden_bytes as u64
+            || residual.length() < state_bytes as u64
+            || block_logits.length() < logits_bytes as u64
+            || final_output.length() < state_bytes as u64
+            || residual_row_ptr.length() < residual_row_ptr_bytes as u64
+            || residual_indices.length() < std::mem::size_of::<u16>() as u64
+            || residual_values.length() < std::mem::size_of::<f32>() as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} received a truncated compact-Q8/shared HC buffer"
+            )));
+        }
+        tcb.dispatch_threads(KERNEL, (hidden as u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(codes), 0);
+            enc.set_buffer(1, Some(scales_f16), 0);
+            enc.set_buffer(2, Some(route_ids), 0);
+            enc.set_buffer(3, Some(route_lut), 0);
+            enc.set_buffer(4, Some(activated), 0);
+            enc.set_buffer(5, Some(selected_weights), 0);
+            enc.set_buffer(6, Some(shared_down_weights), 0);
+            enc.set_buffer(7, Some(shared_activation), 0);
+            enc.set_buffer(8, Some(shared_gate_logit), 0);
+            enc.set_buffer(9, Some(routed_sum_out), 0);
+            enc.set_buffer(10, Some(shared_output_out), 0);
+            enc.set_buffer(11, Some(shared_gated_out), 0);
+            enc.set_buffer(12, Some(output), 0);
+            enc.set_buffer(13, Some(residual), 0);
+            enc.set_buffer(14, Some(block_logits), 0);
+            enc.set_buffer(15, Some(final_output), 0);
+            enc.set_buffer(16, Some(residual_row_ptr), 0);
+            enc.set_buffer(17, Some(residual_indices), 0);
+            enc.set_buffer(18, Some(residual_values), 0);
+            enc.set_u32(19, compact_experts as u32);
+            enc.set_u32(20, top_k as u32);
+            enc.set_u32(21, intermediate as u32);
+            enc.set_u32(22, hidden as u32);
+            enc.set_u32(23, source_experts as u32);
+            enc.set_u32(24, streams as u32);
+            enc.set_f32(25, divisor);
+            enc.set_u32(26, groups_per_row as u32);
+        })
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn encode_moe_shared_only_indexed_tcb_with_scratch(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -16368,13 +18574,27 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_v4" => {
                 "moe_batched_gemm_q4_indexed_v2t"
             }
             _ => "moe_batched_gemm_q4_indexed",
         };
 
-        if q4k_schedule == "v2t_gu_v3" {
+        if q4k_schedule == "v2t_gu_v4" {
+            // One shared route does not benefit from the paired-route geometry.
+            encode_batched_gemv_fused_gu_v2_tcb(
+                tcb,
+                model_buf,
+                shared_route_ids_buf,
+                x_buf,
+                shared_act,
+                shared_gate_offset,
+                shared_up_offset,
+                1,
+                shared_mid,
+                hidden,
+            )?;
+        } else if q4k_schedule == "v2t_gu_v3" {
             // One shared route does not benefit from the paired-route geometry.
             encode_batched_gemv_fused_gu_v2_tcb(
                 tcb,
@@ -16501,13 +18721,14 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" => {
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v3" | "v2t_gu_v4" => {
                 "moe_batched_gemm_q4_indexed_v2t"
             }
             _ => "moe_batched_gemm_q4_indexed",
         };
         let use_fused_gu_v2 = q4k_schedule == "v2t_gu_v2";
         let use_fused_gu_v3 = q4k_schedule == "v2t_gu_v3";
+        let use_fused_gu_v4 = q4k_schedule == "v2t_gu_v4";
         let use_fused_gu = q4k_schedule == "v2t_gu";
         // Serial: dispatch one expert at a time so each expert's weight slab (~3 MB
         // gate+up) is a single sequential stream. Eliminates 6-stream L2 thrashing.
@@ -16516,6 +18737,19 @@ mod metal_dispatch {
 
         if use_serial_gu {
             encode_batched_gemv_fused_gu_serial_tcb(
+                tcb,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_act,
+                routed_gate_offset,
+                routed_up_offset,
+                routes,
+                routed_mid,
+                hidden,
+            )?;
+        } else if use_fused_gu_v4 {
+            encode_batched_gemv_fused_gu_v4_tcb(
                 tcb,
                 model_buf,
                 route_ids_buf,
@@ -16601,33 +18835,42 @@ mod metal_dispatch {
         }
 
         // Down projection: also serial when using v2t_gu_serial to fix the same
-        // L2 thrashing on the down-projection weight slabs.
-        if use_serial_gu {
-            encode_batched_gemv_indexed_serial_tcb(
-                tcb,
-                routed_down_kernel,
-                model_buf,
-                route_ids_buf,
-                routed_act,
-                routed_out,
-                routed_down_offset,
-                routes,
-                hidden,
-                routed_mid,
-            )?;
-        } else {
-            encode_batched_gemv_indexed_tcb(
-                tcb,
-                routed_down_kernel,
-                model_buf,
-                route_ids_buf,
-                routed_act,
-                routed_out,
-                routed_down_offset,
-                routes,
-                hidden,
-                routed_mid,
-            )?;
+        // L2 thrashing on the down-projection weight slabs.  The opt-in
+        // route-major consumer below owns this stage when the routed weights
+        // are Q8_0/v2t; it emits the final weighted result after shared output
+        // is available, so do not materialize routed_out in that case.
+        let use_q8_route_accum_fused = crate::env_on("HAWKING_Q8_ROUTE_ACCUM_FUSED")
+            && routed_down_kernel == "moe_batched_gemm_q8_0_indexed_v2t";
+        let use_q4_0_route_accum_fused = crate::env_on("HAWKING_Q40_ROUTE_ACCUM_FUSED")
+            && routed_down_kernel == "moe_batched_gemm_q4_0_indexed_v2t";
+        if !use_q8_route_accum_fused && !use_q4_0_route_accum_fused {
+            if use_serial_gu {
+                encode_batched_gemv_indexed_serial_tcb(
+                    tcb,
+                    routed_down_kernel,
+                    model_buf,
+                    route_ids_buf,
+                    routed_act,
+                    routed_out,
+                    routed_down_offset,
+                    routes,
+                    hidden,
+                    routed_mid,
+                )?;
+            } else {
+                encode_batched_gemv_indexed_tcb(
+                    tcb,
+                    routed_down_kernel,
+                    model_buf,
+                    route_ids_buf,
+                    routed_act,
+                    routed_out,
+                    routed_down_offset,
+                    routes,
+                    hidden,
+                    routed_mid,
+                )?;
+            }
         }
 
         if let (Some(gate_off), Some(up_off), Some(down_off)) =
@@ -16635,7 +18878,22 @@ mod metal_dispatch {
         {
             // Shared expert always routes=1, so serial == parallel. Use the
             // appropriate fused_gu variant when any gu schedule is selected.
-            if use_fused_gu_v3 {
+            if use_fused_gu_v4 {
+                // The shared expert has one route; retain the 256-thread
+                // variant so paired-route geometry adds no overhead.
+                encode_batched_gemv_fused_gu_v2_tcb(
+                    tcb,
+                    model_buf,
+                    shared_route_ids_buf,
+                    x_buf,
+                    shared_act,
+                    gate_off,
+                    up_off,
+                    1,
+                    shared_mid,
+                    hidden,
+                )?;
+            } else if use_fused_gu_v3 {
                 // The shared expert has one route; retain the 256-thread
                 // variant so v3's paired-route geometry adds no overhead.
                 encode_batched_gemv_fused_gu_v2_tcb(
@@ -16717,7 +18975,39 @@ mod metal_dispatch {
             )?;
         }
 
-        if let Some(residual) = residual_buf {
+        if use_q8_route_accum_fused {
+            encode_q8_route_accumulate_fused_tcb(
+                tcb,
+                model_buf,
+                route_ids_buf,
+                route_weights_buf,
+                routed_act,
+                shared_out,
+                residual_buf,
+                out_buf,
+                routed_down_offset,
+                hidden,
+                routes,
+                routed_mid,
+                has_shared,
+            )
+        } else if use_q4_0_route_accum_fused {
+            encode_q4_0_route_accumulate_fused_tcb(
+                tcb,
+                model_buf,
+                route_ids_buf,
+                route_weights_buf,
+                routed_act,
+                shared_out,
+                residual_buf,
+                out_buf,
+                routed_down_offset,
+                hidden,
+                routes,
+                routed_mid,
+                has_shared,
+            )
+        } else if let Some(residual) = residual_buf {
             encode_route_accumulate_add_tcb(
                 tcb,
                 routed_out,
@@ -18444,6 +20734,93 @@ mod tests {
     use super::*;
     use half::f16;
 
+    fn kernel_message(error: crate::Error) -> String {
+        error
+            .to_string()
+            .strip_prefix("kernel: ")
+            .unwrap_or_default()
+            .to_owned()
+    }
+
+    #[test]
+    fn llama_b9430_weight_windows_share_quant_layout_authority() {
+        for (codec, block_bytes, offset) in [
+            (LLAMA_B9430_Q4, crate::quant::Q4_K_BLOCK_BYTES, 144),
+            (LLAMA_B9430_Q6, crate::quant::Q6_K_BLOCK_BYTES, 210),
+        ] {
+            let window = checked_llama_b9430_weight_window(
+                codec,
+                4_096,
+                offset,
+                2 * block_bytes,
+                2,
+                256,
+                "valid-window",
+            )
+            .expect("valid window");
+            assert_eq!((window.offset, window.rows, window.cols), (offset, 2, 256));
+        }
+        let zero = checked_llama_b9430_weight_window(LLAMA_B9430_Q4, 0, 0, 0, 0, 0, "zero-window")
+            .expect("zero-sized windows were historically legal");
+        assert_eq!((zero.offset, zero.rows, zero.cols), (0, 0, 0));
+    }
+
+    #[test]
+    fn llama_b9430_weight_window_preserves_rejection_boundaries() {
+        for (codec, len, offset, bytes, rows, cols, expected) in [
+            (
+                LLAMA_B9430_Q4,
+                144,
+                0,
+                144,
+                1,
+                255,
+                "window requires cols % 256 == 0; got cols=255",
+            ),
+            (
+                LLAMA_B9430_Q6,
+                210,
+                0,
+                crate::quant::Q4_K_BLOCK_BYTES,
+                1,
+                256,
+                "window Q6_K bytes: got 144 expected 210",
+            ),
+            (
+                LLAMA_B9430_Q4,
+                usize::MAX,
+                usize::MAX - 100,
+                crate::quant::Q4_K_BLOCK_BYTES,
+                1,
+                256,
+                "window offset overflow",
+            ),
+            (
+                LLAMA_B9430_Q4,
+                crate::quant::Q4_K_BLOCK_BYTES - 1,
+                0,
+                crate::quant::Q4_K_BLOCK_BYTES,
+                1,
+                256,
+                "window offset out of bounds: 0+144 > 143",
+            ),
+            (
+                LLAMA_B9430_Q4,
+                usize::MAX,
+                0,
+                0,
+                usize::MAX,
+                256,
+                "window byte-size overflow",
+            ),
+        ] {
+            let error =
+                checked_llama_b9430_weight_window(codec, len, offset, bytes, rows, cols, "window")
+                    .unwrap_err();
+            assert_eq!(kernel_message(error), expected);
+        }
+    }
+
     #[cfg(target_os = "macos")]
     #[test]
     fn qwen_binary_sign_scale_component_metal_matches_packed_cpu_oracle() {
@@ -18608,6 +20985,578 @@ mod tests {
             assert!(
                 error <= 2e-5,
                 "row {row}: expected={expected}, actual={actual}, error={error}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn qwen_uniform_q4_routed_moe_tcb_preserves_route_major_device_contract() {
+        const GROUP: usize = 64;
+        const CODE_BYTES: usize = GROUP / 2;
+        let (routes, gate_rows, hidden, cols) = (2usize, GROUP, 3usize, GROUP);
+        let make_codes = |rows: usize, salt: usize| {
+            let mut codes = vec![0u8; rows * CODE_BYTES];
+            for row in 0..rows {
+                for col in 0..cols {
+                    let code = ((salt + row * 11 + col * 7) & 0x0f) as u8;
+                    let byte = &mut codes[row * CODE_BYTES + col / 2];
+                    if col & 1 == 0 {
+                        *byte |= code;
+                    } else {
+                        *byte |= code << 4;
+                    }
+                }
+            }
+            codes
+        };
+        let gate_codes = make_codes(routes * gate_rows, 1);
+        let up_codes = make_codes(routes * gate_rows, 5);
+        let down_codes = make_codes(routes * hidden, 9);
+        let gate_scales = (0..routes * gate_rows)
+            .map(|index| f16::from_f32(0.0078125 * (index + 1) as f32).to_bits())
+            .collect::<Vec<_>>();
+        let up_scales = (0..routes * gate_rows)
+            .map(|index| f16::from_f32(0.01171875 * (index + 1) as f32).to_bits())
+            .collect::<Vec<_>>();
+        let down_scales = (0..routes * hidden)
+            .map(|index| f16::from_f32(0.015625 * (index + 1) as f32).to_bits())
+            .collect::<Vec<_>>();
+        let input = (0..cols)
+            .map(|index| ((index * 37 % 251) as f32 - 125.0) / 251.0)
+            .collect::<Vec<_>>();
+        let matvec = |codes: &[u8], scales: &[u16], rows: usize, input: &[f32]| {
+            (0..rows)
+                .map(|row| {
+                    (0..cols)
+                        .map(|column| {
+                            let packed = codes[row * CODE_BYTES + column / 2];
+                            let code = if column & 1 == 0 {
+                                packed & 0x0f
+                            } else {
+                                packed >> 4
+                            };
+                            let scale = f16::from_bits(scales[row]).to_f32();
+                            (code as i32 - 8) as f32 * scale * input[column]
+                        })
+                        .sum::<f32>()
+                })
+                .collect::<Vec<_>>()
+        };
+        let gate = matvec(&gate_codes, &gate_scales, routes * gate_rows, &input);
+        let up = matvec(&up_codes, &up_scales, routes * gate_rows, &input);
+        let activated = gate
+            .iter()
+            .zip(&up)
+            .map(|(gate, up)| gate / (1.0 + (-gate).exp()) * up)
+            .collect::<Vec<_>>();
+        let mut expected = Vec::with_capacity(routes * hidden);
+        for route in 0..routes {
+            let code_start = route * hidden * CODE_BYTES;
+            let code_end = code_start + hidden * CODE_BYTES;
+            let scale_start = route * hidden;
+            let scale_end = scale_start + hidden;
+            let input_start = route * gate_rows;
+            let input_end = input_start + gate_rows;
+            expected.extend(matvec(
+                &down_codes[code_start..code_end],
+                &down_scales[scale_start..scale_end],
+                hidden,
+                &activated[input_start..input_end],
+            ));
+        }
+        let Ok(ctx) = crate::metal::MetalContext::new() else {
+            return;
+        };
+        let gate_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&gate_codes)
+            .expect("gate codes");
+        let gate_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&gate_scales))
+            .expect("gate scales");
+        let up_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&up_codes)
+            .expect("up codes");
+        let up_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&up_scales))
+            .expect("up scales");
+        let down_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&down_codes)
+            .expect("down codes");
+        let down_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&down_scales))
+            .expect("down scales");
+        let input_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&input))
+            .expect("input");
+        let activated_buffer = ctx
+            .new_buffer_checked(routes * gate_rows * std::mem::size_of::<f32>())
+            .expect("activated");
+        let output_buffer = ctx
+            .new_buffer_checked(routes * hidden * std::mem::size_of::<f32>())
+            .expect("output");
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&ctx);
+        qwen_uniform_q4_group64_gate_up_swiglu_tcb(
+            &mut tcb,
+            &gate_codes_buffer,
+            &gate_scales_buffer,
+            &up_codes_buffer,
+            &up_scales_buffer,
+            &input_buffer,
+            &activated_buffer,
+            routes * gate_rows,
+            cols,
+        )
+        .expect("route-major gate/up dispatch");
+        qwen_uniform_q4_group64_routed_down_tcb(
+            &mut tcb,
+            &down_codes_buffer,
+            &down_scales_buffer,
+            &activated_buffer,
+            &output_buffer,
+            routes,
+            hidden,
+            gate_rows,
+        )
+        .expect("route-major down dispatch");
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait().expect("route-major Q4 MoE commit");
+        let actual = unsafe {
+            std::slice::from_raw_parts(output_buffer.contents() as *const f32, expected.len())
+                .to_vec()
+        };
+        for (index, (expected, actual)) in expected.iter().zip(actual).enumerate() {
+            let error = (expected - actual).abs();
+            assert!(
+                error <= 2e-4,
+                "output {index}: expected={expected}, actual={actual}, error={error}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn qwen_uniform_q4_compact_route_lut_tcb_preserves_noncontiguous_routes() {
+        const GROUP: usize = 64;
+        const CODE_BYTES: usize = GROUP / 2;
+        let (compact_experts, top_k, intermediate, hidden, source_experts) =
+            (2usize, 3usize, GROUP, GROUP, 5usize);
+        let make_codes = |rows: usize, salt: usize| {
+            let mut codes = vec![0u8; rows * CODE_BYTES];
+            for row in 0..rows {
+                for col in 0..GROUP {
+                    let code = ((salt + row * 11 + col * 7 + (col / 8)) & 0x0f) as u8;
+                    let byte = &mut codes[row * CODE_BYTES + col / 2];
+                    if col & 1 == 0 {
+                        *byte |= code;
+                    } else {
+                        *byte |= code << 4;
+                    }
+                }
+            }
+            codes
+        };
+        let make_scales = |rows: usize, salt: usize| {
+            (0..rows)
+                .map(|row| f16::from_f32(0.00390625 * (1 + (row + salt) % 7) as f32).to_bits())
+                .collect::<Vec<_>>()
+        };
+        let gate_rows = compact_experts * intermediate;
+        let down_rows = compact_experts * hidden;
+        let gate_codes = make_codes(gate_rows, 1);
+        let up_codes = make_codes(gate_rows, 5);
+        let down_codes = make_codes(down_rows, 9);
+        let gate_scales = make_scales(gate_rows, 0);
+        let up_scales = make_scales(gate_rows, 2);
+        let down_scales = make_scales(down_rows, 4);
+        let route_ids = vec![4u32, 1u32, 3u32];
+        let mut route_lut = vec![u32::MAX; source_experts];
+        route_lut[1] = 0;
+        route_lut[4] = 1;
+        let input = (0..hidden)
+            .map(|index| ((index * 37 % 251) as f32 - 125.0) / 251.0)
+            .collect::<Vec<_>>();
+
+        let q4_dot = |codes: &[u8], scales: &[u16], row: usize, x: &[f32]| {
+            let scale = f16::from_bits(scales[row]).to_f32();
+            (0..GROUP)
+                .map(|col| {
+                    let packed = codes[row * CODE_BYTES + col / 2];
+                    let code = if col & 1 == 0 {
+                        packed & 0x0f
+                    } else {
+                        packed >> 4
+                    };
+                    (code as i32 - 8) as f32 * scale * x[col]
+                })
+                .sum::<f32>()
+        };
+
+        let mut expected_activated = vec![0.0f32; top_k * intermediate];
+        for route in 0..top_k {
+            let expert = route_ids[route] as usize;
+            if expert >= source_experts || route_lut[expert] == u32::MAX {
+                continue;
+            }
+            let slot = route_lut[expert] as usize;
+            for row in 0..intermediate {
+                let gate = q4_dot(&gate_codes, &gate_scales, slot * intermediate + row, &input);
+                let up = q4_dot(&up_codes, &up_scales, slot * intermediate + row, &input);
+                expected_activated[route * intermediate + row] = gate / (1.0 + (-gate).exp()) * up;
+            }
+        }
+        let mut expected = vec![0.0f32; top_k * hidden];
+        for route in 0..top_k {
+            let expert = route_ids[route] as usize;
+            if expert >= source_experts || route_lut[expert] == u32::MAX {
+                continue;
+            }
+            let slot = route_lut[expert] as usize;
+            let input_start = route * intermediate;
+            let route_input = &expected_activated[input_start..input_start + intermediate];
+            for row in 0..hidden {
+                expected[route * hidden + row] =
+                    q4_dot(&down_codes, &down_scales, slot * hidden + row, route_input);
+            }
+        }
+
+        let Ok(ctx) = crate::metal::MetalContext::new() else {
+            return;
+        };
+        let gate_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&gate_codes)
+            .expect("compact gate codes");
+        let gate_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&gate_scales))
+            .expect("compact gate scales");
+        let up_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&up_codes)
+            .expect("compact up codes");
+        let up_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&up_scales))
+            .expect("compact up scales");
+        let down_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&down_codes)
+            .expect("compact down codes");
+        let down_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&down_scales))
+            .expect("compact down scales");
+        let route_ids_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&route_ids))
+            .expect("route ids");
+        let route_lut_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&route_lut))
+            .expect("route LUT");
+        let input_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&input))
+            .expect("compact input");
+        let activated_buffer = ctx
+            .new_buffer_checked(expected_activated.len() * std::mem::size_of::<f32>())
+            .expect("compact activation");
+        let output_buffer = ctx
+            .new_buffer_checked(expected.len() * std::mem::size_of::<f32>())
+            .expect("compact output");
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&ctx);
+        qwen_uniform_q4_group64_compact_gate_up_swiglu_tcb(
+            &mut tcb,
+            &gate_codes_buffer,
+            &gate_scales_buffer,
+            &up_codes_buffer,
+            &up_scales_buffer,
+            &route_ids_buffer,
+            &route_lut_buffer,
+            &input_buffer,
+            &activated_buffer,
+            compact_experts,
+            top_k,
+            intermediate,
+            hidden,
+            source_experts,
+        )
+        .expect("compact route-LUT gate/up dispatch");
+        qwen_uniform_q4_group64_compact_down_tcb(
+            &mut tcb,
+            &down_codes_buffer,
+            &down_scales_buffer,
+            &route_ids_buffer,
+            &route_lut_buffer,
+            &activated_buffer,
+            &output_buffer,
+            compact_experts,
+            top_k,
+            intermediate,
+            hidden,
+            source_experts,
+        )
+        .expect("compact route-LUT down dispatch");
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait().expect("compact route-LUT Q4 commit");
+        let actual = unsafe {
+            std::slice::from_raw_parts(output_buffer.contents() as *const f32, expected.len())
+                .to_vec()
+        };
+        for (index, (expected, actual)) in expected.iter().zip(actual).enumerate() {
+            let error = (expected - actual).abs();
+            assert!(
+                error <= 3e-4,
+                "output {index}: expected={expected}, actual={actual}, error={error}"
+            );
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn qwen_uniform_q4_compact_fused_shared_hc_tcb_preserves_two_dispatch_contract() {
+        const GROUP: usize = 64;
+        const CODE_BYTES: usize = GROUP / 2;
+        let (compact_experts, top_k, intermediate, hidden, source_experts, streams) =
+            (2usize, 2usize, GROUP, GROUP, 4usize, 2usize);
+        let make_codes = |rows: usize, salt: usize| {
+            let mut codes = vec![0u8; rows * CODE_BYTES];
+            for row in 0..rows {
+                for col in 0..GROUP {
+                    let code = ((salt + row * 13 + col * 5 + (col / 8)) & 0x0f) as u8;
+                    let byte = &mut codes[row * CODE_BYTES + col / 2];
+                    if col & 1 == 0 {
+                        *byte |= code;
+                    } else {
+                        *byte |= code << 4;
+                    }
+                }
+            }
+            codes
+        };
+        let make_scales = |rows: usize, salt: usize| {
+            (0..rows)
+                .map(|row| f16::from_f32(0.00390625 * (1 + (row + salt) % 7) as f32).to_bits())
+                .collect::<Vec<_>>()
+        };
+        let make_bf16 = |rows: usize, salt: usize| {
+            (0..rows * GROUP)
+                .map(|index| {
+                    let value = 0.00390625 * (((salt + index * 3) % 31) as i32 - 15) as f32;
+                    (value.to_bits() >> 16) as u16
+                })
+                .collect::<Vec<_>>()
+        };
+        let gate_rows = compact_experts * intermediate;
+        let down_rows = compact_experts * hidden;
+        let gate_codes = make_codes(gate_rows, 1);
+        let up_codes = make_codes(gate_rows, 7);
+        let down_codes = make_codes(down_rows, 11);
+        let gate_scales = make_scales(gate_rows, 0);
+        let up_scales = make_scales(gate_rows, 2);
+        let down_scales = make_scales(down_rows, 4);
+        let shared_gate = make_bf16(intermediate, 3);
+        let shared_up = make_bf16(intermediate, 9);
+        let shared_down = make_bf16(hidden, 15);
+        let route_ids = vec![3u32, 1u32];
+        let mut route_lut = vec![u32::MAX; source_experts];
+        route_lut[1] = 0;
+        route_lut[3] = 1;
+        let route_weights = vec![0.4f32, 0.6f32];
+        let shared_gate_logit = vec![0.25f32];
+        let block_logits = vec![0.2f32, -0.1f32];
+        let divisor = 4.0f32;
+        let input = (0..hidden)
+            .map(|index| ((index * 29 % 127) as f32 - 63.0) / 127.0)
+            .collect::<Vec<_>>();
+        let residual = (0..hidden * streams)
+            .map(|index| ((index * 17 % 101) as f32 - 50.0) / 101.0)
+            .collect::<Vec<_>>();
+
+        let q4_dot = |codes: &[u8], scales: &[u16], row: usize, x: &[f32]| {
+            let scale = f16::from_bits(scales[row]).to_f32();
+            (0..GROUP)
+                .map(|col| {
+                    let packed = codes[row * CODE_BYTES + col / 2];
+                    let code = if col & 1 == 0 {
+                        packed & 0x0f
+                    } else {
+                        packed >> 4
+                    };
+                    (code as i32 - 8) as f32 * scale * x[col]
+                })
+                .sum::<f32>()
+        };
+        let bf16_dot = |weights: &[u16], row: usize, x: &[f32]| {
+            (0..GROUP)
+                .map(|col| {
+                    let value = f32::from_bits(u32::from(weights[row * GROUP + col]) << 16);
+                    value * x[col]
+                })
+                .sum::<f32>()
+        };
+        let mut expected_activated = vec![0.0f32; top_k * intermediate];
+        for route in 0..top_k {
+            let slot = route_lut[route_ids[route] as usize] as usize;
+            for row in 0..intermediate {
+                let gate = q4_dot(&gate_codes, &gate_scales, slot * intermediate + row, &input);
+                let up = q4_dot(&up_codes, &up_scales, slot * intermediate + row, &input);
+                expected_activated[route * intermediate + row] = gate / (1.0 + (-gate).exp()) * up;
+            }
+        }
+        let expected_shared_activation = (0..intermediate)
+            .map(|row| {
+                let gate = bf16_dot(&shared_gate, row, &input);
+                let up = bf16_dot(&shared_up, row, &input);
+                gate / (1.0 + (-gate).exp()) * up
+            })
+            .collect::<Vec<_>>();
+        let shared_gate_value = 1.0 / (1.0 + (-shared_gate_logit[0]).exp());
+        let mut expected_final = vec![0.0f32; hidden * streams];
+        for row in 0..hidden {
+            let mut routed_sum = 0.0f32;
+            for route in 0..top_k {
+                let slot = route_lut[route_ids[route] as usize] as usize;
+                let route_input =
+                    &expected_activated[route * intermediate..(route + 1) * intermediate];
+                routed_sum += q4_dot(&down_codes, &down_scales, slot * hidden + row, route_input)
+                    * route_weights[route];
+            }
+            let shared_sum = bf16_dot(&shared_down, row, &expected_shared_activation);
+            let moe = routed_sum + shared_sum * shared_gate_value;
+            for stream in 0..streams {
+                let hc_gate = 2.0 / (1.0 + (-block_logits[stream] / divisor).exp());
+                expected_final[stream * hidden + row] =
+                    residual[stream * hidden + row] + moe * hc_gate;
+            }
+        }
+
+        let Ok(ctx) = crate::metal::MetalContext::new() else {
+            return;
+        };
+        let gate_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&gate_codes)
+            .expect("fused gate codes");
+        let gate_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&gate_scales))
+            .expect("fused gate scales");
+        let up_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&up_codes)
+            .expect("fused up codes");
+        let up_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&up_scales))
+            .expect("fused up scales");
+        let down_codes_buffer = ctx
+            .new_buffer_with_bytes_checked(&down_codes)
+            .expect("fused down codes");
+        let down_scales_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&down_scales))
+            .expect("fused down scales");
+        let route_ids_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&route_ids))
+            .expect("fused route ids");
+        let route_lut_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&route_lut))
+            .expect("fused route LUT");
+        let input_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&input))
+            .expect("fused input");
+        let shared_gate_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&shared_gate))
+            .expect("fused shared gate");
+        let shared_up_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&shared_up))
+            .expect("fused shared up");
+        let shared_down_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&shared_down))
+            .expect("fused shared down");
+        let route_weights_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&route_weights))
+            .expect("fused route weights");
+        let shared_gate_logit_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&shared_gate_logit))
+            .expect("fused shared gate logit");
+        let block_logits_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&block_logits))
+            .expect("fused block logits");
+        let residual_buffer = ctx
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&residual))
+            .expect("fused residual");
+        let routed_activation_buffer = ctx
+            .new_buffer_checked(expected_activated.len() * std::mem::size_of::<f32>())
+            .expect("fused routed activation");
+        let shared_activation_buffer = ctx
+            .new_buffer_checked(expected_shared_activation.len() * std::mem::size_of::<f32>())
+            .expect("fused shared activation");
+        let routed_sum_buffer = ctx
+            .new_buffer_checked(hidden * std::mem::size_of::<f32>())
+            .expect("fused routed sum");
+        let shared_output_buffer = ctx
+            .new_buffer_checked(hidden * std::mem::size_of::<f32>())
+            .expect("fused shared output");
+        let shared_gated_buffer = ctx
+            .new_buffer_checked(hidden * std::mem::size_of::<f32>())
+            .expect("fused shared gated");
+        let moe_output_buffer = ctx
+            .new_buffer_checked(hidden * std::mem::size_of::<f32>())
+            .expect("fused MoE output");
+        let final_output_buffer = ctx
+            .new_buffer_checked(expected_final.len() * std::mem::size_of::<f32>())
+            .expect("fused final output");
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&ctx);
+        qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_tcb(
+            &mut tcb,
+            &gate_codes_buffer,
+            &gate_scales_buffer,
+            &up_codes_buffer,
+            &up_scales_buffer,
+            &route_ids_buffer,
+            &route_lut_buffer,
+            &input_buffer,
+            &routed_activation_buffer,
+            &shared_gate_buffer,
+            &shared_up_buffer,
+            &shared_activation_buffer,
+            compact_experts,
+            top_k,
+            intermediate,
+            hidden,
+            source_experts,
+        )
+        .expect("fused compact gate/up/shared dispatch");
+        qwen_uniform_q4_group64_compact_down_shared_direct_hc_tcb(
+            &mut tcb,
+            &down_codes_buffer,
+            &down_scales_buffer,
+            &route_ids_buffer,
+            &route_lut_buffer,
+            &routed_activation_buffer,
+            &route_weights_buffer,
+            &shared_down_buffer,
+            &shared_activation_buffer,
+            &shared_gate_logit_buffer,
+            &routed_sum_buffer,
+            &shared_output_buffer,
+            &shared_gated_buffer,
+            &moe_output_buffer,
+            &residual_buffer,
+            &block_logits_buffer,
+            &final_output_buffer,
+            compact_experts,
+            top_k,
+            intermediate,
+            hidden,
+            source_experts,
+            streams,
+            divisor,
+        )
+        .expect("fused compact down/HC dispatch");
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait().expect("fused compact Q4 commit");
+        let actual = unsafe {
+            std::slice::from_raw_parts(
+                final_output_buffer.contents() as *const f32,
+                expected_final.len(),
+            )
+            .to_vec()
+        };
+        for (index, (expected, actual)) in expected_final.iter().zip(actual).enumerate() {
+            let error = (expected - actual).abs();
+            assert!(
+                error <= 2e-3,
+                "final output {index}: expected={expected}, actual={actual}, error={error}"
             );
         }
     }

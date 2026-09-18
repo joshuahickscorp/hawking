@@ -28,7 +28,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from hcli.tool_registry import default_tool_registry  # noqa: E402
+from hawking.tool_registry import default_tool_registry  # noqa: E402
 
 TINY = 3
 SKIP_PREFIX = ("web.", "github.", "huggingface.", "grok.", "benchmark", "accelerator")

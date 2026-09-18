@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "10b11410619acf259b15de4ab5361f8c13b387b383418afd15ed456b8aad7b41",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:58:52.836112+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:58:52.836119+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:58:52.837452+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md was observed in full with sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9 (4340 bytes).\",\"README.md identifies docs/CURRENT_ARCHITECTURE.md as the detailed, current ownership map for the r",
+      "outcome": "CONTINUE",
+      "reply_chars": 2336,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md was observed in full with sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9 (4340 bytes).\",\"README.md identifies docs/CURRENT_ARCHITECTURE.md as the detailed, current ownership map for the repository.\",\"README.md states that HAWKING owns planning, typed tool calls, lifecycle, and verification, while the Hawking Rust crates own execution and serving.\",\"README.md states that receipts are evidence, not an additional source of architecture.\",\"README.md states that FPGA work is pre-board and that there are no hardware results.\",\"README.md states that no Odyssey campaign has been run end to end and no Odyssey wall time has been measured; ledger figures are budgets, not measurements.\",\"README.md states that HAWKING self-improvement is running but has not yet landed an accepted change of its own authorship.\",\"No P5_PERCEPTION_ARSENAL read evidence, named current source/test owners, or P5_PERCEPTION_IMPLEMENTATION_CONTRACT source was observed in this pass.\"],\"sources\":[\"README.md (sha256:4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, 4340 bytes)\"],\"recommendations\":[\"Do not emit a P5_PERCEPTION_IMPLEMENTATION_CONTRACT from this pass; the accepted P5_PERCEPTION_ARSENAL read evidence and the named current source/test owners were not observed.\",\"Next bounded read-only step: inspect docs/CURRENT_ARCHITECTURE.md to locate the current ownership map, then inspect only the named P5 perception source and test owners it identifies.\",\"Keep the eventual contract bounded to the smallest safe mutation or verification seam, with focused RED/GREEN tests, protected resources, one-writer effect scope, and exactly one falsifier.\",\"Preserve claim boundaries: no production/release completion, no hardware access, no provider-prose promotion, and no file mutation.\"],\"unresolved_questions\":[\"What is the exact accepted P5_PERCEPTION_ARSENAL read evidence and where is it recorded?\",\"Which current source and test files are the named owners for P5 perception?\",\"What is the smallest safe mutation or verification seam for P5_PERCEPTION_IMPLEMENTATION_CONTRACT?\",\"Which resources are protected and what is the one-writer effect scope for the proposed seam?\",\"What single falsifier should accompany the contract?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-7d2700e205a14417",
+  "worker_id": "hawking-worker-4db1a69eb342499e",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-EF4292D3"
+}

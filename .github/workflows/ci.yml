@@ -19,6 +19,23 @@ env:
   HAWKING_NO_GPU: "1"
 
 jobs:
+  python:
+    name: Python suite (xdist)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the isolated test runner
+        run: python -m pip install --upgrade pip && python -m pip install ".[test]"
+
+      - name: Complete Python suite
+        run: tools/ci/python_test_fast.sh
+
   # The Metal/inference stack. hawking-core is by far the heaviest crate in the
   # workspace and nothing outside these three packages depends on it, so it is
   # confined to this job -- see the `hide` job for the other half.
@@ -73,13 +90,17 @@ jobs:
       - name: Build
         run: cargo build -p hawking -p hawking-core -p hawking-serve
 
-      # Compile every test target, including the GPU/model parity gates, so a
-      # broken test cannot hide behind a skip.
-      - name: Compile all tests
-        run: cargo test -p hawking -p hawking-core -p hawking-serve --no-run
+      # Compile every Core/Hawking/serve test source, including GPU/model
+      # parity gates. The topology keeps source coverage in three aggregate
+      # runners without merging their runtime execution semantics.
+      - name: Compile all test sources
+        run: tools/ci/rust_test_fast.sh compile core
 
       - name: Unit tests
-        run: cargo test -p hawking -p hawking-core -p hawking-serve --lib --bins
+        run: tools/ci/rust_test_fast.sh unit core
+
+      - name: Effective serving policy regression
+        run: tools/ci/rust_test_fast.sh policy
 
   # Everything that does NOT pull in hawking-core: the HIDE product crates and
   # the small hawking crates they depend on. Previously this job ran
@@ -111,7 +132,7 @@ jobs:
       - name: Clippy
         run: |
           cargo clippy \
-            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
+            -p hide-core -p hawking-process-authority -p hide-kernel -p hide-fleet -p hide-protocol \
             -p hawking-context -p hawking-index -p hawking-orch \
             -p hawking-research -p hawking-events -p hawking-speculate \
             -p hawking-adapters -- \
@@ -125,26 +146,16 @@ jobs:
       - name: Build
         run: |
           cargo build \
-            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
+            -p hide-core -p hawking-process-authority -p hide-kernel -p hide-fleet -p hide-protocol \
             -p hawking-context -p hawking-index -p hawking-orch \
             -p hawking-research -p hawking-events -p hawking-speculate \
             -p hawking-adapters
 
       - name: Compile all tests
-        run: |
-          cargo test \
-            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
-            -p hawking-context -p hawking-index -p hawking-orch \
-            -p hawking-research -p hawking-events -p hawking-speculate \
-            -p hawking-adapters --no-run
+        run: tools/ci/rust_test_fast.sh compile hide
 
       - name: Unit tests
-        run: |
-          cargo test \
-            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
-            -p hawking-context -p hawking-index -p hawking-orch \
-            -p hawking-research -p hawking-events -p hawking-speculate \
-            -p hawking-adapters --lib --bins
+        run: tools/ci/rust_test_fast.sh unit hide
 
   # The bake tools are small, have no GPU surface, and were previously only
   # reached via `--workspace` in the job above. Their own job keeps them off
@@ -178,7 +189,7 @@ jobs:
             -A clippy::perf
 
       - name: Compile all tests
-        run: cargo test -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool --no-run
+        run: tools/ci/rust_test_fast.sh compile bake
 
       - name: Unit tests
-        run: cargo test -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool --bins
+        run: tools/ci/rust_test_fast.sh unit bake

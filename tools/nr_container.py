@@ -39,6 +39,17 @@ MACHINE_SPECIFIC = {
 }
 
 
+def seal_payload_sha256_v1(document):
+    """Return the legacy Flash payload seal over an unsealed JSON document.
+
+    Existing Flash accounting artifacts use Python's sorted-key JSON encoding
+    with its default separators. Keep that byte rule explicit and shared by
+    the producer and automatic-reuse verifier so old sealed artifacts remain
+    verifiable.
+    """
+    return hashlib.sha256(json.dumps(document, sort_keys=True).encode()).hexdigest()
+
+
 def walk_keys(o, path=""):
     if isinstance(o, dict):
         for k, v in o.items():

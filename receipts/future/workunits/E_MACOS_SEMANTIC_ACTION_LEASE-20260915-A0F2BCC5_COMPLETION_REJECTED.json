@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-16T03:31:07.021721+00:00",
+  "claim_boundary": "the earlier terminal edge is not accepted",
+  "goal_id": "GOAL-B33C69F193",
+  "prior_seals": [
+    "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5_SEAL_B1"
+  ],
+  "reason": "daemon_completion_contract_incomplete",
+  "schema": "hawking.workunit.completion_rejection.v1",
+  "unmet": [
+    "repo.edit"
+  ],
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5"
+}

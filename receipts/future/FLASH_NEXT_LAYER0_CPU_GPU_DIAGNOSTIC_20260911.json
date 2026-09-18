@@ -1,0 +1,66 @@
+{
+  "schema": "hawking.odyssey.flash_next.layer0_cpu_gpu_diagnostic.v1",
+  "status": "OBSERVED__BOUNDED_PARITY_TIMING_ONLY",
+  "recorded_at": "2026-09-11T17:49:21Z",
+  "purpose": "Carry existing exact Flash-Next CPU-oracle and Metal graph evidence into the per-model CPU/GPU/ANE Odyssey ledger without relabelling it as a complete-token placement result.",
+  "identity": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "source_receipt": "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_NATIVE_PARITY.json",
+    "source_receipt_sha256": "9d3a037cbe3f2485e78f3bcedda81cd97cad47dcb44867b7e0f8ec0d1d82cdd5"
+  },
+  "scope": {
+    "layer": 0,
+    "layer_type": "linear_attention",
+    "input": "one BOS embedding",
+    "representation": "exact source BF16",
+    "organs": [
+      "attention hyperconnection",
+      "linear attention recurrent state",
+      "router top-k",
+      "routed expert gate/up/down",
+      "shared expert",
+      "MoE combine",
+      "MLP hyperconnection"
+    ]
+  },
+  "observations": {
+    "cpu": {
+      "role": "source oracle",
+      "elapsed_ns": 115779584,
+      "measurement_state": "OBSERVED_BOUNDED",
+      "selection_eligible": false
+    },
+    "gpu_metal": {
+      "provider": "apple_metal",
+      "graph_gpu_ns": 21983499,
+      "graph_host_wall_ns": 290295541,
+      "dispatches": 35,
+      "command_buffers": 1,
+      "fallback_count": 0,
+      "host_activation_roundtrips": 0,
+      "source_parity_passed": true,
+      "measurement_state": "OBSERVED_BOUNDED",
+      "selection_eligible": false
+    },
+    "ane": {
+      "measurement_state": "UNMEASURED",
+      "selection_eligible": false
+    }
+  },
+  "non_comparability": [
+    "The CPU value is an oracle execution, not a repeated clean CPU placement control matched to the GPU timing protocol.",
+    "The GPU graph excludes the separately reported embedding read and is not a complete accepted token.",
+    "One bounded BOS-layer observation does not establish sustained latency, TPS, energy, or a backend-selection result."
+  ],
+  "promotion": {
+    "status": "WITHHELD",
+    "requirements": [
+      "clean repeated matched CPU and Metal controls for this exact scope",
+      "model-scoped public Core ML plan and runtime placement for an exact organ",
+      "matched ANE complete-work timing with transfer and synchronization",
+      "protected complete-token parity, capability, and wall-time evidence"
+    ]
+  },
+  "claim_boundary": "This is valid model-scoped diagnostic physical evidence. It is not a CPU-versus-GPU winner, ANE result, full-model runtime, complete-token TPS, capability result, EBPW result, or promotion."
+}

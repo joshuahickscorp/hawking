@@ -81,7 +81,9 @@ struct RefWire {
 }
 impl RefWire {
     fn from_f32(c: &[f32]) -> Self {
-        RefWire { c_bits: c.iter().map(|&v| ref_f32_to_bf16(v)).collect() }
+        RefWire {
+            c_bits: c.iter().map(|&v| ref_f32_to_bf16(v)).collect(),
+        }
     }
 }
 
@@ -125,10 +127,7 @@ fn ref_section_bytes(wires: &[Option<RefWire>], out_features: &[usize]) -> Vec<u
 /// Parse a DBIA section body back into per-tensor wires. Validates every field the
 /// production parser validates (magic, version, n_tensors, flags, reserved, lengths,
 /// no trailing bytes). Returns Err on any inconsistency.
-fn ref_parse_section(
-    s: &[u8],
-    out_features: &[usize],
-) -> Result<Vec<Option<RefWire>>, String> {
+fn ref_parse_section(s: &[u8], out_features: &[usize]) -> Result<Vec<Option<RefWire>>, String> {
     if s.len() < DBIA_HEADER_BYTES {
         return Err("section shorter than header".into());
     }
@@ -150,7 +149,10 @@ fn ref_parse_section(
     }
     let mut p = DBIA_HEADER_BYTES;
     let mut take = |n: usize| -> Result<&[u8], String> {
-        let end = p.checked_add(n).filter(|&e| e <= s.len()).ok_or("truncated")?;
+        let end = p
+            .checked_add(n)
+            .filter(|&e| e <= s.len())
+            .ok_or("truncated")?;
         let sl = &s[p..end];
         p = end;
         Ok(sl)
@@ -169,7 +171,10 @@ fn ref_parse_section(
             return Err("len != out_features".into());
         }
         let raw = take(len * 2)?;
-        let c_bits = raw.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
+        let c_bits = raw
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
         out.push(Some(RefWire { c_bits }));
     }
     if p != s.len() {
@@ -234,7 +239,7 @@ fn per_row_correction_is_row_local_bit_exact() {
     for &in_f in &[1usize, 2, 7, 8, 31, 32, 33, 64, 257] {
         for trial in 0..40 {
             let rows = 1 + (rng.next_u32() as usize % 9); // 1..=9 rows
-            // Build a multi-row weight/recon pair.
+                                                          // Build a multi-row weight/recon pair.
             let mut w = vec![0.0f32; rows * in_f];
             let mut recon = vec![0.0f32; rows * in_f];
             for k in 0..rows * in_f {
@@ -242,7 +247,11 @@ fn per_row_correction_is_row_local_bit_exact() {
                 // recon = a *different* finite-ish value so the rowsum delta is real
                 recon[k] = rng.next_f32_any();
             }
-            let mu_bar = if trial % 3 == 0 { 0.0 } else { rng.next_correction() * 100.0 };
+            let mu_bar = if trial % 3 == 0 {
+                0.0
+            } else {
+                rng.next_correction() * 100.0
+            };
 
             let full = debias_tensor(&w, &recon, in_f, mu_bar, 16);
             assert_eq!(full.bias_correction.len(), rows);
@@ -299,8 +308,7 @@ fn correction_commutes_with_row_permutation() {
         let mut wp = vec![0.0f32; rows * in_f];
         let mut rp = vec![0.0f32; rows * in_f];
         for (newi, &oldi) in perm.iter().enumerate() {
-            wp[newi * in_f..(newi + 1) * in_f]
-                .copy_from_slice(&w[oldi * in_f..(oldi + 1) * in_f]);
+            wp[newi * in_f..(newi + 1) * in_f].copy_from_slice(&w[oldi * in_f..(oldi + 1) * in_f]);
             rp[newi * in_f..(newi + 1) * in_f]
                 .copy_from_slice(&recon[oldi * in_f..(oldi + 1) * in_f]);
         }
@@ -419,7 +427,11 @@ fn apply_add_corner_domain_is_pure_f32_add() {
                 y[0]
             };
             // Use raw bits so NaN compares identically (and to detect any -0/+0 drift).
-            assert_eq!(r1.to_bits(), r2.to_bits(), "apply != f32 add at ({a:#x},{b:#x})");
+            assert_eq!(
+                r1.to_bits(),
+                r2.to_bits(),
+                "apply != f32 add at ({a:#x},{b:#x})"
+            );
             // determinism across a second evaluation
             assert_eq!((base + corr).to_bits(), r1.to_bits());
             checked += 1;
@@ -439,19 +451,23 @@ fn constant_activation_identity_on_real_code() {
     let in_f = 24usize;
     let out = 5usize;
     for _ in 0..100 {
-        let w: Vec<f32> = (0..out * in_f).map(|_| rng.next_correction() * 4.0).collect();
+        let w: Vec<f32> = (0..out * in_f)
+            .map(|_| rng.next_correction() * 4.0)
+            .collect();
         // a coarse "quantized" recon so the rowsum bias is genuinely nonzero
         let recon: Vec<f32> = w.iter().map(|&v| (v * 6.0).round() / 6.0).collect();
         let mu_bar = 0.25f32 + rng.next_correction();
         let r = debias_tensor(&w, &recon, in_f, mu_bar, 16);
         let x = vec![mu_bar; in_f];
         let (_, rms_uncorr) = output_error(&w, &recon, in_f, std::slice::from_ref(&x), None);
-        let (mean_corr, rms_corr) =
-            output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
+        let (mean_corr, rms_corr) = output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
         // corrected error vanishes (float-tolerance — this is the encode-side f64 math,
         // not the bit-exact decode add).
         assert!(rms_corr <= rms_uncorr + 1e-6, "correction increased error");
-        assert!(rms_corr < 1e-3, "corrected rms should be ~0 on constant x: {rms_corr}");
+        assert!(
+            rms_corr < 1e-3,
+            "corrected rms should be ~0 on constant x: {rms_corr}"
+        );
         assert!(mean_corr.abs() < 1e-3);
     }
 }
@@ -475,7 +491,10 @@ fn bf16_is_total_fixed_point_of_round() {
             assert_eq!(r, b, "bf16 NaN pattern {b:#06x} not preserved");
             assert!(ref_bf16_to_f32(r).is_nan());
         } else {
-            assert_eq!(r, b, "bf16 {b:#06x} is not a fixed point (dequant->round drifted)");
+            assert_eq!(
+                r, b,
+                "bf16 {b:#06x} is not a fixed point (dequant->round drifted)"
+            );
         }
     }
     eprintln!("bf16 round fixed-point: all 65536 patterns idempotent");
@@ -488,8 +507,16 @@ fn dequant_places_bits_in_top_half_exhaustive() {
     for b in 0u32..=0xFFFF {
         let b = b as u16;
         let f = ref_bf16_to_f32(b);
-        assert_eq!(f.to_bits() & 0xFFFF, 0, "dequant left low 16 bits set for {b:#06x}");
-        assert_eq!((f.to_bits() >> 16) as u16, b, "dequant top half != stored bits {b:#06x}");
+        assert_eq!(
+            f.to_bits() & 0xFFFF,
+            0,
+            "dequant left low 16 bits set for {b:#06x}"
+        );
+        assert_eq!(
+            (f.to_bits() >> 16) as u16,
+            b,
+            "dequant top half != stored bits {b:#06x}"
+        );
     }
 }
 
@@ -509,7 +536,11 @@ fn ties_round_to_even_across_bf16_grid() {
         }
         let mid = ((b as u32) << 16) | 0x8000; // exactly half a bf16 ulp above `b`
         let got = ref_f32_to_bf16(f32::from_bits(mid));
-        let expect = if (b16 & 1) == 0 { b16 } else { b16.wrapping_add(1) };
+        let expect = if (b16 & 1) == 0 {
+            b16
+        } else {
+            b16.wrapping_add(1)
+        };
         assert_eq!(got, expect, "tie at bf16 {b16:#06x} did not round to even");
         checked += 1;
     }
@@ -529,7 +560,10 @@ fn near_tie_rounds_toward_nearer_neighbor() {
         // midpoint - 1 ulp(f32) rounds down to b
         assert_eq!(ref_f32_to_bf16(f32::from_bits(base | 0x7fff)), b16);
         // midpoint + 1 ulp(f32) rounds up to b+1
-        assert_eq!(ref_f32_to_bf16(f32::from_bits(base | 0x8001)), b16.wrapping_add(1));
+        assert_eq!(
+            ref_f32_to_bf16(f32::from_bits(base | 0x8001)),
+            b16.wrapping_add(1)
+        );
     }
 }
 
@@ -560,11 +594,17 @@ fn non_finite_preserves_top_half() {
             //                      always stays NaN — only synthetic low-payload NaNs collapse.
             let kept_mantissa = (bits >> 16) & 0x007f;
             if kept_mantissa != 0 {
-                assert!(f.is_nan() && ref_bf16_to_f32(got).is_nan(), "NaN with kept payload must stay NaN");
+                assert!(
+                    f.is_nan() && ref_bf16_to_f32(got).is_nan(),
+                    "NaN with kept payload must stay NaN"
+                );
             } else if m != 0 {
                 // a NaN whose payload is only in the dropped bits -> deterministically Inf
                 assert!(f.is_nan(), "input should be NaN here");
-                assert!(ref_bf16_to_f32(got).is_infinite(), "low-payload NaN must collapse to Inf");
+                assert!(
+                    ref_bf16_to_f32(got).is_infinite(),
+                    "low-payload NaN must collapse to Inf"
+                );
             } else {
                 assert!(f.is_infinite() && ref_bf16_to_f32(got).is_infinite());
             }
@@ -608,20 +648,28 @@ fn wire_round_trip_is_byte_exact_property() {
 
         // re-serialise the parse: byte-identical (canonical fixed point)
         let bytes2 = ref_section_bytes(&parsed, &out_features);
-        assert_eq!(bytes, bytes2, "serialize∘parse is not the identity on bytes");
+        assert_eq!(
+            bytes, bytes2,
+            "serialize∘parse is not the identity on bytes"
+        );
 
         // header invariants the production parser also enforces
         assert_eq!(&bytes[0..4], &DBIA_MAGIC[..]);
-        assert_eq!(u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize, n_tensors);
+        assert_eq!(
+            u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize,
+            n_tensors
+        );
         // payload size accounting matches the documented record layout
         let expect_len: usize = DBIA_HEADER_BYTES
             + wires
                 .iter()
-                .map(|w| {
-                    DBIA_RECORD_FIXED_BYTES + w.as_ref().map_or(0, |x| x.c_bits.len() * 2)
-                })
+                .map(|w| DBIA_RECORD_FIXED_BYTES + w.as_ref().map_or(0, |x| x.c_bits.len() * 2))
                 .sum::<usize>();
-        assert_eq!(bytes.len(), expect_len, "section length drifted from layout spec");
+        assert_eq!(
+            bytes.len(),
+            expect_len,
+            "section length drifted from layout spec"
+        );
         checked += 1;
     }
     eprintln!("wire round-trip: {checked} random sections byte-exact");
@@ -659,17 +707,9 @@ fn parser_rejects_all_corruptions() {
     // header reserved nonzero
     assert!(ref_parse_section(&mutate(&|b| b[16] = 1), &out_features).is_err());
     // record reserved nonzero (record 0 starts at header end +4)
-    assert!(ref_parse_section(
-        &mutate(&|b| b[DBIA_HEADER_BYTES + 4] = 1),
-        &out_features
-    )
-    .is_err());
+    assert!(ref_parse_section(&mutate(&|b| b[DBIA_HEADER_BYTES + 4] = 1), &out_features).is_err());
     // record length mismatch (claim 5 rows for an out=4 tensor)
-    assert!(ref_parse_section(
-        &mutate(&|b| b[DBIA_HEADER_BYTES] = 5),
-        &out_features
-    )
-    .is_err());
+    assert!(ref_parse_section(&mutate(&|b| b[DBIA_HEADER_BYTES] = 5), &out_features).is_err());
     // truncated payload (drop the last byte)
     assert!(ref_parse_section(&good[..good.len() - 1], &out_features).is_err());
     // trailing byte
@@ -711,7 +751,10 @@ fn golden_section_bytes_are_frozen() {
     want.extend_from_slice(&0u32.to_le_bytes());
     want.extend_from_slice(&0u32.to_le_bytes());
 
-    assert_eq!(bytes, want, "DBIA wire layout changed — update the golden or the code");
+    assert_eq!(
+        bytes, want,
+        "DBIA wire layout changed — update the golden or the code"
+    );
 
     // Pin the actual bf16 codes so a silent change in the round rule is caught even if
     // someone "fixes" both sides in lockstep.

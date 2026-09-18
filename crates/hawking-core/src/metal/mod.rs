@@ -383,6 +383,9 @@ pub const SHADER_QWEN38_PREFILL: &str = include_str!("../../shaders/qwen38_prefi
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
 pub const SHADER_QWEN_UNIFORM_Q4: &str = include_str!("../../shaders/qwen_uniform_q4.metal");
+/// Higher-fidelity routed-body Q8/G32 candidate for Flash accumulation
+/// experiments. It is opt-in and does not select a generic runtime.
+pub const SHADER_QWEN_UNIFORM_Q8: &str = include_str!("../../shaders/qwen_uniform_q8.metal");
 pub const SHADER_QWEN_UNIFORM_QN: &str = include_str!("../../shaders/qwen_uniform_qn.metal");
 /// RWKV-7 WKV-7 single-step decode recurrence (`rwkv7_wkv_decode`). The novel,
 /// tps-critical kernel of the RWKV-7 GPU decode path — threadgroup-per-head with
@@ -455,6 +458,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN80_DEVICE_EXPERT_TABLE,
         SHADER_QWEN80_DEVICE_ACTIVATIONS,
         SHADER_QWEN_UNIFORM_Q4,
+        SHADER_QWEN_UNIFORM_Q8,
         SHADER_QWEN_UNIFORM_QN,
         SHADER_RWKV7,
         SHADER_GRAVITY_PQ,
@@ -1293,6 +1297,7 @@ mod imp {
             "gemv_f32_attn" => "gemv_f32_attn",
             "mla_decode_kernel" => "mla_decode_kernel",
             "moe_topk_gate" => "moe_topk_gate",
+            "moe_topk_gate_sigmoid_correction" => "moe_topk_gate_sigmoid_correction",
             "moe_gather_combine" => "moe_gather_combine",
             "moe_batched_silu_mul" => "moe_batched_silu_mul",
             "moe_route_accumulate" => "moe_route_accumulate",
@@ -1479,6 +1484,27 @@ mod imp {
             }
             "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_compact_gate_up_swiglu_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_compact_gate_up_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_compact_down_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_compact_down_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_compact_down_shared_direct_hc_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_compact_down_shared_direct_hc_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_geo_tpr64_tg128" => {
+                "qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q8_group32_compact_down_shared_direct_hc_geo_tpr64_tg128" => {
+                "qwen_uniform_q8_group32_compact_down_shared_direct_hc_geo_tpr64_tg128"
             }
             "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128"
@@ -1696,6 +1722,9 @@ mod imp {
             "qwen_next_ba_split_to_decay_beta_source_bf16" => {
                 "qwen_next_ba_split_to_decay_beta_source_bf16"
             }
+            "qwen_next_ba_project_to_decay_beta_source_bf16" => {
+                "qwen_next_ba_project_to_decay_beta_source_bf16"
+            }
             "qwen_next_direct_packed_input_rmsnorm" => "qwen_next_direct_packed_input_rmsnorm",
             "qwen_next_qkvz_rearrange_conv_l2" => "qwen_next_qkvz_rearrange_conv_l2",
             "qwen_next_qkv_split_rearrange_conv_l2" => "qwen_next_qkv_split_rearrange_conv_l2",
@@ -1733,6 +1762,9 @@ mod imp {
             "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4" => {
                 "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4"
             }
+            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_exact_tg32" => {
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_exact_tg32"
+            }
             "qwen_next_bf16_expert_gate_up_swiglu" => "qwen_next_bf16_expert_gate_up_swiglu",
             "qwen_next_bf16_expert_down" => "qwen_next_bf16_expert_down",
             "qwen_next_expand_shared_to_hyper_state" => "qwen_next_expand_shared_to_hyper_state",
@@ -1742,6 +1774,12 @@ mod imp {
             "qwen_next_hyperconnection_grouped_rmsnorm" => {
                 "qwen_next_hyperconnection_grouped_rmsnorm"
             }
+            "qwen_next_hyperconnection_grouped_rmsnorm_serial" => {
+                "qwen_next_hyperconnection_grouped_rmsnorm_serial"
+            }
+            "qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise" => {
+                "qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise"
+            }
             "qwen_next_hyperconnection_input_fused" => "qwen_next_hyperconnection_input_fused",
             "qwen_next_hyperconnection_input_fused_with_block" => {
                 "qwen_next_hyperconnection_input_fused_with_block"
@@ -1749,8 +1787,21 @@ mod imp {
             "qwen_next_hyperconnection_input_fused_with_block_router_topk" => {
                 "qwen_next_hyperconnection_input_fused_with_block_router_topk"
             }
+            "hawking_f32_bf16_roundtrip" => "hawking_f32_bf16_roundtrip",
             "qwen_next_hyperconnection_silu_scale" => "qwen_next_hyperconnection_silu_scale",
+            "qwen_next_hyperconnection_silu_scale_source_bf16" => {
+                "qwen_next_hyperconnection_silu_scale_source_bf16"
+            }
             "qwen_next_hyperconnection_read_mix" => "qwen_next_hyperconnection_read_mix",
+            "qwen_next_hyperconnection_down_block_vec4" => {
+                "qwen_next_hyperconnection_down_block_vec4"
+            }
+            "qwen_next_hyperconnection_up_read_mix_vec4" => {
+                "qwen_next_hyperconnection_up_read_mix_vec4"
+            }
+            "qwen_next_hyperconnection_read_mix_source_bf16" => {
+                "qwen_next_hyperconnection_read_mix_source_bf16"
+            }
             "qwen_next_hyperconnection_combine" => "qwen_next_hyperconnection_combine",
             "qwen80_attention_qk_norm_rope_cache" => "qwen80_attention_qk_norm_rope_cache",
             "qwen80_attention_apply_sigmoid_gate" => "qwen80_attention_apply_sigmoid_gate",
@@ -2070,18 +2121,23 @@ mod imp {
             "gemv_simdgroup_f32" => "gemv_simdgroup_f32",
             // GLM native.bf16 lm_head (sequential accumulate, host parity)
             "gemv_native_bf16_seq" => "gemv_native_bf16_seq",
+            "gemv_native_bf16_seq_source_bf16" => "gemv_native_bf16_seq_source_bf16",
             "gemv_native_bf16_seq_vec4" => "gemv_native_bf16_seq_vec4",
             "gemv_native_bf16_geo_vec4_tg128" => "gemv_native_bf16_geo_vec4_tg128",
             "gemv_native_bf16_swiglu_seq" => "gemv_native_bf16_swiglu_seq",
             "gemv_native_bf16_swiglu_seq_vec4" => "gemv_native_bf16_swiglu_seq_vec4",
             "gemv_native_bf16_swiglu_geo_vec4_tg128" => "gemv_native_bf16_swiglu_geo_vec4_tg128",
             "gemv_native_bf16_dual_seq" => "gemv_native_bf16_dual_seq",
+            "gemv_native_bf16_dual_seq_source_bf16" => "gemv_native_bf16_dual_seq_source_bf16",
             "gemv_native_bf16_dual_seq_vec4" => "gemv_native_bf16_dual_seq_vec4",
             "gemv_native_bf16_dual_geo_vec4_tg128" => "gemv_native_bf16_dual_geo_vec4_tg128",
             "gemv_native_bf16_triple_seq" => "gemv_native_bf16_triple_seq",
             "gemv_native_bf16_triple_seq_vec4" => "gemv_native_bf16_triple_seq_vec4",
             "gemv_native_bf16_hyperconnection_combine" => {
                 "gemv_native_bf16_hyperconnection_combine"
+            }
+            "gemv_native_bf16_hyperconnection_combine_vec4" => {
+                "gemv_native_bf16_hyperconnection_combine_vec4"
             }
             // GLM activation-aware factorized GEMV.
             "activation_aware_project_f16" => "activation_aware_project_f16",
@@ -2150,7 +2206,12 @@ mod imp {
             "moe_batched_gemm_q4_indexed_v2t_gu" => "moe_batched_gemm_q4_indexed_v2t_gu",
             "moe_batched_gemm_q4_indexed_v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t_gu_v2",
             "moe_batched_gemm_q4_indexed_v2t_gu_v3" => "moe_batched_gemm_q4_indexed_v2t_gu_v3",
+            "moe_batched_gemm_q4_indexed_v2t_gu_v4" => "moe_batched_gemm_q4_indexed_v2t_gu_v4",
             "moe_batched_gemm_q8_0_indexed_v2t" => "moe_batched_gemm_q8_0_indexed_v2t",
+            "moe_batched_gemm_q4_0_indexed_v2t" => "moe_batched_gemm_q4_0_indexed_v2t",
+            "moe_batched_gemm_q4_0_route_accumulate_v2t" => {
+                "moe_batched_gemm_q4_0_route_accumulate_v2t"
+            }
             "moe_batched_gemm_q5_0_indexed_v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
             "moe_batched_gemm_q6_k_indexed_v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
             "gemm_q3_k_fused_v2" => "gemm_q3_k_fused_v2",
@@ -2345,6 +2406,7 @@ mod imp {
                 "qwen_next_bf16_compact_expert_down_shared_direct_hc_geo_tg128",
                 "qwen_next_bf16_compact_expert_gate_up_shared_swiglu",
                 "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4",
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_geo_exact_tg32",
                 "qwen_next_moe_weighted_sum_add_shared_sigmoid",
                 "qwen_next_moe_weighted_sum_add_shared_sigmoid_hc",
             ] {
@@ -2361,6 +2423,9 @@ mod imp {
             for kernel in [
                 "qwen_next_hyperconnection_input_fused",
                 "qwen_next_hyperconnection_input_fused_with_block",
+                "qwen_next_hyperconnection_grouped_rmsnorm_serial",
+                "qwen_next_hyperconnection_down_block_vec4",
+                "qwen_next_hyperconnection_up_read_mix_vec4",
             ] {
                 assert_eq!(static_kernel_name(kernel), kernel);
                 assert!(
@@ -2414,14 +2479,17 @@ mod imp {
         fn source_bf16_vec4_gemvs_are_trace_named_and_compiled() {
             const KERNELS: &[&str] = &[
                 "gemv_native_bf16_seq_vec4",
+                "gemv_native_bf16_seq_source_bf16",
                 "gemv_native_bf16_swiglu_seq_vec4",
                 "gemv_native_bf16_dual_seq_vec4",
+                "gemv_native_bf16_dual_seq_source_bf16",
                 "gemv_native_bf16_geo_vec4_tg128",
                 "gemv_native_bf16_swiglu_geo_vec4_tg128",
                 "gemv_native_bf16_dual_geo_vec4_tg128",
                 "gemv_native_bf16_triple_seq",
                 "gemv_native_bf16_triple_seq_vec4",
                 "gemv_native_bf16_hyperconnection_combine",
+                "gemv_native_bf16_hyperconnection_combine_vec4",
             ];
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
@@ -2431,6 +2499,62 @@ mod imp {
                 );
             }
         }
+
+        #[test]
+        fn diagnostic_bf16_roundtrip_is_trace_named_and_compiled() {
+            const KERNEL: &str = "hawking_f32_bf16_roundtrip";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_MATMUL.contains(&format!("kernel void {KERNEL}(")),
+                "generic diagnostic BF16 round-trip must remain in matmul.metal"
+            );
+        }
+
+        #[test]
+        fn source_bf16_projection_and_activation_siblings_are_trace_named_and_compiled() {
+            for (shader, kernel) in [
+                (SHADER_MATMUL, "gemv_native_bf16_seq_source_bf16"),
+                (
+                    SHADER_QWEN_NEXT,
+                    "qwen_next_hyperconnection_silu_scale_source_bf16",
+                ),
+                (
+                    SHADER_QWEN_NEXT,
+                    "qwen_next_hyperconnection_read_mix_source_bf16",
+                ),
+                (
+                    SHADER_QWEN_NEXT,
+                    "qwen_next_ba_project_to_decay_beta_source_bf16",
+                ),
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    shader.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must remain compiled in its source family"
+                );
+            }
+        }
+
+        #[test]
+        fn diagnostic_hc_full_pairwise_reduction_is_trace_named_and_compiled() {
+            const KERNEL: &str = "qwen_next_hyperconnection_grouped_rmsnorm_full_pairwise";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_QWEN_NEXT.contains(&format!("kernel void {KERNEL}(")),
+                "diagnostic HC full-pairwise reduction must remain in qwen_next.metal"
+            );
+        }
+
+        #[test]
+        fn exact_hc_serial_norm_is_trace_named_and_compiled() {
+            const KERNEL: &str = "qwen_next_hyperconnection_grouped_rmsnorm_serial";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_QWEN_NEXT.contains(&format!("kernel void {KERNEL}(")),
+                "exact HC serial norm must remain in qwen_next.metal"
+            );
+        }
+
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
             const DORMANT_RESIDENT_KERNELS: &[&str] = &[
@@ -2758,6 +2882,11 @@ mod imp {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
                 "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
                 "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_compact_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_compact_down_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_compact_down_shared_direct_hc_geo_tpr64_tg128",
                 "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
                 "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
             ] {
@@ -2765,6 +2894,17 @@ mod imp {
                 assert!(
                     SHADER_QWEN_UNIFORM_Q4.contains(&format!("kernel void {kernel}(")),
                     "{kernel} must compile from qwen_uniform_q4.metal"
+                );
+            }
+            use crate::metal::SHADER_QWEN_UNIFORM_Q8;
+            for &kernel in &[
+                "qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q8_group32_compact_down_shared_direct_hc_geo_tpr64_tg128",
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN_UNIFORM_Q8.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen_uniform_q8.metal"
                 );
             }
             use crate::metal::SHADER_Q80_MIXED_DECODE;
@@ -3006,15 +3146,15 @@ mod imp {
                 let load_start = std::time::Instant::now();
                 match device.new_library_with_file(&path) {
                     Ok(library) => {
-                        crate::startup_timing::record_ms(
+                        crate::startup_timing::record_ns(
                             "metal_shader_library_load_metallib_cache_hit",
-                            crate::startup_timing::duration_ms(load_start.elapsed()),
+                            crate::startup_timing::duration_ns(load_start.elapsed()),
                         );
                         return Ok(library);
                     }
                     Err(_err) => {
                         // Corrupt or wrong-GPU metallib: fall through to source.
-                        crate::startup_timing::record_ms(
+                        crate::startup_timing::record_ns(
                             "metal_shader_library_metallib_load_failed_fallback_source",
                             0,
                         );
@@ -3026,9 +3166,9 @@ mod imp {
             ) {
                 let build_start = std::time::Instant::now();
                 if try_build_metallib_with_xcrun(&src, &path, strict_math).is_some() {
-                    crate::startup_timing::record_ms(
+                    crate::startup_timing::record_ns(
                         "metal_shader_library_xcrun_metallib_build",
-                        crate::startup_timing::duration_ms(build_start.elapsed()),
+                        crate::startup_timing::duration_ns(build_start.elapsed()),
                     );
                     if let Ok(library) = device.new_library_with_file(&path) {
                         return Ok(library);
@@ -3048,9 +3188,9 @@ mod imp {
                 if strict_math { "strict-math " } else { "" }
             ))
         })?;
-        crate::startup_timing::record_ms(
+        crate::startup_timing::record_ns(
             "metal_shader_library_compile_from_source",
-            crate::startup_timing::duration_ms(compile_start.elapsed()),
+            crate::startup_timing::duration_ns(compile_start.elapsed()),
         );
         Ok(library)
     }
@@ -3061,7 +3201,7 @@ mod imp {
         }
 
         pub fn new_with_trace(trace_dispatch: bool) -> Result<Self> {
-            crate::startup_timing::time_ms_result("metal_context_new_with_trace", || {
+            crate::startup_timing::time_ns_result("metal_context_new_with_trace", || {
                 // Dummy Metal devices still abort at buffer allocation, so this
                 // must fire before any Metal call. Present and not 0/false/off/no.
                 if std::env::var_os("HAWKING_NO_GPU").is_some()
@@ -3104,7 +3244,7 @@ mod imp {
         /// default compile options; callers must opt in explicitly and must
         /// not treat this as a runtime-wide arithmetic policy.
         pub fn new_with_trace_strict_math(trace_dispatch: bool) -> Result<Self> {
-            crate::startup_timing::time_ms_result(
+            crate::startup_timing::time_ns_result(
                 "metal_context_new_with_trace_strict_math",
                 || {
                     // Same abort-before-Metal gate as new_with_trace.
@@ -3227,9 +3367,9 @@ mod imp {
                 .device
                 .new_compute_pipeline_state_with_function(&f)
                 .map_err(|e| Error::Metal(format!("pipeline `{fn_name}`: {e}")))?;
-            let ms = crate::startup_timing::duration_ms(start.elapsed());
+            let ns = crate::startup_timing::duration_ns(start.elapsed());
             // Aggregate first-create cost; hot path hits cache above.
-            crate::startup_timing::record_ms(format!("metal_pipeline_create:{fn_name}"), ms);
+            crate::startup_timing::record_ns(format!("metal_pipeline_create:{fn_name}"), ns);
             pipes.insert(fn_name.to_string(), p.clone());
             Ok(p)
         }

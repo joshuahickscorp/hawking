@@ -1,0 +1,68 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 6,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "1d18fa7efd2e9a380060c34c3da3af34617899639806840af2b0473b34abc695",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:39:05.862449+00:00",
+      "calls_used": 6,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:39:05.862461+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:39:05.864750+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"tools/nx_genome.py is the NX sealing stage in the Noetic NOS pipeline; it is invoked by tools/genesis_nos.py line 121 via `_run([TOOLS / 'nx_genome.py', '--seal', '--nr', nr_path, '--out', dst])` and refuses with StageRefu",
+      "outcome": "CONTINUE",
+      "reply_chars": 4047,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"tools/nx_genome.py is the NX sealing stage in the Noetic NOS pipeline; it is invoked by tools/genesis_nos.py line 121 via `_run([TOOLS / 'nx_genome.py', '--seal', '--nr', nr_path, '--out', dst])` and refuses with StageRefused on failure (line 123).\",\"The NX contract is documented in docs/NOETIC_NR_NX_CONTRACT.md line 18: `tools/nx_genome.py` binds an NX to the exact NR content, establishing the source boundary as NR-content-to-machine-genome binding.\",\"tools/flash_nx_genome.py is a distinct but schema-compatible sealer (schema `hawking.flash.nx_genome.v1`) that binds the Flash executor (crates/hawking-core/examples/flash_fast_chain.rs), two organ executors, and all crates/hawking-core/shaders/*.metal files by SHA256 to a machine genome derived from sysctl hw.memsize and system_profiler SPDisplaysDataType.\",\"civilization/build_state.py line 797 validates the schema `hawking.flash.nx_genome.v1` as the acceptance boundary for complete NX payloads.\",\"ARCHITECTURE-LEVEL DISAGREEMENT: tools/headless/noetic_kernel_census.py line 1076 states `nx_genome 38 is an underestimate of kernels the decode path actually launches` \u2014 the 38 bound kernels (extracted via `line.startswith('kernel void ')` over crates/hawking-core/shaders/*.metal) do not capture macro-expanded kernel names that become separate runtime launches (line 1002: `nx_genome counts the unexpanded line toward the 554. Expansions are separate runtime names.`).\",\"The current owner boundary is: tools/nx_genome.py seals against NR content + shader source + machine genome; tools/headless/noetic_kernel_census.py is the reconciling census that disagrees with nx_genome's bound-kernel count; tools/nvm_minimal.py line 137 consumes `nx_genome_digest` from the sealed NX.\",\"CHEAPEST FALSIFIER: Run tools/headless/noetic_kernel_census.py's kernel extractor (same `line.startswith('kernel void ')` splitter, line 102/133) against the identical shader corpus and diff its enumerated runtime-launched kernel set against nx_genome.py's bound_kernels list \u2014 a pure read-only text comparison requiring no hardware, no mutation, and no GPU access.\"],\"sources\":[\"tools/nx_genome.py (lines 21-23 CLI, referenced by genesis_nos.py line 121)\",\"tools/flash_nx_genome.py (sha256: 509345ebea6c445fa0a7220605efcea3102d5db88d471b4f37dddfd7fcc4fe4b, 8027 bytes)\",\"tools/genesis_nos.py (lines 5, 14, 121, 123)\",\"tools/headless/noetic_kernel_census.py (lines 9, 12, 102, 133, 641, 997, 1002, 1076, 1209, 1291)\",\"docs/NOETIC_NR_NX_CONTRACT.md (line 18)\",\"civilization/build_state.py (line 797)\",\"tools/nvm_minimal.py (line 137)\",\"tools/headless/noetic_ir.py (line 80)\",\"tools/future/ebpw_categories.py (lines 791, 1180)\"],\"recommendations\":[\"The cheapest falsifier for the bound-kernel underestimate disagreement is a read-only diff: extract the kernel-void census from crates/hawking-core/shaders/*.metal using the identical splitter in noetic_kernel_census.py lines 102/133, expand macro-template kernels, and compare the resulting runtime-name set against nx_genome.py's bound_kernels output. If the expanded set strictly contains the 38 and adds names, the underestimate is confirmed at zero cost.\",\"The next verification target should be the boundary between nx_genome.py's static source extraction (line.startswith('kernel void ')) and the actual Metal runtime dispatch names \u2014 this is the single point where the sealed NX claim diverges from runtime reality.\",\"Do not mutate nx_genome.py or any shader file; the disagreement is an information gap in the seal's expressiveness, not a correctness bug in the binding mechanism.\"],\"unresolved_questions\":[\"Does the 38-of-554 bound-kernel gap in nx_genome.py affect loadability enforcement (i.e., can a shader whose expanded runtime kernel names are not in the bound set still pass the NX seal's content-hash check, since the hash covers the unexpanded source)? If so, the next tranche should prioritize runtime-name enumeration in the seal over source-hash-only binding.\"],\"child_wor",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-83ea2ec7db34459e",
+  "worker_id": "hawking-worker-6ea80003198a42fa",
+  "worker_model": "z-ai/glm-5.3",
+  "workunit_id": "WORKUNIT-20260918-4FC59DD0"
+}

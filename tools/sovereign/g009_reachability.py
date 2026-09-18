@@ -189,7 +189,7 @@ def compact_catalog_names(registry, goal: str) -> tuple[set[str], str]:
     (``odyssey: status(); queue()``) and alias form (``fs.read|filesystem.read(...)``),
     so both are expanded back to dotted names.
     """
-    from hcli.engine import Engine
+    from hawking.engine import Engine
 
     text = Engine._compact_tool_catalog(registry, focus=goal)
     names: set[str] = set()
@@ -283,7 +283,7 @@ def audit_processes(registry, sources) -> dict:
         if not site.startswith("hcli/processes.py:")
     )
 
-    from hcli import processes as live
+    from hawking import processes as live
 
     started = time.perf_counter()
     summary = live.summary()
@@ -324,7 +324,7 @@ def main() -> int:
     goal, state = load_goal()
     check_derivation(goal)
 
-    from hcli.tool_registry import default_tool_registry
+    from hawking.tool_registry import default_tool_registry
 
     registry = default_tool_registry(REPO, repo_root=REPO)
     registered = {spec["name"]: spec for spec in registry.discover()}

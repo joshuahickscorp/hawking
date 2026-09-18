@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.compact_cognition.receipt.v1",
+  "status": "IMPLEMENTED_QUALIFICATION_PENDING",
+  "source": {
+    "module": "hawking/compact_worker.py",
+    "protocol": "hawking.compact_worker.v1",
+    "anchor_schema": "hawking.source_anchor.v1"
+  },
+  "capabilities": [
+    "compact READ/PLAN/MUTATE/REVIEW/DONE/BLOCKED packets",
+    "durable source-range anchors with file and anchor digests",
+    "Hawking-side compact mutation compilation",
+    "local stale-anchor and no-op rejection",
+    "stage token and cost funnel telemetry",
+    "Nova-Compact-Agent future specialization objective"
+  ],
+  "evidence": {
+    "focused_tests": "99 passed in compact/mutation/remote/owner suite; 42 serve-surface tests passed; 79 remote/mutation tests passed after compact repair",
+    "compile": "PASS",
+    "git_diff_check": "PASS",
+    "live_source_anchor": {
+      "anchor": "SRC-C5D8BE0EE828",
+      "schema": "hawking.source_anchor.v1",
+      "path": "hawking/compact_worker.py",
+      "range": "1-12"
+    },
+    "live_daemon": {
+      "pid": 75823,
+      "resident_model": null,
+      "requested_model": "hawking-auto",
+      "provider_children": "ephemeral provider WorkUnits only; no resident model"
+    }
+  },
+  "boundaries": [
+    "No broad mutation fan-out restored until a compact canary crosses the full acceptance path.",
+    "No hardware or release qualification claimed.",
+    "Detailed WorkUnit receipts remain the acceptance authority."
+  ],
+  "compact_path_canary": {
+    "workunit_id": "WORKUNIT-20260918-B0481033",
+    "state": "OUTPUT_UNUSABLE",
+    "provider_model": "deepseek/deepseek-v4.1-flash",
+    "compact_intent": "accepted and compiled from source anchor",
+    "canonical_gate": "repo.edit invoked and rejected invalid resulting syntax; no write accepted",
+    "rollback": "PASS",
+    "failure_class": "MUTATION_PROPOSAL_UNACCEPTED",
+    "next_requirement": "fresh compact anchored body that passes repo.edit, focused tests, Git evidence, and acceptance"
+  },
+  "acceptance_canary": {
+    "workunit_id": "WORKUNIT-20260918-63FBC284",
+    "state": "COMPLETE",
+    "repo_edit": "accepted",
+    "focused_test": "hawking/tests/test_auto_p4_auto_implementation_contract_v2_regression.py",
+    "focused_test_result": "4 passed",
+    "provider_serialization_observed": "legacy literal proposal; retained as compatibility evidence, not compact-path proof"
+  },
+  "routing_observation": {
+    "model": "z-ai/glm-5.3",
+    "trial_workunits": ["WORKUNIT-20260918-9B37B578", "WORKUNIT-20260918-732385E7"],
+    "outcome": "MUTATION_PAYLOAD_MISSING",
+    "realized_acceptance": 0
+  }
+}

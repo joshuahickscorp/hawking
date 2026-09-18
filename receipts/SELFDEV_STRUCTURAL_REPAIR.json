@@ -1,0 +1,56 @@
+{
+ "schema": "hcli.selfdev.structural_repair.v1",
+ "_label": "S007 Phases 3-4. What changed so that OBSERVE -> HYPOTHESIZE -> DISCRIMINATE -> ACT -> VERIFY is a reachable state transition, and so that a HEAD move in HCLI's tree is attributable. The repair changes HOW the loop runs; it never says WHAT to fix.",
+ "_evidence": "MEASURED. Each repair has a RED that failed before it and a GREEN after, the load-bearing line of each was mutation-checked (disabled -> the test fails -> restored, hash-verified), and the isolation claim was proved on a live commit rather than argued.",
+ "repaired_at": "2026-09-09T14:59:58Z",
+ "commit": "b2f836fd7",
+ "S007_PROHIBITIONS_HONOURED": {
+  "no_hardcoded_defect_for_hcli": "the body still chooses its own file, hypothesis, discriminator and edit. The phase machine refuses to let 'I will read more' be a valid answer forever; it never names a target. The three candidate deficiencies Claude found during experiment 1 remain UNSPENT and were deliberately not handed over.",
+  "no_fabricated_RED": "the only REDs written were for Claude's OWN two repairs, against real captured bytes from the run. No RED was manufactured on HCLI's behalf.",
+  "no_auto_created_edit": "nothing writes a repo.edit for the body. A cycle with no edit is recorded as FAILED, which is the opposite of papering over it.",
+  "claudes_repair_does_not_count_as_G004": "explicit in the ledger amendment; G004 requires the body's own 10-step arc landing through hcli/landing.py, whose AUTHORSHIP_TRAILER is the mechanical proof.",
+  "no_new_framework_or_mythology": "no new module, class, subsystem or gate. The phase machine is ~90 lines inside the existing harness; the fs.read repair is 22 lines inside an existing handler."
+ },
+ "REPAIR_1_fs_read_tells_the_truth": {
+  "file": "hcli/tool_registry.py",
+  "commit": "bdb3f3aa0",
+  "defect": "fs.read(path, start_line=1620, end_line=1720) on a 247-line file returned ok=True, content=\"\", truncated=False, start_line=1620, end_line=247 -- failure reported as success, with coordinates that contradict themselves.",
+  "why_truncated_could_not_carry_it": "`truncated` answers 'was content cut?' and past EOF the honest answer is no -- there was nothing to cut. The WINDOW is the thing that is wrong, so it now reports itself: out_of_range plus a note naming the file's real length and the window that does not exist.",
+  "cost_in_experiment_1": "cycle 47 emitted a runaway stream of reads walking a 247-line file toward line 1720 until the generation died; cycles 52-66 (fifteen consecutive) went into one file the body believed it had never finished reading, because no read could ever contradict the belief.",
+  "RED": "2 new tests failed before the fix: an out-of-range window carried no out_of_range flag and no note, and reported end_line(247) before start_line(1620).",
+  "GREEN": "8/8 in hcli/tests/test_fs_read_window.py, including a negative control that an in-range read is NOT flagged.",
+  "mutation_check": "forcing out_of_range = False fails exactly those 2 tests and nothing else; source restored and verified by sha256; zero markers left behind.",
+  "regression": "controlled comparison, same suite, same tree, with and without the fix: 61 failed baseline vs 59 with it; set-diff shows ZERO tests failing that did not already fail. The '53' figure quoted earlier in the campaign was a STALE baseline from a different selection -- measuring the contemporaneous baseline in the worktree is what made the +6 scare evaporate."
+ },
+ "REPAIR_2_the_loop_can_now_fail": {
+  "file": ".hcli/selfdev/harness.py (gitignored: durable operational state, not shipped source)",
+  "defect": "no cycle could fail. A reply with no hypothesis, no test and no edit was a well-formed chat completion, logged as 'reachable 11/11', 66 times.",
+  "change": {
+   "phase_machine": "ORIENT -> HYPOTHESIS_REQUIRED -> DISCRIMINATOR_REQUIRED -> ACT_REQUIRED -> VERIFY, persisted in the `phase` field that already existed and had only ever held 'developing'. A cycle that does not produce what its phase demands increments failed_cycles and its failure is named back to the body verbatim next cycle.",
+   "advance_only_on_evidence": "ACT is satisfied ONLY by the server's own executed-tool trace showing repo.edit -- never by prose. Cycle 66 of experiment 1 contained the literal words 'repo.edit', echoed from its own objective, while calling nothing; that exact string is now a negative control in the self-check.",
+   "attempt_vs_success_kept_apart": "a repo.edit the engine REJECTED hands back the engine's real error rather than 'you produced no repo.edit call' -- which would be false, and would make the body re-send the same broken arguments forever.",
+   "commitments_survive": "the chosen hypothesis and discriminator are carried into the next prompt verbatim. Experiment 1 fed the next cycle a regex-scraped TAIL of the previous reply, and 49 of 66 replies were truncated before their tail, so whatever the body decided evaporated between cycles.",
+   "markers_at_the_head": "required markers are read from the first lines only. Generation is left-to-right: a marker at the front survives a truncated reply, one at the tail does not. A tail-only marker is a self-check case and must NOT satisfy a phase.",
+   "stuck_detector": "4 consecutive failures in one phase logs a loud STUCK line telling the supervisor to re-diagnose rather than accumulate cycles -- S007's own instruction not to wait another 65."
+  },
+  "incidental_fix_measured": "the old prompt's phrase 'Your planned next action' satisfied chat_state.asked_for_a_plan() (substring 'plan' inside 'planned' + a trigger verb), spawning 65 draft plans in 70 turns, none reaching status:executing. The restructured prompt triggers it on 0 of 5 phases -- verified by calling asked_for_a_plan() on each rendered phase prompt. One word mattered: 'explanation' had to become 'prose', because ex-PLAN-ation matches the same substring. The underlying heuristic bug in hcli/chat_state.py was deliberately LEFT for HCLI: it is on the candidate-deficiency list and fixing it would be shaping the body's own internals.",
+  "self_check": "python3.12 .hcli/selfdev/harness.py --selfcheck -- covers advance-on-evidence, fail-on-prose, rejected-vs-absent edits, truncation resistance, and the 8 known false-positive HEAD ranges. Mutation-checked: forcing the act-detector to True fails the prose negative control."
+ },
+ "REPAIR_3_two_writers_two_trees": {
+  "worktree": ".worktrees/hcli-selfdev",
+  "branch": "hcli-selfdev",
+  "integration_baseline_head": "bdb3f3aa0",
+  "why": "all 9 'HEAD MOVED (edit accepted)' events in experiment 1 were Claude commits landing mid-cycle. The trailer check fixed the MEASUREMENT; this removes the CONTAMINATION.",
+  "harness_split": "ROOT (the tree HCLI edits, where its HEAD moves) is now the worktree; CAMPAIGN (the supervisor record -- objective, checkpoint, evidence, metrics) stays canonical in the primary checkout so it survives and stays readable whatever happens to the worktree.",
+  "runtime_isolation_verified": "RepoContext.detect() from inside the worktree resolves to the WORKTREE root, not the primary -- checked explicitly, because a git worktree's .git is a FILE and a detector that required a directory would have escaped upward and failed silently. The live surface's own /health reports repo = the worktree.",
+  "PROVED_ON_A_LIVE_COMMIT": "an Odyssey commit moved main a00ea4048 -> 4c7cfc71e while the selfdev worktree HEAD stayed at a00ea4048. Any HEAD move in HCLI's tree is now attributable to HCLI.",
+  "odyssey_ownership": "the primary checkout is Claude's Odyssey tree with Claude as sole writer. S007 requires the two writers be isolated, not that a third checkout be minted -- one writer per tree is satisfied without redundant disk."
+ },
+ "RESTART_STATE": {
+  "snapshot": "build-20260909-145621 (rebuilt via install-shims so the daemon actually runs the fixed fs.read -- the daemon serves from the installed snapshot, never the repo tree)",
+  "surface": "hcli build --no-browser started FROM the worktree; /health reports authority=write, resident=sealed-3.14, repo=the worktree",
+  "resident": "sealed-3.14, one only -- the single-resident law held throughout (the old process tree was fully stopped and memory release verified before the new one started)",
+  "campaign": "resumed at cycle 66, HEAD bdb3f3aa0, reachable 11/11, from durable state with no objective reconstruction by the owner",
+  "experiment_2_begins": "cycle 67, phase ORIENT, hypothesis/discriminator/last_failure all null, accepted_changes 0. Experiment 1's 66 cycles are preserved and fingerprinted, not deleted."
+ }
+}

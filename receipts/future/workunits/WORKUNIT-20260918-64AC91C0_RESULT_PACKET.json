@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 5,
+    "complete": true,
+    "continuation_turns": 3,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "5822cab521ed25258644d9775fb302f486807c11d75bd2a1d3b279040830d5a8",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:58:12.501879+00:00",
+      "calls_used": 5,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:58:12.501900+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:58:12.507501+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"The repository root at /Users/scammermike/Downloads/hawking contains the expected read-only research surfaces: hawking/, receipts/, civilization/, docs/, tests/, tools/, research/, plus top-level artifacts including AGENTS",
+      "outcome": "CONTINUE",
+      "reply_chars": 5955,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"The repository root at /Users/scammermike/Downloads/hawking contains the expected read-only research surfaces: hawking/, receipts/, civilization/, docs/, tests/, tools/, research/, plus top-level artifacts including AGENTS.md, H-MANIFESTO.md, HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.json, HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md, directive-goal.txt, and ascension_envelope.hawking.json.\",\"The authoritative parent is civilization/sovereign-goal.txt; its latest section is 'KIMI P0 bounded operational freeze; Odyssey resumes \u2014 2026-09-11', which explicitly withholds autonomous repository writing, self-certifying development, unsupervised mutation authority, autonomous Odyssey writing, and autonomous self-improvement promotion.\",\"Campaign state lists recent evidence receipts including receipts/future/HAWKING_MASTER_LONG_HAUL_V2_LOCAL_FRONTIER_EVIDENCE_20260918.json, receipts/future/MODELLAKE_EVENTS.json, receipts/future/HAWKING_MASTER_LONG_HAUL_V2_ROUTE_REQUALIFICATION_JSON_TOOL_20260918.json, receipts/future/HAWKING_MASTER_LONG_HAUL_V2_HTTP_200_SEMANTIC_GATE_LIVE_20260918.json, and receipts/future/HAWKING_MASTER_LONG_HAUL_V2_ROUTE_REQUALIFICATION_LIVE_20260918.json.\",\"The accepted local frontier evidence receipt records that the local tunnel surface stores only capability digests, scopes operations through an explicit permission map, and carries invitation/disconnect/revocation state; H-Web routes tunnel actions through the Hawking share owner, and the recorded round trip is a live local encrypted/revocable one, explicitly not relay hosting.\",\"The same receipt states its falsifier: any test or source path that exposes bearer tokens, provider credentials, or an arbitrary daemon tool surface would invalidate the local tunnel boundary.\",\"A dedicated tunnel protocol slice receipt exists at receipts/future/HAWKING_MASTER_LONG_HAUL_V2_TUNNEL_PROTOCOL_SLICE_20260917.json with schema hawking.long_haul.v2.tunnel_protocol_slice.v1, and its scope includes H-Web host invitation and public share tunnel routes.\",\"A prior P18 one-tool evidence probe (workunit 0B2A2C4E) read hawking/share_bridge.py lines 1-180 and set an explicit claim boundary: read-only local tunnel evidence only, with no relay, release, revocation, or encryption-completeness claim supported by that window; it directed that TUNNEL_* frame/session handlers later in the file are required for those semantics.\",\"At least six sibling P18_TUNNEL checkpoints exist under receipts/future/workunits/ (54A6ABE4, 64AC91C0, 6BEE712C, AFCBF868, B0F8B779, CCAC845E) carrying the identical objective text about different-network browser pairing, remote H-Web prompt streaming, and scoped Build result retrieval.\",\"No evidence was observed of a remote relay host, provider execution path, or production release artifact for the tunnel; the observed boundary remains local, encrypted/revocable, and capability-digest scoped.\"],\"sources\":[\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_LOCAL_FRONTIER_EVIDENCE_20260918.json\",\"receipts/future/HAWKING_MASTER_LONG_HAUL_V2_TUNNEL_PROTOCOL_SLICE_20260917.json\",\"receipts/future/workunits/WORKUNIT-20260918-0B2A2C4E_RESEARCH_PACKET.json\",\"receipts/future/workunits/WORKUNIT-20260918-0B2A2C4E_CHECKPOINT.json\",\"receipts/future/workunits/WORKUNIT-20260918-64AC91C0_CHECKPOINT.json\",\"receipts/future/workunits/WORKUNIT-20260918-54A6ABE4_CHECKPOINT.json\",\"civilization/sovereign-goal.txt\",\"hawking/share_bridge.py\"],\"recommendations\":[\"Next bounded evidence/test: a single read-only integration contract test that exercises the existing TUNNEL_* frame/session handlers in hawking/share_bridge.py against the H-Web share-owner route, asserting (a) capability-digest-only storage, (b) permission-map scoping of each tunnel action, and (c) invitation/disconnect/revocation state transitions, without opening any remote relay socket.\",\"Writer/effect scope: read-only test authoring and execution only; no mutation of hawking/share_bridge.py, no new route registr",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-dc093fb28ebb4b39",
+  "worker_id": "hawking-worker-590bd4e5900642be",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-64AC91C0"
+}

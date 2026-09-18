@@ -1,0 +1,12 @@
+{
+  "schema": "hawking.long_haul.v2.audit_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P4_AUTO_EXECUTION_AUDIT_V3",
+  "workunit_id": "WORKUNIT-20260918-57830236",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Read-only audit evidence plus local focused tests; no provider prose promoted to implementation or release.",
+  "source": {"path":"hawking/auto_orchestration.py","sha256":"cbbc1e5f62eac5c0d7feeea37c836408ecfee4433bb3c753188b0b35d4a24a1c"},
+  "local_verification": {"command":"python3 -m pytest -q hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py","result":"24 passed"},
+  "observed_invariants":["MAX_REMOTE_COGNITION_WORKERS, MAX_PREMIUM_WORKERS, and MAX_AUTOTUNED_WORKERS are None","measured routing dimensions are persisted","terminal child release preserves parent RUNNING state","terminal graph protection and refill are covered by focused tests"],
+  "falsifier":"A terminal node is reintroduced without fresh reopen evidence or a dependency-valid lane is blocked by a fixed count ceiling."
+}

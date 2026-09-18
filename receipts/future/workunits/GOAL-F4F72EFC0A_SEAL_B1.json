@@ -1,0 +1,28 @@
+{
+  "receipt_id": "GOAL-F4F72EFC0A_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "GOAL-F4F72EFC0A",
+  "phase": "TOOL_LEARNING",
+  "title": "Goal milestone 14: tested repository change",
+  "at": "2026-09-15T15:57:24.831175+00:00",
+  "written_at_unix": 1789487844,
+  "change": {
+    "paths": [
+      "hawking/remote_cognition.py",
+      "hawking/tests/test_remote_workunit_contract.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 14"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 14,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-F4F72EFC0A",
+  "real_engineering_seal": true
+}

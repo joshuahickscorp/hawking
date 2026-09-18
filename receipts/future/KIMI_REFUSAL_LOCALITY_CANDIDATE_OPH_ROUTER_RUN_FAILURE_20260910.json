@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.kimi.router_operator_live.execution_failure.v1",
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+  "candidate_method": "OPH",
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "prompt_battery": "tools/future/kimi_refusal_battery_expanded_v1.json",
+  "run_attempt": 2,
+  "status": "OPH_EXECUTION_INCOMPLETE",
+  "failure_class": "INTEGRATION",
+  "error_type": "RuntimeError",
+  "error": "no common DeepSeek router layers were captured",
+  "cause": "The runner nested captured observations under the behavior row's observation key while cross-fit lookup expected them at the top level.",
+  "process_state": "clean_process_terminated_without_atomic_result",
+  "prior_invalid_receipt": "receipts/future/KIMI_REFUSAL_LOCALITY_CANDIDATE_OPH_ROUTER_LIVE_20260910.json",
+  "prior_invalid_receipt_reason": "The first attempt coerced the non-empty one-element labels list to bool, classifying every row as refused; it is retained for history but is not evidence.",
+  "weights_written": false,
+  "artifact_created": false,
+  "claim_boundary": "No OPH behavior, held-out separation, causal effect, null comparison, capability, epistemic, authorization, physical, or promotion claim is made from this failed run. KIMI_BASE remains immutable."
+}

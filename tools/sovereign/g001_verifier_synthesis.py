@@ -29,8 +29,8 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from hcli.goal import GoalCompiler  # noqa: E402
-from hcli.verifier_pipeline import command_is_admissible  # noqa: E402
+from hawking.goal import GoalCompiler  # noqa: E402
+from hawking.verifier_pipeline import command_is_admissible  # noqa: E402
 
 RECEIPT = REPO / "receipts/sovereign/G001_verifier_synthesis.json"
 COMMAND = "python3 tools/sovereign/g001_verifier_synthesis.py"

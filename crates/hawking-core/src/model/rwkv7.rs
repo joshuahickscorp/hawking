@@ -1601,7 +1601,9 @@ impl Engine for RwkvSeven {
             }
             let _ = self.forward_token_routed(t, use_gpu)?;
         }
-        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        let prefill_ns = prefill_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.prefill_ns = prefill_ns;
+        stats.prefill_ms = prefill_ns as f64 / 1_000_000.0;
 
         let json_vocab_index = if req.json_mode {
             self.tokenizer.as_ref().map(|tok| {
@@ -1656,7 +1658,9 @@ impl Engine for RwkvSeven {
             }
             last_id = next_id;
         }
-        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        let decode_ns = decode_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.decode_ns = decode_ns;
+        stats.decode_ms = decode_ns as f64 / 1_000_000.0;
         stats.completion_tokens = produced;
         sink(StreamEvent::Done {
             reason,

@@ -1,0 +1,101 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 11,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "a43f416b940936cbd8e832bba7095e700230f31b703e2a001e5a4dba4496be41",
+  "evidence": [
+    {
+      "at": "2026-09-18T03:21:42.761962+00:00",
+      "calls_used": 12,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:21:42.761972+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:21:42.764729+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"owner\":\"crates/hawking-adapters/src/abi.rs\",\"observation\":\"ProviderAvailability { cpu, metal, cuda } is a first-class tri-provider ABI contract; is_complete() requires each field to be a concrete value or explicit null-wi",
+      "outcome": "CONTINUE",
+      "reply_chars": 6159,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T03:24:20.836248+00:00",
+      "calls_used": 11,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:24:20.836259+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:24:20.840513+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"owner\":\"hawking/backends.py\",\"observation\":\"Single pool-facing runtime backend contract module (~108KB). Defines CapabilityContract.from_backend (line 531), ResidentProfile.from_backend (line 559), backend_supports_respon",
+      "outcome": "CONTINUE",
+      "reply_chars": 5660,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[{\"owner\":\"hawking/backends.py\",\"observation\":\"Single pool-facing runtime backend contract module (~108KB). Defines CapabilityContract.from_backend (line 531), ResidentProfile.from_backend (line 559), backend_supports_response_format (line 1193), and make_structured_output_contract degradation (lines 1526-1531). Backend selection is structural (line 271). No CUDA backend class, no register_backend/BackendRegistry pattern anywhere in searched source; routing is by capability predicate, not a registry a CUDA backend could join.\"},{\"owner\":\"hawking/agentos/flash_telemetry.py\",\"observation\":\"The named-not-registered CUDA boundary is literal: CUDA_CAPABILITY_GRAPH.json (schema hawking.agentos.cuda_capability_graph.v1, line 334) names six CUDA kernel nodes (grouped_rmsnorm, q4_g64_matvec, fused_gate_up_swiglu, moe_weighted_sum, moe_add_shared, hyperconnection_read_write, lines 351-356) each hardcoded cuda_status='UNOBSERVED', with cuda_execution_observed=False (line 339). Only metal_status is measured. CUDA kernels are named in the capability graph but have no registered probe or execution path.\"},{\"owner\":\"hawking/checkpoint.py + hawking/agentos/handoff.py\",\"observation\":\"checkpoint.py (lines 203, 500, 639, 893) and handoff.py (lines 220, 660-671, 846) both consume the CUDA_CAPABILITY_GRAPH receipt and propagate status/qualification/promotion_allowed/claim_boundary; absent receipt defaults to status NOT_RUN, promotion_allowed=False. The gate is receipt-gated; no code path probes CUDA hardware or runtime to fill it.\"},{\"owner\":\"tools/roadmap/hardware.py + tools/accelerator/hardware_doctor.py\",\"observation\":\"The only NVIDIA capability probe in source is DGX-presence via 'nvidia-smi -L' naming a DGX product (hardware.py lines 82-87; hardware_doctor.py lines 697-705, device nvidia_dgx_0). No CUDA driver-API, runtime, or kernel-launch probe exists. machine_genome.py line 838 registers nvidia_dgx_0 as a genome device axis only.\"},{\"owner\":\"hawking/remote_cognition.py + hawking/serve.py\",\"observation\":\"Completion contract enforcement confirmed: remote_cognition.py lines 1077-1105 append 'structured_result:terminal_status' when the final packet's status is not in structured_status_values; serve.py line 3839 sets the admitted terminal values to ['COMPLETE', 'STRUCTURED_RESULT_READY']. Prior turns used 'CHECKPOINT', which is outside the admitted set; this packet uses an admitted value.\"},{\"owner\":\"campaign axis coverage\",\"observation\":\"gpu depth axis: 36 REFUSED / 8 OWED / 12 MEASURED; the measured subset is consistent with Metal/ANE on this host. No CUDA hardware, CUDA runtime, or production backend qualification was established by this review.\"}],\"sources\":[\"hawking/backends.py:1-9,271,478,531,552,559,1193-1312,1526-1531\",\"hawking/agentos/flash_telemetry.py:79,231-247,334-356,412\",\"hawking/checkpoint.py:203,500,639,893\",\"hawking/agentos/handoff.py:220,660-671,846\",\"tools/roadmap/hardware.py:19,82-87\",\"tools/accelerator/hardware_doctor.py:380,697-705,913\",\"tools/accelerator/machine_genome.py:838\",\"hawking/remote_cognition.py:969-986,1077-1105\",\"hawking/serve.py:3839\",\"hawking/tests/test_remote_workunit_contract.py:240-305\",\"campaign_state axis_coverage.gpu\"],\"recommendations\":[{\"tranche\":\"P13_CUDA_PROBE_TRANCHE_1\",\"description\":\"Bounded disjoint follow-on: add a read-only CUDA runtime probe (driver API cuInit/cuDeviceGetCount via ctypes or cuda-python, nvidia-smi fallback) as a new capability-probe module that writes the existing CUDA_CAPABILITY_GRAPH receipt schema, setting execution_device/native_backend_observed/cuda_runtime_present while leaving all six kernel nodes cuda_status='UNOBSERVED' until a real kernel launch is measured. Disjoint from the Metal telemetry path and from the DGX-presence axis; converts UNOBSERVED from a hardcoded constant into a measured fact without claiming hardware qualification.\",\"falsifiable_blocker\":\"If no owner-admitted host exposes a CUDA runtime, the probe must record cuda_runtime_present=",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-6257aee2743c4dd8",
+  "worker_id": "hawking-worker-c5f0d7de402843bc",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260917-12CE792A"
+}

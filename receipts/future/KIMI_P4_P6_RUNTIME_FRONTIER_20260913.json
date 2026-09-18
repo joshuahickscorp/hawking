@@ -1,0 +1,100 @@
+{
+  "schema": "hawking.future.kimi_p4_p6_runtime_frontier.v1",
+  "generated_at": "2026-09-13T09:40:00-04:00",
+  "status": "P4_P5_BELOW_TARGET_P6_COMPILE_REFUSED_PRESERVE_EXPERIMENTAL",
+  "objective": "Continue from immutable P0 with one materially different direct-execution/runtime seam toward the 150-200 generated TPS target.",
+  "protected_control": {
+    "artifact_id": "KIMI_P0_OPERATIONAL",
+    "artifact_path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "resident_pid": 20173,
+    "daemon_pid": 20162,
+    "endpoint": "http://127.0.0.1:8014",
+    "worker_id": "KIMI-U001",
+    "worker_owner_pid_observed": 92771,
+    "p0_replaced": false,
+    "flash_lease_touched": false
+  },
+  "shared_method": {
+    "name": "packed_gate_up_route_consumer",
+    "source": "P0 SwitchGLU gate_proj/up_proj q8 or route-q4 tensors",
+    "consumer": "one mx.gather_qmm over concatenated output axis, split gate/up, original activation, original down gather_qmm",
+    "dense_rematerialization": false,
+    "sorted_and_unsorted_semantics": "preserved",
+    "parity": {
+      "q8_unsorted_max_abs_error": 0.0,
+      "q8_sorted_max_abs_error": 0.0,
+      "q4_unsorted_max_abs_error": 0.0,
+      "q4_sorted_max_abs_error": 0.0,
+      "scope": "small MLX SwitchGLU oracle tests; not whole-model capability"
+    }
+  },
+  "candidates": {
+    "P4_P0_Q8_GATEUP": {
+      "artifact": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+      "representation_bytes": 17856023776,
+      "overlay": "/tmp/hawking-kimi-gateup/sitecustomize.py",
+      "receipt": "receipts/future/KIMI_P4_GATEUP_TPS_20260913.json",
+      "decode_tps_by_context": {"context_0": 87.22071534014566, "context_64": 33.80730221685382, "context_256": 60.63189514395322},
+      "peak_memory_gib": {"min": 19.972813448, "max": 20.27758512},
+      "disposition": "BELOW_TARGET_PRESERVE_EXPERIMENTAL"
+    },
+    "P5_ROUTE4_GATEUP": {
+      "artifact": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+      "artifact_revision": "89babe1efae390ca37f7cedcf7ac98d54d1e84bc5dca5c760358958862c62b6e",
+      "representation_bytes": 10658598112,
+      "complete_ebpw_estimate": 5.196889529273664,
+      "overlay": "/tmp/hawking-kimi-gateup/sitecustomize.py",
+      "receipt": "receipts/future/KIMI_P5_ROUTE4_GATEUP_TPS_20260913.json",
+      "decode_tps_by_context": {"context_0": 44.10190809941641, "context_64": 46.93333024247772, "context_256": 53.131747551552934},
+      "peak_memory_gib": {"min": 12.77538778, "max": 13.080159452},
+      "disposition": "BELOW_TARGET_PRESERVE_EXPERIMENTAL"
+    },
+    "P6_MODELSTEP_COMPILE": {
+      "artifact": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "overlay": "/tmp/hawking-kimi-modelcompile/sitecustomize.py",
+      "receipt": null,
+      "probe": "single-token Deepseek model-step mx.compile(shapeless=True)",
+      "result": "REFUSED",
+      "reason": "MLX compile accepts array trees/constants only; live BatchKVCache object is not a legal compiled argument",
+      "fallback": "stock model-step remained active; no P0 mutation"
+    }
+  },
+  "measurement_contract": {
+    "endpoint": "/chat/completions",
+    "contexts": [0, 64, 256],
+    "reps_per_context": 2,
+    "max_tokens": 512,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "concurrency": 1,
+    "warmup_excluded": true,
+    "path": "live mlx_vlm HTTP server timings; P0/U001 remained resident",
+    "prefill_and_decode_separate": true
+  },
+  "classification": {
+    "150_tps": "NOT_EARNED",
+    "200_tps": "REQUIRES_BODY_CHANGE_AND_NATIVE_ROUTE_MAJOR_CONSUMER",
+    "evidence": "Neither exact gate/up launch fusion nor route-q4 plus fusion produced a sustained 100 TPS result in the shared live-worker lane; P1/P2/P4/P5 all remain below target.",
+    "not_claimed": ["Kimi qualification", "capability preservation", "promotion", "Pulsar admission"]
+  },
+  "bottleneck_evidence": {
+    "receipt": "receipts/future/O003_G017_TARGETS.json",
+    "step_baseline_ms": 8.816,
+    "attention_ms": 3.488,
+    "routed_gather_qmm_ms": 2.048,
+    "router_selection_ms": 0.72392,
+    "shared_experts_ms": 0.9236,
+    "simple_gate_up_fusion": "Cannot remove MLA/attention or router selection; the measured direct-fusion precedent is only about +2% end-to-end.",
+    "interpretation": "Route-only compression cannot supply the required 1.8x-2.6x gain. A credible 150-200 TPS attempt must be native route-major and also address selection, attention/MLA, persistence, and launch/synchronization overhead."
+  },
+  "clean_room_arbitrage": {
+    "operational_server_decode_tps": [70.83541297395267, 74.68366309739233],
+    "direct_raw_control_decode_tps": [83.38581965862952, 86.91719199781267],
+    "long_shared_gpu_control_decode_tps": [92.37301575821859, 99.57195262008437, 100.49917869297987],
+    "interpretation": "An 80 TPS result under a contended or wrapper-heavy lane could plausibly become roughly 90-100 TPS in an uncontended resident, but a new resident is not automatically faster; q4 candidates already showed lower TPS despite fewer bytes. Clean-room p50 is required before promotion and does not turn 80 into 150-200."
+  },
+  "next_frontier": "Do not run another quantization permutation. The only remaining credible Kimi path is a native route-major q4/g64 gate_up+down consumer with persistent buffers and complete-token parity; otherwise seal the Kimi physical Scar and return the GPU to Flash/Pulsar source-bound work.",
+  "claim_boundary": "All staging residents were disposable and stopped after measurement. KIMI_P0_OPERATIONAL and KIMI-U001 remain live and unchanged."
+}

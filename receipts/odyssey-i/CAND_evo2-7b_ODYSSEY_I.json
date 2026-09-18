@@ -1,0 +1,50 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-evo2-7b",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + bundled README.md + filesystem stat only). Deliberately LIGHTER than this session's other discoveries -- the .pt format has no cheap header-only inspection path like safetensors, and loading it to get exact per-tensor accounting would require torch (gated, non-contending with HCLI's resident). What's reported below is genuinely verified; what is NOT is explicitly flagged as such, not estimated.",
+ "_label": "Odyssey I DISCOVERY, LIGHT PASS. Domain-different specimen: DNA/genomic, not natural language.",
+ "identity": {
+  "name": "arcinstitute/evo2_7b",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+  "architecture": [
+   "StripedHyena2"
+  ],
+  "checkpoint_format": "raw PyTorch .pt (pickle), NOT safetensors -- no cheap exact byte/tensor accounting available without a torch load",
+  "license": "apache-2.0",
+  "training_data": "arcinstitute/opengenome2 (per README)"
+ },
+ "domain": {
+  "modality": "DNA / genomic sequence, autoregressive -- NOT natural language. Tokenization is over DNA bases, not a text vocabulary. The single most domain-different specimen in the whole ModelLake census this session ran -- every other specimen (55 total, 45 censused) is a text/vision/audio/multimodal LANGUAGE-adjacent model.",
+  "paper": "https://www.biorxiv.org/content/10.1101/2025.02.18.638918v1 (per README -- not independently read this pass)"
+ },
+ "architecture_README_VERIFIED": {
+  "family": "StripedHyena2 -- Arc Institute's own hybrid architecture (per config.json's architecture field and public naming; internal operator-level structure NOT verified this pass -- would need either the paper or a loaded model to confirm gated-convolution/Hyena-operator/attention layer placement the way this session verified RWKV7/LFM2's structure directly from weights).",
+  "n_layers_per_readme_table": 32,
+  "params_per_readme_table_B": 7,
+  "max_training_context": "up to 1,000,000 tokens (per README's checkpoint table) -- BY FAR the longest context of any specimen in this session's census (next longest: Dream-v0's 131072). Architecturally this IS StripedHyena2's whole design point: efficient long-range modeling for genomic sequences, which are naturally far longer than typical text documents."
+ },
+ "byte_accounting_HONEST_LIMITS": {
+  "checkpoint_file_bytes": 13766621200,
+  "checkpoint_gib": 12.821,
+  "naive_bf16_params_from_filesize_B": 6.8833,
+  "naive_vs_readme_stated_7B_rel_err_pct": 1.67,
+  "finding": "the naive filesize/2 estimate does NOT cleanly match the README's stated 7B (a 1.7% gap) -- unlike every safetensors specimen this session verified to within ~1%. Most likely explanation (NOT confirmed): a raw .pt checkpoint commonly bundles optimizer state, fp32 master-weight copies, or other non-inference data alongside the bf16 weights -- exactly the kind of 'complete system' accounting question the Byte Elimination Law asks about, but here the answer requires actually opening the pickle (gated) rather than a free header read."
+ },
+ "obvious_representation_opportunities": [
+  "Untested -- no per-tensor breakdown available without a load."
+ ],
+ "failure_modes_not_yet_tested": [
+  "Everything beyond config+README -- this is a deliberately light static pass; a real discovery pass needs either a torch-metadata-only load (state_dict keys without materializing tensors, still CPU-cheap but was not attempted this pass) or a full GPU/CPU load (gated)."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN, DEFERRED DEPTH. Genuinely the highest-information-diversity specimen in the lake (different domain entirely), but this pass could not cheaply get the same exact-byte rigor as the safetensors specimens. Next step if pursued further: a torch state_dict KEY listing (no tensor materialization) rather than a full load, which would still be cheap/CPU-only and would answer the byte-accounting gap above.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "NOT APPLICABLE -- a DNA-only model has no HCLI relevance (HCLI's WorkUnits are code/tool/reasoning tasks over natural-language + repo content).",
+  "pulsar_candidate": "NOT APPLICABLE",
+  "magnetar_candidate": "NOT APPLICABLE (different domain entirely)",
+  "cepheid_candidate": "NOT EVALUATED",
+  "verdict": "OUT OF SCOPE for the Resident/Pulsar/Magnetar/Cepheid framework -- that framework is about HCLI's own operation, and this specimen is not a language model at all. Recorded for architecture-diversity completeness per S005's 'prefer high-information diversity', not because it is a serious Resident candidate."
+ },
+ "commit": "f4b1ac190",
+ "emitted_at": "2026-09-09T13:47:29Z"
+}

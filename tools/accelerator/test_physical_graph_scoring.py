@@ -1,5 +1,5 @@
 from architecture_atlas import build_atlas
-from hcli.physical_graph import (
+from hawking.physical_graph import (
     NR_PRIMITIVES,
     apply_architecture_atlas,
     compile_physical_graph,

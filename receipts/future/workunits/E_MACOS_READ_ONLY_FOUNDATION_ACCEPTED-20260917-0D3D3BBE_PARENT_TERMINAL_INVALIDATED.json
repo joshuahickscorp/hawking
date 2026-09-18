@@ -1,0 +1,352 @@
+{
+  "claim_boundary": "preserves the erroneous terminal projection as evidence; root Goal remains RUNNING",
+  "goal_id": "GOAL-B33C69F193",
+  "prior_parent_result": {
+    "claim_boundary": "Hawking-owned read-only child result. Observations remain a research input and are not an engineering acceptance claim.",
+    "commits": [],
+    "completion": {
+      "calls_used": 4,
+      "complete": true,
+      "continuation_turns": 0,
+      "max_continuation_turns": 4,
+      "phase_nudges": 0,
+      "reason": "evidence_contract_satisfied",
+      "required_successful_tools": [],
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    "continuation_impact": null,
+    "evidence": [
+      {
+        "at": "2026-09-17T08:34:27.938068+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:34:27.938437+00:00",
+        "has_tool_json": false,
+        "head": "",
+        "outcome": "CONTINUE",
+        "reply_chars": 0,
+        "tool_less_continue_streak": 3,
+        "tool_signal": "theater",
+        "turn": 5
+      },
+      {
+        "at": "2026-09-17T08:35:09.847074+00:00",
+        "calls_used": 14,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [
+          "campaign.state",
+          "fs.list",
+          "fs.read",
+          "fs.search"
+        ],
+        "unmet": [
+          "structured_result"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:35:09.847083+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:35:09.848775+00:00",
+        "has_tool_json": false,
+        "head": "## STRUCTURED RESEARCH RESULT \u2014 P0_BIND_RECONCILE\n\n```json\n{\n  \"schema\": \"hawking.workunit.structured_result.v1\",\n  \"workunit_id\": \"E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE\",\n  \"goal_id\": \"GOAL-B33C69F193\",\n  \"worker_id\": \"ha",
+        "outcome": "CONTINUE",
+        "reply_chars": 4560,
+        "tool_less_continue_streak": 4,
+        "tool_signal": "theater",
+        "turn": 6
+      },
+      {
+        "at": "2026-09-17T08:35:25.218717+00:00",
+        "claim_boundary": "provider continuation is not canonical WorkUnit state",
+        "from_session_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE",
+        "kind": "provider_session_rotated_after_mode_reclassification",
+        "to_session_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE-r7"
+      },
+      {
+        "at": "2026-09-17T08:35:57.501444+00:00",
+        "calls_used": 15,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [
+          "campaign.state",
+          "fs.list",
+          "fs.read",
+          "fs.search"
+        ],
+        "unmet": [
+          "structured_result"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:35:57.501453+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:35:57.503401+00:00",
+        "has_tool_json": false,
+        "head": "```json\n{\n  \"schema\": \"hawking.supervisor.packet.v1\",\n  \"workunit\": \"P0_BIND_RECONCILE\",\n  \"worker_id\": \"hawking-worker-0f9be4dd4204449f\",\n  \"parent_goal\": \"GOAL-B33C69F193\",\n  \"mode\": \"read_only_research\",\n  \"mutation\": \"none\",\n  \"children",
+        "outcome": "CONTINUE",
+        "reply_chars": 4393,
+        "tool_less_continue_streak": 5,
+        "tool_signal": "theater",
+        "turn": 7
+      },
+      {
+        "at": "2026-09-17T08:37:39.111903+00:00",
+        "calls_used": 15,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [
+          "campaign.state",
+          "fs.list",
+          "fs.read",
+          "fs.search"
+        ],
+        "unmet": [
+          "structured_result"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:37:39.111915+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:37:39.114980+00:00",
+        "has_tool_json": false,
+        "head": "{\"observations\":[{\"id\":\"O1\",\"claim\":\"Governing artifact artifact-81b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393 resolves to content-addressed H-NOTES file .hawking/H-NOTES/pasted/81/b7eaafd21b7343962c0bd76efc47b5c7b6e8b285",
+        "outcome": "CONTINUE",
+        "reply_chars": 4708,
+        "tool_less_continue_streak": 6,
+        "tool_signal": "theater",
+        "turn": 8
+      },
+      {
+        "at": "2026-09-17T08:40:21.943366+00:00",
+        "calls_used": 0,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [],
+        "unmet": [
+          "one_of:filesystem.read,filesystem.search,fs.read,fs.search,github.search,hawking.worker.spawn,receipt.inspect,receipt.read,web.search"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:40:21.943384+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:40:21.945417+00:00",
+        "has_tool_json": false,
+        "head": "{\"tool_calls\":[{\"name\":\"fs_list\",\"arguments\":{\"path\":\".\"}}]}",
+        "outcome": "CONTINUE",
+        "reply_chars": 60,
+        "tool_less_continue_streak": 7,
+        "tool_signal": "theater",
+        "turn": 9
+      },
+      {
+        "at": "2026-09-17T08:40:30.849472+00:00",
+        "calls_used": 0,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [],
+        "unmet": [
+          "one_of:filesystem.read,filesystem.search,fs.read,fs.search,github.search,hawking.worker.spawn,receipt.inspect,receipt.read,web.search"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:40:30.849493+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:40:30.850262+00:00",
+        "has_tool_json": false,
+        "head": "{\"tool_calls\": [\"campaign_state\", \"fs_list\", \"fs_search\"]}",
+        "outcome": "CONTINUE",
+        "reply_chars": 58,
+        "tool_less_continue_streak": 8,
+        "tool_signal": "theater",
+        "turn": 10
+      },
+      {
+        "at": "2026-09-17T08:40:35.359614+00:00",
+        "calls_used": 0,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [],
+        "unmet": [
+          "one_of:filesystem.read,filesystem.search,fs.read,fs.search,github.search,hawking.worker.spawn,receipt.inspect,receipt.read,web.search"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:40:35.359634+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:40:35.360282+00:00",
+        "has_tool_json": false,
+        "head": "{\"tool_calls\":[\"campaign_state\",\"fs_list\"]}",
+        "outcome": "CONTINUE",
+        "reply_chars": 43,
+        "tool_less_continue_streak": 9,
+        "tool_signal": "theater",
+        "turn": 11
+      },
+      {
+        "at": "2026-09-17T08:40:44.819199+00:00",
+        "calls_used": 0,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [],
+        "unmet": [
+          "one_of:filesystem.read,filesystem.search,fs.read,fs.search,github.search,hawking.worker.spawn,receipt.inspect,receipt.read,web.search"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:40:44.819215+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:40:44.819855+00:00",
+        "has_tool_json": false,
+        "head": "{\"tool_calls\": [\"campaign_state\", \"fs_list\", \"fs_search\"]}",
+        "outcome": "CONTINUE",
+        "reply_chars": 58,
+        "tool_less_continue_streak": 10,
+        "tool_signal": "theater",
+        "turn": 12
+      },
+      {
+        "at": "2026-09-17T08:40:50.579696+00:00",
+        "calls_used": 0,
+        "complete": false,
+        "kind": "worker_completion_contract",
+        "successful_tools": [],
+        "unmet": [
+          "one_of:filesystem.read,filesystem.search,fs.read,fs.search,github.search,hawking.worker.spawn,receipt.inspect,receipt.read,web.search"
+        ],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:40:50.579715+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:40:50.580453+00:00",
+        "has_tool_json": false,
+        "head": "{\"tool_calls\": [{\"name\": \"campaign_state\", \"arguments\": {}}, {\"name\": \"fs_list\", \"arguments\": {\"path\": \".\", \"recursive\": false}}],\n\n\"status\": \"in_progress\" }",
+        "outcome": "CONTINUE",
+        "reply_chars": 157,
+        "tool_less_continue_streak": 11,
+        "tool_signal": "theater",
+        "turn": 13
+      },
+      {
+        "at": "2026-09-17T08:43:08.201304+00:00",
+        "calls_used": 4,
+        "complete": true,
+        "kind": "worker_completion_contract",
+        "successful_tools": [
+          "campaign.state",
+          "fs.list",
+          "fs.search"
+        ],
+        "unmet": [],
+        "verified_tools": []
+      },
+      {
+        "at": "2026-09-17T08:43:08.201322+00:00",
+        "kind": "worker_tool_admission",
+        "prior_successful_count": 0,
+        "repo_edit_offered": false,
+        "tool_count": 9,
+        "write_authority": false
+      },
+      {
+        "at": "2026-09-17T08:43:08.203199+00:00",
+        "has_tool_json": true,
+        "head": "{\"tool\": \"fs_list\", \"path\": \"artifacts\" }",
+        "outcome": "CONTINUE",
+        "reply_chars": 41,
+        "tool_less_continue_streak": 12,
+        "tool_signal": "theater",
+        "turn": 14
+      }
+    ],
+    "files_changed": [],
+    "finished_at": 1789634588.20451,
+    "goal_id": "GOAL-B33C69F193",
+    "limitations": [
+      "Read-only worker; no source or receipt mutation",
+      "Provider conversation is not the authority"
+    ],
+    "objective": "Hawking Arsenal Production Ascension: deliver one coherent Hawking-owned production environment across phases D-L. Begin with the Browser World Interface, then advance only through evidence-backed increments for macOS perception, multi-worker Auto, documents, authorized reverse engineering, historical consolidation, tool health, hardening, and final acceptance. Protect Flash/Pulsar, Kimi P0, TTS, ModelLake, sealed receipts, and unrelated user work.",
+    "output_excerpt": "{\"tool\": \"fs_list\", \"path\": \"artifacts\" }",
+    "resident": "hawking/auto",
+    "rollback": null,
+    "schema": "hawking.discrete_goal_result.v1",
+    "seals": [],
+    "status": "COMPLETE",
+    "summary": "Read-only Hawking worker completed with a structured remote research packet; no repository mutation was authorized.",
+    "tests": {},
+    "worker_id": "hawking-worker-0f9be4dd4204449f",
+    "worker_model": "deepseek/deepseek-v4.1-flash",
+    "workunit_id": "D-BROWSER-POST_REPAIR-VERIFY-20260915"
+  },
+  "reason": "read-only non-terminal child result was incorrectly written through the legacy root Goal result writer",
+  "schema": "hawking.workunit.parent_terminal_invalidation.v1",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-0D3D3BBE"
+}

@@ -38,79 +38,8 @@ from tools.verify import status_causality as sc
 RECEIPT = "CONTAMINATION_SCIENCE.json"
 SCHEMA = "hawking.future.contamination.v1"
 
-FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
-    sc,
-    "FIVE_RECORDED_FIELDS",
-    (
-        "probe_performed",
-        "direct_observation",
-        "interpretation",
-        "confidence",
-        "alternatives",
-    ),
-)
-
-
-def _bind_emit() -> None:
-    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
-    if hasattr(sc, "emit"):
-        return
-
-    def emit(
-        status: str,
-        *,
-        probe_performed: str = "",
-        direct_observation: Any = "",
-        interpretation: str = "",
-        probe_kind: str = "",
-        claim_kind: str | None = None,
-        falsifier: str = "",
-        source: str = "",
-    ) -> dict[str, Any]:
-        row: dict[str, Any] = {
-            "status": status,
-            "probe_performed": probe_performed,
-            "direct_observation": direct_observation,
-            "interpretation": interpretation or status,
-            "probe_kind": probe_kind,
-            "use_catalog": False,
-            "source": source or "<emit>",
-        }
-        if claim_kind:
-            row["claim_kind"] = claim_kind
-        if falsifier:
-            row["falsifier"] = falsifier
-        out = sc.challenge(row)
-        out["entry"] = "emit"
-        return out
-
-    sc.emit = emit  # type: ignore[attr-defined]
-
-
-_bind_emit()
-
-
-def records_five_fields(node: Any) -> bool:
-    fn = getattr(sc, "records_five_fields", None)
-    if callable(fn):
-        return bool(fn(node))
-    if not isinstance(node, dict):
-        return False
-    if not all(k in node for k in FIVE_RECORDED_FIELDS):
-        return False
-    if not str(node.get("probe_performed") or "").strip():
-        return False
-    if node.get("direct_observation") in (None, "", [], {}):
-        return False
-    if not str(node.get("interpretation") or "").strip():
-        return False
-    conf = node.get("confidence")
-    if not isinstance(conf, dict):
-        return False
-    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
-        return False
-    alts = node.get("alternatives")
-    return isinstance(alts, list) and bool(alts)
+FIVE_RECORDED_FIELDS = sc.FIVE_RECORDED_FIELDS
+records_five_fields = sc.records_five_fields
 
 
 def record_contamination_causality(
@@ -158,7 +87,7 @@ QUIET_RSS_GIB = 2.0
 HEAVY_CPU_PCT = 400.0
 # quiescence instrument recorded a 17.6 GiB MLX neighbour; 8 GiB is a large resident
 HEAVY_RSS_GIB = 8.0
-# tools/agentos/machine_state.py clean_box_ok
+# hawking/machine_state.py clean_box_ok
 LIGHT_LOAD_FRACTION = 0.5
 # tools/verify/perfgate.py --paired
 MIN_PAIRS = 7
@@ -1102,20 +1031,20 @@ def _recovered() -> list[dict[str, Any]]:
             "path": "tools/odyssey_patient_runner.py",
             "on_disk_in_this_worktree": (REPO / "tools/odyssey_patient_runner.py").is_file(),
             "role": (
-                "maybe_machine_note() optionally imports tools.agentos.machine_state; "
+                "maybe_machine_note() optionally imports hawking.machine_state; "
                 "stamps a contamination flag on SPECIMEN receipts. Inline, not shared."
             ),
             "adequate_for_this_lane": False,
         },
         {
-            "path": "tools/agentos/machine_state.py",
-            "on_disk_in_this_worktree": (REPO / "tools/agentos/machine_state.py").is_file(),
+            "path": "hawking/machine_state.py",
+            "on_disk_in_this_worktree": (REPO / "hawking/machine_state.py").is_file(),
             "role": "snapshot + clean_box_ok (live lanes, disk, load). No promotion gate.",
             "adequate_for_this_lane": False,
         },
         {
-            "path": "hcli/agentos/benchmark_boundary.py",
-            "on_disk_in_this_worktree": (REPO / "hcli/agentos/benchmark_boundary.py").is_file(),
+            "path": "hawking/agentos/benchmark_boundary.py",
+            "on_disk_in_this_worktree": (REPO / "hawking/agentos/benchmark_boundary.py").is_file(),
             "role": (
                 "QUALIFIED_PROTECTED vs DIAGNOSTIC_CONTAMINATED from before/after "
                 "machine_quiescence. Vocabulary is not DIAGNOSTIC_RELATIVE / "

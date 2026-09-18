@@ -1,0 +1,101 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-RWKV7-13.3B",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + model.safetensors.index.json + ALL 6 shard safetensors HEADERS read directly -- header bytes only, not tensor data; every parameter count below is exact, not formula-derived). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY -- exact byte-level anatomy from real tensor headers, not a config-derived formula guess (contrast with the mamba3-siso pass, where a missing d_conv key forced an honest gap; RWKV7's sharded safetensors format made EXACT accounting cheaply available instead).",
+ "identity": {
+  "name": "RWKV7-13.3B-20260805",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+  "architectures": [
+   "Rwkv7ForCausalLM"
+  ],
+  "model_type": "rwkv7",
+  "n_shards": 6,
+  "total_stored_bytes": 26540597248,
+  "total_stored_gib": 24.718
+ },
+ "architecture": {
+  "family": "RWKV7 -- pure LINEAR RECURRENCE, zero attention layers, zero MoE. Architecturally DISTINCT from Mamba's gated SSM (this session's O001/mamba3-siso family): RWKV7's recurrence is a generalized delta-rule with a MATRIX-valued per-head state (not a vector state like Mamba), controlled by several separately low-rank-factorized paths.",
+  "n_layer": 61,
+  "hidden_size": 4096,
+  "n_heads": 64,
+  "head_dim": 64,
+  "vocab_size": 65536,
+  "tie_word_embeddings": false,
+  "low_rank_control_paths": {
+   "a (in-context-learning-rate / removal-key modulation)": {
+    "rank": 192,
+    "shapes": "a0=[1,1,H] a1=[H,r] a2=[r,H]"
+   },
+   "w (primary decay)": {
+    "rank": 192,
+    "shapes": "w0=[1,1,H] w1=[H,r] w2=[r,H]"
+   },
+   "g (gate)": {
+    "rank": 384,
+    "shapes": "g1=[H,r] g2=[r,H] (no g0 bias vector)"
+   },
+   "v (inter-layer value-residual mixing)": {
+    "rank": 128,
+    "shapes": "v0=[1,1,H] v1=[H,r] v2=[r,H]"
+   },
+   "note": "each control path is a bias vector + down-projection + up-projection (rank r << H=4096) -- the recurrence's TIME-VARYING per-channel decay/gate/removal-rate is computed CHEAPLY per token from a low-dimensional bottleneck, not a full HxH matrix. This is itself a genuine 'representation opportunity' pattern (low-rank control of a wide channel dimension) already baked into the base architecture, not something Gravity would need to discover."
+  },
+  "core_projections": "key/value/receptance/output.weight all [4096,4096] full-rank square (no GQA-style KV reduction -- there is no KV concept here at all, this is the WKV recurrence's own r/k/v roles, architecturally unrelated to transformer attention despite the similar naming)",
+  "ffn_channel_mix": "2-matrix FFN (ffn.key [16384,4096] + ffn.value [4096,16384], 4x expansion), NOT the 3-matrix gate+up+down SwiGLU shape seen in every transformer/Mamba-hybrid MLP this session has touched -- RWKV's 'channel mix' is architecturally simpler (2 matrices, presumably a squared-ReLU or similar activation between them, not gated).",
+  "per_block_norms": "3 LayerNorms per block (ln0 input-embed-only, ln1 pre-attention, ln2 pre-ffn) plus an ADDITIONAL in-attention ln_x applied to the WKV output before it re-enters the residual stream -- RWKV-specific, no analog in the Mamba/transformer blocks examined this session."
+ },
+ "byte_accounting_EXACT": {
+  "total_params_bf16": 13270298624,
+  "total_params_B": 13.2703,
+  "name_implied_params_B": 13.3,
+  "cross_check_rel_err_pct": 0.223,
+  "embed_bytes": 536870912,
+  "head_bytes": 536870912,
+  "per_layer_total_bytes_TYPICAL": 417488896,
+  "layer0_extra_ln0_bytes": 16384,
+  "layer0_vs_typical_note": "layer 0 carries 2 extra tensors (ln0.bias/weight, an input-embedding norm layers 1-60 do not have) -- confirmed directly from layer 1's header (33 tensors vs layer 0's 35). all_blocks_total_bytes below accounts for this exactly (60 typical layers + 1 layer-0-with-ln0), not a uniform x61 estimate.",
+  "per_layer_breakdown": {
+   "low_rank_control_paths": 48332800,
+   "core_linear_projections": 134217728,
+   "in_attn_norm": 16384,
+   "ffn": 268443648,
+   "block_norms": 32768
+  },
+  "all_blocks_total_bytes": 25466839040,
+  "all_blocks_frac_of_total": 0.9595
+ },
+ "runtime_recurrent_state": {
+  "kv_cache": "NONE -- zero attention layers",
+  "wkv_state_dtype_declared": "float32",
+  "wkv_state_shape_basis": "RWKV7's WKV state is a per-head [head_dim x head_dim] MATRIX (not a vector, unlike Mamba's [d_state] vector state) -- this is well-established public RWKV7 architecture, not this session's inference; the SIZE computed from it uses config's declared head_dim/num_heads/wkv_state_dtype directly.",
+  "wkv_state_bytes_per_head": 16384,
+  "wkv_state_bytes_per_layer": 1048576,
+  "wkv_state_bytes_total": 63963136,
+  "wkv_state_total_MiB": 61.0,
+  "note": "constant regardless of context length (same class of finding as R-ssm-state-vs-kv-crossover, but the ABSOLUTE state size per layer is much larger than Mamba3-siso's -- a MATRIX state (head_dim^2 per head) vs Mamba's VECTOR state (d_state per head*headdim) is a structurally bigger footprint at comparable head_dim. Worth a real crossover comparison against a transformer of similar size once battery-tested."
+ },
+ "context_capability": {
+  "declared_context": "NOT DECLARED in config.json"
+ },
+ "obvious_representation_opportunities": [
+  "The low-rank control paths (a/w/g/v) are ALREADY a form of Gravity-style factorization baked into pretraining -- worth checking whether Gravity's OWN low-rank-residual search techniques would find further headroom in the SAME channels, or whether the model has already captured what a post-hoc low-rank search would find (a genuine 'does the architecture pre-empt Gravity' question).",
+  "The 2-matrix FFN (no gate) may tolerate LESS aggressive quantization headroom than a 3-matrix gated MLP, or MORE -- untested; a real Gravity pass on this specimen would be a genuinely different data point from every gated-MLP/MoE specimen touched this session."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery (gated, needs a real load).",
+  "No baseline TPS/prefill/decode (same gate).",
+  "wkv_implementation='eager' in config -- may indicate no fused/optimized kernel path is declared for this checkpoint; worth checking before assuming a fast decode path exists."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN. Genuinely fills the biggest architecture-diversity gap in this session's coverage (zero prior linear-recurrence-non-SSM evidence). 13.3B is mid-sized -- plausible Magnetar-tier candidate on capability if it battery-tests well, not a small/fast Resident/Pulsar candidate by size alone.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "UNLIKELY BY SIZE: 13.3B is larger than several small candidates already surveyed (census this session); would need a strong efficiency/context argument to beat them, untested.",
+  "pulsar_candidate": "UNTESTED, no evidence yet.",
+  "magnetar_candidate": "PLAUSIBLE IF CAPABILITY HOLDS: mid-size, architecturally novel recurrence -- worth a real battery before any stronger claim.",
+  "cepheid_candidate": "NOT EVALUATED.",
+  "verdict": "NO CLAIM BEYOND 'WORTH A FUTURE CAPABILITY BATTERY' -- Odyssey I discovery only."
+ },
+ "commit": "9f9de3f29",
+ "emitted_at": "2026-09-09T13:38:17Z"
+}

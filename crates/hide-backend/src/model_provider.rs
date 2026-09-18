@@ -258,6 +258,7 @@ impl HttpModelProvider {
         let stats = final_stats.unwrap_or(GenerationStats {
             input_tokens: 0,
             output_tokens: 0,
+            decode_ns: None,
             decode_ms: None,
             completed_decode_forwards: None,
             decode_tokens_per_second: None,
@@ -292,6 +293,13 @@ pub fn extract_completion(route: GenerateRoute, body: &Value) -> (String, Genera
             .to_string(),
     };
     let stats_obj = body.get("stats").or_else(|| body.get("usage"));
+    let decode_ns = stats_obj
+        .and_then(|s| s.get("decode_ns"))
+        .and_then(Value::as_u64);
+    let decode_ms = stats_obj
+        .and_then(|s| s.get("decode_ms"))
+        .and_then(Value::as_f64)
+        .or_else(|| decode_ns.map(|value| value as f64 / 1_000_000.0));
     let stats = GenerationStats {
         input_tokens: stats_obj
             .and_then(|s| s.get("input_tokens").or_else(|| s.get("prompt_tokens")))
@@ -304,9 +312,8 @@ pub fn extract_completion(route: GenerateRoute, body: &Value) -> (String, Genera
             })
             .and_then(Value::as_u64)
             .unwrap_or(0) as usize,
-        decode_ms: stats_obj
-            .and_then(|s| s.get("decode_ms"))
-            .and_then(Value::as_f64),
+        decode_ns,
+        decode_ms,
         completed_decode_forwards: stats_obj
             .and_then(|s| s.get("completed_decode_forwards"))
             .and_then(Value::as_u64)
@@ -351,6 +358,7 @@ pub fn parse_native_sse_line(line: &str) -> SseChunk {
         return SseChunk::Done(GenerationStats {
             input_tokens: 0,
             output_tokens: 0,
+            decode_ns: None,
             decode_ms: None,
             completed_decode_forwards: None,
             decode_tokens_per_second: None,
@@ -383,6 +391,7 @@ pub fn parse_native_sse_line(line: &str) -> SseChunk {
 fn is_zero_stats(s: &GenerationStats) -> bool {
     s.input_tokens == 0
         && s.output_tokens == 0
+        && s.decode_ns.is_none()
         && s.decode_ms.is_none()
         && s.completed_decode_forwards.is_none()
         && s.decode_tokens_per_second.is_none()

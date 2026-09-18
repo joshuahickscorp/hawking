@@ -17,6 +17,17 @@
 #include <metal_stdlib>
 using namespace metal;
 
+// Keep a diagnostic BF16 materialization in the same kernel that produces a
+// source-BF16 projection.  The F32 carrier remains the graph ABI, but its
+// value is exactly what a BF16 source tensor would widen back to.  This avoids
+// adding a standalone cast launch to a causal trace.
+static inline float hawking_source_bf16_roundtrip_rne(float value)
+{
+    const uint bits = as_type<uint>(value);
+    const uint low_lsb = (bits >> 16u) & 1u;
+    return as_type<float>((bits + 0x7fffu + low_lsb) & 0xffff0000u);
+}
+
 // v1.0.0-H — simdgroup_matrix GEMV: w (rows×cols f32) × x (cols f32) → y (rows f32).
 kernel void gemv_simdgroup_f32(
     device const float* w       [[buffer(0)]],   // (rows × cols) f32, row-major
@@ -196,6 +207,48 @@ kernel void gemv_native_bf16_seq(
     out_logits[row_idx] = acc;
 }
 
+// Source-boundary diagnostic sibling of `gemv_native_bf16_seq`.  It preserves
+// the same scalar left-to-right dot product and only changes the declared
+// output seam to BF16 -> F32 materialization.  The resident/default path must
+// continue selecting the unsuffixed kernel above.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_seq_source_bf16(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float*  act        [[buffer(1)]],
+    device       float*  out_logits  [[buffer(2)]],
+    constant     uint&   n_rows      [[buffer(3)]],
+    constant     uint&   n_cols      [[buffer(4)]],
+    uint                 row_idx     [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows) return;
+    device const ushort* row_bits =
+        weight_bits + (ulong)row_idx * (ulong)n_cols;
+    float acc = 0.0f;
+    uint col = 0u;
+    // MLX's singleton BF16 matmul reduces the K dimension in four-value
+    // groups before carrying the partial into the row accumulator. Preserve
+    // that source-shaped reduction topology at this diagnostic seam while
+    // keeping the default resident GEMV above unchanged.
+    for (; col + 4u <= n_cols; col += 4u) {
+        const uint wide_bits_0 = ((uint)row_bits[col + 0u]) << 16;
+        const uint wide_bits_1 = ((uint)row_bits[col + 1u]) << 16;
+        const uint wide_bits_2 = ((uint)row_bits[col + 2u]) << 16;
+        const uint wide_bits_3 = ((uint)row_bits[col + 3u]) << 16;
+        const float product_0 = as_type<float>(wide_bits_0) * act[col + 0u];
+        const float product_1 = as_type<float>(wide_bits_1) * act[col + 1u];
+        const float product_2 = as_type<float>(wide_bits_2) * act[col + 2u];
+        const float product_3 = as_type<float>(wide_bits_3) * act[col + 3u];
+        const float partial = ((product_0 + product_1) + product_2) + product_3;
+        acc = acc + partial;
+    }
+    for (; col < n_cols; ++col) {
+        const uint wide_bits = ((uint)row_bits[col]) << 16;
+        const float w_val = as_type<float>(wide_bits);
+        acc = acc + w_val * act[col];
+    }
+    out_logits[row_idx] = hawking_source_bf16_roundtrip_rne(acc);
+}
+
 // Vec4-load candidate for the source-BF16 GEMV family. Each lane still widens
 // and accumulates one element at a time in column order; only the memory
 // transactions and pointer arithmetic are packed. This keeps the scalar
@@ -213,6 +266,7 @@ kernel void gemv_native_bf16_seq_vec4(
     if (row_idx >= n_rows || (n_cols & 3u) != 0u) return;
     device const ushort* row_bits = weight_bits + (ulong)row_idx * (ulong)n_cols;
     float acc = 0.0f;
+    #pragma clang loop unroll_count(16)
     for (uint col = 0u; col < n_cols; col += 4u) {
         const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
         const float4 packed_x = *(device const float4*)(act + col);
@@ -255,6 +309,41 @@ kernel void gemv_native_bf16_geo_vec4_tg128(
             acc += as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
             acc += as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
             acc += as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u && row < n_rows) out_logits[row] = acc;
+}
+
+// Tiled HyperConnection up-projection with its immediately consumed low-rank
+// SiLU/scale folded into the activation read.  This preserves the independent
+// tiled output-row geometry of the geo GEMV while removing the device-buffer
+// round trip and launch otherwise spent on `qwen_next_hyperconnection_silu_scale`.
+// Like the geo GEMV, its SIMD reduction association is candidate-only.
+kernel void gemv_native_bf16_geo_vec4_tg128_silu_scale(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float* low_rank     [[buffer(1)]],
+    device float* out_logits         [[buffer(2)]],
+    constant uint& n_rows            [[buffer(3)]],
+    constant uint& n_cols            [[buffer(4)]],
+    constant float& divisor          [[buffer(5)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    const uint row = group_id * 4u + simd_id;
+    float acc = 0.0f;
+    if (row < n_rows && (n_cols & 3u) == 0u) {
+        device const ushort* row_bits =
+            weight_bits + (ulong)row * (ulong)n_cols;
+        for (uint col = simd_lane * 4u; col < n_cols; col += 128u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 raw = *(device const float4*)(low_rank + col) / divisor;
+            const float4 x = raw / (1.0f + exp(-raw));
+            acc += as_type<float>(((uint)packed_w.x) << 16u) * x.x;
+            acc += as_type<float>(((uint)packed_w.y) << 16u) * x.y;
+            acc += as_type<float>(((uint)packed_w.z) << 16u) * x.z;
+            acc += as_type<float>(((uint)packed_w.w) << 16u) * x.w;
         }
     }
     acc = simd_sum(acc);
@@ -305,6 +394,7 @@ kernel void gemv_native_bf16_swiglu_seq_vec4(
     const ulong base = (ulong)row_idx * (ulong)n_cols;
     float gate = 0.0f;
     float up = 0.0f;
+    #pragma clang loop unroll_count(16)
     for (uint col = 0u; col < n_cols; col += 4u) {
         const ushort4 packed_gate = *(device const ushort4*)(gate_bits + base + col);
         const ushort4 packed_up = *(device const ushort4*)(up_bits + base + col);
@@ -402,6 +492,66 @@ kernel void gemv_native_bf16_dual_seq(
     }
 }
 
+// Source-boundary sibling of the dual projection. MLX materializes each
+// independent Linear result as BF16 before the next source operator consumes
+// it; keep the two projections fused without losing that seam. The reduction
+// topology matches the source-BF16 singleton GEMV above.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_dual_seq_source_bf16(
+    device const ushort* weight_a_bits [[buffer(0)]],
+    device const ushort* weight_b_bits [[buffer(1)]],
+    device const float* act            [[buffer(2)]],
+    device float* out_a                [[buffer(3)]],
+    device float* out_b                [[buffer(4)]],
+    constant uint& rows_a              [[buffer(5)]],
+    constant uint& rows_b              [[buffer(6)]],
+    constant uint& n_cols              [[buffer(7)]],
+    uint row_idx                       [[thread_position_in_grid]])
+{
+    if (row_idx < rows_a) {
+        device const ushort* row_bits =
+            weight_a_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        uint col = 0u;
+        for (; col + 4u <= n_cols; col += 4u) {
+            const float product_0 =
+                as_type<float>(((uint)row_bits[col + 0u]) << 16u) * act[col + 0u];
+            const float product_1 =
+                as_type<float>(((uint)row_bits[col + 1u]) << 16u) * act[col + 1u];
+            const float product_2 =
+                as_type<float>(((uint)row_bits[col + 2u]) << 16u) * act[col + 2u];
+            const float product_3 =
+                as_type<float>(((uint)row_bits[col + 3u]) << 16u) * act[col + 3u];
+            acc = acc + ((product_0 + product_1) + product_2) + product_3;
+        }
+        for (; col < n_cols; ++col) {
+            acc = acc + as_type<float>(((uint)row_bits[col]) << 16u) * act[col];
+        }
+        out_a[row_idx] = hawking_source_bf16_roundtrip_rne(acc);
+    }
+    if (row_idx < rows_b) {
+        device const ushort* row_bits =
+            weight_b_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        uint col = 0u;
+        for (; col + 4u <= n_cols; col += 4u) {
+            const float product_0 =
+                as_type<float>(((uint)row_bits[col + 0u]) << 16u) * act[col + 0u];
+            const float product_1 =
+                as_type<float>(((uint)row_bits[col + 1u]) << 16u) * act[col + 1u];
+            const float product_2 =
+                as_type<float>(((uint)row_bits[col + 2u]) << 16u) * act[col + 2u];
+            const float product_3 =
+                as_type<float>(((uint)row_bits[col + 3u]) << 16u) * act[col + 3u];
+            acc = acc + ((product_0 + product_1) + product_2) + product_3;
+        }
+        for (; col < n_cols; ++col) {
+            acc = acc + as_type<float>(((uint)row_bits[col]) << 16u) * act[col];
+        }
+        out_b[row_idx] = hawking_source_bf16_roundtrip_rne(acc);
+    }
+}
+
 // Vec4-load dual-projection candidate. The two output rows are still
 // independent scalar-order reductions; this only packs their source loads.
 #pragma clang fp contract(off)
@@ -420,6 +570,7 @@ kernel void gemv_native_bf16_dual_seq_vec4(
     if (row_idx < rows_a) {
         device const ushort* row_bits = weight_a_bits + (ulong)row_idx * (ulong)n_cols;
         float acc = 0.0f;
+        #pragma clang loop unroll_count(16)
         for (uint col = 0u; col < n_cols; col += 4u) {
             const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
             const float4 packed_x = *(device const float4*)(act + col);
@@ -433,6 +584,7 @@ kernel void gemv_native_bf16_dual_seq_vec4(
     if (row_idx < rows_b) {
         device const ushort* row_bits = weight_b_bits + (ulong)row_idx * (ulong)n_cols;
         float acc = 0.0f;
+        #pragma clang loop unroll_count(16)
         for (uint col = 0u; col < n_cols; col += 4u) {
             const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
             const float4 packed_x = *(device const float4*)(act + col);
@@ -521,6 +673,7 @@ kernel void gemv_native_bf16_triple_seq_vec4(
         device const ushort* row_bits =
             weight_a_bits + (ulong)row_idx * (ulong)n_cols;
         float acc = 0.0f;
+        #pragma clang loop unroll_count(16)
         for (uint col = 0u; col < n_cols; col += 4u) {
             const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
             const float4 packed_x = *(device const float4*)(act + col);
@@ -535,6 +688,7 @@ kernel void gemv_native_bf16_triple_seq_vec4(
         device const ushort* row_bits =
             weight_b_bits + (ulong)row_idx * (ulong)n_cols;
         float acc = 0.0f;
+        #pragma clang loop unroll_count(16)
         for (uint col = 0u; col < n_cols; col += 4u) {
             const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
             const float4 packed_x = *(device const float4*)(act + col);
@@ -549,6 +703,7 @@ kernel void gemv_native_bf16_triple_seq_vec4(
         device const ushort* row_bits =
             weight_c_bits + (ulong)row_idx * (ulong)n_cols;
         float acc = 0.0f;
+        #pragma clang loop unroll_count(16)
         for (uint col = 0u; col < n_cols; col += 4u) {
             const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
             const float4 packed_x = *(device const float4*)(act + col);
@@ -587,6 +742,46 @@ kernel void gemv_native_bf16_hyperconnection_combine(
     for (uint col = 0u; col < cols; ++col) {
         const float weight = as_type<float>(((uint)row_bits[col]) << 16u);
         acc = acc + weight * act[col];
+    }
+    block_output[row] = acc;
+    for (uint stream = 0u; stream < streams; ++stream) {
+        const float gate = 2.0f / (1.0f + exp(-block_logits[stream] / divisor));
+        output[(ulong)stream * (ulong)hidden + row] =
+            residual[(ulong)stream * (ulong)hidden + row] + acc * gate;
+    }
+}
+
+// Exact-order packed-load sibling of the output-projection/HyperConnection
+// combine.  The four products are still added to the row accumulator in source
+// order; only the BF16 and activation loads are widened to vec4 transactions.
+// This is safe for the source-order authority path and removes the last large
+// scalar-load projection from the Flash resident body.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_hyperconnection_combine_vec4(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float* act          [[buffer(1)]],
+    device const float* residual     [[buffer(2)]],
+    device const float* block_logits [[buffer(3)]],
+    device float* block_output       [[buffer(4)]],
+    device float* output             [[buffer(5)]],
+    constant uint& hidden            [[buffer(6)]],
+    constant uint& cols              [[buffer(7)]],
+    constant uint& streams           [[buffer(8)]],
+    constant float& divisor          [[buffer(9)]],
+    uint row                         [[thread_position_in_grid]])
+{
+    if (row >= hidden || (cols & 3u) != 0u) return;
+    device const ushort* row_bits =
+        weight_bits + (ulong)row * (ulong)cols;
+    float acc = 0.0f;
+    #pragma clang loop unroll_count(16)
+    for (uint col = 0u; col < cols; col += 4u) {
+        const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+        const float4 packed_x = *(device const float4*)(act + col);
+        acc = acc + as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+        acc = acc + as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+        acc = acc + as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+        acc = acc + as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
     }
     block_output[row] = acc;
     for (uint stream = 0u; stream < streams; ++stream) {
@@ -839,6 +1034,28 @@ static inline ushort deepseek_v4_bf16_encode_rne(float value)
     const uint bits = as_type<uint>(value);
     const uint low_lsb = (bits >> 16u) & 1u;
     return (ushort)((bits + 0x7fffu + low_lsb) >> 16u);
+}
+
+// Model-neutral finite FP32 -> BF16 -> FP32 materialization. Precision
+// schedules use this only at a declared semantic seam; it is not an implicit
+// resident-path cast. The caller owns finiteness validation, so this keeps
+// the narrow IEEE round-to-nearest, ties-to-even grammar used by the source
+// checkpoint controls without inventing a NaN-payload policy.
+static inline float hawking_f32_bf16_roundtrip_rne(float value)
+{
+    const uint bits = as_type<uint>(value);
+    const uint low_lsb = (bits >> 16u) & 1u;
+    return as_type<float>((bits + 0x7fffu + low_lsb) & 0xffff0000u);
+}
+
+kernel void hawking_f32_bf16_roundtrip(
+    device const float* input [[buffer(0)]],
+    device float* output [[buffer(1)]],
+    constant uint& elements [[buffer(2)]],
+    uint index [[thread_position_in_grid]])
+{
+    if (index >= elements) return;
+    output[index] = hawking_f32_bf16_roundtrip_rne(input[index]);
 }
 
 // The source `fast_round_scale(amax, 1/448)` computes the next power-of-two

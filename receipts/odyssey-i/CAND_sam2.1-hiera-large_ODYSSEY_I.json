@@ -1,0 +1,69 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-sam2.1-hiera-large",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json's own richly-structured sub-configs + one safetensors header, every tensor bucketed by top-level component with an explicit zero-unaccounted-bytes assertion). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY. Pure vision/video specimen -- zero tokenizer, zero text modality at all, the second specimen this session (after pi0_base) with no language component whatsoever.",
+ "identity": {
+  "name": "facebook/sam2.1-hiera-large",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c",
+  "architectures": [
+   "Sam2VideoModel"
+  ],
+  "model_type": "sam2_video"
+ },
+ "domain": {
+  "modality": "promptable image AND video segmentation -- point/box/mask prompts in, per-object segmentation masks out, with a MEMORY mechanism for tracking objects across video frames. No text/language input or output anywhere in this checkpoint."
+ },
+ "architecture_CONFIRMED_FROM_TENSORS": {
+  "component_param_breakdown_M": {
+   "vision_encoder": 212.703,
+   "memory_attention": 5.922,
+   "mask_decoder": 4.215,
+   "memory_encoder": 1.385,
+   "object_pointer_proj": 0.197,
+   "temporal_positional_encoding_projection_layer": 0.016,
+   "prompt_encoder": 0.006,
+   "memory_temporal_positional_encoding": 0.0,
+   "no_memory_embedding": 0.0,
+   "no_memory_positional_encoding": 0.0,
+   "no_object_pointer": 0.0,
+   "shared_image_embedding": 0.0,
+   "occlusion_spatial_embedding_parameter": 0.0,
+   "mask_downsample": 0.0
+  },
+  "finding": "vision_encoder (the Hiera hierarchical vision transformer backbone) is 94.77% of total params -- a BACKBONE-DOMINATED distribution, structurally the inverse of every language specimen surveyed this session (there, embedding tables or MoE experts compete with or exceed the core transformer stack; here the mask_decoder, prompt_encoder, and full video-memory mechanism TOGETHER are only 5.23% of the model).",
+  "memory_mechanism": {
+   "components": "memory_attention + memory_encoder (which itself contains a memory_fuser sub-module) + no_memory_embedding/no_memory_positional_encoding (learned fallbacks for the first frame, which has no prior memory yet) -- together 7.31M params (3.26% of total).",
+   "num_maskmem": 7,
+   "structural_comparison_question_NOT_A_CLAIM": "num_maskmem bounds how many past-frame memory features SAM2 retains for video tracking -- superficially similar in SPIRIT to a bounded/evicted KV-cache or a fixed-size SSM recurrent state (both examined for A5/O001 earlier in this campaign), but the MECHANISM is different (cross-attention over a small stored feature bank, not a recurrent state update or a growing-then-evicted KV). Recorded as a genuine open comparison question this session's A5 work raises, not asserted as a transfer rule from a single loose analogy."
+  }
+ },
+ "byte_accounting_EXACT": {
+  "n_tensors": 901,
+  "total_bytes": 897788616,
+  "total_mib": 856.2,
+  "total_params": 224447154,
+  "total_params_M": 224.447,
+  "fully_bucketed_zero_unaccounted_bytes": true,
+  "dtype": "F32 throughout (same as pi0_base -- second non-language specimen this session shipping without a bf16 cast, tentative pattern worth watching, not yet a rule)."
+ },
+ "obvious_representation_opportunities": [
+  "All-F32 storage on a 224M-param model is the obvious first lever, untested this pass: a bf16 cast alone would roughly halve the 856 MiB footprint. Given the vision_encoder's dominance (94.7%), that one component is where nearly all of the saving would come from.",
+  "The task-specific heads (mask_decoder 4.22M, prompt_encoder 0.01M) are already so small relative to the backbone that they are poor Gravity targets -- unlike every MoE specimen this session, where the expert organ was the obvious dominant-organ attack surface, here the vision_encoder itself (a dense ViT-style hierarchical backbone, no MoE/sparsity structure at all) is the only organ worth attacking."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No capability battery (would need an actual segmentation benchmark -- e.g. COCO/SA-V -- entirely outside Hawking's existing text-oriented Doctor batteries).",
+  "The memory-mechanism structural comparison to SSM/KV-cache above is explicitly a QUESTION, not verified -- no measurement was made of whether Odyssey's SSM-organ Gravity priors have ANY bearing on this specimen's memory_attention/memory_encoder organs."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN, OUT-OF-DOMAIN FOR HCLI. Genuinely useful as a THIRD non-language data point this session (after evo2 and pi0_base) and the first with a backbone-dominated rather than embedding/expert-dominated byte budget -- valuable for architecture-diversity completeness, no bearing on HCLI's own text/code domain.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "NOT APPLICABLE -- a vision/video segmentation model has no HCLI relevance (same reasoning as evo2 and pi0_base).",
+  "pulsar_candidate": "NOT APPLICABLE",
+  "magnetar_candidate": "NOT APPLICABLE",
+  "cepheid_candidate": "NOT EVALUATED",
+  "verdict": "OUT OF SCOPE for the Resident/Pulsar/Magnetar/Cepheid framework, recorded for architecture-diversity completeness per the creed -- the THIRD specimen this session in this category (evo2, pi0_base, now this one), all genuinely out-of-domain but genuinely diversity-valuable."
+ },
+ "commit": "3bae5d5fe",
+ "emitted_at": "2026-09-09T14:11:59Z"
+}

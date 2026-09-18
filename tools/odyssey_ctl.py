@@ -43,6 +43,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parent
 REPO = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
+sys.path.insert(0, str(REPO))
 
 import doctor_seal  # noqa: E402
 import worker_gate  # noqa: E402
@@ -57,6 +58,8 @@ LEDGER = ODYSSEY / "ODYSSEY.md"
 SCHEMA_PATH = ODYSSEY / "patient_packet_schema.json"
 PATIENTS_DIR = ODYSSEY / "patients"
 RECEIPT_DIR = REPO / "receipts" / "odyssey-i"
+MODELLAKE_DISPOSITIONS = RECEIPT_DIR / "MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+MODELLAKE_SCHEDULING_OVERRIDE = RECEIPT_DIR / "MODELLAKE_SCHEDULING_OVERRIDE_20260910.json"
 ESCALATIONS = ODYSSEY / "OPUS_ESCALATIONS.jsonl"
 RULEBASE = ODYSSEY / "GRAVITY_RULEBASE.json"
 TRANSFER = ODYSSEY / "TRANSFER_MATRIX.json"
@@ -96,6 +99,9 @@ DISK_EVICT_TARGET = 65.0
 HARD_LANE_CAP = 14
 DEFAULT_MAX_LANES = 2
 SCHEMA = "hawking.odyssey.controller.v1"
+CANDIDATE_BOARD_SCHEMA = "hawking.odyssey.candidate_board.v1"
+ACTIVE_OWNER_UNREGISTERED = "unregistered"
+FLASH_ACTIVE_OWNER = "local_flash_lane"
 RUN_LOG_SCHEMA = "hawking.odyssey.run_log.v1"
 HARVEST_SCHEMA = "hawking.odyssey.harvest.v2"
 COMPLETION_SCHEMA = "hawking.odyssey.completions.v1"
@@ -440,10 +446,10 @@ def evidence_class(label) -> str | None:
     return None
 
 
-def write_json(path: Path, obj) -> None:
+def write_json(path: Path, obj, *, indent: int = 2) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n")
+    tmp.write_text(json.dumps(obj, indent=indent, ensure_ascii=False) + "\n")
     tmp.replace(path)
 
 
@@ -1468,7 +1474,7 @@ def science_done_for_template(oxx: str, template: str,
 def machine_snapshot() -> dict:
     """Same resource-governor shape as ascent_controller.machine_snapshot."""
     try:
-        from agentos.machine_state import clean_box_ok, snapshot
+        from hawking.machine_state import clean_box_ok, snapshot
 
         snap = snapshot()
         ok, why = clean_box_ok(snap, min_free_gib=DISK_FLOOR_GIB)
@@ -1557,6 +1563,11 @@ def patient_record(row: tuple) -> dict:
         "phase": norm_phase(phase),
         "on_disk": on_disk,
         "blocked_reason": "HF-gated / BLOCKED-auth" if blocked else None,
+        # Ownership is deliberately explicit.  The empty-state projection is
+        # conservative: an owner is never inferred from a model name or from
+        # an old lane counter.  A live lane must claim its exact specimen.
+        "active_owner": ACTIVE_OWNER_UNREGISTERED,
+        "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
         "_evidence": "VERIFIED (ODYSSEY.md patient table)",
     }
 
@@ -1592,7 +1603,465 @@ def load_state() -> dict:
 
 
 def save_state(state: dict) -> None:
-    write_json(STATE, state)
+    # The live Odyssey controller state predates the generic two-space writer;
+    # keep its established one-space format so an additive owner/evidence
+    # update does not manufacture a whole-file formatting diff.
+    write_json(STATE, state, indent=1)
+
+
+# --------------------------------------------------------------------------
+# Additive remote-cognition funnel.  The sealed ModelLake disposition receipt
+# remains the identity/classification source.  The controller state is the
+# single mutable owner of the derived candidate board; no second registry is
+# introduced and the sealed receipt is never rewritten.
+# --------------------------------------------------------------------------
+
+def load_modellake_dispositions(path: Path | None = None) -> dict[str, dict]:
+    """Read the sealed specimen disposition map without touching ModelLake.
+
+    A missing or malformed receipt yields an empty map rather than invented
+    candidates.  This is intentionally a read path so remote Tier 0/Tier 1
+    work cannot turn a prose model name into an admitted specimen.
+    """
+    source = Path(path) if path is not None else MODELLAKE_DISPOSITIONS
+    if not source.is_file():
+        return {}
+    try:
+        document = read_json(source)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    rows = document.get("dispositions") if isinstance(document, dict) else None
+    if not isinstance(rows, dict):
+        return {}
+    out: dict[str, dict] = {}
+    for specimen, raw in rows.items():
+        if isinstance(raw, dict):
+            out[str(specimen)] = dict(raw)
+        elif isinstance(raw, str):
+            out[str(specimen)] = {"disposition": raw}
+    return out
+
+
+def _sealed_active_owner(
+    specimen: str,
+    *,
+    override_path: Path | None = None,
+) -> tuple[str | None, str | None]:
+    """Return an owner proved by a sealed scheduling receipt, if any."""
+    source = Path(override_path) if override_path is not None else MODELLAKE_SCHEDULING_OVERRIDE
+    if not source.is_file():
+        return None, None
+    try:
+        document = read_json(source)
+    except (OSError, json.JSONDecodeError):
+        return None, None
+    preserved = document.get("preserved_evidence") if isinstance(document, dict) else None
+    marker = preserved.get("flash_next") if isinstance(preserved, dict) else None
+    if not isinstance(marker, str):
+        return None, None
+    sealed_specimen = marker.split(" remains", 1)[0].strip()
+    if specimen != sealed_specimen:
+        return None, None
+    try:
+        evidence_ref = str(source.resolve().relative_to(REPO.resolve()))
+    except ValueError:
+        evidence_ref = str(source)
+    return FLASH_ACTIVE_OWNER, evidence_ref
+
+
+def _existing_candidate_rows(state: dict) -> dict[str, dict]:
+    """Collect prior board rows without discarding fields added by a lane."""
+    raw = state.get("candidate_board")
+    rows: dict[str, dict] = {}
+    if isinstance(raw, dict):
+        iterable = []
+        for key, value in raw.items():
+            if isinstance(value, dict):
+                row = dict(value)
+                row.setdefault("specimen", str(key))
+                iterable.append(row)
+    elif isinstance(raw, list):
+        iterable = raw
+    else:
+        iterable = []
+    for value in iterable:
+        if not isinstance(value, dict):
+            continue
+        specimen = str(value.get("specimen") or value.get("slug") or "").strip()
+        if specimen:
+            rows[specimen] = dict(value)
+    return rows
+
+
+def _patient_for_specimen(specimen: str, state: dict) -> dict | None:
+    """Best-effort link to a current patient, never an ownership inference."""
+    base = specimen.split("@", 1)[0]
+    source = base.replace("--", "/", 1)
+    for patient in state.get("patients") or []:
+        if not isinstance(patient, dict):
+            continue
+        if patient.get("canonical_source") == source or patient.get("source") == source:
+            return patient
+    return None
+
+
+def _default_candidate_row(
+    specimen: str,
+    disposition: dict,
+    state: dict,
+    *,
+    override_path: Path | None = None,
+) -> dict:
+    """Project one sealed specimen into the durable, additive board."""
+    disposition_name = str(disposition.get("disposition") or "UNKNOWN")
+    sealed_owner, owner_evidence = _sealed_active_owner(
+        specimen, override_path=override_path,
+    )
+    patient = _patient_for_specimen(specimen, state)
+    source_repo = specimen.split("@", 1)[0].replace("--", "/", 1)
+    row = {
+        "specimen": specimen,
+        "source_repo": source_repo,
+        "revision": specimen.split("@", 1)[1] if "@" in specimen else None,
+        "disposition": disposition_name,
+        "patient_oxx": patient.get("oxx") if patient else None,
+        "active_owner": sealed_owner or ACTIVE_OWNER_UNREGISTERED,
+        "active_owner_evidence": (
+            f"SEALED ({owner_evidence})" if owner_evidence else
+            "NOT_REGISTERED (no current owner claim)"
+        ),
+        "owner_status": "SEALED" if sealed_owner else "UNREGISTERED",
+        "tier_state": {
+            "tier0": "PENDING",
+            "tier1": "PENDING",
+            "tier2": "NOT_STARTED",
+            "star": "NOT_STARTED",
+        },
+        "next_experiment": (
+            "Tier 0 identity/family/params/context/license/artifact screen; "
+            "then bounded Tier 1 capability/tool/context/latency screen"
+        ),
+        "evidence_refs": [
+            "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json",
+        ],
+        "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+    }
+    if patient:
+        row["patient_state"] = patient.get("state")
+        row["patient_phase"] = patient.get("phase")
+    return row
+
+
+def candidate_board(
+    state: dict | None = None,
+    *,
+    dispositions: dict[str, dict] | None = None,
+    override_path: Path | None = None,
+) -> list[dict]:
+    """Build the current candidate board from sealed evidence plus state.
+
+    Existing board rows are merged additively: provider evidence, tier state,
+    remote receipts, and future fields survive a refresh.  Sealed identity and
+    the sealed Flash owner are authoritative collision facts; they are not
+    replaceable by a remote claim.
+    """
+    current = state if state is not None else load_state()
+    sealed = dispositions if dispositions is not None else load_modellake_dispositions()
+    prior = _existing_candidate_rows(current)
+    out: list[dict] = []
+    seen: set[str] = set()
+    for specimen, disposition in sealed.items():
+        row = _default_candidate_row(
+            specimen, disposition, current, override_path=override_path,
+        )
+        old = prior.get(specimen)
+        if old:
+            merged = dict(row)
+            merged.update(old)
+            # A sealed owner cannot be overwritten by a mutable remote row.
+            sealed_owner, sealed_ref = _sealed_active_owner(
+                specimen, override_path=override_path,
+            )
+            if sealed_owner:
+                merged["active_owner"] = sealed_owner
+                merged["active_owner_evidence"] = f"SEALED ({sealed_ref})"
+                merged["owner_status"] = "SEALED"
+            row = merged
+        out.append(row)
+        seen.add(specimen)
+    # Preserve any prior, explicitly added board rows even if their source is
+    # not in the sealed disposition map yet.  They remain unverified rather
+    # than being silently dropped during a refresh.
+    out.extend(value for key, value in prior.items() if key not in seen)
+    return out
+
+
+def refresh_candidate_board(
+    *,
+    state: dict | None = None,
+    persist: bool = True,
+    dispositions: dict[str, dict] | None = None,
+) -> dict:
+    """Add/update the derived board in the canonical Odyssey state."""
+    current = state if state is not None else load_state()
+    board = candidate_board(current, dispositions=dispositions)
+    current["candidate_board"] = board
+    current.setdefault("active_owner_history", [])
+    for patient in current.get("patients") or []:
+        if isinstance(patient, dict):
+            patient.setdefault("active_owner", ACTIVE_OWNER_UNREGISTERED)
+            patient.setdefault(
+                "active_owner_evidence",
+                "NOT_REGISTERED (no current owner claim)",
+            )
+    if persist:
+        save_state(current)
+    counts: dict[str, int] = {}
+    for row in board:
+        owner = str(row.get("active_owner") or ACTIVE_OWNER_UNREGISTERED)
+        counts[owner] = counts.get(owner, 0) + 1
+    return {
+        "schema": CANDIDATE_BOARD_SCHEMA,
+        "state_path": str(STATE),
+        "persisted": bool(persist),
+        "candidate_count": len(board),
+        "active_owner_counts": counts,
+        "candidate_board": board,
+        "_evidence": "DERIVED (sealed disposition + current Odyssey state)",
+    }
+
+
+def active_owner_check(
+    specimen: str,
+    *,
+    requester: str = "odyssey_remote",
+    state: dict | None = None,
+    override_path: Path | None = None,
+) -> dict:
+    """Check whether a requester may start deep work on one exact specimen."""
+    specimen = str(specimen or "").strip()
+    requester = str(requester or "").strip()
+    if not specimen:
+        raise ValueError("specimen is required")
+    if not requester:
+        raise ValueError("requester is required")
+    current = state if state is not None else load_state()
+    rows = {row.get("specimen"): row for row in candidate_board(
+        current, override_path=override_path,
+    )
+            if row.get("specimen")}
+    row = rows.get(specimen)
+    if row is None:
+        raise ValueError(f"unknown exact Odyssey specimen: {specimen}")
+    owner = str(row.get("active_owner") or ACTIVE_OWNER_UNREGISTERED)
+    if owner == requester:
+        allowed = True
+        reason = "ACTIVE_OWNER_MATCH"
+        action = "deep work may proceed within the requester scope"
+    elif owner == ACTIVE_OWNER_UNREGISTERED:
+        allowed = False
+        reason = "ACTIVE_OWNER_UNREGISTERED"
+        action = "claim this exact specimen explicitly before deep work"
+    else:
+        allowed = False
+        reason = "ACTIVE_OWNER_COLLISION"
+        action = "read sealed receipts/metadata only; do not load or benchmark"
+    return {
+        "schema": "hawking.odyssey.active_owner_check.v1",
+        "specimen": specimen,
+        "requester": requester,
+        "active_owner": owner,
+        "active_owner_evidence": row.get("active_owner_evidence"),
+        "deep_work_allowed": allowed,
+        "reason": reason,
+        "action": action,
+        "_evidence": "DERIVED (candidate board)",
+    }
+
+
+def claim_active_owner(
+    specimen: str,
+    owner: str,
+    *,
+    confirm: bool = False,
+    state: dict | None = None,
+    override_path: Path | None = None,
+) -> dict:
+    """Claim one unregistered exact specimen, preserving an append-only history."""
+    if confirm is not True:
+        raise PermissionError("active owner claim changes Odyssey state and requires confirm=True")
+    specimen = str(specimen or "").strip()
+    owner = str(owner or "").strip()
+    if not specimen or not owner:
+        raise ValueError("specimen and owner are required")
+    persist = state is None
+    current = state if state is not None else load_state()
+    board = candidate_board(current, override_path=override_path)
+    rows = {row.get("specimen"): row for row in board if row.get("specimen")}
+    row = rows.get(specimen)
+    if row is None:
+        raise ValueError(f"unknown exact Odyssey specimen: {specimen}")
+    existing = str(row.get("active_owner") or ACTIVE_OWNER_UNREGISTERED)
+    if existing != ACTIVE_OWNER_UNREGISTERED and existing != owner:
+        raise PermissionError(
+            f"active owner collision for {specimen}: {existing} owns it; "
+            "sealed/read-only evidence is the only permitted action"
+        )
+    current["candidate_board"] = board
+    current.setdefault("active_owner_history", [])
+    if existing == owner:
+        # Idempotent refresh is still allowed to persist the derived board if
+        # this is the first owner-check/claim operation in the current state.
+        if persist:
+            save_state(current)
+        return {
+            "schema": "hawking.odyssey.active_owner_claim.v1",
+            "specimen": specimen,
+            "owner": owner,
+            "changed": False,
+            "idempotent": True,
+            "active_owner_history_count": len(current["active_owner_history"]),
+            "_evidence": "DERIVED (canonical Odyssey state)",
+        }
+    row["active_owner"] = owner
+    row["active_owner_evidence"] = "CLAIMED (explicit Hawking owner claim)"
+    row["owner_status"] = "CLAIMED"
+    current["active_owner_history"].append({
+        "specimen": specimen,
+        "previous_owner": existing,
+        "owner": owner,
+        "recorded_at": datetime.now(timezone.utc).isoformat(),
+        "_evidence": "RECORDED (explicit owner claim)",
+    })
+    if persist:
+        save_state(current)
+    return {
+        "schema": "hawking.odyssey.active_owner_claim.v1",
+        "specimen": specimen,
+        "owner": owner,
+        "previous_owner": existing,
+        "changed": True,
+        "idempotent": False,
+        "active_owner_history_count": len(current["active_owner_history"]),
+        "_evidence": "RECORDED (explicit owner claim)",
+    }
+
+
+def record_candidate_evidence(
+    specimen: str,
+    evidence: dict,
+    *,
+    owner: str = "odyssey_remote",
+    tier: str = "TIER0_TIER1",
+    confirm: bool = False,
+    state: dict | None = None,
+    override_path: Path | None = None,
+) -> dict:
+    """Append one bounded remote observation to the owning board row.
+
+    The provider response is evidence for central validation, not acceptance.
+    Only receipt-safe fields are copied, and the sealed disposition/owner
+    facts remain outside the provider's authority.
+    """
+    if confirm is not True:
+        raise PermissionError("candidate evidence changes Odyssey state and requires confirm=True")
+    if not isinstance(evidence, dict):
+        raise TypeError("evidence must be a mapping")
+    specimen = str(specimen or "").strip()
+    owner = str(owner or "").strip()
+    persist = state is None
+    current = state if state is not None else load_state()
+    check = active_owner_check(
+        specimen,
+        requester=owner,
+        state=current,
+        override_path=override_path,
+    )
+    if not check["deep_work_allowed"]:
+        raise PermissionError(
+            f"cannot record remote evidence for {specimen}: {check['reason']}"
+        )
+    board = candidate_board(current, override_path=override_path)
+    row = next((item for item in board if item.get("specimen") == specimen), None)
+    if row is None:
+        raise ValueError(f"unknown exact Odyssey specimen: {specimen}")
+    usage = evidence.get("usage") if isinstance(evidence.get("usage"), dict) else {}
+    usage_safe = {
+        key: usage.get(key)
+        for key in (
+            "prompt_tokens", "completion_tokens", "total_tokens", "cost_usd",
+            "latency_ms", "retries",
+        )
+        if key in usage
+    }
+    observations = evidence.get("observations")
+    if not isinstance(observations, list):
+        observations = []
+    trace = evidence.get("tool_trace")
+    if not isinstance(trace, list):
+        trace = []
+    trace_safe = []
+    for item in trace[:8]:
+        if not isinstance(item, dict):
+            continue
+        compact = {
+            key: item.get(key)
+            for key in ("tool", "wire_tool", "dispatched", "ok", "match_count")
+            if key in item
+        }
+        first = item.get("first_match")
+        if isinstance(first, dict):
+            compact["first_match"] = {
+                key: first.get(key)
+                for key in ("path", "line", "text")
+                if key in first
+            }
+        trace_safe.append(compact)
+    entry = {
+        "schema": "hawking.odyssey.remote_evidence.v1",
+        "tier": str(tier),
+        "status": "OBSERVED",
+        "provider": str(evidence.get("provider") or "openrouter"),
+        "model": str(evidence.get("model") or ""),
+        "usage": usage_safe,
+        "tool_trace": trace_safe,
+        "observations": [str(value)[:600] for value in observations[:12]],
+        "content_excerpt": str(evidence.get("content") or "")[:2400],
+        "validation": {
+            "ok": False,
+            "reason": "REMOTE_COGNITION_REQUIRES_CENTRAL_VALIDATION",
+        },
+        "recorded_at": datetime.now(timezone.utc).isoformat(),
+        "_evidence": "OBSERVED (Hawking remote Luna WorkUnit; not acceptance)",
+    }
+    row.setdefault("remote_evidence", []).append(entry)
+    tier_state = row.setdefault("tier_state", {})
+    tier_state.setdefault("tier0", "PENDING")
+    tier_state.setdefault("tier1", "PENDING")
+    tier_state.setdefault("tier2", "NOT_STARTED")
+    tier_state.setdefault("star", "NOT_STARTED")
+    tier_name = str(tier).upper()
+    if "TIER0" in tier_name:
+        tier_state["tier0"] = "OBSERVED"
+    if "TIER1" in tier_name:
+        tier_state["tier1"] = "OBSERVED"
+    row["next_experiment"] = "Central validation of the bounded Tier 0/Tier 1 packet; no deep Gravity until Star promotion"
+    current["candidate_board"] = board
+    if persist:
+        save_state(current)
+    return {
+        "schema": "hawking.odyssey.remote_evidence.v1",
+        "specimen": specimen,
+        "tier": tier,
+        "status": "OBSERVED",
+        "provider": entry["provider"],
+        "model": entry["model"],
+        "cost_usd": usage_safe.get("cost_usd"),
+        "tool_call_count": len(trace_safe),
+        "validation": entry["validation"],
+        "persisted": persist,
+        "_evidence": "RECORDED (canonical Odyssey candidate board)",
+    }
 
 
 def ensure_state() -> dict:
@@ -6491,6 +6960,52 @@ def cmd_economics() -> int:
     return 0
 
 
+def cmd_candidate_board(*, refresh: bool = False, limit: int = 0) -> int:
+    """Print the derived board; ``--refresh`` persists it additively."""
+    if refresh:
+        payload = refresh_candidate_board(persist=True)
+    else:
+        state = ensure_state()
+        board = candidate_board(state)
+        counts: dict[str, int] = {}
+        for row in board:
+            owner = str(row.get("active_owner") or ACTIVE_OWNER_UNREGISTERED)
+            counts[owner] = counts.get(owner, 0) + 1
+        payload = {
+            "schema": CANDIDATE_BOARD_SCHEMA,
+            "state_path": str(STATE),
+            "persisted": False,
+            "candidate_count": len(board),
+            "active_owner_counts": counts,
+            "candidate_board": board,
+            "_evidence": "DERIVED (sealed disposition + current Odyssey state)",
+        }
+    if limit > 0:
+        payload["candidate_board"] = payload["candidate_board"][:limit]
+        payload["shown"] = min(limit, payload["candidate_count"])
+        payload["truncated"] = payload["candidate_count"] > limit
+    json.dump(payload, sys.stdout, indent=2, ensure_ascii=False)
+    sys.stdout.write("\n")
+    return 0
+
+
+def cmd_owner_check(specimen: str, requester: str) -> int:
+    payload = active_owner_check(specimen, requester=requester)
+    json.dump(payload, sys.stdout, indent=2, ensure_ascii=False)
+    sys.stdout.write("\n")
+    return 0
+
+
+def cmd_owner_claim(specimen: str, owner: str, *, confirm: bool = False) -> int:
+    if not confirm:
+        print("REFUSE  active owner claim requires --confirm; no state changed")
+        return 2
+    payload = claim_active_owner(specimen, owner, confirm=True)
+    json.dump(payload, sys.stdout, indent=2, ensure_ascii=False)
+    sys.stdout.write("\n")
+    return 0
+
+
 def cmd_admit(slug: str, est_gib: float) -> int:
     """Memgate (preferred) + worker_gate. Abort on REFUSE."""
     mg = memgate.admit(est_gib, in_flight_gib=0.0, clean_room=False)
@@ -7781,6 +8296,21 @@ def main(argv=None) -> int:
     p_acq.add_argument("--go", action="store_true",
                        help="start hf download in the background")
     sp.add_parser("economics")
+    p_board = sp.add_parser(
+        "candidate-board",
+        help="read the sealed-evidence candidate board; --refresh adds it to Odyssey state",
+    )
+    p_board.add_argument("--refresh", action="store_true",
+                         help="persist the derived board and explicit owner fields")
+    p_board.add_argument("--limit", type=int, default=0,
+                         help="show only the first N rows (0 means all)")
+    p_owner = sp.add_parser("owner-check", help="check one exact specimen's active owner")
+    p_owner.add_argument("specimen")
+    p_owner.add_argument("--requester", default="odyssey_remote")
+    p_claim = sp.add_parser("owner-claim", help="claim one unregistered exact specimen")
+    p_claim.add_argument("specimen")
+    p_claim.add_argument("owner")
+    p_claim.add_argument("--confirm", action="store_true")
     args = ap.parse_args(argv)
     if args.self_check or args.cmd in {"self-check", "selfcheck"}:
         return _self_check()
@@ -7815,6 +8345,15 @@ def main(argv=None) -> int:
         return cmd_acquire_next(go=go)
     if args.cmd == "economics":
         return cmd_economics()
+    if args.cmd == "candidate-board":
+        return cmd_candidate_board(
+            refresh=bool(getattr(args, "refresh", False)),
+            limit=int(getattr(args, "limit", 0) or 0),
+        )
+    if args.cmd == "owner-check":
+        return cmd_owner_check(args.specimen, args.requester)
+    if args.cmd == "owner-claim":
+        return cmd_owner_claim(args.specimen, args.owner, confirm=bool(args.confirm))
     ap.print_help()
     return 2
 

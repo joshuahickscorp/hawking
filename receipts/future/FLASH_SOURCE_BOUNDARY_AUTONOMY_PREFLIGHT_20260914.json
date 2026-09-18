@@ -1,0 +1,240 @@
+{
+  "capture_contract": {
+    "cache_payloads": "raw pre/post layer-4 cache arrays normalized to F32, with original dtype and shape retained",
+    "execution_scope": "one token through embedding and source layers 0..4 only",
+    "fresh_output_namespaces_required": true,
+    "initial_cache": "empty",
+    "native_manifest_required": true,
+    "payload_format": "raw little-endian F32 plus shape, byte count, and SHA-256 per seam",
+    "route_payloads": "exact ordered top-10 expert ids and F32 weights at layer 4",
+    "seams": [
+      {
+        "layer": null,
+        "ordinal": 0,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "embedding_hc_tiled"
+      },
+      {
+        "layer": 0,
+        "ordinal": 1,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 1,
+        "ordinal": 2,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "pre_ple"
+      },
+      {
+        "layer": 1,
+        "ordinal": 3,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "ple_additive_output"
+      },
+      {
+        "layer": 1,
+        "ordinal": 4,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 2,
+        "ordinal": 5,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 3,
+        "ordinal": 6,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection_layer4_input"
+      },
+      {
+        "layer": 4,
+        "ordinal": 7,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_hyper_connection_mixed"
+      },
+      {
+        "layer": 4,
+        "ordinal": 8,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_branch"
+      },
+      {
+        "layer": 4,
+        "ordinal": 9,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "attention_injection"
+      },
+      {
+        "layer": 4,
+        "ordinal": 10,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "mlp_hyper_connection_mixed"
+      },
+      {
+        "layer": 4,
+        "ordinal": 11,
+        "shape": [
+          10
+        ],
+        "stage": "router_top10_ids_and_weights"
+      },
+      {
+        "layer": 4,
+        "ordinal": 12,
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "mlp_route_and_experts"
+      },
+      {
+        "layer": 4,
+        "ordinal": 13,
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection_layer4_output"
+      }
+    ],
+    "source_checkpoint_mutation_allowed": false,
+    "source_manifest_required": true,
+    "source_semantics": "installed Qwen4-Exp provider math with layer-1 PLE and immutable source rows",
+    "token_id": 5423,
+    "token_index": 0
+  },
+  "claim_boundary": "Static fail-closed capture preflight only. It does not admit the unsigned teacher, establish source parity, execute a model, qualify an NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "comparison_contract": {
+    "cache_hashes_are_not_hidden_states": true,
+    "continuous_metrics": [
+      "finite",
+      "max_abs",
+      "relative_l2",
+      "cosine",
+      "exact_sha256"
+    ],
+    "discrete_metrics": [
+      "ordered_route_ids_exact"
+    ],
+    "order": "compare ordinal seams in order; stop semantic attribution at the first differing seam",
+    "threshold_policy": "diagnostic only until matched provider/native dtype and reduction-order controls establish a predeclared numerical acceptance bound; exact hashes and routes may localize but cannot alone qualify semantics"
+  },
+  "existing_capture_inventory": {
+    "final_cache_identity_only": true,
+    "intermediate_hidden_payloads": 0,
+    "raw_f32_logits_steps": 2,
+    "sufficient_for_boundary_comparison": false
+  },
+  "native_frontier": {
+    "bytes": 36693,
+    "layer": 4,
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/PULSAR_LAYER4_HANDOFF_INITIALIZATION_CONTROL_20260912.json",
+    "raw_intermediate_payloads_present": false,
+    "reuse_boundary": "initialization and deterministic-scratch controls only; the historical suffix and non-PLE trajectory are not source-teacher evidence",
+    "seal_sha256": "667127b7d1731518ebc9c5fea467d96e5c3561e2589711ce395c65f649d1cb73",
+    "sha256": "596796516d64fb722daf2496b13377abd219bcea9ea0ad8f899250e1499d121e",
+    "status": "PASSED_LAYER4_HANDOFF_INITIALIZATION_CONTROLS",
+    "token_id": 5423,
+    "token_index": 0
+  },
+  "next_safe_action": "Machine owner provisions the pinned Ed25519 trust anchor and signs the exact existing V2 request. After admission, perform one fresh protected 0..4/token-0 source capture and matching bounded native capture; do not run another 48-layer replay first.",
+  "observed_unix_ns": 1789392713060334000,
+  "owner_admission": {
+    "authorization_present": false,
+    "status": "WITHHELD_MISSING_OWNER_AUTHORIZATION",
+    "trust_anchor": "/Library/Application Support/Hawking/owner_ed25519_public_key",
+    "trust_anchor_present": false
+  },
+  "reference_candidate": {
+    "bytes": 3393,
+    "candidate_only_until_owner_authorized": true,
+    "generated_token_ids": [
+      271,
+      248045
+    ],
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "prompt_token_ids": [
+      5423,
+      799,
+      4581,
+      3817,
+      13
+    ],
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f"
+  },
+  "runtime_actions": {
+    "daemon_restarted": false,
+    "gpu_or_metal_started": false,
+    "kimi_loaded": false,
+    "model_loaded": false
+  },
+  "schema": "hawking.flash.source_boundary_capture_preflight.v2",
+  "seal_sha256": "00a5ee9241b0e705400ed8b50f6b8ac57bf0bb5699bcd469001a3a0f3b1facc6",
+  "source": {
+    "layer_types_0_through_4": [
+      "linear_attention",
+      "linear_attention",
+      "linear_attention",
+      "full_attention",
+      "linear_attention"
+    ],
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "ple_layer_ids": [
+      1
+    ]
+  },
+  "status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION_AND_BOUNDARY_PAYLOADS"
+}

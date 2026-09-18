@@ -248,6 +248,7 @@ def attach_heterogeneous_plan(compiler_output, plan_dict=None):
 
 
 HETEROGENEOUS_SCHEMA = "hawking.odyssey.physical_graph_heterogeneous.v1"
+DARKMATTER_SCHEMA = "hawking.odyssey.darkmatter_physical_plan.v1"
 COST_MODEL = "COST_MODEL"
 
 
@@ -260,7 +261,7 @@ def _accelerator():
     import fusion_bridge as fb
     import placement as pl
     import backend_contract as bc
-    from hcli.physical_graph import compile_physical_graph
+    from hawking.physical_graph import compile_physical_graph
     return fb, pl, bc, compile_physical_graph
 
 
@@ -412,6 +413,42 @@ def compile_heterogeneous_physical_graph(architecture=None) -> dict:
     return annotated
 
 
+def build_darkmatter_physical_plan(architecture=None) -> dict:
+    """Materialize the canonical DARKMATTER physical-plan pass.
+
+    DARKMATTER owns the execution-and-observation *plan* at this seam; it does
+    not imply that a device was launched or that a placement was measured.
+    Reuse the existing heterogeneous compiler so the plan inherits its
+    ordering, coherency, ownership, placement, and backend gates.  The result
+    is deliberately COST_MODEL/PLAN_ONLY until a separately qualified runtime
+    supplies execution evidence.
+    """
+    compiled = compile_heterogeneous_physical_graph(architecture)
+    out = dict(compiled)
+    out.update({
+        "schema": DARKMATTER_SCHEMA,
+        "pass_name": "DARKMATTER_PHYSICAL_PLAN_PASS",
+        "owner": "tools/odyssey/physical_graph_compiler.py",
+        "status": "PLAN_VALIDATED",
+        "qualification": "PLAN_ONLY",
+        "evidence_tier": COST_MODEL,
+        "physical_qualification": "WITHHELD",
+        "execution": {
+            "status": "WITHHELD",
+            "reason": (
+                "physical execution, timing, and hardware qualification require "
+                "a separately admitted backend and runtime receipt"
+            ),
+        },
+        "claim_boundary": (
+            "The plan is source/contract validated only; it does not prove "
+            "coherent memory, device availability, execution, speedup, hardware "
+            "qualification, or release."
+        ),
+    })
+    return out
+
+
 def refusal_cases() -> list[dict]:
     """Construct illegal plans and record the exact assumption each violates.
 
@@ -492,3 +529,19 @@ def refusal_cases() -> list[dict]:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+def _reconcile_darkmatter_owner(node):
+    """Reconcile the dark-matter owner for a heterogeneous node.
+
+    Returns an explicit owner-reconciliation record when a heterogeneous
+    node has no declared owner, so downstream consumers observe a
+    deterministic owner instead of an implicit/absent one.
+    """
+    owner = node.get("owner")
+    if owner:
+        return {"node": node.get("id"), "owner": owner, "reconciled": False}
+    return {
+        "node": node.get("id"),
+        "owner": "darkmatter",
+        "reconciled": True,
+        "reason": "heterogeneous_node_missing_owner",
+    }

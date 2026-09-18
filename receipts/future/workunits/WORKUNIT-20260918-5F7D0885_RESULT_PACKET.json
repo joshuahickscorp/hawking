@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "304e4076c3766aa3cd4db5b018e98ebe6560b32bd5fe2caae27607636c11550f",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:00:51.371080+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:00:51.371101+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:00:51.375756+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/sandbox_world.py is 25417 bytes; the admitted read returned only the first 4000 bytes (15.7%) with full-file sha256 019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27, so all conclusions are bounded t",
+      "outcome": "CONTINUE",
+      "reply_chars": 4703,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/sandbox_world.py is 25417 bytes; the admitted read returned only the first 4000 bytes (15.7%) with full-file sha256 019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27, so all conclusions are bounded to the shown prefix.\",\"The module docstring declares the Sandbox a durable problem world, not another scheduler or public command; it owns only the restart-readable S0 record; branches are disposable; findings/candidates remain claims until an independent evaluator and the protected controller act; a failed child never closes the root or siblings.\",\"The docstring states execution policy remains in hawking.execution_sandbox and Option-C remains the candidate/reviewer/controller lifecycle owner, establishing a separation-of-concerns contract between world state and execution/lifecycle.\",\"Imports observed: json, os, threading, time, uuid, pathlib.Path, typing (Any, Iterable, Mapping, Optional), and from .persist atomic_write_json and read_json_object_or_none, indicating persistence is delegated to hawking.persist.\",\"Schema constants observed: WORLD_SCHEMA=hawking.sandbox.world.v1, BRANCH_SCHEMA=hawking.sandbox.branch.v1, FINDING_SCHEMA=hawking.sandbox.finding.v1, CANDIDATE_SCHEMA=hawking.sandbox.candidate.v1, EVALUATOR_SCHEMA=hawking.sandbox.evaluator.v1, ARTIFACT_SCHEMA=hawking.sandbox.artifact.v1, EVENT_SCHEMA=hawking.sandbox.event.v1.\",\"DEFAULT_CAPABILITY_CATALOG is a fixed tuple including git, python, rust, c_cpp, go, node, browser, symbolic_math, formal_proof, source_index, debugger, fuzzer, metal, cuda, fpga, gravity, nr, darkmatter, nx, odyssey, tunnel, notifications.\",\"EVALUATOR_KINDS is the set {software, optimization, mathematics, research, security}; WORLD_ID_RE=^S0-[A-Za-z0-9_-]{4,80}$ and BRANCH_ID_RE=^branch-[A-Za-z0-9_-]{3,80}$ constrain identifiers.\",\"A module-level _LOCK = threading.RLock() serializes world operations, and SandboxWorldError(message, status=400) is the bounded fail-closed error type carrying an HTTP-like status.\",\"Path helpers _world_dir/_world_path resolve under <workspace>/.hawking/sandbox/worlds and create the directory; _id(prefix) uses uuid4 hex[:16]; _text truncates to 4000 chars; _safe redacts keys containing secret, token, cookie, authorization, api_key, credential, or environment and caps depth at 3, lists at 64, mappings at 80.\",\"_load validates schema==WORLD_SCHEMA and world_id identity (404 on missing, 409 on mismatch); _save uses atomic_write_json; _branch reads world['branches'] and raises SandboxWorldError('Sandbox branch index is malformed', 500) if branches is not a Mapping.\"],\"sources\":[{\"path\":\"hawking/sandbox_world.py\",\"sha256\":\"019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27\",\"sha256_scope\":\"full_file\",\"bytes\":25417,\"observed_bytes\":4000,\"tool_family\":\"fs.read\",\"mutation\":\"read_only\"}],\"recommendations\":[\"Next bounded evidence/test: read-only, line-ranged inspection of the unshown 21417 bytes of hawking/sandbox_world.py (branch/finding/candidate/evaluator/artifact/event mutation functions and any controller-gated transitions) to confirm whether any write path bypasses _LOCK, _safe redaction, or the evaluator/controller gate asserted in the docstring.\",\"Writer/effect scope for that test: read-only inspection only; no file writes, no world creation, no atomic_write_json invocation, no worker spawn, no hardware access.\",\"Protected resources to keep untouched: <workspace>/.hawking/sandbox/worlds/*.json (S0 world records), hawking/persist.py atomic-write semantics, the module-level _LOCK, the evaluator/controller lifecycle owned by Option-C, and hawking.execution_sandbox execution policy.\",\"Falsifier: if the unshown source contains a mutation path that writes world state without acquiring _LOCK, or persists fields that _safe would redact (secret/token/cookie/authorization/api_key/credential/environment), or lets a finding/candidate transition to accepted without an independent evaluator plus protected controller, then the docstrin",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-5818f20c26074aac",
+  "worker_id": "hawking-worker-d5714e2c4d214d63",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-5F7D0885"
+}

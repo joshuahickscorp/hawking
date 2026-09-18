@@ -19,6 +19,13 @@ using namespace metal;
 constant uint QWEN_UNIFORM_Q4_GROUP_SIZE = 64u;
 constant uint QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP = 32u;
 
+// Shared Flash weights remain source BF16 in the bounded Q4 candidate. Their
+// u16 payload is BF16 rather than IEEE FP16, so widen it explicitly.
+static inline float qwen_uniform_bf16_value(ushort bits)
+{
+    return as_type<float>(uint(bits) << 16u);
+}
+
 // Decode one flat-layout Q4 element (same packing as the matvec body).
 static inline float qwen_uniform_q4_value(
     device const uchar* codes,
@@ -1812,6 +1819,427 @@ kernel void qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128(
         const float g = red[t] + red[t + 1u];
         const float u = red[4u + t] + red[4u + t + 1u];
         act_out[row] = (g / (1.0f + exp(-g))) * u;
+    }
+}
+
+// Route-major sibling of the Q4/G64 geometric matvec.  Unlike the ordinary
+// concatenated-row path, each routed expert consumes its own 640-value
+// activation.  Keeping the route-major activations and rows contiguous lets
+// one command buffer cover every selected down projection without a dense
+// reconstruction or a host roundtrip.
+//
+// Grid: ceil((routes * rows_per_route) / 2) * 128, TG 128.
+kernel void qwen_uniform_q4_group64_routed_down_geo_tpr64_tg128(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* inputs      [[buffer(2)]],
+    device float* outputs           [[buffer(3)]],
+    constant uint& routes           [[buffer(4)]],
+    constant uint& rows_per_route   [[buffer(5)]],
+    constant uint& cols             [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint global_row = group_id * 2u + team;
+    const uint total_rows = routes * rows_per_route;
+    float acc = 0.0f;
+    if (global_row < total_rows) {
+        const uint route = global_row / rows_per_route;
+        const uint local_row = global_row - route * rows_per_route;
+        const uint rgb0 = (route * rows_per_route + local_row) * groups_per_row;
+        device const float* input = inputs + route * cols;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += qwen_uniform_q4_unpack8(packed, scale, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && global_row < total_rows) {
+        outputs[global_row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
+// Compact route-LUT gate/up + SwiGLU. The split packed banks are each laid
+// out as [compact_expert, row, hidden]; `gate_codes` and `up_codes` therefore
+// do not carry a duplicate unused half. `route_ids` contains source expert
+// ids for each route and `route_lut` maps those source ids to compact slots.
+// A missing/out-of-range mapping writes zero while still participating in the
+// threadgroup barrier.
+//
+// Output is route-major [top_k, intermediate].  This is a compact-body
+// primitive, not proof of a complete Flash body or resident qualification.
+// Grid: ceil((top_k * intermediate) / 2) * 128, TG 128.
+kernel void qwen_uniform_q4_group64_compact_gate_up_swiglu_geo_tpr64_tg128(
+    device const uchar* gate_codes  [[buffer(0)]],
+    device const half*  gate_scales [[buffer(1)]],
+    device const uchar* up_codes    [[buffer(2)]],
+    device const half*  up_scales   [[buffer(3)]],
+    device const uint*   route_ids  [[buffer(4)]],
+    device const uint*   route_lut  [[buffer(5)]],
+    device const float*  input       [[buffer(6)]],
+    device float*        act_out     [[buffer(7)]],
+    constant uint& compact_experts   [[buffer(8)]],
+    constant uint& top_k             [[buffer(9)]],
+    constant uint& intermediate      [[buffer(10)]],
+    constant uint& hidden            [[buffer(11)]],
+    constant uint& groups_per_row    [[buffer(12)]],
+    constant uint& source_experts    [[buffer(13)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint logical_row = group_id * 2u + team;
+    const uint total_rows = top_k * intermediate;
+    const bool live = logical_row < total_rows;
+    const uint route = live ? logical_row / intermediate : 0u;
+    const uint row = live ? logical_row - route * intermediate : 0u;
+
+    uint slot = 0u;
+    bool valid = live;
+    if (valid) {
+        const uint expert = route_ids[route];
+        valid = expert < source_experts;
+        if (valid) {
+            slot = route_lut[expert];
+            valid = slot < compact_experts;
+        }
+    }
+
+    float acc_g = 0.0f;
+    float acc_u = 0.0f;
+    if (valid) {
+        const uint expert_stride = intermediate * groups_per_row;
+        const uint gate_rgb0 = slot * expert_stride + row * groups_per_row;
+        const uint up_rgb0 = gate_rgb0;
+        for (uint col = lane_in_row * 8u; col < hidden; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint gate_rgb = gate_rgb0 + group;
+            const uint up_rgb = up_rgb0 + group;
+            const float gscale = float(gate_scales[gate_rgb]);
+            const float uscale = float(up_scales[up_rgb]);
+            const uint gpacked = *((device const uint*)(gate_codes
+                + gate_rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            const uint upacked = *((device const uint*)(up_codes
+                + up_rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            qwen_uniform_q4_unpack8_dual(
+                gpacked, gscale, upacked, uscale, input, col, acc_g, acc_u);
+        }
+    }
+    acc_g = simd_sum(acc_g);
+    acc_u = simd_sum(acc_u);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc_g;
+        red[4u + simd_id] = acc_u;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && live) {
+        const uint t = team * kSplit;
+        const float g = red[t] + red[t + 1u];
+        const float u = red[4u + t] + red[4u + t + 1u];
+        act_out[route * intermediate + row] = valid
+            ? (g / (1.0f + exp(-g))) * u
+            : 0.0f;
+    }
+}
+
+// Compact routed Q4 gate/up + shared BF16 gate/up + SwiGLU in one launch.
+// Route rows use the compact Q4 banks from the sibling above; the final
+// logical route owns the shared BF16 rows.  Both outputs remain device
+// resident for the down/HC epilogue.
+// Grid: ceil(((top_k + 1) * intermediate) / 2) * 128, TG 128.
+kernel void qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_geo_tpr64_tg128(
+    device const uchar* gate_codes    [[buffer(0)]],
+    device const half*  gate_scales   [[buffer(1)]],
+    device const uchar* up_codes      [[buffer(2)]],
+    device const half*  up_scales     [[buffer(3)]],
+    device const uint*  route_ids     [[buffer(4)]],
+    device const uint*  route_lut     [[buffer(5)]],
+    device const float* input         [[buffer(6)]],
+    device float*       routed_out    [[buffer(7)]],
+    device const ushort* shared_gate  [[buffer(8)]],
+    device const ushort* shared_up    [[buffer(9)]],
+    device float*       shared_out    [[buffer(10)]],
+    constant uint& compact_experts    [[buffer(11)]],
+    constant uint& top_k              [[buffer(12)]],
+    constant uint& intermediate       [[buffer(13)]],
+    constant uint& hidden             [[buffer(14)]],
+    constant uint& source_experts     [[buffer(15)]],
+    constant uint& groups_per_row     [[buffer(16)]],
+    uint group_id                     [[threadgroup_position_in_grid]],
+    uint simd_lane                    [[thread_index_in_simdgroup]],
+    uint simd_id                      [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint logical_row = group_id * 2u + team;
+    const uint total_rows = (top_k + 1u) * intermediate;
+    const bool live = logical_row < total_rows;
+    const uint route = live ? logical_row / intermediate : 0u;
+    const uint row = live ? logical_row - route * intermediate : 0u;
+    const bool shared = live && route == top_k;
+
+    uint slot = 0u;
+    bool valid = live;
+    if (!shared && valid) {
+        const uint expert = route_ids[route];
+        valid = expert < source_experts;
+        if (valid) {
+            slot = route_lut[expert];
+            valid = slot < compact_experts;
+        }
+    } else if (shared) {
+        valid = true;
+    } else {
+        valid = false;
+    }
+
+    float acc_g = 0.0f;
+    float acc_u = 0.0f;
+    if (!shared && valid) {
+        const uint expert_stride = intermediate * groups_per_row;
+        const uint gate_rgb0 = slot * expert_stride + row * groups_per_row;
+        const uint up_rgb0 = gate_rgb0;
+        for (uint col = lane_in_row * 8u; col < hidden; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint gate_rgb = gate_rgb0 + group;
+            const uint up_rgb = up_rgb0 + group;
+            const float gscale = float(gate_scales[gate_rgb]);
+            const float uscale = float(up_scales[up_rgb]);
+            const uint gpacked = *((device const uint*)(gate_codes
+                + gate_rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            const uint upacked = *((device const uint*)(up_codes
+                + up_rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            qwen_uniform_q4_unpack8_dual(
+                gpacked, gscale, upacked, uscale, input, col, acc_g, acc_u);
+        }
+    } else if (shared) {
+        const uint row_base = row * hidden;
+        for (uint col = lane_in_row * 8u; col < hidden; col += 512u) {
+            const float x0 = input[col];
+            const float x1 = input[col + 1u];
+            const float x2 = input[col + 2u];
+            const float x3 = input[col + 3u];
+            const float x4 = input[col + 4u];
+            const float x5 = input[col + 5u];
+            const float x6 = input[col + 6u];
+            const float x7 = input[col + 7u];
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col]) * x0;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 1u]) * x1;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 2u]) * x2;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 3u]) * x3;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 4u]) * x4;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 5u]) * x5;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 6u]) * x6;
+            acc_g += qwen_uniform_bf16_value(shared_gate[row_base + col + 7u]) * x7;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col]) * x0;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 1u]) * x1;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 2u]) * x2;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 3u]) * x3;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 4u]) * x4;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 5u]) * x5;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 6u]) * x6;
+            acc_u += qwen_uniform_bf16_value(shared_up[row_base + col + 7u]) * x7;
+        }
+    }
+    acc_g = simd_sum(acc_g);
+    acc_u = simd_sum(acc_u);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc_g;
+        red[4u + simd_id] = acc_u;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && live) {
+        const uint t = team * kSplit;
+        const float g = red[t] + red[t + 1u];
+        const float u = red[4u + t] + red[4u + t + 1u];
+        const float activated = (g / (1.0f + exp(-g))) * u;
+        if (shared) {
+            shared_out[row] = activated;
+        } else {
+            routed_out[route * intermediate + row] = valid ? activated : 0.0f;
+        }
+    }
+}
+
+// Compact route-LUT down projection.  The packed bank is laid out as
+// [compact_expert, hidden row, intermediate], while activated inputs and
+// outputs remain route-major.  The source expert id is resolved per route so
+// compact unions may contain non-contiguous source expert selections.
+// Grid: ceil((top_k * hidden) / 2) * 128, TG 128.
+kernel void qwen_uniform_q4_group64_compact_down_geo_tpr64_tg128(
+    device const uchar* codes        [[buffer(0)]],
+    device const half*  scales       [[buffer(1)]],
+    device const uint*   route_ids   [[buffer(2)]],
+    device const uint*   route_lut   [[buffer(3)]],
+    device const float*  activated    [[buffer(4)]],
+    device float*        outputs      [[buffer(5)]],
+    constant uint& compact_experts    [[buffer(6)]],
+    constant uint& top_k              [[buffer(7)]],
+    constant uint& intermediate       [[buffer(8)]],
+    constant uint& hidden             [[buffer(9)]],
+    constant uint& source_experts     [[buffer(10)]],
+    constant uint& groups_per_row     [[buffer(11)]],
+    uint group_id                     [[threadgroup_position_in_grid]],
+    uint simd_lane                    [[thread_index_in_simdgroup]],
+    uint simd_id                      [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint global_row = group_id * 2u + team;
+    const uint total_rows = top_k * hidden;
+    const bool live = global_row < total_rows;
+    const uint route = live ? global_row / hidden : 0u;
+    const uint local_row = live ? global_row - route * hidden : 0u;
+
+    uint slot = 0u;
+    bool valid = live;
+    if (valid) {
+        const uint expert = route_ids[route];
+        valid = expert < source_experts;
+        if (valid) {
+            slot = route_lut[expert];
+            valid = slot < compact_experts;
+        }
+    }
+
+    float acc = 0.0f;
+    if (valid) {
+        const uint row_group_base = (slot * hidden + local_row) * groups_per_row;
+        device const float* input = activated + route * intermediate;
+        for (uint col = lane_in_row * 8u; col < intermediate; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = row_group_base + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += qwen_uniform_q4_unpack8(packed, scale, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && live) {
+        outputs[global_row] = valid
+            ? red[team * kSplit] + red[team * kSplit + 1u]
+            : 0.0f;
+    }
+}
+
+// Compact Q4 routed down projection fused with shared BF16 down, route
+// weighting, the shared sigmoid gate, and the HyperConnection write.  This is
+// the two-dispatch resident counterpart to the BF16 direct HC epilogue: the
+// preceding compact gate/up/shared kernel writes `activated` and
+// `shared_activation`, and this kernel writes every diagnostic output plus the
+// next stream-major state without a host handoff.
+// Grid: (hidden, 1, 1), TG 256.
+kernel void qwen_uniform_q4_group64_compact_down_shared_direct_hc_geo_tpr64_tg128(
+    device const uchar* codes          [[buffer(0)]],
+    device const half*  scales         [[buffer(1)]],
+    device const uint*  route_ids      [[buffer(2)]],
+    device const uint*  route_lut      [[buffer(3)]],
+    device const float* activated      [[buffer(4)]],
+    device const float* selected_weights [[buffer(5)]],
+    device const ushort* shared_down   [[buffer(6)]],
+    device const float* shared_activation [[buffer(7)]],
+    device const float* shared_gate_logit [[buffer(8)]],
+    device float* routed_sum_out       [[buffer(9)]],
+    device float* shared_output_out     [[buffer(10)]],
+    device float* shared_gated_out      [[buffer(11)]],
+    device float* output                [[buffer(12)]],
+    device const float* residual         [[buffer(13)]],
+    device const float* block_logits     [[buffer(14)]],
+    device float* final_output           [[buffer(15)]],
+    constant uint& compact_experts       [[buffer(16)]],
+    constant uint& top_k                 [[buffer(17)]],
+    constant uint& intermediate          [[buffer(18)]],
+    constant uint& hidden                [[buffer(19)]],
+    constant uint& source_experts        [[buffer(20)]],
+    constant uint& streams               [[buffer(21)]],
+    constant float& divisor              [[buffer(22)]],
+    constant uint& groups_per_row        [[buffer(23)]],
+    uint row                              [[thread_position_in_grid]])
+{
+    if (row >= hidden) return;
+    float routed_sum = 0.0f;
+    for (uint route = 0u; route < top_k; ++route) {
+        const uint expert = route_ids[route];
+        bool valid = expert < source_experts;
+        uint slot = 0u;
+        if (valid) {
+            slot = route_lut[expert];
+            valid = slot < compact_experts;
+        }
+        if (!valid) continue;
+        const uint row_group_base = (slot * hidden + row) * groups_per_row;
+        device const float* input = activated + route * intermediate;
+        float expert_sum = 0.0f;
+        for (uint col = 0u; col < intermediate; col += 8u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = row_group_base + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            expert_sum += qwen_uniform_q4_unpack8(packed, scale, input, col);
+        }
+        routed_sum += expert_sum * selected_weights[route];
+    }
+
+    const uint shared_row_base = row * intermediate;
+    float shared_sum = 0.0f;
+    for (uint col = 0u; col < intermediate; col += 8u) {
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col]) * shared_activation[col];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 1u]) * shared_activation[col + 1u];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 2u]) * shared_activation[col + 2u];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 3u]) * shared_activation[col + 3u];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 4u]) * shared_activation[col + 4u];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 5u]) * shared_activation[col + 5u];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 6u]) * shared_activation[col + 6u];
+        shared_sum += qwen_uniform_bf16_value(shared_down[shared_row_base + col + 7u]) * shared_activation[col + 7u];
+    }
+    const float shared_gate = 1.0f / (1.0f + exp(-shared_gate_logit[0]));
+    const float shared_gated = shared_sum * shared_gate;
+    const float moe = routed_sum + shared_gated;
+    routed_sum_out[row] = routed_sum;
+    shared_output_out[row] = shared_sum;
+    shared_gated_out[row] = shared_gated;
+    output[row] = moe;
+    for (uint stream = 0u; stream < streams; ++stream) {
+        const float hc_gate = 2.0f / (1.0f + exp(-block_logits[stream] / divisor));
+        const uint offset = stream * hidden + row;
+        final_output[offset] = residual[offset] + moe * hc_gate;
     }
 }
 

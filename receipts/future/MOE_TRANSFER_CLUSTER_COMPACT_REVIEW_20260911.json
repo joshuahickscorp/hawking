@@ -1,0 +1,24 @@
+{
+  "schema": "hawking.odyssey.moe_transfer_cluster.compact_review.v1",
+  "recorded_at": "2026-09-11T08:10:00Z",
+  "status": "SEALED_PHASE_REVIEW",
+  "reviewed_controls": [
+    {"specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67", "distinct_axes": ["64 experts", "top-4", "conv", "expert_bias"], "result": "shared structure null; within-expert low-rank real and depth-varying; MLX runtime bridge blocked"},
+    {"specimen": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471", "distinct_axes": ["256 experts", "shared expert", "latent attention", "recurrent state"], "result": "shared structure null; within-expert low-rank absent"},
+    {"specimen": "zai-org--GLM-4.5-Air@a24ceef6ce4f", "distinct_axes": ["128 experts", "shared expert", "GQA"], "result": "shared structure null; within-expert low-rank strongly real"}
+  ],
+  "earned_applicability": {
+    "cross_expert_shared_basis_common_delta_clustering": "DISFAVORED across all three static controls unless a materially new causal discriminator beats matched null",
+    "within_expert_low_rank": "ANATOMY_CONDITIONAL; test only when matched-null anatomy clears threshold",
+    "low_rate_repair": "binary plus sparse residual is a repair component, not a sub-1 complete substrate in LFM2 static accounting",
+    "runtime": "a health-only compatibility server is insufficient; runtime admission requires a bounded completed forward before any activation/capability/TPS claim"
+  },
+  "phase_decision": {
+    "decision": "ADVANCE_TO_FLASH_NEXT_PULSAR_PASS",
+    "scheduler_rule": "MOE_TRANSFER_CLUSTER.advance_when_any: a sealed evidence review establishes that further intermediate cluster models have lower expected information value than Flash-Next",
+    "reason": "The three controls span simple/convolutional MoE, high-expert recurrent/latent MoE, and shared-expert GQA MoE, already falsifying the shared-basis assumption and defining conditional low-rank applicability. Repeating static anatomy on larger siblings has lower expected information value than applying the earned Gravity laws to the explicitly prioritized pristine Flash-Next Pulsar candidate.",
+    "preserve": "All remaining ModelLake specimens remain sealed; this is not a deletion, rejection, or universal-law claim. They remain available as prospective controls if Flash-Next materially challenges this review."
+  },
+  "next_action": "Header-only anatomy and exact resource/runtime preflight for Qwen--Qwen3.8-Flash-Next@34567a4712bc. Do not load or expose it in normal HCLI until its own admission evidence is earned.",
+  "claim_boundary": "This prioritizes the next campaign phase; it does not promote Flash-Next, declare the MoE cluster complete in a universal sense, or replace future controls."
+}

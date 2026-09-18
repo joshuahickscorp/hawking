@@ -1,0 +1,18 @@
+{
+  "at": 1789525627.5695958,
+  "claim_boundary": "Hawking admitted one scoped semantic AXPress; the native helper performed mechanics and did not own authority.",
+  "details": {},
+  "goal_id": "GOAL-B33C69F193",
+  "lease_id": "MACOS-LEASE-C0E7371D0208433F",
+  "operation": "acquire",
+  "outcome": "ADMITTED",
+  "reason": "Exercise one AXPress on the admitted fixture toggle with a verified revision delta.",
+  "schema": "hawking.macos.action_receipt.v1",
+  "state": "ACTIVE",
+  "target": {
+    "application": "hawking-macos-fixture-20260915",
+    "pid": 72187
+  },
+  "worker_id": "hawking-worker-afa8b15014af4177",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-946ED80B"
+}

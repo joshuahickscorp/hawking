@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 authors.workspace = true
 description = "One model-family adapter ABI + honest support-level registry. Generates ABI/schema/CLI surface/completion/SDK types/events/Fabric/tool-effect artifacts and versioned schema migrations from the sole FamilyRegistry. No family is PRODUCTION today. Owns the sole package-contained Bridge surface authority."
+autotests = false
 
 [features]
 # Default product surface: family registry + codegen that needs the events authority.
@@ -31,3 +32,22 @@ anyhow = { workspace = true }
 hawking-events = { path = "../hawking-events", version = "0.2.2", optional = true }
 
 [dev-dependencies]
+
+# BEGIN HAWKING TEST TOPOLOGY — generated targets keep routine source checks
+# compact while preserving every historical test file as an explicit, isolated
+# target when selected with `cargo test --test <name>`.
+
+[[test]]
+name = "compile_all"
+path = "tests/compile_all.rs"
+test = false
+
+[[test]]
+name = "drift"
+path = "tests/drift.rs"
+test = false
+
+[[test]]
+name = "registry_evidence"
+path = "tests/registry_evidence.rs"
+test = false

@@ -1,0 +1,1549 @@
+{
+  "layout": "safetensors_ranges",
+  "row_count": 320001536,
+  "row_width": 160,
+  "schema": "hawking.flash.external_reference_bf16_ple_ranges.v1",
+  "shards": [
+    {
+      "dtype": "BF16",
+      "file": "model-00005-of-00131.safetensors",
+      "offset": 1755880824,
+      "row_count": 2500012,
+      "row_start": 0,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00005-of-00131.safetensors",
+      "offset": 2555884664,
+      "row_count": 2500012,
+      "row_start": 2500012,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00006-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 5000024,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_2.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00006-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 7500036,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00006-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 10000048,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_4.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00006-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 12500060,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_5.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00007-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 15000072,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_6.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00007-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 17500084,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_7.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00007-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 20000096,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00007-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 22500108,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_9.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00008-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 25000120,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00008-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 27500132,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00008-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 30000144,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_12.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00008-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 32500156,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_13.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00009-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 35000168,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_14.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00009-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 37500180,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_15.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00009-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 40000192,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00009-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 42500204,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_17.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00010-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 45000216,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_18.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00010-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 47500228,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_19.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00010-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 50000240,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_20.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00010-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 52500252,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_21.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00011-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 55000264,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00011-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 57500276,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00011-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 60000288,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_24.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00011-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 62500300,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_25.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00012-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 65000312,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_26.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00012-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 67500324,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_27.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00012-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 70000336,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_28.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00012-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 72500348,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00013-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 75000360,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_30.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00013-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 77500372,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00013-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 80000384,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00013-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 82500396,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_33.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00014-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 85000408,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00014-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 87500420,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_35.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00014-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 90000432,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_36.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00014-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 92500444,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_37.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00015-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 95000456,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00015-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 97500468,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00015-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 100000480,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_40.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00015-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 102500492,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_41.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00016-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 105000504,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00016-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 107500516,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00016-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 110000528,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_44.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00016-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 112500540,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_45.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00017-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 115000552,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_46.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00017-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 117500564,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00017-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 120000576,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_48.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00017-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 122500588,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_49.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00018-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 125000600,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00018-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 127500612,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00018-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 130000624,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_52.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00018-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 132500636,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00019-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 135000648,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_54.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00019-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 137500660,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_55.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00019-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 140000672,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_56.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00019-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 142500684,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_57.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00020-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 145000696,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00020-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 147500708,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_59.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00020-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 150000720,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00020-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 152500732,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_61.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00021-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 155000744,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_62.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00021-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 157500756,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_63.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00021-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 160000768,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00021-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 162500780,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_65.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00022-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 165000792,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_66.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00022-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 167500804,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_67.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00022-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 170000816,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00022-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 172500828,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00023-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 175000840,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_70.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00023-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 177500852,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_71.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00023-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 180000864,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_72.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00023-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 182500876,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_73.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00024-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 185000888,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00024-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 187500900,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_75.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00024-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 190000912,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_76.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00024-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 192500924,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00025-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 195000936,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00025-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 197500948,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_79.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00025-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 200000960,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00025-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 202500972,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_81.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00026-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 205000984,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_82.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00026-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 207500996,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_83.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00026-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 210001008,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00026-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 212501020,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_85.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00027-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 215001032,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_86.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00027-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 217501044,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_87.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00027-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 220001056,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_88.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00027-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 222501068,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_89.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00028-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 225001080,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00028-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 227501092,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_91.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00028-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 230001104,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00028-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 232501116,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00029-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 235001128,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_94.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00029-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 237501140,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_95.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00029-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 240001152,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00029-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 242501164,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_97.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00030-of-00131.safetensors",
+      "offset": 1600008352,
+      "row_count": 2500012,
+      "row_start": 245001176,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_98.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00030-of-00131.safetensors",
+      "offset": 2400012192,
+      "row_count": 2500012,
+      "row_start": 247501188,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00030-of-00131.safetensors",
+      "offset": 672,
+      "row_count": 2500012,
+      "row_start": 250001200,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_100.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00030-of-00131.safetensors",
+      "offset": 800004512,
+      "row_count": 2500012,
+      "row_start": 252501212,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_101.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00031-of-00131.safetensors",
+      "offset": 680,
+      "row_count": 2500012,
+      "row_start": 255001224,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_102.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00031-of-00131.safetensors",
+      "offset": 800004520,
+      "row_count": 2500012,
+      "row_start": 257501236,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00031-of-00131.safetensors",
+      "offset": 1600008360,
+      "row_count": 2500012,
+      "row_start": 260001248,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_104.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00031-of-00131.safetensors",
+      "offset": 2400012200,
+      "row_count": 2500012,
+      "row_start": 262501260,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_105.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00032-of-00131.safetensors",
+      "offset": 680,
+      "row_count": 2500012,
+      "row_start": 265001272,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_106.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00032-of-00131.safetensors",
+      "offset": 800004520,
+      "row_count": 2500012,
+      "row_start": 267501284,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00032-of-00131.safetensors",
+      "offset": 1600008360,
+      "row_count": 2500012,
+      "row_start": 270001296,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00032-of-00131.safetensors",
+      "offset": 2400012200,
+      "row_count": 2500012,
+      "row_start": 272501308,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00033-of-00131.safetensors",
+      "offset": 680,
+      "row_count": 2500012,
+      "row_start": 275001320,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_110.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00033-of-00131.safetensors",
+      "offset": 800004520,
+      "row_count": 2500012,
+      "row_start": 277501332,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_111.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00033-of-00131.safetensors",
+      "offset": 1600008360,
+      "row_count": 2500012,
+      "row_start": 280001344,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_112.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00033-of-00131.safetensors",
+      "offset": 2400012200,
+      "row_count": 2500012,
+      "row_start": 282501356,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_113.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00034-of-00131.safetensors",
+      "offset": 680,
+      "row_count": 2500012,
+      "row_start": 285001368,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_114.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00034-of-00131.safetensors",
+      "offset": 800004520,
+      "row_count": 2500012,
+      "row_start": 287501380,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00034-of-00131.safetensors",
+      "offset": 1600008360,
+      "row_count": 2500012,
+      "row_start": 290001392,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_116.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00034-of-00131.safetensors",
+      "offset": 2400012200,
+      "row_count": 2500012,
+      "row_start": 292501404,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00035-of-00131.safetensors",
+      "offset": 680,
+      "row_count": 2500012,
+      "row_start": 295001416,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_118.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00035-of-00131.safetensors",
+      "offset": 800004520,
+      "row_count": 2500012,
+      "row_start": 297501428,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00035-of-00131.safetensors",
+      "offset": 1600008360,
+      "row_count": 2500012,
+      "row_start": 300001440,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00035-of-00131.safetensors",
+      "offset": 2400012200,
+      "row_count": 2500012,
+      "row_start": 302501452,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_121.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00036-of-00131.safetensors",
+      "offset": 680,
+      "row_count": 2500012,
+      "row_start": 305001464,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_122.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00036-of-00131.safetensors",
+      "offset": 800004520,
+      "row_count": 2500012,
+      "row_start": 307501476,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00036-of-00131.safetensors",
+      "offset": 1600008360,
+      "row_count": 2500012,
+      "row_start": 310001488,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_124.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00036-of-00131.safetensors",
+      "offset": 2400012200,
+      "row_count": 2500012,
+      "row_start": 312501500,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_125.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00037-of-00131.safetensors",
+      "offset": 84952,
+      "row_count": 2500012,
+      "row_start": 315001512,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_126.weight"
+    },
+    {
+      "dtype": "BF16",
+      "file": "model-00037-of-00131.safetensors",
+      "offset": 800088792,
+      "row_count": 2500012,
+      "row_start": 317501524,
+      "shape": [
+        2500012,
+        160
+      ],
+      "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_127.weight"
+    }
+  ],
+  "source_mutated": false,
+  "source_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "status": "INDEXED_IMMUTABLE_SOURCE_PLE_ROWS",
+  "version": 1,
+  "weight_payload_copied": false
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:02:30Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P17_CODEBASE_COLLAPSE",
+  "workunit_id": "WORKUNIT-20260918-53B5BBEF",
+  "local_verification": "63 passed: Auto orchestration, OpenAI serve surface, and tool registry focused tests",
+  "accepted_scope": "Read-only owner-map evidence for hawking.goal_surface: duplicated OpenRouter-prefix recognition/extraction and one smallest safe single-file collapse candidate.",
+  "candidate_boundary": "P17-COLLAPSE-GS-001 is a proposal only. No code was changed, no collapse occurred, and no release claim is made.",
+  "protected_resources": [
+    "GOALS_DIRNAME namespace",
+    ".hawking/web-artifacts/ and .hawking/H-NOTES/ read-path authority",
+    "WEIGHT_ARTIFACT_SUFFIXES guard semantics"
+  ],
+  "claim_boundary": "This is bounded read evidence, not acceptance of a codebase-collapse implementation or phase completion."
+}

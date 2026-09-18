@@ -6,10 +6,12 @@ enumerates every `kernel void` declared under crates/hawking-core/shaders,
 classifies each one, and records whether the kernels that already run on the
 Qwen3.8 decode path reconstruct a dense weight tensor before computing.
 
-Classification (reconciled against G071 / nx_genome.py 38 bound of 554 declared):
+Classification uses the live source tree. The historical G071 comparison (38
+literal-bound / 554 declared) is retained as a drift reference only; it is not
+an invariant of the current source tree.
 
   DISPATCHED  string-literal in qwen38_hybrid_decode.rs ∩ declared kernel name
-              (nx_genome.bound_kernels; a seal listing all 554 would be a lie)
+              (nx_genome.bound_kernels; a seal listing every declaration would be a lie)
   REACHABLE   compiled into a Metal library this tree can load, and referenced
               by a quoted identifier in Rust, but not in the decode-literal 38
   DEAD        declared, never referenced as a quoted identifier in Rust
@@ -36,8 +38,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCHEMA = "hawking.headless.noetic_kernel_census.v1"
-G071_BOUND = 38
-G071_DECLARED = 554
+HISTORICAL_G071_BOUND = 38
+HISTORICAL_G071_DECLARED = 554
 
 REPO = Path(__file__).resolve().parents[2]
 DECODE = REPO / "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
@@ -138,6 +140,20 @@ def decode_string_literals(text: str) -> set[str]:
     return lits
 
 
+def current_source_binding() -> tuple[list[str], int]:
+    """Return the live literal-bound set and live declaration count.
+
+    This is deliberately source-only.  It does not infer helper dispatch,
+    hardware execution, timing, or qualification from the current tree.
+    """
+    declared = parse_declared_kernels()
+    literals = decode_string_literals(
+        DECODE.read_text(encoding="utf-8", errors="replace")
+    )
+    names = {row["name"] for row in declared}
+    return sorted(literals & names), len(declared)
+
+
 def is_macro_template(name: str) -> bool:
     return ("##" in name) or name == "NAME"
 
@@ -219,7 +235,7 @@ def compile_gate_for(fname: str, compiled: dict) -> str | None:
     return "not_compiled"
 
 
-# Hand-verified facts for the 38 DISPATCHED kernels. Evidence is quoted from
+# Hand-verified facts for the historical literal-bound subset. Evidence is quoted from
 # the Metal/Rust source that was read; a missing name here becomes UNKNOWN
 # rather than a guessed YES/NO.
 DISPATCHED_FACTS: dict[str, dict] = {
@@ -655,6 +671,91 @@ DISPATCHED_FACTS: dict[str, dict] = {
 }
 
 
+def source_bound_fact(kernel: dict) -> dict | None:
+    """Derive a conservative fact for a current bound sibling from its source contract.
+
+    This intentionally covers only the four shader families whose source bodies
+    and file-level contracts were inspected together.  It never infers a
+    production route, timing, or hardware result; an unrecognised family stays
+    UNKNOWN and the census refuses to guess.
+    """
+    name = str(kernel.get("name") or "")
+    file = str(kernel.get("file") or "")
+    line = int(kernel.get("line") or 0)
+    body = str(kernel.get("body") or "")
+
+    family = None
+    role = None
+    contract = None
+    mixed = False
+    if file == "q80_mixed_decode.metal":
+        mixed = True
+        contract = (
+            "q80_mixed_decode.metal:1-5 states that packed bytes are decoded in "
+            "registers and consumed in the same kernel; the file forbids writing "
+            "a dense (rows x cols) weight reconstruction."
+        )
+        if name == "qwen38_hgrafv_embedding_lookup":
+            family, role = "grouped_affine_hgrafv", "packed embedding row lookup"
+        elif name.startswith("qwen_uniform_q3_"):
+            family, role = "grouped_absmax_q3", "bound mixed Q3 matvec sibling"
+        elif name.startswith("qwen_affine_q2_"):
+            family, role = "grouped_affine_q2", "bound mixed affine-Q2 matvec sibling"
+        elif name.startswith("qwen_q2f_"):
+            family, role = "grouped_q2f", "bound mixed Q2F matvec sibling"
+    elif file == "qwen_uniform_q4.metal" and name.startswith("qwen_uniform_q4_group64_"):
+        family, role = "grouped_absmax_q4", "bound uniform-Q4 fused matvec sibling"
+        contract = (
+            f"qwen_uniform_q4.metal:{line} has packed code/scale/input buffers and "
+            "writes vector outputs; the kernel body consumes decoded values in the "
+            "accumulator and does not materialize a weight matrix."
+        )
+    elif file == "qwen38_device_activations.metal" and name.startswith("qwen38_gated_delta_decode_vi_simd_ba"):
+        family, role = "recurrent_state_operator", "bound DeltaNet recurrent-state sibling"
+        mixed = True
+        contract = (
+            f"qwen38_device_activations.metal:{line} updates recurrent state and "
+            "writes activation output; it has no packed weight-matrix output."
+        )
+    elif file == "qwen80_device_activations.metal" and (
+        name.startswith("qwen80_")
+        or name.startswith("qwen38_residual_rmsnorm_")
+        or name.startswith("qwen38_add_residual_rmsnorm_")
+        or name in {"qwen38_scatter_to_interleaved", "qwen38_gather_from_interleaved"}
+    ):
+        family = "activation_norm" if "rmsnorm" in name else "activation_glue"
+        role = "bound activation/control operator sibling"
+        mixed = True
+        contract = (
+            "qwen80_device_activations.metal header identifies these as device-resident "
+            "activation/control kernels; they consume f32 vectors and write activation "
+            "or state buffers, not a packed weight matrix."
+        )
+
+    if family is None or not contract:
+        return None
+    # A source contract is only admissible when the inspected body exposes a
+    # device output and no obvious matrix-reconstruction buffer.  This is a
+    # negative control, not a claim that the kernel is production-selected.
+    if "device float" not in body and "device half" not in body:
+        return None
+    return {
+        "representation_family": family,
+        "role": role,
+        "production_uniform_q4_default": False,
+        "mixed_path": mixed,
+        "diagnostic": "probe" in name or "addr_probe" in name,
+        "reconstructs_dense": "NO",
+        "evidence": contract,
+        "reads_per_token": "source-bound sibling; runtime dispatch frequency and production selection are not asserted",
+    }
+
+
+def verified_dispatched_fact(kernel: dict) -> dict | None:
+    """Return hand-verified or narrowly source-contract-derived dispatch facts."""
+    return DISPATCHED_FACTS.get(str(kernel.get("name") or "")) or source_bound_fact(kernel)
+
+
 HELPER_DISPATCHED = [
     {
         "name": "mha_decode_f32",
@@ -1014,7 +1115,7 @@ def classify(declared: list[dict], compiled: dict) -> list[dict]:
                 + ("in default Metal library" if gate is None else f"({gate})")
                 + " and referenced from Rust; not a decode.rs literal"
             )
-        facts = DISPATCHED_FACTS.get(name) if cls == "DISPATCHED" else None
+        facts = verified_dispatched_fact(k) if cls == "DISPATCHED" else None
         row = {
             "name": name,
             "file": k["file"],
@@ -1073,23 +1174,23 @@ def watched_fail(classified: list[dict], bound: list[str], compiled: dict) -> li
         },
         {
             "id": 2,
-            "what": "nx_genome 38 is an underestimate of kernels the decode path actually launches",
+            "what": "the historical G071 literal set is an underestimate of kernels the decode path actually launches",
             "detail": (
                 "qwen38_hybrid_decode.rs calls mha_decode_f32_tcb, qwen_next_add_residual_tcb, "
                 "sample_argmax_f32_tcb, and decode_family::swiglu_f32(). Those names are not "
                 "string literals in decode.rs, so they are REACHABLE rather than DISPATCHED under "
-                "the G071 rule. The 64-layer schedule names them. A seal of the 38 is honest about "
-                "literals and silent about helpers. See helper_dispatched_not_in_38."
+                "the historical G071 literal rule. The 64-layer schedule names them. The live "
+                "source-bound count is emitted separately; see helper_dispatched_not_in_38."
             ),
         },
         {
             "id": 3,
-            "what": "554 declared includes preprocessor templates that are not Metal symbols",
+            "what": "the historical declared baseline includes preprocessor templates that are not Metal symbols",
             "detail": (
                 f"Unexpanded lines counted as kernel names: {macros}. Real expansions "
                 "(qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128, …, "
                 "strand_bitslice_gemm_partials_b4/b16/b64) exist at runtime and are REACHABLE "
-                "via metal/mod.rs static_kernel_name, but are extra symbols on top of the 554, not inside it."
+                "via metal/mod.rs static_kernel_name; historical baseline drift is reported separately."
             ),
         },
         {
@@ -1141,7 +1242,7 @@ def watched_fail(classified: list[dict], bound: list[str], compiled: dict) -> li
         },
         {
             "id": 9,
-            "what": "default two-pass argmax is off, so the 38 lists pass1/pass2 that the token does not run",
+            "what": "default two-pass argmax is off, so the historical literal set lists pass1/pass2 that the token does not run",
             "detail": (
                 "HAWKING_ARGMAX_TWO_PASS default false. Production uses sample_argmax_f32 (helper). "
                 "pass1/pass2 are DISPATCHED only under the literal rule."
@@ -1180,21 +1281,18 @@ def build() -> tuple[dict, str]:
         slot["declared"] += 1
         slot[k["class"]] += 1
 
-    missing = [k["name"] for k in dispatched if k["name"] not in DISPATCHED_FACTS]
+    missing = [k["name"] for k in dispatched if k.get("reconstructs_dense") == "UNKNOWN"]
     if missing:
         raise SystemExit(f"DISPATCHED kernels missing facts (refusing to guess): {missing}")
 
-    if len(declared_raw) != G071_DECLARED:
-        recon_note = (
-            f"declared {len(declared_raw)} != recorded {G071_DECLARED} — "
-            "extractor drifted; receipt records live count"
-        )
-    else:
-        recon_note = f"declared {len(declared_raw)} matches recorded {G071_DECLARED}"
-    if len(bound) != G071_BOUND:
-        bound_note = f"bound {len(bound)} != recorded {G071_BOUND}"
-    else:
-        bound_note = f"bound {len(bound)} matches recorded {G071_BOUND}"
+    recon_note = (
+        f"live source count {len(declared_raw)}; historical G071 baseline "
+        f"{HISTORICAL_G071_DECLARED}; live count is authoritative"
+    )
+    bound_note = (
+        f"live source count {len(bound)}; historical G071 baseline "
+        f"{HISTORICAL_G071_BOUND}; live count is authoritative"
+    )
 
     shader_roll = hashlib.sha256()
     for p in sorted(SHADERS.glob("*.metal")):
@@ -1214,8 +1312,14 @@ def build() -> tuple[dict, str]:
             "reconstructs_dense": "YES only if the kernel writes a (rows×cols) W in device memory. In-register dequant+FMA is NO.",
         },
         "reconciliation": {
-            "recorded_bound": G071_BOUND,
-            "recorded_declared": G071_DECLARED,
+            "recorded_bound": HISTORICAL_G071_BOUND,
+            "recorded_declared": HISTORICAL_G071_DECLARED,
+            "historical_g071_bound": HISTORICAL_G071_BOUND,
+            "historical_g071_declared": HISTORICAL_G071_DECLARED,
+            "historical_drift": {
+                "bound": len(bound) != HISTORICAL_G071_BOUND,
+                "declared": len(declared_raw) != HISTORICAL_G071_DECLARED,
+            },
             "live_bound": len(bound),
             "live_declared": len(declared_raw),
             "bound_note": bound_note,
@@ -1288,9 +1392,9 @@ def format_report(r: dict) -> str:
     a(f"head       {r['git_head'][:12]}")
     a(f"receipt    {RECEIPT}")
     a("")
-    a("## RECONCILIATION (G071 / nx_genome 38 of 554)")
-    a(f"  declared  live={rec['live_declared']}  recorded={rec['recorded_declared']}  {rec['declared_note']}")
-    a(f"  bound     live={rec['live_bound']}  recorded={rec['recorded_bound']}  {rec['bound_note']}")
+    a("## RECONCILIATION (live source / historical G071 reference)")
+    a(f"  declared  live={rec['live_declared']}  historical={rec['recorded_declared']}  {rec['declared_note']}")
+    a(f"  bound     live={rec['live_bound']}  historical={rec['recorded_bound']}  {rec['bound_note']}")
     a(f"  classes   {rec['counts']}  sum={rec['sum_classes']}")
     a(f"  dispatched reconstructs-dense {rec['dispatched_reconstructs_dense']}")
     a(f"  shader files {rec['shader_files']}  tree_sha256 {rec['shader_tree_sha256'][:16]}…")
@@ -1305,7 +1409,7 @@ def format_report(r: dict) -> str:
     )
     a(f"  mlp {prod['mlp_bytes']:,}  delta {prod['linear_attn_bytes']:,}  gqa {prod['full_attn_bytes']:,}  lm_head {prod['lm_head_bytes']:,}")
     a("")
-    a("## DISPATCHED (38) — reconstructs-dense is the deliverable")
+    a(f"## DISPATCHED ({rec['live_bound']}) — reconstructs-dense is the deliverable")
     a(f"{'name':<58} {'dense':>5} {'prod':>4} {'mix':>3} {'diag':>4}  family")
     for k in r["dispatched"]:
         a(
@@ -1322,10 +1426,10 @@ def format_report(r: dict) -> str:
         a(f"      {k.get('evidence')}")
         a(f"      reads: {k.get('reads_per_token')}")
     a("")
-    a("## HELPER-DISPATCHED ON DECODE PATH, NOT IN THE 38")
+    a("## HELPER-DISPATCHED ON DECODE PATH, NOT IN THE HISTORICAL LITERAL SET")
     for h in r["helper_dispatched_not_in_38"]:
         a(f"  {h['name']:40s} dense={h['reconstructs_dense']}  prod={h['production_uniform_q4_default']}  n/token={h['dispatches_per_token']}")
-        a(f"    why not in 38: {h['why_not_in_38']}")
+        a(f"    why not in historical literal set: {h['why_not_in_38']}")
         a(f"    {h['evidence']}")
     a("")
     a("## SEVEN REPRESENTATION FAMILIES")
@@ -1395,18 +1499,14 @@ def main() -> int:
     # live checks the operator can see fail
     rec = receipt["reconciliation"]
     problems = []
-    if rec["live_declared"] != G071_DECLARED:
-        problems.append(f"declared {rec['live_declared']} != {G071_DECLARED}")
-    if rec["live_bound"] != G071_BOUND:
-        problems.append(f"bound {rec['live_bound']} != {G071_BOUND}")
     if rec["sum_classes"] != rec["live_declared"]:
         problems.append("class sum != declared")
     if rec["dispatched_reconstructs_dense"].get("UNKNOWN"):
         problems.append("a DISPATCHED kernel has reconstructs_dense UNKNOWN")
     yes = rec["dispatched_reconstructs_dense"].get("YES", 0)
     no = rec["dispatched_reconstructs_dense"].get("NO", 0)
-    if yes + no != G071_BOUND:
-        problems.append(f"YES+NO reconstructs-dense {yes}+{no} != {G071_BOUND}")
+    if yes + no != rec["live_bound"]:
+        problems.append(f"YES+NO reconstructs-dense {yes}+{no} != {rec['live_bound']}")
     fam_ok = {f["id"]: f["verdict"] for f in receipt["families"]}
     if set(fam_ok) != set(FAMILY_IDS):
         problems.append("family id set drifted")

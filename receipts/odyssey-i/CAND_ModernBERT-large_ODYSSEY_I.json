@@ -1,0 +1,62 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-ModernBERT-large",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + one safetensors header; the local/global structural-identity claim and the tied-embedding claim both verified from tensors, not from config fields). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY. FIRST encoder-only specimen this session -- a masked-LM encoder, not a generative decoder. Fourth independent test of R-tied-embedding-dedup-verify.",
+ "identity": {
+  "name": "answerdotai/ModernBERT-large",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
+  "architectures": [
+   "ModernBertForMaskedLM"
+  ],
+  "model_type": "modernbert"
+ },
+ "structural_category": {
+  "family": "encoder-only masked language model. Every other specimen surveyed this session is either decoder-only (Qwen3, iLLaDA, RWKV7, mamba3-siso, BitNet, LFM2, Dream-v0) or encoder-decoder (whisper), or not a language model at all (pi0, sam2.1, evo2). No autoregressive generation loop at all -- one forward pass produces all positions.",
+  "n_layer": 28,
+  "hidden_size": 1024,
+  "intermediate_size": 2624,
+  "vocab_size": 50368,
+  "max_position_embeddings": 8192
+ },
+ "LOCAL_GLOBAL_ALTERNATION_COSTS_ZERO_BYTES": {
+  "global_attn_every_n_layers": 3,
+  "local_attention_window": 128,
+  "n_global_layers": 10,
+  "n_local_layers": 18,
+  "verified": "a global layer and a local layer carry BYTE-IDENTICAL tensor structure (same names, same shapes) -- confirmed by comparing their full signatures, not inferred from the config.",
+  "finding": "the heterogeneity is a RUNTIME ATTENTION-MASK POLICY, not a weight difference: most layers attend within a 128-token window and every 3th attends globally, at zero additional stored bytes. This is a DIRECT CONTRAST with LFM2-24B-A2B earlier this session, whose conv-vs-attention heterogeneity is expressed in genuinely different tensors and therefore does cost bytes. Two routes to heterogeneous attention: one paid for in storage, one free. A Gravity allocation rule keyed on 'layer type' must know which kind it is looking at -- for this body there is nothing type-specific to allocate differently."
+ },
+ "TIED_EMBEDDING_FOURTH_TEST": {
+  "config_claims": true,
+  "stored_once": true,
+  "finding": "tie_word_embeddings=true AND no separate head tensor exists -- so unlike iLLaDA-8B and Qwen3-0.6B (both of which physically duplicate the tied matrix on disk), this checkpoint stores it once, as pi0_base does. R-tied-embedding-dedup-verify now stands at 4 specimens, 2 wasteful / 2 clean -- confirming it is a per-checkpoint PACKAGING CHOICE, not a family or framework property. The rule's value is the VERIFY step: the flag alone predicts nothing."
+ },
+ "byte_accounting_EXACT": {
+  "n_tensors": 173,
+  "total_bytes": 1583526656,
+  "total_mib": 1510.17,
+  "total_params": 395881664,
+  "total_params_M": 395.882,
+  "dtype": "F32 throughout -- THIRD F32 specimen this session (pi0_base, sam2.1-hiera-large, now this). All three are non-generative or non-decoder bodies, while every decoder-only LM surveyed shipped BF16/F16. Suggestive, not established: n=3 and the causal story (release convention vs precision requirement) is untested."
+ },
+ "obvious_representation_opportunities": [
+  "F32 storage on a 395M-param encoder is the obvious first lever: a bf16 cast alone would halve the 1510 MiB footprint. Untested here.",
+  "Because local and global layers are structurally identical, there is no organ-type split to exploit -- any heterogeneous-precision scheme would have to be keyed on measured per-layer sensitivity, not on architecture, which is a strictly harder search than the MoE-organ splits this session has used."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No capability battery (would need a masked-LM / retrieval / classification benchmark, outside Hawking's generative Doctor batteries).",
+  "No measurement of whether the global layers tolerate less compression than the local ones -- the one genuinely interesting sensitivity question this architecture raises."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN. Cheap, structurally novel for this census (first encoder-only), and it contributes a real methodological correction: heterogeneity visible in a config is not necessarily heterogeneity in the weights.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "NOT APPLICABLE as a Resident -- an encoder-only masked LM cannot run HCLI's WorkUnits, which require generation and tool calls.",
+  "pulsar_candidate": "NOT APPLICABLE",
+  "magnetar_candidate": "NOT APPLICABLE",
+  "cepheid_candidate": "PLAUSIBLE IN PRINCIPLE, UNTESTED: an encoder is a natural fit for an independent SCORER/calibrator role (embedding or classifying candidate outputs) rather than producing them -- the one Star role this body could conceivably hold. Not evaluated here, and per S003 deterministic/formal checks may still be superior.",
+  "verdict": "Odyssey I discovery only; the Cepheid angle is flagged as a question, not a claim."
+ },
+ "commit": "a00ea4048",
+ "emitted_at": "2026-09-09T14:48:35Z"
+}

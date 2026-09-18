@@ -14,9 +14,10 @@ else is REFUSED rather than run and hoped for.
 
 The kernel binding is extracted from the decode source by intersecting its string
 literals with the declared `kernel void` names, so the seal names kernels that are
-ACTUALLY dispatched rather than kernels that merely exist. G071 measured that
-distinction as 38 bound against 554 declared, and a seal listing the 554 would be
-a lie about what runs.
+ACTUALLY dispatched rather than kernels that merely exist. The live counts are
+emitted from the current source at seal time; historical G071 counts are not a
+source invariant, and a seal listing every declared kernel would be a lie about
+what runs.
 
   ./tools/nx_genome.py --seal --out /tmp/nx.json
   ./tools/nx_genome.py --dump /tmp/nx.json
@@ -47,6 +48,38 @@ def machine_genome():
                                       "metal_family", "measured_roof_gb_s")},
                    sort_keys=True).encode()).hexdigest()
     return g
+
+
+GENOME_FACT_KEYS = ("chipset", "gpu_cores", "unified_memory_bytes",
+                    "metal_family", "measured_roof_gb_s")
+
+
+def genome_digest(facts):
+    """Digest over exactly the facts a lowering depends on. The seal and the load-time
+    check must agree on this projection, or a machine could be admitted on a digest
+    that never covered the fact that drifted."""
+    return hashlib.sha256(
+        json.dumps({k: facts.get(k) for k in GENOME_FACT_KEYS},
+                   sort_keys=True).encode()).hexdigest()
+
+
+def genome_matches(sealed, current):
+    """REFUSE rather than run and hope: an NX may only load on a machine whose genome
+    digest equals the digest sealed at compile time. Any drift in chipset, GPU core
+    count, unified memory, Metal family, or the measured bandwidth roof is a refusal.
+
+    The sealed digest is not trusted on its own: it is recomputed from the sealed
+    facts and compared to the current facts, so a seal whose stored digest disagrees
+    with its own facts (tampered, truncated, or hand-edited) is refused instead of
+    being replayed as authority."""
+    if not isinstance(sealed, dict) or not isinstance(current, dict):
+        return False
+    sealed_digest = sealed.get("genome_digest")
+    if not isinstance(sealed_digest, str) or not sealed_digest:
+        return False
+    if sealed_digest != genome_digest(sealed):
+        return False
+    return sealed_digest == genome_digest(current)
 
 
 def bound_kernels():
@@ -90,9 +123,10 @@ def seal(nr_path=None):
         "kernel_binding": {
             "dispatched": ks, "count": len(ks), "declared_in_tree": n_declared,
             "extraction": "string literals in qwen38_hybrid_decode.rs intersected with declared "
-                          "`kernel void` names, so this lists kernels ACTUALLY dispatched. G071 "
-                          "measured 38 bound against 554 declared; a seal listing all 554 would be "
-                          "a lie about what runs.",
+                          "`kernel void` names, so this lists kernels ACTUALLY dispatched. The "
+                          "count and declared_in_tree fields are derived from the current source "
+                          "at seal time; historical counts are not treated as invariants, and a "
+                          "seal listing every declared kernel would be a lie about what runs.",
         },
         "threadgroup_geometry": {
             "gemv": {"threadgroup": 128, "rows_per_threadgroup": 2,

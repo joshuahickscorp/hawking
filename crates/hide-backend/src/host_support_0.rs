@@ -643,7 +643,7 @@ pub(crate) fn write_lease_patch(
     })
 }
 
-// --- The diff projection HCLI/HIDE clients read (census sec 23) ---
+// --- The diff projection HAWKING/HIDE clients read (census sec 23) ---
 //
 // HIDE protocol clients fold `projection_patch{projection:"diff"}` into a
 // DiffDoc {diff_id, run_id, path, lang, before, after, hunks[{id, header, lines, status}]}

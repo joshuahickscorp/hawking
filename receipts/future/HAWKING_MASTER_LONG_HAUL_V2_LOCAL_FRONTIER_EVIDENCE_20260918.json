@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.long_haul.v2.local_frontier_evidence.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:29:30Z",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "supervisor_contract_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "claim_boundary": "Independent local source/test evidence only. This receipt does not promote failed provider packets, claim implementation completion, hardware qualification, relay hosting, live worker allocation, or release readiness.",
+  "tranches": [
+    {
+      "tranche": "P17_CODEBASE_COLLAPSE",
+      "status": "LOCAL_SOURCE_TEST_EVIDENCE",
+      "sources": [
+        "hawking/goal_surface.py:820-957",
+        "hawking/goal_surface.py:1080-1242",
+        "hawking/auto_orchestration.py:759-1044",
+        "hawking/workunit_owner.py:5150-5213"
+      ],
+      "finding": "Goal/WorkUnit admission, dependency projection, terminal release, and unbounded Auto refill are separate canonical seams. Refill filters graph eligibility, fresh-route evidence, writer-scope conflicts, budget, and terminal state; it does not invent objectives or promote provider prose.",
+      "focused_tests": {
+        "command": "python3 -m pytest -q hawking/tests/test_consolidated_surface_lost_nothing.py hawking/tests/test_mutation_bundle_completeness.py hawking/tests/test_chat_continuity.py hawking/tests/test_discrete_goal_completion_state.py",
+        "result": "37 passed in 0.37s"
+      },
+      "bounded_next_step": "Any collapse mutation must name one disjoint owner/effect scope and pass the existing focused owner and mutation-bundle suites.",
+      "falsifier": "A source/test observation showing two independent mutation authorities for the same effect scope would invalidate this map before mutation admission."
+    },
+    {
+      "tranche": "P18_TUNNEL",
+      "status": "LOCAL_INTEGRATION_EVIDENCE",
+      "sources": [
+        "hawking/share_bridge.py:1-220",
+        "hawking/serve.py:5432-5537",
+        "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_TUNNEL_PROTOCOL_SLICE_20260917.json"
+      ],
+      "finding": "The local tunnel surface stores only capability digests, scopes operations through an explicit permission map, and has invitation/disconnect/revocation state. H-Web routes tunnel actions through the Hawking share owner; the existing receipt records a live local encrypted/revocable round trip, not relay hosting.",
+      "focused_tests": {
+        "command": "python3 -m pytest -q hawking/tests/test_share_bridge.py hawking/tests/test_web_live_contract.py hawking/tests/test_web_projection.py hawking/tests/test_hweb_controls.py",
+        "result": "19 passed in 4.51s"
+      },
+      "bounded_next_step": "Add only a separately evidenced different-network relay boundary while preserving scoped permissions, encrypted pairing, expiry, and revocation.",
+      "falsifier": "A test or source path that exposes bearer tokens, provider credentials, or an arbitrary daemon tool surface would invalidate the local tunnel boundary."
+    },
+    {
+      "tranche": "P19_SANDBOX",
+      "status": "LOCAL_FOUNDATION_EVIDENCE",
+      "sources": [
+        "hawking/sandbox_world.py:1-228",
+        "hawking/sandbox_world.py:252-677",
+        "hawking/execution_sandbox.py:1-240",
+        "hawking/worker/option_c.py:1-220",
+        "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_SANDBOX_S0_FOUNDATION_20260917.json"
+      ],
+      "finding": "S0 world state is restart-readable, branches/failures/disposal remain scoped to the world, and execution policy separates model allow/deny actions from protected controller authority. Option-C remains a logical candidate/reviewer/controller lifecycle without weight loading or live worker allocation.",
+      "focused_tests": {
+        "command": "python3 -m pytest -q hawking/tests/test_sandbox_world.py hawking/tests/test_worker_option_c.py hawking/tests/test_worker_special_unit.py",
+        "result": "98 passed in 5.47s"
+      },
+      "bounded_next_step": "Wire one evaluator/recovery slice through the existing world, budget, and policy owners before claiming live branch execution.",
+      "falsifier": "A path allowing sandbox models to modify protected oracles, promotion thresholds, credentials, or stable artifacts would invalidate this foundation boundary."
+    },
+    {
+      "tranche": "P14_PCIE_FPGA",
+      "status": "LOCAL_CONTRACT_SCREENED",
+      "sources": [
+        "tools/accelerator/backend_contract.py:1007-1145",
+        "tools/accelerator/test_backend_contract.py",
+        "tools/accelerator/test_physical_qualification.py"
+      ],
+      "finding": "FPGA-HWIR remains static-only and simulated with COST_MODEL evidence; HARDWARE_MEASURED is refused, and CUDA remains named but unregistered.",
+      "focused_tests": {
+        "command": "python3 -m pytest -q tools/accelerator/test_backend_contract.py tools/accelerator/test_physical_graph_scoring.py tools/accelerator/test_physical_qualification.py",
+        "result": "59 passed in 0.29s"
+      },
+      "bounded_next_step": "Require an independently qualified route and actual hardware evidence before any P14 promotion.",
+      "falsifier": "A fresh grounded observation of registered FPGA hardware or HARDWARE_MEASURED evidence would require reconciliation."
+    }
+  ],
+  "daemon_boundary": {
+    "status": "waiting_for_native_runtime",
+    "requested_model": "hawking-auto",
+    "model": null,
+    "resident": null,
+    "local_kimi_or_mlx_process_present": false,
+    "claim": "Local evidence work does not cause Cloud Auto or the canonical daemon to load a model."
+  }
+}

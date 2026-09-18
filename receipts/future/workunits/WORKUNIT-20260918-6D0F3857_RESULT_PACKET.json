@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "2983e0f511b4d239841b45faab6598cdc2bb12635fb45e4b3c4cbe7c4563cca3",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:43:14.523029+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:43:14.523050+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:43:14.526601+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/auto_mode.py declares AUTO_POLICY_REVISION = \\\"hawking-auto-aggressive-v2-measured-diversity-unbounded-14\\\", whose name encodes measured-diversity and unbounded refill intent.\",\"REMOTE_AUTO_ROSTER is a fixed 5-mode",
+      "outcome": "CONTINUE",
+      "reply_chars": 3764,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/auto_mode.py declares AUTO_POLICY_REVISION = \\\"hawking-auto-aggressive-v2-measured-diversity-unbounded-14\\\", whose name encodes measured-diversity and unbounded refill intent.\",\"REMOTE_AUTO_ROSTER is a fixed 5-model tuple: deepseek/deepseek-v4.1-flash, moonshotai/kimi-k3, z-ai/glm-5.3, qwen/qwen3.8-2.4t-a95b, nvidia/nemotron-3-ultra-550b-a55b.\",\"CORE_AUTO_MODELS = (deepseek/deepseek-v4.1-flash, moonshotai/kimi-k3, z-ai/glm-5.3); ESCALATION_AUTO_MODELS = (qwen/qwen3.8-2.4t-a95b, nvidia/nemotron-3-ultra-550b-a55b).\",\"MODEL_ROLE_BIASES maps each roster model to role tags (e.g. deepseek -> implementation/source_mapping/bug_repair; kimi -> architecture/deep_synthesis/hard_debugging; glm -> planning/coding/security_research; qwen -> disagreement_resolution; nemotron -> architectural_diversity/falsification).\",\"AutoRoute is a frozen dataclass with fields model_id, task_class, reason, candidates, requested_profile, cognition_plan; to_dict() emits requested_model, selected_model, runtime, provider, task_class, reason, candidates, requested_profile, policy, and optional cognition_plan.\",\"is_auto_model accepts canonical id plus aliases hawking/auto, hawking:auto, auto, and rejects provider ids.\",\"Module docstring states Auto is a Hawking selector, not an OpenRouter model or second agent runtime, and that the gateway owns credentials, cost policy, cancellation, receipts, and the actual call.\",\"The read of hawking/auto_mode.py was truncated at 4000 of 10396 bytes (sha256 5e30720cbf8ca6af0c23d0bef16b4bde6ac4bf3cceaa47a53ad9355cba3b0865), so routing/refill logic below the shown region was not observed.\",\"No test execution was performed in this session; no focused Auto/refill/task-class test results were observed.\",\"No persisted telemetry field names for accepted-progress-vs-raw-worker-count were observed in the shown region of auto_mode.py.\"],\"sources\":[\"hawking/auto_mode.py (sha256 5e30720cbf8ca6af0c23d0bef16b4bde6ac4bf3cceaa47a53ad9355cba3b0865, 10396 bytes, read truncated to first 4000 bytes)\"],\"recommendations\":[\"Re-read hawking/auto_mode.py in bounded line ranges beyond the 4000-byte truncation to capture the actual selection/refill function and any measured-value scoring.\",\"Inspect hawking/auto_orchestration.py and hawking/goal_surface.py for the refill seam and the persisted telemetry field names (accepted-progress vs raw worker count).\",\"Run the admitted focus tests hawking/tests/test_auto_orchestration.py, hawking/tests/test_discrete_goal_completion_state.py, hawking/tests/test_remote_workunit_contract.py and report pass/fail.\",\"Confirm whether any fixed Hawking worker ceiling constant exists in the refill path; the policy revision string claims 'unbounded' but the code path was not observed.\"],\"unresolved_questions\":[\"Does the selection function actually diversify by measured value, or only by static MODEL_ROLE_BIASES?\",\"Where is the refill seam and does any fixed worker ceiling gate it?\",\"What exact persisted telemetry fields record accepted progress rather than raw worker count?\",\"Can Kimi and DeepSeek be selected concurrently in the same orchestration cycle?\",\"What is the falsifier for routing/concurrency regression (e.g. a test asserting two distinct core models are admitted in one refill window)?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\",\"next_action\":\"Read hawking/auto_mode.py lines beyond byte 4000, then hawking/auto_orchestration.py and hawking/goal_surface.py, then run the three admitted focus tests.\",\"reason\":\"First observation was truncated and no tests were executed, so the audit is incomplete.\",\"expected_evidence\":\"Exact refill function, telemetry field names, and focused test pass/fail output.\",\"tool_family\":\"fs.read + test runner (read-only)\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-4676a67b848740a4",
+  "worker_id": "hawking-worker-251ea89b594b478a",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-6D0F3857"
+}

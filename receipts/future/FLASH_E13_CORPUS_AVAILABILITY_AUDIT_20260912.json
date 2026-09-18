@@ -1,0 +1,102 @@
+{
+  "schema": "hawking.flash_e13.corpus_availability_audit.v1",
+  "status": "EXISTING_FROZEN_HAWKING_CORPORA_INSUFFICIENT_FOR_E13_HAN_STRATA",
+  "recorded_at": "2026-09-12T17:41:00Z",
+  "e13_design": {
+    "row_budget": 4096,
+    "factorial_cells": 8,
+    "rows_per_cell": 512,
+    "han_cells": 4,
+    "distinct_han_token_rows_required": 2048,
+    "factors": [
+      "rare/common corpus frequency",
+      "Latin/Han primary script",
+      "short/long decoded UTF-8 bytes"
+    ]
+  },
+  "candidate_files": [
+    {
+      "path": "tools/eval/thesis_rust_corpus_v0.jsonl",
+      "bytes": 4398,
+      "sha256": "79cf6150c81618bebe2e9d5a0abf0ecfbacf1e103c600d8fb2cc7fafcafeed43",
+      "han_codepoints": 0,
+      "unique_han_codepoints": 0
+    },
+    {
+      "path": "tools/eval/thesis_smoke_corpus_v0.jsonl",
+      "bytes": 5541,
+      "sha256": "c54e5d6e733bdcc83a62c22b914b492fa33f1ff33b2e12499680083c9161e9e4",
+      "han_codepoints": 0,
+      "unique_han_codepoints": 0
+    },
+    {
+      "path": "workspace/campaign/governance/odyssey/program/evaluation/support_halo_corpus_v0.jsonl",
+      "bytes": 8929,
+      "sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+      "han_codepoints": 0,
+      "unique_han_codepoints": 0
+    },
+    {
+      "path": "workspace/campaign/governance/odyssey/program/evaluation/hidden/hidden_items.jsonl",
+      "bytes": 961,
+      "sha256": "82e569d070f81217fb02bfa888ee759d11a28e7cbdac253ca3d8855278612bd4",
+      "han_codepoints": 0,
+      "unique_han_codepoints": 0
+    },
+    {
+      "path": "research/hawking-experiments/frankenstein/data/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl",
+      "bytes": 37281,
+      "sha256": "342430cff2a76926bf975f9192e36b21950c5ef59ad431c98a6e386d39cb9e64",
+      "han_codepoints": 0,
+      "unique_han_codepoints": 0
+    },
+    {
+      "path": "research/hawking-experiments/frankenstein/data/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl",
+      "bytes": 127624,
+      "sha256": "6b64c17e1584359574af678f1f0623742115ab393a1199888239acdf203fd72a",
+      "han_codepoints": 0,
+      "unique_han_codepoints": 0
+    }
+  ],
+  "chinese_trace_upper_bound": {
+    "role": "evidence that Chinese text exists locally, not an admitted E13 corpus",
+    "files": 4,
+    "distinct_prompt_semantics": 1,
+    "han_codepoints_per_file": 26,
+    "unique_han_codepoints_per_file": 12,
+    "total_han_codepoint_occurrences_across_repetitions": 104,
+    "identities": [
+      {
+        "path": "receipts/dsv4f_fullseq_capture_L1/traces/v0_zh_01.json",
+        "bytes": 22845,
+        "sha256": "d99ec42646d068a38c43fb15d557769de220878839c10c3f30804f093621f71e"
+      },
+      {
+        "path": "receipts/dsv4f_fullseq_capture_L1/traces/v0_zh_01_rep1.json",
+        "bytes": 22850,
+        "sha256": "457f6a954d483313e7d66ce814edf509824547fb76883fdfec9345a7b6a4c0cb"
+      },
+      {
+        "path": "receipts/dsv4f_fullseq_capture_L1/traces/v0_zh_01_rep2.json",
+        "bytes": 22850,
+        "sha256": "acd804765a914dc89c329b63a393f7aec05de66f8f083fd7a9bd5c91523e5669"
+      },
+      {
+        "path": "receipts/dsv4f_fullseq_capture_L1/traces/v0_zh_01_rep3.json",
+        "bytes": 22851,
+        "sha256": "658542b618e7d74592e3de96d619def486c2763d85cd3ad2e5520cfb25955758"
+      }
+    ],
+    "reason_insufficient": "At most 104 Han-bearing token occurrences can arise from the recorded Han codepoints before considering tokenizer merges, far below 2048 distinct selected Han token rows; repetitions also violate the intended independent corpus-frequency evidence."
+  },
+  "decision": {
+    "current_hawking_corpus_admitted": false,
+    "concatenating_json_or_repeated_trace_payloads_authorized": false,
+    "threshold_tuning_to_force_cell_occupancy_authorized": false,
+    "tensor_payload_read_authorized": false,
+    "reopen_condition": "A separately selected, licensed/provenanced, immutable multilingual UTF-8 corpus must be pinned by path, byte count, and SHA-256 before thresholds are chosen and hawking gravity e13-evidence runs."
+  },
+  "claim_boundary": "This is a static availability audit over the named current Hawking evaluation, hidden, and Frankenstein corpora plus the only located Chinese trace family. It does not prove that no suitable corpus exists anywhere on the machine or network, select an external dataset, tokenize any production corpus, execute E13, read tensor payloads, or establish a representation result.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "b009cc0ada0acbc5acd5df11b73f6ffc98cb944202d98d80e1fae7052046126c"
+}

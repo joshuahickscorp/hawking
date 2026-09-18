@@ -13,12 +13,90 @@ from pathlib import Path
 
 import pytest
 
+
+def test_cuda_runtime_all_exports_are_unique():
+    from tools.accelerator import cuda_runtime
+
+    names = cuda_runtime.__all__
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    assert duplicates == [], f"duplicate __all__ exports: {duplicates}"
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import backend_contract as bc  # noqa: E402
 import repatriation_audit as audit  # noqa: E402
 from semantic_transport import COST_MODEL, HARDWARE_MEASURED  # noqa: E402
+
+# P14_PCIE_IMPLEMENTATION_CONTRACT_V2: bounded qualification-support tranche.
+# This test file is pinned to the contract phase; no release or hardware
+# qualification is claimed by this annotation.
+P14_PCIE_IMPLEMENTATION_CONTRACT_V2 = "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+
+
+def test_p14_pcie_implementation_contract_v2_constant_is_pinned():
+    """Bounded qualification-support tranche: the contract phase constant is
+    pinned in both the runner and this test module. No release, phase, or
+    hardware qualification is claimed by this test."""
+    import accelerator_runner as runner
+    assert runner.P14_PCIE_IMPLEMENTATION_CONTRACT_V2 == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert P14_PCIE_IMPLEMENTATION_CONTRACT_V2 == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+
+
+def test_p14_pcie_contract_phase_receipt_fragment_boundary():
+    """Bounded qualification-support tranche: the receipt fragment names the
+    contract phase and its explicit boundary. No release, phase completion,
+    or hardware qualification is claimed by this test."""
+    import accelerator_runner as runner
+    fragment = runner.p14_pcie_contract_phase_receipt_fragment()
+    assert fragment["schema"] == "hawking.accelerator.p14_pcie_contract_phase.v1"
+    assert fragment["contract_phase"] == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert fragment["boundary"] == "no-release/no-hardware-qualification"
+    assert fragment["claims_phase_completion"] is False
+    assert fragment["claims_release"] is False
+    assert fragment["claims_hardware_qualification"] is False
+
+
+def test_p14_pcie_contract_phase_evidence_fragment_is_bounded():
+    """Bounded qualification-support tranche: the evidence fragment names the
+    contract phase and its explicit boundary. No release, phase completion,
+    or hardware qualification is claimed by this test."""
+    import accelerator_runner as runner
+    fragment = runner.p14_pcie_contract_phase_evidence_fragment()
+    assert fragment["schema"] == "hawking.accelerator.p14_pcie_contract_evidence.v1"
+    assert fragment["contract_phase"] == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert fragment["boundary"] == "no-release/no-hardware-qualification"
+    assert fragment["claims_phase_completion"] is False
+    assert fragment["claims_release"] is False
+    assert fragment["claims_hardware_qualification"] is False
+
+
+def test_p14_pcie_contract_phase_qualification_support_is_bounded():
+    """Bounded qualification-support tranche: the qualification-support
+    descriptor names the contract phase and its explicit boundary. No release,
+    phase completion, or hardware qualification is claimed by this test."""
+    import accelerator_runner as runner
+    fragment = runner.p14_pcie_contract_phase_qualification_support()
+    assert fragment["schema"] == "hawking.accelerator.p14_pcie_contract_qualification_support.v1"
+    assert fragment["contract_phase"] == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert fragment["boundary"] == "no-release/no-hardware-qualification"
+    assert fragment["claims_phase_completion"] is False
+    assert fragment["claims_release"] is False
+    assert fragment["claims_hardware_qualification"] is False
+
+
+def test_p14_pcie_contract_phase_boundary_is_bounded():
+    from tools.accelerator.accelerator_runner import (
+        P14_PCIE_IMPLEMENTATION_CONTRACT_V2,
+        p14_pcie_contract_phase_boundary,
+    )
+
+    fragment = p14_pcie_contract_phase_boundary()
+    assert fragment["contract_phase"] == P14_PCIE_IMPLEMENTATION_CONTRACT_V2
+    assert fragment["boundary"] == "no-release/no-hardware-qualification"
+    assert fragment["claims_phase_completion"] is False
+    assert fragment["claims_release"] is False
+    assert fragment["claims_hardware_qualification"] is False
 
 
 RECEIPT = "receipts/headless/ACCELERATOR_MACHINE_GENOME.json"
@@ -196,3 +274,149 @@ def test_audit_backend_contract_check_calls_the_registry():
     assert observed["repatriation"]["law_id"] == "AKB-MACHINE-BANDWIDTH"
     assert observed["repatriation"]["feature_gb_s"] == pytest.approx(589.73)
     assert "HARDWARE_MEASURED" not in observed["fpga_evidence_tiers"]
+def test_backend_contract_qualification_support_marker():
+    """Bounded qualification-support check for the backend contract module.
+
+    Asserts the marker surface is importable and stable. Does not assert
+    hardware qualification, release readiness, or phase completion.
+    """
+    from tools.accelerator import backend_contract
+
+    assert backend_contract.qualification_support_marker() == (
+        "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2"
+    )# P14_PCIE_IMPLEMENTATION_CONTRACT_V2 focused qualification-support test:
+# asserts the runner exposes the bounded contract descriptor and that it
+# does not claim hardware qualification or release completion.
+def test_backend_contract_descriptor_boundary():
+    from tools.accelerator.accelerator_runner import backend_contract_descriptor
+    desc = backend_contract_descriptor()
+    assert desc["contract"] == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert desc["hardware_qualified"] is False
+    assert desc["release_complete"] is False
+
+
+def test_validate_backend_contract_accepts_complete_contract():
+    from tools.accelerator.backend_contract import validate_backend_contract
+
+    assert validate_backend_contract(
+        {"name": "cuda", "version": 2, "capabilities": ["matmul"]}
+    )
+
+
+def test_validate_backend_contract_rejects_missing_field():
+    from tools.accelerator.backend_contract import validate_backend_contract
+
+    assert not validate_backend_contract({"name": "cuda", "version": 2})
+
+
+def test_validate_backend_contract_rejects_non_mapping():
+    from tools.accelerator.backend_contract import validate_backend_contract
+
+    assert not validate_backend_contract(None)
+
+
+def test_backend_contract_does_not_claim_hardware_qualification():
+    from tools.accelerator import backend_contract
+
+    assert backend_contract.HARDWARE_QUALIFICATION_CLAIMED is False
+
+
+def test_p13_contract_v2_qualification_support_marker():
+    """Bounded P13 qualification-support check: contract module exposes a stable
+    version marker so downstream NVIDIA implementation work can assert the
+    accepted contract revision without re-deriving source mapping."""
+    from tools.accelerator import backend_contract
+
+    marker = getattr(backend_contract, "CONTRACT_REVISION", None)
+    assert marker is not None, "backend_contract must expose CONTRACT_REVISION"
+    assert isinstance(marker, str) and marker, "CONTRACT_REVISION must be a non-empty str"
+
+
+def test_p13_nvidia_contract_v2_qualification_support_marker():
+    """Bounded qualification-support marker for P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2.
+
+    Asserts the backend contract module exposes the P13 NVIDIA contract marker so the
+    implementation contract can be qualified without hardware. This is a
+    qualification-support check only; it makes no release or hardware claim.
+    """
+    import tools.accelerator.backend_contract as backend_contract
+
+    assert backend_contract is not None
+    assert backend_contract.p13_nvidia_contract_v2_marker() == "P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2"
+
+
+def test_describe_backend_capability_is_offline_and_deterministic():
+    from tools.accelerator.backend_contract import describe_backend_capability
+
+    first = describe_backend_capability("cuda", available=False, reason="no_device")
+    second = describe_backend_capability("cuda", available=False, reason="no_device")
+
+    assert first == second
+    assert first["backend"] == "cuda"
+    assert first["available"] is False
+    assert first["reason"] == "no_device"
+    assert first["probed"] is False
+
+
+def test_describe_backend_capability_defaults_and_validation():
+    from tools.accelerator.backend_contract import describe_backend_capability
+
+    ok = describe_backend_capability("cpu", available=True)
+    assert ok["available"] is True
+    assert ok["reason"] == "available"
+    assert ok["probed"] is False
+
+    try:
+        describe_backend_capability("")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected ValueError for empty backend_name")
+
+
+def test_nvidia_backend_capability_flags_exposed():
+    from tools.accelerator import backend_contract
+
+    flags = backend_contract.NVIDIA_BACKEND_CAPABILITY_FLAGS
+    assert isinstance(flags, (tuple, frozenset, set))
+    assert "cuda" in flags
+
+
+def test_no_hardware_qualification_boundary():
+    from tools.accelerator import backend_contract
+    assert getattr(backend_contract, "NO_HARDWARE_QUALIFICATION_BOUNDARY", False) is True
+
+
+def test_nvidia_route_declaration_is_hardware_free():
+    """Qualification-support: the declared NVIDIA route must be pure data and
+    must not require hardware."""
+    from tools.accelerator import backend_contract
+
+    decl = backend_contract.nvidia_route_declaration()
+    assert isinstance(decl, dict)
+    for field in ("backend", "provider", "route", "requires_hardware"):
+        assert field in decl, f"missing route field: {field}"
+    assert decl["backend"] == "nvidia"
+    assert decl["requires_hardware"] is False
+
+
+def test_p13_no_hardware_qualification_boundary():
+    import backend_contract
+
+    assert backend_contract.NO_HARDWARE_QUALIFICATION is True
+    assert backend_contract.NO_RELEASE is True# P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 qualification-support assertions.
+# Bounded contract-surface check only: no hardware execution, no runtime
+# behavior change, no release or hardware-qualification claim.
+def test_nvidia_backend_identifier_is_stable():
+    from tools.accelerator import backend_contract
+
+    assert backend_contract.NVIDIA_BACKEND_ID == "nvidia"
+    assert backend_contract.nvidia_backend_identifier() == "nvidia"
+
+
+def test_nvidia_backend_capabilities_declared():
+    from tools.accelerator import backend_contract
+
+    caps = backend_contract.nvidia_backend_capabilities()
+    assert "cuda_runtime" in caps
+    assert "backend_contract_v2" in caps

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "1d1e3bcb7d2f98b39db71f5cfe892d7ae1f932701ce903b898e1b62a9f7199e1",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:01:00.514298+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:01:00.514316+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:01:00.519253+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"The admitted read-only observation of tools/accelerator/accelerator_runner.py succeeded with mutation=read_only and deterministic=true; full-file sha256=c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6, byt",
+      "outcome": "CONTINUE",
+      "reply_chars": 5504,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"The admitted read-only observation of tools/accelerator/accelerator_runner.py succeeded with mutation=read_only and deterministic=true; full-file sha256=c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6, bytes=30162.\",\"The projection was truncated: shown_bytes=4000 of 30162 (13.3%), with an explicit truncation note warning not to conclude anything about what is not shown.\",\"Module docstring states planning and queue compilation never launch work, and that AcceleratorRunner.start only creates a detached job when its caller explicitly asks for execution and the physical-window admission check is true.\",\"Module docstring states a blocked or contended physical experiment remains visible without disturbing an unrelated live model download or benchmark.\",\"Observed schema constants: SPEC_SCHEMA=hawking.accelerator.experiment_spec.v1, COMPILED_QUEUE_SCHEMA=hawking.accelerator.repatriation_queue_compiled.v1, DEFAULT_QUEUE_OUT=receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json.\",\"Observed admission status set _ALLOWED_STATUS=frozenset({READY, BLOCKED}).\",\"Observed required metrics _REQUIRED_METRICS=frozenset({complete_useful_wall_ns, active_bytes_per_token, fallback_count, capability_verified}).\",\"Observed secret-argument refusal regex _SECRET_ARGUMENT_RE matching api_key, access_token, authorization, password, secret, private_key, bearer, and hf/gh/github/openai/anthropic token patterns.\",\"Observed resource-class mapping _RESOURCE_CLASSES: metal/cuda/ane -> GPU_EXCLUSIVE, fpga -> COMPILE, cpu -> CPU_HEAVY, remote -> IO_HEAVY.\",\"Observed identity maps _MODEL_IDENTITIES={Qwen27: Qwen3.8-27B, Flash: Qwen3.8-Flash-Next} and _NX_IDENTITIES={Qwen27: QWEN27_NX_CURRENT_SEALED_3.14, Flash: FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED}.\",\"Observed RunnerSpecError docstring: 'A queue/spec is incomplete, unsafe, or overclaims execution.'\",\"Observed AcceleratorExperimentSpec fields include experiment_id, behavior_id, model_identity, nx_identity, nr_identity, organ, organ_range, backend, kernel_lowering, verification_mode, benchmark_mode, state_session_inputs, output_receipt_path, command, candidate, control, metrics, falsifier, status, detached, requires_quiescence, protected_window, atlas_fingerprint, expected_value_score, expected_effect, promotion, source_evidence (list truncated at source_evidence).\",\"The FPGA-HWIR static-only, simulated, COST_MODEL, and HARDWARE_MEASURED refusal boundaries were NOT observed in the admitted projection; the 4000-byte window ended inside the AcceleratorExperimentSpec dataclass before any verification-mode or tier-boundary logic was visible.\",\"No hardware was accessed, no files were mutated, no tests were run, and no qualification claim is made.\"],\"sources\":[\"tools/accelerator/accelerator_runner.py (admitted read-only observation, sha256 c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6, 30162 bytes, 4000-byte projection)\"],\"recommendations\":[\"Re-read tools/accelerator/accelerator_runner.py with a narrowed line range covering verification_mode/benchmark_mode validation and the AcceleratorRunner.start admission path, since the FPGA-HWIR static-only, simulated, COST_MODEL, and HARDWARE_MEASURED refusal boundaries were not in the admitted projection.\",\"Draft the bounded P14 source contract addendum only after those boundaries are directly observed; do not infer them from the truncated header.\",\"Treat _ALLOWED_STATUS={READY,BLOCKED}, _REQUIRED_METRICS, _SECRET_ARGUMENT_RE, and _RESOURCE_CLASSES as candidate protected resources for the P14 addendum, pending confirmation of their enforcement sites.\",\"Proposed writer/effect scope for the addendum: read-only source contract text only; no mutation of accelerator_runner.py, no hardware invocation, no receipt writes, no qualification claim.\",\"Proposed focused tests: (1) spec with verification_mode outside the admitted tier set is refused with RunnerSpecError; (2) HARDWARE_MEASURED spec without a physical-window admission is ref",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-ed5ed3d49cfc46c4",
+  "worker_id": "hawking-worker-419e8bf9a37d4cb6",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-95F2263B"
+}

@@ -1,0 +1,26 @@
+{
+  "authorization_schema": "hawking.flash.external_greedy_reference_owner_authorization.v1",
+  "authorization_scope": "admit_external_greedy_reference_v2",
+  "claim_boundary": "unsigned admission request only; it grants no execution or evidence authority",
+  "owner_must_supply": [
+    "issued_unix_ns",
+    "expires_unix_ns",
+    "nonce",
+    "signature_ed25519_hex"
+  ],
+  "owner_public_key_path": "/Library/Application Support/Hawking/owner_ed25519_public_key",
+  "required_payload_bindings": {
+    "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+    "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+    "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+    "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+    "provider_producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+    "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+    "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+    "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+    "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588"
+  },
+  "schema": "hawking.flash.external_greedy_reference_owner_authorization_request.v1",
+  "status": "OWNER_ACTION_REQUIRED"
+}

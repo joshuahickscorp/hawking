@@ -1,0 +1,23 @@
+{
+  "generated_token_ids": [],
+  "no_sampling": true,
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.external_greedy_reference_mlx_worker.v1",
+  "started_unix_ns": 1789229646916899000,
+  "status": "FAILED_METAL_COMMAND_BUFFER_WATCHDOG_TIMEOUT__NO_SOURCE_RESULT",
+  "failure": {
+    "classification": "ENVIRONMENT_RUNTIME",
+    "generated_steps_completed": 0,
+    "message": "[METAL] Command buffer execution failed: Caused GPU Timeout Error (00000002:kIOGPUCommandBufferCallbackErrorTimeout).",
+    "scientific_disposition": "none",
+    "retry_same_execution_shape": false
+  },
+  "steps": []
+}

@@ -1,0 +1,24 @@
+{
+ "obligation": "K9 (S007) \u2014 one daemon: hawkingd only",
+ "date": "2026-09-09",
+ "complaint": "\"ascension pid should not exist it should all be hawkingd and just hawkingd simply\"",
+ "MEASURED_TOPOLOGY": {
+  "pid 98085": "hawkingd serve :8011 [hawking-native.sealed-3.14]",
+  "pid 98088": "its CHILD: workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident -- 11.5 GiB resident, the process that actually holds the weights",
+  "so": "two long-lived pids where the user expects one, and the one doing the work is named after neither hawkingd nor HCLI"
+ },
+ "WHY_IT_IS_SHAPED_THIS_WAY": {
+  "hawkingd": "a POSIX SHELL SCRIPT at ~/.local/bin/hawkingd, not a binary",
+  "the worker": "crates/hawking-core/examples/ascension_qwen38_resident.rs, 859 lines, built as a cargo EXAMPLE",
+  "hawking-core Cargo.toml": "declares NO [[bin]] targets at all",
+  "the spawn": "hcli/hawking_native.py:363 defaults HCLI_HAWKING_RESIDENT_BINARY to that examples/ path",
+  "diagnosis": "the production resident has no first-class binary. It is a cargo example promoted into production duty by an environment-variable default, supervised by a shell script. Nothing here is wrong at runtime -- it works -- but the naming and the topology both lie about what the system is, which is the complaint."
+ },
+ "THE_FIX_IN_ORDER_OF_HONESTY": [
+  "1. give hawking-core a real [[bin]] target so the resident stops being an example",
+  "2. name it for what it is, so the process listing says hawkingd rather than ascension_qwen38_resident -- the current name also encodes ONE model (qwen38) into the daemon of a system whose whole thesis is that model bodies are replaceable organs",
+  "3. only then consider collapsing supervisor and worker into a single process, which is a real runtime change and must be measured, not assumed better"
+ ],
+ "why_not_done_in_this_turn": "steps 1 and 2 are a Rust build against a crate currently serving the live self-development arc, and S007's first order is not to disturb sealed-3.14. The rename is also load-bearing in hcli/hawking_native.py and in the gpu_attribution tool. Recorded precisely so it is a bounded piece of work rather than a vague intention.",
+ "note_on_the_name": "`ascension_qwen38_resident` bakes a specific model family into the daemon binary's name. S007 says model identity is not HCLI identity. The rename is not cosmetic -- it is the same claim in the process table."
+}

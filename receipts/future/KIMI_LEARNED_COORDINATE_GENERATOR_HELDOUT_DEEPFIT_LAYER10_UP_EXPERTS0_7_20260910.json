@@ -1,0 +1,707 @@
+{
+  "claim_boundary": "Bounded learned coordinate-generator reference only. The generator is trained from immutable weights and directly produces blocks at execution time without dense-parent rematerialization, but this is not a full model representation, capability result, end-to-end TPS result, production kernel qualification, NX artifact, or KIMI promotion.",
+  "expert_count": 8,
+  "fanout_timing": {
+    "execution": "CPU learned-generator held-out fanout; not model TPS",
+    "method_soft_budget_ms": 120000.0,
+    "variant_count": 4,
+    "wall_elapsed_ms": 24953.64162500482,
+    "workers": 4
+  },
+  "generated_at": "2026-09-10T15:48:34.196144+00:00",
+  "immutable_base": true,
+  "next_discriminator": "Take any Pareto survivor to held-out task-level capability and authorization checks only after validating generator fidelity on additional organs; otherwise increase model expressiveness or change the generated factorization.",
+  "organ": "layer10_routed_experts_0_to_7",
+  "python": "3.14.6",
+  "ranked_summary": [
+    {
+      "complete_ebpw": 0.03775301846590909,
+      "direct_batch_median_ms": 382.0373755006585,
+      "fit_ms": 11009.105083998293,
+      "mean_cosine": -0.00297504383524938,
+      "mean_relative_l2": 1.001383803630565,
+      "p95_relative_l2": 1.0062960257029607,
+      "variant": "coord_latent8_h64"
+    },
+    {
+      "complete_ebpw": 0.046320134943181816,
+      "direct_batch_median_ms": 404.90539598977193,
+      "fit_ms": 11191.999375005253,
+      "mean_cosine": 0.0018444370580255054,
+      "mean_relative_l2": 1.0016918758815554,
+      "p95_relative_l2": 1.0059390656412548,
+      "variant": "coord_latent16_h64"
+    },
+    {
+      "complete_ebpw": 0.049560546875,
+      "direct_batch_median_ms": 644.557354535209,
+      "fit_ms": 15890.719624992926,
+      "mean_cosine": 0.008843187206366565,
+      "mean_relative_l2": 1.000376486936207,
+      "p95_relative_l2": 1.0022374858450493,
+      "variant": "coord_latent16_h128"
+    },
+    {
+      "complete_ebpw": 0.06918057528409091,
+      "direct_batch_median_ms": 779.6094795048703,
+      "fit_ms": 16586.15120803006,
+      "mean_cosine": 0.0032401630414824467,
+      "mean_relative_l2": 1.0011475418950906,
+      "p95_relative_l2": 1.0051588489387522,
+      "variant": "coord_latent32_h128"
+    }
+  ],
+  "representation_fit": {
+    "dense_parent_is_fit_source_only": true,
+    "group_width": 32,
+    "groups": 64,
+    "organ_rows": 1408,
+    "organ_width": 2048,
+    "step_override": 2500,
+    "training_is_representation_native": true
+  },
+  "results": [
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "generate each row-group block from expert/row/group coordinates, then matvec",
+        "persistent_representation_bytes": 108864,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 15181.946124997921,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 1.0091927534938956,
+        "mean_cosine": -0.00297504383524938,
+        "mean_relative_l2": 1.001383803630565,
+        "p95_relative_l2": 1.0062960257029607,
+        "probe_count": 8,
+        "probe_tensor_pairs": 64
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 1.7e-05,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 77824,
+              "gb": 7.8e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 31040,
+              "gb": 3.1e-05,
+              "ms": 1.7e-05,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.03775301846590909,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.03775301846590909,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.03775301846590909,
+            "stored_bytes": 108864
+          },
+          "executable_bytes": 108864,
+          "executable_gb": 0.000109,
+          "flags": [],
+          "id": "KIMI_coord_latent8_h64_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 31040,
+              "category": "generators",
+              "gb": 3.1e-05,
+              "ms": 1.7e-05,
+              "ms_per_gb": 0.547282,
+              "name": "coordinate_generator_bf16_parameters",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_layout_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_decoder_support",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 8192,
+              "category": "model_specific_code",
+              "gb": 8e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_generator_kernel_code",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 108864,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 108864,
+          "stored_bpw": 0.03775301846590909,
+          "stored_bytes": 108864,
+          "stored_gb": 0.000109,
+          "stored_ms": 1.7e-05
+        },
+        "family": "learned_coordinate_generator",
+        "generator_bytes": 31040,
+        "generator_parameter_count": 15520,
+        "generator_storage_dtype": "bf16"
+      },
+      "status": "HELDOUT_LEARNED_GENERATOR_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.1332080175634474,
+        "dense_oracle_batch_samples_ms": [
+          1.109875040128827,
+          1.1565409949980676
+        ],
+        "direct_batch_median_ms": 382.0373755006585,
+        "direct_batch_samples_ms": [
+          381.3670420204289,
+          382.7077089808881
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "torch_threads": 1
+      },
+      "training": {
+        "batch_size": 8192,
+        "final_sample_loss": 0.0005538881523534656,
+        "fit_ms": 11009.105083998293,
+        "fit_source_is_immutable_weights": true,
+        "steps": 2500
+      },
+      "variant": {
+        "group_latent": 8,
+        "hidden": 64,
+        "latent": 8,
+        "name": "coord_latent8_h64",
+        "steps": 2500
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "generate each row-group block from expert/row/group coordinates, then matvec",
+        "persistent_representation_bytes": 133568,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 15627.515125030186,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 1.0090844744985406,
+        "mean_cosine": 0.0018444370580255054,
+        "mean_relative_l2": 1.0016918758815554,
+        "p95_relative_l2": 1.0059390656412548,
+        "probe_count": 8,
+        "probe_tensor_pairs": 64
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 3.1e-05,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 77824,
+              "gb": 7.8e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 55744,
+              "gb": 5.6e-05,
+              "ms": 3.1e-05,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.046320134943181816,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.046320134943181816,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.046320134943181816,
+            "stored_bytes": 133568
+          },
+          "executable_bytes": 133568,
+          "executable_gb": 0.000134,
+          "flags": [],
+          "id": "KIMI_coord_latent16_h64_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 55744,
+              "category": "generators",
+              "gb": 5.6e-05,
+              "ms": 3.1e-05,
+              "ms_per_gb": 0.547282,
+              "name": "coordinate_generator_bf16_parameters",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_layout_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_decoder_support",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 8192,
+              "category": "model_specific_code",
+              "gb": 8e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_generator_kernel_code",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 133568,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 133568,
+          "stored_bpw": 0.046320134943181816,
+          "stored_bytes": 133568,
+          "stored_gb": 0.000134,
+          "stored_ms": 3.1e-05
+        },
+        "family": "learned_coordinate_generator",
+        "generator_bytes": 55744,
+        "generator_parameter_count": 27872,
+        "generator_storage_dtype": "bf16"
+      },
+      "status": "HELDOUT_LEARNED_GENERATOR_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.1577710101846606,
+        "dense_oracle_batch_samples_ms": [
+          1.0412500123493373,
+          1.2742920080199838
+        ],
+        "direct_batch_median_ms": 404.90539598977193,
+        "direct_batch_samples_ms": [
+          410.19866697024554,
+          399.6121250092983
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "torch_threads": 1
+      },
+      "training": {
+        "batch_size": 8192,
+        "final_sample_loss": 0.0005536451935768127,
+        "fit_ms": 11191.999375005253,
+        "fit_source_is_immutable_weights": true,
+        "steps": 2500
+      },
+      "variant": {
+        "group_latent": 8,
+        "hidden": 64,
+        "latent": 16,
+        "name": "coord_latent16_h64",
+        "steps": 2500
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "generate each row-group block from expert/row/group coordinates, then matvec",
+        "persistent_representation_bytes": 142912,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 22677.624833013397,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 1.005909397380218,
+        "mean_cosine": 0.008843187206366565,
+        "mean_relative_l2": 1.000376486936207,
+        "p95_relative_l2": 1.0022374858450493,
+        "probe_count": 8,
+        "probe_tensor_pairs": 64
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 3.6e-05,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 77824,
+              "gb": 7.8e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 65088,
+              "gb": 6.5e-05,
+              "ms": 3.6e-05,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.049560546875,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.049560546875,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.049560546875,
+            "stored_bytes": 142912
+          },
+          "executable_bytes": 142912,
+          "executable_gb": 0.000143,
+          "flags": [],
+          "id": "KIMI_coord_latent16_h128_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 65088,
+              "category": "generators",
+              "gb": 6.5e-05,
+              "ms": 3.6e-05,
+              "ms_per_gb": 0.547282,
+              "name": "coordinate_generator_bf16_parameters",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_layout_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_decoder_support",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 8192,
+              "category": "model_specific_code",
+              "gb": 8e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_generator_kernel_code",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 142912,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 142912,
+          "stored_bpw": 0.049560546875,
+          "stored_bytes": 142912,
+          "stored_gb": 0.000143,
+          "stored_ms": 3.6e-05
+        },
+        "family": "learned_coordinate_generator",
+        "generator_bytes": 65088,
+        "generator_parameter_count": 32544,
+        "generator_storage_dtype": "bf16"
+      },
+      "status": "HELDOUT_LEARNED_GENERATOR_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.0503960074856877,
+        "dense_oracle_batch_samples_ms": [
+          1.0372920078225434,
+          1.063500007148832
+        ],
+        "direct_batch_median_ms": 644.557354535209,
+        "direct_batch_samples_ms": [
+          651.648584054783,
+          637.466125015635
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "torch_threads": 1
+      },
+      "training": {
+        "batch_size": 8192,
+        "final_sample_loss": 0.0005524096777662635,
+        "fit_ms": 15890.719624992926,
+        "fit_source_is_immutable_weights": true,
+        "steps": 2500
+      },
+      "variant": {
+        "group_latent": 8,
+        "hidden": 128,
+        "latent": 16,
+        "name": "coord_latent16_h128",
+        "steps": 2500
+      }
+    },
+    {
+      "direct_execution": {
+        "dense_parent_materialized_by_direct_path": false,
+        "execution": "generate each row-group block from expert/row/group coordinates, then matvec",
+        "persistent_representation_bytes": 199488,
+        "production_kernel": "NOT_VALIDATED",
+        "transient_group_expansion_bytes": 180224,
+        "verified": true
+      },
+      "fanout": {
+        "elapsed_ms": 24952.64525001403,
+        "soft_budget_ms": 120000.0,
+        "soft_budget_status": "WITHIN"
+      },
+      "heldout": {
+        "max_relative_l2": 1.0086927101141547,
+        "mean_cosine": 0.0032401630414824467,
+        "mean_relative_l2": 1.0011475418950906,
+        "p95_relative_l2": 1.0051588489387522,
+        "probe_count": 8,
+        "probe_tensor_pairs": 64
+      },
+      "representation": {
+        "complete_accounting": {
+          "billed_ms": 6.7e-05,
+          "by_stream_class": {
+            "activation": {
+              "bytes": 0,
+              "gb": 0.0,
+              "ms": 0.0,
+              "ms_per_gb": 2.906132
+            },
+            "broadcast_aux": {
+              "bytes": 77824,
+              "gb": 7.8e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0
+            },
+            "weight_codes": {
+              "bytes": 121664,
+              "gb": 0.000122,
+              "ms": 6.7e-05,
+              "ms_per_gb": 0.547282
+            }
+          },
+          "complete_ebpw": 0.06918057528409091,
+          "consumes_representation_directly": true,
+          "dense_parent_rematerialization": {
+            "complete_ebpw": 0.06918057528409091,
+            "flag": null,
+            "flagged": false,
+            "is_sub2_executable": true,
+            "reason": "production consumes the representation directly",
+            "stored_bpw": 0.06918057528409091,
+            "stored_bytes": 199488
+          },
+          "executable_bytes": 199488,
+          "executable_gb": 0.000199,
+          "flags": [],
+          "id": "KIMI_coord_latent32_h128_experts_8",
+          "is_sub2_executable": true,
+          "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+          "parent_params": 23068672,
+          "parts": [
+            {
+              "bytes": 121664,
+              "category": "generators",
+              "gb": 0.000122,
+              "ms": 6.7e-05,
+              "ms_per_gb": 0.547282,
+              "name": "coordinate_generator_bf16_parameters",
+              "stream_class": "weight_codes"
+            },
+            {
+              "bytes": 4096,
+              "category": "metadata",
+              "gb": 4e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_layout_metadata",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 65536,
+              "category": "runtime_auxiliaries",
+              "gb": 6.6e-05,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_decoder_support",
+              "stream_class": "broadcast_aux"
+            },
+            {
+              "bytes": 8192,
+              "category": "model_specific_code",
+              "gb": 8e-06,
+              "ms": 0.0,
+              "ms_per_gb": 0.0,
+              "name": "coordinate_generator_kernel_code",
+              "stream_class": "broadcast_aux"
+            }
+          ],
+          "parts_bytes": 199488,
+          "reconciled": true,
+          "reconstructs_dense_parent": false,
+          "stated_total_bytes": 199488,
+          "stored_bpw": 0.06918057528409091,
+          "stored_bytes": 199488,
+          "stored_gb": 0.000199,
+          "stored_ms": 6.7e-05
+        },
+        "family": "learned_coordinate_generator",
+        "generator_bytes": 121664,
+        "generator_parameter_count": 60832,
+        "generator_storage_dtype": "bf16"
+      },
+      "status": "HELDOUT_LEARNED_GENERATOR_REFERENCE_PASS",
+      "tensor_names": [
+        "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+        "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+      ],
+      "timing": {
+        "dense_oracle_batch_median_ms": 1.0547704878263175,
+        "dense_oracle_batch_samples_ms": [
+          0.9974580025300384,
+          1.1120829731225967
+        ],
+        "direct_batch_median_ms": 779.6094795048703,
+        "direct_batch_samples_ms": [
+          779.9850000301376,
+          779.2339589796029
+        ],
+        "fit_excluded_from_direct_timing": true,
+        "torch_threads": 1
+      },
+      "training": {
+        "batch_size": 8192,
+        "final_sample_loss": 0.0005527912289835513,
+        "fit_ms": 16586.15120803006,
+        "fit_source_is_immutable_weights": true,
+        "steps": 2500
+      },
+      "variant": {
+        "group_latent": 16,
+        "hidden": 128,
+        "latent": 32,
+        "name": "coord_latent32_h128",
+        "steps": 2500
+      }
+    }
+  ],
+  "schema": "hawking.future.kimi_learned_coordinate_generator_fanout.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_learned_coordinate_generator_fanout.py",
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "source_model": "KIMI_BASE",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "HELDOUT_LEARNED_GENERATOR_FANOUT_COMPLETE",
+  "tensor_family": "up_proj.weight",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+  ]
+}

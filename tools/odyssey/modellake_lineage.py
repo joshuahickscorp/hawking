@@ -23,10 +23,17 @@ specimens/.
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import stat
 import subprocess
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Sequence
+
+try:
+    from tools.odyssey.specimen_open import read_header
+except ImportError:  # pragma: no cover - direct script compatibility.
+    from specimen_open import read_header  # type: ignore
 
 # Named real specimen: watch-manifest in git AND sealed body on the live lake.
 CANONICAL_SPECIMEN = "Qwen--Qwen3-0.6B@c1899de289a0"
@@ -78,6 +85,15 @@ DIVERSITY_ROLES = (
 
 EVIDENCE_TIER = "STATIC"
 HEADER_CAP = 32 * 1024 * 1024
+SELECTED_TENSOR_HEADERS_SCHEMA = "hawking.gravity.selected_tensor_headers.v1"
+# Target-only passport evidence must stay materially smaller than a generic
+# 131-shard census.  A wider header survey needs an explicit owner and receipt,
+# not a larger caller-supplied name list.
+SELECTED_TENSOR_HEADER_MAX_NAMES = 16
+SELECTED_TENSOR_HEADER_MAX_SHARDS = 8
+SELECTED_TENSOR_HEADER_MAX_BYTES = 512 * 1024
+INDEX_BOUND_SELECTED_HEADERS = "INDEX_BOUND_SELECTED_SAFETENSORS_HEADERS_ONLY"
+SINGLE_SHARD_SELECTED_HEADERS = "SINGLE_SHARD_SELECTED_SAFETENSORS_HEADERS_ONLY"
 
 # Execution-class SIZE tiering. Distinct axis from STORAGE_ROLES above:
 # that is *where* a specimen sits (SSD vs HDD); this is *how big* it is on
@@ -234,6 +250,382 @@ def tensor_names_from_specimen(root: Path) -> list[str]:
     return tensor_names_from_safetensors(shards[0])
 
 
+def _canonical_json_sha256(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
+
+
+def _regular_child(root: Path, path: Path, label: str) -> Path:
+    """Resolve one non-symlink regular metadata file under ``root``.
+
+    The ordinary ModelLake index remains intentionally permissive and cheap.
+    This stricter helper is only for a shape-sensitive passport witness, where
+    an index-directed shard path must not escape a sealed specimen tree.
+    """
+    try:
+        root_resolved = root.resolve(strict=True)
+        status = path.lstat()
+        resolved = path.resolve(strict=True)
+    except OSError as exc:
+        raise LineageError(f"cannot resolve {label}: {exc}") from exc
+    if stat.S_ISLNK(status.st_mode) or not stat.S_ISREG(status.st_mode):
+        raise LineageError(f"{label} must be a non-symlink regular file")
+    try:
+        resolved.relative_to(root_resolved)
+    except ValueError as exc:
+        raise LineageError(f"{label} escapes its specimen root") from exc
+    return resolved
+
+
+def _safe_specimen_root(root: str | Path) -> tuple[Path, Path]:
+    candidate = Path(root)
+    try:
+        status = candidate.lstat()
+        resolved = candidate.resolve(strict=True)
+    except OSError as exc:
+        raise LineageError(f"cannot resolve specimen root: {exc}") from exc
+    if stat.S_ISLNK(status.st_mode) or not stat.S_ISDIR(status.st_mode):
+        raise LineageError("specimen root must be a non-symlink directory")
+    return candidate, resolved
+
+
+def _safe_json_object(path: Path, *, root: Path, label: str) -> tuple[dict[str, Any], str]:
+    resolved = _regular_child(root, path, label)
+    try:
+        raw = resolved.read_bytes()
+        document = json.loads(raw)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise LineageError(f"cannot parse {label}: {exc}") from exc
+    if not isinstance(document, dict):
+        raise LineageError(f"{label} must be a JSON object")
+    return document, hashlib.sha256(raw).hexdigest()
+
+
+def _validated_tensor_descriptor(
+    descriptor: Any,
+    *,
+    name: str,
+    file_bytes: int,
+    header_bytes: int,
+) -> dict[str, Any]:
+    if not isinstance(descriptor, dict):
+        raise LineageError(f"selected tensor {name!r} has no header descriptor")
+    dtype = descriptor.get("dtype")
+    shape = descriptor.get("shape")
+    offsets = descriptor.get("data_offsets")
+    if not isinstance(dtype, str) or not dtype:
+        raise LineageError(f"selected tensor {name!r} has no dtype")
+    if (
+        not isinstance(shape, list)
+        or any(isinstance(dimension, bool) or not isinstance(dimension, int) or dimension < 0 for dimension in shape)
+    ):
+        raise LineageError(f"selected tensor {name!r} has an invalid shape")
+    if (
+        not isinstance(offsets, list)
+        or len(offsets) != 2
+        or any(isinstance(offset, bool) or not isinstance(offset, int) or offset < 0 for offset in offsets)
+        or offsets[0] > offsets[1]
+        or header_bytes + offsets[1] > file_bytes
+    ):
+        raise LineageError(f"selected tensor {name!r} has invalid data offsets")
+    return {
+        "dtype": dtype,
+        "shape": list(shape),
+        "data_offsets": [int(offsets[0]), int(offsets[1])],
+    }
+
+
+def _is_sha256_digest(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def validate_selected_tensor_header_witness(
+    tensor_headers: Any,
+    *,
+    allowed_tensor_names: Iterable[str] | None = None,
+) -> dict[str, Any]:
+    """Validate Hawking's bounded selected-header witness contract.
+
+    ``selected_tensor_headers_from_specimen`` is the only source reader for
+    this schema. This validator is reusable by the trait projection and
+    passport selector so an in-memory or receipt-carried witness cannot weaken
+    the producer's size, identity, or descriptor bindings. It validates
+    evidence structure, not a mutable source tree; source opening remains
+    scoped to the trusted immutable ModelLake root.
+    """
+    expected_top_level = {
+        "schema",
+        "index_name",
+        "index_sha256",
+        "headers",
+        "header_bytes_read",
+        "tensor_payload_bytes_read",
+        "loaded_weights",
+        "source_classification",
+    }
+    if not isinstance(tensor_headers, dict) or set(tensor_headers) != expected_top_level:
+        raise LineageError("selected tensor headers have an unsupported schema")
+    if tensor_headers["schema"] != SELECTED_TENSOR_HEADERS_SCHEMA:
+        raise LineageError("selected tensor headers have an unsupported schema version")
+
+    index_name = tensor_headers["index_name"]
+    index_sha256 = tensor_headers["index_sha256"]
+    if (index_name is None) != (index_sha256 is None):
+        raise LineageError("selected tensor headers must bind both index name and hash, or neither")
+    if index_name is None:
+        expected_classification = SINGLE_SHARD_SELECTED_HEADERS
+    else:
+        if index_name != "model.safetensors.index.json" or not _is_sha256_digest(index_sha256):
+            raise LineageError("selected tensor headers have an invalid index identity")
+        expected_classification = INDEX_BOUND_SELECTED_HEADERS
+    if tensor_headers["source_classification"] != expected_classification:
+        raise LineageError("selected tensor headers have an unsupported source classification")
+
+    header_bytes_read = tensor_headers["header_bytes_read"]
+    if (
+        isinstance(header_bytes_read, bool)
+        or not isinstance(header_bytes_read, int)
+        or not 0 < header_bytes_read <= SELECTED_TENSOR_HEADER_MAX_BYTES
+    ):
+        raise LineageError("selected tensor headers have invalid bounded header accounting")
+    payload_bytes_read = tensor_headers["tensor_payload_bytes_read"]
+    if (
+        isinstance(payload_bytes_read, bool)
+        or not isinstance(payload_bytes_read, int)
+        or payload_bytes_read != 0
+        or tensor_headers["loaded_weights"] is not False
+    ):
+        raise LineageError("selected tensor headers must remain payload-free")
+
+    headers = tensor_headers["headers"]
+    if (
+        not isinstance(headers, list)
+        or not headers
+        or len(headers) > SELECTED_TENSOR_HEADER_MAX_NAMES
+    ):
+        raise LineageError("selected tensor headers exceed the bounded descriptor contract")
+    permitted_names = set(allowed_tensor_names) if allowed_tensor_names is not None else None
+    expected_fields = {
+        "name",
+        "shard",
+        "dtype",
+        "shape",
+        "data_offsets",
+        "header_descriptor_sha256",
+    }
+    seen_names: set[str] = set()
+    seen_shards: set[str] = set()
+    previous_name: str | None = None
+    for position, descriptor in enumerate(headers):
+        label = f"selected tensor headers[{position}]"
+        if not isinstance(descriptor, dict) or set(descriptor) != expected_fields:
+            raise LineageError(f"{label} has an unsupported schema")
+        name = descriptor["name"]
+        shard = descriptor["shard"]
+        dtype = descriptor["dtype"]
+        shape = descriptor["shape"]
+        offsets = descriptor["data_offsets"]
+        descriptor_hash = descriptor["header_descriptor_sha256"]
+        if (
+            not isinstance(name, str)
+            or not name
+            or name in seen_names
+            or (permitted_names is not None and name not in permitted_names)
+        ):
+            raise LineageError(f"{label} has an invalid selected tensor name")
+        if previous_name is not None and name <= previous_name:
+            raise LineageError("selected tensor headers must be sorted by tensor name")
+        previous_name = name
+        seen_names.add(name)
+        shard_path = Path(shard) if isinstance(shard, str) else Path()
+        if (
+            not isinstance(shard, str)
+            or not shard
+            or shard_path.is_absolute()
+            or len(shard_path.parts) != 1
+            or shard_path.name != shard
+            or shard_path.suffix != ".safetensors"
+        ):
+            raise LineageError(f"{label} has an invalid shard name")
+        seen_shards.add(shard)
+        if not isinstance(dtype, str) or not dtype:
+            raise LineageError(f"{label} has an invalid dtype")
+        if (
+            not isinstance(shape, list)
+            or any(
+                isinstance(dimension, bool)
+                or not isinstance(dimension, int)
+                or dimension < 0
+                for dimension in shape
+            )
+        ):
+            raise LineageError(f"{label} has an invalid shape")
+        if (
+            not isinstance(offsets, list)
+            or len(offsets) != 2
+            or any(
+                isinstance(offset, bool) or not isinstance(offset, int) or offset < 0
+                for offset in offsets
+            )
+            or offsets[0] > offsets[1]
+        ):
+            raise LineageError(f"{label} has invalid data offsets")
+        if not _is_sha256_digest(descriptor_hash):
+            raise LineageError(f"{label} has an invalid header descriptor hash")
+        exact_descriptor = {
+            "name": name,
+            "shard": shard,
+            "dtype": dtype,
+            "shape": shape,
+            "data_offsets": offsets,
+        }
+        if descriptor_hash != _canonical_json_sha256(exact_descriptor):
+            raise LineageError(f"{label} header descriptor hash does not bind its descriptor")
+    if len(seen_shards) > SELECTED_TENSOR_HEADER_MAX_SHARDS:
+        raise LineageError("selected tensor headers exceed the bounded shard contract")
+    return json.loads(json.dumps(tensor_headers, sort_keys=True))
+
+
+def selected_tensor_headers_from_specimen(
+    root: str | Path,
+    exact_names: Sequence[str],
+) -> dict[str, Any]:
+    """Return a tiny, index-bound, header-only witness for named tensors.
+
+    This deliberately does *not* become part of ``scan_specimen`` or the
+    generic ModelLake record.  A shape-sensitive passport asks for exactly the
+    tensors it needs; the helper opens only their indexed shard headers through
+    the hard-capped ``specimen_open.read_header`` primitive and reports zero
+    tensor payload bytes. It assumes a trusted, immutable ModelLake root; it
+    is not a hostile-tree source-admission API.
+    """
+    requested = list(exact_names)
+    if (
+        not requested
+        or any(not isinstance(name, str) or not name for name in requested)
+        or len(set(requested)) != len(requested)
+    ):
+        raise LineageError("selected tensor names must be unique non-empty strings")
+    if len(requested) > SELECTED_TENSOR_HEADER_MAX_NAMES:
+        raise LineageError(
+            f"selected tensor capture exceeds the {SELECTED_TENSOR_HEADER_MAX_NAMES}-name cap"
+        )
+    root_path, _root_resolved = _safe_specimen_root(root)
+    index_path = root_path / "model.safetensors.index.json"
+    index_name: str | None = None
+    index_sha256: str | None = None
+    shard_for_name: dict[str, str] = {}
+    if index_path.exists() or index_path.is_symlink():
+        index, index_sha256 = _safe_json_object(
+            index_path, root=root_path, label="model.safetensors.index.json"
+        )
+        weight_map = index.get("weight_map")
+        if not isinstance(weight_map, dict):
+            raise LineageError("safetensors index has no weight_map object")
+        missing = [name for name in requested if not isinstance(weight_map.get(name), str)]
+        if missing:
+            raise LineageError(f"safetensors index does not bind selected tensors: {missing[:3]}")
+        for name in requested:
+            shard_name = str(weight_map[name])
+            shard_path = Path(shard_name)
+            if (
+                shard_path.is_absolute()
+                or len(shard_path.parts) != 1
+                or shard_path.name != shard_name
+                or shard_path.suffix != ".safetensors"
+            ):
+                raise LineageError(f"index supplies an unsafe shard name for {name!r}")
+            shard_for_name[name] = shard_name
+        index_name = index_path.name
+    else:
+        single = root_path / "model.safetensors"
+        _regular_child(root_path, single, "single safetensors shard")
+        shard_for_name = {name: single.name for name in requested}
+
+    grouped: dict[str, list[str]] = {}
+    for name, shard_name in shard_for_name.items():
+        grouped.setdefault(shard_name, []).append(name)
+    if len(grouped) > SELECTED_TENSOR_HEADER_MAX_SHARDS:
+        raise LineageError(
+            f"selected tensor capture exceeds the {SELECTED_TENSOR_HEADER_MAX_SHARDS}-shard cap"
+        )
+    selected: list[dict[str, Any]] = []
+    header_bytes_read = 0
+    for shard_name in sorted(grouped):
+        shard = root_path / shard_name
+        _regular_child(root_path, shard, f"selected shard {shard_name!r}")
+        remaining_header_bytes = SELECTED_TENSOR_HEADER_MAX_BYTES - header_bytes_read
+        if remaining_header_bytes <= 8:
+            raise LineageError(
+                f"selected tensor capture exceeds the {SELECTED_TENSOR_HEADER_MAX_BYTES}-byte header cap"
+            )
+        try:
+            view = read_header(
+                shard,
+                use_cache=False,
+                # ``read_header`` caps JSON bytes while its accounting also
+                # includes the eight-byte safetensors prefix. Reserve that
+                # prefix from the remaining aggregate source-read budget.
+                header_cap=remaining_header_bytes - 8,
+            )
+        except Exception as exc:  # The canonical reader carries the detailed refusal.
+            raise LineageError(f"cannot read selected shard header {shard_name!r}: {exc}") from exc
+        if (
+            view.get("touched_weight_bytes") is not False
+            or view.get("bytes_read") != view.get("header_bytes")
+            or not isinstance(view.get("tensors"), dict)
+        ):
+            raise LineageError(f"selected shard {shard_name!r} did not remain header-only")
+        header_bytes = view.get("header_bytes")
+        file_bytes = view.get("file_bytes")
+        if (
+            isinstance(header_bytes, bool)
+            or not isinstance(header_bytes, int)
+            or isinstance(file_bytes, bool)
+            or not isinstance(file_bytes, int)
+        ):
+            raise LineageError(f"selected shard {shard_name!r} returned invalid header accounting")
+        if header_bytes_read + header_bytes > SELECTED_TENSOR_HEADER_MAX_BYTES:
+            raise LineageError(
+                f"selected tensor capture exceeds the {SELECTED_TENSOR_HEADER_MAX_BYTES}-byte header cap"
+            )
+        header_bytes_read += header_bytes
+        for name in sorted(grouped[shard_name]):
+            descriptor = _validated_tensor_descriptor(
+                view["tensors"].get(name),
+                name=name,
+                file_bytes=file_bytes,
+                header_bytes=header_bytes,
+            )
+            selected_descriptor = {"name": name, "shard": shard_name, **descriptor}
+            selected.append(
+                {
+                    **selected_descriptor,
+                    "header_descriptor_sha256": _canonical_json_sha256(selected_descriptor),
+                }
+            )
+    witness = {
+        "schema": SELECTED_TENSOR_HEADERS_SCHEMA,
+        "index_name": index_name,
+        "index_sha256": index_sha256,
+        "headers": sorted(selected, key=lambda descriptor: descriptor["name"]),
+        "header_bytes_read": header_bytes_read,
+        "tensor_payload_bytes_read": 0,
+        "loaded_weights": False,
+        "source_classification": (
+            INDEX_BOUND_SELECTED_HEADERS if index_name is not None else SINGLE_SHARD_SELECTED_HEADERS
+        ),
+    }
+    return validate_selected_tensor_header_witness(
+        witness, allowed_tensor_names=requested
+    )
+
+
 def role_metadata(
     cfg: Optional[Mapping[str, Any]],
     files: Sequence[str] | None,
@@ -294,8 +686,14 @@ def architecture_fingerprint(
     *,
     repo: str,
     rev: str,
+    tensor_headers: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """CALL arch_recognizer.recognize when tensor names exist. Never loads weights."""
+    """CALL arch_recognizer.recognize when tensor names exist. Never loads weights.
+
+    ``tensor_headers`` is an explicit selected-header witness for a
+    shape-sensitive passport.  It is deliberately absent from ordinary
+    ModelLake indexing, which remains a names/config-only census.
+    """
     cfg = dict(cfg or {})
     text = cfg.get("text_config") or {}
 
@@ -316,23 +714,88 @@ def architecture_fingerprint(
         "loaded_weights": False,
     }
     if names:
-        rec = _recognize(repo, rev, cfg, list(names))
+        rec = _recognize(repo, rev, cfg, list(names), tensor_headers=tensor_headers)
         fp["organs"] = rec.get("organs") or []
         fp["unrecognized"] = rec.get("unrecognized") or []
         fp["novelty"] = rec.get("novelty")
         fp["n_tensors"] = rec.get("n_tensors")
+        # Static ownership bridge only: the Foundry passport selector consumes
+        # this source-bound config/header projection, while ModelLake retains no
+        # method, Law, Scar, execution, or scientific conclusion authority.
+        fp["static_traits"] = rec.get("static_traits")
         fp["strength"] = "ORGAN_FINGERPRINT"
         fp["recognizer_loaded_weights"] = rec.get("loaded_weights")
     return fp
 
 
-def _recognize(repo: str, rev: str, cfg: dict[str, Any], names: list[str]) -> dict[str, Any]:
+def _recognize(
+    repo: str,
+    rev: str,
+    cfg: dict[str, Any],
+    names: list[str],
+    *,
+    tensor_headers: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """Import-and-call site for arch_recognizer.recognize."""
     try:
         from tools.odyssey import arch_recognizer as ar
     except ImportError:
         import arch_recognizer as ar  # type: ignore
-    return ar.recognize(repo, rev, cfg, names)
+    return ar.recognize(repo, rev, cfg, names, tensor_headers=tensor_headers)
+
+
+def passport_static_traits_from_specimen(
+    root: str | Path,
+    *,
+    repo: str,
+    rev: str,
+    exact_tensor_names: Sequence[str],
+) -> dict[str, Any]:
+    """Build an opt-in, shape-witnessed static trait projection for one body.
+
+    This is the narrow source -> trait input for a passport that needs an
+    exact tensor ABI. It leaves ``modellake_index.scan_specimen`` untouched,
+    reads only config/index/selected shard headers, and never opens a tensor
+    payload or turns source metadata into a runtime claim. For a no-index
+    single-shard body it makes one additional equally capped header pass to
+    enumerate names; it never widens to a default-header or payload read.
+    """
+    root_path, _root_resolved = _safe_specimen_root(root)
+    config, _config_sha256 = _safe_json_object(
+        root_path / "config.json", root=root_path, label="config.json"
+    )
+    headers = selected_tensor_headers_from_specimen(root_path, exact_tensor_names)
+    if headers["index_name"] is not None:
+        index, current_index_sha256 = _safe_json_object(
+            root_path / str(headers["index_name"]), root=root_path, label="model.safetensors.index.json"
+        )
+        if current_index_sha256 != headers["index_sha256"]:
+            raise LineageError("safetensors index changed during selected-header capture")
+        weight_map = index.get("weight_map")
+        if not isinstance(weight_map, dict) or not all(isinstance(name, str) for name in weight_map):
+            raise LineageError("safetensors index has an invalid tensor-name map")
+        names = sorted(weight_map)
+    else:
+        single = root_path / "model.safetensors"
+        _regular_child(root_path, single, "single safetensors shard")
+        try:
+            view = read_header(
+                single,
+                use_cache=False,
+                header_cap=SELECTED_TENSOR_HEADER_MAX_BYTES - 8,
+            )
+        except Exception as exc:
+            raise LineageError(f"cannot read single-shard header: {exc}") from exc
+        if view.get("touched_weight_bytes") is not False or not isinstance(view.get("tensors"), dict):
+            raise LineageError("single-shard trait capture did not remain header-only")
+        names = sorted(view["tensors"])
+    fingerprint = architecture_fingerprint(
+        config, names, repo=repo, rev=rev, tensor_headers=headers
+    )
+    traits = fingerprint.get("static_traits")
+    if not isinstance(traits, dict):
+        raise LineageError("passport trait projection did not produce static traits")
+    return traits
 
 
 def artifact_lineage(

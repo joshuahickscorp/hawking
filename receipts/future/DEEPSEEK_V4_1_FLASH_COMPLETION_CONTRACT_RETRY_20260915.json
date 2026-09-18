@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.deepseek.final_qualification.retry_receipt.v1",
+  "recorded_at": "2026-09-15",
+  "provider": "openrouter",
+  "model_id": "deepseek/deepseek-v4.1-flash",
+  "catalog_count_observed": 445,
+  "canonical_slug": "deepseek/deepseek-v4.1-flash-20260910",
+  "budget": {
+    "hard_max_usd": 0.5,
+    "observed_cost_usd": 0.05238638,
+    "within_hard_max": true,
+    "provider_retries": 0
+  },
+  "completion_contract": {
+    "required_successful_tools": [
+      "filesystem.write",
+      "tests.run",
+      "git.status",
+      "git.diff"
+    ],
+    "max_tool_calls": 32,
+    "read_only_tool_call_limit": 10,
+    "max_continuation_turns": 8,
+    "phase_nudges": 1,
+    "continuation_turns": 8,
+    "calls_used": 14,
+    "complete": false,
+    "unmet": [
+      "filesystem.write",
+      "git.diff",
+      "git.status",
+      "tests.run",
+      "tests.run:verified",
+      "structured_result"
+    ]
+  },
+  "qualification": {
+    "status": "INCOMPLETE",
+    "corrected_score_out_of_100": 42.58,
+    "tool_trace_entries": 20,
+    "search_calls": 5,
+    "targeted_current_source_reads": 4,
+    "write_calls": 0,
+    "test_calls": 0,
+    "repair_iterations": 0,
+    "authoritative_test_verified": false,
+    "source_snapshot_changed": false,
+    "output_discarded": true
+  },
+  "live_model": {
+    "context_length": 1048576,
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"],
+    "capabilities_observed": [
+      "tools",
+      "tool_choice",
+      "structured_outputs",
+      "reasoning",
+      "reasoning_effort",
+      "max_tokens"
+    ]
+  },
+  "claim_boundary": "The completion contract prevented a prose stop and recorded bounded incompleteness, but this model instance did not reach mutation or test evidence. It is not authorized as the first autonomous Odyssey writer.",
+  "next_action": "Do not start the full Odyssey. Preserve this receipt and require a new bounded qualification or an operator-selected worker contract before spending further remote budget."
+}

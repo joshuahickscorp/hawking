@@ -19,7 +19,7 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from hcli.persist import atomic_write_json
+from hawking.persist import atomic_write_json
 from tools.accelerator.scoreboard import normalize_receipt
 
 
@@ -137,7 +137,7 @@ def build_budget(*, repo_root: str | Path | None = None) -> dict[str, Any]:
         "label": "DERIVED",
         "model": "qwen3.8-27b-sealed-3.14",
         "baseline": {
-            "profile": "hcli/hawking-native.sealed-3.14.json",
+            "profile": "hawking/hawking-native.sealed-3.14.json",
             "representation": "native-packed sealed control",
             "byte_atlas": str(BYTE_ATLAS),
             "byte_atlas_sha256": _sha256(atlas_path),

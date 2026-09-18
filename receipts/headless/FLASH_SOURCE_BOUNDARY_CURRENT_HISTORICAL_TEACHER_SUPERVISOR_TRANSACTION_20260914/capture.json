@@ -1,0 +1,466 @@
+{
+  "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+  "claim_boundary": "Admitted (owner-authorized or local-canonical) external source boundary capture only. Native counterpart and ordered comparison remain required; science_status=UNEARNED; no complete inference, EBPW, TPS, capability, deployment, promotion, or Kimi retirement.",
+  "elapsed_ns": 3099436000,
+  "finished_unix_ns": 1789417132120898000,
+  "full_body_executed": false,
+  "model_loaded": true,
+  "native_body_executed": false,
+  "parity_compared": false,
+  "preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V3_INITIAL_CACHE_SEMANTICS_20260914.json",
+    "seal_sha256": "31cf3eacbe0401f5cfd344d9d918852aa9e7a89a10461e692b484cb44e6de2da",
+    "sha256": "e9a1f393e9279653b7932725c5027127bfcf7dcc5162d1f8e3736e6158212c3b"
+  },
+  "promotion_allowed": false,
+  "provider": {
+    "boundary_worker": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py",
+      "sha256": "d96190701802fa189597829915c5004ff4a3f374a64a505552a950370b76c197"
+    },
+    "implementation": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/provider-implementation.json",
+      "sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117"
+    },
+    "reused_forward_owner": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "sha256": "2397ab0ad42345564fb0d58275f32b543964f019bb4f4f0cb9c47eb53536b19d"
+    },
+    "runtime_lock": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    }
+  },
+  "schema": "hawking.flash.source_boundary_capture.v1",
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "seal_sha256": "f651aa5161bcd565478f3b967ade4eaeda5f618485a3c1a75a879485990c8271",
+  "source_payloads": {
+    "elapsed_ns": 743205000,
+    "execution_schedule": "exact_qwen4_exp_row_addressed_ple_and_experts_with_evaluated_sublayer_boundaries",
+    "expert_source_access": {
+      "expert_gets": 50,
+      "mode": "direct_immutable_source_shard_slices",
+      "resident_source_file_descriptors": 2,
+      "source_bytes_read": 491520000,
+      "unique_source_files_opened": 10
+    },
+    "layer4_cache": {
+      "post_attention": [
+        {
+          "boundary": "post-attention",
+          "initialization": "PROVIDER_MATERIALIZED_AFTER_ATTENTION",
+          "original_dtype": "mlx.core.bfloat16",
+          "path_in_provider_cache": "provider_cache[0]",
+          "payload": {
+            "bytes": 122880,
+            "dtype": "F32_LE",
+            "elements": 30720,
+            "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/cache-layer4-post-attention-00.f32",
+            "sha256": "0f275257262d55937b13fa38644664e1482341488418b3c227b76fe2eda87f21"
+          },
+          "shape": [
+            1,
+            3,
+            10240
+          ],
+          "state_role": "conv_state"
+        },
+        {
+          "boundary": "post-attention",
+          "initialization": "PROVIDER_MATERIALIZED_AFTER_ATTENTION",
+          "original_dtype": "mlx.core.float32",
+          "path_in_provider_cache": "provider_cache[1]",
+          "payload": {
+            "bytes": 3145728,
+            "dtype": "F32_LE",
+            "elements": 786432,
+            "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/cache-layer4-post-attention-01.f32",
+            "sha256": "b5db3a6ed021727eb8c991ae73402124d840115fe85cf0de0132b7f180686224"
+          },
+          "shape": [
+            1,
+            48,
+            128,
+            128
+          ],
+          "state_role": "recurrent_state"
+        }
+      ],
+      "pre_attention": [
+        {
+          "boundary": "pre-attention",
+          "initialization": "IMPLICIT_SOURCE_ZERO_STATE_MATERIALIZED_BY_CAPTURE",
+          "original_dtype": "mlx.core.bfloat16",
+          "path_in_provider_cache": "implicit_source_cache[0]",
+          "payload": {
+            "bytes": 122880,
+            "dtype": "F32_LE",
+            "elements": 30720,
+            "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/cache-layer4-pre-attention-00.f32",
+            "sha256": "6d7bd1fa33ee71b2d2c4fc8062f6c4b09804b84449ff73a687fe7cfd568d0625"
+          },
+          "shape": [
+            1,
+            3,
+            10240
+          ],
+          "state_role": "conv_state"
+        },
+        {
+          "boundary": "pre-attention",
+          "initialization": "IMPLICIT_SOURCE_ZERO_STATE_MATERIALIZED_BY_CAPTURE",
+          "original_dtype": "mlx.core.float32",
+          "path_in_provider_cache": "implicit_source_cache[1]",
+          "payload": {
+            "bytes": 3145728,
+            "dtype": "F32_LE",
+            "elements": 786432,
+            "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/cache-layer4-pre-attention-01.f32",
+            "sha256": "bbd05cf6097ac9b1f89ea29d2542c1b7b67ee46848393895f5a9e43fa1f621e5"
+          },
+          "shape": [
+            1,
+            48,
+            128,
+            128
+          ],
+          "state_role": "recurrent_state"
+        }
+      ]
+    },
+    "manifest": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/source-boundary-manifest.json",
+      "sha256": "b7c7d5549e0314b7c4550faa7f85b0d8432d39ba69d83054494614224e2332d6"
+    },
+    "max_resident_set_size_bytes": 2661056512,
+    "ple_storage_manifest": {
+      "layout": "safetensors_ranges",
+      "patched_layer_ids": [
+        1
+      ],
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/provider-ple-range-manifest.json",
+      "row_count": 320001536,
+      "row_width": 160,
+      "schema": "hawking.flash.external_reference_bf16_ple_ranges.v1",
+      "schema_version": 1,
+      "sha256": "4c90319bd24f9bb3bfba956eafdd6a7e929af73f0f3c679fef5f3b7943d6952e",
+      "source_mutated": false,
+      "weight_payload_copied": false
+    },
+    "seams": [
+      {
+        "layer": null,
+        "ordinal": 0,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-00-embedding_hc_tiled.f32",
+          "sha256": "14dcdc5e67c713b92807bd55d86b93d21f9e64a8e67cb798f21c4e38a706a84c"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "embedding_hc_tiled"
+      },
+      {
+        "layer": 0,
+        "ordinal": 1,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-01-mlp_injection.f32",
+          "sha256": "7e8510628472e88f3afc5bae604f3eaa29b59fd53e41d37d710e3c53fd26e8d7"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 1,
+        "ordinal": 2,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-02-pre_ple.f32",
+          "sha256": "7e8510628472e88f3afc5bae604f3eaa29b59fd53e41d37d710e3c53fd26e8d7"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "pre_ple"
+      },
+      {
+        "layer": 1,
+        "ordinal": 3,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-03-ple_additive_output.f32",
+          "sha256": "c278efff956911998b1fd5941f954616be22d1356e3627f9af3efece51cb8ee6"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "ple_additive_output"
+      },
+      {
+        "layer": 1,
+        "ordinal": 4,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-04-mlp_injection.f32",
+          "sha256": "48b04e3c4680d2fb2f03187fb8a62aceaab8fa292f0e1a06015197386cc8ddfa"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 2,
+        "ordinal": 5,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-05-mlp_injection.f32",
+          "sha256": "5936797e917b9c43a94b12d5fea8ed7e86ec866bbbbf3100baf316ee182c0442"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection"
+      },
+      {
+        "layer": 3,
+        "ordinal": 6,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-06-mlp_injection_layer4_input.f32",
+          "sha256": "2e61be75f7ec02773a6e21d140af9788e891eb8b4717159e3764f7c2e4d8bfa7"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection_layer4_input"
+      },
+      {
+        "layer": 4,
+        "ordinal": 7,
+        "payload": {
+          "bytes": 10240,
+          "dtype": "F32_LE",
+          "elements": 2560,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-07-attention_hyper_connection_mixed.f32",
+          "sha256": "a86dcdd240b59fc69a819ff193215d5a411d704f984aef50897ea52ec6965235"
+        },
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_hyper_connection_mixed"
+      },
+      {
+        "layer": 4,
+        "ordinal": 8,
+        "payload": {
+          "bytes": 10240,
+          "dtype": "F32_LE",
+          "elements": 2560,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-08-attention_branch.f32",
+          "sha256": "da40b6e30645eeee0028572a70eecae2168343391febe226f82a2f2a79d041b3"
+        },
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "attention_branch"
+      },
+      {
+        "layer": 4,
+        "ordinal": 9,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-09-attention_injection.f32",
+          "sha256": "f1400f11e84d7520d4d0860e820fe9d8d92cf387d0b1b4034791a0810de06130"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "attention_injection"
+      },
+      {
+        "layer": 4,
+        "ordinal": 10,
+        "payload": {
+          "bytes": 10240,
+          "dtype": "F32_LE",
+          "elements": 2560,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-10-mlp_hyper_connection_mixed.f32",
+          "sha256": "c74571d80db7de980b6e11d12139a8afa994f86bc686dd2cd73ba51977ff5989"
+        },
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "mlp_hyper_connection_mixed"
+      },
+      {
+        "canonical_order": "descending normalized weight; stable provider-slot tie break",
+        "expert_ids": [
+          309,
+          252,
+          110,
+          290,
+          168,
+          469,
+          485,
+          453,
+          239,
+          69
+        ],
+        "ids_payload": {
+          "bytes": 40,
+          "dtype": "I32_LE",
+          "elements": 10,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-11-router-top10-ids.i32",
+          "sha256": "1632fc9d33b4b37578cb6fd42bca8368acb9ab967d2f76c30120bbffe305cde9"
+        },
+        "layer": 4,
+        "ordinal": 11,
+        "shape": [
+          10
+        ],
+        "stage": "router_top10_ids_and_weights",
+        "weights": [
+          0.248046875,
+          0.1484375,
+          0.1171875,
+          0.09521484375,
+          0.0771484375,
+          0.06787109375,
+          0.06787109375,
+          0.0634765625,
+          0.059814453125,
+          0.05810546875
+        ],
+        "weights_payload": {
+          "bytes": 40,
+          "dtype": "F32_LE",
+          "elements": 10,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-11-router-top10-weights.f32",
+          "sha256": "38d402246e7400523f9d6c5b920bc8df839da815ca78f18774ea1f02c87dcc39"
+        }
+      },
+      {
+        "layer": 4,
+        "ordinal": 12,
+        "payload": {
+          "bytes": 10240,
+          "dtype": "F32_LE",
+          "elements": 2560,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-12-mlp_route_and_experts.f32",
+          "sha256": "f6680dd625f83b720e963ac6f59b0048922d14b09617acc1d615db4fa36482bf"
+        },
+        "shape": [
+          1,
+          1,
+          2560
+        ],
+        "stage": "mlp_route_and_experts"
+      },
+      {
+        "layer": 4,
+        "ordinal": 13,
+        "payload": {
+          "bytes": 40960,
+          "dtype": "F32_LE",
+          "elements": 10240,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_TRANSACTION_20260914/seam-13-mlp_injection_layer4_output.f32",
+          "sha256": "71051ee102998ad536d93d228672513e08627122b406772a2b02b3dc7473fc42"
+        },
+        "shape": [
+          1,
+          1,
+          10240
+        ],
+        "stage": "mlp_injection_layer4_output"
+      }
+    ]
+  },
+  "source_reference": {
+    "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+    "authorization_binding_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+    "owner_authorization": {
+      "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+      "authorization_scope": "admit_external_greedy_reference_v2",
+      "claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion.",
+      "contract_status_vocabulary_note": "EXTERNAL_REFERENCE_STATUS names a sealed-complete source greedy reference; authority is admission_class, and science_status remains UNEARNED until ordered compare.",
+      "historical_git_snapshot": "a9c8b603fe2f06311324582ca722c55fd32aefb8",
+      "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+      "owner_signature_present": false,
+      "owner_signature_required": false,
+      "path": null,
+      "policy_note": "Detached machine-owner Ed25519 is not required for provenance-complete canonical local source captures. Scientific correctness remains unearned and is established only by later source/native comparison.",
+      "producer_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+      "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+      "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+      "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "schema": "hawking.flash.external_greedy_reference_local_canonical_admission.v1",
+      "science_status": "UNEARNED",
+      "science_unearned": true,
+      "sha256": null,
+      "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "sibling_capture": {
+        "hawking_packager_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+        "hawking_packager_sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6",
+        "historical_owner_authorization_required_suffix": true,
+        "historical_suffix_policy": "CAPTURED_...__OWNER_AUTHORIZATION_REQUIRED remains a sealed historical label; local-canonical admission supersedes the Ed25519 mandate without mutating capture.json.",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+        "sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+        "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED"
+      }
+    },
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f"
+  },
+  "started_unix_ns": 1789417129021463000,
+  "status": "CAPTURED_ADMITTED_SOURCE_LAYERS_0_THROUGH_4_TOKEN_0"
+}

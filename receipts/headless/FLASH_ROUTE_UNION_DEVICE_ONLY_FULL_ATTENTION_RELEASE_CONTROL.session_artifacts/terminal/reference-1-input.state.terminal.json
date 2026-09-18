@@ -1,0 +1,58 @@
+{
+  "claim_boundary": "A long-lived terminal executor reused one source index, readout weights, lm_head buffer, Metal context and pipeline cache for this state. This is a terminal boundary measurement, not a complete-model TPS, EBPW, capability or residency qualification.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "FIRST_COMPLETE_TOKEN_TERMINAL_PROBE",
+  "execution": {
+    "command_buffers": 1,
+    "device": "Apple M3 Ultra",
+    "dispatches": 7,
+    "fallback_count": 0,
+    "gpu_ns": 4093708,
+    "lm_head_reused": true,
+    "native_source_bf16": true,
+    "provider": "apple_metal",
+    "readout_weights_reused": true,
+    "source_index_reused": true,
+    "source_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "timing": {
+      "command_submit_ns": 5292,
+      "command_wait_ns": 4383167,
+      "cpu_readout_ns": 4038666,
+      "device_upload_ns": 1916,
+      "encode_wall_ns": 28375,
+      "gpu_execution_ns": 4093708,
+      "parity_ns": 16208,
+      "state_read_ns": 38084,
+      "wall_ns": 8517834
+    },
+    "wall_ns": 8517834
+  },
+  "flash_tps": null,
+  "input": {
+    "elements": 10240,
+    "state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTE_UNION_DEVICE_ONLY_FULL_ATTENTION_RELEASE_CONTROL.session_artifacts/terminal/reference-1-input.state.f32",
+    "state_sha256": "a27ccdeeec611b91e269c1b2ae289e443ecf26b6805b22f5a486b30bc71b4066"
+  },
+  "parity": {
+    "hyperconnection_readout": {
+      "cosine": 0.9999999999999376,
+      "finite": true,
+      "length_match": true,
+      "max_abs_error": 0.000015735626220703125,
+      "rmse": 1.004913545482335e-6,
+      "within_tolerance": true
+    }
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation": "source_bf16_exact",
+  "schema": "hawking.flash_source_bf16_terminal.v1",
+  "status": "PASSED",
+  "terminal": {
+    "hyperconnection_readout": "cached native Metal source-BF16 graph with CPU oracle",
+    "lm_head": "cached native_bf16_gemv_seq",
+    "sampling": "sample_argmax_f32",
+    "token_id": 96125
+  }
+}

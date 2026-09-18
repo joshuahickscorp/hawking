@@ -1,4 +1,4 @@
-//! HCLI Agent OS — Agent Scheduler scaffold (Ascension Bible §12–§13).
+//! HAWKING Agent OS — Agent Scheduler scaffold (Ascension Bible §12–§13).
 //!
 //! **What this is:** pure data model + state machine for *many logical agents
 //! sharing one loaded model weight copy*. No inference, no weight load, no
@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};
 
 /// Schema id for durable scheduler receipts / projections.
-pub const AGENT_SCHEDULER_SCHEMA: &str = "hcli.agent_scheduler.v1";
+pub const AGENT_SCHEDULER_SCHEMA: &str = "hawking.agent_scheduler.v1";
 
 // ---------------------------------------------------------------------------
 // Identity
@@ -1219,6 +1219,6 @@ mod tests {
 
     #[test]
     fn schema_constant_stable() {
-        assert_eq!(AGENT_SCHEDULER_SCHEMA, "hcli.agent_scheduler.v1");
+        assert_eq!(AGENT_SCHEDULER_SCHEMA, "hawking.agent_scheduler.v1");
     }
 }

@@ -172,6 +172,7 @@ impl HawkingHttpClient {
         let mut stats = GenerationStats {
             input_tokens: 0,
             output_tokens: 0,
+            decode_ns: None,
             decode_ms: None,
             completed_decode_forwards: None,
             decode_tokens_per_second: None,
@@ -282,7 +283,11 @@ fn parse_native_sse_event(data: &str, stats: &mut GenerationStats) -> SseStep {
         if let Some(tps) = raw_stats.get("dec_tps").and_then(|v| v.as_f64()) {
             stats.decode_tokens_per_second = Some(tps as f32);
         }
-        stats.decode_ms = raw_stats.get("decode_ms").and_then(|v| v.as_f64());
+        stats.decode_ns = raw_stats.get("decode_ns").and_then(Value::as_u64);
+        stats.decode_ms = raw_stats
+            .get("decode_ms")
+            .and_then(Value::as_f64)
+            .or_else(|| stats.decode_ns.map(|value| value as f64 / 1_000_000.0));
         stats.completed_decode_forwards = raw_stats
             .get("completed_decode_forwards")
             .and_then(|v| v.as_u64())
@@ -381,6 +386,7 @@ mod tests {
         GenerationStats {
             input_tokens: 0,
             output_tokens: 0,
+            decode_ns: None,
             decode_ms: None,
             completed_decode_forwards: None,
             decode_tokens_per_second: None,

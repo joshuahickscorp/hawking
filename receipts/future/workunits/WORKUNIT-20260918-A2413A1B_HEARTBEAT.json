@@ -1,0 +1,62 @@
+{
+  "active_job": "job-3238abea-24fb-41d1-8db9-7b9481ef99f5",
+  "blocker": {
+    "pid": 59515,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0077524000000000004,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260918-A2413A1B",
+    "tool_less_continue_streak": 2
+  },
+  "context_packet_digest": "af2c7a6f03b1cc6e29e9bc06f64e21008e748557a5a7ff5daf2325de31f3a8bd",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 59515,
+  "exact_next_action": "bounded provider format recovery: preserve findings and return only HAWKING_PATCH_V1 or HAWKING_EDIT_V1; no repository archaeology",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 2,
+  "latest_real_seal": "",
+  "objective": "Advance P8_NOVA_HELDOUT_GATE_DISCOVERY beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay t",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-d4d04f27e20f47c39fee1590:tool-2",
+    "gen-1789755114-pAhj78VwYk02OYq2lQ8S",
+    "gateway-80f1820bca854633aba7b449:tool-2",
+    "gen-1789755119-bkvyQ9woEKRAiRyfEVyO"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "z-ai/glm-5.3"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T18:12:05.488037+00:00",
+  "worker_attempt_id": "hawking-attempt-3a9b2367d9954157",
+  "worker_cost_usd": 0.0077524000000000004,
+  "worker_id": "hawking-worker-d624b970736547e2",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789755116.4691598,
+  "worker_spawned_at": 1789755093.726517,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260918-A2413A1B"
+}

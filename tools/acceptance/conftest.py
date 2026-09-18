@@ -1,4 +1,4 @@
-"""Put the primary checkout on sys.path so sparse worktrees can import hcli."""
+"""Put the primary checkout on sys.path so sparse worktrees can import hawking."""
 from __future__ import annotations
 
 from tools.acceptance.lake.common import ensure_hcli_path, ensure_tools_path

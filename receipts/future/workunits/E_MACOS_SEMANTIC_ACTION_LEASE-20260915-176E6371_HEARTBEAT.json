@@ -1,0 +1,71 @@
+{
+  "active_job": "job-7e263a49-00d2-47bf-a72b-2131c55ed2ae",
+  "blocker": {
+    "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+    "last_failure": null,
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0312771612,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-176E6371",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "8bf45816c60d31d2eed56dece36a9eb4497c952b5685614eb9848d71b0b8af80",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 37538,
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Complete the next production slice for the existing Hawking macOS foundation. Use the real Hawking tool registry and the current source owners; do not use HCLI, HIDE, Grok, Flash, Pulsar, or ModelLake. The accepted parent phase is E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED. Implement and verify one scoped semantic desktop action lease: resolve exactly one AX target in the disposable AppKit fixture hawking-macos-fixture-20260915, explicitly acquire the Hawking lease, perform one AXPress, observe befor",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-4c40523404884e33852bb74a:tool-10",
+    "gen-1789524332-CqupN17sUYBZ4INdlSDf",
+    "gateway-08678ce5818840a79ae97014:tool-10",
+    "gen-1789524386-KqWunkZpO0fia18Gba6b",
+    "gateway-ca8cdfc3c293443bb22d64d6:tool-9",
+    "gen-1789524431-fNVnmD0tQlrqDGvcPePz",
+    "gateway-6f7540bcf75b43e99d7141b5:tool-8",
+    "gen-1789524480-3ebpRjC3Ag5iw84sKVRx",
+    "gateway-babd6a50d5f547b2ac4fb13f:tool-8",
+    "gen-1789524527-9RO6JLusuSxldXkWOgoL",
+    "gateway-c5c6bab761b0442d92807a20:tool-8",
+    "gen-1789524576-3E0fC58oHoXJc3yUqo36"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T02:09:48.010083+00:00",
+  "worker_attempt_id": "hawking-attempt-1362325103d24eaf",
+  "worker_cost_usd": 0.0312771612,
+  "worker_id": "hawking-worker-9626b81123ec42e6",
+  "worker_kill_reason": "child acceptance was incorrectly inheriting browser gate; retry with scoped macOS contract",
+  "worker_last_heartbeat_at": 1789524539.081439,
+  "worker_spawned_at": 1789524267.165903,
+  "worker_status": "KILLED",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-176E6371"
+}

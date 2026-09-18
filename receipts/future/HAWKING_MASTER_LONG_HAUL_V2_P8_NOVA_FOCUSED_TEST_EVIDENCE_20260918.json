@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T08:18:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P8_NOVA_FOCUSED_TEST_EVIDENCE",
+  "workunit_id": "WORKUNIT-20260918-F859C3B2",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-F859C3B2_RESULT_PACKET.json",
+  "source": {
+    "path": "tools/future/test_gravity_nova_lineage.py",
+    "lines": "1-85",
+    "sha256": "4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537",
+    "bytes": 3614
+  },
+  "accepted_observations": [
+    "Incomplete obligations refuse missing objective and parent artifact hash.",
+    "A complete lineage accepts only with a matching descendant hash and refuses a mutated hash.",
+    "Train/freeze overlap is explicitly refused.",
+    "The policy adapter remains PREREGISTERED_NOT_RUN, source immutable, descendant absent, learned-weight evidence false, and promotion withheld.",
+    "Held-out falsifiers are maximum effective dead-end refusals 2 and maximum unsafe-demo indicators 0, with authority-stratified target shuffle as the matched-null control.",
+    "No test loads weights, accesses hardware, runs training, or proves promotion."
+  ],
+  "follow_on_contract": "Locate the canonical held-out policy-adapter evaluator and define the smallest source/test gate that can execute or explicitly refuse that evaluation while preserving the preregistered null, falsifiers, immutable parent, and promotion-withheld boundary.",
+  "falsifier": "A current source/test observation showing the focused suite accepts an incomplete or hash-mismatched lineage, permits train/freeze overlap, or allows unconditional answer-rate optimization invalidates this evidence.",
+  "claim_boundary": "Accepted as bounded focused-test evidence only; no candidate training, learned descendant, full-model capability, hardware qualification, or promotion is established."
+}

@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 5,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "6fa3cfbd758f8f6f2d8583fc0eb8d9a8109d3e4350b89ccdf6a11598b6cbe5c6",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:05:24.968789+00:00",
+      "calls_used": 5,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:05:24.968802+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:05:24.973330+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Odyssey control plane runs under tools/odyssey_ctl.py (~8k lines: queue and acquisition); hawking/odyssey.py is a read-only subprocess/text-parsing wrapper over it, with ODYSSEY_DIR = workspace/campaign/odyssey and patient",
+      "outcome": "CONTINUE",
+      "reply_chars": 5737,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Odyssey control plane runs under tools/odyssey_ctl.py (~8k lines: queue and acquisition); hawking/odyssey.py is a read-only subprocess/text-parsing wrapper over it, with ODYSSEY_DIR = workspace/campaign/odyssey and patient records addressed as oxx files (schema hawking.odyssey.patient.v1).\",\"The Odyssey queue is disk-backed at workspace/campaign/odyssey/patients/; hawking/frontier_scheduler.py probes queue depth there (probe_odyssey, ODYSSEY_PATIENTS) with wake_condition 'a new candidate admitted to the odyssey patient queue', so the scheduler is already event-oriented rather than purely timer-driven.\",\"ModelLake is a separate watcher pipeline under tools/odyssey/ (modellake_watch.py, modellake_promote.py, modellake.py); hawking/acquisition.py imports process_rows/slug from modellake_watch and ranks eligible candidates by odyssey_value computed from tools.odyssey_ctl.value().\",\"ModelLake scheduling authority is a disk artifact at workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json (referenced in hawking/canonical_runtime.py); the watcher holds a literal lock at workspace/campaign/odyssey/.modellake-watch.lock (MODELLAKE_LOCK_REL in hawking/commands.py).\",\"The model/artifact registry is workspace/campaign/odyssey/gravity-artifacts.json, consumed by hawking/catalog.py and exported via HAWKING_GRAVITY_REGISTRY in hawking/cli.py; hawking/connectivity.py marks the connectivity surface managed_by 'tools/odyssey/modellake.py'.\",\"Sealed-receipt ownership is centralized in hawking/receipts.py with evidence landing under receipts/future/ (e.g., MODELLAKE_EVENTS.json, G034_ODYSSEY_LEDGER.json, KIMI_P0_BLIND_WRITE_SCAR_20260911.json); hawking/hawking-native.sealed-3.14.json is a sealed native artifact in-repo.\",\"Protected boundaries are explicit in civilization/sovereign-goal.txt: KIMI_P0_OPERATIONAL is frozen; autonomous repository writing, self-certifying development, unsupervised mutation authority, autonomous Odyssey writing, and autonomous self-improvement promotion are WITHHELD; protected verifier gates are red by construction and may not be edited to pass.\",\"Gate ownership is modular: hawking/modellake_gate.py, autonomy_gate.py, research_gate.py, recovery_gate.py, resident_gate.py, native_gate.py, perception_gate.py, and qwen38_protected_run_verifier.py each isolate a protected verification surface.\",\"Campaign state reports the current bottleneck as depth axis nx_disposition with ZERO measurements (30 REFUSED, 26 OWED), and 31 priors exist that must be read via odyssey.read op=priors before proposing experiments.\",\"An active sibling WorkUnit (GOAL-F4F72EFC0A/t14) is hardening WorkUnit completion contracts in hawking/remote_cognition.py; an open job requires owner spending authority for live OpenRouter credential comparison.\",\"No model download, experiment launch, file mutation, or runtime qualification was performed or claimed during this reconnaissance.\"],\"sources\":[\"civilization/sovereign-goal.txt\",\"hawking/odyssey.py\",\"hawking/acquisition.py\",\"hawking/frontier_scheduler.py\",\"hawking/canonical_runtime.py\",\"hawking/commands.py\",\"hawking/catalog.py\",\"hawking/cli.py\",\"hawking/connectivity.py\",\"hawking/receipts.py\",\"hawking/modellake_gate.py\",\"hawking/odyssey_census.py\",\"hawking/landing.py\",\"hawking/layout.py\",\"receipts/future/MODELLAKE_EVENTS.json\",\"receipts/future/G034_ODYSSEY_LEDGER.json\",\"receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json\",\"campaign state continuation GOAL-F4F72EFC0A/t14\"],\"recommendations\":[\"Propose a dependency-aware scheduler tranche that extends frontier_scheduler's existing probe/wake_condition model: declare per-frontier resource dependencies (Odyssey patient queue depth, ModelLake watcher lock state, gravity-artifacts.json registry mtime, sealed-receipt ledger freshness) as read-only disk probes, so scheduling decisions consume artifact reality rather than timers, without touching tools/odyssey_ctl.py internals.\",\"Add an evidence tranche: a single read-only reconciliation r",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-73fa1585d45345ec",
+  "worker_id": "hawking-worker-7019085922ac4868",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-7923B442"
+}

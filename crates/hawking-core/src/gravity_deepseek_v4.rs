@@ -544,7 +544,7 @@ impl DeepSeekV4FullStreamReader {
         root: impl AsRef<Path>,
         verify_mode: DeepSeekV4VerifyMode,
     ) -> Result<Self> {
-        crate::startup_timing::time_ms_result("admit_total", || {
+        crate::startup_timing::time_ns_result("admit_total", || {
             if let Some(reader) = Self::try_admit_from_artifact_index(&root, verify_mode)? {
                 return Ok(reader);
             }
@@ -558,7 +558,7 @@ impl DeepSeekV4FullStreamReader {
         root: impl AsRef<Path>,
         verify_mode: DeepSeekV4VerifyMode,
     ) -> Result<Option<Self>> {
-        crate::startup_timing::time_ms_result("artifact_index_load", || {
+        crate::startup_timing::time_ns_result("artifact_index_load", || {
             let root = root.as_ref();
             match load_artifact_index(root) {
                 DeepSeekV4IndexLoad::Loaded(contents) => {
@@ -588,7 +588,7 @@ impl DeepSeekV4FullStreamReader {
                 },
             );
         }
-        let native_pairs = crate::startup_timing::time_ms_result("native_scale_pairs", || {
+        let native_pairs = crate::startup_timing::time_ns_result("native_scale_pairs", || {
             validate_native_scale_pairs(&contents.tensors)
         })?;
         let admission = match verify_mode {
@@ -629,14 +629,14 @@ impl DeepSeekV4FullStreamReader {
     ) -> Result<Self> {
         let root = canonical_non_symlink_directory(root.as_ref(), "DeepSeek-V4 full artifact")?;
         let manifest_path = checked_regular_path(&root, "manifest.json", "full stream manifest")?;
-        let manifest_raw = crate::startup_timing::time_ms_result("manifest_json_read", || {
+        let manifest_raw = crate::startup_timing::time_ns_result("manifest_json_read", || {
             read_regular_file(&manifest_path, "full stream manifest")
         })?;
         let manifest_file_sha256 = sha256_hex(&manifest_raw);
         let manifest_value =
             parse_and_verify_sealed_json(&manifest_raw, "full stream manifest", "manifest_json")?;
         let manifest: Manifest =
-            crate::startup_timing::time_ms_result("manifest_schema_decode", || {
+            crate::startup_timing::time_ns_result("manifest_schema_decode", || {
                 serde_json::from_value(manifest_value).map_err(|error| {
                     Error::Gravity(format!("DeepSeek-V4 full manifest schema decode: {error}"))
                 })
@@ -651,7 +651,7 @@ impl DeepSeekV4FullStreamReader {
         if manifest.restart_receipt.path != "restart-receipt.json" {
             return Err(gravity("full stream restart receipt path is not canonical"));
         }
-        let restart_raw = crate::startup_timing::time_ms_result("restart_receipt_read", || {
+        let restart_raw = crate::startup_timing::time_ns_result("restart_receipt_read", || {
             read_regular_file(&restart_path, "full stream restart receipt")
         })?;
         let restart_value = parse_and_verify_sealed_json(
@@ -662,10 +662,10 @@ impl DeepSeekV4FullStreamReader {
         validate_restart_receipt(&restart_value, &manifest.restart_receipt.seal_sha256, &root)?;
 
         let source_metadata_sha256 =
-            crate::startup_timing::time_ms_result("metadata_assets", || {
+            crate::startup_timing::time_ns_result("metadata_assets", || {
                 validate_metadata_assets(&root, &manifest.source)
             })?;
-        let index = crate::startup_timing::time_ms_result("source_index_parse", || {
+        let index = crate::startup_timing::time_ns_result("source_index_parse", || {
             load_and_verify_source_index(&root, &manifest.source)
         })?;
         if index.metadata.total_size != manifest.artifact.source_index_total_size_bytes {
@@ -674,22 +674,22 @@ impl DeepSeekV4FullStreamReader {
             ));
         }
 
-        let source_windows = crate::startup_timing::time_ms_result("source_windows", || {
+        let source_windows = crate::startup_timing::time_ns_result("source_windows", || {
             validate_source_windows(&manifest.source)
         })?;
-        let (tensors, chunks) = crate::startup_timing::time_ms_result("tensor_map_build", || {
+        let (tensors, chunks) = crate::startup_timing::time_ns_result("tensor_map_build", || {
             validate_tensors(&manifest, &index, &source_windows)
         })?;
-        crate::startup_timing::time_ms_result("chunk_tree_validate", || {
+        crate::startup_timing::time_ns_result("chunk_tree_validate", || {
             validate_chunk_tree(&root, &chunks)
         })?;
-        let native_pairs = crate::startup_timing::time_ms_result("native_scale_pairs", || {
+        let native_pairs = crate::startup_timing::time_ns_result("native_scale_pairs", || {
             validate_native_scale_pairs(&tensors)
         })?;
         let content_addressed_chunk_sha256 =
             manifest.artifact.content_addressed_chunk_sha256.clone();
         let total_chunk_bytes = chunk_bytes_total(&chunks)?;
-        let admission = crate::startup_timing::time_ms("admission_receipt_parse", || {
+        let admission = crate::startup_timing::time_ns("admission_receipt_parse", || {
             load_admission_if_requested(
                 &root,
                 verify_mode,
@@ -1193,7 +1193,7 @@ impl DeepSeekV4FullStreamReader {
             },
             verifier_version: &seal.verifier_version,
         };
-        match crate::startup_timing::time_ms_result("artifact_index_build", || {
+        match crate::startup_timing::time_ns_result("artifact_index_build", || {
             write_artifact_index(input)
         }) {
             Ok(index) => Some(index),
@@ -1699,12 +1699,12 @@ fn validate_restart_receipt(value: &Value, expected_seal: &str, root: &Path) -> 
     }
     let journal = checked_regular_path(root, "stream-journal.json", "full stream journal")?;
     let ranges = checked_regular_path(root, "stream-ranges.jsonl", "full stream range journal")?;
-    let journal_ok = crate::startup_timing::time_ms_result("stream_journal_hash", || {
+    let journal_ok = crate::startup_timing::time_ns_result("stream_journal_hash", || {
         Ok::<bool, Error>(
             sha256_hex(&read_regular_file(&journal, "full stream journal")?) == journal_sha,
         )
     })?;
-    let ranges_ok = crate::startup_timing::time_ms_result("stream_ranges_jsonl_hash", || {
+    let ranges_ok = crate::startup_timing::time_ns_result("stream_ranges_jsonl_hash", || {
         Ok::<bool, Error>(
             sha256_hex(&read_regular_file(&ranges, "full stream range journal")?) == ranges_sha,
         )
@@ -2322,11 +2322,11 @@ pub(crate) fn map_chunk_readonly(path: &Path, expected_bytes: u64, label: &str) 
 }
 
 fn parse_and_verify_sealed_json(raw: &[u8], label: &str, phase: &str) -> Result<Value> {
-    let mut value: Value = crate::startup_timing::time_ms_result(format!("{phase}_parse"), || {
+    let mut value: Value = crate::startup_timing::time_ns_result(format!("{phase}_parse"), || {
         serde_json::from_slice(raw)
             .map_err(|error| gravity(format!("{label} is not valid JSON: {error}")))
     })?;
-    crate::startup_timing::time_ms_result(format!("{phase}_canonical_seal"), || {
+    crate::startup_timing::time_ns_result(format!("{phase}_canonical_seal"), || {
         let recorded = {
             let object = value
                 .as_object_mut()
@@ -2356,9 +2356,10 @@ fn parse_and_verify_sealed_json(raw: &[u8], label: &str, phase: &str) -> Result<
 }
 
 /// Python's `json.dumps(sort_keys=True, separators=(",", ":"),
-/// ensure_ascii=False)` layout used by the stream sealer.  This stays local
-/// rather than widening the legacy Gravity container API.
-pub(crate) fn canonical_json(value: &Value) -> Vec<u8> {
+/// ensure_ascii=False)` layout used by sealed Hawking receipts. This is public
+/// so bounded native examples reuse one serializer instead of creating a
+/// second receipt-seal authority.
+pub fn canonical_json(value: &Value) -> Vec<u8> {
     let mut out = Vec::with_capacity(256);
     write_canonical_json(&mut out, value);
     out
@@ -2369,7 +2370,7 @@ fn write_canonical_json(out: &mut Vec<u8>, value: &Value) {
         Value::Null => out.extend_from_slice(b"null"),
         Value::Bool(true) => out.extend_from_slice(b"true"),
         Value::Bool(false) => out.extend_from_slice(b"false"),
-        Value::Number(number) => out.extend_from_slice(number.to_string().as_bytes()),
+        Value::Number(number) => write_python_json_number(out, number),
         Value::String(string) => out.extend_from_slice(
             serde_json::to_string(string)
                 .expect("JSON string serialization is infallible")
@@ -2404,6 +2405,50 @@ fn write_canonical_json(out: &mut Vec<u8>, value: &Value) {
             out.push(b'}');
         }
     }
+}
+
+fn write_python_json_number(out: &mut Vec<u8>, number: &serde_json::Number) {
+    let rendered = number.to_string();
+    if let Some(exponent_at) = rendered.find(['e', 'E']) {
+        out.extend_from_slice(rendered[..exponent_at].as_bytes());
+        out.push(b'e');
+        write_python_json_exponent(out, &rendered[exponent_at + 1..]);
+        return;
+    }
+    let (sign, unsigned) = rendered
+        .strip_prefix('-')
+        .map_or((None, rendered.as_str()), |value| (Some(b'-'), value));
+    if let Some(fraction) = unsigned.strip_prefix("0.") {
+        let leading_zeroes = fraction.bytes().take_while(|byte| *byte == b'0').count();
+        if leading_zeroes >= 4 && leading_zeroes < fraction.len() {
+            if let Some(sign) = sign {
+                out.push(sign);
+            }
+            let significant = &fraction[leading_zeroes..];
+            out.push(significant.as_bytes()[0]);
+            if significant.len() > 1 {
+                out.push(b'.');
+                out.extend_from_slice(&significant.as_bytes()[1..]);
+            }
+            out.push(b'e');
+            write_python_json_exponent(out, &format!("-{}", leading_zeroes + 1));
+            return;
+        }
+    }
+    out.extend_from_slice(rendered.as_bytes());
+}
+
+fn write_python_json_exponent(out: &mut Vec<u8>, exponent: &str) {
+    let (sign, digits) = match exponent.as_bytes().first() {
+        Some(b'+') => (b'+', &exponent[1..]),
+        Some(b'-') => (b'-', &exponent[1..]),
+        _ => (b'+', exponent),
+    };
+    out.push(sign);
+    if digits.len() == 1 {
+        out.push(b'0');
+    }
+    out.extend_from_slice(digits.as_bytes());
 }
 
 fn canonical_json_array_strings(values: &[String]) -> Vec<u8> {
@@ -2542,6 +2587,23 @@ mod tests {
         assert_eq!(
             canonical_json(&value),
             "{\"a\":\"é\",\"z\":[true,null]}".as_bytes().to_vec()
+        );
+    }
+
+    #[test]
+    fn canonical_json_matches_python_float_layout() {
+        let value: Value = serde_json::json!({
+            "small": 5e-6,
+            "small_fixed_by_rust": 0.000019073486328125,
+            "fixed": 0.0001,
+            "large_fixed": 1e15,
+            "large_exp": 1e16,
+            "whole": 1.0,
+            "negative_zero": -0.0,
+        });
+        assert_eq!(
+            canonical_json(&value),
+            b"{\"fixed\":0.0001,\"large_exp\":1e+16,\"large_fixed\":1000000000000000.0,\"negative_zero\":-0.0,\"small\":5e-06,\"small_fixed_by_rust\":1.9073486328125e-05,\"whole\":1.0}".to_vec()
         );
     }
 

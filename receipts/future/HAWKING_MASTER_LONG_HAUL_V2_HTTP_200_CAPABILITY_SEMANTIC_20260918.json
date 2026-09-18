@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.long_haul.v2.http_200_capability_semantic.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T04:42:35Z",
+  "change": {
+    "file": "hawking/backends.py",
+    "boundary": "OpenAICompatibleBackend capability readiness",
+    "rule": "HTTP 2xx is transport evidence only; readiness requires non-empty generated text/content/refusal or a real tool/function call",
+    "false_success_code": "http_success_without_generation_semantics"
+  },
+  "daemon": {
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "pid": 66000,
+    "status": "waiting_for_native_runtime",
+    "revision": "hawking-auto-aggressive-v2-kimi-deepseek-unbounded-13"
+  },
+  "live_gateway_probes": [
+    {
+      "max_tokens": 32,
+      "upstream_transport_status": 200,
+      "gateway_status": 502,
+      "error_code": "REMOTE_SEMANTIC_INCOMPLETE",
+      "accepted": false
+    },
+    {
+      "max_tokens": 128,
+      "upstream_transport_status": 200,
+      "gateway_status": 502,
+      "error_code": "REMOTE_SEMANTIC_INCOMPLETE",
+      "accepted": false
+    },
+    {
+      "max_tokens": 256,
+      "gateway_status": 200,
+      "finish_reason": "tool_calls",
+      "tool_name": "route_probe",
+      "arguments_observed": {"ok": true},
+      "accepted": true
+    }
+  ],
+  "verification": {
+    "semantic_boundary_and_backend_tests": "73 passed + 28 subtests",
+    "final_readiness_regression_after_direct_guard": "7 passed",
+    "direct_completion_guard": "HTTP 200 empty body raises RuntimeError",
+    "compileall": "passed",
+    "git_diff_check": "passed"
+  },
+  "claim_boundary": "Provider/gateway and capability-readiness evidence only; no architectural tranche or parent Goal completion is claimed."
+}

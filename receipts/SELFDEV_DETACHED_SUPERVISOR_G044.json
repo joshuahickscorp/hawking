@@ -1,0 +1,70 @@
+{
+ "obligation": "G044 \u2014 DETACHED-SUPERVISOR TEST",
+ "status": "CLOSED -- INFORMATIVE_FAILURE, which is the close condition it was designed to reach",
+ "opened_at": "2026-09-09T13:26:32",
+ "opened_at_cycle": 76,
+ "rule_for_the_interval": "Claude does NOT steer ordinary HCLI engineering: no substrate repair, no prompt edits, no state edits, no phase corrections, no choosing or hinting at a defect. Claude continues Odyssey science on CPU, which is a different front and does not touch the body. Reading the campaign log and evidence is observation, not intervention.",
+ "what_breaks_the_interval_legitimately": [
+  "the resident dies or wedges (a mechanic call, recorded as such and the interval restarted)",
+  "a NEW supervisor false positive is found (the measurement instrument is wrong, and a wrong instrument makes the whole interval void)",
+  "the harness crashes"
+ ],
+ "what_does_NOT_break_it": [
+  "the body failing a phase repeatedly -- that is the measurement",
+  "the body picking a defect Claude thinks is uninteresting",
+  "cycles producing nothing"
+ ],
+ "start_conditions": {
+  "cycle": 76,
+  "phase": "ORIENT",
+  "hypothesis": null,
+  "accepted_changes": 0,
+  "worktree_HEAD": "234f5f75f",
+  "substrate_state": "intervention 10/11 deployed at 13:11-13:13: repo.edit advertises append (the cheapest op, no anchor and no file body), the tool trace carries verdict/applied/paths so an acceptance cannot be faked, the conversation budget rose 3097 -> 4505 tokens by stopping a double reserve, tests.run can run a 154-second suite instead of timing out at 30s, and the supervisor no longer reads a refusal as a commitment."
+ },
+ "the_question_this_answers": "Every substrate defect found so far was found because the body walked into it and said so. The open question is whether what remains is another substrate defect or the body itself. Only an interval with no repairs underneath it can tell those apart.",
+ "close_conditions": {
+  "SUCCESS": "an accepted, landed HCLI-authored change (G004) with no Claude intervention in the interval",
+  "INFORMATIVE_FAILURE": "the body reaches ACT_REQUIRED and is refused for a NEW reason, naming a defect nobody had found",
+  "NEGATIVE": "the interval passes with no phase progress and no new failure mode -- which would point at the body rather than the substrate, and is the answer that matters most"
+ },
+ "interval_events": [
+  {
+   "at": "13:33:17",
+   "event": "cycle 77 soft-terminal (TimeoutError) at the 1200s REQ_TIMEOUT",
+   "significance": "the FIRST cycle to run entirely on the new substrate. Not acted on: one timeout is a data point, two consecutive is a pattern, and raising REQ_TIMEOUT on one sample would be fixing a guess.",
+   "resident_state_when_checked": "1.2-1.7% CPU, idle -- so not still generating",
+   "cause": "NOT the new substrate. Checked the full soft-terminal history rather than reasoning from one sample: TimeoutError at REQ_TIMEOUT is CHRONIC and long predates today's changes -- cycle 9 timed out three times consecutively (23:25, 23:34, 23:42), cycle 34 twice (05:03, 05:24), and both recovered and the campaign continued past cycle 65. A single timeout at cycle 77 sits inside the established pattern and is not evidence about the new substrate at all.",
+   "why_this_matters_for_the_interval": "The working hypothesis was that the fixes made cycles too slow -- tests.run can now run a 154s suite and the prompt budget rose 45%, so a cycle needing >1200s was plausible. The history refutes it. Had REQ_TIMEOUT been raised on that reasoning it would have been a change made against a real pattern that the change had nothing to do with."
+  },
+  {
+   "at": "~13:32",
+   "event": "an Odyssey job allocated 38.7 GiB alongside the resident",
+   "defect": "organ_gate_transfer allocated a d x d float64 Hessian PER ORGAN per layer. gate and up read the same activations and need the same H; keying by (layer, input_dim) makes sharing structural.",
+   "was_it_the_cause_of_the_timeout": "NO, and the first answer was wrong. The initial reading said free memory had fallen to 16.9 GiB, which looked like a resource collision with the resident. It was a measurement bug: the guard multiplied page counts by 4096 on a machine whose page size is 16384, a 4x undercount. Actual availability was ~68-72 GiB throughout. The collision hypothesis is withdrawn.",
+   "the_worse_bug_that_bug_would_have_caused": "the same undercount would have made the resource guard refuse EVERY future job while claiming to protect the resident -- a ceiling compared against a number that can never reach it, which is a latch. Same shape as the swap high-water defect that once held the resident at cycles=0 with 42.6 GB free. The page size is now read from vm_stat's own header rather than assumed.",
+   "kept_fix": "the per-organ Hessian was still a real bug and is fixed regardless"
+  }
+ ],
+ "interval_status": "OPEN. Neither event is a Claude intervention in HCLI engineering: one is an unexplained timeout left unacted-on, the other is a defect in an Odyssey tool. The next cycle decides whether the timeout is a pattern.",
+ "hypotheses_withdrawn_in_this_interval": [
+  "the Odyssey job's 38.7 GiB starved the resident -- withdrawn, the memory reading was a 4x page-size undercount",
+  "the new substrate made cycles exceed 1200s -- withdrawn, timeouts are chronic across cycles 9, 34 and 77"
+ ],
+ "standing": "Two intervention-shaped impulses examined and neither acted on. The interval remains OPEN and clean: no Claude change to HCLI engineering since it was declared.",
+ "closed_at": "2026-09-09T14:10:16",
+ "closed_at_cycle": 77,
+ "outcome": {
+  "which_close_condition": "INFORMATIVE_FAILURE: 'the body is refused for a NEW reason, naming a defect nobody had found'. It did, and the defect had been live for the whole of experiment 2.",
+  "the_finding": "H-MANIFESTO.md is 45,226 bytes, has NEVER been committed, and is therefore absent from the worktree where HCLI works. The harness objective names it TWICE -- as the thing HCLI develops toward, and as the worked example of a path to fs.read. Cycle 77's trace: the body's first call is fs.read H-MANIFESTO.md -> FileNotFoundError, then two real file reads, then FOUR web.search calls for 'H-MANIFESTO', '\"H-MANIFESTO\"' and 'H-MANIFESTO file' -- searching the public internet for a private uncommitted document.",
+  "what_the_body_said_about_it": "'HYPOTHESIS: I cannot name one yet -- I am still orienting; the first reads returned only 4 KB of 308 KB'. It was telling the truth twice over: it cannot orient toward a manifesto it has never been able to open, and tool results are truncated at RESULT_CHARS=3000.",
+  "why_it_took_this_long_to_see": "the reply text alone never showed it. It was visible only in the TOOL TRACE, which cycles only began persisting this morning -- added after a supervisor false positive proved reply text insufficient to tell what a cycle had done. The instrument built to close one defect immediately exposed a larger one.",
+  "answer_to_the_interval_question": "The interval asked whether what remains is substrate or the body. The answer for this cycle is SUBSTRATE, and not marginally: the body was told to orient on an unreadable file and reported that accurately. That is now seven substrate defects in a row that the body identified correctly and was blamed for."
+ },
+ "fix_applied_to_close": {
+  "primary": "1a483c185 -- H-MANIFESTO.md committed at last",
+  "worktree": "0f0fc7039 -- taken from main as a SINGLE PATH so no Odyssey work enters the tree HCLI develops in",
+  "integrity_note": "the worktree HEAD moved 234f5f75f -> 0f0fc7039, and the commit carries no Landed-By trailer, so hcli_landed() correctly does not count it as an HCLI land. The false-positive HEAD-movement class stays closed.",
+  "NOT_fixed_yet": "RESULT_CHARS is still 3000, sized when the conversation budget was 3097 tokens. The budget is now 4505 and this was never raised with it. Left alone deliberately: one fix per interval, and the manifesto is the one the body named first."
+ }
+}

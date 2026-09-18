@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 3,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "6206a801a4bc794b81824756ba01e069692dcc7d2bda10f7d29c4f512d1beb0b",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:05:05.414048+00:00",
+      "calls_used": 3,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:05:05.414065+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:05:05.417750+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root carries five authoritative Gravity charters that name the owner set explicitly: GRAVITY-CANON.md (15.7KB), GRAVITY-ALGEBRA.md (7.3KB), GRAVITY-MIGRATION-MAP.md (10.8KB), GRAVITY-SLIMMING-WORKORDER.md (55.4K",
+      "outcome": "CONTINUE",
+      "reply_chars": 3306,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root carries five authoritative Gravity charters that name the owner set explicitly: GRAVITY-CANON.md (15.7KB), GRAVITY-ALGEBRA.md (7.3KB), GRAVITY-MIGRATION-MAP.md (10.8KB), GRAVITY-SLIMMING-WORKORDER.md (55.4KB), and GRAVITY-TOOL-GRAVITY.md (9.7KB); these are the current source for the V2 Gravity frontier.\",\"A bounded resident named gravityd is observable in tool provenance chains with published v1 schemas 'hawking-gravityd.list.v1' and 'hawking-gravityd.search-files.v1', providing an admitted read-only enumeration and subject-search surface over the authorized corpus; this is the existing Gravity owner of repository surface access.\",\"The subject index is at index_revision gravity-generation-v1:2 and marks index confidence 0.31 / generation 2, returning 'metadata-validated' freshness and matching across all-authorized corpus roots; heavy '.aider.chat.history.md' speculation dominates subject matches, confirming the corpus itself is the owner mapping join point rather than the speculative history.\",\"The current latest-section in the parent goal ('KIMI P0 bounded operational freeze; Odyssey resumes \u2014 2026-09-11') withholds autonomous repository writing, self-certifying development, and autonomous Odyssey promotion; Gravity read-only research is inside the admitted boundary.\",\"The parent continuation records the active specimen 'hawking/remote_cognition.py::_workunit_completion_contract', showing the current WorkUnit t14 focus is on completion-contract enforcement, not on Gravity migration; Gravity mapping is a frontier-support task.\"],\"sources\":[\"GRAVITY-CANON.md\",\"GRAVITY-ALGEBRA.md\",\"GRAVITY-MIGRATION-MAP.md\",\"GRAVITY-SLIMMING-WORKORDER.md\",\"GRAVITY-TOOL-GRAVITY.md\",\"civilization/sovereign-goal.txt\",\"hawking/remote_cognition.py\",\"hawking-gravityd.list.v1\",\"hawking-gravityd.search-files.v1\"],\"recommendations\":[\"Consume the five Gravity root charters in CANON \u2192 ALGEBRA \u2192 MIGRATION-MAP \u2192 TOOL-GRAVITY \u2192 SLIMMING-WORKORDER order before proposing any tranche; treat the history file as noise.\",\"Next boundable tranche: read GRAVITY-CANON.md fully and GRAVITY-ALGEBRA.md fully and produce an owner table aligned to the MIGRATION-MAP naming; falsifier: if named owners in MIGRATION-MAP are absent from CANON homomorphism targets, the tranche is blocked and a negative control is required.\",\"Route through the frozen operational boundary: propose supervised patches only; do not attempt autonomous writes.\"],\"unresolved_questions\":[\"Which of the five charters is the single owner source of truth for the V2 Gravity frontier \u2014 CANON, MIGRATION-MAP, or SLIMMING-WORKORDER?\",\"What is the accepted schema for a Gravity owner entry (owner name, guarded seam, evidence receipt) before the next tranche is declared?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\",\"next_action\":\"Read GRAVITY-CANON.md and GRAVITY-ALGEBRA.md fully and produce a source-grounded owner table keyed to GRAVITY-MIGRATION-MAP.md.\",\"reason\":\"Owner identification is the prerequisite for any bounded Gravity tranche; charters are small enough to read directly.\",\"expected_evidence\":\"Owner table listing each Gravity owner, its guarded seam, and the receipt it reads, plus a falsifiable blocker if the MIGRATION-MAP references do not cohere.\",\"tool_family\":\"read_only_fs\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-880f5c18a6ba49eb",
+  "worker_id": "hawking-worker-716c60cc51454b89",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-45C1B809"
+}

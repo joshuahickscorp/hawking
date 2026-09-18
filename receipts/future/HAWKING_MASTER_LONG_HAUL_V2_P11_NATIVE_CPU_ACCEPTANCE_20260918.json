@@ -1,0 +1,70 @@
+{
+  "schema": "hawking.long_haul.v2.p11_native_cpu_acceptance.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P11_NATIVE_CPU",
+  "workunit_id": "WORKUNIT-20260918-36432726",
+  "recorded_at": "2026-09-18T05:43:29Z",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "supervisor_contract_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "acceptance": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Independent source and focused-test review accepts this as read-only architecture evidence only. It does not claim CPU hardware execution, native production qualification, provider-output promotion, or mutation completion.",
+  "independent_review": {
+    "workunit_contract": "The packet satisfies the three durable acceptance items: structured owners/observations/recommendations/sources/status/unresolved questions; one bounded follow-on tranche with falsifier; and explicit protected-resource/claim boundaries.",
+    "source_map": [
+      {
+        "path": "hawking/hawking_native.py",
+        "lines": "222-366",
+        "finding": "HawkingNativeConfig is the profile-driven native execution contract; paths, protocol, runtime mode, capabilities, limits, and qualification metadata are data-owned."
+      },
+      {
+        "path": "hawking/hawking_native.py",
+        "lines": "618-675",
+        "finding": "Native profile/artifact selection is explicit and fail-closed; no implicit CPU backend token or model runtime is selected."
+      },
+      {
+        "path": "hawking/hawking_native.py",
+        "lines": "944-1040,1229-1305",
+        "finding": "ResidentProcess owns the JSONL child lifecycle and HawkingNativeConnector owns translation, readiness, start/stop, and restart boundaries."
+      },
+      {
+        "path": "hawking/backends.py",
+        "lines": "484-620,2575-2777",
+        "finding": "RuntimeBackend is the common contract; NoeticNativeBackend is the admitted native implementation and its aliases preserve the serialized backend identity."
+      },
+      {
+        "path": "hawking/runtime_iface.py",
+        "lines": "130-185",
+        "finding": "Runtime factory dispatch admits noetic_native and rejects implicit MLX/GGUF/vendor selection; the canonical factory independently enforces the native boundary."
+      },
+      {
+        "path": "hawking/native_owner.py",
+        "lines": "157-194",
+        "finding": "Stable native helper resolution is release-owned and fail-closed; source-checkout builds are not implicit permission owners."
+      },
+      {
+        "path": "hawking/native_gate.py",
+        "lines": "344-490",
+        "finding": "The live native ladder is explicit and separates direct resident, connector, and provider-abstraction stages; it is not hardware qualification by itself."
+      }
+    ],
+    "cpu_token_search": {
+      "command": "rg -n -i '\\bcpu\\b|cpu-only|simd' hawking/hawking_native.py hawking/native_gate.py hawking/native_owner.py hawking/backends.py hawking/runtime_iface.py",
+      "result": "one incidental llama.cpp CPU-only fitter comment; no distinct CPU backend enum/owner token in the reviewed native surface",
+      "falsifier": "A future grounded source read that identifies a distinct CPU backend token or owner must revise this map before implementation admission."
+    }
+  },
+  "bounded_follow_on": {
+    "tranche": "P14_PCIE_FPGA",
+    "dependency": "P11_NATIVE_CPU",
+    "status": "GRAPH_DEPENDENCY_UNLOCKED_ONLY",
+    "next_action": "Materialize P14 only when a durable contract names its scope, protected resources, acceptance, and falsifier; do not infer those details from the graph node alone.",
+    "claim_boundary": "No P14 lane was invented or admitted by this receipt."
+  },
+  "verification": {
+    "command": "python3 -m pytest -q hawking/tests/test_hawking_native.py hawking/tests/test_runtime_interface.py hawking/tests/test_sealed_capabilities_reach_the_backend.py hawking/agentos/test_native_gate_timing.py hawking/test_native_artifact_ceiling.py hawking/test_native_context_budget.py hawking/test_native_json_grammar.py hawking/test_native_token_budget_clamp.py",
+    "result": "65 passed in 0.75s",
+    "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-36432726_RESULT_PACKET.json",
+    "parent_acceptance": "independent source/test review; no provider prose promotion"
+  }
+}

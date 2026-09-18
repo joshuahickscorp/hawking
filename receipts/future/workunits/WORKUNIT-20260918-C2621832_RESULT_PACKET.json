@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 3,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "05d5e0e02e230e1f96454fe943fd0a9c5d4258db5935ed539bf6255d36d7f74b",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:20:08.720231+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:20:08.720250+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:20:08.723180+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/auto_orchestration.py lines 35-38 state the old 12/4 and 25% burst values were an artificial Hawking admission ceiling and are kept as telemetry only; actual admission is unbounded by worker count and gated by real",
+      "outcome": "CONTINUE",
+      "reply_chars": 2545,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/auto_orchestration.py lines 35-38 state the old 12/4 and 25% burst values were an artificial Hawking admission ceiling and are kept as telemetry only; actual admission is unbounded by worker count and gated by real resource/provider health, dependency readiness, budget authority, and disjoint writer leases.\",\"hawking/auto_orchestration.py lines 39-45 define BASE_MAX_REMOTE_COGNITION_WORKERS = 12, BASE_MAX_PREMIUM_WORKERS = 4, FRONTIER_BURST_FACTOR = 1.25, UNBOUNDED_CONCURRENCY = None, and set MAX_REMOTE_COGNITION_WORKERS, MAX_PREMIUM_WORKERS, and MAX_AUTOTUNED_WORKERS to UNBOUNDED_CONCURRENCY.\",\"hawking/auto_orchestration.py lines 30-33 define schemas AUTO_PLAN_SCHEMA, WORKER_PACKET_SCHEMA, METRICS_SCHEMA, and AUTO_REFILL_SCHEMA, indicating the module owns planning, worker packet, model metrics, and refill evidence surfaces.\",\"The observed read range was hawking/auto_orchestration.py lines 1-200, truncated at 4000 bytes; no supervisor_watcher.py content was observed.\"],\"sources\":[{\"path\":\"hawking/auto_orchestration.py\",\"lines\":\"35-45\",\"sha256\":\"562565980477dfeab85ae2ffe806b3a9b4ca5bff939cb406f370a039440b68e2\"},{\"path\":\"hawking/auto_orchestration.py\",\"lines\":\"30-33\",\"sha256\":\"562565980477dfeab85ae2ffe806b3a9b4ca5bff939cb406f370a039440b68e2\"},{\"path\":\"hawking/auto_orchestration.py\",\"lines\":\"1-200\",\"note\":\"truncated at 4000 bytes\"}],\"recommendations\":[\"Treat hawking/auto_orchestration.py as the current autotuning policy owner for admission ceilings, but confirm the function that computes autotuned worker count in unread lines.\",\"Bounded P15 contract: MAX_* must remain UNBOUNDED_CONCURRENCY (None); BASE_* and FRONTIER_BURST_FACTOR are telemetry only; admission must be gated by resource/provider health, dependency readiness, budget authority, and disjoint writer leases.\",\"Falsifier: any code path that uses BASE_MAX_REMOTE_COGNITION_WORKERS, BASE_MAX_PREMIUM_WORKERS, or FRONTIER_BURST_FACTOR as an admission cap, or sets MAX_* to finite values, or admits workers without the four gating signals.\",\"Focused tests should assert MAX_* is None and that admission gating uses health/dependency/budget/lease signals; tests not yet observed.\"],\"unresolved_questions\":[\"Which function/module actually computes autotuned worker count and refill policy in auto_orchestration.py beyond line 200?\",\"What are the focused tests for autotuning and delta supervision?\",\"What is the exact delta supervision contract in hawking/supervisor_watcher.py?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-9dbffa354a6d4de6",
+  "worker_id": "hawking-worker-1c8735c5e6e24e59",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-C2621832"
+}

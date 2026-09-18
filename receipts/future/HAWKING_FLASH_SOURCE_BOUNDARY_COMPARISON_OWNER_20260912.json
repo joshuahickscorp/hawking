@@ -1,0 +1,93 @@
+{
+  "schema": "hawking.unification.flash_source_boundary_comparison_owner.v1",
+  "status": "RUST_METRIC_OWNER_AND_OWNER_GATED_ORDERED_ORCHESTRATOR_GREEN__WITHHELD_PENDING_CAPTURE_INPUTS",
+  "observed_at_utc": "2026-09-12T19:08:33Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "capture_owner": {
+    "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_CAPTURE_OWNER_V2_20260912.json",
+    "sha256": "f202d5884b9cc88e7d1e6886922b154b1eba55798f3aa7738e99c880687365d4",
+    "seal_sha256": "4dc9a5143a1700a02f836e632d89d7c6d5322dbad35708c9072d2e38bef8fb1d"
+  },
+  "owners": {
+    "rust_payload_metrics": {
+      "path": "crates/hawking-core/src/flash_boundary_compare.rs",
+      "sha256": "31088a944ab9b194b7f44e9312fd934629ce54b6d169f500d20cdc6ad9ddbca5",
+      "symbol": "compare_flash_boundary_payloads",
+      "formats": ["F32_LE", "I32_LE"],
+      "authority": "raw extent, finiteness, hashes, diagnostic continuous metrics, and exact ordered I32 identity"
+    },
+    "typed_cli": {
+      "path": "crates/hawking/src/main.rs",
+      "sha256": "005709cdddfd4cfb89be52b5c1f0f87afbcac2ca7d95d0a55b14cb54dc7aa020",
+      "command": "hawking gravity boundary-payload-compare",
+      "authority": "direct stable-file reads and one typed CPU-only payload comparison invocation"
+    },
+    "ordered_orchestrator": {
+      "path": "tools/odyssey/flash_source_boundary_compare.py",
+      "sha256": "2c04c0ba5d22fc623fef89a336b727d53c178dddcfa03adeadba0504d2f6f681",
+      "authority": "teacher/capture admission, canonical seam order, first-difference stop, Rust invocation, independent Python cross-check, and sealed result"
+    }
+  },
+  "comparison_contract": {
+    "seam_order": "canonical ordinals 0 through 13",
+    "stop_condition": "first exact F32 payload-byte difference or ordered route-ID/weight-byte difference",
+    "cache_order": "only after all 14 seams are exact; layer-4 pre-attention then post-attention array order",
+    "continuous_metrics": ["finite", "max_abs", "relative_l2", "cosine"],
+    "route_metric": "ordered I32 ids exact",
+    "numerical_acceptance_bound": null,
+    "semantic_attribution_allowed": false,
+    "post_ple_seam_semantics": "source-state injection control only; native PLE remains absent",
+    "independent_reference_check": "Python stdlib recomputes each Rust metric and refuses disagreement",
+    "model_or_gpu_required": false
+  },
+  "fail_closed_properties": {
+    "machine_owner_teacher_admission_precedes_capture_consumption": true,
+    "machine_owner_teacher_admission_precedes_output_reservation": true,
+    "source_and_native_capture_identity_reverified": true,
+    "payload_hash_dtype_extent_and_finiteness_reverified": true,
+    "source_or_candidate_symlinks_and_hardlinks_rejected": true,
+    "unknown_dtype_rejected": true,
+    "nonfinite_f32_rejected": true,
+    "rust_python_metric_disagreement_rejected": true,
+    "output_no_clobber": true
+  },
+  "validation": {
+    "rust_core_tests": "3 passed, 0 failed",
+    "typed_cli_test": "1 passed, 0 failed",
+    "python_boundary_union": "34 passed, 0 failed",
+    "cargo_check": "cargo check -p hawking passed",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "real_rust_cpu_smoke": {
+      "binary_path": "workspace/ops/build/rust/debug/hawking",
+      "binary_sha256": "53e498632fe570f6ca0179a4a4079315ee8ecdc146a1d606082686465c64cf88",
+      "reference_and_candidate": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/logits-000000.f32",
+      "payload_sha256": "990db10b7348cd7c030552d5a6a2f63a7809243f19cbac22c74e1f27ed32bcc8",
+      "elements": 248320,
+      "exact_sha256": true,
+      "relative_l2": 0.0,
+      "model_loaded": false,
+      "gpu_or_metal_started": false,
+      "scope": "same-payload transport/metric smoke only; not Flash boundary science"
+    },
+    "real_orchestrator_dry_run": {
+      "status": "WITHHELD_PENDING_OWNER_AUTHORIZED_SOURCE_AND_NATIVE_CAPTURES",
+      "preflight_v2_verified": true,
+      "hawking_binary_exists": true,
+      "capture_payloads_read": false,
+      "output_fresh": true,
+      "model_or_metal_started": false
+    }
+  },
+  "runtime_actions": {
+    "source_model_loaded": false,
+    "native_model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "After machine-owner admission, perform the one bounded source capture and matching native capture, then invoke this ordered comparison owner. Preserve the first observed difference without assigning semantics until an explicit numerical bound is justified; do not run another full-body replay first.",
+  "claim_boundary": "This proves the deterministic comparison machinery and real Rust CLI invocation, not a source/native comparison result. Required source/native boundary captures do not exist because the external teacher is not machine-owner admitted. It does not establish source parity, native PLE, complete inference, an admitted NR, EBPW/TPS/capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "16a1b65ed06273f30b7505ea17e62d1bc7f2d2b7f776df8ec3fac339267386f2"
+}

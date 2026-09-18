@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "fc3326d6540f6d142a1dd3501997c97ee860221156220ad66b14818848b54fea",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:15:51.185305+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:15:51.185315+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:15:51.187498+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/hawking_native.py (sha256 f21f1f5389c025382b36425667607962d11cb3e13285073445518e90f229b6b8, 76887 bytes) is the profile-driven native model connector and resident transport; its docstring states the module only tra",
+      "outcome": "CONTINUE",
+      "reply_chars": 4956,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/hawking_native.py (sha256 f21f1f5389c025382b36425667607962d11cb3e13285073445518e90f229b6b8, 76887 bytes) is the profile-driven native model connector and resident transport; its docstring states the module only translates model payloads into the selected native executable's request format and back, with a one-shot path that is also the fallback when the resident executable is unavailable.\",\"The module declares two wire schemas, PROTOCOL_SCHEMA = 'hawking.native.resident.v1' and QWEN38_PROTOCOL_SCHEMA = 'hawking.qwen38.resident.v1', binding the connector to an explicit artifact/protocol identity rather than an implicit runtime.\",\"Fail-closed runtime selection is implemented via context-local ContextVars: _NATIVE_RUNTIME_SPAWN_ALLOWED (default True) and _NATIVE_BOUNDARY_TRACE_ALLOWED (default True), with native_runtime_spawning_allowed() reading the spawn flag and suppress_native_runtime_spawning() setting both to False and resetting them in a finally block.\",\"The comment above the ContextVars states a constrained HAWKING worker may observe an already-live native resident but must not turn a failed request into a new child process, and that the fence is context-local so an ordinary daemon request can still use its explicitly owned recovery path while a concurrent constrained request fails closed.\",\"_boundary_trace() is opt-in cross-process telemetry gated by _NATIVE_BOUNDARY_TRACE_ALLOWED and the HAWKING_BOUNDARY_TRACE environment variable; it records component, event, pid, wall_ns, monotonic_ns plus safe fields, and swallows OSError so telemetry never changes the model-call result.\",\"REQUIRED_FUSION_ENV pins four fusion flags: HAWKING_QWEN38_FUSE_ADD_RMSNORM=1, HAWKING_QWEN38_FUSE_GQA_QKV=1, HAWKING_QWEN38_FUSE_DN_INPROJ=1, HAWKING_QWEN38_FUSE_MLP=swiglu, making the fused-kernel configuration an explicit contract rather than an ambient default.\",\"The error taxonomy is explicit and fail-closed: HawkingNativeError (base), HawkingNativeConfigError (incomplete/unsafe profile), HawkingNativeProtocolError (missing promised structured record), HawkingNativeTimeout (caller-owned timeout exceeded), and HawkingNativeUnavailable (caller intentionally forbids creating or reviving a runtime).\",\"_absolute_path(value, field_name) rejects empty/whitespace values with HawkingNativeConfigError(f'{field_name} is required'), showing path fields are validated before use rather than defaulted.\",\"The file imports subprocess, tempfile, threading, queue, uuid, and contextvars, consistent with a resident transport that owns process lifecycle and request/response plumbing; the observed 4000-byte window is 5.2% of the file, so downstream sections (resident spawn, request framing, timeout handling) remain unobserved and must not be inferred.\"],\"sources\":[{\"path\":\"hawking/hawking_native.py\",\"sha256\":\"f21f1f5389c025382b36425667607962d11cb3e13285073445518e90f229b6b8\",\"sha256_scope\":\"full_file\",\"bytes\":76887,\"observed_bytes\":4000,\"truncated\":true}],\"recommendations\":[{\"contract\":\"Bounded native/CPU contract for the admitted P11_NATIVE_CPU read evidence\",\"owner\":\"hawking/hawking_native.py (native connector + resident transport); adjacent owners to confirm: hawking/backends.py, hawking/runtime_iface.py, hawking/native_gate.py\",\"focused_tests\":[\"hawking/tests/test_hawking_native.py\",\"hawking/tests/test_runtime_interface.py\",\"hawking/tests/test_sealed_capabilities_reach_the_backend.py\"],\"protected_resources\":[\"_NATIVE_RUNTIME_SPAWN_ALLOWED context-local spawn fence and suppress_native_runtime_spawning()\",\"_NATIVE_BOUNDARY_TRACE_ALLOWED gate and HAWKING_BOUNDARY_TRACE opt-in telemetry\",\"REQUIRED_FUSION_ENV fusion flags (ADD_RMSNORM, GQA_QKV, DN_INPROJ, MLP=swiglu)\",\"PROTOCOL_SCHEMA / QWEN38_PROTOCOL_SCHEMA wire identity\",\"HawkingNativeUnavailable fail-closed path when runtime creation/revival is forbidden\"],\"falsifier\":\"A constrained worker context (suppress_native_runtime_spawning active) that still causes a new native child process to be",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-c00ed04afc5a48ba",
+  "worker_id": "hawking-worker-7708961c5acf49d0",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-2783D0CF"
+}

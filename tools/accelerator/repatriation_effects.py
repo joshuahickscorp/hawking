@@ -18,7 +18,7 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from hcli.persist import atomic_write_json
+from hawking.persist import atomic_write_json
 from tools.accelerator.architecture_atlas import (
     EVIDENCE_CLASSES,
     PRIMITIVES,

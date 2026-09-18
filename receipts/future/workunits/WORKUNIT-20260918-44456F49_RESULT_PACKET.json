@@ -1,0 +1,126 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:25:33.312793+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:25:33.312802+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:25:33.312804+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5779,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:25:33.312815+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def _evidence_digest(payload: Mapping[str, Any] | None) -> str | None:\\n    \\\"\\\"\\\"Return a stable sha256 over a candidate's bound receipt payload.\\n\\n    The digest is computed over canonical JSON (sorted keys, compact\\n    separators) so that identical receipt content always yields the same\\n    value regardless of dict insertion order. Returns ``None`` when no\\n    payload is bound, so unmeasured candidates carry no digest.\\n    \\\"\\\"\\\"\\n    if payload is None:\\n        return None\\n    canonical = json.dumps(payload, sort_keys=True, separators=(\\\",\\\", \\\":\\\"), default=str)\\n    return hashlib.sha256(canonical.encode(\\\"utf-8\\\")).hexdigest()\\n\\n\\ndef _candidate_live_status(payload: Mapping[str, Any] | None) -> str:\\n    \\\"\\\"\\\"Classify a candidate's live evidence as measured or unqualified.\\n\\n    A candidate is only ``measured`` when a payload is bound and that\\n    payload carries at least one non-empty live observation field. Any\\n    other shape (missing payload, empty mapping, or a payload whose live\\n    fields are all empty) is reported as ``unqualified`` so that the\\n    caller never promotes an unmeasured candidate to live evidence.\\n    \\\"\\\"\\\"\\n    if not payload:\\n        return \\\"unqualified\\\"\\n    live_fields = (\\n        \\\"live\\\",\\n        \\\"live_evidence\\\",\\n        \\\"observations\\\",\\n        \\\"measurements\\\",\\n        \\\"receipts\\\",\\n    )\\n    for field in live_fields:\\n        value = payload.get(field)\\n        if value:\\n            return \\\"measured\\\"\\n    return \\\"unqualified\\\"",
+          "ok": true,
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"tools/future/test_auto_p8_nova_candidate_live_evidence_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789752332.8559492, \"n_stdout_chars\": 98, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789752332.687532, \"stderr\": \"\", \"stdout\": \"...                                                                      [100%]\\n3 passed in 0.04s\", \"verified\": true}",
+          "ok": true,
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"tools/future/kimi_operator_live_evidence.py\", \"sha256_after\": \"3be16cbe062cb4a67edf32705cc2508171c105ec5ed27d153915005b79292cb0\", \"sha256_before\": \"ad7066e326014a5649ee22e2149cb6b853fa9edd8767e052956d48eab9e871aa\"}, {\"changed\": true, \"path\": \"tools/future/test_auto_p8_nova_candidate_live_evidence_regression.py\", \"sha256_after\": \"cbf5934be549ffea4997ced617a8ed48d4a764abb6ce1b81029d5dcefaf0362e\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"tools/future/kimi_operator_live_evidence.py\", \"sha256_after\": \"3be16cbe062cb4a67edf32705cc2508171c105ec5ed27d153915005b79292cb0\", \"sha256_before\": \"ad7066e326014a5649ee22e2149cb6b853fa9edd8767e052956d48eab9e871aa\"}, {\"changed\": true, \"path\": \"tools/future/test_auto_p8_nova_candidate_live_evidence_regression.py\", \"sha256_after\": \"cbf5934be549ffea4997ced617a8ed48d4a764abb6ce1b81029d5dcefaf0362e\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"tools/future/kimi_operator_live_evidence.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"tools/future/test_auto_p8_nova_candidate_live_evidence_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 3, \"executed\": 3, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 3, \"requested\": \"tools/future/test",
+          "ok": true,
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:25:33.315870+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"operations\": [{\"op\": \"replace\", \"path\": \"tools/future/kimi_operator_live_evidence.py\", \"old_text\": \"def _evidence_digest(payload: Mapping[str, Any] | None) -> str | None:\\n    \\\"\\\"\\\"Return a stable sha256 ov",
+      "outcome": "CONTINUE",
+      "reply_chars": 5779,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "tools/future/kimi_operator_live_evidence.py",
+        "tools/future/test_auto_p8_nova_candidate_live_evidence_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-44456F49_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "tools/future/kimi_operator_live_evidence.py",
+    "tools/future/test_auto_p8_nova_candidate_live_evidence_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-44456F49_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-44456F49"
+}

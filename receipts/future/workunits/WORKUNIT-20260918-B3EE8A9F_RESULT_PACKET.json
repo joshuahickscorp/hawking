@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "75d1082ec032f433262bac20378985b52b7f62b96d5544789d811c5c1c336c29",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:49:58.487424+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:49:58.487444+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:49:58.491826+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"tools/future/gravity_nova_lineage.py module docstring states it validates Gravity/Nova parent-to-descendant evidence, is pure validation before the Noetic/NX bridge, does not load weights, write an artifact, or pr",
+      "outcome": "CONTINUE",
+      "reply_chars": 4512,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"tools/future/gravity_nova_lineage.py module docstring states it validates Gravity/Nova parent-to-descendant evidence, is pure validation before the Noetic/NX bridge, does not load weights, write an artifact, or promote a candidate, and treats a missing field as a refusal rather than an inferred default.\",\n    \"tools/future/gravity_nova_lineage.py defines SCHEMA = \\\"hawking.gravity.nova_lineage.v1\\\", POLICY_PREREG_SCHEMA = \\\"hawking.gravity.nova_policy_adapter_preregistration.v1\\\", and SHA256_RE = ^[0-9a-f]{64}$.\",\n    \"tools/future/gravity_nova_lineage.py defines MEASUREMENT_AXES = (\\\"capability\\\", \\\"epistemic\\\", \\\"authorization\\\", \\\"physical\\\", \\\"destructive_controls\\\").\",\n    \"tools/future/gravity_nova_lineage.py defines TRANSFORMATION_FIELDS = (\\\"kind\\\", \\\"changed_tensors\\\", \\\"train_set\\\", \\\"freeze_set\\\", \\\"data_class\\\", \\\"teacher\\\", \\\"optimization_objective\\\", \\\"representation_constraints\\\").\",\n    \"tools/future/gravity_nova_lineage.py defines validate(lineage, *, expected_parent_identity=\\\"KIMI_BASE\\\", expected_descendant_hash=None) -> dict[str, Any].\",\n    \"tools/future/gravity_nova_lineage.py returns status LINEAGE_REFUSED with missing [\\\"lineage_object\\\"] and errors [] when lineage is not a Mapping.\",\n    \"tools/future/gravity_nova_lineage.py checks canonical schema, parent and descendant mappings, parent.identity against expected_parent_identity, SHA256 parent.artifact_hash and descendant.artifact_hash, nonempty descendant.identity, descendant hash differing from parent hash, expected_descendant_hash match, nonempty objective, transformation mapping, all TRANSFORMATION_FIELDS nonempty, and train_set/freeze_set overlap as an error.\",\n    \"The observed source read was truncated at 4000 of 16659 bytes across lines 1-409 total, so later lines of tools/future/gravity_nova_lineage.py were not observed.\",\n    \"The focused test file path is tools/future/test_gravity_nova_lineage.py; its contents were not observed in the returned read.\",\n    \"Not proven: no learned descendant, full-model capability, hardware qualification, or promotion is established by this evidence.\"\n  ],\n  \"sources\": [\n    {\n      \"path\": \"tools/future/gravity_nova_lineage.py\",\n      \"sha256\": \"a69f8a5cb9582d3161fc71cd9d8254dbd777c8023460f54825dc204bf1dfb5b6\",\n      \"bytes\": 16659,\n      \"observed_lines\": \"1-409 truncated at 4000 bytes\"\n    },\n    {\n      \"path\": \"tools/future/test_gravity_nova_lineage.py\",\n      \"observed\": false,\n      \"note\": \"path named by objective; contents not observed\"\n    }\n  ],\n  \"recommendations\": [\n    \"Smallest next implementation seam: add a pure, import-safe validator for POLICY_PREREG_SCHEMA in tools/future/gravity_nova_lineage.py or a sibling pure module, refusing missing policy-adapter preregistration fields without loading weights, writing artifacts, or promoting a candidate.\",\n    \"RED test: focused test asserts a valid lineage with canonical schema, KIMI_BASE parent, distinct SHA256 parent/descendant hashes, nonempty objective, complete transformation fields, and disjoint train_set/freeze_set returns an accepted status.\",\n    \"GREEN test: focused test asserts expected_descendant_hash mismatch and parent/descendant hash equality are rejected with explicit errors.\",\n    \"Refusal test: focused test asserts non-Mapping lineage, missing parent/descendant, missing transformation fields, and train_set/freeze_set overlap return LINEAGE_REFUSED or explicit errors rather than inferred defaults.\",\n    \"Protected resources: do not read README.md, mutate files, load weights, train a descendant, access hardware, or claim full-model capability or promotion.\",\n    \"Writer/effect scope: read-only research and pure validation only; no artifact writes, no receipts, no git mutation, no provider-owned conversation spend.\",\n    \"Falsifier: if the focused test file already contains a passing test that proves the proposed seam is redundant or contradicts the observed validate() contract, the contract is invalidated.\"",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-f6491062d6704df7",
+  "worker_id": "hawking-worker-07c87b529fe04181",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-B3EE8A9F"
+}

@@ -1,0 +1,72 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-LFM2-24B-A2B",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json's layer_types + a single safetensors header, ALL 40 layers checked individually for MoE-expert presence -- not extrapolated from a sample). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY. First hypothesis (conv=dense-FFN, attention=MoE-FFN, from checking only layers 0 and 2) was WRONG -- caught by checking every layer before publishing.",
+ "identity": {
+  "name": "LiquidAI/LFM2-24B-A2B",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+  "architectures": [
+   "Lfm2MoeForCausalLM"
+  ],
+  "model_type": "lfm2_moe"
+ },
+ "architecture_TRIPLE_HYBRID": {
+  "family": "conv + sparse-attention + MoE, layered together -- no other specimen surveyed this session combines all three axes. LiquidAI's 'conv' layer type is a SHORT causal depthwise convolution (conv.conv.weight shape=[hidden,1,3], kernel=3, conv_L_cache=3 in config) -- a cheap, purely LOCAL token-mixing operator, structurally unrelated to Mamba/SSM (no state-space recurrence, no gating -- a plain small conv) and unrelated to attention (no QK similarity, no softmax).",
+  "n_layer": 40,
+  "layer_type_counts": {
+   "conv": 30,
+   "full_attention": 10
+  },
+  "layer_type_sequence_note": "roughly 1 full_attention per 4 layers, evenly spaced (verified: 10 attention layers across 40, matching every-4th position)",
+  "dense_vs_moe_split_CORRECTED": {
+   "dense_layers": [
+    0,
+    1
+   ],
+   "n_moe_layers": 38,
+   "finding": "the dense/MoE split is by ABSOLUTE POSITION (first 2 layers only), completely ORTHOGONAL to the conv/attention split -- both conv-type and full_attention-type layers carry MoE FFN everywhere except layers 0-1. This is architecturally distinct from every MoE specimen this session has touched (Qwen3-VL/O006, Qwen3-30B/O005, Kimi-VL/O003), none of which mix a THIRD structural axis (local conv) with the attention/MoE split."
+  },
+  "moe_topology": {
+   "n_experts": 64,
+   "experts_per_tok": 4,
+   "moe_intermediate_size": 1536,
+   "use_expert_bias": true,
+   "note": "expert_bias is a PER-LAYER F32 tensor (shape=[num_experts]) distinct from the gate weight -- a learned routing bias, not just the softmax/sigmoid gate itself; worth checking whether this changes routing-skew analysis methodology vs the gate-only routers examined for O003/O005/O006 this session."
+  },
+  "attention_detail": "per-head Q/K RMSNorm (self_attn.q_layernorm/k_layernorm, shape=[head_dim]) inside each full_attention layer -- a stabilization detail not present in the transformer attention blocks touched elsewhere this session."
+ },
+ "byte_accounting_EXACT": {
+  "n_tensors": 7610,
+  "total_bytes": 47687327744,
+  "total_gib": 44.412,
+  "total_params": 23843661440,
+  "total_params_B": 23.8437,
+  "name_implied_total_B": 24,
+  "total_cross_check_pct": 0.651,
+  "non_expert_params_B": 0.8924,
+  "expert_total_params_all_64_x_38_layers_B": 22.9512,
+  "active_params_per_token_B": 2.3269,
+  "name_implied_active_B": 2,
+  "active_cross_check_pct": 16.344,
+  "active_frac_of_total_pct": 9.76
+ },
+ "obvious_representation_opportunities": [
+  "The dense-layer/MoE-layer split (by position, not by conv/attn type) means this session's new R-heterogeneous-organ-allocation-aggressive-only rule's origin condition ('kind==moe') needs refinement to apply cleanly here -- is the RIGHT unit of analysis 'MoE layers' (38/40) or 'the whole model' given 2 dense layers exist? A genuine transfer-rule precision question for a future pass, not resolved here.",
+  "conv layers are architecturally CHEAP (a single depthwise [hidden,1,3] kernel + 2 square projections) relative to attention layers (Q/K/V/O + per-head norms) -- Gravity pressure on the 30 conv layers vs 10 attention layers is a genuinely different allocation question than anything MoE-organ-focused examined this session."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor battery, no baseline TPS, no routing-skew measurement (would need a live trace, not config-derivable)."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN. Genuinely the most structurally complex specimen surveyed this session (3 combined axes: conv/attention/MoE). 9.76% active fraction is even sparser than O006's 11%. Worth a real Gravity pass once GPU time opens.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "UNLIKELY BY SIZE: 44.4GiB stored footprint is large for a Resident role even with only 2.33B active/token (the FULL model must still be resident in memory for MoE routing to reach any expert) -- size argues against it despite the small active-compute figure.",
+  "pulsar_candidate": "UNTESTED.",
+  "magnetar_candidate": "PLAUSIBLE IF CAPABILITY HOLDS: architecturally sophisticated, worth a real battery.",
+  "cepheid_candidate": "NOT EVALUATED.",
+  "verdict": "NO CLAIM BEYOND 'ARCHITECTURALLY THE RICHEST SPECIMEN SURVEYED' -- Odyssey I discovery only."
+ },
+ "commit": "1b52afb06",
+ "emitted_at": "2026-09-09T13:45:39Z"
+}

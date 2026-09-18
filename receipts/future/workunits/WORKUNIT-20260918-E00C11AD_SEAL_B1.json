@@ -1,0 +1,28 @@
+{
+  "receipt_id": "WORKUNIT-20260918-E00C11AD_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "WORKUNIT-20260918-E00C11AD",
+  "phase": "BUILD",
+  "title": "Goal milestone 5: tested repository change",
+  "at": "2026-09-18T16:11:56.252829+00:00",
+  "written_at_unix": 1789747916,
+  "change": {
+    "paths": [
+      "tools/odyssey/physical_graph_compiler.py",
+      "tools/odyssey/test_physical_graph_compiler_heterogeneous.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 5"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 5,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-A52AB48501",
+  "real_engineering_seal": true
+}

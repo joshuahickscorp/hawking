@@ -1,0 +1,60 @@
+{
+  "active_job": "job-4d34ca9d-3bd4-4c28-8926-2094c13f4ba9",
+  "blocker": {
+    "pid": 62717,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.001122672,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260918-1B8442E6",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "8d0c200cb731552175c0a8965a1bef910606cc256e363dab919aa10be8f0e2e2",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 62717,
+  "exact_next_action": "Hawking rejected the typed effect before a canonical write; preserve the receipt and route a fresh bounded WorkUnit.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 1,
+  "latest_real_seal": "",
+  "objective": "Advance P20_FINAL_HANDOFF_REVIEW_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay term",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-a0cb9fb8cacf4d18b605870f:tool-2",
+    "gen-1789755219-skIfrpqUyIKMLSJZ7ipP"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T18:13:40.725094+00:00",
+  "worker_attempt_id": "hawking-attempt-f815bec20aa344d9",
+  "worker_cost_usd": 0.001122672,
+  "worker_id": "hawking-worker-a9d9749d59264414",
+  "worker_kill_reason": "unaccepted_effect_proposal",
+  "worker_last_heartbeat_at": 1789755216.851063,
+  "worker_spawned_at": 1789755216.332352,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260918-1B8442E6"
+}

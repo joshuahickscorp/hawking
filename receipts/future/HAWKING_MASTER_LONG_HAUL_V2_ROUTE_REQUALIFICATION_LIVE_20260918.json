@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.long_haul.v2.route_requalification_live.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:33:50Z",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "supervisor_contract_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "endpoint": "http://127.0.0.1:8014/v1/chat/completions",
+  "tool_call_qualified": true,
+  "claim_boundary": "Transport and named-tool semantic compatibility only. No repository mutation, provider tranche acceptance, hardware qualification, or local model residency claim.",
+  "probes": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "http_status": 200,
+      "finish_reason": "tool_calls",
+      "tool_call_count": 1,
+      "tool_name": "route_probe",
+      "arguments": "{\"ok\":true}",
+      "tool_call_qualified": true
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "http_status": 200,
+      "finish_reason": "tool_calls",
+      "tool_call_count": 1,
+      "tool_name": "route_probe",
+      "arguments": "{\"ok\":true}",
+      "tool_call_qualified": true
+    }
+  ],
+  "verification": {
+    "request_shape": "explicit named tool_choice route_probe with JSON object response format",
+    "concurrent_probe_count": 2,
+    "invalid_http_200_boundary": "previous semantic tests retain gateway 502 for HTTP 200 responses lacking required JSON/tool semantics",
+    "daemon_model": null,
+    "daemon_resident": null,
+    "local_kimi_or_mlx_process_present": false,
+    "objective_full_reread": false,
+    "objective_digest_checked": true,
+    "objective_digest_unchanged": true
+  },
+  "reopen_authorization": "This receipt qualifies a fresh transport/tool-call route only; each reopened tranche still requires its own bounded WorkUnit evidence contract and independent acceptance."
+}

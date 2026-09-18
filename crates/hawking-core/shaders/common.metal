@@ -44,6 +44,16 @@ struct ArgbufTopkGate {
     uint normalize_topk;
 };
 
+/// (n_experts: u32, top_k: u32, normalize_topk: u32, routed_scale: f32)
+/// — Kimi sigmoid/noaux_tc gate.  The learned correction bias is a separate
+/// device buffer because it is per-layer model data, not a scalar argument.
+struct ArgbufKimiTopkGate {
+    uint n_experts;
+    uint top_k;
+    uint normalize_topk;
+    float routed_scale;
+};
+
 /// (n: u32) — used by silu_mul / moe_batched_silu_mul.
 struct ArgbufN { uint n; };
 

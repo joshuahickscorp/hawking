@@ -17,6 +17,7 @@
 use crate::artifact::widen_native;
 use crate::attn::mha_decode_step;
 use crate::kernels::{add_inplace, argmax_f32, rmsnorm, silu_mul, softmax_inplace};
+use crate::model::source_safetensors::read_safetensors_header;
 use crate::{Error, Result};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -1484,103 +1485,6 @@ impl SourceBf16Index {
             .map_err(|e| model_err(format!("read embed row {token}: {e}")))?;
         widen_native("native.bf16", &buf)
     }
-}
-
-struct SafetensorsHeader {
-    header_nbytes: u64,
-    tensors: HashMap<String, SafetensorsTensorInfo>,
-}
-
-struct SafetensorsTensorInfo {
-    dtype: String,
-    shape: Vec<usize>,
-    data_offsets: (u64, u64),
-}
-
-fn read_safetensors_header(path: &Path) -> Result<SafetensorsHeader> {
-    let mut file =
-        File::open(path).map_err(|e| model_err(format!("cannot open {}: {e}", path.display())))?;
-    let mut len_buf = [0u8; 8];
-    file.read_exact(&mut len_buf).map_err(|e| {
-        model_err(format!(
-            "cannot read header length of {}: {e}",
-            path.display()
-        ))
-    })?;
-    let header_nbytes = u64::from_le_bytes(len_buf);
-    if header_nbytes == 0 || header_nbytes > 64 * 1024 * 1024 {
-        return Err(model_err(format!(
-            "implausible safetensors header length {header_nbytes} in {}",
-            path.display()
-        )));
-    }
-    let mut raw = vec![0u8; header_nbytes as usize];
-    file.read_exact(&mut raw)
-        .map_err(|e| model_err(format!("cannot read header of {}: {e}", path.display())))?;
-    let value: Value = serde_json::from_slice(&raw).map_err(|e| {
-        model_err(format!(
-            "safetensors header JSON invalid in {}: {e}",
-            path.display()
-        ))
-    })?;
-    let object = value.as_object().ok_or_else(|| {
-        model_err(format!(
-            "safetensors header is not an object in {}",
-            path.display()
-        ))
-    })?;
-    let mut tensors = HashMap::new();
-    for (name, info_v) in object {
-        if name == "__metadata__" {
-            continue;
-        }
-        let info = info_v
-            .as_object()
-            .ok_or_else(|| model_err(format!("tensor {name} header is not an object")))?;
-        let dtype = info
-            .get("dtype")
-            .and_then(Value::as_str)
-            .ok_or_else(|| model_err(format!("tensor {name} lacks dtype")))?
-            .to_string();
-        let shape = info
-            .get("shape")
-            .and_then(Value::as_array)
-            .ok_or_else(|| model_err(format!("tensor {name} lacks shape")))?
-            .iter()
-            .map(|v| {
-                v.as_u64()
-                    .and_then(|n| usize::try_from(n).ok())
-                    .ok_or_else(|| model_err(format!("tensor {name} has non-integer shape")))
-            })
-            .collect::<Result<Vec<_>>>()?;
-        let offsets = info
-            .get("data_offsets")
-            .and_then(Value::as_array)
-            .ok_or_else(|| model_err(format!("tensor {name} lacks data_offsets")))?;
-        if offsets.len() != 2 {
-            return Err(model_err(format!(
-                "tensor {name} data_offsets is not a pair"
-            )));
-        }
-        let begin = offsets[0]
-            .as_u64()
-            .ok_or_else(|| model_err(format!("tensor {name} data_offsets[0] invalid")))?;
-        let end = offsets[1]
-            .as_u64()
-            .ok_or_else(|| model_err(format!("tensor {name} data_offsets[1] invalid")))?;
-        tensors.insert(
-            name.clone(),
-            SafetensorsTensorInfo {
-                dtype,
-                shape,
-                data_offsets: (begin, end),
-            },
-        );
-    }
-    Ok(SafetensorsHeader {
-        header_nbytes,
-        tensors,
-    })
 }
 
 fn layer_name(layer: usize, suffix: &str) -> String {

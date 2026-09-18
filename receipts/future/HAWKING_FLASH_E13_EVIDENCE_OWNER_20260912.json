@@ -1,0 +1,71 @@
+{
+  "schema": "hawking.flash_e13.evidence_owner.receipt.v1",
+  "status": "CANONICAL_RUST_EVIDENCE_PRODUCER_VERIFIED__PRODUCTION_CORPUS_ABSENT",
+  "recorded_at": "2026-09-12T17:36:37Z",
+  "repository_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "owner": {
+    "source": "crates/hawking-core/src/flash_e13_vocabulary_evidence.rs",
+    "source_sha256": "20f03e5f8384bf5ac2b78c650f46b2929d4b107ff76645ebd53c76f05a924adc",
+    "source_lines": 711,
+    "entry_point": "produce_e13_evidence",
+    "cli": "hawking gravity e13-evidence",
+    "tokenizer_owner": "crates/hawking-core/src/tokenizer.rs::Tokenizer",
+    "tokenizer_owner_sha256": "4b4175d1e8a24e2732f7a4b0b346172c3133f370ad28cc34d28c78e008f7295d",
+    "independent_admission": "hcli.agentos.flash_vocabulary_prefilter._admit_e13_evidence_producer",
+    "independent_admission_source_sha256": "2e46afcb83cce0a88958db46ea1a6796b17020cbb5cad6e4d84314b59fad4e07"
+  },
+  "owned_contract": [
+    "exact tokenizer and UTF-8 corpus SHA-256 binding",
+    "Hawking-core tokenizer encoding with no special-token insertion",
+    "exact raw tokenizer-surface and independently decoded-token identities",
+    "canonical Latin/Han primary-script classification",
+    "predeclared disjoint frequency and decoded-byte bands",
+    "deterministic eight-cell fit/heldout row selection",
+    "split-preserving seeded shuffled-token null declaration",
+    "immutable no-clobber evidence-directory creation through the canonical hawking CLI",
+    "independent Python admission bound to the current Rust owner source hash"
+  ],
+  "validation": {
+    "native_unit_tests": "cargo test -p hawking-core --lib flash_e13_vocabulary_evidence -- --nocapture: 2 passed, 0 failed",
+    "python_admission_tests": "python3 -m pytest -q hcli/tests/test_flash_vocabulary_prefilter.py: 22 passed, 0 failed",
+    "focused_frontier_tests": "66 passed across E13 admission, Gravity frontier, and complete-NR accounting",
+    "rust_check": "cargo check -p hawking: passed",
+    "cli_surface": "cargo run -q -p hawking -- gravity e13-evidence --help: passed",
+    "current_preflight": {
+      "path": "receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_V2_20260912.json",
+      "file_sha256": "c4b08503e00f808479c4149cce735af9711de10f9ea8e991b6c07845ab24e944",
+      "seal_sha256": "6572063744900b428b46352af5b586a9e5470516c3ca2c7355a34ffc9f4ce881",
+      "status": "WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN",
+      "tensor_payload_bytes_read": 0
+    },
+    "current_accounting": {
+      "path": "receipts/headless/FLASH_NR_ACCOUNTING_FRONTIER_V4_20260912.nr.json",
+      "file_sha256": "38b6f498ff2b5b62642cb0302567da4fb35d1eb9e151ed616f45affd930cae3e",
+      "seal_sha256": "701e6e9d9443a2c36f260e54f11a61064b46b61deb168a3926c429a823575ba2",
+      "status": "OPEN_COMPLETE_FAMILY_ACCOUNTING_BASELINE__NOT_FOR_PROMOTION",
+      "complete_nr_ebpw": null
+    }
+  },
+  "runtime": {
+    "model_loaded": false,
+    "tensor_payload_bytes_read": 0,
+    "row_extraction_performed": false,
+    "gpu_or_ane_execution": false,
+    "provider_started": false,
+    "daemon_or_web_restart": false,
+    "deployment": false
+  },
+  "remaining_e13_prerequisite": {
+    "state": "MISSING_PREDECLARED_AUTHORITATIVE_CORPUS_AND_THRESHOLDS",
+    "required": [
+      "one authoritative UTF-8 corpus path and SHA-256",
+      "fixed rare/common frequency thresholds",
+      "fixed short/long decoded UTF-8 byte thresholds",
+      "fixed selection and shuffled-null seeds"
+    ],
+    "next": "Create the declaration before inspecting corpus-derived cell counts, run hawking gravity e13-evidence once, then pass its plan to the independent no-payload preflight. If any cell is underpowered, record that refusal; do not tune thresholds after observing the corpus merely to fill the design."
+  },
+  "claim_boundary": "This proves the deterministic producer and its independent source-bound admission contract on synthetic controls. It does not identify an authoritative production corpus, execute E13 on Flash tensor rows, admit the tensor-tail sampling policy, establish a representation, construct a complete NR, measure EBPW or TPS, qualify capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "bc93716c177994e3c5e011b875276217b6f5d15cdb7b68d0daa653331e826762"
+}

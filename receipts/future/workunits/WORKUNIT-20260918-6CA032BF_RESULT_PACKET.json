@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "6ccf04243da5afe6d2e24f32aba9a446c944c60d8682ec28861a2a6453c2755a",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:06:12.896951+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:06:12.896971+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:06:12.901308+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\": [{\"id\": \"obs-1\", \"summary\": \"hawking/serve.py lines 6000-6065 contain the tail of the /hawking/web/ultragoal dry-run handler and the start of the /hawking/web/goal route handler.\", \"detail\": \"Lines 6000-6027: the ultragoal ",
+      "outcome": "CONTINUE",
+      "reply_chars": 3675,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\": [{\"id\": \"obs-1\", \"summary\": \"hawking/serve.py lines 6000-6065 contain the tail of the /hawking/web/ultragoal dry-run handler and the start of the /hawking/web/goal route handler.\", \"detail\": \"Lines 6000-6027: the ultragoal dry-run response builds a workunit plan list (id, role, description truncated to 1200 chars, dependencies, resource_class, status='planned') and returns 200 with schema 'hawking.web.ultragoal.v1', dry_run=True, phase_plan phases ['PLAN','WORKUNIT_GRAPH','TERMINAL_REVIEW'], workunit_count, execution stub (workers='not started', terminal='dry_run', remote_cost_usd=0.0), and a claim_boundary string asserting 'Compiler decomposition only. No Goal, worker, mutation, or remote request was created.' ValueError/JSONDecodeError maps to a 400 error response.\"}, {\"id\": \"obs-2\", \"summary\": \"The /hawking/web/goal route is local-only and begins Hawking Auto model resolution.\", \"detail\": \"Lines 6030-6065: route '/hawking/web/goal' enforces self._local_only() else 403 'Hawking Web Goal access is local-only'. It parses the JSON body, requires a non-empty 'objective' (ValueError otherwise), resolves attachment refs via _web_attachment_refs(attachment_ids or attachments), and computes the requested model defaulting to 'hawking/auto'. auto_scope defaults to 'cloud' and must be one of {'cloud','local','both'} (ValueError otherwise). If _is_hawking_auto_model(requested): for auto_scope=='local' the logical model is rewritten to 'hawking-auto' with a comment that dispatch must use an actually admitted native route or fail closed when local remains withheld; otherwise self._remote_auto_route({model:'hawking/auto', messages:[user objective], hawking_auto_scope:auto_scope}) is called and requested is set to selected_model. The excerpt ends mid-handler at preloaded_body.update({'model': requested, ...}).\"}, {\"id\": \"obs-3\", \"summary\": \"File metadata observed.\", \"detail\": \"Path /Users/scammermike/Downloads/hawking/hawking/serve.py, total_lines 7793, bytes 397435, sha256 19f0fcdb69073fe98e17dc40d07b5e073fba0b0b74cd914828a43130849e3786, read not truncated for the requested window.\"}], \"sources\": [{\"tool\": \"fs.read\", \"path\": \"hawking/serve.py\", \"start_line\": 6000, \"end_line\": 6065, \"invocation_id\": \"tool-15ed19b4-305f-4fd9-ab5e-5bfa48342abe\", \"sha256\": \"19f0fcdb69073fe98e17dc40d07b5e073fba0b0b74cd914828a43130849e3786\", \"observed_at\": 1789711562.375933}], \"recommendations\": [{\"id\": \"rec-1\", \"recommendation\": \"To fully trace Hawking Auto web-goal dispatch, read the continuation of the /hawking/web/goal handler starting at line 6066, plus the definitions of _is_hawking_auto_model, _remote_auto_route, and _web_attachment_refs.\", \"tool_family\": \"fs.read/fs.search\"}, {\"id\": \"rec-2\", \"recommendation\": \"Verify the fail-closed behavior for auto_scope=='local' by locating where 'hawking-auto' is dispatched and what admission checks gate native local routes.\", \"tool_family\": \"fs.search\"}], \"unresolved_questions\": [\"What does the remainder of the /hawking/web/goal handler (after line 6065) do with the resolved model and preloaded_body (Goal creation, worker spawn, cost accounting)?\", \"How does _remote_auto_route select selected_model for scope 'cloud' vs 'both', and what providers are admitted?\", \"Where is the 'hawking-auto' local model dispatched, and is the local route currently admitted or withheld (fail-closed)?\"], \"child_worker_ids\": [], \"status\": \"complete\", \"next_action\": null, \"reason\": \"The single admitted fs.read observation for hawking/serve.py lines 6000-6065 was recorded and grounded; this was a one-observation P2 probe and no further work was requested.\", \"expected_evidence\": null, \"tool_family\": null}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-68970f677ced4c56",
+  "worker_id": "hawking-worker-fa6b2ade6a314824",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-6CA032BF"
+}

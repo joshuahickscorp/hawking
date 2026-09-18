@@ -1,0 +1,122 @@
+{
+  "schema": "hawking.gravity.organ_passports.integration.v1",
+  "status": "STATIC_TRAIT_TO_PASSPORT_PROJECTION_VALIDATED__DYNAMIC_CONTROLS_WITHHELD",
+  "recorded_at": "2026-09-12T20:37:25Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "purpose": "Distill the current Flash-Next organ frontier into the existing Foundry method registry without creating a second organ or scientific-policy authority.",
+  "source": {
+    "artifact_id": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "config_file_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "config_canonical_sha256": "e9b3cec7ec732a18386ce5bf8a29755ac8a45485f6d7e001187aa71241ee1083",
+    "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "header_tensor_manifest_sha256": "0cf05c2ba0f0e5423890d006731d7f713f8757997d1fa1a0e0921ef691b00943",
+    "header_tensor_count": 1658,
+    "classification": "CONFIG_AND_SAFETENSORS_HEADER_NAMES_ONLY",
+    "loaded_weights": false
+  },
+  "canonical_owners": {
+    "passport_method_scar_catalog": {
+      "path": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "sha256": "2ec29817f2bdc484463836e69d4c84247d1d57d5eba2df61b224ead3d3e14848",
+      "section": "organ_passports",
+      "schema": "hawking.gravity.organ_passport_catalog.v1"
+    },
+    "passport_query": {
+      "path": "tools/foundry/query_gravity_methods.py",
+      "sha256": "93d6ab75bc0f7aaa807adbbce698fe2602c2f373e0e4935c4f2369dd4bee396e",
+      "entrypoint": "assess_passports",
+      "execution_boundary": "reuse_method remains the sole admitted automatic executor and verifier-binding path"
+    },
+    "static_trait_extractor": {
+      "path": "tools/odyssey/arch_recognizer.py",
+      "sha256": "1088ac5452727cc2a317906ee9fb42de6e51eb53aefa8fb5eed19c7e4e71d434",
+      "entrypoint": "static_trait_projection",
+      "scope": "config and Safetensors-header names only"
+    },
+    "modellake_projection": {
+      "paths": [
+        "tools/odyssey/modellake_lineage.py",
+        "tools/odyssey/modellake_index.py"
+      ],
+      "sha256": [
+        "6fa7795129edbb87377578dd58d1af7694609885fadb94c89bcd4e3178183f92",
+        "5e78d6506a78bd9112e5d5ad6d91882b907f4fa111b91e40e8d09cd874f42df2"
+      ],
+      "boundary": "ModelLake persists immutable static traits only; it does not select a method, Scar, Law, or conclusion."
+    },
+    "accounting": "crates/hawking-core/src/gravity_manifest.rs remains the complete representation and active-state accounting owner."
+  },
+  "passport_set": {
+    "count": 12,
+    "ids": [
+      "flash.routed-moe.v1",
+      "flash.router.v1",
+      "flash.ple.hashed-ngram.v1",
+      "flash.hyperconnection.v1",
+      "flash.deltanet-linear-attention.v1",
+      "flash.full-attention.v1",
+      "flash.embedding-lm-head.v1",
+      "flash.shared-expert-gates.v1",
+      "flash.rmsnorm.v1",
+      "flash.terminal-hc-mixer.v1",
+      "flash.decode-state-kv.v1",
+      "flash.tokenization-sampling.v1"
+    ],
+    "required_fields": [
+      "identity and recognition predicates",
+      "tensor selector and shape contract",
+      "producer/consumer and state contract",
+      "source byte accounting plus explicit active-byte/compute status",
+      "exact/approximation boundary",
+      "methods, Laws, exact scoped Scars, reference controls, reproduction bundle, native primitives, bottlenecks, and reopen conditions"
+    ],
+    "active_bytes_and_compute": "Every passport records active bytes/token and compute/token as UNMEASURED/null. No source-byte split is reused as an active-byte, runtime, or TPS claim."
+  },
+  "static_projection": {
+    "status": "STATIC_FLASH_PASSPORT_PROJECTION_PASS",
+    "recognized_passports": 12,
+    "source_identity_verified": true,
+    "ple": {
+      "recognized": true,
+      "static_projection_verified": true,
+      "status": "WITHHELD_MISSING_CONTROL",
+      "missing_controls": [
+        "source_ple_access_trace",
+        "reference_ple_formula_oracle",
+        "ple_inclusive_source_state_teacher"
+      ]
+    },
+    "decode_state": {
+      "recognized": true,
+      "static_projection_verified": true,
+      "status": "WITHHELD_MISSING_CONTROL",
+      "missing_controls": [
+        "accepted_decode_state_boundary",
+        "ple_inclusive_source_state_teacher"
+      ]
+    },
+    "scar_policy": "A scoped Scar skips only when every declared source revision, organ scope, representation family, and control ID matches. A text-similar candidate, changed scope/rate/family, or reopened predicate does not inherit a skip."
+  },
+  "validation": {
+    "registry_json": "jq empty: passed",
+    "python_compile": "query, recognizer, lineage, ModelLake index, and focused tests: passed",
+    "focused_tests": "80 passed: Foundry query/passport, architecture recognizer, ModelLake lineage/index",
+    "static_flash_projection": "12/12 recognized; PLE and decode-state correctly withheld missing their dynamic source controls",
+    "diff_check": "passed for the passport/trait change set",
+    "protected_model_run_started": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded_or_restarted": false,
+    "modellake_mutated": false
+  },
+  "preserved_frontier": {
+    "source_teacher": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION. The passport catalog does not substitute static traits, native non-PLE state, historical chains, or formula controls for the required PLE-inclusive source greedy teacher.",
+    "native_ple": "NATIVE_PLE_REDUCTION_POLICY_SEAM_EXACT__SOURCE_PERSISTENT_STATE_AUTHORITY_UNQUALIFIED remains unchanged.",
+    "e_frontier": "E01/E02/E03/E04/E06/E07 and E13 retain their existing scoped dispositions; this catalog only exposes their reusable controls and scopes.",
+    "qualification": "No complete NR, complete EBPW, capability, native worker TPS, Pulsar promotion, or Kimi retirement is established."
+  },
+  "next_safe_action": "Wait for machine-owner admission of the existing exact source teacher request. Then run the existing lease-owned source-to-native ordered boundary transaction once, use the PLE-inclusive trajectory to resolve actual persistent-state authority, and only then select the next high-information representation method through this catalog.",
+  "claim_boundary": "This is a static ownership and queryability integration. It does not run a model, open weight payloads, use a GPU/Metal workload, restart Hawkingd/Web/Kimi, alter ModelLake, relax a source/state threshold, execute a Gravity method, construct an NR, establish source parity, capability, density, TPS, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "4ab8bfc5c790f740df23763e15e4a43dfb0667f7740da4366697e47f3539fc60"
+}

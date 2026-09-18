@@ -1,0 +1,129 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T17:36:41.366533+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T17:36:41.366542+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T17:36:41.366544+00:00",
+      "kind": "worker_proposal_bridge",
+      "turns": [
+        {
+          "has_tool_calls": true,
+          "response_chars": 0,
+          "turn": 0,
+          "typed_proposal": false
+        },
+        {
+          "execution_status": "accepted",
+          "executor_available": true,
+          "executor_invoked": true,
+          "has_tool_calls": false,
+          "response_chars": 5435,
+          "turn": 1,
+          "typed_proposal": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:36:41.366556+00:00",
+      "kind": "worker_mutation_handoff_trace",
+      "rows": [
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"bundle_complete\": true, \"bundle_operations\": [{\"new_text\": \"def collapse_goal_record(record: Mapping[str, Any]) -> Dict[str, Any]:\\n    \\\"\\\"\\\"Collapse a discrete goal record into the P17 contract shape.\\n\\n    Observable behavior: the returned mapping always carries the contract\\n    marker, a stable goal id, and a normalized remote/local model decision.\\n    Unknown or missing fields collapse to explicit ``None`` values instead\\n    of raising, so callers can persist a partial record safely.\\n\\n    P17_COLLAPSE_IMPLEMENTATION_CONTRACT_V2: the collapse also resolves the\\n    qualified alternate model route so a caller can tell, without a second\\n    authority, whether the collapsed record is eligible for a fresh attempt.\\n    A record whose model is a resolvable remote OpenRouter id collapses to\\n    ``alternate_route_qualified=True``; a bare ``openrouter:`` prefix, a\\n    local artifact path, or a missing model collapses to ``False``.\\n    \\\"\\\"\\\"\\n    if not isinstance(record, Mapping):\\n        raise TypeError(\\\"collapse_goal_record requires a mapping\\\")\\n    goal_id = record.get(\\\"goal_id\\\")\\n    model = record.get(\\\"model\\\")\\n    return {\\n        \\\"schema\\\": GOAL_SCHEMA,\\n        \\\"contract\\\": P17_COLLAPSE_IMPLEMENTATION_CONTRACT_V2,\\n        \\\"goal_id\\\": str(goal_id) if goal_id is not None else None,\\n        \\\"model\\\": str(model) if model is not None else None,\\n        \\\"remote_model\\\": _is_remote_openrouter_model(model),\\n        \\\"alternate_route_qualified\\\": _is_qualified_alternate_model_route(model),\\n        \\\"collapsed\\\": True,\\n    }\", \"old",
+          "ok": true,
+          "reason": "",
+          "tool": "repo.edit",
+          "verdict": "accepted"
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hawking/tests/test_auto_p17_collapse_implementation_contract_v2_regression.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"finished_at\": 1789753000.910609, \"n_stdout_chars\": 98, \"returncode\": 0, \"root\": \"/Users/scammermike/Downloads/hawking\", \"runner\": \"pytest\", \"started_at\": 1789753000.705981, \"stderr\": \"\", \"stdout\": \"....                                                                     [100%]\\n4 passed in 0.07s\", \"verified\": true}",
+          "ok": true,
+          "reason": "",
+          "tool": "tests.run",
+          "verdict": null
+        },
+        {
+          "dispatched": true,
+          "error": "",
+          "observation": "{\"applied\": true, \"execution\": {\"applied\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/goal_surface.py\", \"sha256_after\": \"b7c16ade34ef4246646d52f57da7c80f7497a9e3d6fe9b5ff45f5ee4122f1328\", \"sha256_before\": \"874821f058cae6e8b141e3cc235450491d746e02aaddf555db58273d47b5e1f5\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p17_collapse_implementation_contract_v2_regression.py\", \"sha256_after\": \"bf271925ff139ab4fd7bae85ceb5f9679cec614d763e4384d7468b0e06bcfff5\", \"sha256_before\": null}], \"completion_packet\": {\"authorized_change\": true, \"changed_files\": [{\"changed\": true, \"path\": \"hawking/goal_surface.py\", \"sha256_after\": \"b7c16ade34ef4246646d52f57da7c80f7497a9e3d6fe9b5ff45f5ee4122f1328\", \"sha256_before\": \"874821f058cae6e8b141e3cc235450491d746e02aaddf555db58273d47b5e1f5\"}, {\"changed\": true, \"path\": \"hawking/tests/test_auto_p17_collapse_implementation_contract_v2_regression.py\", \"sha256_after\": \"bf271925ff139ab4fd7bae85ceb5f9679cec614d763e4384d7468b0e06bcfff5\", \"sha256_before\": null}], \"exit_status\": [0], \"limitations\": [], \"next_action\": \"continue from the verified checkpoint\", \"schema\": \"hawking.completion.packet.v1\", \"status\": \"VERIFIED\", \"tests\": [{\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/goal_surface.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"exit_code\": 0, \"kind\": \"py_compile\", \"path\": \"hawking/tests/test_auto_p17_collapse_implementation_contract_v2_regression.py\", \"stderr\": \"\", \"stdout\": \"\"}, {\"admitted\": true, \"collected\": 4, \"executed\": 4, \"exit_code\": 0, \"kind\": \"test\", \"passed\": 4, \"requested\": \"hawking/tests/test_auto_p17_collapse_implementatio",
+          "ok": true,
+          "reason": "",
+          "tool": "mutation.proposal",
+          "verdict": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-18T17:36:41.369601+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"canonical_root\":\"/Users/scammermike/Downloads/hawking\",\"expected_base_hashes\":{\"hawking/goal_surface.py\":\"874821f058cae6e8b141e3cc235450491d746e02aaddf555db58273d47b5e1f5\"},\"operations\":[{\"op\":\"replace\",\"path\"",
+      "outcome": "CONTINUE",
+      "reply_chars": 5435,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/goal_surface.py",
+        "hawking/tests/test_auto_p17_collapse_implementation_contract_v2_regression.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-9EB6D4BC_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/goal_surface.py",
+    "hawking/tests/test_auto_p17_collapse_implementation_contract_v2_regression.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P17_COLLAPSE_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-9EB6D4BC_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-9EB6D4BC"
+}

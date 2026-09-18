@@ -1,0 +1,79 @@
+{
+  "schema": "hawking.flash_e13.wikimedia_corpus_predeclaration.v2",
+  "status": "PREDECLARED_AFTER_STRUCTURAL_CAPACITY_PASS_BEFORE_BROADER_CORPUS_OCCUPANCY_INSPECTION",
+  "recorded_at": "2026-09-12T18:07:00Z",
+  "purpose": "One bounded follow-up to distinguish Wikinews coverage failure from E13 frequency-design failure while preserving the original thresholds.",
+  "premise": {
+    "wikinews_refusal": "receipts/headless/FLASH_E13_WIKINEWS_FIXED_CORPUS_REFUSAL_20260912.json",
+    "wikinews_refusal_seal_sha256": "06180ade59372c20aaf7a506b463eab48f3d50688966a2cfc04defc4e0e55e61",
+    "lexical_universe_census": "receipts/headless/FLASH_E13_LEXICAL_UNIVERSE_CENSUS_20260912.json",
+    "lexical_universe_census_seal_sha256": "226da98d8cabd096a57622356ed8bdb73ca2144cce5d9e4d71dd8e7562844b34",
+    "han_short_eligible_rows": 5426,
+    "required_rows_per_cell": 512,
+    "decision": "A broader corpus is warranted because tokenizer geometry is not the limiting mechanism."
+  },
+  "sources": [
+    {
+      "project": "English Wikinews",
+      "language": "English",
+      "script": "Latin",
+      "dump_name": "enwikinews-20260901-pages-articles.xml.bz2",
+      "url": "https://dumps.wikimedia.org/enwikinews/20260901/enwikinews-20260901-pages-articles.xml.bz2",
+      "content_length": 47538740,
+      "upstream_sha1": "abc9721f42340c8fc073078a44d98ee8d3a74959"
+    },
+    {
+      "project": "Chinese Wikipedia",
+      "language": "Chinese",
+      "script": "Han",
+      "dump_name": "zhwiki-20260901-pages-articles1.xml-p1p187712.bz2",
+      "url": "https://dumps.wikimedia.org/zhwiki/20260901/zhwiki-20260901-pages-articles1.xml-p1p187712.bz2",
+      "content_length": 254212741,
+      "upstream_sha1": "ce426a867d72952f189562683f0e2e119dea3845",
+      "maximum_emitted_utf8_bytes": 300000000
+    }
+  ],
+  "source_selection": {
+    "rationale": "Keep the already sufficient Latin source fixed and replace only the underpowered Chinese-news coverage with a much broader first-party Chinese Wikipedia article range. The Chinese text contribution is bounded before inspection to control tokenizer memory.",
+    "license_authority": "https://foundation.wikimedia.org/wiki/Legal:Wikimedia_Developer_App_Guidelines#3._What_licenses_apply_to_Wikimedia_content",
+    "license_note": "Most Wikimedia text is CC BY-SA 4.0 and GFDL; the derived corpus is internal evidence and is not committed or redistributed. Source projects, dump URLs, dates, and transformation remain recorded for attribution."
+  },
+  "transform": {
+    "implementation": "this_file.v2",
+    "owner": "tools/future/flash_e13_wikinews_corpus.py",
+    "owner_sha256": "76b8c5c5f229a667e354a5ce0b3433816c3ac1f46f31a6b577c2641cdc4c1efb",
+    "source_order": [
+      "enwikinews-20260901-pages-articles.xml.bz2",
+      "zhwiki-20260901-pages-articles1.xml-p1p187712.bz2"
+    ],
+    "selection": "namespace 0, non-redirect pages with non-empty current revision text; stop a source before the first page that would exceed its predeclared emitted-byte cap",
+    "emission": "UTF-8 title, LF, exact XML-decoded revision text, LF, in source dump order",
+    "normalization": "XML entity resolution and XML line-ending normalization performed by Python stdlib ElementTree only; no markup stripping, sampling, deduplication, Unicode normalization, or language cleanup",
+    "maximum_total_output_bytes": 1073741824,
+    "no_clobber": true
+  },
+  "e13_design_frozen_unchanged": {
+    "eligible_model_vocab_count": 248044,
+    "row_budget": 4096,
+    "fit_rows_per_stratum": 256,
+    "heldout_rows_per_stratum": 256,
+    "rare_max_count": 1,
+    "common_min_count": 2,
+    "short_max_utf8_bytes": 3,
+    "long_min_utf8_bytes": 4,
+    "selection_seed": 5683489481123170890,
+    "shuffled_null_seed": 15016081310332754406,
+    "changed_from_wikinews_control": false,
+    "failure_policy": "If any cell still has fewer than 512 eligible rows, seal the refusal and revisit the factorial design. Do not tune thresholds or acquire a third corpus merely to force occupancy."
+  },
+  "runtime_boundary": {
+    "model_load_authorized": false,
+    "tensor_payload_read_authorized": false,
+    "gpu_or_ane_authorized": false,
+    "provider_or_daemon_restart_authorized": false,
+    "modellake_mutation_authorized": false
+  },
+  "claim_boundary": "This freezes the sole broader-corpus retry before corpus-derived occupancy is inspected. It does not establish corpus sufficiency, authorize row extraction, execute E13, establish a representation, construct a complete NR, measure EBPW/TPS/capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "02ee682014e44046c9cf487025f0f8ca80f33866e37d0f3f29a74053e9e02fb0"
+}

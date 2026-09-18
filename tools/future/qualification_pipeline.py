@@ -3,7 +3,7 @@
 The planning, preflight, contamination and work-unit modules already exist.
 This sidecar sequences them into one resumable pipeline that is structurally
 incapable of taking GPU authority. Stages 10-12 emit a REQUEST/SPEC and stop.
-execute() raises unless an existing HCLI lease is present AND the machine is
+execute() raises unless an existing HAWKING lease is present AND the machine is
 QUIESCENT AND --execute was passed — and even then this sidecar has no lease,
 so it still raises.
 
@@ -28,7 +28,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from hcli.agentos.benchmark_boundary import (
+from hawking.agentos.benchmark_boundary import (
     DIAGNOSTIC_CONTAMINATED,
     QUALIFIED_PROTECTED,
     classify_window,
@@ -44,79 +44,8 @@ from tools.verify import status_causality as sc
 RECEIPT = "QUALIFICATION_PIPELINE.json"
 SCHEMA = "hawking.future.qualification_pipeline.v1"
 
-FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
-    sc,
-    "FIVE_RECORDED_FIELDS",
-    (
-        "probe_performed",
-        "direct_observation",
-        "interpretation",
-        "confidence",
-        "alternatives",
-    ),
-)
-
-
-def _bind_emit() -> None:
-    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
-    if hasattr(sc, "emit"):
-        return
-
-    def emit(
-        status: str,
-        *,
-        probe_performed: str = "",
-        direct_observation: Any = "",
-        interpretation: str = "",
-        probe_kind: str = "",
-        claim_kind: str | None = None,
-        falsifier: str = "",
-        source: str = "",
-    ) -> dict[str, Any]:
-        row: dict[str, Any] = {
-            "status": status,
-            "probe_performed": probe_performed,
-            "direct_observation": direct_observation,
-            "interpretation": interpretation or status,
-            "probe_kind": probe_kind,
-            "use_catalog": False,
-            "source": source or "<emit>",
-        }
-        if claim_kind:
-            row["claim_kind"] = claim_kind
-        if falsifier:
-            row["falsifier"] = falsifier
-        out = sc.challenge(row)
-        out["entry"] = "emit"
-        return out
-
-    sc.emit = emit  # type: ignore[attr-defined]
-
-
-_bind_emit()
-
-
-def records_five_fields(node: Any) -> bool:
-    fn = getattr(sc, "records_five_fields", None)
-    if callable(fn):
-        return bool(fn(node))
-    if not isinstance(node, dict):
-        return False
-    if not all(k in node for k in FIVE_RECORDED_FIELDS):
-        return False
-    if not str(node.get("probe_performed") or "").strip():
-        return False
-    if node.get("direct_observation") in (None, "", [], {}):
-        return False
-    if not str(node.get("interpretation") or "").strip():
-        return False
-    conf = node.get("confidence")
-    if not isinstance(conf, dict):
-        return False
-    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
-        return False
-    alts = node.get("alternatives")
-    return isinstance(alts, list) and bool(alts)
+FIVE_RECORDED_FIELDS = sc.FIVE_RECORDED_FIELDS
+records_five_fields = sc.records_five_fields
 
 
 def record_preflight_causality(
@@ -194,10 +123,10 @@ STAGES: tuple[str, ...] = (
     "derive_next_workunits",
 )
 
-# Recovered from hcli/agentos/protected_accelerator_benchmark.py. Cited, not imported:
+# Recovered from hawking/agentos/protected_accelerator_benchmark.py. Cited, not imported:
 # importing that module would load the runner that takes the exclusive lock.
-HCLI_LOCK_REL = Path(".hcli") / "locks" / "protected-accelerator-bench.lock"
-HCLI_LOCK_NAME = "protected-accelerator-bench.lock"
+HAWKING_LOCK_REL = Path(".hawking") / "locks" / "protected-accelerator-bench.lock"
+HAWKING_LOCK_NAME = "protected-accelerator-bench.lock"
 
 # Recovered from tools/odyssey/gpu_cleanliness.py PAUSE_PATTERN. Codex surface;
 # this sidecar never SIGSTOPs anyone. Pausing STANDING load forges a speedup.
@@ -371,15 +300,15 @@ def _lsof_holders(path: Path) -> dict[str, Any]:
     return {"status": "OK", "pids": pids, "reason": None}
 
 
-def read_hcli_lease_state(repo: Path | None = None) -> dict[str, Any]:
-    """Identify whether an existing HCLI protected lease is present.
+def read_hawking_lease_state(repo: Path | None = None) -> dict[str, Any]:
+    """Identify whether an existing HAWKING protected lease is present.
 
     Fail closed: present is True only when a holder can be observed WITHOUT
     taking the lock. Exclusive flock is a seizure and is never attempted.
-    A missing path is not created. mkdir of .hcli is Codex's job.
+    A missing path is not created. mkdir of .hawking is Codex's job.
     """
     root = repo if repo is not None else REPO
-    lock_path = root / HCLI_LOCK_REL
+    lock_path = root / HAWKING_LOCK_REL
     exists = lock_path.is_file()
     holders: dict[str, Any] = {"status": "SKIPPED", "pids": [], "reason": "lock file absent"}
     if exists:
@@ -387,14 +316,14 @@ def read_hcli_lease_state(repo: Path | None = None) -> dict[str, Any]:
     present = bool(exists and holders.get("status") == "OK" and holders.get("pids"))
     if present:
         reason = (
-            f"HCLI lock {HCLI_LOCK_REL.as_posix()} is held by pids {holders['pids']}; "
+            f"HAWKING lock {HAWKING_LOCK_REL.as_posix()} is held by pids {holders['pids']}; "
             "sidecar observed this read-only and did not take the lock"
         )
     elif not exists:
         reason = (
-            f"no existing HCLI lease: {HCLI_LOCK_REL.as_posix()} is absent. "
-            "queue_policy.protected_start_requires_existing_hcli_lease. "
-            "sidecar will not create .hcli/locks or call _try_lock"
+            f"no existing HAWKING lease: {HAWKING_LOCK_REL.as_posix()} is absent. "
+            "queue_policy.protected_start_requires_existing_hawking_lease. "
+            "sidecar will not create .hawking/locks or call _try_lock"
         )
     else:
         reason = (
@@ -407,15 +336,15 @@ def read_hcli_lease_state(repo: Path | None = None) -> dict[str, Any]:
             "kind": "READ",
             "present": present,
             "lock_path": str(lock_path),
-            "lock_rel": HCLI_LOCK_REL.as_posix(),
-            "lock_name": HCLI_LOCK_NAME,
+            "lock_rel": HAWKING_LOCK_REL.as_posix(),
+            "lock_name": HAWKING_LOCK_NAME,
             "lock_file_exists": exists,
             "holders": holders,
             "probe": "lsof -t on existing path only; never fcntl.LOCK_EX, never mkdir",
-            "recovered_from": "hcli/agentos/protected_accelerator_benchmark.py LOCK_NAME / _lock_path",
+            "recovered_from": "hawking/agentos/protected_accelerator_benchmark.py LOCK_NAME / _lock_path",
             "not_called": [
-                "hcli.agentos.protected_accelerator_benchmark._try_lock",
-                "hcli.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
+                "hawking.agentos.protected_accelerator_benchmark._try_lock",
+                "hawking.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
                 "lab.lease.SingletonLease",
             ],
             "reason": reason,
@@ -720,13 +649,13 @@ def promotion_prerequisites_spec(
                 "measurement_class == PROTECTED_ABSOLUTE",
                 "contamination_class == QUIESCENT",
                 f"ab_stats.sufficient_for_decision with min_pairs={C.MIN_PAIRS}",
-                "queue_policy.protected_start_requires_existing_hcli_lease",
+                "queue_policy.protected_start_requires_existing_hawking_lease",
                 "queue_policy.protected_start_requires_machine_quiescence",
                 "measurement_contract.protected_pass_requires_all_fields",
             ],
             "queue_policy": {
-                "protected_start_requires_existing_hcli_lease": bool(
-                    policy.get("protected_start_requires_existing_hcli_lease")
+                "protected_start_requires_existing_hawking_lease": bool(
+                    policy.get("protected_start_requires_existing_hawking_lease")
                 ),
                 "protected_start_requires_machine_quiescence": bool(
                     policy.get("protected_start_requires_machine_quiescence")
@@ -764,16 +693,16 @@ def lease_request_spec(lease: Mapping[str, Any]) -> dict[str, Any]:
             "never_seizure": True,
             "acquired": False,
             "would_require": [
-                "an existing HCLI protected lease (not created here)",
+                "an existing HAWKING protected lease (not created here)",
                 "machine QUIESCENT (not quiesced here)",
                 "explicit --execute (still insufficient: sidecar has no GPU authority)",
             ],
-            "target_lock": HCLI_LOCK_REL.as_posix(),
+            "target_lock": HAWKING_LOCK_REL.as_posix(),
             "observed_present": bool(lease.get("present")),
             "not_called": list(lease.get("not_called") or []),
             "reason": (
                 "stage 10 emits a request and stops. creating, stealing, or "
-                "fcntl.LOCK_EX on the HCLI lock is a seizure of GPU authority"
+                "fcntl.LOCK_EX on the HAWKING lock is a seizure of GPU authority"
             ),
         }
     )
@@ -809,8 +738,8 @@ def protected_measurement_spec(
             "null_policy": meas.get("null_policy"),
             "protected_pass_requires_all_fields": bool(meas.get("protected_pass_requires_all_fields")),
             "required_fields": fields,
-            "hcli_boundary": {
-                "function": "hcli.agentos.benchmark_boundary.classify_window",
+            "hawking_boundary": {
+                "function": "hawking.agentos.benchmark_boundary.classify_window",
                 "QUALIFIED_PROTECTED": QUALIFIED_PROTECTED,
                 "DIAGNOSTIC_CONTAMINATED": DIAGNOSTIC_CONTAMINATED,
                 "empty_window_class": boundary.get("benchmark_class"),
@@ -819,7 +748,7 @@ def protected_measurement_spec(
             },
             "protected_commands": commands,
             "native_mission_gate": (
-                "hcli/agentos/native_mission_gate.py is the live native tool/verifier "
+                "hawking/agentos/native_mission_gate.py is the live native tool/verifier "
                 "mission; this sidecar does not import or run it"
             ),
         }
@@ -875,7 +804,7 @@ def derive_next_workunits(
         row["blocked_reason"] = (
             None
             if lease_present
-            else "proposal only: protected start requires an existing HCLI lease this sidecar does not hold"
+            else "proposal only: protected start requires an existing HAWKING lease this sidecar does not hold"
         )
         if not lease_present:
             row["status"] = "blocked"
@@ -885,7 +814,7 @@ def derive_next_workunits(
         cid = str(drop.get("candidate_id") or "")
         if not cid:
             continue
-        row = ws.emit_hcli_workunit(
+        row = ws.emit_hawking_workunit(
             id=f"accelerator.physical.{cid}",
             role="accelerator_physical_qualification",
             description=f"Dropped {cid} at static preflight; do not occupy a protected window",
@@ -906,11 +835,11 @@ def derive_next_workunits(
         )
         ws.validate_emitted_unit(row)
         units.append(row)
-    lease_unit = ws.emit_hcli_workunit(
+    lease_unit = ws.emit_hawking_workunit(
         id="future.qualification.protected-lease-request",
         role="science",
         description=(
-            "REQUEST that Codex honour an existing HCLI protected lease for the "
+            "REQUEST that Codex honour an existing HAWKING protected lease for the "
             "survivor set. This unit cannot create, steal, or flock the lock."
         ),
         dependencies=[],
@@ -947,7 +876,7 @@ def derive_next_workunits(
         {
             "kind": "PROPOSAL",
             "n": len(units),
-            "source": "tools.future.workunit_species.emit_hcli_workunit / _physical_unit",
+            "source": "tools.future.workunit_species.emit_hawking_workunit / _physical_unit",
             "does_not_schedule": True,
             "does_not_dispatch": True,
             "units": compact,
@@ -1051,7 +980,7 @@ def _stage_record(
 def execution_stop(stages: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     """First stage that would block execute(), in pipeline order.
 
-    On this sidecar machine that is the lease check: no existing HCLI lease.
+    On this sidecar machine that is the lease check: no existing HAWKING lease.
     Later stages still emit specs; they do not run.
     """
     for rec in stages:
@@ -1078,7 +1007,7 @@ def _run_one_stage(name: str, ctx: dict[str, Any]) -> dict[str, Any]:
     if name == "identify_lease_availability":
         lease = ctx.get("lease")
         if not isinstance(lease, Mapping):
-            lease = read_hcli_lease_state()
+            lease = read_hawking_lease_state()
             ctx["lease"] = lease
         return dict(lease)
     if name == "assess_machine_quiescence":
@@ -1211,7 +1140,7 @@ def run_pipeline(
 ) -> dict[str, Any]:
     """Walk all 13 stages as STATIC_ONLY planning. Never starts a GPU run.
 
-    live=True reads the real queue, contamination snapshot, HCLI lock path and
+    live=True reads the real queue, contamination snapshot, HAWKING lock path and
     static preflight. Tests inject the rest. interrupt_after raises
     PipelineInterrupted after sealing a resume checkpoint. resume_from skips
     already-completed stages.
@@ -1273,7 +1202,7 @@ def run_pipeline(
         if lease is not None:
             ctx["lease"] = lease
         elif live:
-            ctx["lease"] = read_hcli_lease_state()
+            ctx["lease"] = read_hawking_lease_state()
         if snap is not None:
             ctx["snap"] = snap
         if klass is not None:
@@ -1339,18 +1268,18 @@ def execute(
     The three independent refusals (no --execute, no existing lease, machine
     not QUIESCENT) are checked in that order. Each test injects the other two
     as passing so the named guard is the one that fires. Even if all three
-    pass, this sidecar has no GPU authority and must not seize the HCLI lock.
+    pass, this sidecar has no GPU authority and must not seize the HAWKING lock.
     """
     if not explicit_execute:
         raise ExecuteRefused(
             "explicit_execute",
             "explicit --execute was not passed; sidecar will not start a protected run",
         )
-    lease_state = dict(lease) if lease is not None else read_hcli_lease_state()
+    lease_state = dict(lease) if lease is not None else read_hawking_lease_state()
     if not lease_state.get("present"):
         raise ExecuteRefused(
             "existing_lease",
-            "no existing HCLI lease; queue_policy.protected_start_requires_existing_hcli_lease; "
+            "no existing HAWKING lease; queue_policy.protected_start_requires_existing_hawking_lease; "
             "sidecar will not create one",
         )
     klass = contamination_class
@@ -1366,7 +1295,7 @@ def execute(
     raise ExecuteRefused(
         "gpu_authority",
         "existing lease and quiescence and --execute are not sufficient: "
-        "this sidecar has no GPU authority and must not seize the HCLI lock. "
+        "this sidecar has no GPU authority and must not seize the HAWKING lock. "
         "stages 10-12 emit a request/spec and stop",
     )
 
@@ -1417,9 +1346,9 @@ def recovered_implementation() -> list[dict[str, Any]]:
         },
         {
             "path": "tools/future/workunit_species.py",
-            "role": "HCLI WorkUnit species and starting queue",
+            "role": "HAWKING WorkUnit species and starting queue",
             "composed_as": "derive_next_workunits",
-            "adequate_for": "emitting HCLI-shaped proposals with bounded authority",
+            "adequate_for": "emitting HAWKING-shaped proposals with bounded authority",
             "not_adequate_for": "deriving the *next* units from a preflight/lease outcome",
         },
         {
@@ -1428,24 +1357,24 @@ def recovered_implementation() -> list[dict[str, Any]]:
             "composed_as": "ExecuteRefused/PipelineInterrupted inherit FailClosed; checkpoint seal; interrupt/resume",
         },
         {
-            "path": "hcli/agentos/protected_accelerator_benchmark.py",
+            "path": "hawking/agentos/protected_accelerator_benchmark.py",
             "role": "the real protected lease (LOCK_NAME, _try_lock, run_protected_accelerator_benchmark)",
             "composed_as": "lock path cited read-only; runner NOT imported and NOT called",
-            "on_disk_in_this_worktree": (REPO / "hcli/agentos/protected_accelerator_benchmark.py").is_file(),
+            "on_disk_in_this_worktree": (REPO / "hawking/agentos/protected_accelerator_benchmark.py").is_file(),
         },
         {
-            "path": "hcli/agentos/benchmark_boundary.py",
+            "path": "hawking/agentos/benchmark_boundary.py",
             "role": "QUALIFIED_PROTECTED vs DIAGNOSTIC_CONTAMINATED",
             "composed_as": "classify_window(None, None, UNKNOWN) in the measurement spec; empty window is not qualified",
         },
         {
-            "path": "hcli/agentos/native_mission_gate.py",
+            "path": "hawking/agentos/native_mission_gate.py",
             "role": "live native tool/verifier mission",
             "composed_as": "named, not imported, not run",
         },
         {
             "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-            "role": "binding queue_policy.protected_start_requires_existing_hcli_lease and protected_start_requires_machine_quiescence",
+            "role": "binding queue_policy.protected_start_requires_existing_hawking_lease and protected_start_requires_machine_quiescence",
         },
         {
             "path": "tools/odyssey/gpu_cleanliness.py",
@@ -1455,7 +1384,7 @@ def recovered_implementation() -> list[dict[str, Any]]:
         },
         {
             "path": "research/lab/lease.py",
-            "role": "campaign SingletonLease (different object from the HCLI protected bench lock)",
+            "role": "campaign SingletonLease (different object from the HAWKING protected bench lock)",
             "composed_as": "not imported; not used",
         },
         {
@@ -1480,25 +1409,25 @@ def recovered_implementation() -> list[dict[str, Any]]:
 
 def gaps_closed() -> list[str]:
     return [
-        "13-stage ordered pipeline that composes planner, preflight, contamination, workunit species, HCLI boundary",
-        "authority boundary: execute() raises on missing --execute, missing HCLI lease, and non-QUIESCENT separately, and still raises when all three pass",
+        "13-stage ordered pipeline that composes planner, preflight, contamination, workunit species, HAWKING boundary",
+        "authority boundary: execute() raises on missing --execute, missing HAWKING lease, and non-QUIESCENT separately, and still raises when all three pass",
         "no stage starts a benchmark, creates a lease, signals a process, or quiesces a worker — refuse_* functions exist so the guard can be watched to fail",
         "resumability: sealed checkpoint, interrupt_after fault injection, resume from last completed stage, corrupt/partial checkpoints fail closed",
         "--dry-run walks all 13 stages against the real queue and real machine and reports the execution stop (lease check on this host)",
         "static preflight ERRORs DROP mapped candidates rather than spending a protected window on a source-detectable defect",
-        "stages 10-12 emit REQUEST/SPEC only; scoreboard and HCLI lock are not written",
+        "stages 10-12 emit REQUEST/SPEC only; scoreboard and HAWKING lock are not written",
         "next WorkUnits derived from survivors + drops + a blocked lease-request proposal",
     ]
 
 
 def negative_findings() -> list[str]:
     return [
-        "no .hcli/locks/protected-accelerator-bench.lock in this worktree; lease present is fail-closed false",
+        "no .hawking/locks/protected-accelerator-bench.lock in this worktree; lease present is fail-closed false",
         "exclusive flock is never used to inspect the lock, because taking LOCK_EX would be a seizure; lsof is the only holder probe",
         "this sidecar has no GPU authority and cannot produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE",
         "tools/accelerator/physical_qualification.py is not materialized in this sparse checkout and is not imported",
         "tools/odyssey/gpu_cleanliness.py is not materialized; PAUSE_PATTERN recovered via git show, not imported",
-        "research/lab/lease.py is a different campaign lease and is not the HCLI protected-accelerator lock",
+        "research/lab/lease.py is a different campaign lease and is not the HAWKING protected-accelerator lock",
         "PID-level GPU attribution is unavailable without a protected lease (contamination already records this)",
         "no qualification_pipeline.py existed before this lane; device_ascension_pipeline.py is a different pipe (machine arrival)",
         "native_mission_gate.py is not imported: it would start a live native mission",
@@ -1536,7 +1465,7 @@ def build(pipeline: Mapping[str, Any] | None = None) -> Path:
         "authority_boundary": {
             "execute_requires": [
                 "explicit --execute",
-                "existing HCLI lease (read, never created)",
+                "existing HAWKING lease (read, never created)",
                 "machine QUIESCENT (assessed, never coerced)",
             ],
             "even_then": "sidecar has no GPU authority and still raises",
@@ -1549,7 +1478,7 @@ def build(pipeline: Mapping[str, Any] | None = None) -> Path:
             ],
         },
         "queue_policy_binding": {
-            "protected_start_requires_existing_hcli_lease": True,
+            "protected_start_requires_existing_hawking_lease": True,
             "protected_start_requires_machine_quiescence": True,
             "diagnostic_results_do_not_promote": True,
             "source": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json queue_policy",
@@ -1563,7 +1492,7 @@ def build(pipeline: Mapping[str, Any] | None = None) -> Path:
             "stage_id": stop.get("stage_id"),
             "reason": stop.get("reason"),
             "honest_on_this_machine": (
-                "stops at the lease check: no existing HCLI lease. later stages "
+                "stops at the lease check: no existing HAWKING lease. later stages "
                 "are still walked as STATIC_ONLY specs so a human does not have "
                 "to assemble the run by hand when a window opens"
             ),
@@ -1578,7 +1507,7 @@ def build(pipeline: Mapping[str, Any] | None = None) -> Path:
                 "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  "
                 "# always raises ExecuteRefused"
             ),
-            "read_hcli_lease_state": "read_hcli_lease_state(repo=None) -> dict  # present True only with a proven holder; never flock",
+            "read_hawking_lease_state": "read_hawking_lease_state(repo=None) -> dict  # present True only with a proven holder; never flock",
             "admit_checkpoint": "admit_checkpoint(doc) -> dict  # raises FailClosed on corrupt/partial",
         },
         "recovered_implementation": recovered_implementation(),

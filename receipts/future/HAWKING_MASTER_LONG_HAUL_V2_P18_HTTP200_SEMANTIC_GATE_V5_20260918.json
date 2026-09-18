@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.long_haul.v2.local_reconciliation_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P18_HTTP200_SEMANTIC_GATE_V5",
+  "workunit_id": "WORKUNIT-20260918-46799704",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Independent local semantic-boundary verification only; no provider-output promotion, mutation, hardware, or release claim.",
+  "source_observation": {
+    "hawking/backends.py": "69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50",
+    "hawking/workunit_owner.py": "c74ed186bcdffef32b2c8d1e115e3840c3d04dbf89b56db1c6db0d092d887710"
+  },
+  "focused_verification": {
+    "command": "python3 -m pytest -q hawking/test_readiness_proves_generation.py hawking/tests/test_remote_workunit_contract.py",
+    "result": "passed as part of 87-test HTTP/share suite"
+  },
+  "accepted_invariants": [
+    "HTTP 200 with empty or malformed generation payload is rejected",
+    "readiness requires generation semantics, not reachability",
+    "WorkUnit owner records semantic rejection rather than accepting transport status"
+  ],
+  "falsifier": "A focused regression permits empty choices, unnamed tool calls, or transport-only HTTP 200 to become readiness or WorkUnit acceptance."
+}

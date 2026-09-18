@@ -1,0 +1,56 @@
+{
+  "child_worker_ids": [],
+  "compact_crossings": 0,
+  "contract": "/Users/scammermike/Downloads/hawking/.hawking/goals/GOAL-6076C674F9.contract.json",
+  "current_phase": "BUILD",
+  "driver": "hawking.workunit_owner",
+  "driver_pid": 37125,
+  "endpoint": {
+    "base_url": "http://127.0.0.1:8014/v1",
+    "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+    "host": "127.0.0.1",
+    "port": 8014,
+    "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+  },
+  "exact_next_action": "GENERIC_RECOVERY: emit one real admitted fs.read or repo.edit tool call grounded in the submitted Goal; no prose-only CONTINUE.",
+  "last_outcome": "CONTINUE",
+  "last_turn": 2,
+  "objective": "Inspect only: identify which Hawking source function owns the Web model search endpoint. Read/search only; do not edit files, run tests, create artifacts, or change production state. Return concise file-and-symbol evidence.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-3a7b5bcaeade47a786b28175:tool-8",
+    "gen-1789495718-09eajtGdlnSy0FPf75WM",
+    "gateway-fdb54ebd67ff4bf394dd745c:tool-10",
+    "gen-1789495770-NzSgimOfNMtLJI1ldsOk"
+  ],
+  "qualification": "UNEARNED",
+  "qualification_unearned": true,
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.kimi.workunit_checkpoint.v1",
+  "session_id": "GOAL-6076C674F9-r2",
+  "status": "CANCELLED",
+  "tool_less_continue_streak": 0,
+  "ultragoal": "",
+  "updated_at": "2026-09-15T18:09:52.403377+00:00",
+  "wall_ceiling_s": 86400.0,
+  "worker_artifact": {
+    "artifact_revision": null,
+    "grant_digest": null,
+    "kind": "remote_openrouter",
+    "model_id": "deepseek/deepseek-v4.1-flash",
+    "name": "deepseek/deepseek-v4.1-flash",
+    "path": null
+  },
+  "worker_cost_usd": 0.001470228,
+  "worker_id": "hawking-worker-d8891bb7437c401b",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789495784.593312,
+  "worker_spawned_at": 1789495642.9948092,
+  "worker_status": "KILLED",
+  "worktree": {
+    "branch": "worker/WORKER_INTEGRATION_SNAPSHOT",
+    "root": "/Users/scammermike/Downloads/hawking"
+  },
+  "workunit_id": "GOAL-6076C674F9"
+}

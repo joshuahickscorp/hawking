@@ -1,0 +1,59 @@
+{
+  "active_job": "job-8383c3f1-a7f8-4d01-a2ef-2b5679b501f0",
+  "blocker": null,
+  "budget_phase": "build",
+  "build_cost_usd": 0.011986132,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260918-153FB813",
+    "tool_less_continue_streak": 2
+  },
+  "context_packet_digest": "a7ca146c79c498673841771dcd2bd0a43c4ea930aa827aef99894630699d1941",
+  "current_phase": "BUILD",
+  "driver_alive": true,
+  "driver_pid": 59616,
+  "exact_next_action": "bounded provider format recovery: preserve findings and return only HAWKING_PATCH_V1 or HAWKING_EDIT_V1; no repository archaeology",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 2,
+  "latest_real_seal": "",
+  "objective": "Advance P5_PERCEPTION_IMPLEMENTATION_CONTRACT beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, r",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-0e791cc420fe46df86fd4932:tool-3",
+    "gen-1789755128-NE3vWJcTy4HxKE4qwyhg",
+    "gateway-6368255ea3c24be5a621a74f:tool-1",
+    "gen-1789755160-KYfBDOTV7S9hSWVyMrUn"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "z-ai/glm-5.3"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T18:12:43.614879+00:00",
+  "worker_attempt_id": "hawking-attempt-df5e78161e6b402c",
+  "worker_cost_usd": 0.011986132,
+  "worker_id": "hawking-worker-4091e5ebfe23417b",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789755152.4127,
+  "worker_spawned_at": 1789755096.668345,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260918-153FB813"
+}

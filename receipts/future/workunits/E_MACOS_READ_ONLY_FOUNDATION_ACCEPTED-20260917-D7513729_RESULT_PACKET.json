@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "dd8fec7e424736045d99a27724a1752453ff21401be6e2b6bda8d2508c9ee2f5",
+  "evidence": [
+    {
+      "at": "2026-09-17T08:50:19.084320+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-17T08:50:19.084339+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-17T08:50:19.086559+00:00",
+      "has_tool_json": false,
+      "head": "{ \"tool_calls\": [ { \"name\": \"fs_read\", \"arguments\": { \"path\": \".hawking/H-NOTES/pasted/81/b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393\", \"start_line\": 60, \"end_line\": 200 } }, { \"name\": \"fs_search\", \"arguments\": { \"pattern",
+      "outcome": "CONTINUE",
+      "reply_chars": 401,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{ \"tool_calls\": [ { \"name\": \"fs_read\", \"arguments\": { \"path\": \".hawking/H-NOTES/pasted/81/b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393\", \"start_line\": 60, \"end_line\": 200 } }, { \"name\": \"fs_search\", \"arguments\": { \"pattern\": \"GOAL-B33C69F193\", \"corpus\": \"all-authorized\", \"max_results\": 30 } }, { \"name\": \"fs_list\", \"arguments\": { \"path\": \"hawking\", \"glob\": \"web_launcher.py\" } } ] }",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-638d510cf13941f8",
+  "worker_id": "hawking-worker-e8522eae18524a81",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-D7513729"
+}

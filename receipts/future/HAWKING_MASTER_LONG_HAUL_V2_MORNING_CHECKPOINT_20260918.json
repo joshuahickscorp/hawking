@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.long_haul.v2.morning_checkpoint.v1",
+  "generated_at": "2026-09-18T16:50:43Z",
+  "goal_id": "GOAL-A52AB48501",
+  "checkpoint_kind": "post-repair live checkpoint",
+  "baseline": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_OVERNIGHT_BASELINE_20260918.json",
+  "objective": {
+    "bound_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+    "full_objective_reread_this_pass": false,
+    "objective_rereads_this_pass": 0,
+    "digest_reconciliation_note": "The current durable supervisor binding is the authoritative digest. The overnight baseline records a different historical digest; this checkpoint does not reread or reconcile objective prose."
+  },
+  "source": {
+    "head": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+    "head_unchanged_from_overnight_baseline": true,
+    "worktree": "dirty; this checkpoint does not attribute the large shared dirty-tree LOC census to this repair pass",
+    "controlled_repair_files": [
+      "hawking/remote_cognition.py",
+      "hawking/workunit_owner.py",
+      "hawking/serve.py",
+      "hawking/backends.py",
+      "hawking/auto_orchestration.py",
+      "hawking/tests/test_remote_workunit_contract.py",
+      "hawking/tests/test_discrete_goal_completion_state.py",
+      "hawking/tests/test_openrouter_gateway.py",
+      "hawking/tests/test_auto_orchestration.py"
+    ]
+  },
+  "repairs_since_overnight": [
+    {
+      "id": "http_200_semantic_boundary",
+      "change": "A typed WorkUnit request that receives any upstream HTTP 200 semantic miss (missing required tool/structured content or invalid JSON-mode prose) receives a Hawking-owned MUTATION_PAYLOAD_MISSING envelope, not a fabricated local 502. Generic fail-closed 502 behavior remains outside that explicit typed route."
+    },
+    {
+      "id": "bounded_patch_spool",
+      "change": "Mutation WorkUnits admit at most two focused observations, compile explicit read-only proposals into Hawking read tools, then remove the tool menu for patch synthesis. The provider is instructed to emit literal old_text/new_text or literal new_lines, never a prose change/source_edit intent."
+    },
+    {
+      "id": "fast_unaccepted_effect_turnover",
+      "change": "A typed effect proposal that does not cross Hawking's canonical repo.edit gate is dead-lettered immediately for a fresh WorkUnit instead of consuming generic outer owner turns. This preserves NOT_RED_BEFORE and other rejection receipts without treating them as accepted work."
+    },
+    {
+      "id": "cloud_auto_diversification_compatibility",
+      "change": "Cloud Auto retains DeepSeek, Kimi, and GLM routing. GLM 5.3 no longer receives reasoning: none because its upstream route requires reasoning; Kimi and DeepSeek retain bounded no-reasoning patch serialization."
+    },
+    {
+      "id": "frontier_refill",
+      "change": "After the controlled gateway reload, Auto refilled 13 newly free, disjoint writer scopes with no Hawking concurrency ceiling. Remaining candidates were excluded only for focus-file or writer-scope conflicts."
+    }
+  ],
+  "verification": {
+    "command": "python3 -m py_compile hawking/remote_cognition.py hawking/workunit_owner.py && pytest -q focused protocol/orchestration/mutation suites && git diff --check",
+    "focused_tests": "188 passed in 24.76s",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "broad_python": "not rerun; the overnight missing-mlx and unrelated sparse-hcli baseline remains separately tracked",
+    "rust": "not rerun; no Rust source change was verified by this repair pass"
+  },
+  "goal_live_state": {
+    "status": "RUNNING",
+    "goal_status_mutated_to_blocked_or_complete": false,
+    "graph_runnable_nodes": 45,
+    "active_workunit_projection": 19,
+    "active_workunits_by_model": {
+      "deepseek/deepseek-v4.1-flash": 12,
+      "moonshotai/kimi-k3": 6,
+      "z-ai/glm-5.3": 1
+    },
+    "queue_states": {
+      "ACCEPTED_READ_EVIDENCE": 62,
+      "ADMITTED": 16,
+      "COMPLETE": 15,
+      "COMPLETE_PENDING_ACCEPTANCE": 11,
+      "READY": 26,
+      "TERMINAL_PROVIDER_OUTCOME": 82
+    },
+    "refill": {
+      "ceiling": null,
+      "active_before": 19,
+      "admitted": 0,
+      "remaining_skip_reasons": ["focus_file_conflict", "writer_scope_conflict"]
+    },
+    "acceptance_boundary": "No fresh implementation tranche, phase, release, runtime, or hardware claim is accepted by this checkpoint. Provider result packets remain unpromoted until their Hawking mutation and focused-verification evidence is complete."
+  },
+  "provider_economics": {
+    "current_goal_throughput_ledger": {
+      "worker_provider_cost_usd": 1.59369871,
+      "accepted_read_evidence_cost_usd": 0.527760698,
+      "accepted_provider_tranche_cost_usd": 0.0575418,
+      "route_qualification_cost_usd": 0.0030531,
+      "cost_per_accepted_architectural_tranche_usd": 0.26992157
+    },
+    "provider_failures_ledger": {
+      "count": 25,
+      "per_hour": 5.742168,
+      "terminal_owner_failures": 23,
+      "durable_stall_records": 2
+    },
+    "note": "These are the live Goal throughput fields, not a reconciled provider invoice. The overnight total-spend ledger uses a different aggregation and is not subtracted here."
+  },
+  "runtime_health": {
+    "hawkingd_pid": 35696,
+    "rss_kb": 88592,
+    "rss_mb_approx": 86.5,
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "requested_model": "hawking-auto",
+    "resident_model": null,
+    "active_resident_provider_children": "none while native role is withheld",
+    "local_kimi_resident": false,
+    "health": "HTTP 200; waiting_for_native_runtime because no native role artifact is admitted; remote Goal write authority is live. Final typed semantic-envelope update is deployed."
+  },
+  "current_bottleneck": {
+    "classification": "provider mutation acceptance, not worker-count admission",
+    "evidence": "The frontier ran 16 concurrent disjoint lanes after unbounded refill. Fresh rejection receipts include NOT_RED_BEFORE and malformed/missing mutation payloads; the new owner boundary prevents replaying these on a growing session.",
+    "non_blocking_next_action": "Allow the active fresh sessions to produce bounded patch attempts; Auto refills each released disjoint scope without a Codex instruction."
+  },
+  "ready_for_unattended_continuation": "YES"
+}

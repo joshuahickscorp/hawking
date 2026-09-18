@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "1dce5cba7c12b2d2acaa3d931ff80318664da2ddf67997363c6e9a9c9658bf2c",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:24:07.372220+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:24:07.372242+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:24:07.376175+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"tools/nx_genome.py is 9752 bytes with full-file sha256 c795b171e56d3ca6a2f41be3c73942999ab1918e76d5403469df8bf42c6eace0; the admitted read returned only the first 4000 bytes (41.0%), so all statements below are scoped to t",
+      "outcome": "CONTINUE",
+      "reply_chars": 4138,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"tools/nx_genome.py is 9752 bytes with full-file sha256 c795b171e56d3ca6a2f41be3c73942999ab1918e76d5403469df8bf42c6eace0; the admitted read returned only the first 4000 bytes (41.0%), so all statements below are scoped to that prefix.\",\"The module docstring labels this work G104: the NX genome is the machine-specific, non-portable counterpart to NR, and an NX that could load anywhere is treated as a failure because silently running an executable compiled for different hardware is the failure this obligation exists to prevent.\",\"The machine genome digest is defined over chipset, gpu_cores, unified_memory_bytes, metal_family, and measured_roof_gb_s; measured_roof_gb_s is hardcoded to 595.9 with provenance 'roofline sweep in the G072 run, low arithmetic intensity peak'.\",\"The docstring states two machines agreeing on all genome facts may run each other's NX, and anything else is REFUSED rather than run and hoped for.\",\"Kernel binding is computed by intersecting string literals from the decode source with declared `kernel void` names; the docstring cites G071 measuring 38 bound kernels against 554 declared kernels, and argues a seal listing all 554 would misrepresent what actually runs.\",\"The visible CLI surface is `--seal --out`, `--dump`, and `--refusal-test` (the last expected to exit 1).\",\"Module constants visible in the prefix: ROOT = pathlib.Path(__file__).resolve().parents[1]; DECODE = ROOT/'crates/hawking-core/src/model/qwen38_hybrid_decode.rs'; SHADERS = ROOT/'crates/hawking-core/shaders'.\",\"machine_genome() reads hw.memsize via `sysctl -n` and parses `system_profiler SPDisplaysDataType` for Chipset Model, Total Number of Cores, and Metal Support.\",\"bound_kernels() globs *.metal under SHADERS and collects names from lines starting with 'kernel void ', then intersects with alphanumeric/underscore string literals from DECODE.\",\"lowers_nr_section(nr_path) binds the NX to an exact NR via nr_content_sha256 (sha256 of the NR file bytes) plus nr_kind, nr_complete_bits_per_weight, and requirements_the_nx_satisfies, with a note that changing NR content invalidates the binding.\"],\"sources\":[{\"path\":\"tools/nx_genome.py\",\"sha256\":\"c795b171e56d3ca6a2f41be3c73942999ab1918e76d5403469df8bf42c6eace0\",\"bytes\":9752,\"observed_bytes\":4000,\"truncated\":true}],\"recommendations\":[\"Re-read tools/nx_genome.py beyond byte 4000 (e.g., lines covering seal/dump/refusal-test handlers and main()) to confirm the exact seal schema, refusal exit path, and any additional genome fields before naming an owner or next contract.\",\"Read docs/NOETIC_NR_NX_CONTRACT.md to extract the NR/NX contract clauses that the P10 NX tranche must satisfy, since the objective names it as a primary source and it was not observed here.\",\"Inspect crates/hawking-core/src/model/qwen38_hybrid_decode.rs and crates/hawking-core/shaders/*.metal to verify the 38-bound/554-declared kernel claim and to identify the focused tests that exercise bound_kernels() and lowers_nr_section().\",\"Smallest bounded next contract candidate: a read-only verification contract that (a) re-derives the machine genome digest, (b) re-derives the bound-kernel set, and (c) asserts the NR content hash binding, with a falsifier of any digest or bound-kernel-set mismatch against the sealed artifact.\"],\"unresolved_questions\":[\"Which component/owner is the precise owner of the P10 NX tranche (nx_genome.py itself, the NR/NX contract doc, or a downstream consumer)? Not determinable from the observed prefix.\",\"What focused tests currently exist for nx_genome.py (unit tests, refusal-test harness, or CI job)? Not observed.\",\"What is the exact protected boundary (e.g., NR content hash immutability, machine-genome digest, or bound-kernel set) that the next contract must not cross? Not observed.\",\"What is the authoritative falsifier for the P10 NX tranche per docs/NOETIC_NR_NX_CONTRACT.md? Not observed.\",\"Does the seal schema include fields beyond chipset, gpu_cores, unified_memory_bytes, metal_family, measure",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-1fc792c183a143bd",
+  "worker_id": "hawking-worker-1c322fb46d474ce7",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-A3871FFE"
+}

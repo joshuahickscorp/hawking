@@ -1,0 +1,108 @@
+{
+  "schema": "hawking.future.causality_shim.unification.receipt.v1",
+  "status": "STATIC_FUTURE_CAUSALITY_OWNER_VERIFIED",
+  "recorded_at": "2026-09-12T05:48:02-04:00",
+  "base_commit": "c6d7959309ee953c9a68f6c7c2bbfeceb4411edc",
+  "scope": {
+    "canonical_owner": {
+      "module": "tools/verify/status_causality.py",
+      "symbols": [
+        "FIVE_RECORDED_FIELDS",
+        "emit",
+        "records_five_fields"
+      ]
+    },
+    "migrated_consumers": [
+      "tools/future/odyssey2_law_store.py",
+      "tools/future/qualification_pipeline.py",
+      "tools/future/contamination.py"
+    ],
+    "local_domain_guards_retained": [
+      "record_law_store_causality: schools.Flash.physical_status",
+      "record_preflight_causality: blocking_defect_count and would_waste_a_protected_window",
+      "record_contamination_causality: contamination_class"
+    ]
+  },
+  "duplicate_evidence": {
+    "pre_change_measurement": "Every listed span had one raw-source and one syntax-tree body shape across the three consumers before this edit.",
+    "families": [
+      {
+        "former_owner": "FIVE_RECORDED_FIELDS fallback binding",
+        "copies": 3,
+        "each_span": {
+          "lines": 11,
+          "bytes": 229,
+          "raw_sha256": "a6c42bc14bd28d73b0708d78b666c4a9e1a21aeec37244e72848462f58fcb3b0",
+          "ast_sha256": "9d59d53d245e86211da4718be4dcfd81ecaafdda6721759408f24f6c40cd0b02"
+        }
+      },
+      {
+        "former_owner": "_bind_emit including cold nested emit fallback",
+        "copies": 3,
+        "each_span": {
+          "lines": 34,
+          "bytes": 1062,
+          "raw_sha256": "1861e0167302e2c26254d4572b6c00c71ffc1d767586dae64ae369162f8e12c5",
+          "ast_sha256": "ddf5ed6da0eea95df9a2f1d10bb0f139d9a08e361b0534e58b9892cd87afb091"
+        }
+      },
+      {
+        "former_owner": "records_five_fields fallback predicate",
+        "copies": 3,
+        "each_span": {
+          "lines": 21,
+          "bytes": 790,
+          "raw_sha256": "1a9b254da81372decb0b9a441858f203f88842aa1f42b537fc62d2566bc75980",
+          "ast_sha256": "860202a2411b2710f2616e95b2cdc31161d5247cb707d99f79906dce0f556664"
+        }
+      }
+    ]
+  },
+  "implemented": {
+    "aliases": "Each consumer now exposes FIVE_RECORDED_FIELDS and records_five_fields as direct aliases of the canonical status-causality owner.",
+    "removed_cold_fallback": "The old _bind_emit routines could replace sc.emit only if this checkout lacked its native owner. Current source defines emit and records_five_fields at module scope, so the fallbacks were cold duplicate code.",
+    "separate_contracts": "The three record_*_causality wrappers remain separate because their protected field contracts and status sources are deliberately different."
+  },
+  "preserved_contract": {
+    "causality_output": "The wrappers continue to call canonical sc.emit with their exact status selection, source strings, unsupplied-observation rule, optional-field writes, and error behavior.",
+    "domain_guards": "Law-store, preflight, and contamination protected fields remain local and are tested unchanged on both supplied and unsupplied evidence.",
+    "law_store_edge": "With absent evidence, the existing law-store status may infer object_absence from metadata_only_weights_not_present and return OVERREACHING. This tranche preserves that behavior; it does not convert the wrapper to the AgentOS stamp_gate contract."
+  },
+  "validation": {
+    "pre_to_post_output_parity": "A synthetic golden comparison captured all three old record_*_causality outputs for supplied and unsupplied evidence before extraction, then compared the new outputs exactly: 3 wrappers x 2 scenarios matched.",
+    "focused_regressions": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m pytest -p no:cacheprovider -q hcli/tests/test_future_status_causality_shims.py hcli/tests/test_gate_emit_binding_is_a_noop.py: 48 passed.",
+    "focused_test_scope": "The new test checks source ownership, import identity, canonical aliases, supplied evidence, all four empty-observation sentinels, the three local protected-field contracts, stale optional-field behavior, and the law-store OVERREACHING/object_absence edge.",
+    "coverage": "PYTHONDONTWRITEBYTECODE=1 python3 -B tools/verify/status_causality.py --coverage: odyssey2_law_store, contamination, and qualification_pipeline remain recording consumers; no target module is unreadable.",
+    "syntax_and_diff": "python3 -m py_compile on the three consumers and focused test; git diff --check: passed.",
+    "non_execution_boundary": "The existing tools/future/test_contamination.py was intentionally not used because its build path samples host state and writes a receipt. The focused tests import and stamp only in-memory dictionaries."
+  },
+  "runtime": {
+    "model_execution": false,
+    "weights_loaded": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_service_restart": false,
+    "network_request": false,
+    "receipt_or_live_campaign_write": false,
+    "deployment": false
+  },
+  "size_ledger": {
+    "production_consumers_before_receipt": {
+      "added": 6,
+      "deleted": 219,
+      "net": -213,
+      "interpretation": "Three exact cold fallback and predicate implementations were replaced with direct aliases; domain-specific causality wrappers remain."
+    },
+    "hermetic_regression_before_receipt": {
+      "added": 166,
+      "deleted": 0,
+      "net": 166,
+      "interpretation": "The focused test replaces non-hermetic build/host-state coverage for this contract with in-memory behavior and import-identity coverage."
+    },
+    "before_receipt_total": {
+      "added": 172,
+      "deleted": 219,
+      "net": -47
+    }
+  },
+  "claim_boundary": "This receipt proves shared status-causality fallback and predicate ownership for the three listed future consumers, with their distinct causality wrappers left intact. It does not prove a shared domain verdict contract, live qualification outcomes, host state, model or hardware behavior, model identity, daemon behavior, network behavior, or deployment."
+}

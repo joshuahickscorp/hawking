@@ -1,0 +1,57 @@
+{
+  "active_job": "job-0e6e7efc-e8fc-419a-917d-67af55bbe0aa",
+  "blocker": null,
+  "budget_phase": "build",
+  "build_cost_usd": 0.0018762,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260918-2B21FE3D",
+    "tool_less_continue_streak": 1
+  },
+  "context_packet_digest": "2940df359bef368786e75396105733b95bf4cff07c46521ad0c9d1763001b54a",
+  "current_phase": "BUILD",
+  "driver_alive": true,
+  "driver_pid": 78998,
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 3,
+  "latest_real_seal": "",
+  "objective": "Advance P2_PRODUCT_COMMANDS_HWEB beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay termina",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-cf35ad7ea4a34b9c923a8532:tool-2",
+    "gen-1789755888-sIgS7aBhlX4HBbfmzJji"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "moonshotai/kimi-k3"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "RUNNING",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T18:24:51.531655+00:00",
+  "worker_attempt_id": "hawking-attempt-c2e25be658354cc9",
+  "worker_cost_usd": 0.0018762,
+  "worker_id": "hawking-worker-2e26a0dd3f3c4614",
+  "worker_kill_reason": "transport_error",
+  "worker_last_heartbeat_at": 1789755891.527314,
+  "worker_spawned_at": 1789755637.2529202,
+  "worker_status": "RUNNING",
+  "workunit_id": "WORKUNIT-20260918-2B21FE3D"
+}

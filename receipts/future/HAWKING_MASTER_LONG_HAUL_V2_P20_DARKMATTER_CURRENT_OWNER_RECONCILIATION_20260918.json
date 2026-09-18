@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P20_DARKMATTER_CURRENT_OWNER_RECONCILIATION_V1",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-P20-DARKMATTER-CURRENT-OWNER-20260918",
+  "owner": "tools/odyssey/physical_graph_compiler.py::build_darkmatter_physical_plan",
+  "reconciled_at": "2026-09-18T10:12:00Z",
+  "stale_claim_retired": {
+    "claim": "P9 DARKMATTER has no authoritative current owner",
+    "current_owner": "tools/odyssey/physical_graph_compiler.py::build_darkmatter_physical_plan",
+    "current_receipt": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_P9_DARKMATTER_PHYSICAL_PLAN_IMPLEMENTATION_V1_20260918.json",
+    "current_status": "source/contract-validated physical plan; PLAN_ONLY"
+  },
+  "current_evidence": {
+    "focused_tests": "46 passed in DARKMATTER/compiler/fusion/architecture-recognizer coverage",
+    "plan_gates": ["ordering", "coherency", "ownership", "placement", "cost model"],
+    "execution": "WITHHELD",
+    "hardware_qualification": "WITHHELD"
+  },
+  "claim_boundary": "P20 handoff now has a current authoritative DARKMATTER plan owner. This retires the stale owner-absent claim but does not claim physical execution, timing, speedup, production qualification, or release completion.",
+  "remaining": [
+    "DARKMATTER physical execution and hardware qualification remain pending.",
+    "P20 final handoff still requires the full objective acceptance matrix and release gates."
+  ],
+  "falsifier": "A current source census that removes build_darkmatter_physical_plan or a focused suite failure invalidates this reconciliation."
+}

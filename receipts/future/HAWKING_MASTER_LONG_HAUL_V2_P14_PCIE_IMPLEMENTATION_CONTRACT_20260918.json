@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P14_PCIE_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-C93C2127",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded bounded accelerator contract only; no hardware, qualification, or release claim.",
+  "source_observation": {"owner": "tools/accelerator/accelerator_runner.py", "sha256": "c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6", "observed_focus_bytes": 4000},
+  "focused_tests": ["tools/accelerator/test_backend_contract.py", "tools/accelerator/test_physical_qualification.py"],
+  "local_verification": {"command": "python3 -m pytest -q tools/accelerator/test_backend_contract.py tools/accelerator/test_physical_qualification.py", "result": "53 passed"},
+  "next_seam": "Keep AcceleratorExperimentSpec validation and AcceleratorRunner.start admission fail-closed; preserve resource classes and protected receipt output without accessing physical hardware.",
+  "falsifier": "A non-READY/BLOCKED spec or missing required metric is accepted, or FPGA is classified as GPU_EXCLUSIVE, falsifying the contract."
+}

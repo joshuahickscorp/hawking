@@ -1,0 +1,9 @@
+{
+  "authority": "Hawking parent Goal retains budget and lifecycle authority.",
+  "durable_evidence": "worker checkpoint and owner log retain the grounded read/tool receipts; no hidden provider reasoning is transferred.",
+  "from_model": "deepseek/deepseek-v4.1-flash",
+  "reason": "DeepSeek completed grounded read evidence but repeatedly failed the required structured P0 supervisor packet after bounded continuations.",
+  "schema": "hawking.workunit.model_handoff.v1",
+  "to_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-02089467"
+}

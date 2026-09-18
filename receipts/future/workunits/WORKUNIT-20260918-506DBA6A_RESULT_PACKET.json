@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "4b6036050c90e5295822cc0b56e8934d368f3292e9b59b0efb0eb9d2d77e8b8f",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:19:51.954093+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:19:51.954102+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:19:51.956045+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"docs/NOETIC_NR_NX_CONTRACT.md (full file, 1172 bytes, sha256 87c125f0f85eddd4906b8dc36f0ea28b452141bc6e53609f303f5843e321db7b) defines the active storage boundary as SourceSpecimen -> Doctor -> Gravity search -> NR (.nr) -",
+      "outcome": "CONTINUE",
+      "reply_chars": 5277,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"docs/NOETIC_NR_NX_CONTRACT.md (full file, 1172 bytes, sha256 87c125f0f85eddd4906b8dc36f0ea28b452141bc6e53609f303f5843e321db7b) defines the active storage boundary as SourceSpecimen -> Doctor -> Gravity search -> NR (.nr) -> Noetic compiler -> NX (.nx).\",\"Document-level NR owner is tools/nr_container.py: NR owns representation identity, shard maps, codec families, semantic provenance, and portable kernel requirements, and must not contain machine, shader, dispatch geometry, occupancy, residency, TPS, or token-timing claims; the document attests the existing tools/nr_container.py validator enforces this boundary, but that validator source was not itself read in this audit.\",\"Document-level NX owner is tools/nx_genome.py: NX owns compiled kernel bindings, layout, scheduling, residency, machine genome, and loadability checks, and the document attests tools/nx_genome.py binds an NX to the exact NR content hash and rejects a mismatched machine genome; that source file was not read in this audit.\",\"The .gravity suffix is retained only as a compatibility view for sealed historical artifacts; new Gravity-discovered shards must be emitted as .nr and promoted executables as .nx; extension recognition is backward-compatible and no historical file is renamed in place.\",\"docs/CURRENT_ARCHITECTURE.md (only first 4000 of 9417 bytes observed, 42.5%, sha256 9086681b91ace15ca08555d05cf47f2b90df13035f2d1866d0de7b8a032aa503) places the NR/NX boundary in the operating shape 'NR revision -> physical plan -> backend programs -> NX -> resident instance' under hawkingd and Gravity, where Gravity is the single discovery, analysis, transformation, compilation, physical-optimization, and qualification function, and Doctor and Tabula are diagnostic/discovery operations within Gravity.\",\"The observed portion of the CURRENT_ARCHITECTURE ownership map assigns Gravity to hcli.gravity plus tools/gravity_*.py with the caveat that representation search, compilation, and physical optimization share one function while evidence scopes remain distinct; it assigns legal execution regions to hawking_core::gravity::execution and machine/runtime identity to hcli.machine, hcli.genomes, hcli.runtime_iface; any NR/NX-specific ownership rows beyond byte 4000 were not observed.\"],\"sources\":[{\"path\":\"docs/NOETIC_NR_NX_CONTRACT.md\",\"sha256\":\"87c125f0f85eddd4906b8dc36f0ea28b452141bc6e53609f303f5843e321db7b\",\"bytes\":1172,\"scope\":\"full_file\"},{\"path\":\"docs/CURRENT_ARCHITECTURE.md\",\"sha256\":\"9086681b91ace15ca08555d05cf47f2b90df13035f2d1866d0de7b8a032aa503\",\"bytes\":9417,\"scope\":\"partial_first_4000_bytes_truncated\"}],\"recommendations\":[\"Exact owner (document-attested, pending source verification): NR representation-space boundary -> tools/nr_container.py; NX machine-bound executable boundary -> tools/nx_genome.py; boundary definition of record -> docs/NOETIC_NR_NX_CONTRACT.md.\",\"Focused tests (admit-ready bounded contract): (1) NR negative-space test: start from a valid .nr and inject machine, shader, dispatch geometry, occupancy, residency, TPS, and token-timing fields one at a time, asserting tools/nr_container.py rejects each; (2) NX content-binding test: compile an NX from an NR, mutate one byte of that NR, and assert tools/nx_genome.py rejects the NR-content-hash mismatch; (3) NX genome test: bind an NX to machine genome A, present genome B, assert rejection; (4) compatibility test: assert a sealed .gravity artifact is still recognized while newly discovered shards are emitted only as .nr and promoted executables only as .nx.\",\"Protected resources for the bounded contract: tools/nr_container.py, tools/nx_genome.py, docs/NOETIC_NR_NX_CONTRACT.md, the sealed historical .gravity artifact set, and the NR content hashes referenced by emitted NX artifacts; mutation of any of these is out of scope for the admitting worker.\",\"Falsifier: if any fuzzed .nr artifact containing a machine, shader, dispatch geometry, occupancy, residency, TPS, or token-timing claim passes to",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-9d1551c58ff749ef",
+  "worker_id": "hawking-worker-111f743252b94017",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-506DBA6A"
+}

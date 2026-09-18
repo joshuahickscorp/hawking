@@ -1,0 +1,17 @@
+{
+  "at": 1789524571.763124,
+  "claim_boundary": "Hawking admitted one scoped semantic AXPress; the native helper performed mechanics and did not own authority.",
+  "details": {},
+  "goal_id": "GOAL-B33C69F193",
+  "lease_id": "MACOS-LEASE-DA4D57CFB59646B0",
+  "operation": "expire",
+  "outcome": "EXPIRED",
+  "reason": "lease_ttl_expired",
+  "schema": "hawking.macos.action_receipt.v1",
+  "state": "EXPIRED",
+  "target": {
+    "application": "hawking-macos-fixture-20260915"
+  },
+  "worker_id": "hawking-worker-9626b81123ec42e6",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-176E6371"
+}

@@ -1,0 +1,260 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T16:31:53.648486+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"objective\": \"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE beyond accepted read evidence with one bounded, substantive implementation change in tools/future/kimi_operator_live_evidence.py: add an executable per-ca",
+      "outcome": "CONTINUE",
+      "reply_chars": 3043,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 10
+    },
+    {
+      "at": "2026-09-18T16:33:05.503080+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:33:05.503089+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:33:05.504545+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"objective\": \"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE with one bounded production-source behavior change in tools/future/kimi_operator_live_evidence.py: add an explicit per-candidate 'measurement_status' fiel",
+      "outcome": "CONTINUE",
+      "reply_chars": 2698,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 11
+    },
+    {
+      "at": "2026-09-18T16:33:15.996739+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:33:15.996750+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:33:15.999359+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE with one bounded production-source behavior change in tools/future/kimi_operator_live_evidence.py: add an explicit per-candidate evidence-state classifier th",
+      "outcome": "CONTINUE",
+      "reply_chars": 4065,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 12
+    },
+    {
+      "at": "2026-09-18T16:34:27.536871+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:34:27.536878+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:34:27.539137+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE with one bounded production-source behavior change in tools/future/kimi_operator_live_evidence.py: add a deterministic per-candidate evidence-state classifie",
+      "outcome": "CONTINUE",
+      "reply_chars": 3461,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 13
+    },
+    {
+      "at": "2026-09-18T16:34:38.006479+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:34:38.006487+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:34:38.007706+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE with one bounded production-source behavior change in tools/future/kimi_operator_live_evidence.py, exercised by a focused test in tools/future/test_kimi_oper",
+      "outcome": "CONTINUE",
+      "reply_chars": 2679,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 14
+    },
+    {
+      "at": "2026-09-18T16:35:46.263947+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:35:46.263958+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:35:46.267134+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE with one bounded production-source behavior change in tools/future/kimi_operator_live_evidence.py: add a deterministic offline receipt-integrity validator th",
+      "outcome": "CONTINUE",
+      "reply_chars": 4598,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 15
+    },
+    {
+      "at": "2026-09-18T16:37:03.570910+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T16:37:03.570920+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:37:03.572408+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE with one bounded production-source behavior change in tools/future/kimi_operator_live_evidence.py: add a deterministic per-candidate evidence digest so each ",
+      "outcome": "CONTINUE",
+      "reply_chars": 3040,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 17
+    },
+    {
+      "files": [
+        "tools/future/kimi_operator_live_evidence.py",
+        "tools/future/test_kimi_operator_live_evidence.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-2BAD684E_SEAL_B1",
+      "turn": 17
+    }
+  ],
+  "files_changed": [
+    "tools/future/kimi_operator_live_evidence.py",
+    "tools/future/test_kimi_operator_live_evidence.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P8_NOVA_CANDIDATE_LIVE_EVIDENCE beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-2BAD684E_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      17
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-2BAD684E"
+}

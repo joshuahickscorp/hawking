@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 3,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "5efb51acd0ef4529dea0a0e008246ff4da255b089e07c17c7f9fb39991f63e6c",
+  "evidence": [
+    {
+      "at": "2026-09-17T08:55:38.072395+00:00",
+      "calls_used": 3,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-17T08:55:38.072411+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-17T08:55:38.076060+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Supervisor artifact (32378B, sha256 81b7eaaf...61393) read: Codex=supervisor, Hawking `h build`=primary developer; gated on HAWKING_AUTONOMOUS_BUILD_READY=YES; hand-scaffolding phase over.\",\"Budget: OPENROUTER_PROGRAMME_BU",
+      "outcome": "CONTINUE",
+      "reply_chars": 4012,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Supervisor artifact (32378B, sha256 81b7eaaf...61393) read: Codex=supervisor, Hawking `h build`=primary developer; gated on HAWKING_AUTONOMOUS_BUILD_READY=YES; hand-scaffolding phase over.\",\"Budget: OPENROUTER_PROGRAMME_BUDGET_USD=55 hard ceiling; ~10% reserve; per-WorkUnit cost recording; durable Hawking state is authority.\",\"Supervisor live facts: h build LIVE, canonical launcher LIVE, server-owned Build authority LIVE, repair+donor-graft acceptance PASS, RED->EDIT->GREEN PASS, 120 closeout tests passed, Flash/Pulsar/ModelLake protected.\",\"Goal GOAL-B33C69F193.json (11956B) read: active_workunit=E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-F79103DB; current_phase=E_MACOS_WORLD_INTERFACE; next_workunit=E_MACOS_WORLDSTATE_READ_ONLY_FOUNDATION; phase D ACCEPTED, E-L QUEUED.\",\"Goal budget matches supervisor: budget_authorized_usd=55.0; build_usd=55.0, tool_learning_usd=0.0, phase=build.\",\"Goal acceptance: D browser WorldState; E macOS WorldState semantic+visual fallback; F bounded CognitionPlan workers; G/H document+binary capability; I/J/K/L consolidation, health, resilience, release, receipt.\",\"Goal deferral: capture_ocr_status=DEFERRED_NO_CANONICAL_OWNER_MUTATION; last attempt E_MACOS_SEMANTIC_ACTION_LEASE-20260916-3C726AF1; exact_next_action truncated at 4000/11956 bytes.\",\"Goal constraints: allowed_models=[deepseek-v4.1-flash, kimi-k3, qwen3.8-flash]; browser file:// only; no protected Flash/Pulsar/ModelLake/hero mutation; provider conversation is not authority.\",\"web_launcher.py (14595B) read: launcher only, not runtime; hawkingd sole daemon; WebReleaseStore owns H-Web assets; never starts resident model; never imports historical HCLI path.\",\"web_launcher contract: 127.0.0.1:8014, hawking.localhost:8014; 16 REQUIRED_ENDPOINTS (/health,/v1/models,/hawking/web/*); REQUIRED_CLOUD_MODELS=(deepseek-v4.1-flash, qwen3.8-flash).\",\"discover_repo_root requires hawking/serve.py+pyproject.toml (explicit arg, HAWKING_ROOT, cwd parents, ~/Downloads/hawking), never HCLI staging tree; _json_post passes build authority via JSON body, not argv/logs.\",\"Historical vs P0 distinction: historical phase (HCLI staging, resident-model launcher, hand-scaffolding) superseded; long-haul P0 is Codex-supervised autonomous build now at phase E of D-L.\"],\"sources\":[\".hawking/H-NOTES/pasted/81/b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393 (32378B, 4000 shown)\",\".hawking/goals/GOAL-B33C69F193.json (11956B, 4000 shown)\",\"hawking/web_launcher.py (14595B, 4000 shown)\"],\"recommendations\":[\"Bind $55 ceiling as programme budget; record per-WorkUnit cost.\",\"Resume E_MACOS_CAPTURE_OCR as fresh bounded WorkUnit per Goal exact_next_action.\",\"Keep phase E scoped to authorized macOS WorldState with semantic+visual fallback; do not reopen accepted phase D.\",\"Route web surface work through hawkingd+WebReleaseStore, never HCLI path.\",\"Use only Goal allowed_models; keep browser actions within file:// absent EXTERNAL_WRITE.\"],\"unresolved_questions\":[\"Full exact_next_action text beyond 4000-byte truncation?\",\"Spend already consumed against $55 across prior WorkUnits?\",\"Does E_MACOS_WORLDSTATE_READ_ONLY_FOUNDATION need a canonical owner mutation the deferred OCR attempt lacked?\",\"Do unread supervisor artifact sections (87.6%) bear on phase E acceptance?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\",\"reusable_root\":\"/Users/scammermike/Downloads/hawking\",\"historical_phase\":\"HCLI staging tree + resident-model launcher + Codex hand-scaffolding; superseded\",\"programme_phase\":\"E_MACOS_WORLD_INTERFACE (D ACCEPTED; E-L QUEUED)\",\"budget\":{\"authorized_usd\":55.0,\"build_usd\":55.0,\"tool_learning_usd\":0.0,\"source\":\"OPENROUTER_PROGRAMME_BUDGET_USD=55\"},\"runtime_owner\":\"hawkingd (sole daemon); WebReleaseStore (H-Web assets)\",\"next_workunit\":\"E_MACOS_WORLDSTATE_READ_ONLY_FOUNDATION\",\"evidence_paths\":[\".hawking/H-NOTES/pasted/81/b7eaafd21b7343962c0bd76efc47b5c7b6e8b2859785f92c333dfc65861393\",\".hawking/goals/GOAL-B33C69F193.json\",\"hawking/web_la",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-23eed11be2d24cf2",
+  "worker_id": "hawking-worker-60b5d8f79b9b4585",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-F79103DB"
+}

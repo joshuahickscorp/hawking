@@ -1,0 +1,4454 @@
+{
+  "address_context_response": {
+    "address_count": 8,
+    "address_results": [
+      {
+        "base_output_sha256": "2761917fb36a92fd579689800a0e9eb10d67de90c57811df0a3b12ff4f7721d8",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "sealed_bos_source_control",
+        "lookup_rows": [
+          9663979,
+          26558231,
+          56120240,
+          74755659,
+          80459717,
+          109265651,
+          132697467,
+          151022725,
+          170054832,
+          192967038,
+          200687722,
+          225763581,
+          259275737,
+          272983544,
+          297596484,
+          300986548
+        ],
+        "lookup_shards": [
+          3,
+          10,
+          22,
+          29,
+          32,
+          43,
+          53,
+          60,
+          68,
+          77,
+          80,
+          90,
+          103,
+          109,
+          119,
+          120
+        ],
+        "response": {
+          "base_output_l2": 1.3452072143554688,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.014550634659826756,
+            "mean": 0.006554506486281753,
+            "median": 0.00585367321036756,
+            "min": 0.0021931352093815804
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 11,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 1,
+              "0.99": 1
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.030014324694841905,
+              0.0026157543210405406,
+              0.0010848095745940004,
+              0.0008717746306644434,
+              2.2806276613855517e-05,
+              1.9041955430510403e-05,
+              1.3524003990338426e-05,
+              1.1553133908064246e-05,
+              8.112869931751277e-06,
+              6.004563157909632e-06,
+              1.0800599042195332e-06,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.0009096399625111131
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.1777314465540653,
+            "mean": 0.08441086037851989,
+            "median": 0.06948538538656565,
+            "min": 0.03186537326924543
+          },
+          "step_l2": {
+            "max": 0.014775248244404793,
+            "mean": 0.0065546311816433445,
+            "median": 0.005855577299371362,
+            "min": 0.002002669032663107
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.00046366508468054235,
+            "mean": 0.00041058076385525055,
+            "median": 0.0004051516734762117,
+            "min": 0.0003877841809298843
+          }
+        },
+        "source_group": "sealed_source_control",
+        "source_token_index": 0,
+        "token_id": 248044
+      },
+      {
+        "base_output_sha256": "5d3307bbdbe68240b2bdee35dc9436fb3a062425971adb2dc54a402b4558ddf5",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_0",
+        "lookup_rows": [
+          14372315,
+          21827640,
+          59280967,
+          63888239,
+          80283410,
+          106543326,
+          126678265,
+          141582367,
+          173802232,
+          195724011,
+          204213856,
+          225545542,
+          259482876,
+          274655901,
+          299988367,
+          308709461
+        ],
+        "lookup_shards": [
+          5,
+          8,
+          23,
+          25,
+          32,
+          42,
+          50,
+          56,
+          69,
+          78,
+          81,
+          90,
+          103,
+          109,
+          119,
+          123
+        ],
+        "response": {
+          "base_output_l2": 0.7246654033660889,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.011632858775556087,
+            "mean": 0.00436034156155074,
+            "median": 0.0029659357387572527,
+            "min": 0.0006382638239301741
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 10,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 1,
+              "0.99": 1
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.022088869503557134,
+              0.001745933301866962,
+              0.0009761122079459815,
+              0.0007057883144426264,
+              1.5153138522494357e-05,
+              1.1544272023948068e-05,
+              7.224141728450024e-06,
+              5.839864522777781e-06,
+              4.245331658980042e-06,
+              3.603089218677237e-06,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.0004924178514122071
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.7016641844715817,
+            "mean": 0.20984686357963808,
+            "median": 0.15719888772269214,
+            "min": 0.06507373431157926
+          },
+          "step_l2": {
+            "max": 0.012006503529846668,
+            "mean": 0.004361853205409716,
+            "median": 0.0029643275775015354,
+            "min": 0.00045114997192285955
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.0007570040761493146,
+            "mean": 0.0005158579224371351,
+            "median": 0.0004659057594835758,
+            "min": 0.0004488668928388506
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 0,
+        "token_id": 5423
+      },
+      {
+        "base_output_sha256": "fbf787b7ad7c1446ac17f3f81733fd433b8a8484f2228124eb7522532577c57f",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_1",
+        "lookup_rows": [
+          9949239,
+          28866003,
+          58419028,
+          79899210,
+          95552045,
+          107456527,
+          125332174,
+          149201698,
+          164894268,
+          195474054,
+          212886084,
+          230077049,
+          248971874,
+          268210025,
+          294699197,
+          307716301
+        ],
+        "lookup_shards": [
+          3,
+          11,
+          23,
+          31,
+          38,
+          42,
+          50,
+          59,
+          65,
+          78,
+          85,
+          92,
+          99,
+          107,
+          117,
+          123
+        ],
+        "response": {
+          "base_output_l2": 0.5570427179336548,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.006168006919324398,
+            "mean": 0.0023357549580396153,
+            "median": 0.001626402314286679,
+            "min": 0.00042114168172702193
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 10,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 1,
+              "0.99": 3
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.01189930761112279,
+              0.0015220656002811349,
+              0.0010351973724955943,
+              0.0007462764125118791,
+              8.05652004502782e-06,
+              6.806701593754511e-06,
+              5.659916647690597e-06,
+              4.004372213645751e-06,
+              3.0067199178579458e-06,
+              1.5080971322743334e-06,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.0001455389380226541
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.6848054125740406,
+            "mean": 0.27113010500859136,
+            "median": 0.19017020363495152,
+            "min": 0.0773621614647738
+          },
+          "step_l2": {
+            "max": 0.006399090867489576,
+            "mean": 0.0023408307333738776,
+            "median": 0.0016201921389438212,
+            "min": 0.00042714676237665117
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.0004771933308802545,
+            "mean": 0.00034230989695061,
+            "median": 0.0003106120420852676,
+            "min": 0.0002980411518365145
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 1,
+        "token_id": 799
+      },
+      {
+        "base_output_sha256": "e0f40a04ab256434173730d8d6d94605abeeca06208f6ecb166dcb3d96c0950e",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_2",
+        "lookup_rows": [
+          2608171,
+          22295646,
+          42232465,
+          66248249,
+          98358609,
+          102415232,
+          138518879,
+          146691689,
+          160234128,
+          193534463,
+          209126214,
+          234117767,
+          240923228,
+          267743638,
+          290020504,
+          301428689
+        ],
+        "lookup_shards": [
+          1,
+          8,
+          16,
+          26,
+          39,
+          40,
+          55,
+          58,
+          64,
+          77,
+          83,
+          93,
+          96,
+          107,
+          116,
+          120
+        ],
+        "response": {
+          "base_output_l2": 0.5248743295669556,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.006269577890634537,
+            "mean": 0.0023113786373869516,
+            "median": 0.0015847511822357774,
+            "min": 0.0004930934519506991
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 10,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 1,
+              "0.99": 3
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.011697189346058248,
+              0.0014610671690530605,
+              0.0013011997730852647,
+              0.0007053582884622685,
+              8.92730792966423e-06,
+              7.02732486072604e-06,
+              4.384486446932827e-06,
+              3.5899611880570373e-06,
+              2.3207489191380572e-06,
+              1.4133796719658045e-06,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.0001411497756097848
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.5965523386143684,
+            "mean": 0.24820033174434303,
+            "median": 0.1959918472883425,
+            "min": 0.07651566183900303
+          },
+          "step_l2": {
+            "max": 0.006502331700176001,
+            "mean": 0.0023154514310590457,
+            "median": 0.0015894464449957013,
+            "min": 0.0004352299147285521
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.00047974224435165524,
+            "mean": 0.0003386237513041124,
+            "median": 0.0003102633490925655,
+            "min": 0.0002956493117380887
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 2,
+        "token_id": 4581
+      },
+      {
+        "base_output_sha256": "f0eba66d19d9bd54db8f78316f976aee880be007eae69ac59ed7ce64b7358e95",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_3",
+        "lookup_rows": [
+          12272008,
+          37554332,
+          50196804,
+          75897748,
+          95071347,
+          108129513,
+          127717026,
+          153834206,
+          173291479,
+          191323675,
+          212365591,
+          232510937,
+          241536077,
+          270562234,
+          293571253,
+          308616983
+        ],
+        "lookup_shards": [
+          4,
+          15,
+          20,
+          30,
+          38,
+          43,
+          51,
+          61,
+          69,
+          76,
+          84,
+          93,
+          96,
+          108,
+          117,
+          123
+        ],
+        "response": {
+          "base_output_l2": 0.5052031874656677,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.006496720016002655,
+            "mean": 0.002133505782694556,
+            "median": 0.0012891063815914094,
+            "min": 0.00040773075306788087
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 11,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 1,
+              "0.99": 2
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.01134428351024788,
+              0.00111676298537037,
+              0.0007605403071704524,
+              0.0007213901922602322,
+              9.303677516213167e-06,
+              5.374255423279314e-06,
+              3.661970131630449e-06,
+              2.8770583095298257e-06,
+              2.6522348264064413e-06,
+              1.313783223627368e-06,
+              3.959672700648719e-07,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.00013103889934038798
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.7633854797141434,
+            "mean": 0.30266427171393884,
+            "median": 0.25637561670481424,
+            "min": 0.0767379375294291
+          },
+          "step_l2": {
+            "max": 0.006741727236658335,
+            "mean": 0.002138845473382389,
+            "median": 0.0013397454167716205,
+            "min": 0.0003712695906870067
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.0004985578125342727,
+            "mean": 0.0003594805712054949,
+            "median": 0.0003333809436298907,
+            "min": 0.0003259438381064683
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 3,
+        "token_id": 3817
+      },
+      {
+        "base_output_sha256": "cef7af322823493f0894f7a4a6c8076aa14c96be0b2ab713787cc6be760679ac",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_4",
+        "lookup_rows": [
+          5040598,
+          36400117,
+          42137645,
+          62234912,
+          85235536,
+          119581488,
+          131111852,
+          159840626,
+          167530236,
+          186415225,
+          211884213,
+          222407311,
+          242064112,
+          261741319,
+          288305083,
+          301156947
+        ],
+        "lookup_shards": [
+          2,
+          14,
+          16,
+          24,
+          34,
+          47,
+          52,
+          63,
+          67,
+          74,
+          84,
+          88,
+          96,
+          104,
+          115,
+          120
+        ],
+        "response": {
+          "base_output_l2": 0.4751337766647339,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.005439828149974346,
+            "mean": 0.0019530724275682587,
+            "median": 0.0013043962535448372,
+            "min": 0.00043296077637933195
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 10,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 2,
+              "0.99": 4
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.009786640711824404,
+              0.002102314475170151,
+              0.001259796405428862,
+              0.0011229480258417139,
+              5.82915961440228e-06,
+              4.5693466567278455e-06,
+              2.9035121544355643e-06,
+              1.7705497227330655e-06,
+              1.233990192026971e-06,
+              5.525844741463048e-07,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.00010304623007806336
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.6184471218952208,
+            "mean": 0.26661256175178005,
+            "median": 0.22640916349458004,
+            "min": 0.07925669514813599
+          },
+          "step_l2": {
+            "max": 0.005638400558382273,
+            "mean": 0.0019585357968026074,
+            "median": 0.0013224452850408852,
+            "min": 0.00042662330088205636
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.00043119609472341835,
+            "mean": 0.0003086015676672105,
+            "median": 0.0002837024221662432,
+            "min": 0.00027317687636241317
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 4,
+        "token_id": 13
+      },
+      {
+        "base_output_sha256": "e91ca3c734ae4391d283fb8f4cd76566a7b672c6bfdb0a219387a9125028d40d",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_5",
+        "lookup_rows": [
+          4155854,
+          27542821,
+          49289246,
+          79793531,
+          85995058,
+          114740271,
+          127868586,
+          145392766,
+          166267475,
+          180001640,
+          206063729,
+          232185672,
+          249133513,
+          266089040,
+          298409471,
+          300023148
+        ],
+        "lookup_shards": [
+          1,
+          11,
+          19,
+          31,
+          34,
+          45,
+          51,
+          58,
+          66,
+          72,
+          82,
+          92,
+          99,
+          106,
+          119,
+          120
+        ],
+        "response": {
+          "base_output_l2": 0.49948063492774963,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.004440476652234793,
+            "mean": 0.0016355221014237031,
+            "median": 0.0013580230879597366,
+            "min": 0.00043359556002542377
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 11,
+            "ranks_at_energy": {
+              "0.9": 2,
+              "0.95": 2,
+              "0.99": 4
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.007896755326411415,
+              0.002473067255017502,
+              0.0012500207217241294,
+              0.0008800023430853573,
+              7.95252747622952e-06,
+              4.7078003785062245e-06,
+              3.5404250880426455e-06,
+              2.2541566810711226e-06,
+              1.7945242597857486e-06,
+              1.1793137159542455e-06,
+              6.650908514723742e-07,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 7.08118703369761e-05
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.5899197734501136,
+            "mean": 0.2918987075716901,
+            "median": 0.19483958338168444,
+            "min": 0.08335289562449125
+          },
+          "step_l2": {
+            "max": 0.00460192421451211,
+            "mean": 0.001642512495891424,
+            "median": 0.0013552419259212911,
+            "min": 0.00041622339631430805
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.00037020642776042223,
+            "mean": 0.0002846347924787551,
+            "median": 0.0002667272638063878,
+            "min": 0.0002592338714748621
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 5,
+        "token_id": 2972
+      },
+      {
+        "base_output_sha256": "6ae9f9297dfeac90972e658e7d0a4e560380dd3ee908214dcf8fcea199bc9298",
+        "intermediate_shapes": {
+          "gate": [
+            17,
+            4
+          ],
+          "gated_value": [
+            17,
+            10240
+          ],
+          "gated_value_normed": [
+            17,
+            10240
+          ],
+          "key": [
+            10240
+          ],
+          "value": [
+            2560
+          ]
+        },
+        "label": "historical_stateful_address_6",
+        "lookup_rows": [
+          8832859,
+          21303122,
+          59229408,
+          78220209,
+          99113944,
+          119772667,
+          121098877,
+          143498570,
+          160348493,
+          186956960,
+          210052063,
+          236785465,
+          244351338,
+          272323240,
+          288404123,
+          309484515
+        ],
+        "lookup_shards": [
+          3,
+          8,
+          23,
+          31,
+          39,
+          47,
+          48,
+          57,
+          64,
+          74,
+          84,
+          94,
+          97,
+          108,
+          115,
+          123
+        ],
+        "response": {
+          "base_output_l2": 0.5360462665557861,
+          "direction_count": 8,
+          "linear_response_l2": {
+            "max": 0.006915852427482605,
+            "mean": 0.002341999042982934,
+            "median": 0.0014758585602976382,
+            "min": 0.00040316811646334827
+          },
+          "local_delta_spectrum": {
+            "numerical_rank": 10,
+            "ranks_at_energy": {
+              "0.9": 1,
+              "0.95": 1,
+              "0.99": 2
+            },
+            "response_rows": 16,
+            "response_width": 10240,
+            "top_singular_values": [
+              0.012563190592460347,
+              0.0013407427810698787,
+              0.0010225024407396427,
+              0.0005107173075321249,
+              6.142415513030488e-06,
+              5.543600872660799e-06,
+              3.246749728819521e-06,
+              3.0343332417935857e-06,
+              2.049502791516468e-06,
+              9.712313147473344e-07,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "total_energy": 0.00016093778583009947
+          },
+          "normalized_symmetric_curvature": {
+            "max": 0.7627519461604036,
+            "mean": 0.3063953185574328,
+            "median": 0.22585997574762673,
+            "min": 0.07559016160600969
+          },
+          "step_l2": {
+            "max": 0.007171724922955036,
+            "mean": 0.002346433851926122,
+            "median": 0.0014684249181300402,
+            "min": 0.000356558506609872
+          },
+          "symmetric_curvature_l2": {
+            "max": 0.0005227865767665207,
+            "mean": 0.0003632836524047889,
+            "median": 0.00033123293542303145,
+            "min": 0.0003180299245286733
+          }
+        },
+        "source_group": "historical_stateful_token_address_only",
+        "source_token_index": 6,
+        "token_id": 96125
+      }
+    ],
+    "cross_address_delta_spectrum": {
+      "numerical_rank": 78,
+      "ranks_at_energy": {
+        "0.9": 6,
+        "0.95": 7,
+        "0.99": 10
+      },
+      "response_rows": 128,
+      "response_width": 10240,
+      "top_singular_values": [
+        0.030063421411933418,
+        0.022189991843090597,
+        0.013834591684056066,
+        0.011693521953449347,
+        0.011294152825258147,
+        0.010949582031729414,
+        0.009383284700780705,
+        0.007244081921700095,
+        0.004059657426051378,
+        0.0027129467610212087,
+        0.00259313310931909,
+        0.0018812093983090813,
+        0.0013161395985235018,
+        0.001127974178344988,
+        0.0010786880573553177,
+        0.0010083697572051938
+      ],
+      "total_energy": 0.002154578287672224
+    },
+    "interpretation": "This is the response spectrum over one synthetic low-dimensional context plane per real address. Its rank is bounded by the declared probe directions and cannot infer the rank of the full source-state distribution."
+  },
+  "address_inputs": {
+    "historical_stateful_address_sequence": {
+      "active_lookup": {
+        "embedding_values_per_token": 2560,
+        "lookup_events": 112,
+        "lookup_events_per_token": 16,
+        "ordered_lookup_records": [
+          {
+            "combined_row": 14372315,
+            "global_head": 0,
+            "local_row": 1872255,
+            "payload_sha256": "c5767212bc15a8e49a20280e61802e0aa05fdcee37282e9aa84e1b6c203eddbb",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 5,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_5.weight"
+          },
+          {
+            "combined_row": 21827640,
+            "global_head": 1,
+            "local_row": 1827544,
+            "payload_sha256": "37e2a4725ebb62226e4ae6834065a8a8010fb84632ed92726ad726d8cbbe22ad",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 8,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+          },
+          {
+            "combined_row": 59280967,
+            "global_head": 2,
+            "local_row": 1780691,
+            "payload_sha256": "16f690c6dd6724a08ff02b8fad3f4fcaab47fcb010da7b41dc86206380ef6387",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 23,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+          },
+          {
+            "combined_row": 63888239,
+            "global_head": 3,
+            "local_row": 1387939,
+            "payload_sha256": "1ccd8e59b3b8a77c320a4e0a84001c46da9a09893f5e24ddc68e61e75902d011",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 25,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_25.weight"
+          },
+          {
+            "combined_row": 80283410,
+            "global_head": 4,
+            "local_row": 283026,
+            "payload_sha256": "dabdf6a81804ba7f34d43be4c0d9d68cc67eb871d1062e8e6f79fc06709d10ca",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 32,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+          },
+          {
+            "combined_row": 106543326,
+            "global_head": 5,
+            "local_row": 1542822,
+            "payload_sha256": "784f515cd0c3b76ca03db47654a708396ef0b2bfa61e7980b37498f93407be68",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 42,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+          },
+          {
+            "combined_row": 126678265,
+            "global_head": 6,
+            "local_row": 1677665,
+            "payload_sha256": "f96df31b01bb70919ffb49ed0447ac2fbf92cb431651230322b5641101704d76",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 50,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+          },
+          {
+            "combined_row": 141582367,
+            "global_head": 7,
+            "local_row": 1581695,
+            "payload_sha256": "1b89d4df3ecd233d84d9c93221537d6362ac013fed3ecda1f630b0ff06cfec0e",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 56,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_56.weight"
+          },
+          {
+            "combined_row": 173802232,
+            "global_head": 8,
+            "local_row": 1301404,
+            "payload_sha256": "ec6d099dc594294b8825473c884b80fd59bb5ac1fc91cfdf4203ed7968b61b63",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 69,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+          },
+          {
+            "combined_row": 195724011,
+            "global_head": 9,
+            "local_row": 723075,
+            "payload_sha256": "daf0d8197b91246107178a9f7da152d1c116383d29e21c4ac88fef96b1cb1389",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 78,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+          },
+          {
+            "combined_row": 204213856,
+            "global_head": 10,
+            "local_row": 1712884,
+            "payload_sha256": "11d0e05efe51db83fd404618ae1a015372e2e5b7ff6179cc810c650305329a1e",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 81,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_81.weight"
+          },
+          {
+            "combined_row": 225545542,
+            "global_head": 11,
+            "local_row": 544462,
+            "payload_sha256": "f52097d857939d743cea31c134371f27c9155d10f618a7750f40fdbdc0dfe645",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 90,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+          },
+          {
+            "combined_row": 259482876,
+            "global_head": 12,
+            "local_row": 1981640,
+            "payload_sha256": "9bd93d3a12f2f60c3d88f1b02264ba2a99094bd65d9d3053572cfbfc5995b0a1",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 103,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+          },
+          {
+            "combined_row": 274655901,
+            "global_head": 13,
+            "local_row": 2154593,
+            "payload_sha256": "a76a9e0d01dee90e6c6f0538c6dea345035cf4740d5990aff2650b88799cc9ef",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 109,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+          },
+          {
+            "combined_row": 299988367,
+            "global_head": 14,
+            "local_row": 2486939,
+            "payload_sha256": "eaf1469059e3bc7831f280801135ef33481da0f569d47a179fc12ade3657afb7",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 119,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+          },
+          {
+            "combined_row": 308709461,
+            "global_head": 15,
+            "local_row": 1207985,
+            "payload_sha256": "659952efa3afe73fef55cd0b16366f3a824118811e02f5aa9b68e5c5ccf3ada7",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          },
+          {
+            "combined_row": 9949239,
+            "global_head": 0,
+            "local_row": 2449203,
+            "payload_sha256": "3e1b6422bf06f253ce3489ecbcde71640ca56532e3af728fbc38688445a8ffe3",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 3,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+          },
+          {
+            "combined_row": 28866003,
+            "global_head": 1,
+            "local_row": 1365871,
+            "payload_sha256": "8ef17c085b073ded1b24a313b9052f6dd4fd94e83bebd6d99202822be58fc21a",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 11,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+          },
+          {
+            "combined_row": 58419028,
+            "global_head": 2,
+            "local_row": 918752,
+            "payload_sha256": "ea10bce8ed361ec096dd1dc6492fdd32496e379d68550b0233bac5db885e744c",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 23,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+          },
+          {
+            "combined_row": 79899210,
+            "global_head": 3,
+            "local_row": 2398838,
+            "payload_sha256": "3b2755b2b1aefcdd0f557259ac335a68524f6ff4851de9ca1f47449cf247495b",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 31,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+          },
+          {
+            "combined_row": 95552045,
+            "global_head": 4,
+            "local_row": 551589,
+            "payload_sha256": "69e60e7da29fb15d8a718003928e331335f7c34817957072edda3872ce9466f3",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 38,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+          },
+          {
+            "combined_row": 107456527,
+            "global_head": 5,
+            "local_row": 2456023,
+            "payload_sha256": "44ddb386cf44fbc738c380a09c1dc4043586a663fe33fe0d2fbaf5156d319a13",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 42,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+          },
+          {
+            "combined_row": 125332174,
+            "global_head": 6,
+            "local_row": 331574,
+            "payload_sha256": "d4b333d43519bd504c1caecb8ce86e92748166d9f6ff80db0bf0c1fea22eec9a",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 50,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+          },
+          {
+            "combined_row": 149201698,
+            "global_head": 7,
+            "local_row": 1700990,
+            "payload_sha256": "5161d586be501134f992dedd8a0ec734d24989a71b6d2b08e1135c8d3e62d3f8",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 59,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_59.weight"
+          },
+          {
+            "combined_row": 164894268,
+            "global_head": 8,
+            "local_row": 2393488,
+            "payload_sha256": "ae1c0e2bbfd81d0c53c0a4c404e0ab86eb96123af49b95c8206d3d788ab42dc3",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 65,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_65.weight"
+          },
+          {
+            "combined_row": 195474054,
+            "global_head": 9,
+            "local_row": 473118,
+            "payload_sha256": "9cfc26fb1a7b6cdcdf0e99f4aa8beaee100146565ecfc9da2f19fb4585940acc",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 78,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+          },
+          {
+            "combined_row": 212886084,
+            "global_head": 10,
+            "local_row": 385064,
+            "payload_sha256": "60f522242ac9f09c1172a8c95d57166848f4738a98394ffef3da8bd71a2b2763",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 85,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_85.weight"
+          },
+          {
+            "combined_row": 230077049,
+            "global_head": 11,
+            "local_row": 75945,
+            "payload_sha256": "886e7fa0891cda6a5469a62b31628e8de9f9eda99b35d0c31792bfafcc370ebe",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 92,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+          },
+          {
+            "combined_row": 248971874,
+            "global_head": 12,
+            "local_row": 1470686,
+            "payload_sha256": "28d01ceb1e43d620ad807fa972dda0ff0f6ad64aef523ead803274ed4d0345e0",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 99,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+          },
+          {
+            "combined_row": 268210025,
+            "global_head": 13,
+            "local_row": 708741,
+            "payload_sha256": "61aaf5e75ee3c45aef3a6e895760822225b3d2ae6ce31edd56c1e3f41a024b07",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 107,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+          },
+          {
+            "combined_row": 294699197,
+            "global_head": 14,
+            "local_row": 2197793,
+            "payload_sha256": "da80b44d040496f9fd5da97de2e94f479f673a35ee2b08f59f5806a104bd6987",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 117,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+          },
+          {
+            "combined_row": 307716301,
+            "global_head": 15,
+            "local_row": 214825,
+            "payload_sha256": "06a49321d235dcee5ddc038170f6070d7c7286317bb455489118c47be16a72af",
+            "row_bytes": 320,
+            "session_token_index": 1,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          },
+          {
+            "combined_row": 2608171,
+            "global_head": 0,
+            "local_row": 108159,
+            "payload_sha256": "5e27c6c6cad1278d666e39e9b1c5e11b97dca40af8875674970d82e26101b347",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 1,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+          },
+          {
+            "combined_row": 22295646,
+            "global_head": 1,
+            "local_row": 2295550,
+            "payload_sha256": "5e18e31123a04b12acac3696614ba7f53d543d70f00801bbaaaee4703504a4b5",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 8,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+          },
+          {
+            "combined_row": 42232465,
+            "global_head": 2,
+            "local_row": 2232273,
+            "payload_sha256": "fbee1da45949247cdc01d6a9cd04aa2a4c57ca5cb2dc4069932676f1411573f4",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 16,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+          },
+          {
+            "combined_row": 66248249,
+            "global_head": 3,
+            "local_row": 1247937,
+            "payload_sha256": "1a9928b52703fadfd427c4647365325812f65b9a2a577f52ef2ab090c8c9db85",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 26,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_26.weight"
+          },
+          {
+            "combined_row": 98358609,
+            "global_head": 4,
+            "local_row": 858141,
+            "payload_sha256": "c0000bfb8128850619338c68adb86bbef46dc7833d35ad07907264932c41c558",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 39,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+          },
+          {
+            "combined_row": 102415232,
+            "global_head": 5,
+            "local_row": 2414752,
+            "payload_sha256": "cd0e301c598fb1311891ef3df9421af908ebfd2c37f9aa358cc18b5d31917570",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 40,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_40.weight"
+          },
+          {
+            "combined_row": 138518879,
+            "global_head": 6,
+            "local_row": 1018219,
+            "payload_sha256": "a29cf99e5c4a6640c06a737f079769fa0b5c8eb337b33e752c025539238e15ca",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 55,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_55.weight"
+          },
+          {
+            "combined_row": 146691689,
+            "global_head": 7,
+            "local_row": 1690993,
+            "payload_sha256": "85b7681b645cd6cd428b7573af0bbc08749d2009142b8ee6e25e07f676f336ad",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 58,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+          },
+          {
+            "combined_row": 160234128,
+            "global_head": 8,
+            "local_row": 233360,
+            "payload_sha256": "7599daa3e148a4bf7b8e5d19825d1c0f0099475d3447d67fbee709f7e6038f1a",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 64,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+          },
+          {
+            "combined_row": 193534463,
+            "global_head": 9,
+            "local_row": 1033539,
+            "payload_sha256": "4ae42009ffc4a64f4b6716668700ad897e2dc30bf61799227ce6450c81e8d3eb",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 77,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+          },
+          {
+            "combined_row": 209126214,
+            "global_head": 10,
+            "local_row": 1625218,
+            "payload_sha256": "1c0edc7ece32c58c17ca27bf006b0c98a80ffd58be19f094a56a674cfda43884",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 83,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_83.weight"
+          },
+          {
+            "combined_row": 234117767,
+            "global_head": 11,
+            "local_row": 1616651,
+            "payload_sha256": "088107632fb41b36c48a594d77067c105ca5c5024581cdb3a79ff35c451a7a82",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 93,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+          },
+          {
+            "combined_row": 240923228,
+            "global_head": 12,
+            "local_row": 922076,
+            "payload_sha256": "15f03d4aaa5e56cf244fb859757fdbaf10c02de35a34cd10700c6bec43196d7d",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 96,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+          },
+          {
+            "combined_row": 267743638,
+            "global_head": 13,
+            "local_row": 242354,
+            "payload_sha256": "664e78082988d0e87109c4b313f454c9667e91ad53b259751a8e05193e329d64",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 107,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+          },
+          {
+            "combined_row": 290020504,
+            "global_head": 14,
+            "local_row": 19112,
+            "payload_sha256": "2dc0e5115d8077a262bb0b4a3f9dc229b0cd02754a527e4a4c8426247c070659",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 116,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_116.weight"
+          },
+          {
+            "combined_row": 301428689,
+            "global_head": 15,
+            "local_row": 1427249,
+            "payload_sha256": "fc6199890c12c1acb0984340661230ef9f5a48ef5f379cf2e31d90985adc6aa6",
+            "row_bytes": 320,
+            "session_token_index": 2,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          },
+          {
+            "combined_row": 12272008,
+            "global_head": 0,
+            "local_row": 2271960,
+            "payload_sha256": "3f44fb697497080c9964d6af05262df6fba50e4ac0552d6869ca1adfa28a7f6e",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 4,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_4.weight"
+          },
+          {
+            "combined_row": 37554332,
+            "global_head": 1,
+            "local_row": 54152,
+            "payload_sha256": "6293657dd94fdfc0c8665506b595801e930f47847604abcd8e0f1d3990785ae8",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 15,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_15.weight"
+          },
+          {
+            "combined_row": 50196804,
+            "global_head": 2,
+            "local_row": 196564,
+            "payload_sha256": "a373816f17b03c5434affcee7655f8147bb1463640f5d229f26f950d01d04ac8",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 20,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_20.weight"
+          },
+          {
+            "combined_row": 75897748,
+            "global_head": 3,
+            "local_row": 897388,
+            "payload_sha256": "1b542ea4f947d44039fa3c122497d5a94f705ea36d3690a3aa2983ec19e3c9bb",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 30,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_30.weight"
+          },
+          {
+            "combined_row": 95071347,
+            "global_head": 4,
+            "local_row": 70891,
+            "payload_sha256": "9805d23ebda26d8ad8b91661c6f321568769e0bb594a892d079eb1484a79afe0",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 38,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+          },
+          {
+            "combined_row": 108129513,
+            "global_head": 5,
+            "local_row": 628997,
+            "payload_sha256": "06e29f4623c7ef16b3306b927d9bb23f191fd6f464efb4b05910a84f544c013b",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 43,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+          },
+          {
+            "combined_row": 127717026,
+            "global_head": 6,
+            "local_row": 216414,
+            "payload_sha256": "852e3d83adba6d06e20f4d971144d73d104e18c4c32fe730d6dab26254312897",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 51,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+          },
+          {
+            "combined_row": 153834206,
+            "global_head": 7,
+            "local_row": 1333474,
+            "payload_sha256": "9be003170d45fad2b53236bc20a6680e73d2c54f165a582f7e7094b32527380d",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 61,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_61.weight"
+          },
+          {
+            "combined_row": 173291479,
+            "global_head": 8,
+            "local_row": 790651,
+            "payload_sha256": "1eb171b9b7b87141bb665613a7b39b5a06cef848437d5e283b596fa6bd09dcf9",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 69,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+          },
+          {
+            "combined_row": 191323675,
+            "global_head": 9,
+            "local_row": 1322763,
+            "payload_sha256": "9e289c0b685c70df1d77339bb9a7bae38abe6a6ae2d08130706c6016e951d0ea",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 76,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_76.weight"
+          },
+          {
+            "combined_row": 212365591,
+            "global_head": 10,
+            "local_row": 2364583,
+            "payload_sha256": "e60d82661492accec4e5f65d84a8f93dab1aa62d4286a157c11435c9f348fbd5",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 84,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+          },
+          {
+            "combined_row": 232510937,
+            "global_head": 11,
+            "local_row": 9821,
+            "payload_sha256": "1ff90dafb2fd4c85ba0c2a9a3232fffd4d07e7ed3c4079c06ef065684aca0257",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 93,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+          },
+          {
+            "combined_row": 241536077,
+            "global_head": 12,
+            "local_row": 1534925,
+            "payload_sha256": "8f1ef6019e66c3ea94b8b1e31547d02894da96d0d80ea9275d156cd6de92edc6",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 96,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+          },
+          {
+            "combined_row": 270562234,
+            "global_head": 13,
+            "local_row": 560938,
+            "payload_sha256": "7a760a19fc32b325e3ca9f242ffbb7a9199ada4d474e2b70b063145c7b919c80",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 108,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+          },
+          {
+            "combined_row": 293571253,
+            "global_head": 14,
+            "local_row": 1069849,
+            "payload_sha256": "84b4371b3ff505d419491da36f723ddff31fc625dede075498ad056484d3b520",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 117,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+          },
+          {
+            "combined_row": 308616983,
+            "global_head": 15,
+            "local_row": 1115507,
+            "payload_sha256": "fa53904a796d68b6dd2522e280b10c0fb9199a2bb778d5b7c56d55f3c7c89d15",
+            "row_bytes": 320,
+            "session_token_index": 3,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          },
+          {
+            "combined_row": 5040598,
+            "global_head": 0,
+            "local_row": 40574,
+            "payload_sha256": "fdec35cf5cb8a4a978f9c0edf3ab126b72a8ac4798384171788e62d6bb27ee20",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 2,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_2.weight"
+          },
+          {
+            "combined_row": 36400117,
+            "global_head": 1,
+            "local_row": 1399949,
+            "payload_sha256": "49d8bb31a2142b4ec074386a6a0952bda51bd1f5596b7c5f5c1a30e4d64354bc",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 14,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_14.weight"
+          },
+          {
+            "combined_row": 42137645,
+            "global_head": 2,
+            "local_row": 2137453,
+            "payload_sha256": "841a2eeb6be91099ea3ae076ea863cb96ef742e42fb2636bee3852f24433bbf2",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 16,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+          },
+          {
+            "combined_row": 62234912,
+            "global_head": 3,
+            "local_row": 2234624,
+            "payload_sha256": "0ab94835bb6edaf688a7f03e4314ea009e3400e55dc5a12da842325fbf75cd34",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 24,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_24.weight"
+          },
+          {
+            "combined_row": 85235536,
+            "global_head": 4,
+            "local_row": 235128,
+            "payload_sha256": "d52ed72e353219c9133d428dcecb10b67673d9b15cdc26e874e362aa39132859",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 34,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+          },
+          {
+            "combined_row": 119581488,
+            "global_head": 5,
+            "local_row": 2080924,
+            "payload_sha256": "ac35268e4867c418f3359b8604cf7446e94513acf5abcbd83a92fd65e75481f2",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 47,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+          },
+          {
+            "combined_row": 131111852,
+            "global_head": 6,
+            "local_row": 1111228,
+            "payload_sha256": "d6d7ec3a8cef663eefa75359d1bf4a909eeeb3d1ace9b6336ef6421987f83db6",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 52,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_52.weight"
+          },
+          {
+            "combined_row": 159840626,
+            "global_head": 7,
+            "local_row": 2339870,
+            "payload_sha256": "f432feb3ded57471d52e9da7a09c827c02e487b5f2397e5475dbfbbde438b9f7",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 63,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_63.weight"
+          },
+          {
+            "combined_row": 167530236,
+            "global_head": 8,
+            "local_row": 29432,
+            "payload_sha256": "66a87c22a4560d07ad010ca65d1bd316187e06c62a1e47f37be53dbc17ba759d",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 67,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_67.weight"
+          },
+          {
+            "combined_row": 186415225,
+            "global_head": 9,
+            "local_row": 1414337,
+            "payload_sha256": "0f80a9d3b87b32a57052b1eca54a422b2d4ef87a0f1853d977a5ef3987d726b9",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 74,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+          },
+          {
+            "combined_row": 211884213,
+            "global_head": 10,
+            "local_row": 1883205,
+            "payload_sha256": "70f57f320f8bc649d41b9c16e3718acfdd72187725bcf39a25c9be51bdac9614",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 84,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+          },
+          {
+            "combined_row": 222407311,
+            "global_head": 11,
+            "local_row": 2406255,
+            "payload_sha256": "ad2e1816c3b1b5a188acd73805f633f6e3506e9a9b9b8f5c7654b010bcf576ee",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 88,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_88.weight"
+          },
+          {
+            "combined_row": 242064112,
+            "global_head": 12,
+            "local_row": 2062960,
+            "payload_sha256": "547c35cb4cf51dd8e3a029b1de79306e734dfd67ba28f6303dcf9df6557a6a33",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 96,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+          },
+          {
+            "combined_row": 261741319,
+            "global_head": 13,
+            "local_row": 1740071,
+            "payload_sha256": "0271f98acba37baa9d3f7aeb1215c314187715cdadee49a036219c580c946dd2",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 104,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_104.weight"
+          },
+          {
+            "combined_row": 288305083,
+            "global_head": 14,
+            "local_row": 803703,
+            "payload_sha256": "372a9c731b872aca3f9481727279305e73b3cd3bf1b47c292eb119e805b76b0f",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 115,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+          },
+          {
+            "combined_row": 301156947,
+            "global_head": 15,
+            "local_row": 1155507,
+            "payload_sha256": "8ac4e137f6c285ec2ba26c6b86012a6b278f6048edaa4b689085c3c512cb7211",
+            "row_bytes": 320,
+            "session_token_index": 4,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          },
+          {
+            "combined_row": 4155854,
+            "global_head": 0,
+            "local_row": 1655842,
+            "payload_sha256": "d693652ef091cc001b2a4634251950272a86d841b816d6b2bf8df3d4ac010037",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 1,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+          },
+          {
+            "combined_row": 27542821,
+            "global_head": 1,
+            "local_row": 42689,
+            "payload_sha256": "6c34dde41a6f8b35f46449bd4a7cbcfd029769c5289122c25e8a1ae9a2b0b552",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 11,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+          },
+          {
+            "combined_row": 49289246,
+            "global_head": 2,
+            "local_row": 1789018,
+            "payload_sha256": "ff1189989762a021743e64b767ca9512e458ec513b65faf79bf38d273bb12710",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 19,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_19.weight"
+          },
+          {
+            "combined_row": 79793531,
+            "global_head": 3,
+            "local_row": 2293159,
+            "payload_sha256": "8c210ed43caa18580be8014029957f4975eae7455b421bae4fedd8fb26c3882a",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 31,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+          },
+          {
+            "combined_row": 85995058,
+            "global_head": 4,
+            "local_row": 994650,
+            "payload_sha256": "76faff2358d6e1e51f2806a6dd2997c53d2ebf2b5b541046ed03f61e3005ad7d",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 34,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+          },
+          {
+            "combined_row": 114740271,
+            "global_head": 5,
+            "local_row": 2239731,
+            "payload_sha256": "38a01f2b50b2a4e8e1b644b8b82e327ad9ef7e46b780a7e9be70dc346e4e7901",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 45,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_45.weight"
+          },
+          {
+            "combined_row": 127868586,
+            "global_head": 6,
+            "local_row": 367974,
+            "payload_sha256": "bdbbacf44cfa9e0c399c62c88607d385c0e72bff46ef2159d852b82d3d7c58fc",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 51,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+          },
+          {
+            "combined_row": 145392766,
+            "global_head": 7,
+            "local_row": 392070,
+            "payload_sha256": "e232f6cd5b26466b215db225338031781f2f051593f29b7ba453fc29f85f4b98",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 58,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+          },
+          {
+            "combined_row": 166267475,
+            "global_head": 8,
+            "local_row": 1266683,
+            "payload_sha256": "df68c8864ed4cc09edd5f81213384e7645570c503eb4d3a0d8aa1ee2ff4d5218",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 66,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_66.weight"
+          },
+          {
+            "combined_row": 180001640,
+            "global_head": 9,
+            "local_row": 776,
+            "payload_sha256": "d8c562ffa165050859f64e0afa182c1adae46c9774e4ecd3034578c82544134a",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 72,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_72.weight"
+          },
+          {
+            "combined_row": 206063729,
+            "global_head": 10,
+            "local_row": 1062745,
+            "payload_sha256": "a02f5a02c9614acff848612f2bce30260cca1b6a700a504532bc071797b8618b",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 82,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_82.weight"
+          },
+          {
+            "combined_row": 232185672,
+            "global_head": 11,
+            "local_row": 2184568,
+            "payload_sha256": "5d3680827a9284a433cda60b1b3a44b14e403d704f93d06d2c6350256d3de6c3",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 92,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+          },
+          {
+            "combined_row": 249133513,
+            "global_head": 12,
+            "local_row": 1632325,
+            "payload_sha256": "d264ecea6fe8a4ac565b8049af05cd086c194fba55bf50ef7f99663ef88bb855",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 99,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+          },
+          {
+            "combined_row": 266089040,
+            "global_head": 13,
+            "local_row": 1087768,
+            "payload_sha256": "d26dff44369fbf0cf8f5967b660a5c0b1a4de08d5479e759e24f83a916938f5e",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 106,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_106.weight"
+          },
+          {
+            "combined_row": 298409471,
+            "global_head": 14,
+            "local_row": 908043,
+            "payload_sha256": "da99767e5d850682a5fd7b3a63cb52ee6db7ef12d76c5908ccab9eb3a8a7ac2d",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 119,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+          },
+          {
+            "combined_row": 300023148,
+            "global_head": 15,
+            "local_row": 21708,
+            "payload_sha256": "2a8280f9ddc87d63c5a828b63ab154cc8d35eb8cbc63dac6196997bca2e447be",
+            "row_bytes": 320,
+            "session_token_index": 5,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          },
+          {
+            "combined_row": 8832859,
+            "global_head": 0,
+            "local_row": 1332823,
+            "payload_sha256": "48e5d3964cfd3fbef1d0d0684027a74b03ffdc1b9b6d8d30f81d8322d54c677d",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 3,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+          },
+          {
+            "combined_row": 21303122,
+            "global_head": 1,
+            "local_row": 1303026,
+            "payload_sha256": "1f2c4e30b077c53d3df6f27d493e584eed46273d2d152d64714c7effcfde3b60",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 8,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+          },
+          {
+            "combined_row": 59229408,
+            "global_head": 2,
+            "local_row": 1729132,
+            "payload_sha256": "5840c1ecd66eba810093781c95f314d6eafcb13d862430eed96c97c03a1e69b3",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 23,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+          },
+          {
+            "combined_row": 78220209,
+            "global_head": 3,
+            "local_row": 719837,
+            "payload_sha256": "7e2b5cdf36cef7f21bd7681feba9be3bdce5804da19d120f21bd1b275d8e99e3",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 31,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+          },
+          {
+            "combined_row": 99113944,
+            "global_head": 4,
+            "local_row": 1613476,
+            "payload_sha256": "7c464282eb139f46a939aee2e02f7dbd09333d758a0b2cad851cbf73d454f4e7",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 39,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+          },
+          {
+            "combined_row": 119772667,
+            "global_head": 5,
+            "local_row": 2272103,
+            "payload_sha256": "61f250796d33113531f160bd2220dfb27b5485f836a651ac18232027f93a67c1",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 47,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+          },
+          {
+            "combined_row": 121098877,
+            "global_head": 6,
+            "local_row": 1098301,
+            "payload_sha256": "0e35f1fc742dac767ac32ca9449a831357ba3b4db6798831b15cae8251743ca4",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 48,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_48.weight"
+          },
+          {
+            "combined_row": 143498570,
+            "global_head": 7,
+            "local_row": 997886,
+            "payload_sha256": "fa16b27e4490b45b00bf1285a420ad80a2ce1ddcfb794098d6c820f5d4d1b14d",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 57,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_57.weight"
+          },
+          {
+            "combined_row": 160348493,
+            "global_head": 8,
+            "local_row": 347725,
+            "payload_sha256": "29b4acdd15cbee2cc61bb8b19e51026d2950ff5c75e7850554000c6caf90fd19",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 64,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+          },
+          {
+            "combined_row": 186956960,
+            "global_head": 9,
+            "local_row": 1956072,
+            "payload_sha256": "883d77adc0d898cb92a62f320dec43e892878d12cc492229a2455b5b46297821",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 74,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+          },
+          {
+            "combined_row": 210052063,
+            "global_head": 10,
+            "local_row": 51055,
+            "payload_sha256": "5045ff363fa7610bbf537fec26568488b77b1cb77c0daad6a9df0f9a0edc3c28",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 84,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+          },
+          {
+            "combined_row": 236785465,
+            "global_head": 11,
+            "local_row": 1784337,
+            "payload_sha256": "8e83b28102bbcabc5e630a073333b3e9a3c60f7b743e509687291f54fa75dbc3",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 94,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_94.weight"
+          },
+          {
+            "combined_row": 244351338,
+            "global_head": 12,
+            "local_row": 1850174,
+            "payload_sha256": "cec59885a185428b6678d72023acb4e745c69337823069cbfba9b268819c688d",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 97,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_97.weight"
+          },
+          {
+            "combined_row": 272323240,
+            "global_head": 13,
+            "local_row": 2321944,
+            "payload_sha256": "e436a5db1e46ce2300b5ab73ba1bcc2fba22586d0d26efd29f1a6d8cc8618e48",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 108,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+          },
+          {
+            "combined_row": 288404123,
+            "global_head": 14,
+            "local_row": 902743,
+            "payload_sha256": "622002b6a22ad068309e0a7aa20eb4757e5482f34b1c0064dbed76732e7c8bd2",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 115,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+          },
+          {
+            "combined_row": 309484515,
+            "global_head": 15,
+            "local_row": 1983039,
+            "payload_sha256": "5a66bf6802c3cc7e4a44e6d8099115a8a36e571d3f7618cc7878aa6f289f5aaa",
+            "row_bytes": 320,
+            "session_token_index": 6,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          }
+        ],
+        "source_bytes_referenced_across_events": 35840,
+        "source_range_read_sha256": "31b6e1bece077a6aac71d1bbfc295c677bb093ad1a7501c8418bec8d60c32b5d",
+        "source_row_bytes": 320,
+        "source_row_records": [
+          {
+            "combined_row": 2608171,
+            "local_row": 108159,
+            "payload_sha256": "5e27c6c6cad1278d666e39e9b1c5e11b97dca40af8875674970d82e26101b347",
+            "row_bytes": 320,
+            "shard_ordinal": 1,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+          },
+          {
+            "combined_row": 4155854,
+            "local_row": 1655842,
+            "payload_sha256": "d693652ef091cc001b2a4634251950272a86d841b816d6b2bf8df3d4ac010037",
+            "row_bytes": 320,
+            "shard_ordinal": 1,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+          },
+          {
+            "combined_row": 5040598,
+            "local_row": 40574,
+            "payload_sha256": "fdec35cf5cb8a4a978f9c0edf3ab126b72a8ac4798384171788e62d6bb27ee20",
+            "row_bytes": 320,
+            "shard_ordinal": 2,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_2.weight"
+          },
+          {
+            "combined_row": 8832859,
+            "local_row": 1332823,
+            "payload_sha256": "48e5d3964cfd3fbef1d0d0684027a74b03ffdc1b9b6d8d30f81d8322d54c677d",
+            "row_bytes": 320,
+            "shard_ordinal": 3,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+          },
+          {
+            "combined_row": 9949239,
+            "local_row": 2449203,
+            "payload_sha256": "3e1b6422bf06f253ce3489ecbcde71640ca56532e3af728fbc38688445a8ffe3",
+            "row_bytes": 320,
+            "shard_ordinal": 3,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+          },
+          {
+            "combined_row": 12272008,
+            "local_row": 2271960,
+            "payload_sha256": "3f44fb697497080c9964d6af05262df6fba50e4ac0552d6869ca1adfa28a7f6e",
+            "row_bytes": 320,
+            "shard_ordinal": 4,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_4.weight"
+          },
+          {
+            "combined_row": 14372315,
+            "local_row": 1872255,
+            "payload_sha256": "c5767212bc15a8e49a20280e61802e0aa05fdcee37282e9aa84e1b6c203eddbb",
+            "row_bytes": 320,
+            "shard_ordinal": 5,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_5.weight"
+          },
+          {
+            "combined_row": 21303122,
+            "local_row": 1303026,
+            "payload_sha256": "1f2c4e30b077c53d3df6f27d493e584eed46273d2d152d64714c7effcfde3b60",
+            "row_bytes": 320,
+            "shard_ordinal": 8,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+          },
+          {
+            "combined_row": 21827640,
+            "local_row": 1827544,
+            "payload_sha256": "37e2a4725ebb62226e4ae6834065a8a8010fb84632ed92726ad726d8cbbe22ad",
+            "row_bytes": 320,
+            "shard_ordinal": 8,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+          },
+          {
+            "combined_row": 22295646,
+            "local_row": 2295550,
+            "payload_sha256": "5e18e31123a04b12acac3696614ba7f53d543d70f00801bbaaaee4703504a4b5",
+            "row_bytes": 320,
+            "shard_ordinal": 8,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+          },
+          {
+            "combined_row": 27542821,
+            "local_row": 42689,
+            "payload_sha256": "6c34dde41a6f8b35f46449bd4a7cbcfd029769c5289122c25e8a1ae9a2b0b552",
+            "row_bytes": 320,
+            "shard_ordinal": 11,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+          },
+          {
+            "combined_row": 28866003,
+            "local_row": 1365871,
+            "payload_sha256": "8ef17c085b073ded1b24a313b9052f6dd4fd94e83bebd6d99202822be58fc21a",
+            "row_bytes": 320,
+            "shard_ordinal": 11,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+          },
+          {
+            "combined_row": 36400117,
+            "local_row": 1399949,
+            "payload_sha256": "49d8bb31a2142b4ec074386a6a0952bda51bd1f5596b7c5f5c1a30e4d64354bc",
+            "row_bytes": 320,
+            "shard_ordinal": 14,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_14.weight"
+          },
+          {
+            "combined_row": 37554332,
+            "local_row": 54152,
+            "payload_sha256": "6293657dd94fdfc0c8665506b595801e930f47847604abcd8e0f1d3990785ae8",
+            "row_bytes": 320,
+            "shard_ordinal": 15,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_15.weight"
+          },
+          {
+            "combined_row": 42137645,
+            "local_row": 2137453,
+            "payload_sha256": "841a2eeb6be91099ea3ae076ea863cb96ef742e42fb2636bee3852f24433bbf2",
+            "row_bytes": 320,
+            "shard_ordinal": 16,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+          },
+          {
+            "combined_row": 42232465,
+            "local_row": 2232273,
+            "payload_sha256": "fbee1da45949247cdc01d6a9cd04aa2a4c57ca5cb2dc4069932676f1411573f4",
+            "row_bytes": 320,
+            "shard_ordinal": 16,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+          },
+          {
+            "combined_row": 49289246,
+            "local_row": 1789018,
+            "payload_sha256": "ff1189989762a021743e64b767ca9512e458ec513b65faf79bf38d273bb12710",
+            "row_bytes": 320,
+            "shard_ordinal": 19,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_19.weight"
+          },
+          {
+            "combined_row": 50196804,
+            "local_row": 196564,
+            "payload_sha256": "a373816f17b03c5434affcee7655f8147bb1463640f5d229f26f950d01d04ac8",
+            "row_bytes": 320,
+            "shard_ordinal": 20,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_20.weight"
+          },
+          {
+            "combined_row": 58419028,
+            "local_row": 918752,
+            "payload_sha256": "ea10bce8ed361ec096dd1dc6492fdd32496e379d68550b0233bac5db885e744c",
+            "row_bytes": 320,
+            "shard_ordinal": 23,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+          },
+          {
+            "combined_row": 59229408,
+            "local_row": 1729132,
+            "payload_sha256": "5840c1ecd66eba810093781c95f314d6eafcb13d862430eed96c97c03a1e69b3",
+            "row_bytes": 320,
+            "shard_ordinal": 23,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+          },
+          {
+            "combined_row": 59280967,
+            "local_row": 1780691,
+            "payload_sha256": "16f690c6dd6724a08ff02b8fad3f4fcaab47fcb010da7b41dc86206380ef6387",
+            "row_bytes": 320,
+            "shard_ordinal": 23,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+          },
+          {
+            "combined_row": 62234912,
+            "local_row": 2234624,
+            "payload_sha256": "0ab94835bb6edaf688a7f03e4314ea009e3400e55dc5a12da842325fbf75cd34",
+            "row_bytes": 320,
+            "shard_ordinal": 24,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_24.weight"
+          },
+          {
+            "combined_row": 63888239,
+            "local_row": 1387939,
+            "payload_sha256": "1ccd8e59b3b8a77c320a4e0a84001c46da9a09893f5e24ddc68e61e75902d011",
+            "row_bytes": 320,
+            "shard_ordinal": 25,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_25.weight"
+          },
+          {
+            "combined_row": 66248249,
+            "local_row": 1247937,
+            "payload_sha256": "1a9928b52703fadfd427c4647365325812f65b9a2a577f52ef2ab090c8c9db85",
+            "row_bytes": 320,
+            "shard_ordinal": 26,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_26.weight"
+          },
+          {
+            "combined_row": 75897748,
+            "local_row": 897388,
+            "payload_sha256": "1b542ea4f947d44039fa3c122497d5a94f705ea36d3690a3aa2983ec19e3c9bb",
+            "row_bytes": 320,
+            "shard_ordinal": 30,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_30.weight"
+          },
+          {
+            "combined_row": 78220209,
+            "local_row": 719837,
+            "payload_sha256": "7e2b5cdf36cef7f21bd7681feba9be3bdce5804da19d120f21bd1b275d8e99e3",
+            "row_bytes": 320,
+            "shard_ordinal": 31,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+          },
+          {
+            "combined_row": 79793531,
+            "local_row": 2293159,
+            "payload_sha256": "8c210ed43caa18580be8014029957f4975eae7455b421bae4fedd8fb26c3882a",
+            "row_bytes": 320,
+            "shard_ordinal": 31,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+          },
+          {
+            "combined_row": 79899210,
+            "local_row": 2398838,
+            "payload_sha256": "3b2755b2b1aefcdd0f557259ac335a68524f6ff4851de9ca1f47449cf247495b",
+            "row_bytes": 320,
+            "shard_ordinal": 31,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+          },
+          {
+            "combined_row": 80283410,
+            "local_row": 283026,
+            "payload_sha256": "dabdf6a81804ba7f34d43be4c0d9d68cc67eb871d1062e8e6f79fc06709d10ca",
+            "row_bytes": 320,
+            "shard_ordinal": 32,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+          },
+          {
+            "combined_row": 85235536,
+            "local_row": 235128,
+            "payload_sha256": "d52ed72e353219c9133d428dcecb10b67673d9b15cdc26e874e362aa39132859",
+            "row_bytes": 320,
+            "shard_ordinal": 34,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+          },
+          {
+            "combined_row": 85995058,
+            "local_row": 994650,
+            "payload_sha256": "76faff2358d6e1e51f2806a6dd2997c53d2ebf2b5b541046ed03f61e3005ad7d",
+            "row_bytes": 320,
+            "shard_ordinal": 34,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+          },
+          {
+            "combined_row": 95071347,
+            "local_row": 70891,
+            "payload_sha256": "9805d23ebda26d8ad8b91661c6f321568769e0bb594a892d079eb1484a79afe0",
+            "row_bytes": 320,
+            "shard_ordinal": 38,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+          },
+          {
+            "combined_row": 95552045,
+            "local_row": 551589,
+            "payload_sha256": "69e60e7da29fb15d8a718003928e331335f7c34817957072edda3872ce9466f3",
+            "row_bytes": 320,
+            "shard_ordinal": 38,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+          },
+          {
+            "combined_row": 98358609,
+            "local_row": 858141,
+            "payload_sha256": "c0000bfb8128850619338c68adb86bbef46dc7833d35ad07907264932c41c558",
+            "row_bytes": 320,
+            "shard_ordinal": 39,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+          },
+          {
+            "combined_row": 99113944,
+            "local_row": 1613476,
+            "payload_sha256": "7c464282eb139f46a939aee2e02f7dbd09333d758a0b2cad851cbf73d454f4e7",
+            "row_bytes": 320,
+            "shard_ordinal": 39,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+          },
+          {
+            "combined_row": 102415232,
+            "local_row": 2414752,
+            "payload_sha256": "cd0e301c598fb1311891ef3df9421af908ebfd2c37f9aa358cc18b5d31917570",
+            "row_bytes": 320,
+            "shard_ordinal": 40,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_40.weight"
+          },
+          {
+            "combined_row": 106543326,
+            "local_row": 1542822,
+            "payload_sha256": "784f515cd0c3b76ca03db47654a708396ef0b2bfa61e7980b37498f93407be68",
+            "row_bytes": 320,
+            "shard_ordinal": 42,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+          },
+          {
+            "combined_row": 107456527,
+            "local_row": 2456023,
+            "payload_sha256": "44ddb386cf44fbc738c380a09c1dc4043586a663fe33fe0d2fbaf5156d319a13",
+            "row_bytes": 320,
+            "shard_ordinal": 42,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+          },
+          {
+            "combined_row": 108129513,
+            "local_row": 628997,
+            "payload_sha256": "06e29f4623c7ef16b3306b927d9bb23f191fd6f464efb4b05910a84f544c013b",
+            "row_bytes": 320,
+            "shard_ordinal": 43,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+          },
+          {
+            "combined_row": 114740271,
+            "local_row": 2239731,
+            "payload_sha256": "38a01f2b50b2a4e8e1b644b8b82e327ad9ef7e46b780a7e9be70dc346e4e7901",
+            "row_bytes": 320,
+            "shard_ordinal": 45,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_45.weight"
+          },
+          {
+            "combined_row": 119581488,
+            "local_row": 2080924,
+            "payload_sha256": "ac35268e4867c418f3359b8604cf7446e94513acf5abcbd83a92fd65e75481f2",
+            "row_bytes": 320,
+            "shard_ordinal": 47,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+          },
+          {
+            "combined_row": 119772667,
+            "local_row": 2272103,
+            "payload_sha256": "61f250796d33113531f160bd2220dfb27b5485f836a651ac18232027f93a67c1",
+            "row_bytes": 320,
+            "shard_ordinal": 47,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+          },
+          {
+            "combined_row": 121098877,
+            "local_row": 1098301,
+            "payload_sha256": "0e35f1fc742dac767ac32ca9449a831357ba3b4db6798831b15cae8251743ca4",
+            "row_bytes": 320,
+            "shard_ordinal": 48,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_48.weight"
+          },
+          {
+            "combined_row": 125332174,
+            "local_row": 331574,
+            "payload_sha256": "d4b333d43519bd504c1caecb8ce86e92748166d9f6ff80db0bf0c1fea22eec9a",
+            "row_bytes": 320,
+            "shard_ordinal": 50,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+          },
+          {
+            "combined_row": 126678265,
+            "local_row": 1677665,
+            "payload_sha256": "f96df31b01bb70919ffb49ed0447ac2fbf92cb431651230322b5641101704d76",
+            "row_bytes": 320,
+            "shard_ordinal": 50,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+          },
+          {
+            "combined_row": 127717026,
+            "local_row": 216414,
+            "payload_sha256": "852e3d83adba6d06e20f4d971144d73d104e18c4c32fe730d6dab26254312897",
+            "row_bytes": 320,
+            "shard_ordinal": 51,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+          },
+          {
+            "combined_row": 127868586,
+            "local_row": 367974,
+            "payload_sha256": "bdbbacf44cfa9e0c399c62c88607d385c0e72bff46ef2159d852b82d3d7c58fc",
+            "row_bytes": 320,
+            "shard_ordinal": 51,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+          },
+          {
+            "combined_row": 131111852,
+            "local_row": 1111228,
+            "payload_sha256": "d6d7ec3a8cef663eefa75359d1bf4a909eeeb3d1ace9b6336ef6421987f83db6",
+            "row_bytes": 320,
+            "shard_ordinal": 52,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_52.weight"
+          },
+          {
+            "combined_row": 138518879,
+            "local_row": 1018219,
+            "payload_sha256": "a29cf99e5c4a6640c06a737f079769fa0b5c8eb337b33e752c025539238e15ca",
+            "row_bytes": 320,
+            "shard_ordinal": 55,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_55.weight"
+          },
+          {
+            "combined_row": 141582367,
+            "local_row": 1581695,
+            "payload_sha256": "1b89d4df3ecd233d84d9c93221537d6362ac013fed3ecda1f630b0ff06cfec0e",
+            "row_bytes": 320,
+            "shard_ordinal": 56,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_56.weight"
+          },
+          {
+            "combined_row": 143498570,
+            "local_row": 997886,
+            "payload_sha256": "fa16b27e4490b45b00bf1285a420ad80a2ce1ddcfb794098d6c820f5d4d1b14d",
+            "row_bytes": 320,
+            "shard_ordinal": 57,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_57.weight"
+          },
+          {
+            "combined_row": 145392766,
+            "local_row": 392070,
+            "payload_sha256": "e232f6cd5b26466b215db225338031781f2f051593f29b7ba453fc29f85f4b98",
+            "row_bytes": 320,
+            "shard_ordinal": 58,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+          },
+          {
+            "combined_row": 146691689,
+            "local_row": 1690993,
+            "payload_sha256": "85b7681b645cd6cd428b7573af0bbc08749d2009142b8ee6e25e07f676f336ad",
+            "row_bytes": 320,
+            "shard_ordinal": 58,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+          },
+          {
+            "combined_row": 149201698,
+            "local_row": 1700990,
+            "payload_sha256": "5161d586be501134f992dedd8a0ec734d24989a71b6d2b08e1135c8d3e62d3f8",
+            "row_bytes": 320,
+            "shard_ordinal": 59,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_59.weight"
+          },
+          {
+            "combined_row": 153834206,
+            "local_row": 1333474,
+            "payload_sha256": "9be003170d45fad2b53236bc20a6680e73d2c54f165a582f7e7094b32527380d",
+            "row_bytes": 320,
+            "shard_ordinal": 61,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_61.weight"
+          },
+          {
+            "combined_row": 159840626,
+            "local_row": 2339870,
+            "payload_sha256": "f432feb3ded57471d52e9da7a09c827c02e487b5f2397e5475dbfbbde438b9f7",
+            "row_bytes": 320,
+            "shard_ordinal": 63,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_63.weight"
+          },
+          {
+            "combined_row": 160234128,
+            "local_row": 233360,
+            "payload_sha256": "7599daa3e148a4bf7b8e5d19825d1c0f0099475d3447d67fbee709f7e6038f1a",
+            "row_bytes": 320,
+            "shard_ordinal": 64,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+          },
+          {
+            "combined_row": 160348493,
+            "local_row": 347725,
+            "payload_sha256": "29b4acdd15cbee2cc61bb8b19e51026d2950ff5c75e7850554000c6caf90fd19",
+            "row_bytes": 320,
+            "shard_ordinal": 64,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+          },
+          {
+            "combined_row": 164894268,
+            "local_row": 2393488,
+            "payload_sha256": "ae1c0e2bbfd81d0c53c0a4c404e0ab86eb96123af49b95c8206d3d788ab42dc3",
+            "row_bytes": 320,
+            "shard_ordinal": 65,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_65.weight"
+          },
+          {
+            "combined_row": 166267475,
+            "local_row": 1266683,
+            "payload_sha256": "df68c8864ed4cc09edd5f81213384e7645570c503eb4d3a0d8aa1ee2ff4d5218",
+            "row_bytes": 320,
+            "shard_ordinal": 66,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_66.weight"
+          },
+          {
+            "combined_row": 167530236,
+            "local_row": 29432,
+            "payload_sha256": "66a87c22a4560d07ad010ca65d1bd316187e06c62a1e47f37be53dbc17ba759d",
+            "row_bytes": 320,
+            "shard_ordinal": 67,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_67.weight"
+          },
+          {
+            "combined_row": 173291479,
+            "local_row": 790651,
+            "payload_sha256": "1eb171b9b7b87141bb665613a7b39b5a06cef848437d5e283b596fa6bd09dcf9",
+            "row_bytes": 320,
+            "shard_ordinal": 69,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+          },
+          {
+            "combined_row": 173802232,
+            "local_row": 1301404,
+            "payload_sha256": "ec6d099dc594294b8825473c884b80fd59bb5ac1fc91cfdf4203ed7968b61b63",
+            "row_bytes": 320,
+            "shard_ordinal": 69,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+          },
+          {
+            "combined_row": 180001640,
+            "local_row": 776,
+            "payload_sha256": "d8c562ffa165050859f64e0afa182c1adae46c9774e4ecd3034578c82544134a",
+            "row_bytes": 320,
+            "shard_ordinal": 72,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_72.weight"
+          },
+          {
+            "combined_row": 186415225,
+            "local_row": 1414337,
+            "payload_sha256": "0f80a9d3b87b32a57052b1eca54a422b2d4ef87a0f1853d977a5ef3987d726b9",
+            "row_bytes": 320,
+            "shard_ordinal": 74,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+          },
+          {
+            "combined_row": 186956960,
+            "local_row": 1956072,
+            "payload_sha256": "883d77adc0d898cb92a62f320dec43e892878d12cc492229a2455b5b46297821",
+            "row_bytes": 320,
+            "shard_ordinal": 74,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+          },
+          {
+            "combined_row": 191323675,
+            "local_row": 1322763,
+            "payload_sha256": "9e289c0b685c70df1d77339bb9a7bae38abe6a6ae2d08130706c6016e951d0ea",
+            "row_bytes": 320,
+            "shard_ordinal": 76,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_76.weight"
+          },
+          {
+            "combined_row": 193534463,
+            "local_row": 1033539,
+            "payload_sha256": "4ae42009ffc4a64f4b6716668700ad897e2dc30bf61799227ce6450c81e8d3eb",
+            "row_bytes": 320,
+            "shard_ordinal": 77,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+          },
+          {
+            "combined_row": 195474054,
+            "local_row": 473118,
+            "payload_sha256": "9cfc26fb1a7b6cdcdf0e99f4aa8beaee100146565ecfc9da2f19fb4585940acc",
+            "row_bytes": 320,
+            "shard_ordinal": 78,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+          },
+          {
+            "combined_row": 195724011,
+            "local_row": 723075,
+            "payload_sha256": "daf0d8197b91246107178a9f7da152d1c116383d29e21c4ac88fef96b1cb1389",
+            "row_bytes": 320,
+            "shard_ordinal": 78,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+          },
+          {
+            "combined_row": 204213856,
+            "local_row": 1712884,
+            "payload_sha256": "11d0e05efe51db83fd404618ae1a015372e2e5b7ff6179cc810c650305329a1e",
+            "row_bytes": 320,
+            "shard_ordinal": 81,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_81.weight"
+          },
+          {
+            "combined_row": 206063729,
+            "local_row": 1062745,
+            "payload_sha256": "a02f5a02c9614acff848612f2bce30260cca1b6a700a504532bc071797b8618b",
+            "row_bytes": 320,
+            "shard_ordinal": 82,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_82.weight"
+          },
+          {
+            "combined_row": 209126214,
+            "local_row": 1625218,
+            "payload_sha256": "1c0edc7ece32c58c17ca27bf006b0c98a80ffd58be19f094a56a674cfda43884",
+            "row_bytes": 320,
+            "shard_ordinal": 83,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_83.weight"
+          },
+          {
+            "combined_row": 210052063,
+            "local_row": 51055,
+            "payload_sha256": "5045ff363fa7610bbf537fec26568488b77b1cb77c0daad6a9df0f9a0edc3c28",
+            "row_bytes": 320,
+            "shard_ordinal": 84,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+          },
+          {
+            "combined_row": 211884213,
+            "local_row": 1883205,
+            "payload_sha256": "70f57f320f8bc649d41b9c16e3718acfdd72187725bcf39a25c9be51bdac9614",
+            "row_bytes": 320,
+            "shard_ordinal": 84,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+          },
+          {
+            "combined_row": 212365591,
+            "local_row": 2364583,
+            "payload_sha256": "e60d82661492accec4e5f65d84a8f93dab1aa62d4286a157c11435c9f348fbd5",
+            "row_bytes": 320,
+            "shard_ordinal": 84,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+          },
+          {
+            "combined_row": 212886084,
+            "local_row": 385064,
+            "payload_sha256": "60f522242ac9f09c1172a8c95d57166848f4738a98394ffef3da8bd71a2b2763",
+            "row_bytes": 320,
+            "shard_ordinal": 85,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_85.weight"
+          },
+          {
+            "combined_row": 222407311,
+            "local_row": 2406255,
+            "payload_sha256": "ad2e1816c3b1b5a188acd73805f633f6e3506e9a9b9b8f5c7654b010bcf576ee",
+            "row_bytes": 320,
+            "shard_ordinal": 88,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_88.weight"
+          },
+          {
+            "combined_row": 225545542,
+            "local_row": 544462,
+            "payload_sha256": "f52097d857939d743cea31c134371f27c9155d10f618a7750f40fdbdc0dfe645",
+            "row_bytes": 320,
+            "shard_ordinal": 90,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+          },
+          {
+            "combined_row": 230077049,
+            "local_row": 75945,
+            "payload_sha256": "886e7fa0891cda6a5469a62b31628e8de9f9eda99b35d0c31792bfafcc370ebe",
+            "row_bytes": 320,
+            "shard_ordinal": 92,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+          },
+          {
+            "combined_row": 232185672,
+            "local_row": 2184568,
+            "payload_sha256": "5d3680827a9284a433cda60b1b3a44b14e403d704f93d06d2c6350256d3de6c3",
+            "row_bytes": 320,
+            "shard_ordinal": 92,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+          },
+          {
+            "combined_row": 232510937,
+            "local_row": 9821,
+            "payload_sha256": "1ff90dafb2fd4c85ba0c2a9a3232fffd4d07e7ed3c4079c06ef065684aca0257",
+            "row_bytes": 320,
+            "shard_ordinal": 93,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+          },
+          {
+            "combined_row": 234117767,
+            "local_row": 1616651,
+            "payload_sha256": "088107632fb41b36c48a594d77067c105ca5c5024581cdb3a79ff35c451a7a82",
+            "row_bytes": 320,
+            "shard_ordinal": 93,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+          },
+          {
+            "combined_row": 236785465,
+            "local_row": 1784337,
+            "payload_sha256": "8e83b28102bbcabc5e630a073333b3e9a3c60f7b743e509687291f54fa75dbc3",
+            "row_bytes": 320,
+            "shard_ordinal": 94,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_94.weight"
+          },
+          {
+            "combined_row": 240923228,
+            "local_row": 922076,
+            "payload_sha256": "15f03d4aaa5e56cf244fb859757fdbaf10c02de35a34cd10700c6bec43196d7d",
+            "row_bytes": 320,
+            "shard_ordinal": 96,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+          },
+          {
+            "combined_row": 241536077,
+            "local_row": 1534925,
+            "payload_sha256": "8f1ef6019e66c3ea94b8b1e31547d02894da96d0d80ea9275d156cd6de92edc6",
+            "row_bytes": 320,
+            "shard_ordinal": 96,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+          },
+          {
+            "combined_row": 242064112,
+            "local_row": 2062960,
+            "payload_sha256": "547c35cb4cf51dd8e3a029b1de79306e734dfd67ba28f6303dcf9df6557a6a33",
+            "row_bytes": 320,
+            "shard_ordinal": 96,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+          },
+          {
+            "combined_row": 244351338,
+            "local_row": 1850174,
+            "payload_sha256": "cec59885a185428b6678d72023acb4e745c69337823069cbfba9b268819c688d",
+            "row_bytes": 320,
+            "shard_ordinal": 97,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_97.weight"
+          },
+          {
+            "combined_row": 248971874,
+            "local_row": 1470686,
+            "payload_sha256": "28d01ceb1e43d620ad807fa972dda0ff0f6ad64aef523ead803274ed4d0345e0",
+            "row_bytes": 320,
+            "shard_ordinal": 99,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+          },
+          {
+            "combined_row": 249133513,
+            "local_row": 1632325,
+            "payload_sha256": "d264ecea6fe8a4ac565b8049af05cd086c194fba55bf50ef7f99663ef88bb855",
+            "row_bytes": 320,
+            "shard_ordinal": 99,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+          },
+          {
+            "combined_row": 259482876,
+            "local_row": 1981640,
+            "payload_sha256": "9bd93d3a12f2f60c3d88f1b02264ba2a99094bd65d9d3053572cfbfc5995b0a1",
+            "row_bytes": 320,
+            "shard_ordinal": 103,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+          },
+          {
+            "combined_row": 261741319,
+            "local_row": 1740071,
+            "payload_sha256": "0271f98acba37baa9d3f7aeb1215c314187715cdadee49a036219c580c946dd2",
+            "row_bytes": 320,
+            "shard_ordinal": 104,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_104.weight"
+          },
+          {
+            "combined_row": 266089040,
+            "local_row": 1087768,
+            "payload_sha256": "d26dff44369fbf0cf8f5967b660a5c0b1a4de08d5479e759e24f83a916938f5e",
+            "row_bytes": 320,
+            "shard_ordinal": 106,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_106.weight"
+          },
+          {
+            "combined_row": 267743638,
+            "local_row": 242354,
+            "payload_sha256": "664e78082988d0e87109c4b313f454c9667e91ad53b259751a8e05193e329d64",
+            "row_bytes": 320,
+            "shard_ordinal": 107,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+          },
+          {
+            "combined_row": 268210025,
+            "local_row": 708741,
+            "payload_sha256": "61aaf5e75ee3c45aef3a6e895760822225b3d2ae6ce31edd56c1e3f41a024b07",
+            "row_bytes": 320,
+            "shard_ordinal": 107,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+          },
+          {
+            "combined_row": 270562234,
+            "local_row": 560938,
+            "payload_sha256": "7a760a19fc32b325e3ca9f242ffbb7a9199ada4d474e2b70b063145c7b919c80",
+            "row_bytes": 320,
+            "shard_ordinal": 108,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+          },
+          {
+            "combined_row": 272323240,
+            "local_row": 2321944,
+            "payload_sha256": "e436a5db1e46ce2300b5ab73ba1bcc2fba22586d0d26efd29f1a6d8cc8618e48",
+            "row_bytes": 320,
+            "shard_ordinal": 108,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+          },
+          {
+            "combined_row": 274655901,
+            "local_row": 2154593,
+            "payload_sha256": "a76a9e0d01dee90e6c6f0538c6dea345035cf4740d5990aff2650b88799cc9ef",
+            "row_bytes": 320,
+            "shard_ordinal": 109,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+          },
+          {
+            "combined_row": 288305083,
+            "local_row": 803703,
+            "payload_sha256": "372a9c731b872aca3f9481727279305e73b3cd3bf1b47c292eb119e805b76b0f",
+            "row_bytes": 320,
+            "shard_ordinal": 115,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+          },
+          {
+            "combined_row": 288404123,
+            "local_row": 902743,
+            "payload_sha256": "622002b6a22ad068309e0a7aa20eb4757e5482f34b1c0064dbed76732e7c8bd2",
+            "row_bytes": 320,
+            "shard_ordinal": 115,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+          },
+          {
+            "combined_row": 290020504,
+            "local_row": 19112,
+            "payload_sha256": "2dc0e5115d8077a262bb0b4a3f9dc229b0cd02754a527e4a4c8426247c070659",
+            "row_bytes": 320,
+            "shard_ordinal": 116,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_116.weight"
+          },
+          {
+            "combined_row": 293571253,
+            "local_row": 1069849,
+            "payload_sha256": "84b4371b3ff505d419491da36f723ddff31fc625dede075498ad056484d3b520",
+            "row_bytes": 320,
+            "shard_ordinal": 117,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+          },
+          {
+            "combined_row": 294699197,
+            "local_row": 2197793,
+            "payload_sha256": "da80b44d040496f9fd5da97de2e94f479f673a35ee2b08f59f5806a104bd6987",
+            "row_bytes": 320,
+            "shard_ordinal": 117,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+          },
+          {
+            "combined_row": 298409471,
+            "local_row": 908043,
+            "payload_sha256": "da99767e5d850682a5fd7b3a63cb52ee6db7ef12d76c5908ccab9eb3a8a7ac2d",
+            "row_bytes": 320,
+            "shard_ordinal": 119,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+          },
+          {
+            "combined_row": 299988367,
+            "local_row": 2486939,
+            "payload_sha256": "eaf1469059e3bc7831f280801135ef33481da0f569d47a179fc12ade3657afb7",
+            "row_bytes": 320,
+            "shard_ordinal": 119,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+          },
+          {
+            "combined_row": 300023148,
+            "local_row": 21708,
+            "payload_sha256": "2a8280f9ddc87d63c5a828b63ab154cc8d35eb8cbc63dac6196997bca2e447be",
+            "row_bytes": 320,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          },
+          {
+            "combined_row": 301156947,
+            "local_row": 1155507,
+            "payload_sha256": "8ac4e137f6c285ec2ba26c6b86012a6b278f6048edaa4b689085c3c512cb7211",
+            "row_bytes": 320,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          },
+          {
+            "combined_row": 301428689,
+            "local_row": 1427249,
+            "payload_sha256": "fc6199890c12c1acb0984340661230ef9f5a48ef5f379cf2e31d90985adc6aa6",
+            "row_bytes": 320,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          },
+          {
+            "combined_row": 307716301,
+            "local_row": 214825,
+            "payload_sha256": "06a49321d235dcee5ddc038170f6070d7c7286317bb455489118c47be16a72af",
+            "row_bytes": 320,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          },
+          {
+            "combined_row": 308616983,
+            "local_row": 1115507,
+            "payload_sha256": "fa53904a796d68b6dd2522e280b10c0fb9199a2bb778d5b7c56d55f3c7c89d15",
+            "row_bytes": 320,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          },
+          {
+            "combined_row": 308709461,
+            "local_row": 1207985,
+            "payload_sha256": "659952efa3afe73fef55cd0b16366f3a824118811e02f5aa9b68e5c5ccf3ada7",
+            "row_bytes": 320,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          },
+          {
+            "combined_row": 309484515,
+            "local_row": 1983039,
+            "payload_sha256": "5a66bf6802c3cc7e4a44e6d8099115a8a36e571d3f7618cc7878aa6f289f5aaa",
+            "row_bytes": 320,
+            "shard_ordinal": 123,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+          }
+        ],
+        "token_count": 7,
+        "unique_source_bytes": 35840,
+        "unique_source_rows": 112
+      },
+      "historical_session_provenance": {
+        "integrity_boundary": "The historical stateful-session JSON's own seal does not validate under the canonical receipt verifier. This screen uses the sealed trace only as an exact source address sequence and does not reassert stateful acceptance.",
+        "path": "receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.json",
+        "recorded_status": "PASSED_STATEFUL_REPEATED_ACCEPTED_DECODE",
+        "sha256": "20177dcaf6ab5f8b6611fd830688eaa6a24ddc640d036ac6ec31ec404f3fa2e4"
+      },
+      "state_boundary": "These are real source hash addresses only. Their historical session evidence is integrity-withheld here, and their source pre-layer states are not available; every address is probed around the sealed BOS state instead.",
+      "token_ids": [
+        5423,
+        799,
+        4581,
+        3817,
+        13,
+        2972,
+        96125
+      ],
+      "token_source": "segments from a sealed source-bound address-trace receipt",
+      "trace": [
+        {
+          "accesses": [
+            {
+              "combined_row": 14372315,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 21827640,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 59280967,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 63888239,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 80283410,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 106543326,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 126678265,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 141582367,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 173802232,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 195724011,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 204213856,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 225545542,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 259482876,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 274655901,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 299988367,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 308709461,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 0,
+          "segment_token_index": 0,
+          "session_token_index": 0,
+          "token_id": 5423
+        },
+        {
+          "accesses": [
+            {
+              "combined_row": 9949239,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 28866003,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 58419028,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 79899210,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 95552045,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 107456527,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 125332174,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 149201698,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 164894268,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 195474054,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 212886084,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 230077049,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 248971874,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 268210025,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 294699197,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 307716301,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 0,
+          "segment_token_index": 1,
+          "session_token_index": 1,
+          "token_id": 799
+        },
+        {
+          "accesses": [
+            {
+              "combined_row": 2608171,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 22295646,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 42232465,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 66248249,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 98358609,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 102415232,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 138518879,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 146691689,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 160234128,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 193534463,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 209126214,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 234117767,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 240923228,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 267743638,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 290020504,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 301428689,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 0,
+          "segment_token_index": 2,
+          "session_token_index": 2,
+          "token_id": 4581
+        },
+        {
+          "accesses": [
+            {
+              "combined_row": 12272008,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 37554332,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 50196804,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 75897748,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 95071347,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 108129513,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 127717026,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 153834206,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 173291479,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 191323675,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 212365591,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 232510937,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 241536077,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 270562234,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 293571253,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 308616983,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 0,
+          "segment_token_index": 3,
+          "session_token_index": 3,
+          "token_id": 3817
+        },
+        {
+          "accesses": [
+            {
+              "combined_row": 5040598,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 36400117,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 42137645,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 62234912,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 85235536,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 119581488,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 131111852,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 159840626,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 167530236,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 186415225,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 211884213,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 222407311,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 242064112,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 261741319,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 288305083,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 301156947,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 0,
+          "segment_token_index": 4,
+          "session_token_index": 4,
+          "token_id": 13
+        },
+        {
+          "accesses": [
+            {
+              "combined_row": 4155854,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 27542821,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 49289246,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 79793531,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 85995058,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 114740271,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 127868586,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 145392766,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 166267475,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 180001640,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 206063729,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 232185672,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 249133513,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 266089040,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 298409471,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 300023148,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 1,
+          "segment_token_index": 0,
+          "session_token_index": 5,
+          "token_id": 2972
+        },
+        {
+          "accesses": [
+            {
+              "combined_row": 8832859,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 21303122,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 59229408,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 78220209,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 99113944,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 119772667,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 121098877,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 143498570,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 160348493,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 186956960,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 210052063,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 236785465,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 244351338,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 272323240,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 288404123,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 309484515,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 1,
+          "segment_token_index": 1,
+          "session_token_index": 6,
+          "token_id": 96125
+        }
+      ]
+    },
+    "sealed_bos_control": {
+      "active_lookup": {
+        "embedding_values_per_token": 2560,
+        "lookup_events": 16,
+        "lookup_events_per_token": 16,
+        "ordered_lookup_records": [
+          {
+            "combined_row": 9663979,
+            "global_head": 0,
+            "local_row": 2163943,
+            "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 3,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+          },
+          {
+            "combined_row": 26558231,
+            "global_head": 1,
+            "local_row": 1558111,
+            "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 10,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+          },
+          {
+            "combined_row": 56120240,
+            "global_head": 2,
+            "local_row": 1119976,
+            "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 22,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+          },
+          {
+            "combined_row": 74755659,
+            "global_head": 3,
+            "local_row": 2255311,
+            "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 29,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+          },
+          {
+            "combined_row": 80459717,
+            "global_head": 4,
+            "local_row": 459333,
+            "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 32,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+          },
+          {
+            "combined_row": 109265651,
+            "global_head": 5,
+            "local_row": 1765135,
+            "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 43,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+          },
+          {
+            "combined_row": 132697467,
+            "global_head": 6,
+            "local_row": 196831,
+            "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 53,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+          },
+          {
+            "combined_row": 151022725,
+            "global_head": 7,
+            "local_row": 1022005,
+            "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 60,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+          },
+          {
+            "combined_row": 170054832,
+            "global_head": 8,
+            "local_row": 54016,
+            "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 68,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+          },
+          {
+            "combined_row": 192967038,
+            "global_head": 9,
+            "local_row": 466114,
+            "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 77,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+          },
+          {
+            "combined_row": 200687722,
+            "global_head": 10,
+            "local_row": 686762,
+            "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 80,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+          },
+          {
+            "combined_row": 225763581,
+            "global_head": 11,
+            "local_row": 762501,
+            "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 90,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+          },
+          {
+            "combined_row": 259275737,
+            "global_head": 12,
+            "local_row": 1774501,
+            "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 103,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+          },
+          {
+            "combined_row": 272983544,
+            "global_head": 13,
+            "local_row": 482236,
+            "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 109,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+          },
+          {
+            "combined_row": 297596484,
+            "global_head": 14,
+            "local_row": 95056,
+            "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 119,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+          },
+          {
+            "combined_row": 300986548,
+            "global_head": 15,
+            "local_row": 985108,
+            "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+            "row_bytes": 320,
+            "session_token_index": 0,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          }
+        ],
+        "source_bytes_referenced_across_events": 5120,
+        "source_range_read_sha256": "252971962a85c94b3341b39eff45d569ff3253234cce5f430208c162ed65e359",
+        "source_row_bytes": 320,
+        "source_row_records": [
+          {
+            "combined_row": 9663979,
+            "local_row": 2163943,
+            "payload_sha256": "49c7951942f6b9b29c6abfd8f465414e5bc576886d6c4d0612f814c2bb720fed",
+            "row_bytes": 320,
+            "shard_ordinal": 3,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+          },
+          {
+            "combined_row": 26558231,
+            "local_row": 1558111,
+            "payload_sha256": "6e009444be5d4e2f7ffbf629736e8b6a5512e6adbd0b2415b45f0c707cff37ce",
+            "row_bytes": 320,
+            "shard_ordinal": 10,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_10.weight"
+          },
+          {
+            "combined_row": 56120240,
+            "local_row": 1119976,
+            "payload_sha256": "cf388961e739226d3754f82461b76a3f4fe5b687622dd2831286b32c4d753ea1",
+            "row_bytes": 320,
+            "shard_ordinal": 22,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_22.weight"
+          },
+          {
+            "combined_row": 74755659,
+            "local_row": 2255311,
+            "payload_sha256": "b24f499b453ec48f576e2046c4c0b954263edfb9ac0f46c5de93ed0e3e813607",
+            "row_bytes": 320,
+            "shard_ordinal": 29,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_29.weight"
+          },
+          {
+            "combined_row": 80459717,
+            "local_row": 459333,
+            "payload_sha256": "122054d9c48c74498840d56a56df193469da6de13135ba92d8d7d01ad46aa31d",
+            "row_bytes": 320,
+            "shard_ordinal": 32,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+          },
+          {
+            "combined_row": 109265651,
+            "local_row": 1765135,
+            "payload_sha256": "766de068427ffbced67fe687b752095f73f7b5d5f9a93cdeecf6208f69701915",
+            "row_bytes": 320,
+            "shard_ordinal": 43,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+          },
+          {
+            "combined_row": 132697467,
+            "local_row": 196831,
+            "payload_sha256": "866a3187e1a1c26b60f5f73892d6ba2b0cc0c33d61b5ab3984c20c7d182bea58",
+            "row_bytes": 320,
+            "shard_ordinal": 53,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_53.weight"
+          },
+          {
+            "combined_row": 151022725,
+            "local_row": 1022005,
+            "payload_sha256": "89d0789a11939c27d1b2d860b0572c9c85e4b6a9fae4555b9a11b2acb91d7add",
+            "row_bytes": 320,
+            "shard_ordinal": 60,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_60.weight"
+          },
+          {
+            "combined_row": 170054832,
+            "local_row": 54016,
+            "payload_sha256": "e9abbee529239d3989e92f9a350208255f6638dab0545ba543343867f04e0617",
+            "row_bytes": 320,
+            "shard_ordinal": 68,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_68.weight"
+          },
+          {
+            "combined_row": 192967038,
+            "local_row": 466114,
+            "payload_sha256": "53a402ae67617890f56693b02abdd9acd054d280d802a948f1467e04bf03385f",
+            "row_bytes": 320,
+            "shard_ordinal": 77,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+          },
+          {
+            "combined_row": 200687722,
+            "local_row": 686762,
+            "payload_sha256": "eca492c7df58bcec1244b448326e267bd21933aa20c8136d6ee61e93dd0bb0b4",
+            "row_bytes": 320,
+            "shard_ordinal": 80,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_80.weight"
+          },
+          {
+            "combined_row": 225763581,
+            "local_row": 762501,
+            "payload_sha256": "ae69a3d61e4419ff367d248b8a5a2a740c4ac19f3b5f7688b921340b667e054a",
+            "row_bytes": 320,
+            "shard_ordinal": 90,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+          },
+          {
+            "combined_row": 259275737,
+            "local_row": 1774501,
+            "payload_sha256": "ebb3ed3b86104cd0860eb734c526a85961fe3dd3b9003e080be59fbb042fa284",
+            "row_bytes": 320,
+            "shard_ordinal": 103,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+          },
+          {
+            "combined_row": 272983544,
+            "local_row": 482236,
+            "payload_sha256": "d895ce03de14b77043bd6452bcf54bc2052dcbe46b8d03f9dd7000135dde3170",
+            "row_bytes": 320,
+            "shard_ordinal": 109,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+          },
+          {
+            "combined_row": 297596484,
+            "local_row": 95056,
+            "payload_sha256": "577637f91432ee7692df94a025efcb2dd4ec4652b405286ee9665716aa3cc416",
+            "row_bytes": 320,
+            "shard_ordinal": 119,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+          },
+          {
+            "combined_row": 300986548,
+            "local_row": 985108,
+            "payload_sha256": "d80da9b7c924aebe20375b8d771c86fe933ea08b14f9d06a239d9b3fa05506ec",
+            "row_bytes": 320,
+            "shard_ordinal": 120,
+            "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+          }
+        ],
+        "token_count": 1,
+        "unique_source_bytes": 5120,
+        "unique_source_rows": 16
+      },
+      "token_ids": [
+        248044
+      ],
+      "trace": [
+        {
+          "accesses": [
+            {
+              "combined_row": 9663979,
+              "global_head": 0,
+              "head_within_ngram": 0,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 26558231,
+              "global_head": 1,
+              "head_within_ngram": 1,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 56120240,
+              "global_head": 2,
+              "head_within_ngram": 2,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 74755659,
+              "global_head": 3,
+              "head_within_ngram": 3,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 80459717,
+              "global_head": 4,
+              "head_within_ngram": 4,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 109265651,
+              "global_head": 5,
+              "head_within_ngram": 5,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 132697467,
+              "global_head": 6,
+              "head_within_ngram": 6,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 151022725,
+              "global_head": 7,
+              "head_within_ngram": 7,
+              "ngram_order": 2
+            },
+            {
+              "combined_row": 170054832,
+              "global_head": 8,
+              "head_within_ngram": 0,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 192967038,
+              "global_head": 9,
+              "head_within_ngram": 1,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 200687722,
+              "global_head": 10,
+              "head_within_ngram": 2,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 225763581,
+              "global_head": 11,
+              "head_within_ngram": 3,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 259275737,
+              "global_head": 12,
+              "head_within_ngram": 4,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 272983544,
+              "global_head": 13,
+              "head_within_ngram": 5,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 297596484,
+              "global_head": 14,
+              "head_within_ngram": 6,
+              "ngram_order": 3
+            },
+            {
+              "combined_row": 300986548,
+              "global_head": 15,
+              "head_within_ngram": 7,
+              "ngram_order": 3
+            }
+          ],
+          "segment_index": 0,
+          "segment_token_index": 0,
+          "session_token_index": 0,
+          "token_id": 248044
+        }
+      ]
+    }
+  },
+  "claim_boundary": "This is a source-bound local geometry screen, not a representation result. It verifies that a zero-history batch form reproduces the sealed PLE control, then measures exact source-formula response across real hashed addresses under deterministic synthetic perturbations of one sealed BOS pre-layer state. A sealed historical address trace supplies addresses only; its originating stateful-session receipt has an invalid inner seal and its acceptance claim is explicitly withheld. It does not establish source-trajectory coverage, persistent PLE state behavior, a context-conditioned generator, direct execution, complete EBPW, capability, or TPS.",
+  "context_bank": {
+    "base_rms": 0.01594002736962805,
+    "construction": "deterministic orthogonal symmetric local perturbations around sealed source state",
+    "context_bank_sha256": "2abe03267f44984a5c3dc384b5a9c9029290cd5d139aeff66ed4eb7c16d5c321",
+    "context_count": 17,
+    "context_width": 10240,
+    "direction_count": 8,
+    "direction_matrix_sha256": "04722ae34d8142b402d69c7fbe92cb641081088c246690501c56a9a37505c92c",
+    "directions_mutually_orthogonal": true,
+    "directions_orthogonal_to_base": true,
+    "ordering": "row zero is base; each following pair is plus, minus for one direction",
+    "perturbation_l2": 0.016130173585103144,
+    "ple_convolution_history": "zero independently for every context row",
+    "relative_rms": 0.01,
+    "seed": 20260912,
+    "source_trajectory_distribution": false,
+    "synthetic": true
+  },
+  "execution": {
+    "backend": "numpy_f32_source_formula_tangent_screen",
+    "context_evaluations": 136,
+    "elapsed_ns": 98159292,
+    "real_hashed_addresses": 8,
+    "source_lookup_row_range_reads": 128,
+    "source_support_payload_bytes_materialized": 65679640,
+    "source_support_payload_materializations": 9
+  },
+  "generated_at": "2026-09-12T05:07:10.304691+00:00",
+  "next": "If the local response geometry justifies it, add a narrowly scoped real source multi-context state-bank contract before training or evaluating an (address, context, persistent PLE state) to contribution function. Do not resume fixed table-codec sweeps; any later generator, latent basis, or Nova replacement must bill its complete persistent representation and pass increasing functional and capability gates.",
+  "promotion_allowed": false,
+  "schema": "hawking.odyssey.ple_context_response_screen.v1",
+  "seal_sha256": "d39d811ba2a795106a46bb460b1f47eda617c99dc471d815b84a6108b65343a7",
+  "source_control_batch_check": {
+    "passed": true,
+    "reference_formula_oracle_metrics": {
+      "cosine": 1.0,
+      "finite": true,
+      "max_abs": 4.470348358154297e-08,
+      "relative_l2": 1.498442827596591e-07,
+      "rmse": 1.9919543169561657e-09
+    },
+    "required_max_abs": 1e-06,
+    "required_max_relative_l2": 1e-06,
+    "source_formula_control_metrics": {
+      "cosine": 0.9999999403953552,
+      "finite": true,
+      "max_abs": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0
+    }
+  },
+  "source_controls": {
+    "historical_stateful_address_trace": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json",
+      "seal_sha256": "c698975664f19f087fc0a0dcc5bd88210d0885556ab42f20d61028717046d90e",
+      "sha256": "38e9e690e00fade6a5c99ef223fc15ae7e1071058953eda0348e18db33ad88c5"
+    },
+    "reference_formula_parity": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+      "seal_sha256": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+      "sha256": "8c1b854d0c4410a0deb0a1e185b0cd3c2fe7d1d6c22fdd9ed3c57f8b0c84d189"
+    },
+    "reference_ple_injection": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.reference_ple_injection.f32",
+      "sha256": "23207e7651cb2f8b65133996ec34da205bd71e9283f70d063c1de43209ce5658"
+    },
+    "sealed_pre_ple_state": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-0/state.f32",
+      "sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e"
+    },
+    "sealed_source_ple_injection": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.ple_injection.f32",
+      "sha256": "2761917fb36a92fd579689800a0e9eb10d67de90c57811df0a3b12ff4f7721d8"
+    },
+    "source_ple_output_control": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+      "seal_sha256": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+      "sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"
+    }
+  },
+  "source_formula": {
+    "evaluated_path": "exact source BF16 support tensors in F32, zero-history independent one-token contexts",
+    "formula": {
+      "convolution": "four-tap depthwise causal cross-correlation with dilation=ngram_size",
+      "gate": "signed_sqrt(dot(key_normed, query_normed) / sqrt(hidden_size))",
+      "input": "sealed f32 pre-layer hidden state from source-parity layer 0",
+      "lookup": "16 EOS-aware source BF16 hashed n-gram rows concatenated to 2560 values",
+      "normalization": "grouped RMSNorm with source BF16 weights and source epsilon",
+      "output": "PLE injection and post-injection layer-1 input state",
+      "projection": "source BF16 key/value matrices evaluated in F32"
+    },
+    "implementation_scope": "Qwen4ExpTextPLELayer.forward + Qwen4ExpTextNGramEmbedding.forward",
+    "source_lookup_tensor_full_materializations": 0,
+    "source_model_loads": 0
+  },
+  "source_support": {
+    "payload_bytes_materialized": 65679640,
+    "tensors": [
+      {
+        "bytes": 52428800,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.key_proj.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "f431e2b51311b4bbea97ea0e02b6c35944033490dd5dc76bb5cc5b594f7af7de",
+        "shape": [
+          10240,
+          2560
+        ]
+      },
+      {
+        "bytes": 13107200,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.value_proj.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "d25aabbce09091bf133d776b41d5b3e0802c4d2523b9ca97003491c28db3c437",
+        "shape": [
+          2560,
+          2560
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.norm_key.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "516e94b36bec727c0d219282d9166ab7a6ad6684680d1f4f186b5738d2d5a6d6",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.norm_query.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "f5a531160c93e1345f15a02803fdefb5df59e830e7259d28f0cce8ca87fb121d",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.norm_conv.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "30ffcc1dfc34a7008f54447d199d9001dd534d8e04911976b587d2773575f705",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 81920,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.1.ple.conv1d.weight",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "06a84201bf8cc7082874aae671bc8688e848d51ccca9b78a0f1be791f1fb5f7e",
+        "shape": [
+          10240,
+          1,
+          4
+        ]
+      },
+      {
+        "bytes": 24,
+        "dtype": "I64",
+        "name": "model.language_model.layers.1.ple.ple_embedding.layer_multipliers",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+        "payload_sha256": "37349930c3c77bf4927b2afb6b50f30c404f42f00f5790bda96e7d9589c26477",
+        "shape": [
+          3
+        ],
+        "values": [
+          23703573157769,
+          20109073645365,
+          8052911324071
+        ]
+      },
+      {
+        "bytes": 128,
+        "dtype": "I64",
+        "name": "model.language_model.layers.1.ple.ple_embedding.ngram_heads_offsets",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "af1566f7a3be2f4a9ee8e2384aa161b8d45cfcbd92376827662a028679b7d8eb",
+        "shape": [
+          16
+        ],
+        "values": [
+          0,
+          20000003,
+          40000026,
+          60000059,
+          80000106,
+          100000165,
+          120000228,
+          140000297,
+          160000374,
+          180000455,
+          200000548,
+          220000655,
+          240000802,
+          260000955,
+          280001114,
+          300001275
+        ]
+      },
+      {
+        "bytes": 128,
+        "dtype": "I64",
+        "name": "model.language_model.layers.1.ple.ple_embedding.ngram_heads_vocab_sizes",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00037-of-00131.safetensors",
+        "payload_sha256": "81879b658d9974287ceecc77463e5fdd183cb4cd66692b061ea6af24ef414d39",
+        "shape": [
+          16
+        ],
+        "values": [
+          20000003,
+          20000023,
+          20000033,
+          20000047,
+          20000059,
+          20000063,
+          20000069,
+          20000077,
+          20000081,
+          20000093,
+          20000107,
+          20000147,
+          20000153,
+          20000159,
+          20000161,
+          20000171
+        ]
+      }
+    ]
+  },
+  "specimen": {
+    "config": {
+      "config_seed": null,
+      "effective_seed": 1234,
+      "model_type": "qwen4_exp_text",
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "ple_layer_ids": [
+        2
+      ],
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+    },
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "34567a4712bc",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "status": "SOURCE_PLE_CONTEXT_RESPONSE_TANGENT_ONLY"
+}

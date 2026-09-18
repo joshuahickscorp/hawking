@@ -1,0 +1,180 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T16:08:28.516190+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:08:28.516198+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:08:28.518091+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\": \"MUTATION_PROPOSED\", \"canonical_root\": \"/Users/scammermike/Downloads/hawking\", \"operations\": [{\"op\": \"replace\", \"path\": \"workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json\", \"anchor_before\": \"    \\\"updated_on\\\": \\\"202",
+      "outcome": "CONTINUE",
+      "reply_chars": 786,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T16:11:04.119827+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:11:04.119841+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:11:04.121130+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"P9_DARKMATTER_OWNER_RECONCILIATION_V2\",\"repair_of\":\"REQ-01b00a48b9e7496cb412c7a7d4d924a4\",\"repair_reason\":\"create of a new path is disallowed; allowed_files is fixed. Re-target the same executable ",
+      "outcome": "CONTINUE",
+      "reply_chars": 1581,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T16:11:33.343959+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T16:11:33.343968+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:11:33.345795+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the rejected proposal: the expected_base_hashes field is being rejected because it is not a valid sha256. Omit the expected_base_hashes field entirely so Hawking resolves base hashes from th",
+      "outcome": "CONTINUE",
+      "reply_chars": 3069,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-18T16:11:56.241474+00:00",
+      "calls_used": 0,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T16:11:56.241483+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T16:11:56.243289+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the anchor failure: 'def compile_physical_graph(' does not occur in tools/odyssey/physical_graph_compiler.py. Append the dark-matter owner reconciliation helper as a new top-level function (",
+      "outcome": "CONTINUE",
+      "reply_chars": 2775,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 5
+    },
+    {
+      "files": [
+        "tools/odyssey/physical_graph_compiler.py",
+        "tools/odyssey/test_physical_graph_compiler_heterogeneous.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-E00C11AD_SEAL_B1",
+      "turn": 5
+    }
+  ],
+  "files_changed": [
+    "tools/odyssey/physical_graph_compiler.py",
+    "tools/odyssey/test_physical_graph_compiler_heterogeneous.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P9_DARKMATTER_OWNER_RECONCILIATION_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-E00C11AD_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      5
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-E00C11AD"
+}

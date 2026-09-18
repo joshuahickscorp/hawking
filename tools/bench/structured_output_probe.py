@@ -38,7 +38,7 @@ MODEL = os.path.expanduser(
 # engine -- it had no `tool_calls` at all, so the instrument understated the very
 # failure class it exists to measure. Import the live values; a probe that cannot
 # import the thing it probes has nothing worth reporting.
-from hcli.engine import HCLI_RESULT_SCHEMA as RESULT_SCHEMA, _SYSTEM_PROMPT as SYSTEM
+from hawking.engine import HAWKING_RESULT_SCHEMA as RESULT_SCHEMA, _SYSTEM_PROMPT as SYSTEM
 
 
 def extract_json(text: str):

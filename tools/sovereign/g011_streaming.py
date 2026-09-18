@@ -100,7 +100,7 @@ def running_under_resident_worker() -> tuple[bool, dict]:
     if not isinstance(pid, int) or pid <= 0:
         return False, {**detail, "reason": "resident records no live worker pid"}
     try:
-        from hcli.resources import process_start_token
+        from hawking.resources import process_start_token
     except ImportError as exc:  # pragma: no cover - repo layout is fixed
         return False, {**detail, "reason": f"cannot import hcli.resources: {exc}"}
     observed = process_start_token(pid)

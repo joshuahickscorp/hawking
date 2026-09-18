@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "52ac5a3a53ceeee15ec17f455474adfbd1660001f7bb0d9be75d77952867a1ef",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:17:34.085441+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:17:34.085455+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:17:34.088955+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/odyssey.py (20488 bytes, sha256 41f616eddc2a485173099a8f3d089463fb4e9a1815f384f91891912fed223b7d; first 4000 bytes observed, 19.5%, truncation acknowledged so no claims are made about unshown regions) is a resident",
+      "outcome": "CONTINUE",
+      "reply_chars": 5597,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/odyssey.py (20488 bytes, sha256 41f616eddc2a485173099a8f3d089463fb4e9a1815f384f91891912fed223b7d; first 4000 bytes observed, 19.5%, truncation acknowledged so no claims are made about unshown regions) is a resident-facing connector into the live Odyssey-I driver at tools/odyssey_ctl.py; it shells out to the driver's own subcommands and adds/encodes no curriculum.\",\"The module declares three capability classes: inspect (status, queue, value, economics, completions(), patient() -- read-only, unconditional, never write or spend a resource), continue (harvest, write_packet, run, cycle, retire, acquire_next, completions(rebuild=True), gravity_gauntlet -- each can mutate persistent Odyssey state, spawn a subprocess, or start a download, and each requires confirm=True or raises PermissionError, mirroring the benchmark.run/accelerator.benchmark gate in hawking/tool_registry.py), and own (ingest, add_to_eligibility, park_specimen, record_law, record_scar, create_transfer_probe, create_adversarial_probe).\",\"admit_check was deliberately NOT registered as an inspect verb because the driver's cmd_admit calls reclaim_if_tight(), which runs tools/reclaim_safe.sh below DISK_WARN_GIB and can delete build caches and finished lane directories; the reason is recorded at its definition.\",\"Ownership boundary observed: STATE_PATH = workspace/campaign/odyssey/ODYSSEY_STATE.json is driver-owned and read-only from this module; LEDGER_PATH = workspace/campaign/odyssey/HAWKING_LEDGER.json is owned exclusively by hawking/odyssey.py, its only writer, with ledger lists ('eligible','parked','laws','scars','transfer_probes','adversarial_probes'), so HAWKING writes cannot race the driver's own cycle/harvest/retire writers.\",\"In the own class, ingest reads both real on-disk files (real state, never a fixture or re-run) and is read-only; the other six verbs mutate the ledger and gate on confirm=True checked before the ledger is even loaded, so a refusal touches no file.\",\"Ordering rule observed: Odyssey II (transfer) and III (adversarial) probes require a law already recorded via record_law; that is the only enforced ordering, so phases I/II/III can overlap once a law is claimed (no-phase-barrier rule).\",\"Module constants observed: REPO = parent of the hawking package; ODYSSEY_CTL = REPO/tools/odyssey_ctl.py; ODYSSEY_DIR = REPO/workspace/campaign/odyssey; PATIENTS_DIR = ODYSSEY_DIR/patients; subprocess invocation uses [sys.executable, ODYSSEY_CTL, *args] with cwd=REPO, capture_output, text, and a default 60s timeout; a dry-run acquire-next returning exit code 1 with stdout starting 'REFUSE' is handled as a refusal path rather than an error.\",\"Bounded contract (source-grounded): owner = hawking/odyssey.py as sole writer of HAWKING_LEDGER.json and read-only consumer of driver-owned ODYSSEY_STATE.json; focused tests = hawking/test_odyssey.py and hawking/test_modellake_index_mount_guard.py (admitted but not observed by this worker); protected resources = ODYSSEY_STATE.json (driver-owned, read-only), HAWKING_LEDGER.json (single-writer), the confirm=True gate on every continue/own verb, the unregistered admit_check (reclaim deletion risk), and the no-download/no-mutation boundary for inspect verbs; falsifier = the contract is falsified if any code path in hawking/odyssey.py writes to STATE_PATH/ODYSSEY_STATE.json, or if any registered continue/own-class verb is invocable without confirm=True (or loads the ledger before the confirm check).\",\"hawking/modellake_gate.py, hawking/test_odyssey.py, and hawking/test_modellake_index_mount_guard.py were admitted but not read in this bounded pass; no claim is made about their contents.\"],\"sources\":[\"hawking/odyssey.py (sha256 41f616eddc2a485173099a8f3d089463fb4e9a1815f384f91891912fed223b7d, 20488 bytes, first 4000 bytes observed; truncation note acknowledged)\"],\"recommendations\":[\"Adopt the bounded contract: hawking/odyssey.py owns HAWKING_LEDGER.json exclusively, treats ODYSSEY_STATE.json as read-only ",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-d6feb43853604226",
+  "worker_id": "hawking-worker-a3012aff44be43cc",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-75D4589F"
+}

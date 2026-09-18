@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.long_haul.v2.semantic_boundary_unbounded_activation.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T04:23:21Z",
+  "daemon": {
+    "endpoint": "http://127.0.0.1:8014/v1",
+    "pid": 36028,
+    "status": "waiting_for_native_runtime",
+    "revision": "hawking-auto-aggressive-v2-kimi-deepseek-unbounded-13"
+  },
+  "http_semantic_boundary": {
+    "request": "OpenRouter chat completion with required route_probe tool and max_tokens=32",
+    "upstream_transport_status": 200,
+    "gateway_status": 502,
+    "error_code": "REMOTE_SEMANTIC_INCOMPLETE",
+    "reason": "provider returned HTTP success without the required tool call",
+    "claim_boundary": "HTTP transport success is not semantic worker success"
+  },
+  "qualified_tool_probe": {
+    "request": "same route_probe contract with max_tokens=128",
+    "gateway_status": 200,
+    "finish_reason": "tool_calls",
+    "tool_name": "route_probe",
+    "arguments_observed": {"ok": true},
+    "claim_boundary": "transport/tool-call compatibility only; no provider tranche acceptance"
+  },
+  "worker_admission_policy": {
+    "default_hawking_max_workers": null,
+    "default_hawking_max_premium_workers": null,
+    "default_openrouter_concurrency": null,
+    "explicit_finite_policy_supported": true,
+    "remaining_gates": [
+      "OS/process resources",
+      "scheduler HAWKING class has no fixed count ceiling",
+      "provider health and rate limits",
+      "budget authority for remote routes",
+      "dependency-valid graph frontier",
+      "disjoint mutation/effect scopes",
+      "cycle prevention"
+    ],
+    "claim_boundary": "no artificial Hawking worker-count, premium-count, child-fan-out, or delegation-depth ceiling"
+  },
+  "verification": {
+    "provider_owner_tests": "40 passed",
+    "gateway_owner_surface_tests": "82 passed",
+    "auto_admission_tests": "32 passed",
+    "scheduler_resource_tests": "36 passed",
+    "compileall": "passed",
+    "git_diff_check": "passed"
+  },
+  "objective_reads": {
+    "bound_master_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+    "full_objective_reread_since_steer": 0,
+    "digest_comparison_required_before_reread": true
+  },
+  "claim_boundary": "Source and live boundary activation evidence only; the parent Goal remains RUNNING and no provider prose is accepted as architectural completion."
+}

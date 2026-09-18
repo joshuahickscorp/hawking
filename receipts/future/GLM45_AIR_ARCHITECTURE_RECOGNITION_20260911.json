@@ -1,0 +1,176 @@
+{
+ "repo": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-4.5-Air@a24ceef6ce4f",
+ "revision": "local",
+ "architectures": [
+  "Glm4MoeForCausalLM"
+ ],
+ "model_type": "glm4_moe",
+ "n_tensors": 18329,
+ "n_unmatched": 189,
+ "organs": [
+  {
+   "organ": "embed",
+   "status": "KNOWN",
+   "n_tensors": 2,
+   "n_layers": 1,
+   "confidence": 0.554,
+   "example": [
+    "model.embed_tokens.weight",
+    "model.layers.46.embed_tokens.weight"
+   ]
+  },
+  {
+   "organ": "gqa_attention",
+   "status": "KNOWN",
+   "n_tensors": 188,
+   "n_layers": 47,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.0.self_attn.k_proj.weight",
+    "model.layers.0.self_attn.o_proj.weight"
+   ]
+  },
+  {
+   "organ": "lm_head",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 1,
+   "n_layers": 0,
+   "confidence": 0.32,
+   "example": [
+    "lm_head.weight"
+   ]
+  },
+  {
+   "organ": "mlp_down",
+   "status": "KNOWN",
+   "n_tensors": 1,
+   "n_layers": 1,
+   "confidence": 0.552,
+   "example": [
+    "model.layers.0.mlp.down_proj.weight"
+   ]
+  },
+  {
+   "organ": "mlp_gate_up",
+   "status": "KNOWN",
+   "n_tensors": 2,
+   "n_layers": 1,
+   "confidence": 0.554,
+   "example": [
+    "model.layers.0.mlp.gate_proj.weight",
+    "model.layers.0.mlp.up_proj.weight"
+   ]
+  },
+  {
+   "organ": "moe_expert",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 17664,
+   "n_layers": 46,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.1.mlp.experts.0.down_proj.weight",
+    "model.layers.1.mlp.experts.0.gate_proj.weight"
+   ]
+  },
+  {
+   "organ": "moe_router",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 46,
+   "n_layers": 46,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.1.mlp.gate.weight",
+    "model.layers.10.mlp.gate.weight"
+   ]
+  },
+  {
+   "organ": "rmsnorm",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 98,
+   "n_layers": 47,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.0.input_layernorm.weight",
+    "model.layers.0.post_attention_layernorm.weight"
+   ]
+  },
+  {
+   "organ": "shared_expert",
+   "status": "DECLARED_UNMEASURED",
+   "n_tensors": 138,
+   "n_layers": 46,
+   "confidence": 0.98,
+   "example": [
+    "model.layers.1.mlp.shared_experts.down_proj.weight",
+    "model.layers.1.mlp.shared_experts.gate_proj.weight"
+   ]
+  }
+ ],
+ "unrecognized": [
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.k_proj.bias",
+   "n_tensors": 47,
+   "confidence": 0.5
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.q_proj.bias",
+   "n_tensors": 47,
+   "confidence": 0.5
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.self_attn.v_proj.bias",
+   "n_tensors": 47,
+   "confidence": 0.5
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.mlp.gate.e_score_correction_bias",
+   "n_tensors": 46,
+   "confidence": 0.5
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.eh_proj.weight",
+   "n_tensors": 1,
+   "confidence": 0.26
+  },
+  {
+   "organ": "UNRECOGNIZED",
+   "status": "NOVEL",
+   "skeleton": "model.layers.N.shared_head.head.weight",
+   "n_tensors": 1,
+   "confidence": 0.26
+  }
+ ],
+ "folded_organ": null,
+ "novelty": {
+  "novel_organs": [
+   "lm_head",
+   "moe_expert",
+   "moe_router",
+   "rmsnorm",
+   "shared_expert"
+  ],
+  "novel_axes": [
+   "routing"
+  ],
+  "n_unrecognized_clusters": 6,
+  "new_scale_regime": 46,
+  "transfer_test_value": 0.8
+ },
+ "analysis_wall_s": 0.034,
+ "loaded_weights": false,
+ "classification": "STATIC_STREAMABLE",
+ "schema": "hawking.headless.architecture_recognizer.local_snapshot.v1",
+ "source": "local_safetensors_headers",
+ "did_not_load_weights": true,
+ "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-4.5-Air@a24ceef6ce4f"
+}

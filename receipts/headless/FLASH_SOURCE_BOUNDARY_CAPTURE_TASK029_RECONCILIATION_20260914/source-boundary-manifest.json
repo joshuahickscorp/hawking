@@ -1,0 +1,17 @@
+{
+  "active_layer_index": null,
+  "active_stage": "embedding",
+  "claim_boundary": "in-flight external provider capture; no Hawking source-parity verdict",
+  "last_completed_layer_index": null,
+  "last_completed_stage": "embedding",
+  "owner_authorization_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+  "preflight_sha256": "e8d3b7d42454babe9744028efaf92b73ae36d8cab66f65893cb8356130cefb93",
+  "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.source_boundary_mlx_worker.v1",
+  "started_unix_ns": 1789399319803363000,
+  "status": "RUNNING_EXTERNAL_SOURCE_BOUNDARY_CAPTURE",
+  "token_id": 5423,
+  "token_index": 0,
+  "updated_unix_ns": 1789399326792270000
+}

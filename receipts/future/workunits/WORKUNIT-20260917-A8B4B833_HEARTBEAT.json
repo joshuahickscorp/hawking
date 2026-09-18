@@ -1,0 +1,70 @@
+{
+  "active_job": "job-20d05031-d29d-49dd-b27c-e145dfbea525",
+  "blocker": {
+    "pid": 28140,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.001349484,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260917-A8B4B833",
+    "tool_less_continue_streak": 6
+  },
+  "context_packet_digest": "45aef178da08cdbef6a05460be68fce2fe7871b0087533e1689d4e59b9b6a190",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 28140,
+  "exact_next_action": "Research output was unusable after the bounded continuation cap; inspect the checkpoint and dead-letter, then either continue independent work or resume with a fresh Hawking Worker Packet. Do not replay provider turns.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Read-only P3 memory/artifact/source/context reconnaissance for the V2 programme. Trace the canonical owners for artifacts, H-NOTES, source evidence, retrieval, context compilation, and workspace continuity; identify one coherent tranche that can be implemented later without duplicate telemetry or authority. Do not edit or delete anything and do not inspect secrets.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-d35074386a2646f3a67aa69b:tool-6",
+    "gen-1789697303-7SM48pmxAjApFU0AR85L",
+    "gateway-1095c9f0609043be962ecbba:tool-6",
+    "gen-1789697311-LVVA8aUYlLlP7EzW5uqv",
+    "gateway-f8f2086d974a440f864d219b:tool-6",
+    "gen-1789697318-OkrOzyvkY6UXon73Uy5N",
+    "gateway-c492da0ed516457ebb2f4069:tool-6",
+    "gen-1789697326-eZOp7OL7snf6F2r8u3BJ",
+    "gateway-66067d8d66ba4a04b836c071:tool-6",
+    "gen-1789697334-PcQxMCzSisyD1kvlQChS",
+    "gateway-f502d98b3d174a7190050e19:tool-6",
+    "gen-1789697343-xdVDtgjoYDDfAsTkeZsP"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T02:09:03.824253+00:00",
+  "worker_attempt_id": "hawking-attempt-bfd0daad10c0408e",
+  "worker_cost_usd": 0.001349484,
+  "worker_id": "hawking-worker-7fa6a1beb7cc4361",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789697337.427808,
+  "worker_spawned_at": 1789697295.424315,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260917-A8B4B833"
+}

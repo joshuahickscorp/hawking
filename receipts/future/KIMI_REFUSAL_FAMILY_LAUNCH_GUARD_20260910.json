@@ -1,0 +1,49 @@
+{
+  "artifact_created": false,
+  "candidate_causal_interventions": {},
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+  "candidate_method": "OPH",
+  "claim_boundary": "OPH belongs to the sealed OPA--OPH intervention family. No model load, MPS lease, behavior run, or candidate was created.",
+  "device": "mps",
+  "dtype": "bfloat16",
+  "elapsed_seconds": 0.055,
+  "generated_at": "2026-09-11T00:07:59.484167+00:00",
+  "negative_science_preflight": {
+    "allowed": false,
+    "method": "OPH",
+    "proposal": {
+      "hypothesis_family": "kimi refusal intervention family",
+      "model": "KIMI_BASE",
+      "organ": "whole_model"
+    },
+    "reopen_condition": "a materially different causal hypothesis names a distinct mechanism and a pre-registered falsifier capable of beating matched nulls on held-out rows. A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or another projection of the same refusal-separable state is not a reopen condition.",
+    "reproduction_only": false,
+    "scar": {
+      "claim_refuted": "Does refusal-separable state in KIMI_BASE expose a clean, held-out causal control surface through the tested writer, routed-expert, residual, subspace, or router-logit interventions?",
+      "failure_mechanism": "Refusal-related state is strongly decodable in the tested representation, but the tested writer, routed-expert, residual, subspace, and router-logit interventions did not establish a clean held-out causal control surface. OPA--OPG were null or inconsistent against their matched controls; OPH completed with no compliant comparison rows and therefore could not establish a sufficient causal sample.",
+      "hypothesis_family": "kimi_refusal_intervention",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 32,
+      "model": "kimi-vl-a3b-instruct",
+      "models": [
+        "kimi-vl-a3b-instruct"
+      ],
+      "organ": "whole_model",
+      "original_id": "kimi refusal intervention family",
+      "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+      "refused": true,
+      "reopen_condition": "a materially different causal hypothesis names a distinct mechanism and a pre-registered falsifier capable of beating matched nulls on held-out rows. A renamed OPI/OPJ candidate, another layer/strength/rank/expert sweep, or another projection of the same refusal-separable state is not a reopen condition.",
+      "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#kimi refusal intervention family",
+      "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+      "verdict": "MEASURED_NEGATIVE"
+    },
+    "status": "NEGATIVE_SCIENCE_REFUSED"
+  },
+  "recorded_by": "tools/future/kimi_router_operator_live.py",
+  "schema": "hawking.kimi.router_operator_live.v1",
+  "source_model": "KIMI_BASE",
+  "source_script_sha256": "cec95de97f88b272e6442ec103dc38f22f0c2345703df2a19bc6489bf95045a8",
+  "specimen": "/no-model-load-required",
+  "status": "NEGATIVE_SCIENCE_REFUSED",
+  "weights_written": false
+}

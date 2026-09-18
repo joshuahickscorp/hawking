@@ -32,7 +32,7 @@ def call_run_modellake_census(
 ) -> dict[str, Any]:
     """Production call site of the catalog symbol. Not an import."""
     run_modellake_census = load_symbol(
-        "hcli.agentos.modellake_gate", "run_modellake_census"
+        "hawking.modellake_gate", "run_modellake_census"
     )
     return run_modellake_census(
         repo_root=str(repo_root), emit=str(emit), timeout_s=float(timeout_s)
@@ -111,7 +111,7 @@ def run_identity_gate(
             "lake_mounted": lake_mounted() if live else False,
             "symbol_invoked": census is not None,
             "census_schema_is_modellake": bool(
-                census and census.get("schema") == "hcli.agentos.modellake_census.v1"
+                census and census.get("schema") == "hawking.modellake_census.v1"
             ),
             "sealed_count_is_55": len(slugs) == 55 if live else None,
             "every_sealed_specimen_identity_resolved": bool(rows) and not unresolved,

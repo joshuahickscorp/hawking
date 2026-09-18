@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.long_haul.v2.provider_route_qualification.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T05:23:10Z",
+  "model": "moonshotai/kimi-k3",
+  "endpoint": "http://127.0.0.1:8014/v1/chat/completions",
+  "route": "Together",
+  "qualification": {
+    "http_status": 200,
+    "finish_reason": "tool_calls",
+    "tool_name": "route_probe",
+    "arguments_present": true,
+    "arguments_observed": {"ok": true},
+    "gateway_semantic_status": "completed",
+    "checks": {
+      "tool_call": {
+        "http_status": 200,
+        "tool_call_count": 1,
+        "arguments_present": true
+      }
+    }
+  },
+  "tool_call_qualified": true,
+  "claim_boundary": "Transport and tool-call compatibility only; no provider tranche acceptance, repository mutation, hardware qualification, or parent Goal completion.",
+  "verification": {
+    "live_probe": "passed",
+    "gateway_http_200_with_tool_semantics": true,
+    "http_200_empty_output_policy": "gateway rejects as HTTP 502 REMOTE_SEMANTIC_INCOMPLETE"
+  }
+}

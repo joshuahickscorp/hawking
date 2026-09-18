@@ -22,7 +22,7 @@ pub(crate) struct TurnOutcome {
     pub(crate) source_context_disposition: SourceContextDisposition,
 }
 
-/// What happened to an explicitly selected HCLI source pack on this concrete
+/// What happened to an explicitly selected HAWKING source pack on this concrete
 /// request. A compact diagnostic endpoint can inject only a complete pack that
 /// fits alongside its actual native prompt and response reserve.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -42,7 +42,7 @@ impl SourceContextDisposition {
     }
 }
 
-/// Build the sole native prompt sent by the HCLI turn path. Keeping this
+/// Build the sole native prompt sent by the HAWKING turn path. Keeping this
 /// formatting in one helper makes compact evidence admission count the exact
 /// string that is subsequently handed to the HTTP provider.
 fn fold_native_turn_prompt(
@@ -60,17 +60,17 @@ fn fold_native_turn_prompt(
     }
 }
 
-// This is deliberately an opt-in, trace-only forensic hook.  The ordinary HCLI
+// This is deliberately an opt-in, trace-only forensic hook.  The ordinary HAWKING
 // path never writes a raw folded prompt or selected context bodies.  When the
 // two environment controls below are explicitly set, it records the exact
 // pre-provider compilation boundary and then *refuses* before a model request
-// can be constructed.  That lets a bounded diagnostic prove what an HCLI turn
-// would send without claiming a generation, HCLI pass, or performance result.
-const HCLI_COMPILER_TRACE_PATH_ENV: &str = "HAWKING_HCLI_COMPILER_TRACE_PATH";
-const HCLI_COMPILER_TRACE_MODE_ENV: &str = "HAWKING_HCLI_COMPILER_TRACE_MODE";
-const HCLI_COMPILER_TRACE_MODE: &str = "NEW_DIAGNOSTIC_NOT_HISTORICAL";
+// can be constructed.  That lets a bounded diagnostic prove what an HAWKING turn
+// would send without claiming a generation, HAWKING pass, or performance result.
+const HAWKING_COMPILER_TRACE_PATH_ENV: &str = "HAWKING_COMPILER_TRACE_PATH";
+const HAWKING_COMPILER_TRACE_MODE_ENV: &str = "HAWKING_COMPILER_TRACE_MODE";
+const HAWKING_COMPILER_TRACE_MODE: &str = "NEW_DIAGNOSTIC_NOT_HISTORICAL";
 
-fn hcli_compiler_trace_document(
+fn hawking_compiler_trace_document(
     manifest: &hawking_context::manifest::ContextManifest,
     compiled_prompt: &str,
     folded_prompt: &str,
@@ -93,8 +93,8 @@ fn hcli_compiler_trace_document(
         })
         .collect::<Vec<_>>();
     json!({
-        "schema": "hawking.ascension.hcli_compiler_pre_execution_trace.v1",
-        "status": HCLI_COMPILER_TRACE_MODE,
+        "schema": "hawking.ascension.hawking_compiler_pre_execution_trace.v1",
+        "status": HAWKING_COMPILER_TRACE_MODE,
         "capture_timing": "AFTER_CONTEXT_COMPILATION_BEFORE_PROVIDER_OR_MODEL_EXECUTION",
         "model_execution_started": false,
         "process_id": std::process::id(),
@@ -109,49 +109,54 @@ fn hcli_compiler_trace_document(
         "claim_boundary": {
             "new_diagnostic_not_historical": true,
             "does_not_contact_provider_or_execute_a_model": true,
-            "does_not_claim_generation_hcli_tps_tg_capability_or_tournament": true,
+            "does_not_claim_generation_hawking_tps_tg_capability_or_tournament": true,
         },
     })
 }
 
-fn maybe_capture_hcli_compiler_pre_execution_trace(
+fn maybe_capture_hawking_compiler_pre_execution_trace(
     manifest: &hawking_context::manifest::ContextManifest,
     compiled_prompt: &str,
     folded_prompt: &str,
     history_message_count: usize,
     requested_output_cap: usize,
 ) -> Result<bool> {
-    let Some(path) = std::env::var_os(HCLI_COMPILER_TRACE_PATH_ENV) else {
+    let Some(path) = std::env::var_os(HAWKING_COMPILER_TRACE_PATH_ENV) else {
         return Ok(false);
     };
-    if std::env::var(HCLI_COMPILER_TRACE_MODE_ENV).ok().as_deref() != Some(HCLI_COMPILER_TRACE_MODE)
+    if std::env::var(HAWKING_COMPILER_TRACE_MODE_ENV)
+        .ok()
+        .as_deref()
+        != Some(HAWKING_COMPILER_TRACE_MODE)
     {
         return Err(hide_core::error::HideError::Config(format!(
-            "{HCLI_COMPILER_TRACE_PATH_ENV} requires {HCLI_COMPILER_TRACE_MODE_ENV}={HCLI_COMPILER_TRACE_MODE}"
+            "{HAWKING_COMPILER_TRACE_PATH_ENV} requires {HAWKING_COMPILER_TRACE_MODE_ENV}={HAWKING_COMPILER_TRACE_MODE}"
         )));
     }
     let destination = PathBuf::from(path);
     if !destination.is_absolute() {
         return Err(hide_core::error::HideError::Config(
-            "HCLI compiler trace destination must be an absolute path".into(),
+            "HAWKING compiler trace destination must be an absolute path".into(),
         ));
     }
     let parent = destination.parent().ok_or_else(|| {
-        hide_core::error::HideError::Config("HCLI compiler trace destination has no parent".into())
+        hide_core::error::HideError::Config(
+            "HAWKING compiler trace destination has no parent".into(),
+        )
     })?;
     if !parent.is_dir() {
         return Err(hide_core::error::HideError::Config(format!(
-            "HCLI compiler trace parent does not exist: {}",
+            "HAWKING compiler trace parent does not exist: {}",
             parent.display()
         )));
     }
     if destination.exists() {
         return Err(hide_core::error::HideError::Config(format!(
-            "refusing to overwrite existing HCLI compiler trace: {}",
+            "refusing to overwrite existing HAWKING compiler trace: {}",
             destination.display()
         )));
     }
-    let raw = serde_json::to_vec_pretty(&hcli_compiler_trace_document(
+    let raw = serde_json::to_vec_pretty(&hawking_compiler_trace_document(
         manifest,
         compiled_prompt,
         folded_prompt,
@@ -159,14 +164,14 @@ fn maybe_capture_hcli_compiler_pre_execution_trace(
         requested_output_cap,
     ))
     .map_err(|error| {
-        hide_core::error::HideError::Config(format!("serialize HCLI compiler trace: {error}"))
+        hide_core::error::HideError::Config(format!("serialize HAWKING compiler trace: {error}"))
     })?;
     let file_name = destination
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or_else(|| {
             hide_core::error::HideError::Config(
-                "HCLI compiler trace destination has no UTF-8 filename".into(),
+                "HAWKING compiler trace destination has no UTF-8 filename".into(),
             )
         })?;
     let temporary = parent.join(format!(".{file_name}.{}.tmp", std::process::id()));
@@ -176,7 +181,7 @@ fn maybe_capture_hcli_compiler_pre_execution_trace(
         .open(&temporary)
         .map_err(|error| {
             hide_core::error::HideError::Config(format!(
-                "create HCLI compiler trace temporary file {}: {error}",
+                "create HAWKING compiler trace temporary file {}: {error}",
                 temporary.display()
             ))
         })?;
@@ -189,14 +194,14 @@ fn maybe_capture_hcli_compiler_pre_execution_trace(
     if let Err(error) = write_result {
         let _ = std::fs::remove_file(&temporary);
         return Err(hide_core::error::HideError::Config(format!(
-            "write HCLI compiler trace {}: {error}",
+            "write HAWKING compiler trace {}: {error}",
             temporary.display()
         )));
     }
     if let Err(error) = std::fs::rename(&temporary, &destination) {
         let _ = std::fs::remove_file(&temporary);
         return Err(hide_core::error::HideError::Config(format!(
-            "publish HCLI compiler trace {}: {error}",
+            "publish HAWKING compiler trace {}: {error}",
             destination.display()
         )));
     }
@@ -252,10 +257,10 @@ pub(crate) async fn run_turn_core(
     // context-derived cap; the compiled prompt remains authoritative.
     requested_output_cap: Option<usize>,
     // An explicit, bounded pack of local object-store derivatives selected by
-    // HCLI. The type deliberately exposes a model-facing derivative prompt,
+    // HAWKING. The type deliberately exposes a model-facing derivative prompt,
     // never raw object bytes. It is injected for this invocation only and is
     // not folded into durable user history.
-    source_context: Option<&crate::hcli_sources::HcliSourceContext>,
+    source_context: Option<&crate::hawking_sources::HawkingSourceContext>,
 ) -> Result<TurnOutcome> {
     use crate::connectors::choose_context_role;
     use hawking_context::compiler::CompileInput;
@@ -301,7 +306,7 @@ pub(crate) async fn run_turn_core(
         ));
     }
     // A live endpoint can legitimately report a diagnostic-scale window below
-    // HCLI's ordinary repository-context floor.  In that case keep the durable
+    // HAWKING's ordinary repository-context floor.  In that case keep the durable
     // turn, but do not fill its entire native budget with optional repository
     // or memory material and force the endpoint to reject a silently
     // over-window prompt. A selected attachment is also an optional reference
@@ -356,7 +361,7 @@ pub(crate) async fn run_turn_core(
             .filter(|budget| *budget > 0)
             .ok_or_else(|| {
                 hide_core::error::HideError::Config(format!(
-                    "selected local evidence requires {source_context_tokens} prompt tokens, leaving less than the {min_output_reserve}-token response reserve in this {max_input}-token HCLI context budget"
+                    "selected local evidence requires {source_context_tokens} prompt tokens, leaving less than the {min_output_reserve}-token response reserve in this {max_input}-token HAWKING context budget"
                 ))
             })?
     };
@@ -519,7 +524,7 @@ pub(crate) async fn run_turn_core(
         .map(|cap| out_budget.min(cap))
         .unwrap_or(out_budget);
 
-    if maybe_capture_hcli_compiler_pre_execution_trace(
+    if maybe_capture_hawking_compiler_pre_execution_trace(
         &compiled.manifest,
         &compiled.prompt,
         &folded_prompt,
@@ -527,7 +532,7 @@ pub(crate) async fn run_turn_core(
         out_budget,
     )? {
         return Err(hide_core::error::HideError::PolicyDenied(
-            "HCLI compiler trace captured before provider/model execution; trace-only mode intentionally refuses generation".into(),
+            "HAWKING compiler trace captured before provider/model execution; trace-only mode intentionally refuses generation".into(),
         ));
     }
 
@@ -851,6 +856,7 @@ mod tests {
                 Ok(GenerationStats {
                     input_tokens: 1,
                     output_tokens: 2,
+                    decode_ns: None,
                     decode_ms: None,
                     completed_decode_forwards: None,
                     decode_tokens_per_second: None,
@@ -880,6 +886,7 @@ mod tests {
                 Ok(GenerationStats {
                     input_tokens: 0,
                     output_tokens: 1,
+                    decode_ns: None,
                     decode_ms: None,
                     completed_decode_forwards: None,
                     decode_tokens_per_second: None,
@@ -997,9 +1004,9 @@ mod tests {
     async fn selected_local_source_is_injected_once_without_entering_durable_history() {
         let workspace = tempfile::tempdir().unwrap();
         let source_path = workspace.path().join("evidence.txt");
-        let selected_fact = "HCLI_SELECTED_FACT_9d6e0b";
+        let selected_fact = "HAWKING_SELECTED_FACT_9d6e0b";
         std::fs::write(&source_path, selected_fact).unwrap();
-        let sources = crate::hcli_sources::HcliSourceStore::open(workspace.path()).unwrap();
+        let sources = crate::hawking_sources::HawkingSourceStore::open(workspace.path()).unwrap();
         let ingested = sources.ingest_file(&source_path, None, None).unwrap();
         let source_context = sources
             .select_context(&[ingested.reference.id.as_str().to_string()])
@@ -1083,7 +1090,7 @@ mod tests {
     async fn compact_live_window_omits_the_entire_selected_source_block() {
         let workspace = tempfile::tempdir().unwrap();
         let source_path = workspace.path().join("evidence.txt");
-        let selected_fact = "HCLI_COMPACT_SELECTED_FACT_7f3a";
+        let selected_fact = "HAWKING_COMPACT_SELECTED_FACT_7f3a";
         // Make the selected derivative nontrivial: this is intentionally the
         // kind of attachment that must not be sliced down to fit a 128-token
         // diagnostic endpoint.
@@ -1092,7 +1099,7 @@ mod tests {
             format!("{selected_fact}\n{}", "evidence ".repeat(128)),
         )
         .unwrap();
-        let sources = crate::hcli_sources::HcliSourceStore::open(workspace.path()).unwrap();
+        let sources = crate::hawking_sources::HawkingSourceStore::open(workspace.path()).unwrap();
         let ingested = sources.ingest_file(&source_path, None, None).unwrap();
         let source_context = sources
             .select_context(&[ingested.reference.id.as_str().to_string()])
@@ -1182,9 +1189,9 @@ mod tests {
     async fn compact_live_window_injects_complete_selected_source_when_full_prompt_fits() {
         let workspace = tempfile::tempdir().unwrap();
         let source_path = workspace.path().join("tiny-evidence.txt");
-        let selected_fact = "HCLI_COMPACT_TINY_FACT_f81b";
+        let selected_fact = "HAWKING_COMPACT_TINY_FACT_f81b";
         std::fs::write(&source_path, selected_fact).unwrap();
-        let sources = crate::hcli_sources::HcliSourceStore::open(workspace.path()).unwrap();
+        let sources = crate::hawking_sources::HawkingSourceStore::open(workspace.path()).unwrap();
         let ingested = sources.ingest_file(&source_path, None, None).unwrap();
         let source_context = sources
             .select_context(&[ingested.reference.id.as_str().to_string()])
@@ -1283,14 +1290,14 @@ mod tests {
     #[test]
     fn compiler_trace_document_is_explicitly_pre_execution_and_marks_raw_prompt_scope() {
         let manifest = hawking_context::manifest::ContextManifest::new(256);
-        let trace = hcli_compiler_trace_document(
+        let trace = hawking_compiler_trace_document(
             &manifest,
             "selected context",
             "selected context\n\nuser: diagnostic prompt",
             1,
             8,
         );
-        assert_eq!(trace["status"], HCLI_COMPILER_TRACE_MODE);
+        assert_eq!(trace["status"], HAWKING_COMPILER_TRACE_MODE);
         assert_eq!(trace["model_execution_started"], false);
         assert_eq!(
             trace["folded_native_prompt_utf8"],

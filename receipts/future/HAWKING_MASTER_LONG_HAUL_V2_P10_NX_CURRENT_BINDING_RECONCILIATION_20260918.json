@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P10_NX_CURRENT_BINDING_RECONCILIATION_V1",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-P10-NX-BINDING-20260918",
+  "accepted_at": "2026-09-18T06:35:00Z",
+  "owner": "tools/nx_genome.py::bound_kernels",
+  "source": [
+    "tools/nx_genome.py",
+    "tools/headless/noetic_kernel_census.py",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/shaders/*.metal"
+  ],
+  "source_sha256": {
+    "tools/nx_genome.py": "866c46a83e3c7a8e6aaa79e0d6000403247addb46284d2763c067956d9de5bf6",
+    "hawking/test_nx_current_binding.py": "ae039cbdd04217b01c794b7b3eb360c250e1ac84ad78eaf3b77cf4d0054fd4f2",
+    "tools/headless/noetic_kernel_census.py": "bb1c11fb657067d24b2a101ece7fb34ac5012030205b342627023afa2ebccfef",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs": "6f54adaa65fe843c03196ae3d8a00861c53a12618e88b6152e7e14339df2d690"
+  },
+  "observations": {
+    "nx_bound_count": 98,
+    "nx_declared_count": 818,
+    "census_bound_count": 98,
+    "census_declared_count": 818,
+    "extractor_sets_equal": true,
+    "historical_provider_count": "38 bound / 554 declared is stale for the current source tree"
+  },
+  "focused_tests": {
+    "command": "python3 -m pytest -q hawking/test_nx_current_binding.py hawking/test_nx_promotion.py hawking/test_nrnx_discipline.py",
+    "result": "15 passed",
+    "compile": "python3 -m py_compile tools/nx_genome.py hawking/test_nx_current_binding.py",
+    "diff_check": "git diff --check"
+  },
+  "claim_boundary": "Static current-source binding evidence only. This does not prove physical execution, timing, device availability, hardware qualification, artifact completeness, production readiness, or NX promotion.",
+  "falsifier": "Any disagreement between nx_genome.bound_kernels() and the independent census extractor, or any seal whose dispatched/declared counts differ from the current source extraction, invalidates this reconciliation.",
+  "remaining": [
+    "P10 physical/runtime qualification remains withheld",
+    "historical noetic census facts still require a separate bounded refresh before its full report can be treated as current"
+  ]
+}

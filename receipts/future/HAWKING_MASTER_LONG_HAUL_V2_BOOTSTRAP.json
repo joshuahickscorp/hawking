@@ -1,0 +1,1047 @@
+{
+  "alternate_provider_outcome": {
+    "at": 1789697866.893703,
+    "budget_ledger": {
+      "authorized_usd": 55.0,
+      "available_after_reserve_usd": 49.399146108,
+      "claim_boundary": "observed WorkUnit owner cost; provider-output claims remain unusable unless a structured/evidenced result exists.",
+      "currency": "USD",
+      "last_observed_at": 1789697866.878551,
+      "reserved_usd": 0.0,
+      "spent_usd": 0.100853892,
+      "unreserved_remaining_usd": 54.899146108,
+      "v1_history_spent_usd": 0.664715971,
+      "verification_reserve_usd": 5.5
+    },
+    "claim_boundary": "terminal provider boundary evidence only; no research acceptance",
+    "outcome": {
+      "classification": "PROVIDER_OUTPUT_UNUSABLE",
+      "dead_letter": "/Users/scammermike/Downloads/hawking/.hawking/provider-dead-letters/WORKUNIT-20260917-C7A6E173.json",
+      "driver_alive": false,
+      "last_turn": 2,
+      "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+      "state": "PAUSED_PROVIDER",
+      "tranche": "P11_NATIVE_CPU",
+      "worker_cost_usd": 0.09519630000000001,
+      "worker_model": "moonshotai/kimi-k3",
+      "worker_status": "WAITING_RETRY",
+      "workunit_id": "WORKUNIT-20260917-C7A6E173"
+    },
+    "watcher": {
+      "fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+      "goal_id": "GOAL-A52AB48501",
+      "previous_fingerprint": "6fed76bb7fca3104e066bec2f8cbea2006c513b264dfeb9ca732e50bb628a3a4",
+      "reasons": [
+        "state_fingerprint_changed",
+        "frontier.changed"
+      ],
+      "schema": "hawking.supervisor_watcher.v1",
+      "state": {
+        "accepted_heads": [],
+        "active_workunit_ids": [],
+        "blockers": [],
+        "budget_band": "0.00",
+        "fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+        "goal_id": "GOAL-A52AB48501",
+        "phase": "P0_REBIND_PROVIDER_BOUNDARY_CONFIRMED",
+        "resource_state": {},
+        "revision": null,
+        "runnable_frontier": [],
+        "schema": "hawking.supervisor_watcher.v1",
+        "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+        "status": "RUNNING",
+        "waiting_dependencies": []
+      },
+      "state_changed": true,
+      "tier": "LIGHT_REVIEW",
+      "wake_supervisor": true
+    },
+    "watcher_delta_written": true
+  },
+  "alternate_provider_probe": {
+    "at": 1789697626.4826088,
+    "budget_ledger": {
+      "authorized_usd": 55.0,
+      "available_after_reserve_usd": 48.494342408,
+      "claim_boundary": "observed WorkUnit owner cost; provider-output claims remain unusable unless a structured/evidenced result exists.",
+      "currency": "USD",
+      "reserved_usd": 1.0,
+      "spent_usd": 0.005657592,
+      "unreserved_remaining_usd": 54.994342408,
+      "v1_history_spent_usd": 0.664715971,
+      "verification_reserve_usd": 5.5
+    },
+    "claim_boundary": "Kimi lane is admitted/running only; no research result or qualification claim yet.",
+    "tranche": {
+      "classification": "",
+      "driver_alive": true,
+      "last_turn": 0,
+      "retry_policy": "single alternate-provider probe; no replay of DeepSeek dead letters",
+      "state": "RUNNING",
+      "tranche": "P11_NATIVE_CPU",
+      "worker_cost_usd": 0.0,
+      "worker_model": "moonshotai/kimi-k3",
+      "worker_status": "RUNNING",
+      "workunit_id": "WORKUNIT-20260917-C7A6E173"
+    },
+    "watcher": {
+      "fingerprint": "5cedf48c92999dc2e974e06ae2227c2b3a57402a1e334802536690f9ad91bf8d",
+      "goal_id": "GOAL-A52AB48501",
+      "previous_fingerprint": "e01924128452d86a68145354f3357e00814dd333a7c57cfe21d51a6163e211c0",
+      "reasons": [
+        "state_fingerprint_changed",
+        "frontier.changed"
+      ],
+      "schema": "hawking.supervisor_watcher.v1",
+      "state": {
+        "accepted_heads": [],
+        "active_workunit_ids": [
+          "WORKUNIT-20260917-C7A6E173"
+        ],
+        "blockers": [],
+        "budget_band": "0.00",
+        "fingerprint": "5cedf48c92999dc2e974e06ae2227c2b3a57402a1e334802536690f9ad91bf8d",
+        "goal_id": "GOAL-A52AB48501",
+        "phase": "P0_REBIND_ALTERNATE_PROVIDER_ACTIVE",
+        "resource_state": {},
+        "revision": null,
+        "runnable_frontier": [],
+        "schema": "hawking.supervisor_watcher.v1",
+        "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+        "status": "RUNNING",
+        "waiting_dependencies": [
+          {
+            "dependencies": [
+              "None"
+            ],
+            "phase": "BUILD",
+            "state": "RUNNING",
+            "unresolved_dependencies": [
+              "None"
+            ],
+            "worker_id": "hawking-worker-4b96327b3b4e4144",
+            "worker_model": "moonshotai/kimi-k3",
+            "workunit_id": "WORKUNIT-20260917-C7A6E173"
+          }
+        ]
+      },
+      "state_changed": true,
+      "tier": "LIGHT_REVIEW",
+      "wake_supervisor": true
+    }
+  },
+  "auto_runtime": {
+    "claim_boundary": "source/live runtime observation only; provider output still requires Hawking evidence.",
+    "daemon_revision": "hawking-auto-aggressive-v2-kimi-deepseek-12",
+    "live_lease": {
+      "credential_available": true,
+      "host": "127.0.0.1",
+      "model": null,
+      "pid": 80371,
+      "port": 8014,
+      "role": "serve"
+    },
+    "max_autotuned_workers": 12,
+    "max_premium_workers": 4,
+    "max_remote_workers": 12,
+    "roster": [
+      "deepseek/deepseek-v4.1-flash",
+      "moonshotai/kimi-k3"
+    ]
+  },
+  "bootstrap_repairs": [
+    "at",
+    "change",
+    "files",
+    "focused_test_command",
+    "focused_test_result",
+    "watcher_after_reprojection",
+    "watcher_delta_written",
+    {
+      "claim_boundary": "source-policy repair and focused verification only; no V2 phase completion or provider result promotion.",
+      "files": [
+        "hawking/auto_mode.py",
+        "hawking/serve.py",
+        "hawking/test_auto_mode.py",
+        "hawking/tests/test_auto_orchestration.py"
+      ],
+      "repair": "auto_roster_and_policy_revision_reconciliation",
+      "verification": {
+        "auto_web_orchestration_tests": "31 passed",
+        "git_diff_check": "passed",
+        "normalization_frontier_tests": "37 passed",
+        "py_compile": "passed"
+      }
+    }
+  ],
+  "budget_ledger": {
+    "authorized_usd": 55.0,
+    "available_after_reserve_usd": 49.5,
+    "claim_boundary": "V2 sprint ledger is separate from V1 historical spend; no new provider spend is claimed at bootstrap.",
+    "currency": "USD",
+    "reserved_usd": 0.0,
+    "spent_usd": 0.0,
+    "unreserved_remaining_usd": 55.0,
+    "v1_history_spent_usd": 0.664715971,
+    "verification_reserve_usd": 5.5
+  },
+  "budget_ledger_after_frontier_outcome": {
+    "authorized_usd": 55.0,
+    "available_after_reserve_usd": 49.494342408,
+    "claim_boundary": "observed WorkUnit owner cost; provider-output claims remain unusable unless a structured/evidenced result exists.",
+    "currency": "USD",
+    "reserved_usd": 0.0,
+    "spent_usd": 0.005657592,
+    "unreserved_remaining_usd": 54.994342408,
+    "v1_history_spent_usd": 0.664715971,
+    "verification_reserve_usd": 5.5
+  },
+  "carry_forward": {
+    "accepted_workunits": [
+      {
+        "claim": "accepted V1 browser post-repair verification",
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/D-BROWSER-POST_REPAIR-VERIFY-20260915_SEAL_B1.json",
+        "state": "COMPLETE",
+        "workunit_id": "D-BROWSER-POST_REPAIR-VERIFY-20260915"
+      },
+      {
+        "claim": "accepted V1 macOS read-only foundation",
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-2275D01B_RESULT_PACKET.json",
+        "state": "COMPLETE",
+        "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-2275D01B"
+      },
+      {
+        "claim": "accepted V1 macOS read-only foundation",
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/future/workunits/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-6A147862_RESULT_PACKET.json",
+        "state": "COMPLETE",
+        "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-6A147862"
+      }
+    ],
+    "dead_letters": [
+      "E_MACOS_CAPTURE_OCR-20260918-REOPEN",
+      "E_MACOS_CAPTURE_OCR-20260918-BOUND",
+      "F_AUTO_FRONTIER-20260918-AUDIT"
+    ],
+    "known_failure_classes": [
+      "PROVIDER_OUTPUT_UNUSABLE",
+      "OUTPUT_UNUSABLE",
+      "PROVIDER_TOOL_NONCOMPLIANCE"
+    ],
+    "old_disposition": "CLOSED_WITH_CARRY_FORWARD",
+    "old_root": "GOAL-B33C69F193",
+    "v1_closeout_artifacts": [
+      "/Users/scammermike/Downloads/hawking/HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md",
+      "/Users/scammermike/Downloads/hawking/HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.json"
+    ],
+    "workunit_state_counts": {
+      "BLOCKED": 6,
+      "CANCELLED": 13,
+      "COMPLETE": 11,
+      "OUTPUT_UNUSABLE": 39,
+      "PAUSED_PROVIDER": 1
+    }
+  },
+  "claim_boundary": "This receipt proves V2 P0 programme rebind and evidence preservation only.",
+  "created_at": 1789697248.528942,
+  "dependency_graph": {
+    "digest": "db3a329eabe97f7a6a4fc531d4a8a2d961fd3cceedb8bbc056039d79af7daccd",
+    "node_count": 20,
+    "revision": "V2-P0-REBIND-1",
+    "runnable_frontier": [
+      "P1_CONTROL_PLANE_COLLAPSE",
+      "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT",
+      "P6_GRAVITY",
+      "P11_NATIVE_CPU",
+      "P12_APPLE_BACKEND",
+      "P13_NVIDIA_BACKEND",
+      "P16_ODYSSEY_MODELLAKE"
+    ]
+  },
+  "frontier_admission": {
+    "at": 1789697312.852868,
+    "available_after_reserve_usd": 46.5,
+    "claim_boundary": "admitted/running owner state only; completion awaits WorkUnit evidence",
+    "goal_id": "GOAL-A52AB48501",
+    "lanes": [
+      {
+        "background_job": "job-269341cb-a3b2-44ca-abc0-4eb73d93375e",
+        "owner_state": "RUNNING",
+        "selected_model": "deepseek/deepseek-v4.1-flash",
+        "status": "ADMITTED",
+        "task_class": "repo_engineering",
+        "tranche": "P1_CONTROL_PLANE_COLLAPSE",
+        "workunit_id": "WORKUNIT-20260917-55E1A8D9"
+      },
+      {
+        "background_job": "job-20d05031-d29d-49dd-b27c-e145dfbea525",
+        "owner_state": "RUNNING",
+        "selected_model": "deepseek/deepseek-v4.1-flash",
+        "status": "ADMITTED",
+        "task_class": "repo_engineering",
+        "tranche": "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT",
+        "workunit_id": "WORKUNIT-20260917-A8B4B833"
+      },
+      {
+        "background_job": "job-05945acb-cb6c-42ac-9180-a9ddc16062ca",
+        "owner_state": "RUNNING",
+        "selected_model": "deepseek/deepseek-v4.1-flash",
+        "status": "ADMITTED",
+        "task_class": "physical_engineering",
+        "tranche": "P6_GRAVITY",
+        "workunit_id": "WORKUNIT-20260917-FEE1F0A1"
+      },
+      {
+        "background_job": "job-a4092ac1-9efc-4749-be46-1081edb7faa5",
+        "owner_state": "RUNNING",
+        "selected_model": "deepseek/deepseek-v4.1-flash",
+        "status": "ADMITTED",
+        "task_class": "model_science",
+        "tranche": "P16_ODYSSEY_MODELLAKE",
+        "workunit_id": "WORKUNIT-20260917-FCBFF7FB"
+      }
+    ],
+    "reserved_usd": 3.0
+  },
+  "frontier_outcomes": {
+    "at": 1789697465.6090791,
+    "retry_policy": "known PROVIDER_OUTPUT_UNUSABLE is preserved and not retried",
+    "rows": [
+      {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "driver_alive": false,
+        "evidence": "/Users/scammermike/Downloads/hawking/.hawking/provider-dead-letters/WORKUNIT-20260917-55E1A8D9.json",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "OUTPUT_UNUSABLE",
+        "tranche": "P1_CONTROL_PLANE_COLLAPSE",
+        "worker_cost_usd": 0.001495692,
+        "worker_model": "deepseek/deepseek-v4.1-flash",
+        "workunit_id": "WORKUNIT-20260917-55E1A8D9"
+      },
+      {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "driver_alive": false,
+        "evidence": "/Users/scammermike/Downloads/hawking/.hawking/provider-dead-letters/WORKUNIT-20260917-A8B4B833.json",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "OUTPUT_UNUSABLE",
+        "tranche": "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT",
+        "worker_cost_usd": 0.001349484,
+        "worker_model": "deepseek/deepseek-v4.1-flash",
+        "workunit_id": "WORKUNIT-20260917-A8B4B833"
+      },
+      {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "driver_alive": false,
+        "evidence": "/Users/scammermike/Downloads/hawking/.hawking/provider-dead-letters/WORKUNIT-20260917-FEE1F0A1.json",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "OUTPUT_UNUSABLE",
+        "tranche": "P6_GRAVITY",
+        "worker_cost_usd": 0.0010979039999999998,
+        "worker_model": "deepseek/deepseek-v4.1-flash",
+        "workunit_id": "WORKUNIT-20260917-FEE1F0A1"
+      },
+      {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "driver_alive": false,
+        "evidence": "/Users/scammermike/Downloads/hawking/.hawking/provider-dead-letters/WORKUNIT-20260917-FCBFF7FB.json",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "OUTPUT_UNUSABLE",
+        "tranche": "P16_ODYSSEY_MODELLAKE",
+        "worker_cost_usd": 0.001714512,
+        "worker_model": "deepseek/deepseek-v4.1-flash",
+        "workunit_id": "WORKUNIT-20260917-FCBFF7FB"
+      }
+    ],
+    "spent_usd_observed": 0.005657592
+  },
+  "goal_id": "GOAL-A52AB48501",
+  "latest_runtime_snapshot": {
+    "active_workunits": [],
+    "at": 1789698304.2791228,
+    "auto_policy_reconciliation": {
+      "claim_boundary": "source-policy repair and focused verification only; no V2 phase completion or provider result promotion.",
+      "revision": "hawking-auto-aggressive-v2-kimi-deepseek-12",
+      "roster": [
+        "deepseek/deepseek-v4.1-flash",
+        "moonshotai/kimi-k3"
+      ],
+      "verification": {
+        "auto_web_orchestration_tests": "31 passed",
+        "git_diff_check": "passed",
+        "normalization_frontier_tests": "37 passed",
+        "py_compile": "passed"
+      }
+    },
+    "budget_ledger": {
+      "authorized_usd": 55.0,
+      "available_after_reserve_usd": 49.399146108,
+      "claim_boundary": "observed WorkUnit owner cost; provider-output claims remain unusable unless a structured/evidenced result exists.",
+      "currency": "USD",
+      "last_observed_at": 1789697866.878551,
+      "reserved_usd": 0.0,
+      "spent_usd": 0.100853892,
+      "unreserved_remaining_usd": 54.899146108,
+      "v1_history_spent_usd": 0.664715971,
+      "verification_reserve_usd": 5.5
+    },
+    "claim_boundary": "bootstrap handoff snapshot; root remains RUNNING for Hawking continuation",
+    "frontier": [],
+    "goal_id": "GOAL-A52AB48501",
+    "graph_runnable_frontier": [
+      "P12_APPLE_BACKEND",
+      "P13_NVIDIA_BACKEND"
+    ],
+    "local_frontier_screening": {
+      "P12_APPLE_BACKEND": "LOCAL_CONTRACT_SCREENED",
+      "P13_NVIDIA_BACKEND": "HARDWARE_WITHHELD",
+      "claim_boundary": "contract-screen evidence; not P12/P13 phase completion."
+    },
+    "provider_stall": {
+      "claim_boundary": "no provider result, read evidence, phase completion, or cost was accepted.",
+      "classification": "PROVIDER_REQUEST_STALL",
+      "read_evidence": false,
+      "state": "CANCELLED",
+      "tranche": "P12_APPLE_BACKEND",
+      "workunit_id": "WORKUNIT-20260917-9067AEF8"
+    },
+    "waiting": []
+  },
+  "local_frontier_screening": {
+    "at": 1789698882.95615,
+    "schema": "hawking.accelerator.frontier_screen.v1",
+    "tranches": {
+      "P12_APPLE_BACKEND": {
+        "ane": {
+          "evidence_tier": "FUNCTIONAL_SIM",
+          "lowering": "mlcomputeplan",
+          "physical": true,
+          "present": true
+        },
+        "claim_boundary": "shared backend contract and functional simulation only; no production Metal/ANE route promotion.",
+        "metal": {
+          "evidence_tier": "FUNCTIONAL_SIM",
+          "physical": true,
+          "present": true
+        },
+        "observed": [
+          "CPU",
+          "METAL",
+          "ANE",
+          "FPGA-HWIR"
+        ],
+        "screening": "LOCAL_CONTRACT_SCREENED",
+        "state": "RUNNABLE_UNADMITTED"
+      },
+      "P13_NVIDIA_BACKEND": {
+        "claim_boundary": "CUDA remains named-not-registered; no CUDA hardware or production backend claim.",
+        "cuda": {
+          "reason": "no NVIDIA hardware/runtime admission on this host",
+          "registered": false
+        },
+        "screening": "HARDWARE_WITHHELD",
+        "state": "RUNNABLE_UNADMITTED"
+      }
+    },
+    "verification": {
+      "claim_boundary": "contract-screen evidence; not P12/P13 phase completion.",
+      "command": "python3 -m pytest -q tools/accelerator/test_backend_contract.py hawking/tests/test_metal_status_actually_tests_metal.py hawking/tests/test_health_document_reports_backend_count.py hawking/tests/test_sealed_capabilities_reach_the_backend.py",
+      "result": "19 passed, 2 skipped",
+      "snapshot": {
+        "backend_ids": [
+          "CPU",
+          "METAL",
+          "ANE",
+          "FPGA-HWIR"
+        ],
+        "count": 4,
+        "cuda_registered": false
+      }
+    }
+  },
+  "new_root_watcher": {
+    "fingerprint": "bccb244b1eb952028860ede178360797431a7ab5a1b7929036093e967ceb2f32",
+    "goal_id": "GOAL-A52AB48501",
+    "previous_fingerprint": null,
+    "reasons": [
+      "initial_state",
+      "goal.phase_changed"
+    ],
+    "schema": "hawking.supervisor_watcher.v1",
+    "state": {
+      "accepted_heads": [],
+      "active_workunit_ids": [
+        ""
+      ],
+      "blockers": [],
+      "budget_band": "0.00",
+      "fingerprint": "bccb244b1eb952028860ede178360797431a7ab5a1b7929036093e967ceb2f32",
+      "goal_id": "GOAL-A52AB48501",
+      "phase": "P0_PROGRAMME_REBIND_COMPLETE",
+      "resource_state": {},
+      "revision": null,
+      "runnable_frontier": [
+        {
+          "dependencies": [],
+          "phase": "P0_PROGRAMME_REBIND_COMPLETE",
+          "state": "RUNNING",
+          "worker_id": "",
+          "worker_model": "",
+          "workunit_id": ""
+        }
+      ],
+      "schema": "hawking.supervisor_watcher.v1",
+      "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+      "status": "RUNNING",
+      "waiting_dependencies": []
+    },
+    "state_changed": true,
+    "tier": "LIGHT_REVIEW",
+    "wake_supervisor": true
+  },
+  "new_root_watcher_after_frontier": {
+    "fingerprint": "63f4541c34a5eab1be5b0ee6bdd33e52101ad390239603041de55099c6ecb68f",
+    "goal_id": "GOAL-A52AB48501",
+    "previous_fingerprint": "bccb244b1eb952028860ede178360797431a7ab5a1b7929036093e967ceb2f32",
+    "reasons": [
+      "state_fingerprint_changed",
+      "frontier.changed"
+    ],
+    "schema": "hawking.supervisor_watcher.v1",
+    "state": {
+      "accepted_heads": [],
+      "active_workunit_ids": [
+        "WORKUNIT-20260917-55E1A8D9",
+        "WORKUNIT-20260917-A8B4B833",
+        "WORKUNIT-20260917-FEE1F0A1",
+        "WORKUNIT-20260917-FCBFF7FB"
+      ],
+      "blockers": [],
+      "budget_band": "0.00",
+      "fingerprint": "63f4541c34a5eab1be5b0ee6bdd33e52101ad390239603041de55099c6ecb68f",
+      "goal_id": "GOAL-A52AB48501",
+      "phase": "P0_REBIND_FRONTIER_ACTIVE",
+      "resource_state": {},
+      "revision": null,
+      "runnable_frontier": [],
+      "schema": "hawking.supervisor_watcher.v1",
+      "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+      "status": "RUNNING",
+      "waiting_dependencies": [
+        {
+          "dependencies": [
+            "None"
+          ],
+          "phase": "BUILD",
+          "state": "RUNNING",
+          "unresolved_dependencies": [
+            "None"
+          ],
+          "worker_id": "hawking-worker-0afe9d91c19a4316",
+          "worker_model": "deepseek/deepseek-v4.1-flash",
+          "workunit_id": "WORKUNIT-20260917-55E1A8D9"
+        },
+        {
+          "dependencies": [
+            "None"
+          ],
+          "phase": "BUILD",
+          "state": "RUNNING",
+          "unresolved_dependencies": [
+            "None"
+          ],
+          "worker_id": "hawking-worker-7fa6a1beb7cc4361",
+          "worker_model": "deepseek/deepseek-v4.1-flash",
+          "workunit_id": "WORKUNIT-20260917-A8B4B833"
+        },
+        {
+          "dependencies": [
+            "None"
+          ],
+          "phase": "BUILD",
+          "state": "RUNNING",
+          "unresolved_dependencies": [
+            "None"
+          ],
+          "worker_id": "hawking-worker-f428856eb2994d9b",
+          "worker_model": "deepseek/deepseek-v4.1-flash",
+          "workunit_id": "WORKUNIT-20260917-FEE1F0A1"
+        },
+        {
+          "dependencies": [
+            "None"
+          ],
+          "phase": "BUILD",
+          "state": "RUNNING",
+          "unresolved_dependencies": [
+            "None"
+          ],
+          "worker_id": "hawking-worker-b80993ce767941fc",
+          "worker_model": "deepseek/deepseek-v4.1-flash",
+          "workunit_id": "WORKUNIT-20260917-FCBFF7FB"
+        }
+      ]
+    },
+    "state_changed": true,
+    "tier": "LIGHT_REVIEW",
+    "wake_supervisor": true
+  },
+  "objective": {
+    "path": "/Users/scammermike/Downloads/HAWKING_MASTER_LONG_HAUL_V2.md",
+    "sha256": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+    "supervisor_contract_path": "/Users/scammermike/.codex/attachments/d61cf599-dfbd-40de-8a9a-833423f013e9/goal-objective.md",
+    "supervisor_contract_sha256": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce"
+  },
+  "objective_cache": {
+    "cached_at": 1789697248.50278,
+    "goal_id": "GOAL-A52AB48501",
+    "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+    "objective_path": "/Users/scammermike/Downloads/HAWKING_MASTER_LONG_HAUL_V2.md",
+    "schema": "hawking.supervisor_watcher.v1"
+  },
+  "old_root": {
+    "goal_id": "GOAL-B33C69F193",
+    "status_after": "SUPERSEDED",
+    "superseded_by": "GOAL-A52AB48501",
+    "watcher_decision": {
+      "fingerprint": "9befbe106b8ce8d370dc315d799e0d0fe6412beea70866d48964fcab57ec0828",
+      "goal_id": "GOAL-B33C69F193",
+      "previous_fingerprint": "fcfbd517f7e164531746234b9767218304bc6f91ee874a0d931c302917c7d2ac",
+      "reasons": [
+        "state_fingerprint_changed",
+        "goal.phase_changed"
+      ],
+      "schema": "hawking.supervisor_watcher.v1",
+      "state": {
+        "accepted_heads": [],
+        "active_workunit_ids": [],
+        "blockers": [],
+        "budget_band": "0.66",
+        "fingerprint": "9befbe106b8ce8d370dc315d799e0d0fe6412beea70866d48964fcab57ec0828",
+        "goal_id": "GOAL-B33C69F193",
+        "phase": "SUPERSEDED",
+        "resource_state": {},
+        "revision": null,
+        "runnable_frontier": [],
+        "schema": "hawking.supervisor_watcher.v1",
+        "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+        "status": "SUPERSEDED",
+        "waiting_dependencies": []
+      },
+      "state_changed": true,
+      "tier": "LIGHT_REVIEW",
+      "wake_supervisor": true
+    }
+  },
+  "owner_map": {
+    "artifacts_memory_source": [
+      "hawking/artifacts.py",
+      "hawking/controller.py",
+      "hawking/source.py"
+    ],
+    "auto": [
+      "hawking/auto_mode.py",
+      "hawking/auto_orchestration.py"
+    ],
+    "goals": [
+      "hawking/goal_surface.py"
+    ],
+    "receipts": [
+      "receipts/future/",
+      "hawking/receipts.py"
+    ],
+    "resources_runtime": [
+      "hawking/canonical_runtime.py",
+      "hawking/hawkingd.py"
+    ],
+    "sessions_chat_build": [
+      "hawking/serve.py",
+      "hawking/controller.py"
+    ],
+    "supervision": [
+      "hawking/supervisor_watcher.py"
+    ],
+    "workunits": [
+      "hawking/workunit_owner.py"
+    ]
+  },
+  "p4_auto_policy_reconciliation": {
+    "at": 1789698803.056386,
+    "ceilings": {
+      "gateway_concurrency": 12,
+      "max_autotuned_workers": 12,
+      "max_premium_workers": 4,
+      "max_remote_workers": 12
+    },
+    "claim_boundary": "source-policy repair and focused verification only; no V2 phase completion or provider result promotion.",
+    "live_observation": {
+      "claim_boundary": "persisted Qwen enablement is historical explicit Web state, not the source default roster; no live config was deleted.",
+      "credential_available": true,
+      "daemon": "127.0.0.1:8014",
+      "daemon_revision": "hawking-auto-aggressive-v2-kimi-deepseek-12",
+      "explicit_persisted_web_enablement": [
+        "deepseek/deepseek-v4.1-flash",
+        "qwen/qwen3.8-flash"
+      ]
+    },
+    "revision": "hawking-auto-aggressive-v2-kimi-deepseek-12",
+    "role_bias": {
+      "deepseek/deepseek-v4.1-flash": [
+        "execution",
+        "source traversal",
+        "tests",
+        "bounded research"
+      ],
+      "moonshotai/kimi-k3": [
+        "architecture",
+        "planning",
+        "synthesis",
+        "review",
+        "deep reasoning"
+      ]
+    },
+    "roster": [
+      "deepseek/deepseek-v4.1-flash",
+      "moonshotai/kimi-k3"
+    ],
+    "schema": "hawking.auto.policy_reconciliation.v1",
+    "source_files": [
+      "hawking/auto_mode.py",
+      "hawking/serve.py",
+      "hawking/test_auto_mode.py",
+      "hawking/tests/test_auto_orchestration.py"
+    ],
+    "verification": {
+      "auto_web_orchestration_tests": "31 passed",
+      "git_diff_check": "passed",
+      "normalization_frontier_tests": "37 passed",
+      "py_compile": "passed"
+    }
+  },
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "protected_resources": [
+    "Flash",
+    "Pulsar",
+    "ModelLake",
+    "Odyssey sealed receipts",
+    "credentials and secure keychain material",
+    "unrelated dirty worktree changes",
+    "production branches and canonical protected artifacts"
+  ],
+  "provider_stalls": [
+    {
+      "at": 1789699261.98476,
+      "claim_boundary": "no provider result, read evidence, phase completion, or cost was accepted.",
+      "classification": "PROVIDER_REQUEST_STALL",
+      "goal_id": "GOAL-A52AB48501",
+      "observed": {
+        "elapsed_over_seconds": 180,
+        "last_tool_dispatch": null,
+        "mutation_evidence": false,
+        "provider_request_ids": [],
+        "read_evidence": false,
+        "turn": 1,
+        "worker_cost_usd": 0.0
+      },
+      "owner_log": "receipts/future/workunits/WORKUNIT-20260917-9067AEF8_OWNER.log",
+      "retry_policy": "DO_NOT_RETRY_SAME_STALLED_ROUTE; require a separately qualified provider route before a fresh P12 lane.",
+      "schema": "hawking.workunit.provider_stall.v1",
+      "state": "CANCELLED",
+      "tranche": "P12_APPLE_BACKEND",
+      "worker_model": "moonshotai/kimi-k3",
+      "workunit_id": "WORKUNIT-20260917-9067AEF8"
+    }
+  ],
+  "schema": "hawking.long_haul.v2.bootstrap.v1",
+  "source_baseline": {
+    "changed_path_count": 1144,
+    "git_diff_check": {
+      "passed": true,
+      "returncode": 0
+    },
+    "revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+    "worktree_dirty": true
+  },
+  "state_reconciliation": {
+    "at": 1789698277.049827,
+    "frontier_projection": {
+      "active_workunit_ids": [],
+      "frontier": [],
+      "waiting": []
+    },
+    "frontier_projection_shape": "compact; canonical Goal object omitted to avoid recursive stale snapshots",
+    "goal_id": "GOAL-A52AB48501",
+    "graph_frontier_claim_boundary": "dependency graph projection only; no local WorkUnit admitted and no provider result promoted",
+    "graph_frontier_reconciled_at": 1789698927.622625,
+    "graph_frontier_state": {
+      "P10_NX": {
+        "dependencies": [
+          "P9_DARKMATTER_CORE"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P11_NATIVE_CPU": {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "TERMINAL_KNOWN_PROVIDER_FAILURE",
+        "workunit_id": "WORKUNIT-20260917-C7A6E173"
+      },
+      "P12_APPLE_BACKEND": {
+        "state": "RUNNABLE_UNADMITTED"
+      },
+      "P13_NVIDIA_BACKEND": {
+        "state": "RUNNABLE_UNADMITTED"
+      },
+      "P14_PCIE_FPGA": {
+        "dependencies": [
+          "P11_NATIVE_CPU"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P15_AUTOTUNING": {
+        "dependencies": [
+          "P11_NATIVE_CPU",
+          "P12_APPLE_BACKEND",
+          "P13_NVIDIA_BACKEND",
+          "P14_PCIE_FPGA"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P16_ODYSSEY_MODELLAKE": {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "TERMINAL_KNOWN_PROVIDER_FAILURE",
+        "workunit_id": "WORKUNIT-20260917-FCBFF7FB"
+      },
+      "P17_CODEBASE_COLLAPSE": {
+        "dependencies": [
+          "P1_CONTROL_PLANE_COLLAPSE",
+          "P2_PRODUCT_COMMANDS_HWEB",
+          "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT",
+          "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN",
+          "P5_PERCEPTION_ARSENAL"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P18_TUNNEL": {
+        "dependencies": [
+          "P1_CONTROL_PLANE_COLLAPSE",
+          "P2_PRODUCT_COMMANDS_HWEB"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P19_SANDBOX": {
+        "dependencies": [
+          "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P1_CONTROL_PLANE_COLLAPSE": {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "TERMINAL_KNOWN_PROVIDER_FAILURE",
+        "workunit_id": "WORKUNIT-20260917-55E1A8D9"
+      },
+      "P20_FINAL_HANDOFF": {
+        "dependencies": [
+          "P16_ODYSSEY_MODELLAKE",
+          "P17_CODEBASE_COLLAPSE",
+          "P18_TUNNEL",
+          "P19_SANDBOX"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P2_PRODUCT_COMMANDS_HWEB": {
+        "dependencies": [
+          "P1_CONTROL_PLANE_COLLAPSE"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT": {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "TERMINAL_KNOWN_PROVIDER_FAILURE",
+        "workunit_id": "WORKUNIT-20260917-A8B4B833"
+      },
+      "P4_GOAL_WORKUNIT_AUTO_EXECUTIONPLAN": {
+        "dependencies": [
+          "P1_CONTROL_PLANE_COLLAPSE"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P5_PERCEPTION_ARSENAL": {
+        "dependencies": [
+          "P3_MEMORY_ARTIFACT_SOURCE_CONTEXT"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P6_GRAVITY": {
+        "classification": "PROVIDER_OUTPUT_UNUSABLE",
+        "retry_policy": "DO_NOT_RETRY_KNOWN_PROVIDER_OUTPUT_CLASS",
+        "state": "TERMINAL_KNOWN_PROVIDER_FAILURE",
+        "workunit_id": "WORKUNIT-20260917-FEE1F0A1"
+      },
+      "P7_NR": {
+        "dependencies": [
+          "P6_GRAVITY"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P8_NOVA": {
+        "dependencies": [
+          "P7_NR"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      },
+      "P9_DARKMATTER_CORE": {
+        "dependencies": [
+          "P6_GRAVITY"
+        ],
+        "state": "WAITING_DEPENDENCIES"
+      }
+    },
+    "graph_runnable_frontier": [
+      "P12_APPLE_BACKEND",
+      "P13_NVIDIA_BACKEND"
+    ],
+    "outcome_count": 5,
+    "provider_normalization_repair": {
+      "at": 1789698277.041976,
+      "claim_boundary": "partial read evidence is preserved without WorkUnit completion or mutation authority; stale root projections were reconciled from canonical WorkUnit state.",
+      "files": [
+        "hawking/workunit_owner.py",
+        "hawking/tests/test_remote_workunit_contract.py"
+      ],
+      "repair": "research_partial_packet_normalization_and_projection_reconciliation",
+      "verification": {
+        "focused_tests": "37 passed",
+        "git_diff_check": "passed",
+        "py_compile": "passed"
+      }
+    },
+    "watcher": {
+      "fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+      "goal_id": "GOAL-A52AB48501",
+      "previous_fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+      "reasons": [
+        "frontier.changed"
+      ],
+      "schema": "hawking.supervisor_watcher.v1",
+      "state": {
+        "accepted_heads": [],
+        "active_workunit_ids": [],
+        "blockers": [],
+        "budget_band": "0.00",
+        "fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+        "goal_id": "GOAL-A52AB48501",
+        "phase": "P0_REBIND_PROVIDER_BOUNDARY_CONFIRMED",
+        "resource_state": {},
+        "revision": null,
+        "runnable_frontier": [],
+        "schema": "hawking.supervisor_watcher.v1",
+        "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+        "status": "RUNNING",
+        "waiting_dependencies": []
+      },
+      "state_changed": false,
+      "tier": "LIGHT_REVIEW",
+      "wake_supervisor": true
+    },
+    "watcher_delta_written": false
+  },
+  "test_baseline": {
+    "collection_command": "python3 -m pytest -q",
+    "collection_result": "blocked: 5 MLX-dependent modules fail import because mlx is unavailable; 3 deselected",
+    "diff_check": {
+      "command": "git diff --check",
+      "passed": true,
+      "returncode": 0
+    },
+    "handoff_baseline": "V1 closeout receipt reports 2000 passed, 20 skipped, 28 subtests passed; this is historical evidence, not a fresh V2 result.",
+    "non_mlx_command": "python3 -m pytest -q hawking --ignore=hawking/test_dense_anatomy.py --ignore=hawking/test_gravity_outlier.py --ignore=hawking/test_lowrank_nr.py --ignore=hawking/test_moe_fusion_patch.py --ignore=hawking/test_nonlinear_probe.py",
+    "non_mlx_result": "73 failed, 3063 passed, 21 skipped, 3 deselected, 1 warning, 28 subtests passed",
+    "python": "3.14.6",
+    "source": "fresh local measurement"
+  },
+  "verification": {
+    "at": 1789697817.859713,
+    "claim_boundary": "focused bootstrap verification only; not full V2 acceptance",
+    "focused_tests": [
+      {
+        "command": "python3 -m pytest -q hawking/tests/test_discrete_goal_completion_state.py hawking/tests/test_supervisor_watcher.py",
+        "result": "13 passed"
+      },
+      {
+        "command": "python3 -m pytest -q hawking/tests/test_remote_workunit_contract.py",
+        "result": "22 passed"
+      }
+    ],
+    "fresh_baseline_boundary": "The earlier full local baseline remains 5 MLX collection errors and, with those five modules excluded, 73 failed / 3063 passed / 21 skipped / 3 deselected / 28 subtests passed. The focused repair does not overwrite that baseline.",
+    "git_diff_check": {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  },
+  "watcher_after_frontier_outcome": {
+    "fingerprint": "e01924128452d86a68145354f3357e00814dd333a7c57cfe21d51a6163e211c0",
+    "goal_id": "GOAL-A52AB48501",
+    "previous_fingerprint": "63f4541c34a5eab1be5b0ee6bdd33e52101ad390239603041de55099c6ecb68f",
+    "reasons": [
+      "state_fingerprint_changed",
+      "frontier.changed"
+    ],
+    "schema": "hawking.supervisor_watcher.v1",
+    "state": {
+      "accepted_heads": [],
+      "active_workunit_ids": [],
+      "blockers": [],
+      "budget_band": "0.00",
+      "fingerprint": "e01924128452d86a68145354f3357e00814dd333a7c57cfe21d51a6163e211c0",
+      "goal_id": "GOAL-A52AB48501",
+      "phase": "P0_REBIND_PROVIDER_BOUNDARY_OBSERVED",
+      "resource_state": {},
+      "revision": null,
+      "runnable_frontier": [],
+      "schema": "hawking.supervisor_watcher.v1",
+      "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+      "status": "RUNNING",
+      "waiting_dependencies": []
+    },
+    "state_changed": true,
+    "tier": "LIGHT_REVIEW",
+    "wake_supervisor": true
+  },
+  "watcher_after_provider_stall": {
+    "claim_boundary": "watcher wake only; it does not retry or complete the stalled WorkUnit",
+    "decision": {
+      "fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+      "goal_id": "GOAL-A52AB48501",
+      "previous_fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+      "reasons": [
+        "workunit.failed.new_class"
+      ],
+      "schema": "hawking.supervisor_watcher.v1",
+      "state": {
+        "accepted_heads": [],
+        "active_workunit_ids": [],
+        "blockers": [],
+        "budget_band": "0.00",
+        "fingerprint": "b1bf43dede04d2cebc64d74d9043e452db99650c36379174229349ba7e0c9bb8",
+        "goal_id": "GOAL-A52AB48501",
+        "phase": "P0_REBIND_PROVIDER_BOUNDARY_CONFIRMED",
+        "resource_state": {},
+        "revision": null,
+        "runnable_frontier": [],
+        "schema": "hawking.supervisor_watcher.v1",
+        "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+        "status": "RUNNING",
+        "waiting_dependencies": []
+      },
+      "state_changed": false,
+      "tier": "LIGHT_REVIEW",
+      "wake_supervisor": true
+    },
+    "delta_written": false
+  },
+  "watcher_delta_written": true,
+  "watcher_delta_written_after_alternate_probe": true,
+  "watcher_delta_written_after_frontier_outcome": true
+}

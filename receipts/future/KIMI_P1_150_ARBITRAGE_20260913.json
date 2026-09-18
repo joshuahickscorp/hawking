@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.future.kimi_p1_150_arbitrage.v1",
+  "generated_at": "2026-09-13T11:54:00-04:00",
+  "status": "P1_ARBITRAGE_150_EARNED_CONTENTION_GATED",
+  "objective": "Earn a disposable 150 generated-TPS P1 arbitrage while KIMI_P0_OPERATIONAL and KIMI-U001 remain live.",
+  "protected_state": {
+    "p0": {
+      "daemon_pid": 20162,
+      "provider_pid": 20173,
+      "resident": "KIMI_P0_OPERATIONAL",
+      "artifact": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+      "artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+      "catalog_revision": "1a122dc82ad74284c48ad2d469237f8ec4cd4d19d84988dbb592571dba8a8803",
+      "health_after": "ok",
+      "provider_children": "daemon-owned"
+    },
+    "u001": {
+      "owner_pid": 67370,
+      "workunit_id": "KIMI-U001",
+      "state": "left_running_and_untouched"
+    },
+    "p1": {
+      "provider_pid": 75521,
+      "port": 56941,
+      "state": "stopped_after_measurement"
+    }
+  },
+  "candidate": {
+    "id": "KIMI_P2_ROUTE4_STAGING",
+    "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-p2-route4",
+    "artifact_revision": "89babe1efae390ca37f7cedcf7ac98d54d1e84bc5dca5c760358958862c62b6e",
+    "recipe": "P0 q8 non-routed organs plus q4/group64 routed switch_mlp only",
+    "overlay": "/private/tmp/hawking-kimi-p1-fused/sitecustomize.py",
+    "overlay_sha256": "92ea7886a49db2ad0ce76def05e556d4ffec509b49592705399b93941bfafada",
+    "flags": [
+      "P1_REQUANT_ROUTE_BITS=4",
+      "P1_FUSE_ROUTE_WEIGHT=1",
+      "P1_COMPILE_SHARED=1"
+    ],
+    "source_artifact_mutated": false
+  },
+  "measurement_contract": {
+    "endpoint": "http://127.0.0.1:56941/v1/chat/completions",
+    "single_stream": true,
+    "temperature": 0.0,
+    "context_repeats": 0,
+    "max_tokens": 32,
+    "warmup_excluded": true,
+    "arbitrage_gate": "two consecutive P0 provider CPU samples below 10% before each request",
+    "note": "The gate is a scheduling observation, not a clean-room claim and not proof that GPU contention was zero."
+  },
+  "measurements": {
+    "generated_tokens_per_request": 24,
+    "decode_tps": [
+      154.59855139146612,
+      154.78734473947034,
+      154.73879172195532,
+      155.10589173067797
+    ],
+    "decode_tps_median": 154.76306823071283,
+    "decode_ms": [
+      155.1087829689293,
+      155.05143550589034,
+      155.10008662291193,
+      154.73300035354558
+    ],
+    "coherent_output_witness": "The fixed physical throughput benchmark measures the maximum data transfer rate achievable over a network or communication channel under ideal conditions.",
+    "longer_64_token_control": {
+      "fast_sample_tps": 154.5302348543939,
+      "contention_sample_tps": 52.68432193966159,
+      "interpretation": "P0 reactivation during the second request demonstrates the contention boundary; long-run clean-room or sustained resident qualification is not claimed."
+    }
+  },
+  "disposition": {
+    "150_tps_arbitrage": "EARNED",
+    "150_tps_sustained_under_uncontrolled_p0_contention": "NOT_ESTABLISHED",
+    "worker_body_promotion": "WITHHELD",
+    "clean_room_equivalence": "NOT_CLAIMED",
+    "next_frontier": "Use this as the measured P1 burst ceiling under an observed P0-idle window; any stronger claim requires a long held-out run or a native resident graph."
+  },
+  "mutation_boundary": {
+    "p0_restart": false,
+    "p0_gpu_run_interrupted": false,
+    "p0_artifact_mutated": false,
+    "model_lake_mutated": false,
+    "flash_lease_touched": false,
+    "p1_server_stopped_after_seal": true
+  },
+  "claim_boundary": "This is a real disposable P1 arbitrage receipt: 154.76 tok/s median over four gated single-stream decode bursts while P0 remained live. It is not Kimi qualification, not clean-room throughput, not a P0 replacement, and not Pulsar admission evidence."
+}

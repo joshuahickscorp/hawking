@@ -25,7 +25,7 @@ _REPO = Path(__file__).resolve().parents[2]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
-from hcli.physical_graph import score_physical_candidates
+from hawking.physical_graph import score_physical_candidates
 
 
 SCHEMA = "hawking.accelerator.scoreboard.v1"

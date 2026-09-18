@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "8a0623d90c02c0f1464333407a1ea94116c50f66775207df08728cd0aac0adf5",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:28:04.525827+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:28:04.525846+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:28:04.529838+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"First read-only observation targeted hawking/test_frontier_scheduler.py, sha256 2fdc401fff1c49832742343256c2affd6f3fce28f23a47b249c31b56869c7cef, 7432 bytes, truncated at 4000 bytes.\",\n    \"The test module docstri",
+      "outcome": "CONTINUE",
+      "reply_chars": 3659,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"First read-only observation targeted hawking/test_frontier_scheduler.py, sha256 2fdc401fff1c49832742343256c2affd6f3fce28f23a47b249c31b56869c7cef, 7432 bytes, truncated at 4000 bytes.\",\n    \"The test module docstring states frontier_scheduler owns frontier switching between WAITING and STUCK, and the law that no runnable frontier is ever left idle behind a shrug.\",\n    \"Observed assertions: FrontierState(\\\"X\\\", WAITING, 0.0, None) and FrontierState(\\\"X\\\", WAITING, 0.0, \\\"\\\") raise ValueError; an unknown kind raises ValueError; ELIGIBLE and UNKNOWN may omit wake_condition.\",\n    \"Observed probe_sub2 fixture behavior: a parked SUB2 with a recorded wake_condition reads as WAITING; resumed past its stop reads as ELIGIBLE with expected_value 2.0; a missing receipt reads as UNKNOWN rather than crashing.\",\n    \"Observed test name test_never_reports_idle_while_a_frontier_is_eligible, indicating select_next must prefer ELIGIBLE over an idle report whenever any frontier is runnable.\",\n    \"The docstring further states select_next never preempts a RUNNING frontier for a higher-value ELIGIBLE one; PARK_ALL always carries every frontier's wake_condition; one broken probe reports UNKNOWN without sinking other frontiers; default probes read actual repo receipts without raising.\",\n    \"No mutation, hardware, or release claim was made; the observation was read-only.\"\n  ],\n  \"sources\": [\n    {\n      \"path\": \"hawking/test_frontier_scheduler.py\",\n      \"sha256\": \"2fdc401fff1c49832742343256c2affd6f3fce28f23a47b249c31b56869c7cef\",\n      \"bytes\": 7432,\n      \"observed_range\": \"first 4000 bytes\"\n    },\n    {\n      \"admitted_focus_files\": [\n        \"hawking/test_frontier_scheduler.py\",\n        \"hawking/frontier_scheduler.py\",\n        \"hawking/tests/test_gpu_lane_defers_not_blocks.py\",\n        \"hawking/tests/test_control_plane_performance.py\"\n      ]\n    }\n  ],\n  \"recommendations\": [\n    \"Provisional bounded P15 contract: owner module hawking.frontier_scheduler; observed owner symbols include fs.FrontierState and fs.select_next; scheduling/lease seam is select_next plus PARK_ALL, where select_next must not preempt RUNNING and must not return idle while any ELIGIBLE frontier exists, and PARK_ALL must carry every frontier's wake_condition.\",\n    \"Protected resources for the contract: receipts/future/HAWKING_MISSION_KERNEL.json and fs.RECEIPTS, treated as read-only evidence inputs.\",\n    \"RED/GREEN tests observed or named: test_waiting_without_wake_condition_is_refused, test_never_reports_idle_while_a_frontier_is_eligible, test_sub2_parked_reads_as_waiting_with_the_recorded_wake_condition.\",\n    \"Falsifier: a WAITING FrontierState with None or empty wake_condition can be constructed, or select_next returns idle while an ELIGIBLE frontier exists.\",\n    \"Preserve unbounded dependency-valid refill and no-phase-barrier behavior; do not introduce a phase barrier or bounded refill in the P15 autotuning contract.\",\n    \"Next bounded read should target hawking/frontier_scheduler.py, then inspect the two admitted integration tests only as needed to confirm exact owner symbol, seam, and P15 autotuning parameters.\"\n  ],\n  \"unresolved_questions\": [\n    \"The full hawking/test_frontier_scheduler.py beyond the first 4000 bytes was not observed.\",\n    \"hawking/frontier_scheduler.py was not read, so the exact owner symbol and nonconflicting scheduling/lease seam remain provisional.\",\n    \"The two admitted integration tests were not inspected.\",\n    \"Exact P15 autotuning parameters, budget, and protected-resource boundaries were not observed.\"\n  ],\n  \"child_worker_ids\": [],\n  \"status\": \"STRUCTURED_RESULT_READY\"\n}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-6826c785c4e447af",
+  "worker_id": "hawking-worker-a4463bf919e74d69",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-77AA2361"
+}

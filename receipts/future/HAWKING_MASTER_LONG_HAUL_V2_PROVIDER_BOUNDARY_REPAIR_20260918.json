@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.v2.provider_boundary_repair.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "objective_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+  "changes": [
+    {
+      "path": "hawking/mutation.py",
+      "result": "Provider singleton operation and bounded source-edit/append dialects normalize to canonical engine operations; scope, anchors, and authority remain engine-validated."
+    },
+    {
+      "path": "hawking/serve.py",
+      "result": "Mutation-bundle completeness accepts the same bounded singleton operation dialect before canonical execution."
+    },
+    {
+      "path": "hawking/auto_orchestration.py",
+      "result": "Semantic-zero diversification prefers prior accepted route history before novelty/exposure, while preserving least-exposed rotation for pure no-success pools."
+    }
+  ],
+  "verification": {
+    "focused_tests_passed": 146,
+    "compile": "passed",
+    "git_diff_check": "passed",
+    "daemon_pid": 6746,
+    "daemon_health_http": 200,
+    "resident_model": null,
+    "requested_model": "hawking-auto"
+  },
+  "live_observation": {
+    "workunit_states": {
+      "COMPLETE": 103,
+      "RUNNING": 15,
+      "OUTPUT_UNUSABLE": 3786,
+      "PAUSED_PROVIDER": 261,
+      "PAUSED_RESOURCE": 1,
+      "BLOCKED": 7,
+      "CANCELLED": 19
+    },
+    "active_models": {
+      "moonshotai/kimi-k3": 14,
+      "deepseek/deepseek-v4.1-flash": 1
+    },
+    "provider_boundary": "Remote 502/remote disconnects remain upstream transport or semantic failures; they are not converted to false HTTP 200 success."
+  },
+  "claim_boundary": "This receipt records control-plane and provider-boundary repairs only; it does not claim phase completion, release readiness, or hardware qualification."
+}

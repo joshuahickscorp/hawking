@@ -13,8 +13,10 @@ UNTESTED, not evidence the claim is unjustified.
 
 `challenge()` looks up the historical catalog (scan-time / forensic).
 `emit()` is the emit-time entry point a gate calls as it stamps a status:
-no disk, no catalog, no subprocess. A gate that does not call it is a
-named coverage gap, not silent success.
+no disk, no catalog, no subprocess. `stamp_gate()` is the matching Hawking
+gate adapter: it attaches the five fields while preserving a gate's status,
+qualification, and checks. A gate that does not call an emit-time entry point
+is a named coverage gap, not silent success.
 
     python3 tools/verify/status_causality.py --build
     python3 tools/verify/status_causality.py --challenge BLOCKED_NO_METAL_GPU
@@ -287,11 +289,11 @@ SELECTION_RULE = (
     "whether a protected window is RUNNABLE, or whether a scanned status was "
     "treated as a blocker. "
     "Included: (1) every path named in the G007 obligation (odyssey_launch "
-    "criteria, integration_gate, resident and native gates under hcli/agentos, "
+    "criteria, integration_gate, and the canonical Hawking resident/native "
+    "gates; "
     "specimen verification); "
-    "(2) every hcli/agentos module whose filename matches *gate*.py or that "
-    "defines run_*_gate (autonomy, modellake, vmcp, native_mission, recovery, "
-    "research); "
+    "(2) every canonical Hawking control gate (resident, native, "
+    "native_mission, autonomy, modellake, perception, recovery, research); "
     "(3) every receipt already reached by status_causality.scan via "
     "KNOWN_RECEIPT_PATHS, except AUTONOMY_SCARS which is an adjudication "
     "schema not a gate; "
@@ -325,74 +327,82 @@ CONSEQUENTIAL_GATES: tuple[dict[str, Any], ...] = (
     },
     {
         "name": "resident_gate",
-        "module": "hcli/agentos/resident_gate.py",
-        "receipt": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+        "module": "hawking/resident_gate.py",
+        "receipt": "receipts/headless/HAWKING_RESIDENT_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json"],
         "emit_fn": "run_resident_gate",
         "why": "PASSED/FAILED live residency proof; campaign next-step depends on it",
-        "selection": "named in G007 (resident gates under hcli/agentos)",
+        "selection": "named in G007; canonical Hawking resident gate",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
         "name": "native_gate",
-        "module": "hcli/agentos/native_gate.py",
-        "receipt": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+        "module": "hawking/native_gate.py",
+        "receipt": "receipts/headless/HAWKING_NATIVE_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"],
         "emit_fn": "run_native_gate",
         "why": "PASSED/FAILED native reproduction ladder",
-        "selection": "named in G007 (native gates under hcli/agentos)",
+        "selection": "named in G007; canonical Hawking native gate",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
         "name": "native_mission_gate",
-        "module": "hcli/agentos/native_mission_gate.py",
-        "receipt": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json",
+        "module": "hawking/native_mission_gate.py",
+        "receipt": "receipts/headless/HAWKING_NATIVE_MISSION_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_NATIVE_MISSION_GATE.json"],
         "emit_fn": "run_native_mission_gate",
         "why": "one live native mission PASS/FAIL; qualification next-step",
-        "selection": "hcli/agentos run_*_gate; native family",
+        "selection": "canonical Hawking native mission gate",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
         "name": "autonomy_gate",
-        "module": "hcli/agentos/autonomy_gate.py",
-        "receipt": "receipts/headless/HCLI_AGENTOS_AUTONOMY_GATE.json",
+        "module": "hawking/autonomy_gate.py",
+        "receipt": "receipts/headless/HAWKING_AUTONOMY_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_AGENTOS_AUTONOMY_GATE.json"],
         "emit_fn": "run_autonomy_gate",
         "why": "odyssey_launch reads all_requested_stages_passed from this receipt",
-        "selection": "hcli/agentos *gate*.py; campaign next-step",
+        "selection": "canonical Hawking autonomy gate; campaign next-step",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
         "name": "modellake_gate",
-        "module": "hcli/agentos/modellake_gate.py",
-        "receipt": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+        "module": "hawking/modellake_gate.py",
+        "receipt": "receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json",
+        "historical_receipts": ["receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"],
         "emit_fn": "run_modellake_census",
         "why": "census PASS/FAIL; launch/curriculum identity depends on the lake",
-        "selection": "hcli/agentos *gate*.py; campaign next-step",
+        "selection": "canonical Hawking ModelLake gate; campaign next-step",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
-        "name": "vmcp_gate",
-        "module": "hcli/agentos/vmcp_gate.py",
-        "receipt": "receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
-        "emit_fn": "run_vmcp_gate",
-        "why": "HCLI↔VMCP evidence-boundary PASS/FAIL",
-        "selection": "hcli/agentos *gate*.py; campaign next-step",
+        "name": "perception_gate",
+        "module": "hawking/perception_gate.py",
+        "receipt": "receipts/headless/HAWKING_PERCEPTION_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_AGENTOS_VMCP_GATE.json"],
+        "emit_fn": "run_perception_gate",
+        "why": "Hawking perception evidence-boundary PASS/FAIL",
+        "selection": "canonical Hawking perception gate; campaign next-step",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
         "name": "recovery_gate",
-        "module": "hcli/agentos/recovery.py",
-        "receipt": "receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json",
+        "module": "hawking/recovery_gate.py",
+        "receipt": "receipts/headless/HAWKING_RECOVERY_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json"],
         "emit_fn": "run_recovery_gate",
         "why": "crash-recovery PASS/FAIL; autonomy next-step depends on it",
-        "selection": "hcli/agentos run_*_gate; campaign next-step",
+        "selection": "canonical Hawking recovery gate; campaign next-step",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
         "name": "research_gate",
-        "module": "hcli/agentos/research.py",
-        "receipt": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
+        "module": "hawking/research_gate.py",
+        "receipt": "receipts/headless/HAWKING_RESEARCH_GATE.json",
+        "historical_receipts": ["receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json"],
         "emit_fn": "run_research_gate",
         "why": "research-tool evidence-boundary PASS/FAIL",
-        "selection": "hcli/agentos run_*_gate; campaign next-step",
+        "selection": "canonical Hawking research gate; campaign next-step",
         "named_statuses": ["PASSED", "FAILED"],
     },
     {
@@ -477,22 +487,21 @@ CONSEQUENTIAL_GATES: tuple[dict[str, Any], ...] = (
     },
 )
 
-# S015 (2026-08-30) dissolved the Codex sidecar write partition: crates/, hcli/,
-# tools/ and receipts/ are writable. mutation_surface.CODEX_OWNED is history,
-# not a gate. This lane's write set is the eight hcli/agentos emit points plus
-# the coverage consumer. flash_meta_teacher_capture_boundary remains unwired
+# S015 (2026-08-30) dissolved the Codex sidecar write partition. The retired
+# partition description is historical; current writes use the root Hawking
+# gate modules below. flash_meta_teacher_capture_boundary remains unwired
 # because its emit point is Rust, not because of the withdrawn partition.
 THIS_LANE_WRITE_SCOPE: tuple[str, ...] = (
-    "hcli/agentos/resident_gate.py",
-    "hcli/agentos/native_gate.py",
-    "hcli/agentos/native_mission_gate.py",
-    "hcli/agentos/autonomy_gate.py",
-    "hcli/agentos/modellake_gate.py",
-    "hcli/agentos/vmcp_gate.py",
-    "hcli/agentos/recovery.py",
-    "hcli/agentos/research.py",
+    "hawking/resident_gate.py",
+    "hawking/native_gate.py",
+    "hawking/native_mission_gate.py",
+    "hawking/autonomy_gate.py",
+    "hawking/modellake_gate.py",
+    "hawking/perception_gate.py",
+    "hawking/recovery_gate.py",
+    "hawking/research_gate.py",
     "tools/verify/status_causality.py",
-    "tools/future/test_status_causality_gates.py",
+    "hawking/tests/test_gate_emit_binding_is_a_noop.py",
     "receipts/future/STATUS_CAUSALITY_COVERAGE.json",
 )
 
@@ -1376,6 +1385,63 @@ def stamp(status_row: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
     return rec
 
 
+def stamp_gate(
+    report: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+    source: str = "",
+) -> dict[str, Any]:
+    """Stamp a gate report without changing its verdict fields.
+
+    This preserves the AgentOS gate contract: an unsupplied direct observation
+    is UNTESTED, rather than a restatement of PASSED or FAILED.  The causality
+    verdict is recorded beside the gate's status; it does not replace status,
+    qualification, or checks.
+    """
+    status_before = report.get("status")
+    qualification_before = report.get("qualification")
+    checks_before = (
+        dict(report["checks"])
+        if isinstance(report.get("checks"), dict)
+        else report.get("checks")
+    )
+    status = str(report.get("status") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    record = emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source=source,
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        report[key] = record[key]
+    report["causality_verdict"] = record["verdict"]
+    report["falsifier"] = record.get("falsifier")
+    if record.get("probe_kind"):
+        report["probe_kind"] = record["probe_kind"]
+    if record.get("claim_kind") is not None:
+        report["claim_kind"] = record["claim_kind"]
+    checks_after = (
+        dict(report["checks"])
+        if isinstance(report.get("checks"), dict)
+        else report.get("checks")
+    )
+    if (
+        report.get("status") != status_before
+        or report.get("qualification") != qualification_before
+        or checks_after != checks_before
+    ):
+        raise RuntimeError("status_causality.emit mutated the gate verdict")
+    return record
+
+
 def matching_overreach_shape(row: Mapping[str, Any] | str) -> str | None:
     """Shape id if this emission matches a known overreach, else None.
 
@@ -1470,8 +1536,10 @@ def _calls_emit_time(src: str) -> bool:
     markers = (
         "status_causality.emit(",
         "status_causality.stamp(",
+        "status_causality.stamp_gate(",
         "sc.emit(",
         "sc.stamp(",
+        "sc.stamp_gate(",
     )
     return any(m in src for m in markers)
 
@@ -1487,7 +1555,18 @@ def _gate_coverage_row(spec: Mapping[str, Any]) -> dict[str, Any]:
         src_state = "readable" if src is not None else "unreadable"
     else:
         src_state = "no_module"
-    doc = _load_receipt(str(receipt_rel)) if receipt_rel else None
+    receipt_candidates = [
+        str(path)
+        for path in (receipt_rel, *(spec.get("historical_receipts") or ()))
+        if path
+    ]
+    doc = None
+    observed_receipt = None
+    for candidate in receipt_candidates:
+        doc = _load_receipt(candidate)
+        if doc is not None:
+            observed_receipt = candidate
+            break
     receipt_state = "readable" if doc is not None else "unreadable"
     calls_emit = _calls_emit_time(src or "")
     receipt_has_five = _any_five_field_record(doc) if doc is not None else False
@@ -1514,6 +1593,8 @@ def _gate_coverage_row(spec: Mapping[str, Any]) -> dict[str, Any]:
         "name": name,
         "module": module,
         "receipt": receipt_rel,
+        "historical_receipts": list(spec.get("historical_receipts") or []),
+        "observed_receipt": observed_receipt,
         "emit_fn": spec.get("emit_fn"),
         "why": spec.get("why"),
         "selection": spec.get("selection"),
@@ -1598,9 +1679,11 @@ def coverage() -> dict[str, Any]:
         ],
         "write_scope": list(THIS_LANE_WRITE_SCOPE),
         "write_scope_note": (
-            "S015 dissolved the Codex write partition. This lane wired the eight "
-            "hcli/agentos emit points (resident, native, native_mission, autonomy, "
-            "modellake, vmcp, recovery, research). odyssey_launch, integration_gate, "
+            "S015 dissolved the Codex write partition. This lane wires the eight "
+            "root Hawking emit points (resident, native, native_mission, autonomy, "
+            "modellake, perception, recovery, research). Canonical receipt paths "
+            "are listed first; sealed legacy receipts remain read-only fallback evidence. "
+            "odyssey_launch, integration_gate, "
             "specimen_verify, metal_reachability, flash_nx_audit, odyssey2_law_store, "
             "contamination, qualification_pipeline and protected_scheduler were "
             "wired by prior lanes; their receipts are regenerated so the scanner "
@@ -2611,6 +2694,7 @@ def build() -> Path:
             "entry_point": "tools.verify.status_causality.challenge()",
             "emit_entry_point": "tools.verify.status_causality.emit()",
             "stamp_entry_point": "tools.verify.status_causality.stamp()",
+            "gate_stamp_entry_point": "tools.verify.status_causality.stamp_gate()",
             "workunit": (
                 "one CPU_ANALYSIS unit; challenge a consequential blocker before "
                 "acting on its label"
@@ -2627,6 +2711,7 @@ def build() -> Path:
         "emit_time": {
             "entry_point": "tools.verify.status_causality.emit()",
             "stamp": "tools.verify.status_causality.stamp()",
+            "gate_stamp": "tools.verify.status_causality.stamp_gate()",
             "cheap": "no disk, no catalog, no subprocess",
             "returns": list(VERDICTS),
             "records": list(FIVE_RECORDED_FIELDS),

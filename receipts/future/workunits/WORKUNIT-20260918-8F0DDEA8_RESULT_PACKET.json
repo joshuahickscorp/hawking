@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "d302e822042e98c319017ddc8b6334050804f0e2bce7377b39658e0e93365e6b",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:43:15.356852+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:43:15.356877+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:43:15.360182+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First read-only observation targeted the admitted focus file hawking/canonical_runtime.py (sha256 2aacd449b3cb9edfe127f99c82dcb1a9d506511ee0702f8761cde139f8ba1458, 19190 bytes); the read was truncated at 4000 bytes (20.8%)",
+      "outcome": "CONTINUE",
+      "reply_chars": 3362,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First read-only observation targeted the admitted focus file hawking/canonical_runtime.py (sha256 2aacd449b3cb9edfe127f99c82dcb1a9d506511ee0702f8761cde139f8ba1458, 19190 bytes); the read was truncated at 4000 bytes (20.8%), so only the module header and top-level declarations were observed.\",\"canonical_runtime.py declares ROLE_SCHEMA='hawking.canonical_runtime_roles.v1', SCHEDULING_SCHEMA='hawking.modellake.scheduling_authority.v2', ROLE_NAMES=('pulsar','magnetar','themis'), and AUTO_ROLE='hawking-auto'.\",\"ROLE_QUALIFICATIONS observed: pulsar requires frozenset({'RESIDENT_QUALIFIED'}); magnetar and themis each require frozenset({'CAPABILITY_QUALIFIED','RESIDENT_QUALIFIED'}).\",\"RuntimeRoleUnavailable is defined with default code='ROLE_WITHHELD' and state='WITHHELD', and to_dict() emits role/state/code/reason; the module docstring states a missing qualification is a structured withholding, never a Kimi/MLX or remote fallback.\",\"RoleResolution is a frozen dataclass carrying role, action (ResolvedAction), qualification, evidence tuple, and source; its to_dict() emits state='READY' plus artifact wire form.\",\"CanonicalRoute is a frozen dataclass carrying requested_model, role, action, and reason; to_dict() emits requested_model, role, reason, artifact_id, artifact_revision, artifact_kind.\",\"Module docstring states the current machine has a serial single-resident implementation and that the role contract intentionally does not claim multiple workers are already co-resident.\",\"No daemon health fields, resident lifecycle fields, or model/resident null-vs-non-null behavior for cloud Auto were observed in the truncated portion; no tests were executed in this session.\"],\"sources\":[\"hawking/canonical_runtime.py (sha256 2aacd449b3cb9edfe127f99c82dcb1a9d506511ee0702f8761cde139f8ba1458; read truncated to first 4000 of 19190 bytes)\"],\"recommendations\":[\"Continue reading canonical_runtime.py beyond byte 4000 (e.g., by line ranges) to capture the resolver logic that decides whether cloud Auto leaves model and resident null until an explicit native role is selected.\",\"Inspect hawking/serve.py and hawking/resident.py for the exact residency owner and health field names before asserting any residency truth.\",\"Run the admitted focus tests hawking/tests/test_hawking_resident_daemon.py, hawking/tests/test_catalog_and_switching.py, and hawking/tests/test_runtime_authority.py and report raw pass/fail output rather than inferred results.\"],\"unresolved_questions\":[\"Does cloud Auto leave model and resident null until an explicit native role is selected? Not yet verified from observed bytes.\",\"Are local Kimi/MLX weights kept non-resident merely because the daemon is running? Not yet verified.\",\"What are the exact residency owner and health field names emitted by the daemon? Not yet observed.\",\"Do the three admitted focus tests pass, and do they cover the null-until-selected and no-idle-residency invariants? Not yet run.\",\"Continuation capsule: next_action='read remainder of canonical_runtime.py and inspect serve.py/resident.py, then run the three focus tests'; reason='first observation was truncated and no tests were executed'; expected_evidence='full-file line ranges for resolver/residency logic plus raw test output'; tool_family='fs.read + test runner'.\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-938ad977f08c4a57",
+  "worker_id": "hawking-worker-bdcf61e294534d66",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-8F0DDEA8"
+}

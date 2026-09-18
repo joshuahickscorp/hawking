@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "4dec0cc39eaf1b1f53e7dc56e4171ca321e2813b0f1e17988dd052792915c6a8",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:16:34.262772+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:16:34.262783+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:16:34.264998+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/perception/tools.py was observed at /Users/scammermike/Downloads/hawking/hawking/perception/tools.py: 11820 bytes total, full-file sha256 3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106; only the f",
+      "outcome": "CONTINUE",
+      "reply_chars": 5347,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/perception/tools.py was observed at /Users/scammermike/Downloads/hawking/hawking/perception/tools.py: 11820 bytes total, full-file sha256 3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106; only the first 4000 bytes (33.8%) were returned with an explicit truncation notice, so no claim is made about the unobserved remainder.\",\"TOOL_NAMES is a module-level tuple of ten entries in this order: system.doctor, project.status, vision.capabilities, vision.observe, vision.query, vision.verify, vision.progress, vision.list_artifacts, vision.get_artifact, document.extract.\",\"The module docstring states 'The nine local perception tools Hawking explicitly allowlists', which conflicts with the observed ten-entry TOOL_NAMES tuple; this count discrepancy is unresolved.\",\"ADAPTERS is the set {\\\"file.local\\\"} and ADAPTER_VERSION is the string \\\"1\\\".\",\"_open(projects_root, project_path) resolves the root with Path(projects_root).expanduser().resolve(); a relative project_path is joined under the root and then resolved, while an absolute project_path is resolved directly; it raises ValueError('project path escapes projects root: ...') when root is not in p.parents and p != root, so sibling-prefix paths and '..' traversal that escape the root are refused while the root itself is accepted.\",\"_open returns ProjectStore.open(p) when (p / 'project.db').is_file() is true, and otherwise calls ProjectStore.create(p, p.name); thus a read-oriented lookup of a nonexistent project path triggers project creation rather than refusal, a write side effect embedded in the path-resolution helper.\",\"register(host) binds root = Path(host.projects_root) once and registers handlers through host.tool decorators; the observed portion shows registrations for system.doctor, vision.capabilities, project.status, and vision.list_artifacts; the registrations for the remaining six names in TOOL_NAMES lie in the truncated region and were not observed.\",\"system.doctor returns an offline health report containing ok=True, offline=True, network_forbidden=True, python and platform versions, projects_root, an os.access-based writability check on projects_root (or its parent if absent), sorted(ADAPTERS), list(TOOL_NAMES), implementation 'hawking-native (hawking.perception)', and a checked_at timestamp.\",\"vision.capabilities declares not_implemented entries: vision.verify(receipt_path) is not ported (verify binds a capture_id to its subject instead) and browser/3d/worldir adapters are PARKED pending a Hawking-owned implementation earning a typed allowlist entry; it declares dependencies pillow=False, opencv=False, numpy=False.\",\"_classify performs magic-byte classification by importing hawking.perception.file_eye.classify_bytes over at most 8,000,000 bytes of the subject file and falls back to {'kind': 'unclassified', 'why': 'file_eye unavailable: ...'} on import failure.\",\"The module imports MAX_SOURCE_BYTES and extraction_digest from .document_extract_contract, and Host plus ProjectStore, sha256_file, utc_now from .host and .store respectively.\",\"hawking/test_tool_registry.py was never read during this WorkUnit; no observation, assertion name, or test evidence from that file is claimed.\"],\"sources\":[{\"path\":\"hawking/perception/tools.py\",\"absolute_path\":\"/Users/scammermike/Downloads/hawking/hawking/perception/tools.py\",\"sha256\":\"3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106\",\"sha256_scope\":\"full_file\",\"bytes\":11820,\"observed_bytes\":4000,\"truncated\":true}],\"recommendations\":[\"Read the remaining bytes of hawking/perception/tools.py (offset beyond 4000) to observe the registrations for vision.observe, vision.query, vision.verify, vision.progress, vision.get_artifact, and document.extract before asserting that register() covers all of TOOL_NAMES.\",\"Read hawking/test_tool_registry.py to obtain the exact named assertions covering the TOOL_NAMES/register allowlist and the _open path-escape behavior, as required by the objective.\",\"Re",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-eaf718aa31224006",
+  "worker_id": "hawking-worker-52bf65ef0c5e4b97",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-C0971B9D"
+}

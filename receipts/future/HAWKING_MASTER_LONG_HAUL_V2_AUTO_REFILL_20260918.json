@@ -1,0 +1,33 @@
+{
+  "claim_boundary": "Auto admission control-plane seam only; no P4/P20 completion, provider acceptance, or downstream tranche planning claimed.",
+  "goal_id": "GOAL-A52AB48501",
+  "implemented": [
+    "serialized refill decisions across concurrent terminal owners",
+    "admit only durable graph-runnable queue entries",
+    "sort by priority and reject active writer-scope conflicts",
+    "exclude known terminal/provider-failure tranches",
+    "trigger refill after canonical terminal-child projection"
+  ],
+  "live_observation": {
+    "auto_revision": "hawking-auto-aggressive-v2-kimi-deepseek-12",
+    "claim_boundary": "daemon source/live observation only; no native runtime qualification claimed.",
+    "daemon_pid": 57119,
+    "status": "waiting_for_native_runtime"
+  },
+  "next_evidence": "A future terminal child with a durable auto_refill_queue entry should admit the next dependency-valid, nonconflicting lane automatically; current V2 graph has no runnable entries after P12/P13 outcomes.",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": 1789702465.228388,
+  "schema": "hawking.long_haul.v2.auto_refill_control_plane.v1",
+  "source": [
+    "hawking/auto_orchestration.py",
+    "hawking/workunit_owner.py",
+    "hawking/tests/test_auto_orchestration.py",
+    "hawking/tests/test_discrete_goal_completion_state.py"
+  ],
+  "status": "LOCAL_AUTO_REFILL_CONTROL_PLANE",
+  "verification": {
+    "compile": "passed",
+    "diff_check": "passed",
+    "focused_tests": "19 passed"
+  }
+}

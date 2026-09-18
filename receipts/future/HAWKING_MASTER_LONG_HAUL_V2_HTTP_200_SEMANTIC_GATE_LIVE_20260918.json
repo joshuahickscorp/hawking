@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.long_haul.v2.http_200_semantic_gate_live.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:47:16Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "endpoint": "http://127.0.0.1:8014/v1/chat/completions",
+  "probes": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "provider_http_semantics": "HTTP 200 without required named tool call",
+      "hawking_http_status": 502,
+      "hawking_error_code": "REMOTE_SEMANTIC_INCOMPLETE"
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider_http_semantics": "HTTP 200 without required named tool call",
+      "hawking_http_status": 502,
+      "hawking_error_code": "REMOTE_SEMANTIC_INCOMPLETE"
+    }
+  ],
+  "daemon_boundary": {
+    "status": "waiting_for_native_runtime",
+    "requested_model": "hawking-auto",
+    "model": null,
+    "resident": null,
+    "provider_children": "none while native role is withheld",
+    "local_kimi_or_mlx_process_present": false
+  },
+  "claim_boundary": "The transport gate is live and fail-closed. This receipt is not provider qualification, tranche acceptance, or a blocker declaration.",
+  "next_action": "Keep Goal RUNNING; preserve P14/P17/P18/P19 frontier state and reopen only after a fresh named-tool route qualifies."
+}

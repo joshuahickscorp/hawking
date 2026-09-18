@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "fe78defade4fd06acd7dcd3b66280bb402dee2671c1f932765c2c7904c421a23",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:02:06.538970+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:02:06.538988+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:02:06.542803+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First observation targeted admitted focus file hawking/sandbox_world.py; README.md was not used.\",\"Observed file metadata: path hawking/sandbox_world.py, sha256 019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214",
+      "outcome": "CONTINUE",
+      "reply_chars": 3795,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First observation targeted admitted focus file hawking/sandbox_world.py; README.md was not used.\",\"Observed file metadata: path hawking/sandbox_world.py, sha256 019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27, 25417 bytes, observed prefix 4000 bytes.\",\"Module docstring states it owns persistent S0 problem-world state, not another scheduler or public command; branches are disposable; findings/candidates remain claims until an independent evaluator and protected controller act; a failed child never closes the root or siblings; execution policy remains in hawking.execution_sandbox; Option-C remains the candidate/reviewer/controller lifecycle owner.\",\"Observed schema constants: WORLD_SCHEMA hawking.sandbox.world.v1, BRANCH_SCHEMA hawking.sandbox.branch.v1, FINDING_SCHEMA hawking.sandbox.finding.v1, CANDIDATE_SCHEMA hawking.sandbox.candidate.v1, EVALUATOR_SCHEMA hawking.sandbox.evaluator.v1, ARTIFACT_SCHEMA hawking.sandbox.artifact.v1, EVENT_SCHEMA hawking.sandbox.event.v1.\",\"Observed module-level _LOCK is a threading.RLock.\",\"Observed SandboxWorldError is a bounded fail-closed runtime error carrying an integer status.\",\"Observed _world_dir resolves workspace/.hawking/sandbox/worlds and creates it with parents and exist_ok.\",\"Observed _world_path returns world_id.json under the world directory.\",\"Observed _id returns prefix plus 16 hex characters from uuid4.\",\"Observed _text strips and truncates values.\",\"Observed _safe redacts mapping keys containing secret, token, cookie, authorization, api_key, credential, or environment; it limits depth to 3, lists to 64, mappings to 80, and strings to 1200.\",\"Observed _load reads a JSON object, requires schema WORLD_SCHEMA, and raises SandboxWorldError 404 for missing or wrong schema and 409 for world_id identity mismatch.\",\"Observed _save writes the world mapping through atomic_write_json to the world path.\",\"Observed _branch requires the branches index to be a mapping and raises SandboxWorldError 500 if malformed, then retrieves the requested branch.\"],\"sources\":[{\"path\":\"hawking/sandbox_world.py\",\"sha256\":\"019d3814cbaddf56862e7578296375633bec2619a3c7473a564cb31d0c214a27\",\"bytes\":25417,\"observed_prefix_bytes\":4000}],\"recommendations\":[\"P19_SANDBOX_IMPLEMENTATION_CONTRACT_V2 owner: hawking/sandbox_world.py.\",\"Smallest safe seam: the _load/_save persistence boundary with schema and world_id identity validation; do not expand into execution policy or Option-C lifecycle ownership.\",\"Focused RED tests: test_load_rejects_missing_or_wrong_schema_404; test_load_rejects_world_id_mismatch_409; test_save_uses_atomic_write_json_and_preserves_world_id; test_safe_redacts_secret_token_cookie_authorization_api_key_credential_environment_keys; test_branch_rejects_malformed_branch_index_500.\",\"Focused GREEN tests: the same cases pass after the seam is implemented; assert no mutation outside .hawking/sandbox/worlds/<world_id>.json.\",\"Protected resources: .hawking/sandbox/worlds/*.json, WORLD_SCHEMA, _LOCK, atomic_write_json, read_json_object_or_none, and SandboxWorldError status semantics.\",\"Writer/effect scope: only _save may write the world JSON; this research worker must remain read-only and must not mutate files, promote provider prose, access hardware, or claim production/release completion.\",\"One falsifier: a test that writes a world JSON with a mismatched world_id and observes _load returning it instead of raising SandboxWorldError 409 falsifies the identity-validation contract.\"],\"unresolved_questions\":[\"hawking/tests/test_sandbox_world.py was not inspected in this observation.\",\"The full hawking/sandbox_world.py beyond the observed 4000-byte prefix was not inspected.\",\"No admitted focus tests were declared.\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-926b7c57fc354246",
+  "worker_id": "hawking-worker-c94bcf8c0f45421c",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-FD173886"
+}

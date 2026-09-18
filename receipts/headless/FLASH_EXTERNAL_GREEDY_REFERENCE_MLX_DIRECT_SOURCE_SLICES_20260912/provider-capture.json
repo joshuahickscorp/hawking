@@ -1,0 +1,30 @@
+{
+  "active_generation_index": 0,
+  "active_layer_index": 1,
+  "active_stage": "ple",
+  "claim_boundary": "provider/runtime failure only; not source evidence, teacher admission, or a Flash scientific disposition",
+  "execution_schedule": "exact_qwen4_exp_direct_source_expert_slices_with_evaluated_sublayer_boundaries",
+  "failure": {
+    "exception_type": "RuntimeError",
+    "message": "[METAL] Command buffer execution failed: Caused GPU Timeout Error (00000002:kIOGPUCommandBufferCallbackErrorTimeout).",
+    "scientific_disposition": "none"
+  },
+  "finished_unix_ns": 1789230572149936000,
+  "generated_token_ids": [],
+  "last_completed_layer_index": 0,
+  "last_completed_stage": "mlp_injection",
+  "no_sampling": true,
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.external_greedy_reference_mlx_worker.v1",
+  "started_unix_ns": 1789230516995757000,
+  "status": "FAILED_EXTERNAL_PROVIDER_RUNTIME__NO_NEW_SOURCE_RESULT",
+  "steps": [],
+  "updated_unix_ns": 1789230517410813000
+}

@@ -46,7 +46,7 @@ def _census_rows() -> Dict[str, Dict[str, Any]]:
     """
     sys.path.insert(0, str(REPO))
     try:
-        from hcli.tool_registry import default_tool_registry
+        from hawking.tool_registry import default_tool_registry
         reg = default_tool_registry(str(REPO), repo_root=str(REPO))
         res = reg.invoke("lake.census", {"limit": 200})
         val = res.value if hasattr(res, "value") else res

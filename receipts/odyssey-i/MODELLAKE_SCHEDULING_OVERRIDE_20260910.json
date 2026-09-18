@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.odyssey.modellake_schedule_override_receipt.v1",
+  "action": "SEAL_SCHEDULING_OVERRIDE",
+  "status": "COMPLETED",
+  "completed_on": "2026-09-10",
+  "authority": {
+    "path": "workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "schema": "hawking.modellake.scheduling_authority.v2",
+    "sha256": "b53567832168c4c4827424a0d6ee7a7fd93f27728707067dddc0e2de5e9198ea",
+    "active_phase": "KIMI_CLOSEOUT",
+    "phase_transition_owner": "explicit operator control-state update after the listed evidence requirements are met"
+  },
+  "directive_source": "/Users/scammermike/.codex/attachments/43fbc4ea-ba0a-49d9-b95f-cb133d25146c/pasted-text.txt",
+  "sealed_schedule": [
+    "KIMI_CLOSEOUT",
+    "MOE_TRANSFER_CLUSTER",
+    "FLASH_NEXT_PULSAR_PASS",
+    "FLASH_NEXT_WITH_CODEX_ODYSSEY",
+    "ROLLING_RETIREMENT",
+    "V41_CAPACITY_GATE",
+    "MAIN_ODYSSEY_POPULATION",
+    "STAR_SERIES"
+  ],
+  "enforcement": {
+    "strict_size_ordering": "superseded only where the active phase defines a priority override",
+    "new_legacy_queue_admissions_during_kimi_closeout": "PAUSED",
+    "v41_target": "SCHEDULED but phase-deferred until V41_CAPACITY_GATE, then still subject to live hard capacity and physical-free gates",
+    "watcher_may_infer_or_advance_phase": false,
+    "watcher_may_delete_specimens": false,
+    "deletion_armed": false
+  },
+  "preserved_evidence": {
+    "kimi_resident_control": "KIMI_P0_OPERATIONAL remains the working local Resident/control",
+    "completed_specimens_reused_without_restart": [
+      {
+        "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+        "sealed_receipt": "receipts/odyssey-i/O005_PATIENT_SEAL.json"
+      },
+      {
+        "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+        "sealed_receipt": "receipts/odyssey-i/O006_DOCTOR_SEAL.json"
+      }
+    ],
+    "flash_next": "Qwen--Qwen3.8-Flash-Next@34567a4712bc remains the pristine-source Pulsar/Resident Star candidate",
+    "k3": "held until the complete V4.1 Magnetar comparison and a separate explicit deletion directive"
+  },
+  "measured_control_state": {
+    "moe_transfer_cluster_resident_specimens": 6,
+    "v41_phase_admissible_now": false,
+    "legacy_queue_admissible_now": false,
+    "tier2_used_bytes": 4352674967552,
+    "tier2_budget_bytes": 3500000000000,
+    "free_hdd_bytes": 451817222144,
+    "resident_specimen_count": 55
+  },
+  "verification": {
+    "authority_json_parse": "python3 -m json.tool workspace/campaign/odyssey/MODELLAKE_SCHEDULING_AUTHORITY.json",
+    "phase_semantic_check": "current phase KIMI_CLOSEOUT; V4.1 phase gate false; legacy queue false; all six cluster bodies resident; sealed O005/O006 are evidence-only",
+    "focused_test_command": "pytest -q tools/odyssey/test_modellake.py tools/odyssey/test_modellake_promote.py tools/odyssey/test_modellake_watch.py tools/odyssey/test_modellake_index.py",
+    "focused_test_result": "77 passed in 3.43s",
+    "diff_check": "git diff --check -- tools/odyssey/modellake_watch.py tools/odyssey/test_modellake_watch.py"
+  },
+  "non_actions": [
+    "no ModelLake specimen was downloaded during this scheduling update",
+    "no ModelLake specimen was deleted during this scheduling update",
+    "no watcher restart was performed"
+  ]
+}

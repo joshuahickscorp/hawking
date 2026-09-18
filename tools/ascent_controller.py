@@ -13,7 +13,7 @@ queue sensibly.
     python3 tools/ascent_controller.py status
     python3 tools/ascent_controller.py run [--max-lanes N]
 
-Governors reused rather than rebuilt: machine_state.clean_box_ok (resource) and
+Governors reused rather than rebuilt: hawking.machine_state.clean_box_ok (resource) and
 tools/reclaim_safe.sh (disk).
 """
 
@@ -35,13 +35,13 @@ GROK = Path.home() / ".claude-grok" / "bin" / "grok-run"
 DISK_FLOOR_GIB = 15.0
 DISK_WARN_GIB = 40.0
 
-sys.path.insert(0, str(REPO / "tools"))
+sys.path.insert(0, str(REPO))
 
 
 def machine_snapshot() -> dict:
-    """Resource governor. Falls back to a permissive snapshot if agentos moved."""
+    """Resource governor. Falls back when the Hawking leg is unavailable."""
     try:
-        from agentos.machine_state import clean_box_ok, snapshot  # type: ignore
+        from hawking.machine_state import clean_box_ok, snapshot
 
         snap = snapshot()
         ok, why = clean_box_ok(snap, min_free_gib=DISK_FLOOR_GIB)

@@ -1,0 +1,95 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "edb8d4e1e75397f5b40004e2dd3a3a06ed135fbe61355c8a24b8ec06c101d202",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:59:11.273061+00:00",
+      "calls_used": 5,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:59:11.273079+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:59:11.277174+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"The P14_PCIE_FPGA tranche is referenced in receipts/future/HAWKING_MASTER_LONG_HAUL_V2_BOOTSTRAP.json (line 793) and in the frontier source/local evidence receipts, but a full-corpus search for the literal token P",
+      "outcome": "CONTINUE",
+      "reply_chars": 5452,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T07:59:25.415695+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:59:25.415705+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:59:25.416662+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"The only real read-only observation in this bounded pass was the repository README at path README.md with full-file sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9 and 4340 bytes; the retur",
+      "outcome": "CONTINUE",
+      "reply_chars": 4677,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "none",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"The only real read-only observation in this bounded pass was the repository README at path README.md with full-file sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9 and 4340 bytes; the returned view was truncated to 4000 bytes, so no conclusion is drawn about unshown content.\",\n    \"The README states FPGA work is pre-board and that there are no hardware results, so any P14_PCIE_IMPLEMENTATION_CONTRACT must remain a planning/verification contract and cannot claim hardware, production, or release completion.\",\n    \"The README states HAWKING owns planning, typed tool calls, lifecycle, and verification, while the Hawking Rust crates own execution and serving; this bounds writer/effect scope for a P14 contract to the control-plane/verification side unless a named source owner says otherwise.\",\n    \"The README states receipts are evidence, not an additional source of architecture, so the contract must be grounded in named source/test owners rather than provider prose or receipt narrative.\",\n    \"The README lists current verification surfaces: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check, tools/ci/rust_test_fast.sh compile, tools/ci/rust_test_fast.sh policy, and cargo test -p hawking-core --test q4k_fast_parity.\",\n    \"The README states the Rust fast lane compiles 135 integration sources through checked aggregate targets while preserving each named source file as an explicit isolated target, which is the natural attachment point for focused RED/GREEN tests.\",\n    \"The README states model weights are local inputs and are not part of the repository, so the contract must not depend on weight artifacts or hardware access.\",\n    \"No accepted P14_PCIE_FPGA read evidence artifact and no named current source/test owners were observed in this bounded pass, so the requested source-grounded owner and smallest bounded next seam cannot yet be named.\"\n  ],\n  \"sources\": [\n    {\n      \"path\": \"README.md\",\n      \"sha256\": \"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\n      \"sha256_scope\": \"full_file\",\n      \"bytes\": 4340,\n      \"note\": \"Only file observed in this bounded read; view truncated to 4000 of 4340 bytes, so no conclusion is drawn about unshown content.\"\n    }\n  ],\n  \"recommendations\": [\n    {\n      \"next_action\": \"Locate and read the accepted P14_PCIE_FPGA read evidence artifact, then inspect only the named current source/test owners it identifies.\",\n      \"reason\": \"The objective requires a source-grounded owner and smallest bounded next seam, but no P14_PCIE_FPGA evidence or named owners were observed in this bounded pass.\",\n      \"expected_evidence\": \"Exact file paths and hashes for the accepted P14_PCIE_FPGA read evidence plus the named source/test owner files, with line-anchored excerpts identifying the smallest safe mutation or verification seam.\",\n      \"tool_family\": \"read_only_research\"\n    },\n    {\n      \"next_action\": \"After owners are identified, derive one bounded implementation contract naming the smallest safe mutation or verification seam, focused RED/GREEN tests, protected resources, writer/effect scope, and one falsifier.\",\n      \"reason\": \"The contract must be source-grounded and must preserve one-writer scope and claim boundaries; it cannot be produced from README.md alone.\",\n      \"expected_evidence\": \"A single contract object with owner path, seam description, RED test, GREEN test, protected resources, writer/effect scope, and one falsifier, each tied to an observed source location.\",\n      \"tool_family\": \"read_only_research\"\n    },\n    {\n      \"next_action\": \"Keep the contract within read-only planning evidence: do not mutate files, promote provider prose, access hardware, or claim production/release completion.\",\n      \"reason\": \"WORKER_MODE=read_only_research and the acceptance criteria require preserving protected resources and claim boundaries.\",\n      \"expected_evidence\": \"A contract that names protected resour",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-e50532a183dc45f7",
+  "worker_id": "hawking-worker-3013b501161e43d8",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-43DE3CC7"
+}

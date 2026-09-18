@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.odyssey.lfm2.runtime_admission.v1",
+  "recorded_at": "2026-09-11T07:49:00Z",
+  "status": "BLOCKED_RUNTIME",
+  "specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+  "attempt": {
+    "provider": "daemon-owned mlx_lm.server compatibility bridge",
+    "research_switch": "PASS; HTTP 200; LFM2 was the sole provider child of hawkingd",
+    "normal_selector": "P0-only; LFM2 remained absent",
+    "tool_authority": "WITHHELD; research body was not passed through the P0 tool qualification",
+    "forward_probe": "POST /v1/chat/completions with a 12-token deterministic prompt produced no HTTP response within curl's 120-second bound",
+    "conclusion": "The currently installed MLX-LM LFM2 server accepts health and binds its port but did not complete the first forward request. No route-conditioned activation corpus, capability, or TPS claim was earned."
+  },
+  "cleanup": {
+    "LFM2_provider_released": true,
+    "KIMI_P0_restored": true,
+    "final_root": 68911,
+    "final_provider": 68914,
+    "final_webui_children": [68937, 68961],
+    "orphan_detection": "Two exact provider orphans exposed during restart testing were identified by PID/ancestry and reaped; final persistent Hawking processes are descendants of root 68911.",
+    "swap_claim": "not measured by this receipt"
+  },
+  "reopen_condition": "Use a LFM2-compatible execution path that completes a bounded deterministic forward and exposes the layer-2 expert route/conv/expert_bias execution needed for capture. Do not substitute a generic dense MLP or claim static analysis as runtime evidence.",
+  "next_action": "Keep LFM2 static/representation work active; advance an independent Odyssey front while the compatible runtime is diagnosed."
+}

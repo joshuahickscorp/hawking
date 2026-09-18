@@ -1,0 +1,238 @@
+{
+  "schema": "hawking.kimi.p0.operational_bounded_freeze.v1",
+  "generated_at": "2026-09-11T07:06:17Z",
+  "status": "FROZEN_OPERATIONAL_DEVELOPMENTAL_BOUNDED_AUTHORITY",
+  "artifact_id": "KIMI_P0_OPERATIONAL",
+  "role": "first useful local Hawking conversational, read/research, and scientific-assistant Resident",
+  "freeze": {
+    "identity_frozen": true,
+    "weights_frozen": true,
+    "in_place_mutation": false,
+    "parent_immutable": true,
+    "parent": "KIMI_BASE",
+    "autonomous_write_is_not_a_freeze_prerequisite": true,
+    "rollback": {
+      "installed_current": "/Users/scammermike/.local/share/hcli/build-20260911-063840",
+      "previous_snapshots": [
+        "/Users/scammermike/.local/share/hcli/build-20260911-063407",
+        "/Users/scammermike/.local/share/hcli/build-20260911-063258"
+      ],
+      "model_source_is_preserved": true
+    }
+  },
+  "lineage": {
+    "weight_lineage": "KIMI_BASE unchanged",
+    "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+    "source_revision": "398eede0903c",
+    "local_executable_snapshot": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8",
+    "representation": "dense KIMI_BASE MLX snapshot",
+    "full_model_complete_ebpw": null,
+    "reduced_weight_claim": false,
+    "hawking_native": false,
+    "dense_parent_rematerialization": false,
+    "model_hashes_sha256": {
+      "config.json": "854edceb8789f190f37df61389baf06594cec93bfd0a403a1655961aaa228662",
+      "model.safetensors.index.json": "2e35afacf7dbb68e8984b58886d71dc7819ef98e257a8e50d1c97b8f074e17af",
+      "model-00001-of-00004.safetensors": "b82de250d53dbd975720601ccbd2742fd431773088a0be14393f671d265d55c2",
+      "model-00002-of-00004.safetensors": "50e3f6178e10b23bbf73d14cfc55628114df12048b84c4c7730b2c3a8994a251",
+      "model-00003-of-00004.safetensors": "e63b2362698ff546b651d3bfbec04c614b1bd29c621336cf176567858ee11cc5",
+      "model-00004-of-00004.safetensors": "38f541d94e3527e857c5191256eda6428d46a2b658c96bb37e367a5375a3f67e",
+      "tiktoken.model": "b6c497a7469b33ced9c38afb1ad6e47f03f5e5dc05f15930799210ec050c5103",
+      "tokenizer_config.json": "4ed644c6e3d9447fdb36808279330f6cba2f81cb66d805f6e3c33b7379c3bb79"
+    }
+  },
+  "runtime": {
+    "backend": "mlx_vlm.server compatibility provider",
+    "backend_version": "mlx-vlm 0.7.0",
+    "backend_python": "3.13.13",
+    "provider_entrypoint_sha256": "470730688fec2f72f54d4ca9dce60204fb8c2aa73c7d6a864af7b1dbac3c5ba1",
+    "webui": "Open WebUI 0.11.3",
+    "webui_entrypoint_sha256": "03be4032866d4538a7e4f2f15998f92fdbfa209c19e68a2af73ecb7bc3744737",
+    "hcli_build": "/Users/scammermike/.local/share/hcli/build-20260911-063840",
+    "hcli_package_digest_sha256": "d63cedf2859731895561ce4dbc4b227a1f684f1f95ffd5131a3ef97540c3002c",
+    "source_git_head": "ce5e1b2a551c6817b6e82f05cf937dbdc77bb00e",
+    "gravity_registry": "workspace/campaign/odyssey/gravity-artifacts.json",
+    "gravity_registry_sha256": "6ecfac72a13d55caf457fcf3321e2301de71609bf3dc29de43d7fc3d2aeda66b",
+    "openai_base_url": "http://127.0.0.1:8011/v1",
+    "webui_urls": [
+      "http://127.0.0.1:8080",
+      "http://127.0.0.1:8081"
+    ],
+    "authority": "read",
+    "normal_selector": [
+      "KIMI_P0_OPERATIONAL"
+    ],
+    "modellake_default": "hidden",
+    "swap_at_freeze": "0 bytes"
+  },
+  "process_ownership": {
+    "invariant": "ONE_SOVEREIGN_HAWKINGD_PROCESS_TREE",
+    "literal_single_pid_required": false,
+    "root": {
+      "pid": 59189,
+      "ppid": 1,
+      "role": "hawkingd serve",
+      "endpoint_port": 8011
+    },
+    "provider": {
+      "pid": 59193,
+      "ppid": 59189,
+      "count": 1,
+      "role": "daemon-owned KIMI MLX-VLM provider"
+    },
+    "webui": [
+      {
+        "pid": 59206,
+        "ppid": 59189,
+        "port": 8080
+      },
+      {
+        "pid": 59241,
+        "ppid": 59189,
+        "port": 8081
+      }
+    ],
+    "resource_trackers": [
+      {
+        "pid": 59224,
+        "ppid": 59206
+      },
+      {
+        "pid": 59266,
+        "ppid": 59241
+      }
+    ],
+    "all_persistent_hawking_processes_descend_from_root": true,
+    "second_surface_guard": {
+      "attempted_port": 8012,
+      "exit": 17,
+      "model_loaded": false,
+      "result": "PASS"
+    },
+    "clean_stop_restart": "PASS",
+    "multi_client_single_provider": "PASS"
+  },
+  "qualification": {
+    "bounded_capability": {
+      "status": "QUALIFIED",
+      "result": "4/4",
+      "receipt": "receipts/future/KIMI_WORKUNIT_CAPABILITY_LIVE_RETRY2_20260910.json"
+    },
+    "epistemic_calibration": {
+      "status": "QUALIFIED",
+      "result": "7/7",
+      "receipt": "receipts/future/KIMI_EPISTEMIC_LIVE_20260910.json"
+    },
+    "destructive_controls": {
+      "status": "QUALIFIED",
+      "result": "6/6",
+      "receipt": "receipts/future/KIMI_HCLI_BOUNDARY_CONTROLS_20260910.json"
+    },
+    "serving_contract": {
+      "status": "QUALIFIED_DEPLOYMENT_PATH_ONLY",
+      "result": "16/16 bounded passes; 0/16 effective dead-end refusals",
+      "learned_weight_evidence": false,
+      "receipt": "receipts/future/KIMI_HCLI_ENGINE_LIVE_RETRY3_20260910.json"
+    },
+    "live_read_surface": {
+      "health": "PASS",
+      "resident_identity_match": true,
+      "tools_qualified": true,
+      "tool_names": [
+        "audit",
+        "campaign.state",
+        "context.recall",
+        "debug.diagnose",
+        "forensics.snapshot",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "git.status",
+        "gravity.inspect",
+        "observation.expand",
+        "odyssey.read",
+        "processes.summary",
+        "receipt.read",
+        "reverse.identify",
+        "tools.catalog",
+        "web.fetch",
+        "web.search"
+      ],
+      "repo_edit_exposed": false,
+      "webui_8080_http": 200,
+      "webui_8081_http": 200,
+      "conversation_probe": {
+        "http": 200,
+        "wall_s": 2.6269,
+        "nonempty_response": true,
+        "exact_wording_followed": false,
+        "claim": "liveness only; not counted as instruction-adherence evidence"
+      }
+    }
+  },
+  "authority": {
+    "admitted": [
+      "local conversational Resident",
+      "read/research HCLI worker",
+      "repository and ModelLake investigator",
+      "tool-using scientific assistant",
+      "receipt/evidence consumer",
+      "hypothesis and experiment planner",
+      "supervised proposal generator"
+    ],
+    "withheld": [
+      "autonomous repository writer",
+      "self-certifying developer",
+      "unsupervised mutation authority",
+      "autonomous Odyssey writer",
+      "autonomous self-improvement promotion"
+    ],
+    "blind_write_scar": "receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json",
+    "blind_write_result": "RED_WITHHELD_NOT_A_USAGE_PREREQUISITE"
+  },
+  "physical": {
+    "canonical_raw_kimi_base_steady_decode_tps_by_context": {
+      "prompt_tokens_20": 86.917,
+      "prompt_tokens_212": 83.386,
+      "prompt_tokens_788": 85.39
+    },
+    "canonical_raw_mean_context_median_steady_decode_tps": 85.231,
+    "deployment_path_replicate_steady_decode_tps_by_context": [
+      73.81919639634056,
+      72.18291139785278,
+      70.83541297395267
+    ],
+    "claim_boundary": "Dense KIMI_BASE lineage timing only; not reduced-representation, Hawking-native, or capability-qualified direct TPS."
+  },
+  "density_science_separate": {
+    "KIMI_P0_DENSITY_R16": "0.1948 complete EBPW at declared down-organ scope; full-graph capability FAIL/WITHHELD",
+    "KIMI_DENSITY_FRONTIER_R6": "0.0989 EBPW at declared down-organ scope; full-model capability NOT EARNED",
+    "operational_p0_complete_ebpw": null
+  },
+  "next_parent_objective": {
+    "name": "ODYSSEY_PLUS_COMPOUNDING_GRAVITY",
+    "p0_use": "Immediate bounded read/research/scientific-assistant WorkUnits with independent review",
+    "writer": "Codex remains primary writer/reviewer outside P0's earned authority",
+    "next_hcli_repair_law": "Only a deficiency exposed by real Odyssey work reopens harness work",
+    "sequence": [
+      "KIMI closeout",
+      "high-value MoE transfer cluster",
+      "Flash-Next priority override",
+      "deep Pulsar/Gravity pass",
+      "qualified local Pulsar plus Codex continue Odyssey",
+      "rolling ModelLake retirement",
+      "V4.1 acquisition when disk gate permits",
+      "finish Odyssey",
+      "Star Series"
+    ]
+  },
+  "verification": {
+    "focused_python_runtime_tests": "51 passed",
+    "rust_process_inspector_tests": "5 passed",
+    "negative_science_producer": "PASS",
+    "negative_science_index_roundtrip": "PASS",
+    "json_validation": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "claim_boundary": "This is an honest bounded operational freeze of unchanged dense KIMI_BASE plus its serving/controller/runtime stack. It admits useful read/research/scientific-assistant operation. It does not claim autonomous writing, self-certification, learned-weight repair, reduced full-model EBPW, Hawking-native execution, qualified direct TPS, final Pulsar status, or autonomous Odyssey authority."
+}

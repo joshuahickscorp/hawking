@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 3,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "f217df3c111125ccbc92367498a4a7c644ef3e28da8470c4a1e9a7d1c21a83d2",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:08:08.251604+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:08:08.251622+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:08:08.255112+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First observation targeted tools/accelerator/accelerator_runner.py (sha256 c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6, 30162 bytes, truncated to first 4000 bytes).\",\"Observed module docstring: paramet",
+      "outcome": "CONTINUE",
+      "reply_chars": 3634,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First observation targeted tools/accelerator/accelerator_runner.py (sha256 c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6, 30162 bytes, truncated to first 4000 bytes).\",\"Observed module docstring: parameterized accelerator experiment specs and safe HCLI dispatch; planning and queue compilation never launch work; AcceleratorRunner.start only creates a detached job when caller explicitly asks and physical-window admission check is true.\",\"Observed constants: SPEC_SCHEMA='hawking.accelerator.experiment_spec.v1'; COMPILED_QUEUE_SCHEMA='hawking.accelerator.repatriation_queue_compiled.v1'; DEFAULT_QUEUE_OUT=Path('receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json').\",\"Observed _ALLOWED_STATUS = frozenset({'READY','BLOCKED'}).\",\"Observed _REQUIRED_METRICS = frozenset({'complete_useful_wall_ns','active_bytes_per_token','fallback_count','capability_verified'}).\",\"Observed _RESOURCE_CLASSES maps fpga->COMPILE, metal/cuda/ane->GPU_EXCLUSIVE, cpu->CPU_HEAVY, remote->IO_HEAVY.\",\"Observed RunnerSpecError class for incomplete, unsafe, or overclaiming queue/spec.\",\"Observed AcceleratorExperimentSpec frozen dataclass fields including experiment_id, behavior_id, model_identity, nx_identity, nr_identity, organ, organ_range, backend, kernel_lowering, verification_mode, benchmark_mode, state_session_inputs, output_receipt_path, command, candidate, control, metrics, falsifier, status, detached, requires_quiescence, protected_window, atlas_fingerprint, expected_value_score, expected_effect, promotion, source_evidence.\",\"Observed imports include atomic_write_json, WorkUnit, and architecture_atlas build_atlas/validate_atlas.\",\"Did not observe test files or full source body beyond the first 4000 bytes.\"],\"sources\":[\"tools/accelerator/accelerator_runner.py sha256 c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6\",\"admitted focus tests not yet observed: tools/accelerator/test_backend_contract.py, tools/accelerator/test_physical_qualification.py\"],\"recommendations\":[\"Bounded contract: seam is AcceleratorRunner.start admission gate plus AcceleratorExperimentSpec validation; source owner is tools/accelerator/accelerator_runner.py; test owners are tools/accelerator/test_backend_contract.py for backend contract and tools/accelerator/test_physical_qualification.py for physical qualification.\",\"RED tests: reject status not in _ALLOWED_STATUS; reject missing required metric; reject fpga mapped to GPU_EXCLUSIVE; reject secret-like command argument; reject empty required strings.\",\"GREEN tests: accept READY spec with all required metrics; accept fpga->COMPILE; accept protected_window true; accept detached false; accept output_receipt_path under receipts/headless.\",\"Protected resources: GPU_EXCLUSIVE for metal/cuda/ane, COMPILE for fpga, CPU_HEAVY for cpu, IO_HEAVY for remote; physical window and quiescence must be respected.\",\"Writer scope: output_receipt_path and DEFAULT_QUEUE_OUT only; no hardware mutation and no release qualification claim.\",\"Falsifier: if a spec with status not in _ALLOWED_STATUS or missing required metrics is accepted, or if fpga resource class is treated as GPU_EXCLUSIVE, the contract fails.\"],\"unresolved_questions\":[\"Full source body beyond first 4000 bytes was not observed.\",\"tools/accelerator/test_backend_contract.py and tools/accelerator/test_physical_qualification.py were not observed.\",\"Exact implementation of AcceleratorRunner.start and physical-window admission check was not observed.\",\"Whether existing tests already cover the proposed RED/GREEN cases is unknown.\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-37956ccb638b4fc0",
+  "worker_id": "hawking-worker-9c47f671dee1435e",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-C93C2127"
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P10_NX_CENSUS_LIVE_BASELINE_HARDENING_V1",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-P10-NX-CENSUS-20260918",
+  "owner": "tools/headless/noetic_kernel_census.py::current_source_binding",
+  "source": [
+    "tools/headless/noetic_kernel_census.py",
+    "tools/nx_genome.py",
+    "hawking/test_nx_current_binding.py"
+  ],
+  "source_sha256": {
+    "tools/headless/noetic_kernel_census.py": "a88c28a788c2f37b8690398716d2eefbf5b79d5faf8a06551d66a08b156f1cf0",
+    "tools/nx_genome.py": "866c46a83e3c7a8e6aaa79e0d6000403247addb46284d2763c067956d9de5bf6",
+    "hawking/test_nx_current_binding.py": "c19f3488348c56b99653f2c53c1f921d0676499b51450f26d4cfce60c474e05e"
+  },
+  "observations": {
+    "live_bound_count": 98,
+    "live_declared_count": 818,
+    "historical_g071_bound": 38,
+    "historical_g071_declared": 554,
+    "historical_numbers_are_drift_reference_only": true,
+    "unknown_kernel_facts_remain_fail_closed": true,
+    "full_census_build": "refused because 60 current dispatched kernels lack hand-verified facts; no classification was guessed"
+  },
+  "focused_tests": {
+    "command": "python3 -m pytest -q hawking/test_nx_current_binding.py hawking/test_nx_promotion.py hawking/test_nrnx_discipline.py",
+    "result": "15 passed",
+    "compile": "python3 -m py_compile tools/headless/noetic_kernel_census.py tools/nx_genome.py hawking/test_nx_current_binding.py",
+    "diff_check": "git diff --check"
+  },
+  "claim_boundary": "Current source-count reconciliation only. This does not classify the 60 newly bound kernels, prove physical execution, timing, device availability, hardware qualification, production readiness, or NX promotion.",
+  "falsifier": "If current_source_binding() and nx_genome.bound_kernels() disagree, or if unknown dispatched kernels are silently classified instead of refusing, this hardening is invalid.",
+  "remaining": [
+    "Hand-verify facts for the 60 newly bound kernels before the full noetic census can pass",
+    "Physical/runtime qualification remains withheld"
+  ]
+}

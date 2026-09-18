@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "ecbf2f0c4d6e7b692cd53c61a2f399533a2c3ecc0fa51e284b708084243ed595",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:01:00.383217+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:01:00.383226+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:01:00.385043+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, 4340 bytes, 92.2% of content shown) describes Hawking as an experimental systems stack pairing a Rust inference runtime on Apple Silicon w",
+      "outcome": "CONTINUE",
+      "reply_chars": 3896,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, 4340 bytes, 92.2% of content shown) describes Hawking as an experimental systems stack pairing a Rust inference runtime on Apple Silicon with a Python control plane that plans work, calls typed tools, runs deterministic verifiers, and records evidence receipts for every claim.\",\"The runtime executes GGUF and .gravity artifacts through a Metal execution path with a CPU reference path used for parity checking, and serves generation locally over an OpenAI-compatible HTTP surface.\",\"README names docs/CURRENT_ARCHITECTURE.md as the detailed current ownership map: HAWKING owns planning, typed tool calls, lifecycle, and verification, while the Rust crates under crates/ own execution and serving; receipts are evidence, not an additional source of architecture.\",\"Stated deterministic verification lanes: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check (full source check, no tests run), tools/ci/rust_test_fast.sh compile (linked confidence lane, no model or hardware cases), and tools/ci/rust_test_fast.sh policy (pure serving-policy precedence regression); 135 integration sources compile through checked aggregate targets with each named source preserved as an explicit isolated target for runtime work.\",\"README states current state plainly: prompt throughput on the resident path is the bottleneck (prefill steps one token at a time), no Odyssey campaign has run end to end, FPGA work is pre-board with no hardware results, and the Event Horizon refactor only consolidates source authorities without altering live ascension state.\",\"Only README.md was inspected in this bounded window; no P12-named source file, P12 test owner, or the accepted P12_APPLE_BACKEND read evidence referenced by the objective was observed, so the smallest safe mutation seam for P12_APPLE_IMPLEMENTATION_CONTRACT cannot be grounded from the evidence gathered here.\"],\"sources\":[{\"path\":\"README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"bytes\":4340,\"scope\":\"full_file_hash_partial_content\",\"note\":\"content truncated at 4000 of 4340 bytes; no conclusion drawn about unshown portion\"}],\"recommendations\":[\"Before naming any mutation seam, read docs/CURRENT_ARCHITECTURE.md to resolve the owner mapping for the P12 Apple backend surface, then read the specific P12-named source and test files identified by the accepted P12_APPLE_BACKEND evidence.\",\"Prefer the smallest verification seam over mutation: a focused RED/GREEN pair executed through an isolated named integration target (per the README named-target pattern), with python3 -m pytest and cargo check --workspace as deterministic acceptance evidence.\",\"Preserve one-writer scope: confine any future P12 mutation to the single owning crate/module identified in the architecture doc, keep receipts/ as the only evidence sink, and make no hardware, provider-prose promotion, or production/release claims.\",\"Candidate falsifier to carry forward once owners are named: if the CPU reference path and the Metal execution path diverge on the same P12 input artifact beyond the documented tolerance, the implementation contract is falsified.\"],\"unresolved_questions\":[\"Which concrete source files and test files own P12_APPLE_BACKEND, and where is the accepted P12_APPLE_BACKEND read evidence stored?\",\"What does P12 denote (phase, priority, or workstream identifier), and which section of docs/CURRENT_ARCHITECTURE.md or the civilization/ roadmap defines it?\",\"What is the exact smallest bounded next seam for P12_APPLE_IMPLEMENTATION_CONTRACT, including its protected resources and writer/effect scope?\",\"Which focused RED/GREEN test names and deterministic acceptance evidence will satisfy the contract once the owners are resolved?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-4cfab47dbf374182",
+  "worker_id": "hawking-worker-fd2ae9f35593452b",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-C3BF114A"
+}

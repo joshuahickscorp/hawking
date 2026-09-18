@@ -1,0 +1,19 @@
+{
+  "active_generation_index": 0,
+  "active_layer_index": 4,
+  "active_stage": "attention_hyper_connection",
+  "claim_boundary": "in-flight external provider capture; no Hawking source-parity verdict",
+  "execution_schedule": "exact_qwen4_exp_row_addressed_ple_and_experts_with_evaluated_sublayer_boundaries",
+  "last_completed_layer_index": 4,
+  "last_completed_stage": "attention_hyper_connection",
+  "owner_authorization_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+  "preflight_sha256": "668007e149a1d04fb62aa1d6fc306fa79b24e7183f2b182f7a26c57867061f4c",
+  "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.source_boundary_mlx_worker.v1",
+  "started_unix_ns": 1789415029783283000,
+  "status": "RUNNING_EXTERNAL_SOURCE_BOUNDARY_CAPTURE",
+  "token_id": 5423,
+  "token_index": 0,
+  "updated_unix_ns": 1789415046803690000
+}

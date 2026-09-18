@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "stream_prompt and scoped_build return bounded dispatch envelopes to canonical H-Web; no provider execution, different-network rendezvous, relay hosting, or repository mutation is claimed by this adapter slice.",
+  "goal_id": "GOAL-A52AB48501",
+  "graph_state": {
+    "claim_boundary": "local protocol/admission evidence only; P18 phase completion is not promoted",
+    "dependencies": [
+      "P1_CONTROL_PLANE_COLLAPSE",
+      "P2_PRODUCT_COMMANDS_HWEB"
+    ],
+    "p18": "WAITING_DEPENDENCIES"
+  },
+  "implemented": [
+    "one-use invitation with raw secret excluded from durable state",
+    "host/device/session capability intersection",
+    "direct_p2p selection with encrypted_relay fallback metadata",
+    "AES-256-GCM authenticated application-frame seam",
+    "reconnect cursor and replayable events",
+    "request/disconnect idempotency",
+    "share revocation invalidates paired connections",
+    "scoped list_chats/list_models/retrieve_result plus prompt/build admission",
+    "H-Web host invitation and public share tunnel routes"
+  ],
+  "live_verification": {
+    "at": 1789701378.163522,
+    "auto_revision": "hawking-auto-aggressive-v2-kimi-deepseek-12",
+    "claim_boundary": "live local protocol round-trip only; no secret, provider cognition, remote relay hosting, or production acceptance claimed.",
+    "daemon_pid": 21049,
+    "disconnect_connected": false,
+    "endpoint": "http://127.0.0.1:8014",
+    "pair_transport": "encrypted_relay",
+    "post_revoke_reconnect_status": 410,
+    "revoked": true,
+    "scoped_model_count": 3,
+    "share_created": true,
+    "wire_security": "AES-256-GCM"
+  },
+  "next_evidence": [
+    "fresh accepted P1/P2 graph predecessors",
+    "different-network browser pairing against hawkingd",
+    "live direct and relay transport integration",
+    "remote H-Web prompt stream and scoped Build result retrieval"
+  ],
+  "owner": "hawking.share_bridge + hawkingd H-Web",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": 1789700742.1590998,
+  "schema": "hawking.long_haul.v2.tunnel_protocol_slice.v1",
+  "source_digests": {
+    "docs/reports/HAWKING_TUNNEL_V1_VERTICAL_SLICE_20260917.md": "edd379ea47c2019e9ac04128be3ab4ce8470b994f3374b347c1c45b49aca5961",
+    "hawking/serve.py": "18ef904cb627b45cfd2889e277b5a21015abe0d9f5614a0640467321a0b90e7b",
+    "hawking/share_bridge.py": "847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46",
+    "hawking/tests/test_share_bridge.py": "7d8f8445028b094eae46c33a48686453de72eb795a39c7759c7310897ec1e2f5"
+  },
+  "source_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+  "status": "LOCAL_PROTOCOL_ADMISSION_SLICE",
+  "tranche": "P18_TUNNEL",
+  "verification": {
+    "command": "python3 -m pytest -q hawking/tests/test_share_bridge.py hawking/tests/test_web_live_contract.py hawking/tests/test_web_projection.py hawking/tests/test_hweb_controls.py",
+    "compile": "python3 -m py_compile hawking/share_bridge.py hawking/serve.py hawking/tests/test_share_bridge.py: passed",
+    "diff_check": "git diff --check: passed",
+    "result": "19 passed"
+  }
+}

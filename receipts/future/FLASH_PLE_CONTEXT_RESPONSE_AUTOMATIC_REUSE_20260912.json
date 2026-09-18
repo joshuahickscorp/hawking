@@ -1,0 +1,205 @@
+{
+  "cheap_falsifier": {
+    "passed": true,
+    "required_inputs": [
+      "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+      "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+      "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json"
+    ]
+  },
+  "claim_boundary": "For Flash's sealed BOS PLE source formula control, this method first proves a zero-history batch form reproduces the exact sealed injection, then probes eight real hashed addresses over a deterministic eight-direction synthetic local context plane. It measured cross-address response rank 6 at 90% energy, 7 at 95%, and 10 at 99%. The historical stateful-session receipt that originally supplied the address sequence has an invalid inner seal, so the sealed address trace is used only as a source-address input and no stateful acceptance is reasserted. This is not a real source-state bank, a learned function, a representation, direct execution, complete EBPW, capability, or TPS result.",
+  "invocation": {
+    "argv": [
+      "/Users/scammermike/Downloads/hawking/tools/odyssey/ple_context_response_screen.py",
+      "--output",
+      "receipts/headless/FLASH_PLE_CONTEXT_RESPONSE_AUTOMATIC_20260912.json"
+    ],
+    "returncode": 0
+  },
+  "invoked": true,
+  "laws": [
+    {
+      "id": "L-flash-ple-local-tangent-is-not-state-bank",
+      "statement": "For Flash's sealed BOS PLE control, the exact zero-history formula responds through a compact spectrum over the declared eight-direction synthetic local plane (cross-address rank 6 at 90% energy), but that plane is not a source trajectory distribution. Do not claim a context-conditioned PLE replacement, stateful fidelity, complete EBPW, or capability from it; require a real source multi-context state bank before learned function training."
+    }
+  ],
+  "method_assessment": [
+    {
+      "applicable": false,
+      "id": "M-closed-nr-rate-accounting",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_accounting'",
+        "missing architecture tags: portable_nr",
+        "missing required features: declared_persistent_parts, logical_weight_denominator"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-stateful-repeated-accepted-decode",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'execution_state'",
+        "missing architecture tags: autoregressive_decoder",
+        "missing required features: persistent_model_state, source_bound_reference_contract"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-teacher-route-union-compact-experts",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'moe_representation'",
+        "missing architecture tags: moe, routed_experts",
+        "missing required features: expert_row_addressability, teacher_oracle_for_route_control"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-device-only-immutable-weight-release",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'physical_residency'",
+        "missing architecture tags: autoregressive_decoder, metal",
+        "missing required features: device_weight_upload, reconstructible_or_pinned_source, resident_device_buffers"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-device-state-handoff",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'physical_execution'",
+        "missing architecture tags: metal, multi_organ_decoder",
+        "missing required features: compatible_device_buffer_abi, device_to_device_state_transition"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-activation-rate-distortion",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_discriminator'",
+        "missing architecture tags: moe, routed_experts, source_activation_control",
+        "missing required features: addressable_expert_matrix, declared_scoped_accounting, sealed_source_activation, source_receipt_hash_binding"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-sharded-lookup-heldout-pq-screen",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_discriminator'",
+        "missing architecture tags: lookup_table",
+        "missing required features: deterministic_disjoint_row_sampling, indexed_or_addressable_sharded_2d_tensors, shared_codebook_candidate"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-ple-output-pq-sparse-repair-screen",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_discriminator'",
+        "missing required features: candidate_uniform_pq_fixed_sparse_repair, globally_billed_lookup_table_geometry, offline_encoder_can_select_fixed_residual_offsets"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-ple-shard-local-pq-output-screen",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_discriminator'",
+        "missing required features: candidate_shard_local_pq, globally_billed_lookup_table_geometry, physical_numeric_PLE_shard_layout"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-ple-additive-pq-output-screen",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_discriminator'",
+        "missing required features: candidate_residual_additive_pq, globally_billed_lookup_table_geometry"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-ple-address-generator-screen",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'representation_discriminator'",
+        "missing required features: candidate_address_only_generator, canonical_combined_lookup_row_address, sealed_pre_PLE_hidden_state, source_independent_generator_candidate"
+      ]
+    },
+    {
+      "applicable": true,
+      "id": "M-source-ple-context-response-tangent-screen",
+      "reasons": []
+    },
+    {
+      "applicable": false,
+      "id": "M-source-bound-ple-access-trace",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'architecture_contract'",
+        "missing required features: addressable_concatenated_lookup_checkpoint, bounded_token_sequence_or_explicit_control, persistent_token_context, versioned_reference_algorithm"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-source-bound-ple-output-control",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'architecture_contract'",
+        "missing required features: addressable_source_lookup_rows, source_bound_pre_layer_hidden_state, source_projection_norm_and_convolution_payloads, versioned_PLE_reference_formula"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-reference-ple-formula-oracle",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'verification'",
+        "missing required features: installed_pinned_reference_framework, small_placeholder_embedding_or_equivalent_no_full_table_allocation, source_bound_formula_control"
+      ]
+    },
+    {
+      "applicable": false,
+      "id": "M-route-major-packed-q4-routed-moe",
+      "reasons": [
+        "objective_family='function_geometry_discriminator' does not match 'physical_execution'",
+        "missing architecture tags: metal, moe, routed_experts, uniform_q4_group64",
+        "missing required features: compatible_selected_expert_gate_up_and_down_geometry, persisted_independent_q4_g64_bodies, route_major_device_activation_abi"
+      ]
+    }
+  ],
+  "new_evidence": {
+    "path": "receipts/headless/FLASH_PLE_CONTEXT_RESPONSE_AUTOMATIC_20260912.json",
+    "sha256": "77450105f8a08bfaa13adf640cb59cf2a17f66a177c14755881fd9ebe38c9dcf",
+    "status": "SOURCE_PLE_CONTEXT_RESPONSE_TANGENT_ONLY"
+  },
+  "observation": {
+    "architecture_tags": [
+      "flash_qwen4_exp",
+      "hashed_ngram",
+      "sharded_lookup",
+      "hyperconnection",
+      "stateful_decoder",
+      "source_ple_output_control",
+      "reference_formula_parity"
+    ],
+    "artifact_id": "FLASH_QWEN4_EXP_PLE",
+    "candidate_levers": [
+      "ple_address_context_state_tangent"
+    ],
+    "features": [
+      "source_bound_lookup_access_trace",
+      "sealed_pre_ple_hidden_state",
+      "reference_checked_PLE_formula_control",
+      "candidate_address_context_state_function",
+      "historical_address_trace_with_session_acceptance_withheld"
+    ],
+    "invocation": {
+      "generation": "flash-ple-context-response-automatic-v1"
+    },
+    "objective_family": "function_geometry_discriminator",
+    "schema": "hawking.gravity.observed_traits.v1"
+  },
+  "recorded_at": "2026-09-12T05:07:10Z",
+  "scars": [],
+  "schema": "hawking.gravity.method_reuse.v1",
+  "selected_adapter": "flash-ple-context-response-tangent-v1",
+  "selected_method": "M-source-ple-context-response-tangent-screen",
+  "status": "EXECUTED_VERIFIED",
+  "verification": {
+    "schema_matches": true,
+    "seal_matches": true,
+    "status_matches": true,
+    "verifier": "sealed JSON receipt: source PLE context-response tangent screen"
+  }
+}

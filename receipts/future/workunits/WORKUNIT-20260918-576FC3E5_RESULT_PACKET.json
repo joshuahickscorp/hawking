@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "4e47ae5d25957ea9051d75fd26d4d0200232947059368503685f11bc81c62a0e",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:01:44.338257+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:01:44.338277+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:01:44.342464+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"hawking/share_bridge.py declares tunnel schema constants TUNNEL_SCHEMA=\\\"hawking.tunnel.session.v1\\\", TUNNEL_EVENT_SCHEMA=\\\"hawking.tunnel.event.v1\\\", and TUNNEL_FRAME_SCHEMA=\\\"hawking.tunnel.frame.v1\\\" alongside ",
+      "outcome": "CONTINUE",
+      "reply_chars": 4853,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"hawking/share_bridge.py declares tunnel schema constants TUNNEL_SCHEMA=\\\"hawking.tunnel.session.v1\\\", TUNNEL_EVENT_SCHEMA=\\\"hawking.tunnel.event.v1\\\", and TUNNEL_FRAME_SCHEMA=\\\"hawking.tunnel.frame.v1\\\" alongside SHARE_SCHEMA and SHARE_EVENT_SCHEMA.\",\n    \"TUNNEL_OPERATION_PERMISSIONS is a fixed mapping: list_chats->read, list_models->read, stream_prompt->prompt, scoped_build->build, retrieve_result->read; KNOWN_PERMISSIONS is {read, comment, steer, prompt, build}.\",\n    \"Tunnel invitation TTL bounds are declared as TUNNEL_INVITATION_TTL_SECONDS=300 and TUNNEL_MAX_INVITATION_TTL_SECONDS=3600, distinct from DEFAULT_TTL_SECONDS=3600 and MAX_TTL_SECONDS=604800.\",\n    \"TUNNEL_SECRET_RE = ^[A-Za-z0-9_-]{16,128}$ is the declared shape validator for tunnel secrets; TOKEN_RE, GOAL_RE, SESSION_RE, and DEVICE_RE are separate validators.\",\n    \"The module docstring states the /s/<token> token is the capability and Hawking stores only its SHA-256 digest, so the raw bearer token is never written to the workspace; _token_hash and _path implement digest-only addressing under .hawking/shares.\",\n    \"SECRET_PATTERNS redact bearer, openrouter_api_key, and sk- tokens in _clean_text; _clean_value drops keys containing authorization, api_key, secret, cookie, environment, or system_prompt and caps depth at 3.\",\n    \"A module-level _LOCK = threading.RLock() serializes share/tunnel state, and persistence is delegated to atomic_write_json imported from .persist, indicating a single-writer seam.\",\n    \"ShareError carries an explicit HTTP status (default 404), giving a clean error-mapping seam for tunnel admission failures.\",\n    \"Only the first 4000 of 49705 bytes of hawking/share_bridge.py were observed (sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46, full-file scope); no tunnel session/event/frame handler bodies were observed.\"\n  ],\n  \"sources\": [\n    {\n      \"path\": \"hawking/share_bridge.py\",\n      \"sha256\": \"847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46\",\n      \"sha256_scope\": \"full_file\",\n      \"bytes\": 49705,\n      \"observed_bytes\": 4000,\n      \"note\": \"First read-only observation; admitted focus file. Truncated at 8.0%.\"\n    }\n  ],\n  \"recommendations\": [\n    \"Smallest safe seam: extend hawking/share_bridge.py in place, reusing _LOCK, _token_hash, _path, _clean_text/_clean_value, ShareError, and atomic_write_json rather than introducing a new module or a second writer.\",\n    \"Owner: hawking/share_bridge.py owns tunnel session/event/frame persistence and admission; hawking/tests/test_share_bridge.py owns unit-level RED/GREEN for the new tunnel seam; hawking/tests/test_web_live_contract.py owns the HTTP contract assertions.\",\n    \"Bounded next seam: add tunnel session create/read/revoke handlers that validate TUNNEL_SECRET_RE, enforce TUNNEL_INVITATION_TTL_SECONDS <= ttl <= TUNNEL_MAX_INVITATION_TTL_SECONDS, and gate each operation through TUNNEL_OPERATION_PERMISSIONS before any state write.\",\n    \"Focused RED tests: (1) reject tunnel secret failing TUNNEL_SECRET_RE; (2) reject ttl below 300 or above 3600; (3) reject operation not in TUNNEL_OPERATION_PERMISSIONS; (4) reject caller lacking the mapped permission; (5) assert raw secret never appears in persisted JSON (digest-only).\",\n    \"Focused GREEN tests: (1) admitted tunnel session persists under .hawking/shares with TUNNEL_SCHEMA; (2) each permitted operation emits TUNNEL_EVENT_SCHEMA; (3) frames carry TUNNEL_FRAME_SCHEMA; (4) ShareError status maps to the expected HTTP code in test_web_live_contract.py.\",\n    \"Protected resources: raw bearer/tunnel secrets, provider credentials, prompts, daemon API surface, and any key matching SECRET_PATTERNS or the _clean_value drop-list must never be persisted or echoed.\",\n    \"Writer/effect scope: single-writer via module _LOCK plus atomic_write_json; no new lock, no direct file writes, no network or hardware effects; tunnel handlers must be pure state transitions over the existing share",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-fd53281487f5460e",
+  "worker_id": "hawking-worker-cc38483156884609",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-576FC3E5"
+}

@@ -1,0 +1,65 @@
+{
+ "specimen": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+ "author": "hcli",
+ "note": "classification by the resident; the measurements were taken mechanically and every numeric claim in the verdict was checked against them before this receipt was written",
+ "measured_facts": {
+  "specimen": "Dream-org--Dream-v0-Instruct-7B",
+  "path": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+  "n_tensors": 339,
+  "tensor_bytes": 15231233024,
+  "tensor_gib": 14.19,
+  "on_disk_bytes": 15236445272,
+  "on_disk_gib": 14.19,
+  "matrix_params_b": 7.6153,
+  "dtype_bytes": {
+   "BF16": 15231233024
+  },
+  "per_container_gib": {
+   "model-00002-of-00004.safetensors": 4.59,
+   "model-00001-of-00004.safetensors": 4.54,
+   "model-00003-of-00004.safetensors": 4.03,
+   "model-00004-of-00004.safetensors": 1.02
+  },
+  "tensor_bytes_vs_disk": 1.0,
+  "coverage_warning": null,
+  "distinct_roles": 15,
+  "repeated_blocks": {
+   "model.layers.<L>.input_layernorm.weight": 28,
+   "model.layers.<L>.mlp.down_proj.weight": 28,
+   "model.layers.<L>.mlp.gate_proj.weight": 28,
+   "model.layers.<L>.mlp.up_proj.weight": 28,
+   "model.layers.<L>.post_attention_layernorm.weight": 28,
+   "model.layers.<L>.self_attn.k_proj.bias": 28,
+   "model.layers.<L>.self_attn.k_proj.weight": 28,
+   "model.layers.<L>.self_attn.o_proj.weight": 28,
+   "model.layers.<L>.self_attn.q_proj.bias": 28,
+   "model.layers.<L>.self_attn.q_proj.weight": 28,
+   "model.layers.<L>.self_attn.v_proj.bias": 28,
+   "model.layers.<L>.self_attn.v_proj.weight": 28
+  },
+  "n_repeated_roles": 12,
+  "complete_ebpw_if_bf16": 16.001
+ },
+ "verdict": {
+  "architecture_family": "LLM",
+  "execution_class": "instruct",
+  "dominant_organs": [
+   "self_attn",
+   "mlp",
+   "input_layernorm",
+   "post_attention_layernorm"
+  ],
+  "state_or_kv": "dense",
+  "likely_bottleneck": "repeated blocks in mlp and self_attn",
+  "relevant_laws": [
+   "Hawking Law 3: Repeated blocks indicate modular redundancy",
+   "Hawking Law 7: BF16 dtype implies optimized memory efficiency",
+   "Hawking Law 12: EBPW > 15.0 indicates high computational density"
+  ],
+  "disposition": "RESEARCH SPECIMEN",
+  "next_experiment": "analyze block repetition patterns in mlp and self_attn layers",
+  "matrix_params_b": 7.6153,
+  "tensor_gib": 14.19,
+  "_agent": "Qwen3-4B-Instruct-2507"
+ }
+}

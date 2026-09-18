@@ -1,0 +1,93 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "fcd0d3ba7986810c38ae5353d7bbe75e8ebdfcccdf3c89b8c9f87a4c341ba64c",
+  "evidence": [
+    {
+      "at": "2026-09-18T04:05:43.150038+00:00",
+      "calls_used": 13,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search",
+        "receipt.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:05:43.150049+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:05:43.151558+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"digest_comparison\",\"detail\":\"Bound-digest check done first. Only digest in admitted evidence is V1 closeout digest ddbed4ef...bcca1a1 bound to OLD root GOAL-B33C69F193. No V2 master-objective digest for b",
+      "outcome": "CONTINUE",
+      "reply_chars": 2004,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T04:09:50.755401+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.search",
+        "hawking.worker.status"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T04:09:50.755420+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T04:09:50.756215+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"CONTINUE\",\"observations\":[\"Making the real receipt_read calls this turn before any terminal packet.\"],\"sources\":[],\"recommendations\":[],\"unresolved_questions\":[],\"child_worker_ids\":[]}",
+      "outcome": "CONTINUE",
+      "reply_chars": 195,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "Making the real receipt_read calls this turn before any terminal packet."
+  ],
+  "provider_status": "CONTINUE",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.search"
+  ],
+  "unresolved_questions": [],
+  "worker_attempt_id": "hawking-attempt-c019fbd6cdc14a5d",
+  "worker_id": "hawking-worker-5bd19e00215d4574",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-2E8D4FC0"
+}

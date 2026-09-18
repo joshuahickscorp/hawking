@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:27:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P9_DARKMATTER_CORE",
+  "workunit_id": "WORKUNIT-20260918-97F130B7",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-97F130B7_RESULT_PACKET.json",
+  "local_verification": "Current source tail and targeted repository search confirm the sealed Frankenstein plan's P9 is an unrelated four-way comparison phase and no DARKMATTER owner is present in the admitted sources.",
+  "accepted_scope": "Discovery-only evidence that the named P9 DARKMATTER implementation owner is not grounded in current source; no implementation contract is admitted.",
+  "required_follow_on": "Keep P9 discovery-only until a current authoritative owner and bounded source contract are found; do not promote the unrelated Frankenstein P9 label.",
+  "falsifier": "A current authoritative source explicitly naming P9 DARKMATTER and its owner would overturn this owner-absent result and require a fresh contract review.",
+  "limitations": [
+    "No DARKMATTER implementation or phase completion is claimed.",
+    "The sealed planning document remains protected and was not mutated."
+  ],
+  "claim_boundary": "Accepted as bounded discovery evidence only; P9 implementation remains unresolved."
+}

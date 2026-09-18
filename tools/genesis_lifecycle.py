@@ -17,7 +17,7 @@ REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from lab.lineage.lifecycle import (
+from hawking.lineage.lifecycle import (
     CandidateInbox,
     DEFAULT_CANDIDATE_ROOT,
     DEFAULT_CHECKPOINT_ROOT,
@@ -30,7 +30,7 @@ from lab.lineage.lifecycle import (
     benchmark_pair_command,
     process_candidate_inbox_once,
 )
-from lab.lineage.state import LineageState
+from hawking.lineage.state import LineageState
 
 
 def _add_runtime_paths(parser: argparse.ArgumentParser) -> None:
@@ -52,7 +52,7 @@ def _controller(args: argparse.Namespace) -> PromotionController:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="genesis_lifecycle")
+    parser = argparse.ArgumentParser(prog="hawking genesis-lifecycle")
     sub = parser.add_subparsers(dest="command", required=True)
     pair = sub.add_parser("benchmark-pair")
     pair.add_argument("--request", type=Path, required=True)

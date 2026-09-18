@@ -1,0 +1,150 @@
+{
+  "claim_boundary": "This is a symbolic HC stream-axis closure falsifier using the canonical read-mix and combine formulas. It establishes full joint observable rank for the declared stream consumers at the algebraic probe, but it does not establish numeric source-state parity, a model representation, EBPW, physical latency, capability, or promotion.",
+  "consumer_system": {
+    "combine_formula": "output[s,h] = residual[s,h] + block_output[h] * 2*sigmoid(block_logits[s]/divisor)",
+    "combine_residual_stream_jacobian": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "input_dependent_generators_included": [
+      "read_mix sigmoid gate coefficients",
+      "combine block-logit stream gates"
+    ],
+    "joint_observable_matrix": [
+      [
+        0.18276464465750122,
+        0.125,
+        0.125,
+        0.125
+      ],
+      [
+        0.125,
+        0.18276464465750122,
+        0.125,
+        0.125
+      ],
+      [
+        0.125,
+        0.125,
+        0.18276464465750122,
+        0.125
+      ],
+      [
+        0.125,
+        0.125,
+        0.125,
+        0.18276464465750122
+      ],
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "read_mix_formula": "y[h] = (1/m) * sum_s sigmoid(g_s[h]) * normalized[s,h]",
+    "read_mix_probe_matrix": [
+      [
+        0.18276464465750122,
+        0.125,
+        0.125,
+        0.125
+      ],
+      [
+        0.125,
+        0.18276464465750122,
+        0.125,
+        0.125
+      ],
+      [
+        0.125,
+        0.125,
+        0.18276464465750122,
+        0.125
+      ],
+      [
+        0.125,
+        0.125,
+        0.125,
+        0.18276464465750122
+      ]
+    ]
+  },
+  "direct_execution": {
+    "compact_quotient_candidate": "WITHHELD_AFTER_FULL_RANK_FALSIFIER",
+    "status": "NOT_APPLICABLE_SYMBOLIC_ONLY"
+  },
+  "elapsed_ns": 119708,
+  "generated_at": "2026-09-12T06:14:30.397370+00:00",
+  "geometry": {
+    "gate_probe": 1.0,
+    "source_streams_m": 4,
+    "tested_quotient_condition": "r < m"
+  },
+  "rank_solution": {
+    "falsifier": "The direct residual-stream identity consumer forces full stream-axis rank; no nontrivial simultaneous invariant quotient can preserve the declared consumers.",
+    "joint_observable_nullity": 0,
+    "joint_observable_rank": 4,
+    "nontrivial_r_less_than_m_possible": false,
+    "numeric_tolerance": 2.033987842950392e-15,
+    "read_mix_determinant": 0.00010750713794635171,
+    "read_mix_rank": 4,
+    "singular_values": [
+      1.145033361448438,
+      1.0016669876622706,
+      1.0016669876622704,
+      1.0016669876622704
+    ]
+  },
+  "schema": "hawking.odyssey.hyperconnection_closure_screen.v1",
+  "seal_sha256": "e2e21da43022dea437670a383aab896bbac35e32e87d551064e7437ad5e7068f",
+  "source_bindings": {
+    "combine_kernel": "qwen_next_hyperconnection_combine",
+    "formula_owner": "crates/hawking-core/shaders/qwen_next.metal",
+    "model_load": false,
+    "read_mix_kernel": "qwen_next_hyperconnection_read_mix",
+    "rust_dispatch_owner": "crates/hawking-core/src/kernels/mod.rs",
+    "source_state_replay": "NOT_PERFORMED"
+  },
+  "status": "SYMBOLIC_FULL_JOINT_RANK__QUOTIENT_REJECTED"
+}

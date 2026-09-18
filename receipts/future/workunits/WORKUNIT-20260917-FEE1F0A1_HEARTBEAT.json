@@ -1,0 +1,70 @@
+{
+  "active_job": "job-05945acb-cb6c-42ac-9180-a9ddc16062ca",
+  "blocker": {
+    "pid": 28158,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0010979039999999998,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260917-FEE1F0A1",
+    "tool_less_continue_streak": 6
+  },
+  "context_packet_digest": "c3938920c765f33807628e58c9c51deca1ccf297430c51f6870f9321f78baed7",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 28158,
+  "exact_next_action": "Research output was unusable after the bounded continuation cap; inspect the checkpoint and dead-letter, then either continue independent work or resume with a fresh Hawking Worker Packet. Do not replay provider turns.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Read-only P6 Gravity reconnaissance for the V2 programme. Inspect the current Gravity owner, qualification/evidence boundaries, existing receipts and tests, and identify the next coherent architecture tranche. Do not run expensive hardware experiments, mutate source, touch ModelLake/Flash/Pulsar, or promote source-only claims to measured results.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-cdce5dc075db4762af81a8cc:tool-6",
+    "gen-1789697301-ALNAIZrch0VfnBdtHwlu",
+    "gateway-4d50d8b5c1734e89b332637b:tool-6",
+    "gen-1789697308-T6cjf78FCUuBppM3FRsK",
+    "gateway-5b4a01854e974fb1809ae525:tool-6",
+    "gen-1789697317-KPgUBBLAlyK2Jlw1QljO",
+    "gateway-059e7c85457546cb9709e7c9:tool-6",
+    "gen-1789697324-3lqI6gIShhP1s6B1up1b",
+    "gateway-7179bc7484b647f99294b313:tool-6",
+    "gen-1789697331-GdKkFcp8N1VtcIU5HzQM",
+    "gateway-2db5d50142a34efc8aad82af:tool-6",
+    "gen-1789697338-DH92A6hGjY2Q7CvmR3uT"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T02:08:59.700314+00:00",
+  "worker_attempt_id": "hawking-attempt-b51394bb273b44d0",
+  "worker_cost_usd": 0.0010979039999999998,
+  "worker_id": "hawking-worker-f428856eb2994d9b",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789697334.213363,
+  "worker_spawned_at": 1789697295.6396759,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260917-FEE1F0A1"
+}

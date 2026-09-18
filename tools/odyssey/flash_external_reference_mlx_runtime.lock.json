@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.flash.external_reference_mlx_runtime_lock.v1",
+  "python_executable": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/bin/python",
+  "packages": {
+    "mlx": "0.32.2",
+    "mlx-vlm": "0.7.0",
+    "safetensors": "0.8.0",
+    "torch": "2.14.0",
+    "transformers": "5.17.0"
+  },
+  "provider": "isolated MLX-VLM Qwen4-Exp research/reference adapter",
+  "claim_boundary": "runtime selection only; not provider semantics, source correctness, admission, native runtime completion, or production authority"
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "hawking.odyssey.flash_next.static_anatomy.v1",
+  "recorded_at": "2026-09-11T08:18:00Z",
+  "status": "STATIC_DISCRIMINATOR_PASS",
+  "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "method": {
+    "tool": "tools/future/representational_anatomy.py",
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "layer": 1,
+    "runtime_loaded": false,
+    "payload_scope": "one stacked routed-expert organ at a time; CPU-only static analysis"
+  },
+  "architecture": {
+    "model_type": "qwen4_exp",
+    "language_layers": 48,
+    "routed_experts": 512,
+    "experts_per_token": 10,
+    "expert_storage": "stacked BF16 tensors",
+    "shared_expert_present": true,
+    "attention_state": "36 linear-attention layers plus full-attention interval 4",
+    "multimodal": true
+  },
+  "observations": {
+    "cross_expert": {
+      "gate_up_proj_deficit_pct": 0.001,
+      "down_proj_deficit_pct": 0.002,
+      "matched_null_threshold_pct": 2.0,
+      "verdict": "DEAD_FOR_SHARED_BASIS_COMMON_DELTA_AND_CLUSTERING"
+    },
+    "within_expert": {
+      "shape": [1280, 2560],
+      "ratio": 0.623,
+      "matched_null_ratio": 0.7781,
+      "deficit_pct": 19.938,
+      "rank_90": 707,
+      "bf16_break_even_rank": 853,
+      "factor_storage_at_rank_90_x_dense": 0.829,
+      "verdict": "REAL_BYTE_LEVER_CAPABILITY_UNTESTED"
+    }
+  },
+  "gravity_decision": {
+    "rejected_before_body_work": [
+      "cross-expert shared basis",
+      "common-plus-delta as primary substrate",
+      "expert clustering/alignment as primary linear sharing lever"
+    ],
+    "admitted_next_static_to_runtime_hypothesis": "within-expert, layer-and-projection-specific low-rank plus selectively protected residual; only after independent runtime/resource admission",
+    "nonuniform_allocation_required": true
+  },
+  "next_discriminator": "Exact resource and Hawking-native runtime-support preflight. Do not displace KIMI_P0_OPERATIONAL, create a normal HCLI selector entry, or claim Flash-Next capability/TPS/direct execution from this static result.",
+  "claim_boundary": "One language layer and one within-expert matrix. No full-body EBPW, capability, runtime, physical, or resident-admission claim."
+}

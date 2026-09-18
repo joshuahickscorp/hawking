@@ -12,7 +12,7 @@ LOG="$REPO/workspace/ops/ascent-daemon.log"
 RESIDENT_LOG="$REPO/workspace/ops/genesis-resident.log"
 STOP="$REPO/workspace/ops/GENESIS_STOP"
 LOCK=/tmp/hawking-gpu-lane.lock
-RESIDENT_CLIENT="$REPO/tools/agentos/genesis_resident.py"
+RESIDENT_CLIENT="$REPO/hawking/genesis_resident.py"
 
 mkdir -p "$(dirname "$LOG")"
 
@@ -61,7 +61,7 @@ trap cleanup EXIT INT TERM
 
 start_resident() {
   # Artifact, tokenizer, and executable are selected by the seated CURRENT
-  # identity inside genesis_resident.py.  Do not pin G0 paths here: after a
+  # identity inside hawking/genesis_resident.py. Do not pin G0 paths here: after a
   # protected runtime/representation handoff that would restart a healthy
   # process against the wrong generation.
   /usr/bin/env python3 "$RESIDENT_CLIENT" serve \

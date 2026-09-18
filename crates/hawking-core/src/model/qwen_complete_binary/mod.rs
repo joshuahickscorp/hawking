@@ -2902,7 +2902,7 @@ pub fn admit_complete_binary_artifact(
     manifest_path: impl AsRef<Path>,
     admission: &CompleteBinaryAdmission,
 ) -> Result<CompleteBinaryArtifact> {
-    crate::startup_timing::time_ms_result("admit_complete_binary_total", || {
+    crate::startup_timing::time_ns_result("admit_complete_binary_total", || {
         admit_complete_binary_artifact_inner(manifest_path, admission)
     })
 }
@@ -2920,7 +2920,7 @@ fn admit_complete_binary_artifact_inner(
                 .into(),
         ));
     }
-    let manifest_path = crate::startup_timing::time_ms_result("admit_manifest_seal", || {
+    let manifest_path = crate::startup_timing::time_ns_result("admit_manifest_seal", || {
         canonical_regular_path(manifest_path.as_ref(), "complete binary manifest")
     })?;
     let root = manifest_path.parent().ok_or_else(|| {
@@ -2969,7 +2969,7 @@ fn admit_complete_binary_artifact_inner(
         )?,
         "complete binary source revalidation receipt",
     )?;
-    let source = crate::startup_timing::time_ms_result("admit_source_chain", || {
+    let source = crate::startup_timing::time_ns_result("admit_source_chain", || {
         let receipt_raw =
             read_regular_file(&receipt_path, "complete binary source revalidation receipt")?;
         let receipt = parse_json_no_duplicate_keys(
@@ -3042,7 +3042,7 @@ fn admit_complete_binary_artifact_inner(
     // repack). Force historical sequential scan with
     // `HAWKING_ADMISSION_PARALLEL=0` for baseline measurement.
     let (tensors, verified_payloads) =
-        crate::startup_timing::time_ms_result("admit_payload_cold_rehash", || {
+        crate::startup_timing::time_ns_result("admit_payload_cold_rehash", || {
             let parallel = match std::env::var("HAWKING_ADMISSION_PARALLEL") {
                 Ok(v)
                     if matches!(
@@ -3115,7 +3115,7 @@ fn admit_complete_binary_artifact_inner(
     };
 
     if admission_warm_receipt::warm_receipt_enabled() {
-        let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_write", || {
+        let _ = crate::startup_timing::time_ns_result("admit_warm_receipt_write", || {
             let receipt = admission_warm_receipt::build_receipt_from_admitted(
                 &artifact.manifest_path,
                 &artifact.manifest_seal_sha256,
@@ -3148,7 +3148,7 @@ fn try_warm_payload_admission(
     if !admission_warm_receipt::receipt_covers_manifest_rows(&receipt, rows, root, source)? {
         return Ok(None);
     }
-    let identity_ok = crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
+    let identity_ok = crate::startup_timing::time_ns_result("admit_warm_identity_recheck", || {
         admission_warm_receipt::receipt_identities_still_match(&receipt)
     })?;
     if !identity_ok {
@@ -3158,7 +3158,7 @@ fn try_warm_payload_admission(
     // Identity matches: load payloads without content rehash (still prove size
     // and header geometry). Parallel by source-shard lanes for I/O.
     let (tensors, verified_payloads) =
-        crate::startup_timing::time_ms_result("admit_payload_warm_load_no_rehash", || {
+        crate::startup_timing::time_ns_result("admit_payload_warm_load_no_rehash", || {
             load_warm_payloads_bounded_parallel(&receipt)
         })?;
 

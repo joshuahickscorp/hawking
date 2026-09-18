@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.rust.llama_b9430_window.unification.receipt.v1",
+  "status": "OFFLINE_RUST_WINDOW_OWNER_VERIFIED",
+  "recorded_at": "2026-09-12T05:13:22-04:00",
+  "base_commit": "ef1cc9b90f58ed2d838ad836e60cd4b8a9b0740f",
+  "scope": {
+    "canonical_owner": "crates/hawking-core/src/kernels/mod.rs::checked_llama_b9430_weight_window",
+    "codec_layout_owner": "crates/hawking-core/src/quant.rs::{Q4_K_BLOCK_BYTES,Q6_K_BLOCK_BYTES}",
+    "migrated_consumers": [
+      "llama_b9430_qkv_rope_q4_pinned",
+      "llama_b9430_ffn_q4_q6_pinned",
+      "gemv_q4_k_m_llama_b9430_pinned_tcb",
+      "gemv_q4_k_m_llama_b9430_pinned_off_tcb",
+      "gemv_q4_k_m_llama_b9430_batched_pinned_tcb",
+      "gemv_q4_k_m_llama_b9430_pair_pinned_tcb",
+      "gemv_q6_k_llama_b9430_pinned_tcb",
+      "gemv_q6_k_llama_b9430_pinned_off_tcb",
+      "llama_b9430_rmsnorm_qkv_rope_q4_pinned",
+      "llama_b9430_rmsnorm_ffn_q4_q6_pinned"
+    ]
+  },
+  "implemented": {
+    "checked_window": "One pure Q4_K/Q6_K window constructor preserves the existing column-alignment, expected-byte, multiplication-overflow, offset-add-overflow, and buffer-bound rules while returning offset/row/column identity.",
+    "typed_propagation": "The four batched QKV/FFN compositions pass checked window identities to their private encoder composition before any batch dispatch.",
+    "layout_authority": "The former local 144- and 210-byte literals now use the existing quantization layout constants.",
+    "static_dispatch_boundary": "The Q4/Q6 dispatch wrappers retain their literal kernel names, geometry, buffer slots, and scalar slots because the static host/shader ABI verifier requires readable dispatch expressions."
+  },
+  "preserved_behavior": {
+    "zero_windows": "rows=0, cols=0, byte_size=0 remains accepted, as in the prior validators.",
+    "dispatch_order": "All existing validation remains before CommandBatch or TokenCommandBuffer encoding; no commit, cancellation, Drop, buffer lifetime, or kernel arithmetic path changed.",
+    "hardware_boundary": "No model, weights, Metal dispatch, GPU/ANE, daemon, service restart, or deployment was performed."
+  },
+  "validation": {
+    "window_regressions": "cargo test -p hawking-core --lib llama_b9430_weight_window -- --nocapture: 2 passed",
+    "static_verifier_regressions": "cargo test -p hawking-core --lib static_kernel_verify -- --nocapture: 7 passed",
+    "complete_core_test_source_check": "tools/ci/rust_test_fast.sh check core: passed; 135 direct integration sources across 10 packages",
+    "diff": "git diff --check: passed"
+  },
+  "size_ledger": {
+    "kernel_source": {
+      "added": 175,
+      "deleted": 154,
+      "net": 21
+    },
+    "model_free_regressions": {
+      "added": 88,
+      "deleted": 0,
+      "net": 88
+    },
+    "interpretation": "Two duplicated validators were retired. Typed propagation and model-free negative coverage make this bounded safety consolidation net-positive in this file; it does not claim a whole-kernel or whole-runtime source reduction.",
+    "before_receipt_total": {
+      "added": 263,
+      "deleted": 154,
+      "net": 109
+    }
+  },
+  "claim_boundary": "This receipt proves one shared offline Q4_K/Q6_K packed-window validation owner and its listed caller migration. It does not prove numerical parity, real Metal execution, model behavior, throughput, source-wide Q4/Q6 unification, or removal of the literal launch wrappers."
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:20:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P7_NR",
+  "workunit_id": "WORKUNIT-20260918-9D117ACC",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-9D117ACC_RESULT_PACKET.json",
+  "accepted_scope": "Read-only NR/NX boundary evidence: NR is portable representation space; NX owns machine-bound compiled bindings, scheduling, residency, machine genome, and loadability; the documented pipeline is SourceSpecimen -> Doctor -> Gravity -> NR -> Noetic -> NX.",
+  "local_screening": "Source contract packet reviewed; no implementation or hardware claim accepted.",
+  "follow_on_contract": "PROPOSED-NR-BOUNDARY-AUDIT-01: audit docs/CURRENT_ARCHITECTURE.md, tools/nr_container.py, and tools/nx_genome.py against the documented boundary.",
+  "falsifier": "The proposed audit is falsified if the validator permits forbidden machine-specific NR claims, NX accepts mismatched NR content or machine genome, or CURRENT_ARCHITECTURE names a contradictory owner.",
+  "limitations": [
+    "The precise current-architecture owner and validator behavior remain unverified until the follow-on audit.",
+    "No mutation, hardware execution, or production qualification was run or claimed."
+  ],
+  "claim_boundary": "Accepted as bounded read evidence only; no P7 implementation or phase completion is claimed."
+}

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "48caba7a5e1ee1ec17949adb60527e90999063b0cc14f62d79d78311d8b88d0a",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:08:32.303392+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:08:32.303401+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:08:32.305129+00:00",
+      "has_tool_json": false,
+      "head": "{\n  \"observations\": [\n    \"hawking/ane_provider.py is an evidence adapter over Apple public Core ML receipts, not an ANE driver: ANEProvider.from_receipts loads APPLE_ANE_DEVICE_PROFILE.json and APPLE_ANE_ATLAS.json and tolerates missing or",
+      "outcome": "CONTINUE",
+      "reply_chars": 3908,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\n  \"observations\": [\n    \"hawking/ane_provider.py is an evidence adapter over Apple public Core ML receipts, not an ANE driver: ANEProvider.from_receipts loads APPLE_ANE_DEVICE_PROFILE.json and APPLE_ANE_ATLAS.json and tolerates missing or malformed JSON by returning empty mappings rather than inventing evidence.\",\n    \"Promotion gate is explicitly evidence-based: provider.available requires profile['neural_engine_present'], provider.plan_ready requires mlcomputeplan.status == 'PLANNED', and provider.atlas_ready requires atlas.status == 'MEASURED'; eligibility further requires a positive measured complete_token_ns (helper _positive_int rejects bool, zero, and non-int values).\",\n    \"ANEProvider.operation_evidence searches mlcomputeplan.operations then atlas.graphs for the operator, and placement marks ane_supported only when 'NEURAL_ENGINE' appears in supported or preferred == 'NEURAL_ENGINE'; score_candidate consumes this to set eligible_for_promotion and total_candidate_ns.\",\n    \"characterize_model builds a model-scoped mega-kernel spine whose backend_matrix always has cpu/gpu/ane entries and withholds promotion with explicit blockers (e.g. 'no_model_specific_protected_complete_work') unless model-specific protected complete-work evidence exists; mega_kernel records not_a_single_vendor_kernel_claim = True.\",\n    \"The seam into the compiler is hawking.physical_graph.compile_physical_graph(..., provider=provider); the resulting graph records provider_context.kind == 'ANEProvider' and provider_context.private_interface_control == 'forbidden', so private Apple interfaces are excluded at the contract level.\",\n    \"RED/GREEN tests exist in hawking/test_ane_provider.py: test_ane_provider_requires_plan_and_measurement_for_promotion is the GREEN promotion path (PLANNED plan + MEASURED atlas + complete_token_ns=100 yields eligible_for_promotion True and total_candidate_ns 100), and test_ane_provider_stays_plan_only_without_evidence is the RED/no-promotion guard (empty evidence yields eligible_for_promotion False, total_candidate_ns None).\",\n    \"No file was mutated; all reads were read_only via fs.read with sha256 recorded (ane_provider.py sha256=86ab120e..., test_ane_provider.py sha256=32703404...).\"\n  ],\n  \"sources\": [\n    \"hawking/ane_provider.py\",\n    \"hawking/test_ane_provider.py\",\n    \"hawking/physical_graph.py (seam owner for compile_physical_graph, referenced by the admitted tests)\"\n  ],\n  \"recommendations\": [\n    \"Bounded contract: exact seam = ANEProvider.score_candidate / characterize_model consumed by hawking.physical_graph.compile_physical_graph(provider=...); protected resources = device profile with neural_engine_present, MLComputePlan status PLANNED, measured complete_token_ns > 0, and model-scoped protected complete-work evidence; writer scope = none (read-only worker; no mutation).\",\n    \"Falsifier: if provider.score_candidate returns eligible_for_promotion True when plan_ready, atlas_ready, or a positive complete_token_ns is absent, the contract is broken and hawking/test_ane_provider.py::test_ane_provider_stays_plan_only_without_evidence must fail; likewise any reliance on private Apple interfaces contradicts provider_context.private_interface_control == 'forbidden'.\",\n    \"Keep the second admitted focus test (hawking/tests/test_metal_status_actually_tests_metal.py) as an independent guard that Metal status is genuinely hardware-reported rather than assumed.\"\n  ],\n  \"unresolved_questions\": [\n    \"Full contents of hawking/ane_provider.py beyond the first 4000 bytes (e.g. complete score_candidate and characterize_model bodies) were truncated; only the shown portion is grounded here.\",\n    \"hawking/tests/test_metal_status_actually_tests_metal.py was not read in this bounded pass; its RED/GREEN pairing with the ANE provider tests is inferred, not observed.\"\n  ],\n  \"child_worker_ids\": [],\n  \"status\": \"STRUCTURED_RESULT_READY\"\n}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-9a5d5ff44d044856",
+  "worker_id": "hawking-worker-4bf11acb40204256",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-DE908EC0"
+}

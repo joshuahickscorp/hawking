@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.flash.source_boundary_executable_closure.v1",
+  "status": "SUCCESSOR_RELEASE_EXECUTABLES_OBSERVED_AND_DRY_GATES_STATIC__WITHHELD_PENDING_MACHINE_OWNER_AUTHORIZATION",
+  "observed_at_utc": "2026-09-12T23:20:10Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "worktree_dirty": true,
+  "build": {
+    "commands": [
+      "CARGO_TARGET_DIR=/Users/scammermike/Downloads/hawking/target/source-boundary-ple-i64-guard-20260912 cargo build --release -p hawking-core --example flash_stateful_complete_token_session",
+      "CARGO_TARGET_DIR=/Users/scammermike/Downloads/hawking/target/source-boundary-ple-i64-guard-20260912 cargo build --release -p hawking --bin hawking"
+    ],
+    "target_dir": "target/source-boundary-ple-i64-guard-20260912",
+    "rustc": {
+      "version": "rustc 1.94.1 (e408947bf 2026-03-25) (Homebrew)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-apple-darwin\nrelease: 1.94.1\nLLVM version: 21.1.8"
+    },
+    "compiler_provenance_attested": false,
+    "reproducible_build_claimed": false
+  },
+  "native_diagnostic": {
+    "path": "target/source-boundary-ple-i64-guard-20260912/release/examples/flash_stateful_complete_token_session",
+    "sha256": "7098bd66f08166283973280c34978cbb1751d2a44d95d94d1365be5cfda6db15",
+    "bytes": 3048256,
+    "format": "Mach-O 64-bit executable arm64",
+    "source_closure": [
+      {
+        "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+        "sha256": "478c32d9edb9cab1350c17c8c652c98ebc3071a37efdece4eba269f6732c4d4c"
+      },
+      {
+        "path": "crates/hawking-core/src/lib.rs",
+        "sha256": "8c84db29c99dd2569a5a0ef3c41644f5dcda0c45350db0cbfaff2c2c64f4f118"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+        "sha256": "3f72b93fd9d9f5be43b2ad5bef5f6139c3fa2368b031e8b3a0f30dbea31c91f5"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "acb0e7dcf641e948a590d0a1517dd3b5c810a52895ec13d177e324258c55813a"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "3b31137e3700da3d4a683c5ab0dc32bf7697af969c16b70ea8d2df8d21c014c1"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+        "sha256": "e6d61c0effd4c25ed84d8e8d88f6132835926f4751e57b3e2c4dba58f1513602"
+      },
+      {
+        "path": "crates/hawking-core/src/flash_ple.rs",
+        "sha256": "bf9b9940e6a00eddea5f10c3067083232e56078ba0987a9c6c86d1ea1a95495c"
+      },
+      {
+        "path": "crates/hawking-core/src/model/source_safetensors.rs",
+        "sha256": "7cba58d2595a68c02d3b62271a8344bae837f3c9622f9f4978ddb26e5ce2c7eb"
+      },
+      {
+        "path": "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+        "sha256": "e614040d20f816ccd188f8607c578c8d0cb261177197f12d61d9c874e82aef5c"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "wrapper": {
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "c4171e01a1b06c442a5693c9eb7d261e8d68e51779e98b917ec4efe95838955e"
+    },
+    "preexecution_identity_rechecked_after_build": true,
+    "executed": false
+  },
+  "hawking_metric_owner": {
+    "path": "target/source-boundary-ple-i64-guard-20260912/release/hawking",
+    "sha256": "002b475e652e53ee8857f9447f48a34e6aee1bc1ae3e1cb2fcdc40670fb630c5",
+    "bytes": 10099888,
+    "format": "Mach-O 64-bit executable arm64",
+    "version": "hawking 0.2.2",
+    "source": [
+      {
+        "path": "crates/hawking-core/src/flash_boundary_compare.rs",
+        "sha256": "31088a944ab9b194b7f44e9312fd934629ce54b6d169f500d20cdc6ad9ddbca5"
+      },
+      {
+        "path": "crates/hawking/src/main.rs",
+        "sha256": "7f381b3fbb45d3e9348442f997ff010151370186cee13c1bfcb3ebf327431659"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "orchestrator": {
+      "path": "tools/odyssey/flash_source_boundary_compare.py",
+      "sha256": "2c04c0ba5d22fc623fef89a336b727d53c178dddcfa03adeadba0504d2f6f681"
+    }
+  },
+  "validation": {
+    "release_builds": "passed",
+    "hawking_cli_version": "hawking 0.2.2",
+    "cargo_fmt_check": "passed",
+    "hawking_external_worker_tests": "2 passed, 0 failed",
+    "ple_dtype_guard_test": "1 passed, 0 failed",
+    "native_source_closure_tests": "24 passed, 0 failed",
+    "native_source_closure_historical_receipt": "intentionally rejected after source closure drift; predecessor retained unchanged",
+    "model_or_metal_started": false
+  },
+  "supersession": {
+    "prior_receipt": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_20260912.json",
+    "prior_receipt_sha256": "56e74a63e6e6b316a63fc43e85b18aabd8557e20c6cbc1420142ab83b56c16db",
+    "prior_receipt_status": "historical closure; no longer matches current source after exact auxiliary-control dtype guard",
+    "reason": "Source-boundary PLE control provenance now rejects byte-compatible non-I64 controls before payload read; the executable closure must bind the changed Rust sources and current wrapper.",
+    "scientific_evidence_changed": false
+  },
+  "runtime_actions": {
+    "source_model_loaded": false,
+    "native_model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "owner_gate": {
+    "machine_admin_trust_anchor_present": false,
+    "owner_authorization_consumed": false,
+    "protected_gpu_lane_acquired": false,
+    "source_boundary_transaction_executed": false
+  },
+  "next_safe_action": "After the legitimate machine-owner trust anchor and signature exist, use this successor closure with explicit candidate binaries for one bounded source/native transaction; stop at the first exact divergence and do not start a full replay.",
+  "claim_boundary": "This is a static successor executable/source closure for an isolated release candidate. It is not an owner authorization, model execution, source/native comparison, source-parity result, complete NR, EBPW/TPS/capability evidence, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "3c19248160538d252321be961d025deff6756eae2918ee5ce5d52618d5f452ae"
+}

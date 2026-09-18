@@ -1,0 +1,254 @@
+{
+  "bounded_extraction_budget": {
+    "authorized_next_action": "none until one predeclared authoritative corpus/threshold declaration is materialized by hawking gravity e13-evidence and its exact tokenizer-addressable row universe plus decoded-text controls pass this independent preflight",
+    "bytes_per_role": 20971520,
+    "bytes_per_row_per_role": 5120,
+    "bytes_total": 41943040,
+    "complete_tensor_accounting_policy": "retain_all_declared_tensor_rows_in_complete_artifact_and_byte_accounting.v1",
+    "dtype": "BF16",
+    "e13_eligible_model_vocab_token_count": 248044,
+    "e13_excluded_added_control_token_count": 33,
+    "excluded_tensor_tail_row_count": 243,
+    "payload_read_now": 0,
+    "raw_source_logit_policy": "preserve_full_declared_tensor_row_axis_for_source_correctness.v1",
+    "roles": [
+      "input_embedding",
+      "output_head"
+    ],
+    "rows_total": 4096,
+    "tail_sampling_policy": "withhold_until_admitted_source_or_runtime_control_defines_tail_sampling.v1",
+    "tensor_row_count": 248320,
+    "tensor_tail_output_semantics": "SAMPLING_POLICY_WITHHELD_NOT_AN_E13_LEXICAL_ROW_UNIVERSE",
+    "tokenizer_addressable_token_count": 248077
+  },
+  "claim_boundary": "header/control admissibility only; no embedding/head payload byte, row, logit, capability, or runtime claim is measured here; tokenizer-unaddressable tensor rows are excluded from E13 lexical selection; all declared tensor rows remain in complete byte accounting and raw-logit correctness surfaces, while tail sampling authority remains withheld; role payload identity is not rehashed here",
+  "control_artifact_root": "/Users/scammermike/Downloads/hawking/receipts/headless",
+  "elapsed_ns": 600050000,
+  "elapsed_s": 0.6,
+  "experiment": "E13",
+  "finished_at_ns": 1789441773258298000,
+  "gpu_session_started": false,
+  "model_lake_manifest": {
+    "bytes": 360023286454,
+    "n_files": 144,
+    "n_sha256_verified": 132,
+    "n_size_only_verified": 12,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+  },
+  "model_loaded": false,
+  "next_action": "repair the named source/control prerequisite; do not read tensor payload bytes yet",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "producer": {
+    "module": "hawking.agentos.flash_vocabulary_prefilter",
+    "module_path": "/Users/scammermike/Downloads/hawking/hawking/agentos/flash_vocabulary_prefilter.py",
+    "module_sha256": "f478bb7c904a62386dcce1a02ef53878bd207d3e397de82f875449327bdef491",
+    "python_executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "source_closure": {
+      "hawking.agentos.flash_tensor_probe": {
+        "path": "/Users/scammermike/Downloads/hawking/hawking/agentos/flash_tensor_probe.py",
+        "sha256": "41f65428154742db6419f59fb4a9765df6b7cdbf7929e4345e2f5620d29e2b9c"
+      },
+      "hawking.agentos.flash_vocabulary_prefilter": {
+        "path": "/Users/scammermike/Downloads/hawking/hawking/agentos/flash_vocabulary_prefilter.py",
+        "sha256": "f478bb7c904a62386dcce1a02ef53878bd207d3e397de82f875449327bdef491"
+      },
+      "tools.odyssey.specimen_open": {
+        "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/specimen_open.py",
+        "sha256": "4dc301f109ca0bf4305b6fe8ea60f1048843ef741bc7bf555c146dc5fd9d7f6e"
+      }
+    }
+  },
+  "receipt_integrity": {
+    "seal_format": "python_json_compact_utf8_sorted_v1",
+    "verifier": "hawking.agentos.flash_vocabulary_prefilter.verify_flash_vocabulary_prefilter_receipt"
+  },
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_E13_VOCABULARY_PRODUCER_FRONTIER_HAWKING_V3_20260914.json",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "row_budget": 4096,
+  "row_extraction_performed": false,
+  "schema": "hawking.agentos.flash_vocabulary_prefilter.v1",
+  "seal_format": "python_json_compact_utf8_sorted_v1",
+  "seal_sha256": "07026d58a7fae57d9fafdcd10ccba3e03feea08b4a547125a435b42e2ad5f5c6",
+  "source_identity": {
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "role_headers_sha256": "48dc2cc9ad567b511dcc2834a58d94e225d7f5707d14b5b9dc47e29020615418",
+    "roles": {
+      "input_embedding": {
+        "data_offsets": [
+          0,
+          1271398400
+        ],
+        "dtype": "BF16",
+        "header_bytes": 1568,
+        "header_read_bytes": 1576,
+        "index_bytes": 170726,
+        "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+        "payload_bytes": 1271398400,
+        "shape": [
+          248320,
+          2560
+        ],
+        "shard_name": "model-00130-of-00131.safetensors",
+        "shard_size": 2974788136,
+        "tensor_name": "model.language_model.embed_tokens.weight",
+        "tensor_payload_bytes_read": 0
+      },
+      "output_head": {
+        "data_offsets": [
+          0,
+          1271398400
+        ],
+        "dtype": "BF16",
+        "header_bytes": 120,
+        "header_read_bytes": 128,
+        "index_bytes": 170726,
+        "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+        "payload_bytes": 1271398400,
+        "shape": [
+          248320,
+          2560
+        ],
+        "shard_name": "model-00131-of-00131.safetensors",
+        "shard_size": 1271398528,
+        "tensor_name": "lm_head.weight",
+        "tensor_payload_bytes_read": 0
+      }
+    },
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "tokenizer_addressability_sha256": "6c7166ca5fc9a75fec8bfb7ace11019c8f7cd1f33f5ba801af2086e20f3d5e8d",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "vocabulary_geometry": {
+      "addressable_ids_contiguous_from_zero": true,
+      "addressable_token_count": 248077,
+      "addressable_token_id_range": [
+        0,
+        248076
+      ],
+      "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "e13_eligible_model_vocab_token_count": 248044,
+      "e13_excluded_added_control_token_count": 33,
+      "e13_excluded_added_control_token_ids_sha256": "e4fc11bf3c04b699ff5a9cc6e78f3f9230ba328962738e71db9ce93eaa73c63d",
+      "hidden_size": 2560,
+      "index_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+      "tensor_only_tail_id_range": [
+        248077,
+        248319
+      ],
+      "tensor_row_count": 248320,
+      "tensor_row_tail_status": "TENSOR_PADDING_INTERVAL_IDENTIFIED__OUTPUT_SAMPLING_POLICY_WITHHELD",
+      "tensor_rows_without_tokenizer_surface": 243,
+      "tie_word_embeddings": false,
+      "tokenizer_added_token_entry_count": 33,
+      "tokenizer_added_token_id_range": [
+        248044,
+        248076
+      ],
+      "tokenizer_added_token_ids": [
+        248044,
+        248045,
+        248046,
+        248047,
+        248048,
+        248049,
+        248050,
+        248051,
+        248052,
+        248053,
+        248054,
+        248055,
+        248056,
+        248057,
+        248058,
+        248059,
+        248060,
+        248061,
+        248062,
+        248063,
+        248064,
+        248065,
+        248066,
+        248067,
+        248068,
+        248069,
+        248070,
+        248071,
+        248072,
+        248073,
+        248074,
+        248075,
+        248076
+      ],
+      "tokenizer_added_token_ids_contiguous_after_model_vocab": true,
+      "tokenizer_added_tokens_sha256": "b9a3adcc43f7f0d345f3fc2a59353df0a1fb4c228ca845a2b094ebe13ff52d3f",
+      "tokenizer_model_vocab_entry_count": 248044,
+      "tokenizer_model_vocab_id_range": [
+        0,
+        248043
+      ],
+      "tokenizer_model_vocab_ids_contiguous_from_zero": true,
+      "tokenizer_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json",
+      "tokenizer_tensor_partition": {
+        "added_control": {
+          "count": 33,
+          "e13_lexical_eligible": false,
+          "id_range": [
+            248044,
+            248076
+          ],
+          "ids_sha256": "e4fc11bf3c04b699ff5a9cc6e78f3f9230ba328962738e71db9ce93eaa73c63d",
+          "metadata_sha256": "b9a3adcc43f7f0d345f3fc2a59353df0a1fb4c228ca845a2b094ebe13ff52d3f"
+        },
+        "lexical_model_vocab": {
+          "count": 248044,
+          "e13_lexical_eligible": true,
+          "id_range": [
+            0,
+            248043
+          ]
+        },
+        "schema": "flash_tokenizer_tensor_partition.v1",
+        "tensor_only_tail": {
+          "count": 243,
+          "e13_lexical_eligible": false,
+          "id_range": [
+            248077,
+            248319
+          ],
+          "output_sampling_policy": "withhold_until_admitted_source_or_runtime_control_defines_tail_sampling.v1",
+          "tokenizer_input_addressable": false
+        },
+        "tensor_rows": {
+          "complete_artifact_accounting_policy": "retain_all_declared_tensor_rows_in_complete_artifact_and_byte_accounting.v1",
+          "count": 248320,
+          "id_range": [
+            0,
+            248319
+          ],
+          "raw_source_logit_policy": "preserve_full_declared_tensor_row_axis_for_source_correctness.v1"
+        },
+        "tokenizer_addressable": {
+          "count": 248077,
+          "id_range": [
+            0,
+            248076
+          ],
+          "input_addressable": true
+        }
+      },
+      "vocab_size": 248320
+    }
+  },
+  "started_at_ns": 1789441772658248000,
+  "status": "WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN",
+  "tensor_payload_bytes_read": 0,
+  "withheld_reason": "use the canonical Rust producer with one predeclared authoritative UTF-8 corpus and fixed thresholds to supply independently hashed corpus-frequency and decoded-token-script artifacts, an explicit tokenizer-addressable row universe, disjoint frequency/script/byte-length strata, and a split-preserving seeded null"
+}

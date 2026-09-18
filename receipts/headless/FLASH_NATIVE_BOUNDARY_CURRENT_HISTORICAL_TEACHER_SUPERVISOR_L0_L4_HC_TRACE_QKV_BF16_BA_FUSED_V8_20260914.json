@@ -1,0 +1,649 @@
+{
+  "claim_boundary": "Bounded native diagnostic with one explicit owner-bound source PLE state injection. It does not implement native PLE, establish source parity by itself, execute the complete body, qualify an NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "execution": {
+    "attention_hc_norm_precision": {
+      "accumulation_dtype": "F32",
+      "logical_dtype": "BF16",
+      "mode": "SOURCE_BF16_ROUNDTRIP_AFTER_EACH_ATTENTION_HC_STAGE_FULL_PAIRWISE_F32_REDUCTION",
+      "reduction_threadgroup_size": 256,
+      "reduction_topology": "CONTIGUOUS_FULL_PAIRWISE_F32",
+      "rounding_points": [
+        "after attention HyperConnection grouped RMSNorm",
+        "after attention HyperConnection down projection",
+        "after attention HyperConnection SiLU",
+        "after attention HyperConnection up projection"
+      ],
+      "scope": "explicit bounded source-boundary diagnostic only",
+      "storage_dtype": "F32 carrier with BF16-representable values"
+    },
+    "elapsed_ns": 207440022333,
+    "full_body_executed": false,
+    "invocation_admission": {
+      "claim_boundary": "The caller asserted that a wrapper performed its external source/lane checks before launch. Native code does not authenticate that assertion, grant a lease, or establish source-independent execution.",
+      "policy_marker": "--wrapper-admitted-source-control",
+      "status": "WRAPPER_ASSERTED_SOURCE_CONTROL"
+    },
+    "layer4_dispatches": 15,
+    "layer4_gpu_ns": 20920625,
+    "layer4_wall_ns": 90817250,
+    "lm_head_executed": false,
+    "native_lane_preflight": {
+      "checked_markers": [
+        "flash_stateful_complete_token_session",
+        "flash_repeated_accepted_decode.py",
+        "flash_route_union_control.py",
+        "flash_source_boundary_capture_mlx.py",
+        "flash_source_boundary_mlx_worker.py",
+        "flash_source_boundary_native.py",
+        "flash_source_boundary_transaction.py",
+        "flash_noetic_complete_layer0",
+        "mlx_vlm.server",
+        "hawkingd"
+      ],
+      "clean": true,
+      "excluded_supervising_launcher_pid": 16132,
+      "matches": [],
+      "observation": "point-in-time ps preflight only; it is neither a lock, a lease, nor a timing/exclusivity witness"
+    },
+    "process_boundary": "one native process",
+    "provider": "hawking-core Rust + Apple Metal",
+    "source_payload_bytes_read": 25923494656
+  },
+  "layer0_trace": [
+    {
+      "layer": 0,
+      "ordinal": 0,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-00-attention_hyper_connection_normalized.f32",
+        "sha256": "196a199661bfbc64d323b37921497cc5629ee4851edea574fbb4f753238dac87"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_hyper_connection_normalized"
+    },
+    {
+      "layer": 0,
+      "ordinal": 1,
+      "payload": {
+        "bytes": 1280,
+        "dtype": "F32_LE",
+        "elements": 320,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-01-attention_hyper_connection_down_projection.f32",
+        "sha256": "647aa1893ed7a4fe922acde54f2e92562535b38223b0f18df3131edb764a874c"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        320
+      ],
+      "stage": "attention_hyper_connection_down_projection"
+    },
+    {
+      "layer": 0,
+      "ordinal": 2,
+      "payload": {
+        "bytes": 1280,
+        "dtype": "F32_LE",
+        "elements": 320,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-02-attention_hyper_connection_low_rank_activation.f32",
+        "sha256": "f33e39aa0ce36f9de5cf61b4c65272560162fabc371ce5554dbfed89adb98f2f"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        320
+      ],
+      "stage": "attention_hyper_connection_low_rank_activation"
+    },
+    {
+      "layer": 0,
+      "ordinal": 3,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-03-attention_hyper_connection_up_projection.f32",
+        "sha256": "694770df68387f7f77510aa06f09f98fe3832fe9f705232d44a6537e7dc6ab12"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_hyper_connection_up_projection"
+    },
+    {
+      "layer": 0,
+      "ordinal": 4,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-04-attention_hyper_connection_mix_weights.f32",
+        "sha256": "ad335f02758d28777f629806547d0ec2e751f67313bcf90b567e04b06c0edd87"
+      },
+      "producer": "native_readback_source_equivalent_hc_formula",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_hyper_connection_mix_weights"
+    },
+    {
+      "layer": 0,
+      "ordinal": 5,
+      "payload": {
+        "bytes": 10240,
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-05-attention_hyper_connection_mixed.f32",
+        "sha256": "bb9956d51506ca37d39d25c8f42dfa677a08ebd8d0dbe0c81016a00e228aec2c"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "attention_hyper_connection_mixed"
+    },
+    {
+      "layer": 0,
+      "ordinal": 6,
+      "payload": {
+        "bytes": 16,
+        "dtype": "F32_LE",
+        "elements": 4,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-06-attention_block_injection_weights.f32",
+        "sha256": "5cff2df02069bbada3d5da9f160aac1b356bb53cbc4796fb31b3ca582f1e82cc"
+      },
+      "producer": "native_readback_source_equivalent_hc_formula",
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "stage": "attention_block_injection_weights"
+    },
+    {
+      "layer": 0,
+      "ordinal": 7,
+      "payload": {
+        "bytes": 10240,
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-07-attention_branch.f32",
+        "sha256": "0305ddd9f5d499eceabed150def6ada3efb87185400ebd48c19b0358ca8493a0"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "attention_branch"
+    },
+    {
+      "layer": 0,
+      "ordinal": 8,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer0-trace-08-post_attention_state.f32",
+        "sha256": "39da79bc0d31bc66dfc5eb911c6d012f7f640fbcd54f37f40acb8f98d026826b"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "post_attention_state"
+    }
+  ],
+  "layer0_trace_contract_version": 5,
+  "layer3_receipt": {
+    "device_weight_bytes": 5171657728,
+    "expert_bank_mode": "dense",
+    "host_source_weights_retained_during_token_loop": false,
+    "immutable_weight_ownership": "device_only_after_source_upload",
+    "layer": 3,
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/layer-3-attention.json",
+    "source_payload_bytes_read": 5171656704,
+    "species": "full_attention",
+    "state_memory": {
+      "growth_bytes_per_token": 4096,
+      "persistent_kv_bytes": 4096
+    },
+    "stateful_kv": true,
+    "timing": {
+      "device_prepare_ns": 279016167,
+      "full_layer_call_wall_ns": 41770794625,
+      "oracle_ns": null,
+      "receipt_read_ns": 0,
+      "source_load_ns": 41413937959
+    }
+  },
+  "layer4_cache": {
+    "post_attention": [
+      {
+        "boundary": "post-attention",
+        "layout": "native_flattened",
+        "name": "conv-state",
+        "original_dtype": "F32",
+        "payload": {
+          "bytes": 122880,
+          "dtype": "F32_LE",
+          "elements": 30720,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/cache-layer4-post-attention-conv-state.f32",
+          "sha256": "d148f979d10f0bae24da1226f860b8e65a14d849566f8af8544e07309a898e26"
+        },
+        "shape": [
+          30720
+        ]
+      },
+      {
+        "boundary": "post-attention",
+        "layout": "native_flattened",
+        "name": "recurrent-state",
+        "original_dtype": "F32",
+        "payload": {
+          "bytes": 3145728,
+          "dtype": "F32_LE",
+          "elements": 786432,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/cache-layer4-post-attention-recurrent-state.f32",
+          "sha256": "3da3c0428785e650b9308e0fcffd03046c524a5bc4d71b0965d4496e9924b3a5"
+        },
+        "shape": [
+          786432
+        ]
+      }
+    ],
+    "pre_attention": [
+      {
+        "boundary": "pre-attention",
+        "layout": "native_flattened",
+        "name": "conv-state",
+        "original_dtype": "F32",
+        "payload": {
+          "bytes": 122880,
+          "dtype": "F32_LE",
+          "elements": 30720,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/cache-layer4-pre-attention-conv-state.f32",
+          "sha256": "6d7bd1fa33ee71b2d2c4fc8062f6c4b09804b84449ff73a687fe7cfd568d0625"
+        },
+        "shape": [
+          30720
+        ]
+      },
+      {
+        "boundary": "pre-attention",
+        "layout": "native_flattened",
+        "name": "recurrent-state",
+        "original_dtype": "F32",
+        "payload": {
+          "bytes": 3145728,
+          "dtype": "F32_LE",
+          "elements": 786432,
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/cache-layer4-pre-attention-recurrent-state.f32",
+          "sha256": "bbd05cf6097ac9b1f89ea29d2542c1b7b67ee46848393895f5a9e43fa1f621e5"
+        },
+        "shape": [
+          786432
+        ]
+      }
+    ]
+  },
+  "layers_executed": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "ple": {
+    "injected_at_layer": 1,
+    "native_implementation_present": false,
+    "preflight_sha256": "2184f3384e7d910567d63ce8a10e3f400d7c93971b267baefe6b4fd1034187b1",
+    "purpose": "teacher-forced diagnostic seam only; never an ordinary inference dependency",
+    "source_capture_sha256": "2e55dbe6c28ef1304e53f7523c2e9d34e3dc1a925d594bdaa54c0b5958cf2b63",
+    "source_post_ple_state": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/seam-03-ple_additive_output.f32",
+      "sha256": "c278efff956911998b1fd5941f954616be22d1356e3627f9af3efece51cb8ee6"
+    }
+  },
+  "promotion_allowed": false,
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.native_source_boundary_capture.v1",
+  "seal_sha256": "a2a2bc296e5463c644a17b147629c40b7e70f2372285d5da7a35d3eb1d1522af",
+  "seams": [
+    {
+      "layer": null,
+      "ordinal": 0,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-00-embedding_hc_tiled.f32",
+        "sha256": "14dcdc5e67c713b92807bd55d86b93d21f9e64a8e67cb798f21c4e38a706a84c"
+      },
+      "producer": "native_embedding_row",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "embedding_hc_tiled"
+    },
+    {
+      "layer": 0,
+      "ordinal": 1,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-01-mlp_injection.f32",
+        "sha256": "b14fa6bebf1dbfee46d7724b7a5e7a19cdce7280ed29101fc044dc7ffc77015f"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "mlp_injection"
+    },
+    {
+      "layer": 1,
+      "ordinal": 2,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-02-pre_ple.f32",
+        "sha256": "b14fa6bebf1dbfee46d7724b7a5e7a19cdce7280ed29101fc044dc7ffc77015f"
+      },
+      "producer": "native_rust_metal",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "pre_ple"
+    },
+    {
+      "layer": 1,
+      "ordinal": 3,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-03-ple_additive_output.f32",
+        "sha256": "c278efff956911998b1fd5941f954616be22d1356e3627f9af3efece51cb8ee6"
+      },
+      "producer": "owner_authorized_external_source_teacher_injection",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "ple_additive_output"
+    },
+    {
+      "layer": 1,
+      "ordinal": 4,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-04-mlp_injection.f32",
+        "sha256": "86f75d1ff769f896eb1abba28d93d12dd004714a4c961bde0ace18481e4d87aa"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "mlp_injection"
+    },
+    {
+      "layer": 2,
+      "ordinal": 5,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-05-mlp_injection.f32",
+        "sha256": "132f34029291dd50b128f08a964b946c6548042be7cd462bb00dca5ebc1634a6"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "mlp_injection"
+    },
+    {
+      "layer": 3,
+      "ordinal": 6,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-06-mlp_injection_layer4_input.f32",
+        "sha256": "e059ca59eee5f74f22ae79c8ebbfeb146ca4763f3a6de0150969d1e46a4360f2"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "mlp_injection_layer4_input"
+    },
+    {
+      "layer": 4,
+      "ordinal": 7,
+      "payload": {
+        "bytes": 10240,
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-07-attention_hyper_connection_mixed.f32",
+        "sha256": "f25a3fa15e2cf6eeb3e412aaac60999df37d82ecf9c7c2ccc8effe6568401f25"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "attention_hyper_connection_mixed"
+    },
+    {
+      "layer": 4,
+      "ordinal": 8,
+      "payload": {
+        "bytes": 10240,
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-08-attention_branch.f32",
+        "sha256": "4d58fd9084c0e26e89c12974f4bc8b6cd66969d65e5ce6299d0e85dddf6b3141"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "attention_branch"
+    },
+    {
+      "layer": 4,
+      "ordinal": 9,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-09-attention_injection.f32",
+        "sha256": "be9b48fb94f241c24e785f0054c2ebc0f86d8cfa968ff6687a178f0a6f53ea52"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "attention_injection"
+    },
+    {
+      "layer": 4,
+      "ordinal": 10,
+      "payload": {
+        "bytes": 10240,
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-10-mlp_hyper_connection_mixed.f32",
+        "sha256": "bc485c3ac39bcaeac5b59069eb8e365733e4cd3f9ab93f6626917f700ba9c51e"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "mlp_hyper_connection_mixed"
+    },
+    {
+      "expert_ids": [
+        309,
+        252,
+        110,
+        290,
+        168,
+        485,
+        453,
+        469,
+        239,
+        69
+      ],
+      "ids_payload": {
+        "bytes": 40,
+        "dtype": "I32_LE",
+        "elements": 10,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-11-router-top10-ids.i32",
+        "sha256": "723be13d8e634ac1929f42cded3f1ee51967d3205e03e8a8cf7b1bbd338269d9"
+      },
+      "layer": 4,
+      "ordinal": 11,
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        10
+      ],
+      "stage": "router_top10_ids_and_weights",
+      "weights": [
+        0.24581798911094666,
+        0.14891362190246582,
+        0.11565211415290833,
+        0.09294019639492035,
+        0.07870516926050186,
+        0.0673660859465599,
+        0.06610428541898727,
+        0.06604611873626709,
+        0.06078425049781799,
+        0.05767018720507622
+      ],
+      "weights_payload": {
+        "bytes": 40,
+        "dtype": "F32_LE",
+        "elements": 10,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-11-router-top10-weights.f32",
+        "sha256": "1c54e28a95a1a0412f2f503a7793dddf4e0cb1abb39597ec59cd0b7be737feed"
+      }
+    },
+    {
+      "layer": 4,
+      "ordinal": 12,
+      "payload": {
+        "bytes": 10240,
+        "dtype": "F32_LE",
+        "elements": 2560,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-12-mlp_route_and_experts.f32",
+        "sha256": "312e56a0d3e0348ba815290574801c53a92088c9b36dbc8601541404de708dfc"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        2560
+      ],
+      "stage": "mlp_route_and_experts"
+    },
+    {
+      "layer": 4,
+      "ordinal": 13,
+      "payload": {
+        "bytes": 40960,
+        "dtype": "F32_LE",
+        "elements": 10240,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.session_artifacts/seam-13-mlp_injection_layer4_output.f32",
+        "sha256": "0600a4eb632a6324835509231c4d58842c89daebcd8e52e8665122e80884ff5f"
+      },
+      "producer": "native_rust_metal_after_source_ple_injection",
+      "shape": [
+        1,
+        1,
+        10240
+      ],
+      "stage": "mlp_injection_layer4_output"
+    }
+  ],
+  "source_input_identity": {
+    "config": {
+      "bytes": 4745,
+      "file": "config.json",
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+    },
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_lake_manifest": {
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+    },
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "safetensors_index": {
+      "bytes": 170726,
+      "file": "model.safetensors.index.json",
+      "sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"
+    },
+    "schema": "hawking.flash.source_input_identity.v1",
+    "tokenizer": {
+      "bytes": 12809320,
+      "file": "tokenizer.json",
+      "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+    }
+  },
+  "status": "CAPTURED_NATIVE_LAYERS_0_THROUGH_4_TOKEN_0_WITH_SOURCE_PLE_INJECTION",
+  "token_id": 5423,
+  "token_index": 0
+}

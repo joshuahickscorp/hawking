@@ -7,8 +7,12 @@
 *.pdb
 Cargo.lock.bak
 
-# Cargo registry / git auth (never commit)
-.cargo/
+# Cargo registry / git auth (never commit). The tracked build layout uses a
+# relative target path, so each linked worktree owns its Cargo cache instead of
+# serializing on the main checkout's artifact lock.
+.cargo/*
+!.cargo/
+!.cargo/config.toml
 
 # IDE
 .vscode/
@@ -253,6 +257,7 @@ workspace/campaign/odyssey/.modellake-watch.lock
 workspace/ops/ane/
 workspace/ops/c2m-seed/
 .worktrees/
+.worktree-state/
 
 # Local run logs: process output, not source.
 /logs/

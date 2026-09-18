@@ -247,6 +247,7 @@ def read_header(
     nocache: bool = False,
     use_cache: bool = False,
     cache_dir: Path | None = None,
+    header_cap: int = HEADER_CAP,
 ) -> dict[str, Any]:
     """Read a safetensors JSON header. Never reads weight bytes.
 
@@ -257,6 +258,14 @@ def read_header(
     This is the symbol a caller must invoke. Importing this module is not
     a call site.
     """
+    try:
+        effective_header_cap = int(header_cap)
+    except (TypeError, ValueError) as exc:
+        raise SpecimenOpenRefused("header cap must be an integer") from exc
+    if effective_header_cap <= 0 or effective_header_cap > HEADER_CAP:
+        raise SpecimenOpenRefused(
+            f"header cap must be in 1..{HEADER_CAP}, got {effective_header_cap}"
+        )
     src = Path(path)
     try:
         st = src.stat()
@@ -283,12 +292,12 @@ def read_header(
                 "evidence_tier": "FUNCTIONAL_SIM",
             }
 
-    with _Counted(_open_binary(src, nocache=nocache), cap=8 + HEADER_CAP) as fh:
+    with _Counted(_open_binary(src, nocache=nocache), cap=8 + effective_header_cap) as fh:
         prefix = fh.read(8)
         if len(prefix) != 8:
             raise SpecimenOpenRefused("missing 8-byte safetensors header length")
         hl = int.from_bytes(prefix, "little")
-        if hl <= 0 or hl > HEADER_CAP:
+        if hl <= 0 or hl > effective_header_cap:
             raise SpecimenOpenRefused(f"header length {hl} is outside the bounded range")
         if 8 + hl > st.st_size:
             raise SpecimenOpenRefused("header exceeds physical file size")

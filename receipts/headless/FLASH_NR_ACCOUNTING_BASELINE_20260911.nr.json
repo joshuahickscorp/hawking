@@ -1,0 +1,2337 @@
+{
+  "nr_version": "1.0.0",
+  "nr_kind": "hawking.nos.noetic_representation",
+  "artifact_kind": "NR",
+  "schema": "hawking.flash.complete_nr.accounting-baseline-v1",
+  "generation": "accounting-baseline-v1",
+  "status": "OPEN_COMPLETE_FAMILY_ACCOUNTING_BASELINE__NOT_FOR_PROMOTION",
+  "research_target_ladder": {
+    "engineering_gate_complete_ebpw": "0.5",
+    "deep_frontier_complete_ebpw": "0.25",
+    "grand_challenge_complete_ebpw": "0.1",
+    "open_horizon_complete_ebpw": [
+      "0.05",
+      "0.025",
+      "0.01"
+    ],
+    "law": "These are complete-NR research pressures. No target is earned until declared closure, direct execution, physical behavior, and capability gates pass."
+  },
+  "semantic_provenance": {
+    "parent_model": "Qwen/Qwen3.8-Flash-Next",
+    "parent_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "parameter_count": 179999981564,
+    "source_parameter_bytes_indexed": 359999963128,
+    "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "census_sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d",
+    "doctor_nr_sha256": "727d9ad25a261ea13c46cd8877e36168b0a6e13aa2b19be1fab03f9ce6dfe8fa",
+    "doctor_bank_screen_sha256": "0135684bfb3debd0e6e294e43e17eff2cd3c7c255511c8953a840d913f99457d",
+    "doctor_ngram_screen_sha256": "43e2b619d2b592f6799c9e52084736490bdf8e33ad4a3dba7ebbfe800fb96617",
+    "ngram_lookup_oracle_sha256": "0ec2e29bea64123b7a5d32cd33a153d6c35c9eed58aae7fc909a62e76c9a994a",
+    "routed_lowrank_activation_screen_sha256": "677d6a84ffd292f178dfbb6a5b0445187990d2f2161dec0303a78f17c44d29b9",
+    "ngram_pq_screen_sha256": "33b53d39e238520bf647ff9d31c5d457a5d3a773246436685bcf72d44e4260b3",
+    "ngram_access_trace_sha256": "38e9e690e00fade6a5c99ef223fc15ae7e1071058953eda0348e18db33ad88c5",
+    "ple_source_output_control_sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66",
+    "ple_reference_formula_parity_sha256": "8c1b854d0c4410a0deb0a1e185b0cd3c2fe7d1d6c22fdd9ed3c57f8b0c84d189",
+    "ple_lookup_pq_output_screen_sha256": "9abf99cad126f6cdae6ad69d867e8962453961f87478745654e5c68c1d7cffa7",
+    "ple_shard_local_pq_output_screen_sha256": "2d4b79aa7a83b985b04845c75368a26ae190d19f73f1ced9f0fbc5c0338016f2",
+    "ple_additive_pq_output_screen_sha256": "cfd90c676ea171642347b80733ebe8257bb58df7cc85676f8fd3ac6da5d04c01",
+    "ple_address_generator_screen_sha256": "731f0448b6eba3f96251566c41d37e52e59447a38167737c393b95a6abb9a850",
+    "ple_additive_hash_function_screen_sha256": "73f76b47845789e87c6959c5c183622d941dbc670824bd2d1eb7cab575996d55",
+    "ple_context_response_screen_sha256": "d6f62d732c93280ecd923c2354246e4cb4e4d3ed294e57198c34559ad984e3eb",
+    "expert_vector_code_screen_sha256": "2d0ae111bfe5039d96b15ca159b2ca973e8dc818cca2f796a2962d7a1c43402b",
+    "expert_shared_basis_screen_sha256": "2fdfa1c888db1b65000ae0996a970e980721539f6c77dbb64ac56a93fecb200c",
+    "expert_atom_sharing_screen_sha256": "93f73da2f3b3fea54d8687d01a7734532a4fb022cc5a1c871ca7c53000c4bb9e",
+    "hc_closure_screen_sha256": "52eca5331535a03a03ae0b8ca240aa8919d467b5eede9bd84b69102ff42c7e78",
+    "router_source_output_screen_sha256": "ec2c0d5893f742b3dd41b3a2f1665d25fe5155815012e6ddc844804d93da6617"
+  },
+  "representation": {
+    "scope": "complete 48-layer Flash model",
+    "parts": [
+      {
+        "family": "embedding_lm_head",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "complete terminal control exists",
+        "source_control_bytes": 2564759064
+      },
+      {
+        "family": "ngram_embedding",
+        "representation": "factorized_lookup_candidate",
+        "runtime_required": true,
+        "qualification": "128-shard global row layout, source-algorithm addresses, and one sealed source-bound PLE formula/input control have passed reference-framework parity on one BOS control; broader PLE output coverage and native compact lookup remain open",
+        "source_control_bytes": 102400491520
+      },
+      {
+        "family": "norm",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 376320
+      },
+      {
+        "family": "linear_attention_hyperconnection",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "48-layer source parity and stateful organ/prefix evidence",
+        "source_control_bytes": 4820291328
+      },
+      {
+        "family": "full_attention",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "all full-attention source organs and KV organ evidence",
+        "source_control_bytes": 1337609728
+      },
+      {
+        "family": "mlp_hyperconnection",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 1311502048
+      },
+      {
+        "family": "shared_expert",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 481940480
+      },
+      {
+        "family": "routed_experts",
+        "representation": "route_conditioned_compact_candidate",
+        "runtime_required": true,
+        "qualification": "compact routed-bank exact parity on verified layers; dynamic complete-bank storage not yet qualified",
+        "source_control_bytes": 246625075200
+      },
+      {
+        "family": "other",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract",
+        "source_control_bytes": 457917440
+      }
+    ],
+    "family_source_bytes": {
+      "routed_experts": 246625075200,
+      "ngram_embedding": 102400491520,
+      "linear_attention_hyperconnection": 4820291328,
+      "embedding_lm_head": 2564759064,
+      "full_attention": 1337609728,
+      "mlp_hyperconnection": 1311502048,
+      "shared_expert": 481940480,
+      "other": 457917440,
+      "norm": 376320
+    },
+    "accounting": {
+      "canonical_rust_contract": "crates/hawking-core/src/gravity_manifest.rs:NoeticRepresentationManifest::totals + rate_budget",
+      "flash_adapter": "tools/flash_complete_nr.py",
+      "source_control": {
+        "status": "EXACT_SOURCE_BF16_STORAGE_CONTROL__NOT_NR_CLOSURE",
+        "persistent_bytes": 359999963128,
+        "logical_weights": 179999981564,
+        "complete_ebpw": 16.0,
+        "complete_ebpw_ppm": 16000000,
+        "source_dependency": "pinned BF16 source shards remain outside this NR"
+      },
+      "nr_candidate": {
+        "status": "OPEN__NO_COMPLETE_EBPW_CLAIM",
+        "closure_status": "OPEN",
+        "complete_persistent_bytes": null,
+        "complete_ebpw": null,
+        "active_bytes_per_token": null,
+        "mutable_state_bytes": null,
+        "scratch_bytes": null,
+        "direct_execution": "PARTIAL_COMPONENT_ONLY",
+        "source_independent": false,
+        "external_dependencies": [
+          "pinned BF16 source-family bodies",
+          "unqualified dynamic routed-expert bank representation",
+          "unqualified n-gram representation and lookup path",
+          "unqualified broader PLE output coverage and native compact PLE runtime",
+          "unmeasured complete direct runtime state",
+          "unmeasured complete direct scratch working set"
+        ],
+        "reason": "The document identifies every organ family but does not yet contain a closed direct body for all of them."
+      },
+      "whole_body_target_budgets": [
+        {
+          "target_complete_ebpw": "1",
+          "target_complete_ebpw_ppm": 1000000,
+          "target_persistent_bytes_ceiling": 22499997696,
+          "source_control_bytes_over_budget": 337499965432,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": false,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 11525601288,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 528355,
+          "finding": "Keeping the non-routed/non-ngram tail at BF16 is arithmetically possible but leaves the dominant routed-expert and n-gram families only the stated residual budget. This is a pressure signal, not a claim that such a local rate preserves capability."
+        },
+        {
+          "target_complete_ebpw": "0.75",
+          "target_complete_ebpw_ppm": 750000,
+          "target_persistent_bytes_ceiling": 16874998272,
+          "source_control_bytes_over_budget": 343124964856,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": false,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 5900601864,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 270494,
+          "finding": "Keeping the non-routed/non-ngram tail at BF16 is arithmetically possible but leaves the dominant routed-expert and n-gram families only the stated residual budget. This is a pressure signal, not a claim that such a local rate preserves capability."
+        },
+        {
+          "target_complete_ebpw": "0.5",
+          "target_complete_ebpw_ppm": 500000,
+          "target_persistent_bytes_ceiling": 11249998848,
+          "source_control_bytes_over_budget": 348749964280,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": false,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 275602440,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 12634,
+          "finding": "Keeping the non-routed/non-ngram tail at BF16 is arithmetically possible but leaves the dominant routed-expert and n-gram families only the stated residual budget. This is a pressure signal, not a claim that such a local rate preserves capability."
+        },
+        {
+          "target_complete_ebpw": "0.25",
+          "target_complete_ebpw_ppm": 250000,
+          "target_persistent_bytes_ceiling": 5624999424,
+          "source_control_bytes_over_budget": 354374963704,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": true,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 0,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 0,
+          "finding": "The non-routed/non-ngram source tail alone exceeds this whole-body budget. A target candidate must transform that tail as well; improving only routed experts and n-gram embeddings cannot reach the target."
+        },
+        {
+          "target_complete_ebpw": "0.1",
+          "target_complete_ebpw_ppm": 100000,
+          "target_persistent_bytes_ceiling": 2249999770,
+          "source_control_bytes_over_budget": 357749963358,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": true,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 0,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 0,
+          "finding": "The non-routed/non-ngram source tail alone exceeds this whole-body budget. A target candidate must transform that tail as well; improving only routed experts and n-gram embeddings cannot reach the target."
+        },
+        {
+          "target_complete_ebpw": "0.05",
+          "target_complete_ebpw_ppm": 50000,
+          "target_persistent_bytes_ceiling": 1124999885,
+          "source_control_bytes_over_budget": 358874963243,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": true,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 0,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 0,
+          "finding": "The non-routed/non-ngram source tail alone exceeds this whole-body budget. A target candidate must transform that tail as well; improving only routed experts and n-gram embeddings cannot reach the target."
+        },
+        {
+          "target_complete_ebpw": "0.025",
+          "target_complete_ebpw_ppm": 25000,
+          "target_persistent_bytes_ceiling": 562499943,
+          "source_control_bytes_over_budget": 359437463185,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": true,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 0,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 0,
+          "finding": "The non-routed/non-ngram source tail alone exceeds this whole-body budget. A target candidate must transform that tail as well; improving only routed experts and n-gram embeddings cannot reach the target."
+        },
+        {
+          "target_complete_ebpw": "0.01",
+          "target_complete_ebpw_ppm": 10000,
+          "target_persistent_bytes_ceiling": 224999977,
+          "source_control_bytes_over_budget": 359774963151,
+          "dominant_families": [
+            "routed_experts",
+            "ngram_embedding"
+          ],
+          "dominant_source_bytes": 349025566720,
+          "tail_source_bytes_if_left_bf16": 10974396408,
+          "tail_source_global_ebpw_ppm_if_left_bf16": 487751,
+          "tail_alone_exceeds_target": true,
+          "remaining_for_dominant_bytes_if_tail_left_bf16": 0,
+          "dominant_local_ebpw_ppm_if_tail_left_bf16": 0,
+          "finding": "The non-routed/non-ngram source tail alone exceeds this whole-body budget. A target candidate must transform that tail as well; improving only routed experts and n-gram embeddings cannot reach the target."
+        }
+      ]
+    },
+    "candidate_variants": [
+      {
+        "name": "external_source_bf16_control",
+        "source_control_ebpw": 16.0,
+        "nr_complete_ebpw": null,
+        "runnable_nr": false,
+        "capability_status": "source-control-only"
+      },
+      {
+        "name": "route_conditioned_compact_experts_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "not-yet-qualified",
+        "open": "dynamic expert-bank representation and accepted-token accounting",
+        "bank_screen": "cross-expert sharing hypothesis is weak in sampled real weights; pursue active-route storage, not unconditional shared basis"
+      },
+      {
+        "name": "ngram_factorized_lookup_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "not-yet-qualified",
+        "open": "broader PLE output coverage, lookup representation fidelity, and native compact lookup",
+        "lookup_oracle_status": "REAL_ROW_PACKED_LOOKUP_ORACLE",
+        "access_trace": {
+          "status": "SOURCE_ALGORITHM_BOUND_TOKEN_ACCESS_TRACE__NOT_PLE_OUTPUT_PARITY",
+          "sequence_binding": "STATEFUL_ACCEPTED_TOKEN_SEQUENCE_RECEIPT",
+          "token_count": 7,
+          "lookup_events": 112,
+          "lookup_events_per_token": 16,
+          "unique_source_rows": 112,
+          "unique_source_bytes": 35840,
+          "source_bytes_referenced_across_events": 35840,
+          "boundary": "ADDRESS_AND_SOURCE_ROW_BINDING_ONLY__NOT_PLE_OUTPUT_OR_CAPABILITY"
+        },
+        "source_output_control": {
+          "status": "SOURCE_BOUND_PLE_OUTPUT_CONTROL__NO_INDEPENDENT_PLE_OUTPUT_PARITY",
+          "input_qualification": "EXACT_LAYER_SOURCE_PARITY",
+          "input_state_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+          "token_count": 1,
+          "lookup_events": 16,
+          "lookup_events_per_token": 16,
+          "unique_source_rows": 16,
+          "unique_source_bytes": 5120,
+          "post_injection_state_sha256": "8359f389f65bb2308179775efe6f0dd933ec12d91d798f63a808a805758a6aa5",
+          "mutable_state_bytes": 368656,
+          "boundary": "SOURCE_FORMULA_INPUT_OUTPUT_CONTROL_ONLY__NOT_INDEPENDENT_PLE_PARITY_OR_CAPABILITY"
+        },
+        "reference_formula_parity": {
+          "status": "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS",
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "max_abs": 4.470348358154297e-08,
+          "rmse": 1.9919543169561657e-09,
+          "relative_l2": 1.498442827596591e-07,
+          "cosine": 1.0,
+          "finite": true,
+          "boundary": "ONE_SEALED_PLE_CONTROL_REFERENCE_FORMULA_PARITY_ONLY__NOT_FULL_CHECKPOINT_OR_CAPABILITY"
+        }
+      },
+      {
+        "name": "ngram_uniform_q4_g32_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "stage-a-only",
+        "nominal_bpw": 4.5,
+        "sample_cosine": 0.9952799081802368,
+        "open": "activation/output sensitivity and native compact lookup"
+      },
+      {
+        "name": "ngram_packed_q4_g32_lookup_v1",
+        "complete_bits_per_weight": 5.0,
+        "runtime_ready": false,
+        "capability_status": "row-oracle-only",
+        "sample_rows": 384,
+        "mean_lookup_ns": 26809.989583333332,
+        "open": "native lookup kernel, activation sensitivity, collision semantics, and complete-token impact"
+      },
+      {
+        "name": "ngram_packed_q3_g32_lookup_v1",
+        "complete_bits_per_weight": 4.0,
+        "runtime_ready": false,
+        "capability_status": "row-oracle-only",
+        "sample_rows": 384,
+        "mean_lookup_ns": 26809.989583333332,
+        "open": "native lookup kernel, activation sensitivity, collision semantics, and complete-token impact"
+      },
+      {
+        "name": "routed_expert_lowrank_sparse_activation_repair_v1",
+        "scope": "one exact layer-0 source-selected gate/up expert control",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_ACTIVATION_NEGATIVE__NOT_ESCALATED",
+        "target_summary": [
+          {
+            "target_scoped_ebpw": 0.01,
+            "best_candidate": null,
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.025,
+            "best_candidate": null,
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.05,
+            "best_candidate": null,
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.1,
+            "best_candidate": null,
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.25,
+            "best_candidate": {
+              "rank": 2,
+              "residual_fraction": 0.001,
+              "complete_scoped_ebpw": 0.2458154296875,
+              "weight_relative_l2": 0.9902553558349609,
+              "source_activation_relative_l2": 0.7989962697029114,
+              "source_activation_cosine": 0.6128243207931519
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.5,
+            "best_candidate": {
+              "rank": 4,
+              "residual_fraction": 0.005,
+              "complete_scoped_ebpw": 0.4753125,
+              "weight_relative_l2": 0.9764975309371948,
+              "source_activation_relative_l2": 0.6974374055862427,
+              "source_activation_cosine": 0.7184029221534729
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 0.75,
+            "best_candidate": {
+              "rank": 4,
+              "residual_fraction": 0.01,
+              "complete_scoped_ebpw": 0.7153125,
+              "weight_relative_l2": 0.9668192863464355,
+              "source_activation_relative_l2": 0.6428569555282593,
+              "source_activation_cosine": 0.766952633857727
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          },
+          {
+            "target_scoped_ebpw": 1.0,
+            "best_candidate": {
+              "rank": 16,
+              "residual_fraction": 0.01,
+              "complete_scoped_ebpw": 0.9403125,
+              "weight_relative_l2": 0.9474741816520691,
+              "source_activation_relative_l2": 0.6203136444091797,
+              "source_activation_cosine": 0.7843809127807617
+            },
+            "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+          }
+        ],
+        "open": "A new composition needs multiple source/held-out activations or learned repair; do not escalate pure BF16 low-rank plus sparse correction from this control."
+      },
+      {
+        "name": "ngram_shared_product_quantization_v1",
+        "scope": "128-shard deterministic train/held-out row screen",
+        "runtime_ready": false,
+        "capability_status": "HELDOUT_STATIC_NEGATIVE__NOT_ESCALATED",
+        "target_summary": [
+          {
+            "best_candidate": {
+              "cardinality": 8,
+              "heldout_global_relative_l2": 0.9646316766738892,
+              "heldout_mean_row_cosine": 0.26972371339797974,
+              "projected_complete_table_ebpw": 0.09376065994883225,
+              "subdimension": 32
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.1
+          },
+          {
+            "best_candidate": {
+              "cardinality": 8,
+              "heldout_global_relative_l2": 0.9264289736747742,
+              "heldout_mean_row_cosine": 0.380463570356369,
+              "projected_complete_table_ebpw": 0.18751065994883226,
+              "subdimension": 16
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.25
+          },
+          {
+            "best_candidate": {
+              "cardinality": 8,
+              "heldout_global_relative_l2": 0.8472569584846497,
+              "heldout_mean_row_cosine": 0.535033106803894,
+              "projected_complete_table_ebpw": 0.37501065994883226,
+              "subdimension": 8
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.5
+          },
+          {
+            "best_candidate": {
+              "cardinality": 32,
+              "heldout_global_relative_l2": 0.7368595004081726,
+              "heldout_mean_row_cosine": 0.6808103919029236,
+              "projected_complete_table_ebpw": 0.6250118599430723,
+              "subdimension": 8
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 0.75
+          },
+          {
+            "best_candidate": {
+              "cardinality": 32,
+              "heldout_global_relative_l2": 0.7368595004081726,
+              "heldout_mean_row_cosine": 0.6808103919029236,
+              "projected_complete_table_ebpw": 0.6250118599430723,
+              "subdimension": 8
+            },
+            "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+            "target_projected_table_ebpw": 1.0
+          }
+        ],
+        "open": "The source-algorithm address trace and one sealed reference-checked PLE formula/input control are bound. Test selective repair against that output control before considering learned/generative table representations; do not materialize uniform global PQ from this screen."
+      },
+      {
+        "name": "ngram_shared_pq_fixed_sparse_repair_output_v1",
+        "scope": "one sealed source PLE output control with projected full-table code and exact-BF16 residual accounting",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_FUNCTION_CONTROL_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_PLE_OUTPUT_PQ_PLUS_SPARSE_REPAIR_RATE_DISTORTION_ONLY",
+          "target_summary": [
+            {
+              "target_projected_table_ebpw": 0.1,
+              "codebook_scope": null,
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 32,
+              "cardinality": 8,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.09376065994883225,
+              "ple_output_relative_l2": 0.9409741759300232,
+              "ple_output_cosine": 0.34227344393730164
+            },
+            {
+              "target_projected_table_ebpw": 0.25,
+              "codebook_scope": null,
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 16,
+              "cardinality": 8,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.18751065994883226,
+              "ple_output_relative_l2": 0.8984858393669128,
+              "ple_output_cosine": 0.45768246054649353
+            },
+            {
+              "target_projected_table_ebpw": 0.5,
+              "codebook_scope": null,
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 16,
+              "cardinality": 8,
+              "repair_count_per_row": 2,
+              "projected_complete_table_ebpw": 0.48751066244882024,
+              "ple_output_relative_l2": 0.8505499958992004,
+              "ple_output_cosine": 0.5380985140800476
+            },
+            {
+              "target_projected_table_ebpw": 0.75,
+              "codebook_scope": null,
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 8,
+              "cardinality": 16,
+              "repair_count_per_row": 1,
+              "projected_complete_table_ebpw": 0.6500110624469002,
+              "ple_output_relative_l2": 0.7345430254936218,
+              "ple_output_cosine": 0.6785915493965149
+            },
+            {
+              "target_projected_table_ebpw": 1.0,
+              "codebook_scope": null,
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 8,
+              "cardinality": 16,
+              "repair_count_per_row": 2,
+              "projected_complete_table_ebpw": 0.8000110624469002,
+              "ple_output_relative_l2": 0.7272153496742249,
+              "ple_output_cosine": 0.6915277242660522
+            }
+          ],
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+          "boundary": "ONE_SOURCE_PLE_OUTPUT_CONTROL_WITH_PROJECTED_GLOBAL_TABLE_ACCOUNTING__NOT_COMPLETE_PLE_OR_NR"
+        },
+        "open": "At the measured sub-1 projected table points, fixed per-row top-error BF16 repair leaves high PLE-output distortion. Do not retry this same uniform-PQ plus local-error residual rule; test a materially different function representation, such as a generated/state-conditioned lookup or learned repair, before broader PLE controls."
+      },
+      {
+        "name": "ngram_physical_shard_local_pq_output_v1",
+        "scope": "one sealed source PLE output control with one separately billed BF16 PQ codebook family per physical checkpoint shard",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_FUNCTION_CONTROL_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_PLE_OUTPUT_SHARD_LOCAL_PQ_RATE_DISTORTION_ONLY",
+          "target_summary": [
+            {
+              "target_projected_table_ebpw": 0.1,
+              "codebook_scope": "shard_local",
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 32,
+              "cardinality": 8,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.09381209970192143,
+              "ple_output_relative_l2": 0.9320031404495239,
+              "ple_output_cosine": 0.362887978553772
+            },
+            {
+              "target_projected_table_ebpw": 0.25,
+              "codebook_scope": "shard_local",
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 16,
+              "cardinality": 8,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.18756209970192142,
+              "ple_output_relative_l2": 0.9157528281211853,
+              "ple_output_cosine": 0.4050453007221222
+            },
+            {
+              "target_projected_table_ebpw": 0.5,
+              "codebook_scope": "shard_local",
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 8,
+              "cardinality": 8,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.37506209970192145,
+              "ple_output_relative_l2": 0.8597307205200195,
+              "ple_output_cosine": 0.5322428345680237
+            },
+            {
+              "target_projected_table_ebpw": 0.75,
+              "codebook_scope": "shard_local",
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 8,
+              "cardinality": 16,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.5001132994561626,
+              "ple_output_relative_l2": 0.8163122534751892,
+              "ple_output_cosine": 0.596656858921051
+            },
+            {
+              "target_projected_table_ebpw": 1.0,
+              "codebook_scope": "shard_local",
+              "quantizer_family": null,
+              "residual_stages": null,
+              "subdimension": 8,
+              "cardinality": 16,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.5001132994561626,
+              "ple_output_relative_l2": 0.8163122534751892,
+              "ple_output_cosine": 0.596656858921051
+            }
+          ],
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+          "boundary": "ONE_SOURCE_PLE_OUTPUT_CONTROL_WITH_PROJECTED_SHARD_LOCAL_TABLE_ACCOUNTING__NOT_COMPLETE_PLE_OR_NR"
+        },
+        "open": "Physical shard-local BF16 PQ does not improve the useful sub-one PLE-output curve over the global-plus-fixed-repair control. Do not retry this fixed local-codebook hierarchy; a next family must change the function or allocation through learned/context-conditioned/hierarchical residuals or a learned PLE replacement."
+      },
+      {
+        "name": "ngram_greedy_additive_residual_pq_output_v1",
+        "scope": "one sealed source PLE output control with globally billed BF16 residual-PQ codebook stages and packed stage codes",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_FUNCTION_CONTROL_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_PLE_OUTPUT_ADDITIVE_PQ_RATE_DISTORTION_ONLY",
+          "target_summary": [
+            {
+              "target_projected_table_ebpw": 0.1,
+              "codebook_scope": "global_shared",
+              "quantizer_family": "residual_additive",
+              "residual_stages": 2,
+              "subdimension": 32,
+              "cardinality": 2,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.06251045994979224,
+              "ple_output_relative_l2": 0.9560976028442383,
+              "ple_output_cosine": 0.3373485803604126
+            },
+            {
+              "target_projected_table_ebpw": 0.25,
+              "codebook_scope": "global_shared",
+              "quantizer_family": "residual_additive",
+              "residual_stages": 2,
+              "subdimension": 32,
+              "cardinality": 4,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.12501065994883226,
+              "ple_output_relative_l2": 0.9380813241004944,
+              "ple_output_cosine": 0.3998912572860718
+            },
+            {
+              "target_projected_table_ebpw": 0.5,
+              "codebook_scope": "global_shared",
+              "quantizer_family": "residual_additive",
+              "residual_stages": 2,
+              "subdimension": 10,
+              "cardinality": 4,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.4000106599488322,
+              "ple_output_relative_l2": 0.8616471290588379,
+              "ple_output_cosine": 0.5584343671798706
+            },
+            {
+              "target_projected_table_ebpw": 0.75,
+              "codebook_scope": "global_shared",
+              "quantizer_family": "residual_additive",
+              "residual_stages": 2,
+              "subdimension": 8,
+              "cardinality": 4,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.5000106599488322,
+              "ple_output_relative_l2": 0.8144101500511169,
+              "ple_output_cosine": 0.6362730860710144
+            },
+            {
+              "target_projected_table_ebpw": 1.0,
+              "codebook_scope": "global_shared",
+              "quantizer_family": "residual_additive",
+              "residual_stages": 2,
+              "subdimension": 8,
+              "cardinality": 4,
+              "repair_count_per_row": 0,
+              "projected_complete_table_ebpw": 0.5000106599488322,
+              "ple_output_relative_l2": 0.8144101500511169,
+              "ple_output_cosine": 0.6362730860710144
+            }
+          ],
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+          "boundary": "ONE_SOURCE_PLE_OUTPUT_CONTROL_WITH_PROJECTED_ADDITIVE_TABLE_ACCOUNTING__NOT_COMPLETE_PLE_OR_NR"
+        },
+        "open": "Greedy additive residual PQ does not improve the useful <=0.5 PLE-output curve over the existing global-plus-fixed-repair result. Do not sweep stage/card variants as a substitute for a new hypothesis; move to an address/context/state contribution function, learned allocation, or learned PLE replacement."
+      },
+      {
+        "name": "ngram_address_conditioned_fourier_generator_v1",
+        "scope": "one sealed source PLE output control with a complete projected BF16 address-generator program",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_FUNCTION_CONTROL_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY",
+          "target_summary": [
+            {
+              "target_projected_table_ebpw": 0.01,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 0.025,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 0.05,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 0.1,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 0.25,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 0.5,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 0.75,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            },
+            {
+              "target_projected_table_ebpw": 1.0,
+              "family": null,
+              "configuration": null,
+              "feature_count": 129,
+              "projected_complete_table_ebpw": 7.129965776164274e-06,
+              "heldout_row_relative_l2": 1.0357834100723267,
+              "ple_output_relative_l2": 0.9532825350761414,
+              "ple_output_cosine": 0.3021423816680908
+            }
+          ],
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+          "boundary": "ONE_SOURCE_PLE_OUTPUT_ADDRESS_GENERATOR_CONTROL__NOT_COMPLETE_PLE_OR_NR"
+        },
+        "open": "A tiny address-conditioned Fourier generator has no useful held-out or PLE-output fidelity on the measured source control. Do not retry an address-only smooth-coordinate generator; a next function family must use materially different state/context information, hierarchy, or learned/Nova repair."
+      },
+      {
+        "name": "ngram_address_conditioned_additive_hash_factor_v1",
+        "scope": "one sealed source PLE output control with a complete projected BF16 discontinuous additive-hash factor program",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_FUNCTION_CONTROL_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY",
+          "target_summary": [
+            {
+              "target_projected_table_ebpw": 0.01,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 0.025,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 0.05,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 0.1,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 0.25,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 0.5,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 0.75,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            },
+            {
+              "target_projected_table_ebpw": 1.0,
+              "family": "address_conditioned_additive_hash_factor_generator",
+              "configuration": {
+                "bucket_count": 64,
+                "hash_terms": 3
+              },
+              "feature_count": 193,
+              "projected_complete_table_ebpw": 1.0329950416238002e-05,
+              "heldout_row_relative_l2": 1.0957002639770508,
+              "ple_output_relative_l2": 0.979712724685669,
+              "ple_output_cosine": 0.2035313993692398
+            }
+          ],
+          "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+          "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+          "boundary": "ONE_SOURCE_PLE_OUTPUT_ADDRESS_GENERATOR_CONTROL__NOT_COMPLETE_PLE_OR_NR"
+        },
+        "open": "The fixed three-term additive-hash factor program has no useful held-out or PLE-output fidelity despite a tiny projected table rate. Do not tune bucket count, seed, or ridge as a substitute for a new hypothesis; move to real context/history-conditioned, learned-topology, sparse-exception, or Nova-trained PLE functions."
+      },
+      {
+        "name": "ngram_address_context_response_tangent_v1",
+        "scope": "one sealed source PLE state with deterministic synthetic local context perturbations across real hashed addresses",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_FUNCTION_GEOMETRY_PRIOR__NOT_A_REPRESENTATION_OR_CAPABILITY_RESULT",
+        "geometry_summary": {
+          "status": "SOURCE_PLE_CONTEXT_RESPONSE_TANGENT_ONLY",
+          "source_control_batch_passed": true,
+          "synthetic_context_bank": {
+            "direction_count": 8,
+            "context_count": 17,
+            "relative_rms": 0.01,
+            "source_trajectory_distribution": false
+          },
+          "cross_address_delta_spectrum": {
+            "ranks_at_energy": {
+              "0.9": 6,
+              "0.95": 7,
+              "0.99": 10
+            },
+            "numerical_rank": 78
+          },
+          "historical_session_integrity": "The source stateful-session receipt validates under the declared compact UTF-8 native receipt format, and its exact bytes/token sequence bind this address trace. This screen still uses that session for address provenance only.",
+          "boundary": "SYNTHETIC_LOCAL_SOURCE_FORMULA_TANGENT_ONLY__NOT_REAL_STATE_BANK_OR_REPRESENTATION"
+        },
+        "open": "The source formula has a compact local response spectrum over the declared synthetic plane, but this is not a real source-state distribution. Before any learned (address, context, persistent PLE state) contribution model, collect a separately sealed multi-context source-state bank and use disjoint context/sequence controls."
+      },
+      {
+        "name": "routed_expert_shared_vector_code_v1",
+        "scope": "ten source-selected layer-0 gate/up experts under one sealed source activation and route control",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_OUTPUT_SCREEN_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_BOUND_EXPERT_VECTOR_CODE_FANOUT_COMPLETE",
+          "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+          "tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+          "expert_ids": [
+            411,
+            334,
+            286,
+            152,
+            291,
+            106,
+            421,
+            304,
+            226,
+            331
+          ],
+          "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+          "source_activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+          "candidates": [
+            {
+              "variant": {
+                "cardinality": 2,
+                "iterations": 4,
+                "seed": 1337,
+                "subdimension": 32
+              },
+              "complete_scoped_ebpw": 0.049822265625,
+              "complete_bytes": 204072,
+              "heldout_global_relative_l2": 0.987338662147522,
+              "heldout_mean_row_cosine": 0.1582230180501938,
+              "route_weighted_relative_l2": 0.8385419845581055,
+              "route_weighted_cosine": 0.5458307266235352
+            },
+            {
+              "variant": {
+                "cardinality": 4,
+                "iterations": 4,
+                "seed": 1337,
+                "subdimension": 32
+              },
+              "complete_scoped_ebpw": 0.083572265625,
+              "complete_bytes": 342312,
+              "heldout_global_relative_l2": 0.9724821448326111,
+              "heldout_mean_row_cosine": 0.23256321251392365,
+              "route_weighted_relative_l2": 0.8252585530281067,
+              "route_weighted_cosine": 0.5671919584274292
+            },
+            {
+              "variant": {
+                "cardinality": 8,
+                "iterations": 4,
+                "seed": 1337,
+                "subdimension": 32
+              },
+              "complete_scoped_ebpw": 0.119822265625,
+              "complete_bytes": 490792,
+              "heldout_global_relative_l2": 0.9557703733444214,
+              "heldout_mean_row_cosine": 0.29388362169265747,
+              "route_weighted_relative_l2": 0.812954843044281,
+              "route_weighted_cosine": 0.5880330801010132
+            },
+            {
+              "variant": {
+                "cardinality": 2,
+                "iterations": 4,
+                "seed": 1337,
+                "subdimension": 64
+              },
+              "complete_scoped_ebpw": 0.034197265625,
+              "complete_bytes": 140072,
+              "heldout_global_relative_l2": 0.993789553642273,
+              "heldout_mean_row_cosine": 0.11064775288105011,
+              "route_weighted_relative_l2": 0.8486948013305664,
+              "route_weighted_cosine": 0.5314847826957703
+            },
+            {
+              "variant": {
+                "cardinality": 4,
+                "iterations": 4,
+                "seed": 1337,
+                "subdimension": 64
+              },
+              "complete_scoped_ebpw": 0.052322265625,
+              "complete_bytes": 214312,
+              "heldout_global_relative_l2": 0.9860907793045044,
+              "heldout_mean_row_cosine": 0.16594737768173218,
+              "route_weighted_relative_l2": 0.8383369445800781,
+              "route_weighted_cosine": 0.547374963760376
+            },
+            {
+              "variant": {
+                "cardinality": 8,
+                "iterations": 4,
+                "seed": 1337,
+                "subdimension": 64
+              },
+              "complete_scoped_ebpw": 0.072947265625,
+              "complete_bytes": 298792,
+              "heldout_global_relative_l2": 0.9774518013000488,
+              "heldout_mean_row_cosine": 0.21097759902477264,
+              "route_weighted_relative_l2": 0.835737407207489,
+              "route_weighted_cosine": 0.5491411685943604
+            }
+          ],
+          "best_density": {
+            "variant": {
+              "cardinality": 2,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 64
+            },
+            "complete_scoped_ebpw": 0.034197265625,
+            "complete_bytes": 140072,
+            "heldout_global_relative_l2": 0.993789553642273,
+            "heldout_mean_row_cosine": 0.11064775288105011,
+            "route_weighted_relative_l2": 0.8486948013305664,
+            "route_weighted_cosine": 0.5314847826957703
+          },
+          "best_route_output": {
+            "variant": {
+              "cardinality": 8,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 32
+            },
+            "complete_scoped_ebpw": 0.119822265625,
+            "complete_bytes": 490792,
+            "heldout_global_relative_l2": 0.9557703733444214,
+            "heldout_mean_row_cosine": 0.29388362169265747,
+            "route_weighted_relative_l2": 0.812954843044281,
+            "route_weighted_cosine": 0.5880330801010132
+          },
+          "boundary": "ONE_SOURCE_ACTIVATION_SELECTED_EXPERT_FAMILY_SCREEN__NOT_COMPLETE_NR_OR_CAPABILITY"
+        },
+        "open": "The tested shared BF16 product-vector-code family reaches 0.034197 scoped EBPW at its densest point but remains highly distortive on held-out weights and route-weighted source output. Do not tune this fixed shared-PQ family as a substitute for a materially different expert function representation; require learned/shared generator, output-aware residual, or another source-bound hypothesis."
+      },
+      {
+        "name": "routed_expert_shared_input_basis_v1",
+        "scope": "ten source-selected layer-0 gate/up experts under one sealed source activation and route control",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_OUTPUT_SCREEN_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "SOURCE_BOUND_EXPERT_VECTOR_CODE_FANOUT_COMPLETE",
+          "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+          "tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+          "expert_ids": [
+            411,
+            334,
+            286,
+            152,
+            291,
+            106,
+            421,
+            304,
+            226,
+            331
+          ],
+          "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+          "source_activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+          "candidates": [
+            {
+              "variant": {
+                "family": "shared_input_basis",
+                "iterations": 1,
+                "rank": 4,
+                "seed": 1337
+              },
+              "complete_scoped_ebpw": 0.046072265625,
+              "complete_bytes": 188712,
+              "heldout_global_relative_l2": 0.9987688064575195,
+              "heldout_mean_row_cosine": 0.0448727123439312,
+              "route_weighted_relative_l2": 0.9869165420532227,
+              "route_weighted_cosine": 0.23164276778697968
+            },
+            {
+              "variant": {
+                "family": "shared_input_basis",
+                "iterations": 1,
+                "rank": 8,
+                "seed": 1337
+              },
+              "complete_scoped_ebpw": 0.076072265625,
+              "complete_bytes": 311592,
+              "heldout_global_relative_l2": 0.997612714767456,
+              "heldout_mean_row_cosine": 0.06494967639446259,
+              "route_weighted_relative_l2": 0.9726660847663879,
+              "route_weighted_cosine": 0.307873398065567
+            },
+            {
+              "variant": {
+                "family": "shared_input_basis",
+                "iterations": 1,
+                "rank": 16,
+                "seed": 1337
+              },
+              "complete_scoped_ebpw": 0.136072265625,
+              "complete_bytes": 557352,
+              "heldout_global_relative_l2": 0.9953617453575134,
+              "heldout_mean_row_cosine": 0.09237436205148697,
+              "route_weighted_relative_l2": 0.977962076663971,
+              "route_weighted_cosine": 0.2777802646160126
+            },
+            {
+              "variant": {
+                "family": "shared_input_basis",
+                "iterations": 1,
+                "rank": 32,
+                "seed": 1337
+              },
+              "complete_scoped_ebpw": 0.256072265625,
+              "complete_bytes": 1048872,
+              "heldout_global_relative_l2": 0.990896463394165,
+              "heldout_mean_row_cosine": 0.13091973960399628,
+              "route_weighted_relative_l2": 0.9038986563682556,
+              "route_weighted_cosine": 0.5387300848960876
+            }
+          ],
+          "best_density": {
+            "variant": {
+              "family": "shared_input_basis",
+              "iterations": 1,
+              "rank": 4,
+              "seed": 1337
+            },
+            "complete_scoped_ebpw": 0.046072265625,
+            "complete_bytes": 188712,
+            "heldout_global_relative_l2": 0.9987688064575195,
+            "heldout_mean_row_cosine": 0.0448727123439312,
+            "route_weighted_relative_l2": 0.9869165420532227,
+            "route_weighted_cosine": 0.23164276778697968
+          },
+          "best_route_output": {
+            "variant": {
+              "family": "shared_input_basis",
+              "iterations": 1,
+              "rank": 32,
+              "seed": 1337
+            },
+            "complete_scoped_ebpw": 0.256072265625,
+            "complete_bytes": 1048872,
+            "heldout_global_relative_l2": 0.990896463394165,
+            "heldout_mean_row_cosine": 0.13091973960399628,
+            "route_weighted_relative_l2": 0.9038986563682556,
+            "route_weighted_cosine": 0.5387300848960876
+          },
+          "boundary": "ONE_SOURCE_ACTIVATION_SELECTED_EXPERT_FAMILY_SCREEN__NOT_COMPLETE_NR_OR_CAPABILITY"
+        },
+        "open": "The tested shared-input-basis factor formula reaches 0.046072 scoped EBPW at rank 4 and 0.256072 at rank 32, but remains highly distortive on held-out rows and route-weighted source output. Do not increase rank or retune randomized-basis settings as a substitute for a materially different expert-family function hypothesis."
+      },
+      {
+        "name": "routed_expert_lawful_nonlinear_atom_sharing_v1",
+        "scope": "two exact source-selected layer-0 gated-MoE experts and 128 selected neuron triples",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_OUTPUT_DISCRIMINATOR_SURVIVES__REPLICATION_REQUIRED",
+        "target_summary": {
+          "status": "SOURCE_BOUND_NONLINEAR_ATOM_SHARING_SCREEN_COMPLETE",
+          "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+          "gate_up_tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+          "down_tensor": "model.language_model.layers.0.mlp.experts.down_proj",
+          "expert_ids": [
+            411,
+            334
+          ],
+          "selected_neuron_count": 128,
+          "outcome": {
+            "byte_advantage_achieved": true,
+            "byte_advantage_threshold": 0.2,
+            "matched_null_advantage": true,
+            "reopen_rule": "Expand only to a second source layer or a materially broader source-output bank after independent replication.",
+            "source_output_matched_null_advantage": true,
+            "status": "SOURCE_OUTPUT_DISCRIMINATOR_SURVIVES",
+            "synthetic_probe_matched_null_advantage": false
+          },
+          "complete_scoped_ebpw": 8.2703125,
+          "complete_bytes": 2032512,
+          "byte_advantage_percent": 48.31054687500001,
+          "matched_b_selected_relative_l2": 1.9575355052947998,
+          "shuffled_b_selected_relative_l2": 2.5000388622283936,
+          "matched_b_full_relative_l2": 0.7327003479003906,
+          "shuffled_b_full_relative_l2": 0.9357578754425049,
+          "assignment_similarity_mean": 0.32808399200439453,
+          "assignment_similarity_min": 0.1683344841003418,
+          "boundary": "TWO_EXPERT_SELECTED_TRIPLES_ONLY__SOURCE_OUTPUT_DISCRIMINATOR__NOT_COMPLETE_NR_OR_CAPABILITY"
+        },
+        "open": "The matched source-output result is a bounded two-expert discriminator, not a capable representation: replicate on a second source layer or materially broader source-output bank before expanding. The current synthetic function-probe control did not show the same advantage, so no direct/runtime or whole-body claim is earned."
+      },
+      {
+        "name": "hyperconnection_simultaneous_invariant_quotient_v1",
+        "scope": "Flash HyperConnection stream axis and declared read-mix/combine consumers",
+        "runtime_ready": false,
+        "capability_status": "SYMBOLIC_FULL_RANK__QUOTIENT_REJECTED",
+        "target_summary": {
+          "status": "SYMBOLIC_FULL_JOINT_RANK__QUOTIENT_REJECTED",
+          "streams": 4,
+          "joint_observable_rank": 4,
+          "joint_observable_nullity": 0,
+          "read_mix_rank": 4,
+          "read_mix_determinant": 0.00010750713794635171,
+          "nontrivial_r_less_than_m_possible": false,
+          "falsifier": "The direct residual-stream identity consumer forces full stream-axis rank; no nontrivial simultaneous invariant quotient can preserve the declared consumers.",
+          "boundary": "SYMBOLIC_HC_CONSUMER_CLOSURE_ONLY__NO_NUMERIC_SOURCE_STATE_OR_EBPW"
+        },
+        "open": "The declared consumer set is already full-rank at m=4, so no nontrivial exact HC stream quotient is available. Reopen only with a materially different consumer closure or a measured source-approved approximation; do not fit a smaller state by assumption."
+      },
+      {
+        "name": "flash_router_rowwise_int4_source_output_v1",
+        "scope": "one exact layer-0 router and one sealed source MLP input",
+        "runtime_ready": false,
+        "capability_status": "SOURCE_ROUTER_ROUTE_GATE_NEGATIVE__NOT_ESCALATED",
+        "target_summary": {
+          "status": "FIXED_INT4_ROUTER_ROUTE_GATE_REJECTED",
+          "router_tensor": "model.language_model.layers.0.mlp.gate.weight",
+          "router_shape": [
+            512,
+            2560
+          ],
+          "source_activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+          "source_route_ids": [
+            411,
+            334,
+            286,
+            152,
+            291,
+            106,
+            421,
+            304,
+            226,
+            331
+          ],
+          "candidate_route_ids": [
+            211,
+            304,
+            414,
+            226,
+            507,
+            446,
+            298,
+            391,
+            402,
+            135
+          ],
+          "candidate_top10_symmetric_difference": 16,
+          "candidate_top10_order_positions_changed": 10,
+          "source_logit_relative_l2": 0.3463221788406372,
+          "source_logit_rmse": 2.3984925992508903,
+          "source_logit_max_abs_error": 7.165263652801514,
+          "candidate_route_weight_max_abs_error": 0.33580252528190613,
+          "source_top10_top11_margin": 0.054087162017822266,
+          "candidate_top10_top11_margin": 0.03106999397277832,
+          "matched_null_top10_symmetric_difference": 20,
+          "matched_null_logit_relative_l2": 0.9591805934906006,
+          "complete_scoped_ebpw": 4.4078125,
+          "complete_candidate_bytes": 722176,
+          "source_control_recomputed_ids_match_bridge": true,
+          "fixed_candidate_route_identity_pass": false,
+          "tail_non_router_organs": "WITHHELD; no compatible source-output control was loaded",
+          "boundary": "ONE_FIXED_SOURCE_BOUND_LAYER0_ROUTER_GATE__NOT_TAIL_COMPLETE_NR_OR_CAPABILITY"
+        },
+        "open": "The fixed rowwise INT4 router candidate is rejected when source route identity changes. Keep the router high fidelity; reopen only with a materially different representation or disjoint source-input bank, and gate the other tail organs independently."
+      }
+    ],
+    "portable_identity": {
+      "census": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+      "doctor": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json",
+      "routed_lowrank_activation_screen": "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json",
+      "ngram_pq_screen": "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json",
+      "ngram_access_trace": "receipts/headless/FLASH_PLE_ACCEPTED_TOKEN_ACCESS_TRACE.json",
+      "ple_source_output_control": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+      "ple_reference_formula_parity": "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.json",
+      "ple_lookup_pq_output_screen": "receipts/headless/FLASH_PLE_LOOKUP_PQ_SOURCE_OUTPUT_REPAIR_SCREEN.json",
+      "ple_shard_local_pq_output_screen": "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_SOURCE_OUTPUT_SCREEN.json",
+      "ple_additive_pq_output_screen": "receipts/headless/FLASH_PLE_ADDITIVE_PQ_SOURCE_OUTPUT_SCREEN.json",
+      "ple_address_generator_screen": "receipts/headless/FLASH_PLE_ADDRESS_GENERATOR_SOURCE_OUTPUT_SCREEN.json",
+      "ple_additive_hash_function_screen": "receipts/headless/FLASH_PLE_ADDITIVE_HASH_FUNCTION_SOURCE_OUTPUT_SCREEN.json",
+      "ple_context_response_screen": "receipts/headless/FLASH_PLE_CONTEXT_RESPONSE_SCREEN.json",
+      "expert_vector_code_screen": "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json",
+      "expert_shared_basis_screen": "receipts/headless/FLASH_EXPERT_SHARED_BASIS_SOURCE_OUTPUT_SCREEN.json",
+      "expert_atom_sharing_screen": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json",
+      "hc_closure_screen": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json",
+      "router_source_output_screen": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json"
+    }
+  },
+  "kernel_requirements": [
+    {
+      "requires": "source_bf16_gemv_family",
+      "applies_to": "exact fallback organs"
+    },
+    {
+      "requires": "grouped_absmax_decoder",
+      "applies_to": "future compact routed-expert candidates only"
+    },
+    {
+      "requires": "route_conditioned_expert_selection",
+      "applies_to": "routed expert family"
+    },
+    {
+      "requires": "gated_delta_recurrence",
+      "applies_to": "linear-attention state"
+    },
+    {
+      "requires": "causal_attention_kv_state",
+      "applies_to": "full-attention state"
+    }
+  ],
+  "promotion": {
+    "allowed": false,
+    "blockers": [
+      "closed direct runtime",
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite"
+    ]
+  },
+  "evidence": {
+    "state": "STATIC_ACCOUNTING_ONLY",
+    "recorded_at": "2026-09-12T06:30:49Z",
+    "recorded_by": "tools/flash_complete_nr.py representation composition",
+    "rule": "S032 \u00a73 -- NR composition carries no physical timing claim"
+  },
+  "negative_science": [
+    {
+      "receipt": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN.json",
+      "finding": 0.003477525221917917,
+      "law": "do not assume routed experts share a low-dimensional basis; sampled gate-up expert cosine was near zero"
+    },
+    {
+      "receipt": "receipts/headless/FLASH_DOCTOR_NGRAM_SCREEN.json",
+      "finding": 0.0013096139929922714,
+      "law": "do not assume n-gram shards share a low-dimensional basis; shard-row similarity was near zero"
+    },
+    {
+      "receipt": "receipts/headless/FLASH_SOURCE_ROUTE_E411_GATEUP_LOWRANK_ACTIVATION_REPAIR.json",
+      "finding": [
+        {
+          "target_scoped_ebpw": 0.01,
+          "best_candidate": null,
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.025,
+          "best_candidate": null,
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.05,
+          "best_candidate": null,
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.1,
+          "best_candidate": null,
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.25,
+          "best_candidate": {
+            "rank": 2,
+            "residual_fraction": 0.001,
+            "complete_scoped_ebpw": 0.2458154296875,
+            "weight_relative_l2": 0.9902553558349609,
+            "source_activation_relative_l2": 0.7989962697029114,
+            "source_activation_cosine": 0.6128243207931519
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.5,
+          "best_candidate": {
+            "rank": 4,
+            "residual_fraction": 0.005,
+            "complete_scoped_ebpw": 0.4753125,
+            "weight_relative_l2": 0.9764975309371948,
+            "source_activation_relative_l2": 0.6974374055862427,
+            "source_activation_cosine": 0.7184029221534729
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 0.75,
+          "best_candidate": {
+            "rank": 4,
+            "residual_fraction": 0.01,
+            "complete_scoped_ebpw": 0.7153125,
+            "weight_relative_l2": 0.9668192863464355,
+            "source_activation_relative_l2": 0.6428569555282593,
+            "source_activation_cosine": 0.766952633857727
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        },
+        {
+          "target_scoped_ebpw": 1.0,
+          "best_candidate": {
+            "rank": 16,
+            "residual_fraction": 0.01,
+            "complete_scoped_ebpw": 0.9403125,
+            "weight_relative_l2": 0.9474741816520691,
+            "source_activation_relative_l2": 0.6203136444091797,
+            "source_activation_cosine": 0.7843809127807617
+          },
+          "status": "SOURCE_ACTIVATION_CONTROL_ONLY__NOT_A_REPRESENTATION_CLAIM"
+        }
+      ],
+      "law": "On the sealed source-selected E411 gate/up control, pure BF16 low-rank plus sparse correction remained high-error at sub-1 scoped rates; do not escalate this substrate without a materially different repair hypothesis."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_NGRAM_SHARDED_LOOKUP_PQ_SCREEN.json",
+      "finding": [
+        {
+          "best_candidate": {
+            "cardinality": 8,
+            "heldout_global_relative_l2": 0.9646316766738892,
+            "heldout_mean_row_cosine": 0.26972371339797974,
+            "projected_complete_table_ebpw": 0.09376065994883225,
+            "subdimension": 32
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.1
+        },
+        {
+          "best_candidate": {
+            "cardinality": 8,
+            "heldout_global_relative_l2": 0.9264289736747742,
+            "heldout_mean_row_cosine": 0.380463570356369,
+            "projected_complete_table_ebpw": 0.18751065994883226,
+            "subdimension": 16
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.25
+        },
+        {
+          "best_candidate": {
+            "cardinality": 8,
+            "heldout_global_relative_l2": 0.8472569584846497,
+            "heldout_mean_row_cosine": 0.535033106803894,
+            "projected_complete_table_ebpw": 0.37501065994883226,
+            "subdimension": 8
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.5
+        },
+        {
+          "best_candidate": {
+            "cardinality": 32,
+            "heldout_global_relative_l2": 0.7368595004081726,
+            "heldout_mean_row_cosine": 0.6808103919029236,
+            "projected_complete_table_ebpw": 0.6250118599430723,
+            "subdimension": 8
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 0.75
+        },
+        {
+          "best_candidate": {
+            "cardinality": 32,
+            "heldout_global_relative_l2": 0.7368595004081726,
+            "heldout_mean_row_cosine": 0.6808103919029236,
+            "projected_complete_table_ebpw": 0.6250118599430723,
+            "subdimension": 8
+          },
+          "status": "SAMPLED_STATIC_ONLY__NOT_A_REPRESENTATION_CLAIM",
+          "target_projected_table_ebpw": 1.0
+        }
+      ],
+      "law": "Shared product quantization can meet sub-bit projected n-gram table budgets arithmetically, but its held-out row distortion is high at the tested rates; source addresses plus one reference-checked PLE formula/input control now permit bounded selective-repair controls, but not broad PLE parity or capability claims."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_PLE_LOOKUP_PQ_SOURCE_OUTPUT_REPAIR_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_PLE_OUTPUT_PQ_PLUS_SPARSE_REPAIR_RATE_DISTORTION_ONLY",
+        "target_summary": [
+          {
+            "target_projected_table_ebpw": 0.1,
+            "codebook_scope": null,
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 32,
+            "cardinality": 8,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.09376065994883225,
+            "ple_output_relative_l2": 0.9409741759300232,
+            "ple_output_cosine": 0.34227344393730164
+          },
+          {
+            "target_projected_table_ebpw": 0.25,
+            "codebook_scope": null,
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 16,
+            "cardinality": 8,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.18751065994883226,
+            "ple_output_relative_l2": 0.8984858393669128,
+            "ple_output_cosine": 0.45768246054649353
+          },
+          {
+            "target_projected_table_ebpw": 0.5,
+            "codebook_scope": null,
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 16,
+            "cardinality": 8,
+            "repair_count_per_row": 2,
+            "projected_complete_table_ebpw": 0.48751066244882024,
+            "ple_output_relative_l2": 0.8505499958992004,
+            "ple_output_cosine": 0.5380985140800476
+          },
+          {
+            "target_projected_table_ebpw": 0.75,
+            "codebook_scope": null,
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 8,
+            "cardinality": 16,
+            "repair_count_per_row": 1,
+            "projected_complete_table_ebpw": 0.6500110624469002,
+            "ple_output_relative_l2": 0.7345430254936218,
+            "ple_output_cosine": 0.6785915493965149
+          },
+          {
+            "target_projected_table_ebpw": 1.0,
+            "codebook_scope": null,
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 8,
+            "cardinality": 16,
+            "repair_count_per_row": 2,
+            "projected_complete_table_ebpw": 0.8000110624469002,
+            "ple_output_relative_l2": 0.7272153496742249,
+            "ple_output_cosine": 0.6915277242660522
+          }
+        ],
+        "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+        "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+        "boundary": "ONE_SOURCE_PLE_OUTPUT_CONTROL_WITH_PROJECTED_GLOBAL_TABLE_ACCOUNTING__NOT_COMPLETE_PLE_OR_NR"
+      },
+      "law": "On the sealed Flash BOS PLE formula control, globally billed shared PQ plus fixed per-row exact-BF16 top-error repair remains highly distortive below 1.0 projected table EBPW (best <=0.5 point: 0.850550 relative-L2; best <=1.0 point: 0.727215). Do not repeat this uniform base plus local-error residual rule as a PLE escalation; it is not a claim that a state-conditioned/generated or learned PLE function cannot work."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_PLE_OUTPUT_SHARD_LOCAL_PQ_RATE_DISTORTION_ONLY",
+        "target_summary": [
+          {
+            "target_projected_table_ebpw": 0.1,
+            "codebook_scope": "shard_local",
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 32,
+            "cardinality": 8,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.09381209970192143,
+            "ple_output_relative_l2": 0.9320031404495239,
+            "ple_output_cosine": 0.362887978553772
+          },
+          {
+            "target_projected_table_ebpw": 0.25,
+            "codebook_scope": "shard_local",
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 16,
+            "cardinality": 8,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.18756209970192142,
+            "ple_output_relative_l2": 0.9157528281211853,
+            "ple_output_cosine": 0.4050453007221222
+          },
+          {
+            "target_projected_table_ebpw": 0.5,
+            "codebook_scope": "shard_local",
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 8,
+            "cardinality": 8,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.37506209970192145,
+            "ple_output_relative_l2": 0.8597307205200195,
+            "ple_output_cosine": 0.5322428345680237
+          },
+          {
+            "target_projected_table_ebpw": 0.75,
+            "codebook_scope": "shard_local",
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 8,
+            "cardinality": 16,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.5001132994561626,
+            "ple_output_relative_l2": 0.8163122534751892,
+            "ple_output_cosine": 0.596656858921051
+          },
+          {
+            "target_projected_table_ebpw": 1.0,
+            "codebook_scope": "shard_local",
+            "quantizer_family": null,
+            "residual_stages": null,
+            "subdimension": 8,
+            "cardinality": 16,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.5001132994561626,
+            "ple_output_relative_l2": 0.8163122534751892,
+            "ple_output_cosine": 0.596656858921051
+          }
+        ],
+        "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+        "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+        "boundary": "ONE_SOURCE_PLE_OUTPUT_CONTROL_WITH_PROJECTED_SHARD_LOCAL_TABLE_ACCOUNTING__NOT_COMPLETE_PLE_OR_NR"
+      },
+      "law": "On the sealed Flash BOS PLE formula control, independently fitted BF16 PQ codebooks for each of the 128 physical PLE shards do not yield a useful sub-one output curve: the best <=0.5 point is 0.375062 projected table EBPW with 0.859731 relative-L2, worse than the existing global-plus-fixed-repair <=0.5 point at 0.850550. Do not retry this fixed shard-local PQ hierarchy; this does not reject a learned, context-conditioned, generated, or Nova-trained PLE function."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_PLE_ADDITIVE_PQ_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_PLE_OUTPUT_ADDITIVE_PQ_RATE_DISTORTION_ONLY",
+        "target_summary": [
+          {
+            "target_projected_table_ebpw": 0.1,
+            "codebook_scope": "global_shared",
+            "quantizer_family": "residual_additive",
+            "residual_stages": 2,
+            "subdimension": 32,
+            "cardinality": 2,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.06251045994979224,
+            "ple_output_relative_l2": 0.9560976028442383,
+            "ple_output_cosine": 0.3373485803604126
+          },
+          {
+            "target_projected_table_ebpw": 0.25,
+            "codebook_scope": "global_shared",
+            "quantizer_family": "residual_additive",
+            "residual_stages": 2,
+            "subdimension": 32,
+            "cardinality": 4,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.12501065994883226,
+            "ple_output_relative_l2": 0.9380813241004944,
+            "ple_output_cosine": 0.3998912572860718
+          },
+          {
+            "target_projected_table_ebpw": 0.5,
+            "codebook_scope": "global_shared",
+            "quantizer_family": "residual_additive",
+            "residual_stages": 2,
+            "subdimension": 10,
+            "cardinality": 4,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.4000106599488322,
+            "ple_output_relative_l2": 0.8616471290588379,
+            "ple_output_cosine": 0.5584343671798706
+          },
+          {
+            "target_projected_table_ebpw": 0.75,
+            "codebook_scope": "global_shared",
+            "quantizer_family": "residual_additive",
+            "residual_stages": 2,
+            "subdimension": 8,
+            "cardinality": 4,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.5000106599488322,
+            "ple_output_relative_l2": 0.8144101500511169,
+            "ple_output_cosine": 0.6362730860710144
+          },
+          {
+            "target_projected_table_ebpw": 1.0,
+            "codebook_scope": "global_shared",
+            "quantizer_family": "residual_additive",
+            "residual_stages": 2,
+            "subdimension": 8,
+            "cardinality": 4,
+            "repair_count_per_row": 0,
+            "projected_complete_table_ebpw": 0.5000106599488322,
+            "ple_output_relative_l2": 0.8144101500511169,
+            "ple_output_cosine": 0.6362730860710144
+          }
+        ],
+        "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+        "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+        "boundary": "ONE_SOURCE_PLE_OUTPUT_CONTROL_WITH_PROJECTED_ADDITIVE_TABLE_ACCOUNTING__NOT_COMPLETE_PLE_OR_NR"
+      },
+      "law": "On the sealed Flash BOS PLE formula control, two-stage greedily decoded BF16 additive residual PQ has no useful sub-one output curve: the best <=0.5 point is 0.400011 projected table EBPW with 0.861647 relative-L2, while the 0.500011 point remains 0.814410. Do not turn this into another stage/card sweep; this does not reject jointly learned, context-conditioned, generated, or Nova-trained PLE replacement functions."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_PLE_ADDRESS_GENERATOR_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY",
+        "target_summary": [
+          {
+            "target_projected_table_ebpw": 0.01,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 0.025,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 0.05,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 0.1,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 0.25,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 0.5,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 0.75,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          },
+          {
+            "target_projected_table_ebpw": 1.0,
+            "family": null,
+            "configuration": null,
+            "feature_count": 129,
+            "projected_complete_table_ebpw": 7.129965776164274e-06,
+            "heldout_row_relative_l2": 1.0357834100723267,
+            "ple_output_relative_l2": 0.9532825350761414,
+            "ple_output_cosine": 0.3021423816680908
+          }
+        ],
+        "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+        "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+        "boundary": "ONE_SOURCE_PLE_OUTPUT_ADDRESS_GENERATOR_CONTROL__NOT_COMPLETE_PLE_OR_NR"
+      },
+      "law": "On the sealed Flash BOS PLE formula control, an address-only BF16 Fourier row generator is effectively uncorrelated with held-out table rows (best reported held-out relative-L2 1.035783) and leaves 0.953283 PLE-output relative-L2 despite a 0.000007130 projected table EBPW. Do not retry smooth address-only coordinate generators; this is not a claim against context-conditioned, hierarchical, or learned PLE functions."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_PLE_ADDITIVE_HASH_FUNCTION_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_PLE_OUTPUT_GENERATOR_RATE_DISTORTION_ONLY",
+        "target_summary": [
+          {
+            "target_projected_table_ebpw": 0.01,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 0.025,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 0.05,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 0.1,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 0.25,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 0.5,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 0.75,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          },
+          {
+            "target_projected_table_ebpw": 1.0,
+            "family": "address_conditioned_additive_hash_factor_generator",
+            "configuration": {
+              "bucket_count": 64,
+              "hash_terms": 3
+            },
+            "feature_count": 193,
+            "projected_complete_table_ebpw": 1.0329950416238002e-05,
+            "heldout_row_relative_l2": 1.0957002639770508,
+            "ple_output_relative_l2": 0.979712724685669,
+            "ple_output_cosine": 0.2035313993692398
+          }
+        ],
+        "source_control_seal": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+        "reference_parity_seal": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+        "boundary": "ONE_SOURCE_PLE_OUTPUT_ADDRESS_GENERATOR_CONTROL__NOT_COMPLETE_PLE_OR_NR"
+      },
+      "law": "On the sealed Flash BOS PLE formula control, a fixed three-term discontinuous additive-hash BF16 factor generator has no useful held-out or PLE-output fidelity (best tested output point: 0.979713 relative-L2 at 0.000010330 projected table EBPW). Do not retune bucket count, mix seed, or ridge as a substitute for a materially new context/history-conditioned, learned-topology, sparse-exception, or Nova-trained PLE function."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_BOUND_EXPERT_VECTOR_CODE_FANOUT_COMPLETE",
+        "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+        "expert_ids": [
+          411,
+          334,
+          286,
+          152,
+          291,
+          106,
+          421,
+          304,
+          226,
+          331
+        ],
+        "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+        "source_activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+        "candidates": [
+          {
+            "variant": {
+              "cardinality": 2,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 32
+            },
+            "complete_scoped_ebpw": 0.049822265625,
+            "complete_bytes": 204072,
+            "heldout_global_relative_l2": 0.987338662147522,
+            "heldout_mean_row_cosine": 0.1582230180501938,
+            "route_weighted_relative_l2": 0.8385419845581055,
+            "route_weighted_cosine": 0.5458307266235352
+          },
+          {
+            "variant": {
+              "cardinality": 4,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 32
+            },
+            "complete_scoped_ebpw": 0.083572265625,
+            "complete_bytes": 342312,
+            "heldout_global_relative_l2": 0.9724821448326111,
+            "heldout_mean_row_cosine": 0.23256321251392365,
+            "route_weighted_relative_l2": 0.8252585530281067,
+            "route_weighted_cosine": 0.5671919584274292
+          },
+          {
+            "variant": {
+              "cardinality": 8,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 32
+            },
+            "complete_scoped_ebpw": 0.119822265625,
+            "complete_bytes": 490792,
+            "heldout_global_relative_l2": 0.9557703733444214,
+            "heldout_mean_row_cosine": 0.29388362169265747,
+            "route_weighted_relative_l2": 0.812954843044281,
+            "route_weighted_cosine": 0.5880330801010132
+          },
+          {
+            "variant": {
+              "cardinality": 2,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 64
+            },
+            "complete_scoped_ebpw": 0.034197265625,
+            "complete_bytes": 140072,
+            "heldout_global_relative_l2": 0.993789553642273,
+            "heldout_mean_row_cosine": 0.11064775288105011,
+            "route_weighted_relative_l2": 0.8486948013305664,
+            "route_weighted_cosine": 0.5314847826957703
+          },
+          {
+            "variant": {
+              "cardinality": 4,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 64
+            },
+            "complete_scoped_ebpw": 0.052322265625,
+            "complete_bytes": 214312,
+            "heldout_global_relative_l2": 0.9860907793045044,
+            "heldout_mean_row_cosine": 0.16594737768173218,
+            "route_weighted_relative_l2": 0.8383369445800781,
+            "route_weighted_cosine": 0.547374963760376
+          },
+          {
+            "variant": {
+              "cardinality": 8,
+              "iterations": 4,
+              "seed": 1337,
+              "subdimension": 64
+            },
+            "complete_scoped_ebpw": 0.072947265625,
+            "complete_bytes": 298792,
+            "heldout_global_relative_l2": 0.9774518013000488,
+            "heldout_mean_row_cosine": 0.21097759902477264,
+            "route_weighted_relative_l2": 0.835737407207489,
+            "route_weighted_cosine": 0.5491411685943604
+          }
+        ],
+        "best_density": {
+          "variant": {
+            "cardinality": 2,
+            "iterations": 4,
+            "seed": 1337,
+            "subdimension": 64
+          },
+          "complete_scoped_ebpw": 0.034197265625,
+          "complete_bytes": 140072,
+          "heldout_global_relative_l2": 0.993789553642273,
+          "heldout_mean_row_cosine": 0.11064775288105011,
+          "route_weighted_relative_l2": 0.8486948013305664,
+          "route_weighted_cosine": 0.5314847826957703
+        },
+        "best_route_output": {
+          "variant": {
+            "cardinality": 8,
+            "iterations": 4,
+            "seed": 1337,
+            "subdimension": 32
+          },
+          "complete_scoped_ebpw": 0.119822265625,
+          "complete_bytes": 490792,
+          "heldout_global_relative_l2": 0.9557703733444214,
+          "heldout_mean_row_cosine": 0.29388362169265747,
+          "route_weighted_relative_l2": 0.812954843044281,
+          "route_weighted_cosine": 0.5880330801010132
+        },
+        "boundary": "ONE_SOURCE_ACTIVATION_SELECTED_EXPERT_FAMILY_SCREEN__NOT_COMPLETE_NR_OR_CAPABILITY"
+      },
+      "law": "On the sealed Flash layer-0 source route, shared BF16 product-vector codes are arithmetically tiny but highly distortive: the densest tested selected-expert family is 0.034197 scoped EBPW with 0.848695 route-weighted source-output relative-L2, while the best route-output point is 0.119822 scoped EBPW with 0.812955 error. Close this fixed shared-PQ expert family for the tested control; this does not reject learned generators, output-aware residuals, or other functional expert representations."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_EXPERT_SHARED_BASIS_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_BOUND_EXPERT_VECTOR_CODE_FANOUT_COMPLETE",
+        "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+        "expert_ids": [
+          411,
+          334,
+          286,
+          152,
+          291,
+          106,
+          421,
+          304,
+          226,
+          331
+        ],
+        "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+        "source_activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+        "candidates": [
+          {
+            "variant": {
+              "family": "shared_input_basis",
+              "iterations": 1,
+              "rank": 4,
+              "seed": 1337
+            },
+            "complete_scoped_ebpw": 0.046072265625,
+            "complete_bytes": 188712,
+            "heldout_global_relative_l2": 0.9987688064575195,
+            "heldout_mean_row_cosine": 0.0448727123439312,
+            "route_weighted_relative_l2": 0.9869165420532227,
+            "route_weighted_cosine": 0.23164276778697968
+          },
+          {
+            "variant": {
+              "family": "shared_input_basis",
+              "iterations": 1,
+              "rank": 8,
+              "seed": 1337
+            },
+            "complete_scoped_ebpw": 0.076072265625,
+            "complete_bytes": 311592,
+            "heldout_global_relative_l2": 0.997612714767456,
+            "heldout_mean_row_cosine": 0.06494967639446259,
+            "route_weighted_relative_l2": 0.9726660847663879,
+            "route_weighted_cosine": 0.307873398065567
+          },
+          {
+            "variant": {
+              "family": "shared_input_basis",
+              "iterations": 1,
+              "rank": 16,
+              "seed": 1337
+            },
+            "complete_scoped_ebpw": 0.136072265625,
+            "complete_bytes": 557352,
+            "heldout_global_relative_l2": 0.9953617453575134,
+            "heldout_mean_row_cosine": 0.09237436205148697,
+            "route_weighted_relative_l2": 0.977962076663971,
+            "route_weighted_cosine": 0.2777802646160126
+          },
+          {
+            "variant": {
+              "family": "shared_input_basis",
+              "iterations": 1,
+              "rank": 32,
+              "seed": 1337
+            },
+            "complete_scoped_ebpw": 0.256072265625,
+            "complete_bytes": 1048872,
+            "heldout_global_relative_l2": 0.990896463394165,
+            "heldout_mean_row_cosine": 0.13091973960399628,
+            "route_weighted_relative_l2": 0.9038986563682556,
+            "route_weighted_cosine": 0.5387300848960876
+          }
+        ],
+        "best_density": {
+          "variant": {
+            "family": "shared_input_basis",
+            "iterations": 1,
+            "rank": 4,
+            "seed": 1337
+          },
+          "complete_scoped_ebpw": 0.046072265625,
+          "complete_bytes": 188712,
+          "heldout_global_relative_l2": 0.9987688064575195,
+          "heldout_mean_row_cosine": 0.0448727123439312,
+          "route_weighted_relative_l2": 0.9869165420532227,
+          "route_weighted_cosine": 0.23164276778697968
+        },
+        "best_route_output": {
+          "variant": {
+            "family": "shared_input_basis",
+            "iterations": 1,
+            "rank": 32,
+            "seed": 1337
+          },
+          "complete_scoped_ebpw": 0.256072265625,
+          "complete_bytes": 1048872,
+          "heldout_global_relative_l2": 0.990896463394165,
+          "heldout_mean_row_cosine": 0.13091973960399628,
+          "route_weighted_relative_l2": 0.9038986563682556,
+          "route_weighted_cosine": 0.5387300848960876
+        },
+        "boundary": "ONE_SOURCE_ACTIVATION_SELECTED_EXPERT_FAMILY_SCREEN__NOT_COMPLETE_NR_OR_CAPABILITY"
+      },
+      "law": "On the sealed Flash layer-0 source route, a shared BF16 input-basis factor formula is also highly distortive: rank 4 reaches 0.046072 scoped EBPW with 0.986917 route-weighted source-output relative-L2, while rank 32 reaches 0.256072 with 0.903899 error. Close this fixed shared-basis form for the tested control; this does not reject lawful nonlinear atom sharing, route-aggregate representations, learned generators, or output-aware repair."
+    }
+  ],
+  "frontier_evidence": [
+    {
+      "receipt": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_SCREEN.json",
+      "finding": {
+        "status": "SOURCE_BOUND_NONLINEAR_ATOM_SHARING_SCREEN_COMPLETE",
+        "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "gate_up_tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+        "down_tensor": "model.language_model.layers.0.mlp.experts.down_proj",
+        "expert_ids": [
+          411,
+          334
+        ],
+        "selected_neuron_count": 128,
+        "outcome": {
+          "byte_advantage_achieved": true,
+          "byte_advantage_threshold": 0.2,
+          "matched_null_advantage": true,
+          "reopen_rule": "Expand only to a second source layer or a materially broader source-output bank after independent replication.",
+          "source_output_matched_null_advantage": true,
+          "status": "SOURCE_OUTPUT_DISCRIMINATOR_SURVIVES",
+          "synthetic_probe_matched_null_advantage": false
+        },
+        "complete_scoped_ebpw": 8.2703125,
+        "complete_bytes": 2032512,
+        "byte_advantage_percent": 48.31054687500001,
+        "matched_b_selected_relative_l2": 1.9575355052947998,
+        "shuffled_b_selected_relative_l2": 2.5000388622283936,
+        "matched_b_full_relative_l2": 0.7327003479003906,
+        "shuffled_b_full_relative_l2": 0.9357578754425049,
+        "assignment_similarity_mean": 0.32808399200439453,
+        "assignment_similarity_min": 0.1683344841003418,
+        "boundary": "TWO_EXPERT_SELECTED_TRIPLES_ONLY__SOURCE_OUTPUT_DISCRIMINATOR__NOT_COMPLETE_NR_OR_CAPABILITY"
+      },
+      "law": "On one sealed Flash layer-0 source route, lawful gated-MoE atom matching across two exact experts beat a byte-identical independent-ID null on source selected-triple and full-expert outputs with 48.31% scoped byte reduction. The synthetic function-probe control did not repeat the advantage and absolute matched error remains high; this is an E02 discriminator survivor requiring independent replication, not a representation, direct-runtime, capability, or whole-body EBPW result."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json",
+      "finding": {
+        "status": "SYMBOLIC_FULL_JOINT_RANK__QUOTIENT_REJECTED",
+        "streams": 4,
+        "joint_observable_rank": 4,
+        "joint_observable_nullity": 0,
+        "read_mix_rank": 4,
+        "read_mix_determinant": 0.00010750713794635171,
+        "nontrivial_r_less_than_m_possible": false,
+        "falsifier": "The direct residual-stream identity consumer forces full stream-axis rank; no nontrivial simultaneous invariant quotient can preserve the declared consumers.",
+        "boundary": "SYMBOLIC_HC_CONSUMER_CLOSURE_ONLY__NO_NUMERIC_SOURCE_STATE_OR_EBPW"
+      },
+      "law": "The canonical Flash HyperConnection read-mix and combine consumers have full joint stream-axis rank 4/4; the direct residual-stream consumer alone blocks a nontrivial exact quotient. Close E04 for this declared formula set without model loading, and do not claim an HC state reduction absent a materially different consumer or a source-approved approximation."
+    },
+    {
+      "receipt": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json",
+      "finding": {
+        "status": "FIXED_INT4_ROUTER_ROUTE_GATE_REJECTED",
+        "router_tensor": "model.language_model.layers.0.mlp.gate.weight",
+        "router_shape": [
+          512,
+          2560
+        ],
+        "source_activation_sha256": "20cd74d2af232a3320c9b0723bc8192cb8ad888b10765b4749a2f0ee53cb7fb0",
+        "source_route_ids": [
+          411,
+          334,
+          286,
+          152,
+          291,
+          106,
+          421,
+          304,
+          226,
+          331
+        ],
+        "candidate_route_ids": [
+          211,
+          304,
+          414,
+          226,
+          507,
+          446,
+          298,
+          391,
+          402,
+          135
+        ],
+        "candidate_top10_symmetric_difference": 16,
+        "candidate_top10_order_positions_changed": 10,
+        "source_logit_relative_l2": 0.3463221788406372,
+        "source_logit_rmse": 2.3984925992508903,
+        "source_logit_max_abs_error": 7.165263652801514,
+        "candidate_route_weight_max_abs_error": 0.33580252528190613,
+        "source_top10_top11_margin": 0.054087162017822266,
+        "candidate_top10_top11_margin": 0.03106999397277832,
+        "matched_null_top10_symmetric_difference": 20,
+        "matched_null_logit_relative_l2": 0.9591805934906006,
+        "complete_scoped_ebpw": 4.4078125,
+        "complete_candidate_bytes": 722176,
+        "source_control_recomputed_ids_match_bridge": true,
+        "fixed_candidate_route_identity_pass": false,
+        "tail_non_router_organs": "WITHHELD; no compatible source-output control was loaded",
+        "boundary": "ONE_FIXED_SOURCE_BOUND_LAYER0_ROUTER_GATE__NOT_TAIL_COMPLETE_NR_OR_CAPABILITY"
+      },
+      "law": "On the sealed Flash layer-0 source MLP input, source route recomputation matches all ten authoritative IDs, but the one fixed rowwise INT4 router candidate changes 8 of 10 route identities (16-ID symmetric difference) at 4.4078125 scoped EBPW and 0.346322 router-logit relative-L2. Close this fixed router family for the tested control; do not attribute the route failure to expert compression, and keep non-router tail gates withheld until valid source-output controls exist."
+    }
+  ],
+  "claim_boundary": "This is a complete source-family inventory plus an open-NR accounting baseline. The exact 16.0 EBPW figure belongs only to external source BF16 storage; this receipt claims no complete NR EBPW, closed standalone runnable NR, accepted-token TPS, or capability preservation.",
+  "next": "Use the source-bound routed-MoE bridge and direct packed substrate as controls. The n-gram address trace and one sealed reference-checked PLE formula/input control are now closed. Fixed top-error sparse repair on shared PQ, fixed physical-shard-local BF16 PQ, fixed greedy additive residual PQ, a smooth address-only generator, a fixed discontinuous additive-hash factor generator, the fixed shared expert product-vector-code family, the fixed shared input-basis factor family, the fixed rowwise INT4 router candidate, and the declared exact HC stream quotient are bounded negatives. The expert results are real source-output falsifiers at scoped sub-0.1 rates, not whole-body claims. E02 lawful nonlinear atom sharing now has a bounded source-output discriminator survivor: replicate on a second source layer or materially broader source-output bank, preserving the same independent-ID null and complete descriptor accounting, before any expansion. Do not call it capable or direct until that replication and a production formula audit pass. E03 router gating is closed for this fixed INT4 control because source route identity failed; keep the router high fidelity and test other tail organs only with valid source-output teachers. E04 symbolic closure is closed at full joint rank 4/4; only a materially different HC consumer closure or source-approved approximation can reopen it. A sealed local synthetic context-response screen is a positive function-geometry prior only: it verified the fast formula form and found a compact response spectrum over its declared local plane, but it did not supply real trajectory states or an EBPW candidate. The historical native stateful session has a verified compact-UTF8 seal and can supply accepted reference provenance; its native body does not embed PLE, so it is not upstream PLE-inclusive source trajectory evidence. The next PLE hypothesis must represent (address, context, persistent PLE state) to contribution directly or use a learned/Nova replacement; first capture a fresh sealed native-context state bank, evaluate the exact formula bank, then expand only survivors to disjoint source inputs/token boundaries. Continue tail gates only where valid controls exist. Replace only Pareto survivors, close every dependency before reporting complete EBPW, and build NX only when a machine specialization earns it.",
+  "seal_sha256": "1b940f63b638937d8ef09edfae8f1c1648d774eb4d52bc322d64d79d0d403a61"
+}

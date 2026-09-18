@@ -1,0 +1,31 @@
+{
+ "schema": "hawking.odyssey.rule_test.v1",
+ "oxx": "O003",
+ "rule_tested": "R-predictable-route-prefetch",
+ "kind": "transfer-rule-verification",
+ "gpu_cost": 0,
+ "_evidence": "SYNTHESIZED from receipts/odyssey-i/O003_NX_gather.json's route data (already MEASURED, 'MEASURED live switch_mlp inspect'). Formula confirmed by reading tools/odyssey_patient_runner.py directly (~line 590-638) rather than guessing field semantics -- a naive first chance-baseline attempt (P(>=1 shared expert), 46%) answered the wrong question and would have given a backwards conclusion; corrected before publishing.",
+ "_label": "MEASURED (source receipt + source code) -> DERIVED (corrected chance-baseline comparison)",
+ "computation": {
+  "transition_stability_formula": "mean_t(|top_k(t) \u2229 top_k(t-1)| / top_k)",
+  "p_e_t_given_e_t_minus_1_formula": "mean_e(P(e in top_k(t) | e in top_k(t-1)))",
+  "chance_baseline_formula": "top_k / n_experts (expected overlap fraction under independent/memoryless routing)",
+  "n_experts": 64,
+  "top_k": 6,
+  "chance_baseline": 0.0938,
+  "measured_transition_stability": 0.4049,
+  "transition_stability_vs_chance": 4.32,
+  "measured_p_e_t_given_e_t_minus_1": 0.3819,
+  "p_e_t_given_e_t_minus_1_vs_chance": 4.07,
+  "transition_events": 2340,
+  "tokens_observed": 91,
+  "moe_layers": 26
+ },
+ "finding": "Both route-transition metrics sit ~4.3-4.1x above the chance baseline for independent/memoryless routing (9.4%): on average 40.5% of the 6 routed experts persist from one token position to the next (vs 9.4% expected by chance), and a given expert that was routed has a 38.2% chance of being routed again next position (vs 9.4% chance). This is genuine, decisive route-transition predictability -- R-predictable-route-prefetch's condition ('route transition predictable, P(E_t|E_t-1) peaked') is CONFIRMED for O003, with a solid effective sample (2340 transition-events across 26 layers, not just the 91 raw tokens).",
+ "sources": {
+  "measured_ref": "receipts/odyssey-i/O003_NX_gather.json",
+  "formula_ref": "tools/odyssey_patient_runner.py:590-638"
+ },
+ "commit": "6d5c76c15",
+ "emitted_at": "2026-09-09T13:21:10Z"
+}

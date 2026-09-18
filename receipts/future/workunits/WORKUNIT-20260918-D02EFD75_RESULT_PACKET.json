@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "3cd8e874bd6edc620571338729d1a171cb5adfc54b622afb1e0dbfb7fdc530ff",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:01:36.992063+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:01:36.992080+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:01:36.997173+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First read-only observation targeted admitted focus file hawking/perception/tools.py (sha256 3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106, 11820 bytes); only the first 4000 bytes (33.8%) were shown, so ",
+      "outcome": "CONTINUE",
+      "reply_chars": 5194,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First read-only observation targeted admitted focus file hawking/perception/tools.py (sha256 3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106, 11820 bytes); only the first 4000 bytes (33.8%) were shown, so no conclusion is drawn about the unshown remainder.\",\"tools.py declares a typed allowlist surface: ADAPTERS = {\\\"file.local\\\"}, ADAPTER_VERSION = \\\"1\\\", and TOOL_NAMES = (\\\"system.doctor\\\", \\\"project.status\\\", \\\"vision.capabilities\\\", \\\"vision.observe\\\", \\\"vision.query\\\", \\\"vision.verify\\\", \\\"vision.progress\\\", \\\"vision.list_artifacts\\\", \\\"vision.get_artifact\\\", \\\"document.extract\\\").\",\"_classify(path) performs magic-byte classification with no graphics stack by importing hawking.perception.file_eye.classify_bytes and reading path.read_bytes()[:8_000_000]; on any exception it returns {\\\"kind\\\": \\\"unclassified\\\", \\\"why\\\": ...} rather than raising.\",\"_open(projects_root, project_path) resolves the projects root, resolves the requested path relative to root when not absolute, and raises ValueError(f\\\"project path escapes projects root: {p}\\\") when root is neither a parent of p nor equal to p; it then opens ProjectStore if project.db exists, else creates it.\",\"register(host) is the single registration entry point: it binds root = Path(host.projects_root) and decorates each tool via @host.tool(...), so the tool surface is written in exactly one place.\",\"system.doctor returns an offline health report asserting ok=True, offline=True, network_forbidden=True, plus python/platform/projects_root, projects_root_writable via os.access, adapters, tools, implementation=\\\"hawking-native (hawking.perception)\\\", and checked_at=utc_now().\",\"vision.capabilities declares not_implemented entries for \\\"vision.verify(receipt_path)\\\" (acceptance-receipt audit trail not ported; verify binds a capture_id to its subject instead) and for \\\"browser/3d/worldir adapters\\\" (PARKED until a Hawking-owned implementation earns a typed allowlist entry), and reports dependencies {\\\"pillow\\\": False, \\\"opencv\\\": False, \\\"numpy\\\": False}.\",\"project.status returns _open(root, project_path).status(); vision.list_artifacts returns rows from _open(root, project_path).list_artifacts(limit) with count and a limit clamped by max(1, min(int(limit), 10_000)).\",\"The module docstring states the design intent: observe classifies by magic bytes without a graphics stack, verify binds evidence to a subject path as well as a digest so replaying identical bytes at a different path remains visible, and everything else is refused by the typed allowlist rather than exposed as an unbounded tool surface.\"],\"sources\":[{\"path\":\"hawking/perception/tools.py\",\"sha256\":\"3f648d29242a7a10b67cc4eff485cca0e7f555e66954f2c19a62d18b516f6106\",\"bytes\":11820,\"observed_bytes\":4000,\"truncated\":true,\"observation\":\"read-only, first observation of this WorkUnit\"}],\"recommendations\":[\"Smallest safe seam: the typed allowlist boundary in hawking/perception/tools.py, i.e. the pair (TOOL_NAMES, register(host)) plus the _open path-escape guard. Do not widen ADAPTERS or add tool names; the contract is that the registered surface equals TOOL_NAMES and every non-allowlisted name is refused.\",\"Focused RED/GREEN tests (to live in hawking/test_tool_registry.py, not yet read): RED - assert that registering or invoking a name absent from TOOL_NAMES is refused and that _open with a path escaping projects_root raises ValueError; GREEN - assert that every name in TOOL_NAMES is registered exactly once by register(host) and that _open accepts a path inside projects_root.\",\"Protected resources: projects_root and its parent (os.access is read-only probing only), ProjectStore/project.db, and the file_eye classifier import. No network, no optional graphics dependencies (pillow/opencv/numpy stay False), no hardware access.\",\"Writer/effect scope: exactly one writer - register(host) is the sole place that binds tools to the host; _open is the sole path-resolution authority and must remain the only ga",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-ae6e294a2d3e4c17",
+  "worker_id": "hawking-worker-a5ee135a72f147f6",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-D02EFD75"
+}

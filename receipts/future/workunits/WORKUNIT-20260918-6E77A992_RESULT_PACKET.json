@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "9ea6c622e0ea4ab9768b6c025e8e447416ce803b66d90391bd9923ed0103642b",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:15:47.608998+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:15:47.609007+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:15:47.610810+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/tests/test_web_live_contract.py (3046 bytes, sha256 26118aa402c55baeb6767deec1b0685cdd83cb27aa6e94e62adc9fa1c2612fa2) was read in full and contains exactly one test: test_refresh_and_reconnect_rehydrate_one_canonic",
+      "outcome": "CONTINUE",
+      "reply_chars": 3971,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/tests/test_web_live_contract.py (3046 bytes, sha256 26118aa402c55baeb6767deec1b0685cdd83cb27aa6e94e62adc9fa1c2612fa2) was read in full and contains exactly one test: test_refresh_and_reconnect_rehydrate_one_canonical_session, plus helpers _Backend, _request, and _serve.\",\"The test exercises successful request/response flows only: POST /hawking/web/session (action=select, session_id=web-c2-live), GET /hawking/web/events?id=web-c2-live&after=0, POST /hawking/web/events/ack, then a fresh ThreadingHTTPServer handler over the same state_root followed by GET /hawking/web/session?id=web-c2-live and GET /hawking/web/events?id=web-c2-live&after=<cursor>.\",\"Assertions verify contract_schema == 'hawking.web.contract.v1', the selected contract's goals contain the created goal_id, every replayed event carries keys {event_id, sequence, identity, type, timestamp, payload_version, source_revision}, and post-reconnect replay reports gap is False and snapshot_required is False.\",\"HTTP 200 semantics are implicit: _request uses urllib.request.urlopen, which raises for non-2xx responses, so any non-200 from the handler would fail the test; there are no explicit status-code assertions in this file.\",\"The fixture's _Backend.complete raises AssertionError ('C2 projection fixture must not invoke a model'), and make_handler is constructed with greedy=False, a fixed health payload, and stores={'state_root': str(root)}; no cognition occurs in the fixture.\",\"The observed focus file contains no references to P18, tunnels, ShareError, permission gates, TTL, or secret redaction; none of the objective's named target areas (ShareError status mapping, tunnel permission/TTL gates, secret redaction) are covered by this file.\",\"hawking/share_bridge.py and hawking/tests/test_share_bridge.py were not read within the completed observation window, so no claim is made about ShareError definitions, tunnel permission/TTL logic, redaction helpers, or their tests.\",\"Falsifier: if hawking/tests/test_share_bridge.py and hawking/share_bridge.py contain no tests or code for ShareError-to-HTTP-status mapping, tunnel permission/TTL enforcement, and secret redaction, then the accepted P18 tunnel contract has no admitted test coverage in the declared focus set.\"],\"sources\":[\"hawking/tests/test_web_live_contract.py (sha256 26118aa402c55baeb6767deec1b0685cdd83cb27aa6e94e62adc9fa1c2612fa2, 3046 bytes, read in full, not truncated)\"],\"recommendations\":[\"Read hawking/share_bridge.py to locate ShareError definitions, tunnel permission/TTL gate logic, and any secret-redaction helpers before claiming contract coverage.\",\"Read hawking/tests/test_share_bridge.py (an admitted focus test) to identify the exact tests for ShareError status mapping, tunnel permission/TTL gates, and secret redaction.\",\"Search the admitted files for identifiers such as ShareError, ttl, expires, permission, redact, and tunnel to bind each contract requirement to a specific test or code path.\",\"Record exact test names and assertion lines as evidence for each of the four audit areas: successful 200 responses, ShareError status mapping, tunnel permission/TTL gates, and secret redaction.\"],\"unresolved_questions\":[\"Does hawking/share_bridge.py define ShareError with an explicit HTTP status mapping, and which statuses are used for permission denial versus TTL expiry?\",\"Which exact tests in hawking/tests/test_share_bridge.py assert successful HTTP 200 tunnel responses, and do they assert status codes explicitly or only implicitly via urlopen?\",\"Where are tunnel permission and TTL gates enforced (handler, bridge, or store layer), and are there tests for expired-TTL and denied-permission paths?\",\"Is secret redaction applied to tunnel payloads or logs, and which test asserts that redaction?\",\"Does any admitted test assert non-200 error responses, or is all error semantics implicit as in test_web_live_contract.py?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-0c44824953a54150",
+  "worker_id": "hawking-worker-fbd15493e73a4e5e",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-6E77A992"
+}

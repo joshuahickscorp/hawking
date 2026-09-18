@@ -1,0 +1,66 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P11_NATIVE_RUNTIME_QUALIFICATION_PARTIAL",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-P11-NATIVE-RUNTIME-20260918",
+  "owner": "hawking/native_gate.py::run_native_gate",
+  "built_at": "2026-09-18T09:53:00Z",
+  "build": {
+    "command": "cargo build --profile release-fast --example ascension_qwen38_hybrid_greedy --example ascension_qwen38_resident",
+    "result": "Finished release-fast profile [optimized] target(s) in 47.07s",
+    "target_profile": "release-fast",
+    "target_directory": "workspace/ops/build/rust/release-fast"
+  },
+  "artifacts": {
+    "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy": {
+      "sha256": "a62ac19896c91815ca261c66c1d5dabc349a0e396b53489fd5ea369ecbbafb39",
+      "bytes": 7234880,
+      "format": "Mach-O 64-bit executable arm64"
+    },
+    "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident": {
+      "sha256": "e5ceb5e0a4765d3d37528c836c1a2f2e597530096c1183f5a49d722b707b0b3e",
+      "bytes": 7266792,
+      "format": "Mach-O 64-bit executable arm64"
+    }
+  },
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "artifact_root_observation": {
+    "exists": true,
+    "approx_size": "9.9G",
+    "tokenizer": "present",
+    "catalog": "present"
+  },
+  "direct_one_token_probe": {
+    "result": "PASS",
+    "prompt_tokens": 11,
+    "new_token_ids": [248068],
+    "fallbacks": 0,
+    "dense_w_materialized": 0,
+    "catalog_tensors": 755,
+    "gpu_ns_per_step": [683622874],
+    "wall_ns": 765687208
+  },
+  "native_gate": {
+    "receipt": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_NATIVE_QUALIFICATION_20260918.json",
+    "status": "FAILED_ONLY_AT_PUBLIC_CLI_STAGE",
+    "elapsed_ns": 65611015084,
+    "stages_passed": [
+      "A1_direct_resident",
+      "A2_hawking_native_backend",
+      "A3_provider_abstraction",
+      "A4_hawking_plain_cognition",
+      "A5_hawking_structured_cognition"
+    ],
+    "stage_failed": "A6_full_hawking_task",
+    "a6_failure": "The public CLI rejects the legacy sealed-3.14 profile because the active catalog archives it from the normal execution selector.",
+    "provider_activity": "none; all stages used the local native profile"
+  },
+  "claim_boundary": "Local native artifact build and runtime evidence is accepted through A1-A5, including direct resident, connector, provider abstraction, plain cognition, and structured cognition. This does not claim public CLI release, full resident production admission, hardware qualification, or P20 completion.",
+  "remaining": [
+    "Resolve the intentional archived-profile/public-CLI A6 boundary without weakening catalog admission policy.",
+    "Complete broader runtime/hardware qualification and final release gates."
+  ],
+  "falsifier": "Any future native run with a nonzero fallback, dense materialization, failed tensor census, failed A1-A5 stage, or artifact hash mismatch invalidates this partial runtime evidence."
+}

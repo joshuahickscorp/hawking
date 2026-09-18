@@ -26,79 +26,8 @@ from tools.verify import status_causality as sc
 RECEIPT = "ODYSSEY2_LAW_STORE.json"
 SCHEMA = "hawking.future.odyssey2_law_store.v1"
 
-FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
-    sc,
-    "FIVE_RECORDED_FIELDS",
-    (
-        "probe_performed",
-        "direct_observation",
-        "interpretation",
-        "confidence",
-        "alternatives",
-    ),
-)
-
-
-def _bind_emit() -> None:
-    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
-    if hasattr(sc, "emit"):
-        return
-
-    def emit(
-        status: str,
-        *,
-        probe_performed: str = "",
-        direct_observation: Any = "",
-        interpretation: str = "",
-        probe_kind: str = "",
-        claim_kind: str | None = None,
-        falsifier: str = "",
-        source: str = "",
-    ) -> dict[str, Any]:
-        row: dict[str, Any] = {
-            "status": status,
-            "probe_performed": probe_performed,
-            "direct_observation": direct_observation,
-            "interpretation": interpretation or status,
-            "probe_kind": probe_kind,
-            "use_catalog": False,
-            "source": source or "<emit>",
-        }
-        if claim_kind:
-            row["claim_kind"] = claim_kind
-        if falsifier:
-            row["falsifier"] = falsifier
-        out = sc.challenge(row)
-        out["entry"] = "emit"
-        return out
-
-    sc.emit = emit  # type: ignore[attr-defined]
-
-
-_bind_emit()
-
-
-def records_five_fields(node: Any) -> bool:
-    fn = getattr(sc, "records_five_fields", None)
-    if callable(fn):
-        return bool(fn(node))
-    if not isinstance(node, dict):
-        return False
-    if not all(k in node for k in FIVE_RECORDED_FIELDS):
-        return False
-    if not str(node.get("probe_performed") or "").strip():
-        return False
-    if node.get("direct_observation") in (None, "", [], {}):
-        return False
-    if not str(node.get("interpretation") or "").strip():
-        return False
-    conf = node.get("confidence")
-    if not isinstance(conf, dict):
-        return False
-    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
-        return False
-    alts = node.get("alternatives")
-    return isinstance(alts, list) and bool(alts)
+FIVE_RECORDED_FIELDS = sc.FIVE_RECORDED_FIELDS
+records_five_fields = sc.records_five_fields
 
 
 def record_law_store_causality(

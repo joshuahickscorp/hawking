@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.unification.flash_source_boundary_capture_owner.v1",
+  "status": "STATICALLY_WIRED__WITHHELD_PENDING_MACHINE_OWNER_AUTHORIZATION",
+  "observed_at_utc": "2026-09-12T18:20:00Z",
+  "specimen": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+  },
+  "owners": {
+    "teacher_admission": {
+      "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+      "sha256": "e67213f61998c3ae5b948baec652017f6d7006b80a2f0849a211647f27028824",
+      "symbol": "load_external_reference_contract",
+      "role": "canonical exact-source, raw-logit, and detached machine-owner admission"
+    },
+    "capture_preflight": {
+      "path": "tools/odyssey/flash_source_boundary_preflight.py",
+      "sha256": "e1cdfc28212d600616d30c440c0e342316f3b76316b8b87de37344a1ecab8c29",
+      "receipt": "receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_20260912.json",
+      "receipt_sha256": "888353ef23e1dad735df24f248989994aad50986a966df08757af6b354c1d7b2",
+      "receipt_seal_sha256": "9574dc51522eb98303625743d7e827b8f1e22932db926727d866dc4462e608ba"
+    },
+    "capture_wrapper": {
+      "path": "tools/odyssey/flash_source_boundary_capture_mlx.py",
+      "sha256": "67b228624c86680522958ba3f7916bd5cf00165b38f17d73c68e5d5a846b7018",
+      "role": "owner-gated reservation, isolated runtime launch, independent payload verification, and sealed packaging"
+    },
+    "isolated_reference_worker": {
+      "path": "tools/odyssey/flash_source_boundary_mlx_worker.py",
+      "sha256": "69099e51c778701c7f59bbf6fd221783798023e992d1cb3284fa1493b05724ba",
+      "role": "reuse the existing Qwen4-Exp forward owner, capture evaluated seams, stop after layer 4",
+      "production_authority": false
+    }
+  },
+  "capture_contract": {
+    "token_index": 0,
+    "token_id": 5423,
+    "layers": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "ple_layer_ids": [
+      1
+    ],
+    "continuous_seams": 13,
+    "route_seams": 1,
+    "layer4_cache_boundaries": [
+      "pre_attention",
+      "post_attention"
+    ],
+    "full_body_executed": false,
+    "lm_head_executed": false,
+    "source_checkpoint_mutation_allowed": false
+  },
+  "fail_closed_properties": {
+    "owner_admission_precedes_runtime_probe": true,
+    "owner_admission_precedes_output_reservation": true,
+    "owner_admission_precedes_model_load": true,
+    "fresh_output_namespace_required": true,
+    "payload_symlinks_and_hardlinks_rejected": true,
+    "payload_hash_dtype_shape_and_extent_reverified": true,
+    "worker_cannot_self_admit": true,
+    "cache_hashes_not_treated_as_hidden_states": true,
+    "protected_lane_owner_knows_boundary_wrapper_and_worker": true
+  },
+  "validation": {
+    "focused_tests": "47 passed, 0 failed",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "real_dry_run": {
+      "status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+      "protected_native_lane_clean": true,
+      "output_namespace_exists": false,
+      "model_loaded": false
+    }
+  },
+  "runtime_actions": {
+    "model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "After the machine owner provisions the pinned Ed25519 trust anchor and signs the exact existing V2 request, execute one protected bounded source capture. Then add the matching native payload producer and compare the ordered seams before any full replay.",
+  "claim_boundary": "This proves a statically validated, fail-closed source-capture path. It does not admit the unsigned teacher, execute the source model, provide native counterpart payloads, establish source parity, qualify an NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "seal_sha256": "bf086974580f39c59b827e87bddcd8e381c5ee6b2ed06a499df10696dd6f599e"
+}

@@ -1,0 +1,132 @@
+{
+  "bounded_extraction_budget": {
+    "authorized_next_action": "none until a canonical E13 evidence producer is admitted",
+    "bytes_per_role": 20971520,
+    "bytes_per_row_per_role": 5120,
+    "bytes_total": 41943040,
+    "dtype": "BF16",
+    "payload_read_now": 0,
+    "roles": [
+      "input_embedding",
+      "output_head"
+    ],
+    "rows_total": 4096
+  },
+  "claim_boundary": "header/control admissibility only; no embedding/head payload byte, row, logit, capability, or runtime claim is measured here; role payload identity is not rehashed here",
+  "control_artifact_root": "/Users/scammermike/Downloads/hawking/receipts/headless",
+  "elapsed_ns": 63663000,
+  "elapsed_s": 0.064,
+  "experiment": "E13",
+  "finished_at_ns": 1789209448081957000,
+  "gpu_session_started": false,
+  "model_lake_manifest": {
+    "bytes": 360023286454,
+    "n_files": 144,
+    "n_sha256_verified": 132,
+    "n_size_only_verified": 12,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+  },
+  "model_loaded": false,
+  "next_action": "repair the named source/control prerequisite; do not read tensor payload bytes yet",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "producer": {
+    "module": "hcli.agentos.flash_vocabulary_prefilter",
+    "module_path": "/Users/scammermike/Downloads/hawking/hcli/agentos/flash_vocabulary_prefilter.py",
+    "module_sha256": "16a4c3514b4df8ad789f9d10fd7e710bfc85114bc6b9f639563904d654e02330",
+    "python_executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "source_closure": {
+      "hcli.agentos.flash_tensor_probe": {
+        "path": "/Users/scammermike/Downloads/hawking/hcli/agentos/flash_tensor_probe.py",
+        "sha256": "b6a77647b4e6093091f961d70dd1e2995d17d99cec36b13b559ec64412330d3f"
+      },
+      "hcli.agentos.flash_vocabulary_prefilter": {
+        "path": "/Users/scammermike/Downloads/hawking/hcli/agentos/flash_vocabulary_prefilter.py",
+        "sha256": "16a4c3514b4df8ad789f9d10fd7e710bfc85114bc6b9f639563904d654e02330"
+      },
+      "tools.odyssey.specimen_open": {
+        "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/specimen_open.py",
+        "sha256": "4dc301f109ca0bf4305b6fe8ea60f1048843ef741bc7bf555c146dc5fd9d7f6e"
+      }
+    }
+  },
+  "receipt_integrity": {
+    "seal_format": "python_json_compact_utf8_sorted_v1",
+    "verifier": "hcli.agentos.flash_vocabulary_prefilter.verify_flash_vocabulary_prefilter_receipt"
+  },
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_E13_VOCABULARY_PREFLIGHT.json",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "row_budget": 4096,
+  "row_extraction_performed": false,
+  "schema": "hcli.agentos.flash_vocabulary_prefilter.v1",
+  "seal_format": "python_json_compact_utf8_sorted_v1",
+  "seal_sha256": "5cba152013743171a01631739986cbd231d518321ad81f33764356376ca03f7a",
+  "source_identity": {
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "role_headers_sha256": "48dc2cc9ad567b511dcc2834a58d94e225d7f5707d14b5b9dc47e29020615418",
+    "roles": {
+      "input_embedding": {
+        "data_offsets": [
+          0,
+          1271398400
+        ],
+        "dtype": "BF16",
+        "header_bytes": 1568,
+        "header_read_bytes": 1576,
+        "index_bytes": 170726,
+        "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+        "payload_bytes": 1271398400,
+        "shape": [
+          248320,
+          2560
+        ],
+        "shard_name": "model-00130-of-00131.safetensors",
+        "shard_size": 2974788136,
+        "tensor_name": "model.language_model.embed_tokens.weight",
+        "tensor_payload_bytes_read": 0
+      },
+      "output_head": {
+        "data_offsets": [
+          0,
+          1271398400
+        ],
+        "dtype": "BF16",
+        "header_bytes": 120,
+        "header_read_bytes": 128,
+        "index_bytes": 170726,
+        "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+        "payload_bytes": 1271398400,
+        "shape": [
+          248320,
+          2560
+        ],
+        "shard_name": "model-00131-of-00131.safetensors",
+        "shard_size": 1271398528,
+        "tensor_name": "lm_head.weight",
+        "tensor_payload_bytes_read": 0
+      }
+    },
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "vocabulary_geometry": {
+      "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "hidden_size": 2560,
+      "index_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+      "tie_word_embeddings": false,
+      "tokenizer_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json",
+      "vocab_size": 248320
+    }
+  },
+  "started_at_ns": 1789209448018294000,
+  "status": "WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN",
+  "tensor_payload_bytes_read": 0,
+  "withheld_reason": "supply independently hashed corpus-frequency and tokenizer-script artifacts, disjoint frequency/script/byte-length strata, and a seeded shuffled-token null"
+}

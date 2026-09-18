@@ -1,0 +1,28 @@
+{
+  "receipt_id": "WORKUNIT-20260918-BBB41F49_SEAL_B1",
+  "schema": "hawking.workunit.seal.v1",
+  "workunit_id": "WORKUNIT-20260918-BBB41F49",
+  "phase": "BUILD",
+  "title": "Goal milestone 3: tested repository change",
+  "at": "2026-09-18T15:29:53.539871+00:00",
+  "written_at_unix": 1789745393,
+  "change": {
+    "paths": [
+      "tools/accelerator/backend_contract.py",
+      "tools/accelerator/test_backend_contract.py"
+    ],
+    "adds": [
+      "owner-observed mutation and passing test on turn 3"
+    ]
+  },
+  "validation": {
+    "ok": true,
+    "turn": 3,
+    "source": "Hawking tool trace",
+    "test_evidence": "focused test validation returned success"
+  },
+  "claim_boundary": "Observed staging edit plus passing focused test; no production claim.",
+  "generator": "hawking.workunit_owner",
+  "goal_id": "GOAL-A52AB48501",
+  "real_engineering_seal": true
+}

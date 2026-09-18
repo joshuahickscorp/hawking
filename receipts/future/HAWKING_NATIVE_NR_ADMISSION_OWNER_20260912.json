@@ -1,0 +1,80 @@
+{
+  "schema": "hawking.native_nr.admission_owner.receipt.v1",
+  "status": "STRICT_PACKAGE_IDENTITY_OWNER_VERIFIED__NO_EXECUTOR",
+  "recorded_at": "2026-09-12T17:10:32Z",
+  "repository_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "owner": {
+    "source": "crates/hawking-core/src/admitted_nr.rs",
+    "source_sha256": "d2eb6d699cee5175883167cde8bbe5dd99a6f7c099c7968ed80bb9a6fb612918",
+    "source_lines": 1433,
+    "export": "crates/hawking-core/src/lib.rs::admitted_nr",
+    "export_file_sha256": "a4a82da175c17d824664796fa4c094bbcab1616064fa06d0c7c91bf4a0bf7705",
+    "entry_point": "admit_nr_descriptor",
+    "result_type": "AdmittedNrArtifact",
+    "readiness": "ArtifactVerifiedNoExecutor"
+  },
+  "owned_contract": [
+    "one explicit descriptor schema and version",
+    "duplicate-key-rejecting JSON parse",
+    "canonical descriptor seal verification",
+    "contained relative package paths",
+    "regular non-symlink immutable files and directories",
+    "single-link files at admission on Unix",
+    "closed package tree with no undeclared files",
+    "exact byte counts and SHA-256 for every component and native build",
+    "byte and declared-seal identity for source-provenance receipts",
+    "complete declared execution-contract vocabulary",
+    "declared refusal of source checkpoints, network fallback, Python inference, and external inference frameworks"
+  ],
+  "intentional_non_owners": [
+    "provenance-receipt semantic verification",
+    "OS-enforced immutable artifact lease after admission",
+    "native executor construction",
+    "Metal initialization or kernel execution",
+    "tokenization or model mathematics",
+    "runtime-independence staging proof",
+    "capability, density, TPS, or promotion"
+  ],
+  "validation": {
+    "focused_tests": "cargo test -p hawking-core admitted_nr -- --nocapture: 11 passed, 0 failed",
+    "negative_controls": [
+      "duplicate descriptor keys",
+      "stale descriptor seal",
+      "path escape",
+      "invalid SHA-256 binding",
+      "missing execution contract",
+      "declared external framework",
+      "write-enabled payload",
+      "undeclared sidecar",
+      "surrounding whitespace and embedded control characters",
+      "symlinked payload",
+      "hard-linked descriptor, component, build, and provenance receipt"
+    ],
+    "fast_rust_check": "tools/ci/rust_test_fast.sh check core: passed; 135 direct integration sources across 10 packages",
+    "fast_rust_compile": "tools/ci/rust_test_fast.sh compile core: passed",
+    "scoped_format": "rustfmt --edition 2021 --check crates/hawking-core/src/admitted_nr.rs: passed",
+    "diff_check": "git diff --check for admitted_nr.rs and lib.rs: passed",
+    "workspace_format_boundary": "cargo fmt --all -- --check remains red on pre-existing dirty Flash example formatting outside this owner; no unrelated formatting was applied"
+  },
+  "runtime": {
+    "model_execution": false,
+    "weights_loaded": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_web_restart": false,
+    "deployment": false,
+    "kimi_provider_started": false
+  },
+  "flash_next_state": {
+    "actual_flash_nr_admitted": false,
+    "complete_runnable_nr_present": false,
+    "candidate_freeze_earned": false,
+    "complete_ebpw": null,
+    "native_worker_tps": null,
+    "capability_qualified": false,
+    "reason": "The current inventory has no source-independent closed body. This owner makes future package identity deterministic but cannot turn component candidates or a 16.0-EBPW external BF16 source control into an admitted worker."
+  },
+  "next_safe_use": "Construct a complete source-independent candidate only after representation closure, package every required component/build/provenance file under this contract, then bind a separate native executor and independent qualification evidence to the returned identity.",
+  "claim_boundary": "This proves one fail-closed Rust owner for immutable NR package identity and its synthetic negative controls. It does not admit a real Flash-Next artifact, prove source independence after admission, bind an executor, load a model, establish correctness, preserve capability, measure complete EBPW or TPS, deploy Hawking, promote Pulsar, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "23ac316e2d6ad474b7caed4570b7367d9da1b0ba460f58b3cfb8a25de4084fb2"
+}

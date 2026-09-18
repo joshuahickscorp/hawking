@@ -94,7 +94,7 @@ Per tier: `io_hours = bytes / 118,000,000 Bps`, `probe_hours = n ×
 | A_tiny | 21 | 73,456,681,480 | 68.4 | 0.173 | 2.062 | UNKNOWN | **2.235 h** |
 | B_mid | 19 | 337,064,183,935 | 313.9 | 0.793 | 1.865 | UNKNOWN | **2.659 h** |
 | C_large | 5 | 314,263,794,536 | 292.7 | 0.740 | 0.491 | UNKNOWN | **1.231 h** |
-| D_giant (−3 deferred) | 8 | 1,534,938,184,222 | 1,429.5 | 3.613 | 0.785 | UNKNOWN | **4.399 h** |
+| D_giant (−2 resident deferred) | 8 | 1,534,938,184,222 | 1,429.5 | 3.613 | 0.785 | UNKNOWN | **4.399 h** |
 | **total** | **53** | **2,259,722,844,173** | **2,104.5** | **5.319** | **5.203** | UNKNOWN | **10.522 h** |
 
 Known lower bound across all four tiers is **10.52 h of a 48 h budget
@@ -113,9 +113,9 @@ adequacy-gate scar warns against — it is not made here.
 | A_tiny | **Plausible.** Known lower bound 2.24 h; models are 1–8 GiB, comfortably resident alongside the ~11 GiB resident body on a 96 GiB machine even with build overhead included. The unresolved risk is not time or memory, it's whether *any* achievable search finds sub-bit at all (§2). |
 | B_mid | **Plausible, tighter.** Known lower bound 2.66 h. Up to 40 GiB specimens; `mlx_lm.convert` needs the source weights loaded plus the quantized output materializing, which for the largest B_mid specimens starts to compete with the ~85 GiB of headroom on this machine. Flagged, not ruled out — same posture `ODYSSEY_48H_PLAN.md` took for C_large. |
 | C_large | **Flagged, tight.** Known lower bound 1.23 h (cheap — only 5 specimens), but the largest specimens run to ~77 GiB; converting one (loading bf16 source + writing a quantized copy) can approach or exceed the ~85 GiB headroom on a 96 GiB machine with the resident body running. `ODYSSEY_48H_PLAN.md` already flagged this same tier as "plausible, not comfortable" for execution probes alone; a build step adds more resident pressure than a probe does, not less. |
-| D_giant (−3 deferred) | **Cannot execute at all, independent of the clock.** `ODYSSEY_48H_PLAN.md` already established this: `G011_odyssey_streaming` has no receipt and all 5 of `tools/odyssey/test_odyssey_streaming_runtime.py`'s tests fail (re-confirmed here — reading that test file is a read, it regenerates nothing). `mlx_lm.convert` loads the full model to quantize it; every one of these 8 specimens (89.5–335.3 GiB) is bigger than the ~85 GiB of usable headroom before *any* KV cache or activation memory, the same ceiling that blocks plain inference. A build step needs at least as much residency as inference, so this blocker applies at least as hard to a gravity gauntlet as it did to the probe-only plan. The 48h clock is irrelevant until G011 lands. |
+| D_giant (−2 resident deferred) | **Cannot execute at all, independent of the clock.** `ODYSSEY_48H_PLAN.md` already established this: `G011_odyssey_streaming` has no receipt and all 5 of `tools/odyssey/test_odyssey_streaming_runtime.py`'s tests fail (re-confirmed here — reading that test file is a read, it regenerates nothing). `mlx_lm.convert` loads the full model to quantize it; every one of these 8 specimens (89.5–335.3 GiB) is bigger than the ~85 GiB of usable headroom before *any* KV cache or activation memory, the same ceiling that blocks plain inference. A build step needs at least as much residency as inference, so this blocker applies at least as hard to a gravity gauntlet as it did to the probe-only plan. The 48h clock is irrelevant until G011 lands. |
 
-The 3 deferred giants (Kimi-K3, Inkling-Small, Qwen3.8-Flash-Next) are
+The 2 resident deferred giants (Kimi-K3 and Inkling-Small) are
 excluded here by the same operator policy `ODYSSEY_48H_PLAN.md` encodes —
 Kimi-K3 is data-only and never an execution target; the other two stay in
 scope for a future pass, not this one.

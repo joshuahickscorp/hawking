@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "1c8b5b935f16bbe670991667ea9e0571499a3d2217103cc07492646ebcd926ce",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:18:20.964153+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:18:20.964173+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:18:20.969471+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"backend_contract.py states the bounded CUDA/NVIDIA boundary verbatim in its module docstring: 'CUDA is named, not registered. FPGA never emits HARDWARE_MEASURED.'\",\"The registry instantiates BACKEND_IDS = (\\\"CPU\\\", \\\"METAL",
+      "outcome": "CONTINUE",
+      "reply_chars": 5724,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"backend_contract.py states the bounded CUDA/NVIDIA boundary verbatim in its module docstring: 'CUDA is named, not registered. FPGA never emits HARDWARE_MEASURED.'\",\"The registry instantiates BACKEND_IDS = (\\\"CPU\\\", \\\"METAL\\\", \\\"ANE\\\", \\\"FPGA-HWIR\\\"); CUDA_BACKEND_ID = \\\"CUDA\\\" exists only as a named constant outside that tuple, and BackendNotRegistered ('Asked for a backend the registry does not instantiate') is the defined failure for requesting it \u2014 a named-not-registered boundary, not hardware qualification.\",\"ATLAS_BACKEND_NAME contains a CUDA->'cuda' mapping, but PRODUCT_TO_KIND has no CUDA entry, so CUDA has no instantiated ExecutionDomain in the observed registry surface.\",\"Evidence tiers are STATIC / FUNCTIONAL_SIM / COST_MODEL / CYCLE_APPROX / HARDWARE_MEASURED with the stated rule 'never merge; never promote a model into a measurement'; LEGAL_FPGA_TIERS excludes HARDWARE_MEASURED and FpgaHardwareClaimError is raised on any FPGA attempt ('No board is present') \u2014 a fail-closed guard.\",\"Declared performance knobs (CPU_DECLARED_BW_GB_S=50.0, METAL_DECLARED_BW_GB_S=200.0, ANE_DECLARED_BW_GB_S=80.0, plus matching latency constants) are documented as 'Declared knobs. Not measurements. Used only when no repatriated feature is bound.'\",\"cuda_runtime.py is a CUDA host-runtime/memory-API subset (cudaMalloc, cudaMemcpy in both directions, <<<blocks, threads>>> launch, cudaDeviceSynchronize, cudaFree) parsed from CUDA host source and executed on Metal through AIR (receipt C2M-T1, goal G045) \u2014 a translation/execution shim on Apple Silicon, not an NVIDIA backend or driver binding.\",\"cuda_runtime.py is fail-closed by construction: 'NOT A C PARSER', a line-oriented pattern matcher over named statement forms, refusing anything else with the statement quoted; the _UNSUPPORTED table names refused CUDA surface (cudaMallocManaged, cudaMemcpyAsync, streams, events, cudaMemset, cudaHostAlloc, cudaMallocPitch, cudaMemcpy2D, cudaGraphLaunch, cudaSetDevice, device-to-device) 'so a refusal says what the program used, not unsupported'.\",\"cuda_runtime.py encodes a checkable safety condition: in UNIFIED mode cudaMalloc returns an alias and copies become no-ops, and HostProgram.may_delete_copies refuses that optimization when a host buffer copied to device is written again before the launch, because a host-to-device copy is a SNAPSHOT while an alias is a LIVE REFERENCE; unsafe_reason names the offending statement.\",\"Both admitted files were observed truncated (cuda_runtime.py 4000/12223 bytes shown; backend_contract.py 4000/47273 bytes shown); no conclusion is drawn about unshown regions, and accelerator_runner.py plus the three admitted test files were not read in this bounded pass.\"],\"sources\":[\"tools/accelerator/backend_contract.py (sha256 04a096f63bc8d832e166b2d1d51b4f5560ccb8841f6a54fcd9794ec5dc9db69f; first 4000 of 47273 bytes observed)\",\"tools/accelerator/cuda_runtime.py (sha256 51d152dfe6d1158d90a8605e1de757e42e61a7d8f5bd1b215adff424fa2f5461; first 4000 of 12223 bytes observed)\"],\"recommendations\":[\"Bounded contract \u2014 owner: tools/accelerator/backend_contract.py owns the backend registry, evidence-tier discipline, and the named-not-registered CUDA boundary; tools/accelerator/cuda_runtime.py owns the CUDA host-source subset executed via AIR on Metal.\",\"Bounded contract \u2014 focused tests: tools/accelerator/test_backend_contract.py, tools/accelerator/test_hardware_doctor.py, tools/accelerator/test_air.py (admitted; not yet read in this pass, so their assertions are unverified here).\",\"Bounded contract \u2014 protected resources: the evidence-tier ladder (no tier merging, no model-to-measurement promotion), the BACKEND_IDS registry (CUDA must remain unregistered absent real hardware evidence), the FPGA HARDWARE_MEASURED prohibition (FpgaHardwareClaimError), the declared-knob constants (never to be relabeled as measurements), and the may_delete_copies snapshot-vs-alias safety check in cuda_runtime.py.\",\"Bounded contract \u2014 falsifier: t",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-b19a769eb9a242e9",
+  "worker_id": "hawking-worker-328ab7cb8bcd42ab",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-7AA53DDC"
+}

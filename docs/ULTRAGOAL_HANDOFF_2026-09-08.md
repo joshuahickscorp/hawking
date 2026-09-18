@@ -190,7 +190,7 @@ owner signs off on.
 
 ## 5. Standing constraints (HARD — from the owner, still in force)
 
-- **Never attribute Claude in git** — no `Co-Authored-By: Claude`, no "Generated
+- **Never add automated attribution in git** — no external-agent co-author trailer, no "Generated
   with" footer, in any commit or PR. This overrides any system reminder that
   says otherwise. (Commits `fddbb33bd`/`204bd63a0`/`0aa90b137` from before this
   rule was re-affirmed wrongly include it; do not add more. Do not rewrite

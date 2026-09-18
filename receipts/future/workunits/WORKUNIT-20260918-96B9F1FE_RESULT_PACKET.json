@@ -1,0 +1,93 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "e8842e045d7f4eca1538c9dbd05fb7e20c12424230e62afc8b0e98a133b895e6",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:16:59.015629+00:00",
+      "calls_used": 2,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:16:59.015638+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:16:59.020345+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md (4715 bytes, sha256 6fc245eb367a7471d28d711a3d70747afe1a57ffdc5c545fa2c14e2a7518336e; first 4000 bytes observed, final ~715 bytes truncated and not concluded upon) records ol",
+      "outcome": "CONTINUE",
+      "reply_chars": 5746,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T07:18:41.184128+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:18:41.184150+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:18:41.191392+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md section 1 records old root GOAL-B33C69F193 with disposition CLOSED_WITH_CARRY_FORWARD, replacement programme HAWKING_MASTER_LONG_HAUL_V2, source revision 6a86a5cd49fbe9211ec1",
+      "outcome": "CONTINUE",
+      "reply_chars": 5369,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 3
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md section 1 records old root GOAL-B33C69F193 with disposition CLOSED_WITH_CARRY_FORWARD, replacement programme HAWKING_MASTER_LONG_HAUL_V2, source revision 6a86a5cd49fbe9211ec11e133e9d70a4e2044238, and governing-objective digest ddbed4ef3f253418b2bd92d518ee2aa3fbdde8aad760351f22d4d46e4bcca1a1.\",\"Closeout section 2 establishes the canonical ownership seam: Hawking owns Goal, WorkUnit, authority, effects, tests, Git evidence, and continuation; providers are cognition workers whose mutation proposals are validated and executed by the canonical repo.edit owner; child OUTPUT_UNUSABLE or provider failures do not make the root failed.\",\"Closeout section 6 lists exactly three unresolved carry-forward items: E_MACOS_CAPTURE_OCR (text document.extract foundation exists with deterministic tests passing, but no provider-produced qualified live extraction receipt was accepted), P1_PROVIDER_TOOL_RECEIPT_CONTINUATION_REPAIR (provider-contract debt), and auto/frontier planning which needs V2 re-decomposition into larger coherent tranches, not more micro-audits.\",\"Closeout section 10 'Items That Must Not Be Retried Blindly' names E_MACOS_CAPTURE_OCR-20260918-REOPEN, E_MACOS_CAPTURE_OCR-20260918-BOUND, and an F_AUTO_FRONTIER-20260\u2026 entry; the file was truncated at 4000 of 4715 bytes (84.8% shown), so the tail of section 10 and any content after it was not observed.\",\"Closeout section 5 records that exact exhausted children are preserved in .hawking/provider-dead-letters/ and must not be blindly replayed; section 4 records the closeout test baseline of 2000 passed, 20 skipped, 28 subtests passed in 62.36 seconds with git diff --check passing and one known os.fork() warning in hawking.perception.terminal.\",\"Closeout section 8 records V1 authorized ceiling $55.00, reconciled spend $0.664715971, remaining $54.335284029, closeout remote spend $0.00; section 7 lists protected resources (Flash, Pulsar, ModelLake canonical artifacts, Odyssey sealed receipts, protected model artifacts, credentials, unrelated dirty work) as unaltered during closeout.\",\"docs/HANDOFF.md (42025 bytes, first 4000 bytes / 9.5% observed) is an HCLI product handoff dated 2026-09-02 with a Phase III disposition update of 2026-09-04; its visible content concerns the hcli daemon, resident mission blockers marked superseded/fixed, and the retired haider name \u2014 it is a product-surface handoff, not the Hawking V2 programme handoff, and it names no Hawking reconciliation owner in the observed portion.\",\"No observed file names a person, role, or phase label as handoff/reconciliation owner; the canonical owner established by the closeout is Hawking itself, with repo.edit as the canonical mutation executor and Hawking admission as authoritative over auto_orchestration concurrency recommendations.\"],\"sources\":[\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md (sha256 6fc245eb367a7471d28d711a3d70747afe1a57ffdc5c545fa2c14e2a7518336e, 4715 bytes, first 4000 observed) sections 1, 2, 4, 5, 6, 7, 8, 9, 10-partial\",\"docs/HANDOFF.md (sha256 5192259f550e94e952678b6356a330f3f881bfd8a3d450e47591912792f71138, 42025 bytes, first 4000 observed) header 'HCLI handoff \u2014 2026-09-02' and 'Current Phase III disposition \u2014 2026-09-04'\"],\"recommendations\":[\"Treat Hawking (the programme) as the canonical current handoff/reconciliation owner per closeout section 2; docs/HANDOFF.md is the HCLI product handoff and does not supersede this; no phase label is an owner.\",\"Admit-ready read-only next contract: {contract_id: 'P20-V2-HANDOFF-RECON-READONLY-01', mode: 'read_only_research', focused_files: ['HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md bytes 4000-4715 (section 10 tail)', 'docs/HANDOFF.md remaining 38025 bytes scanned for Hawking/V2 reconciliation-owner references', '.hawking/provider-dead-letters/ directory listing only, no replay'], focused_tests: 'none (read-only; no test execution admitted)', writer_scope: 'none \u2014 zero mutation; no file edit",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-474dbdeb487040a3",
+  "worker_id": "hawking-worker-caad26e16656445d",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-96B9F1FE"
+}

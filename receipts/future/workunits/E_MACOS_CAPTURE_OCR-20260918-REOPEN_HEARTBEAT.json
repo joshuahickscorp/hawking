@@ -1,0 +1,59 @@
+{
+  "active_job": "job-23e1d2f0-6e00-4b9c-96ae-a263dd8225df",
+  "blocker": null,
+  "budget_phase": "build",
+  "build_cost_usd": 0.000343944,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_CAPTURE_OCR-20260918-REOPEN",
+    "tool_less_continue_streak": 2
+  },
+  "context_packet_digest": "1a3c5f83b685766d0a33bbe26475e794b0bf4973d5dab858c0b1515eb738888b",
+  "current_phase": "BUILD",
+  "driver_alive": true,
+  "driver_pid": 3596,
+  "exact_next_action": "Continue bounded read-only research from the latest checkpoint; use one admitted observation or delegate one bounded child, then return the structured evidence packet.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 2,
+  "latest_real_seal": "",
+  "objective": "Using the existing Hawking perception registry, qualify one bounded text document.extract operation against an admitted artifact. Establish RED baseline, execute through Hawking-owned document.extract, verify GREEN, matching source and extracted digests, and record the durable receipt. Do not claim image OCR or modify production source.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-ae0eeb8c3e3b46f1a7fbfb50:tool-6",
+    "gen-1789692650-YFufg0Eah6SHYxdhYCQz",
+    "gateway-212e68e972d6426282ae59aa:tool-6",
+    "gen-1789692657-vrXwooxbJ8yEXApFvw3h"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "RUNNING",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T00:50:58.068074+00:00",
+  "worker_attempt_id": "hawking-attempt-f4aad02058a54e93",
+  "worker_cost_usd": 0.000343944,
+  "worker_id": "hawking-worker-99ef5ee9a3404b35",
+  "worker_kill_reason": "",
+  "worker_last_heartbeat_at": 1789692653.2109451,
+  "worker_spawned_at": 1789692644.130785,
+  "worker_status": "RUNNING",
+  "workunit_id": "E_MACOS_CAPTURE_OCR-20260918-REOPEN"
+}

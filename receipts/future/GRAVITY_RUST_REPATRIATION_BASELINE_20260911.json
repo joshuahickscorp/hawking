@@ -1,0 +1,1051 @@
+{
+  "schema": "hawking.gravity.rust-repatriation-baseline.v1",
+  "status": "ACTIVE_PRIORITY__ODYSSEY_AND_REPATRIATION",
+  "source_census": {
+    "method": "rg --files language extension, then wc -l; ignored files excluded by repository rules",
+    "rust_files": 730,
+    "rust_lines": 486424,
+    "python_files": 1444,
+    "python_lines": 565605,
+    "rust_share_percent": 46.237,
+    "target_rust_share_percent": 75,
+    "minimum_python_lines_to_migrate_at_constant_total": 302598,
+    "primary_migration_pool": {
+      "roots": [
+        "hcli",
+        "tools"
+      ],
+      "python_lines": 459928,
+      "reason": "This is the largest production/repeated-research Python surface and contains tool discovery, repository context, ModelLake administration, daemon control, and science accounting."
+    }
+  },
+  "latency_census": {
+    "native_header_inventory_flash_next": {
+      "scope": "131 safetensors shards / 1658 tensors, header-only",
+      "median_ns": 13333292,
+      "claim": "complete source identification and byte closure, not model execution"
+    },
+    "native_manifest_policy": {
+      "scope": "100000 complete-manifest-plus-policy selections",
+      "median_ns": 7806500,
+      "claim": "integer policy primitive only"
+    },
+    "native_resident_repository_index": {
+      "scope": "active-code discovery scope, 5000 indexed files, bounded and intentionally excluding receipts/workspace/artifacts",
+      "cold_build_ns": 5998278292,
+      "warm_identifier_query_median_ns": 79667,
+      "hcli_python_to_persistent_native_warm_median_ns": 278208,
+      "hcli_python_to_persistent_native_warm_p95_ns": 441625,
+      "claim": "query meets millisecond requirement; build must be asynchronous and process-resident under hawkingd"
+    },
+    "native_resident_modellake_catalog": {
+      "scope": "existing durable receipts/future/modellake-index/catalog.json; 1000 resident exact-slug queries; no lake walk and no weight payload read",
+      "in_process_lookup_median_ns": 250,
+      "claim": "catalog lookup only; excludes daemon startup, catalog construction, source inventory, and model execution"
+    },
+    "native_resident_tool_catalog": {
+      "scope": "canonical HCLI tool-name/search-text snapshot; four-focus parity against Python ranking; 1000 resident rankings",
+      "in_process_lookup_median_ns": 12000,
+      "claim": "tool identification only; Python retains schemas, permission checks, aliases, and all dispatch"
+    },
+    "native_resident_tool_dispatch_admission": {
+      "scope": "immutable HCLI tool-name/mutation snapshot; 1000 read-only permission admission checks",
+      "in_process_lookup_median_ns": 334,
+      "claim": "name, declared mutation, and permission admission only; excludes JSONL transport, Python schema validation, and handler execution"
+    },
+    "hcli_resident_tool_invocation_fixture": {
+      "scope": "1000 warm read-only fixture invocations through ToolRegistry, persistent hawking-gravityd JSONL admission, Python schema validation, and trivial handler",
+      "median_ns": 106125,
+      "p95_ns": 150042,
+      "claim": "control-plane floor only; excludes model execution and nontrivial tool work"
+    },
+    "native_resident_filesystem_list": {
+      "scope": "1000 warm contained fs.list queries for *.py at repository root; one-level, bounded, content-free discovery",
+      "python_to_native_median_ns": 122583,
+      "python_to_native_p95_ns": 143291,
+      "native_reported_median_ns": 95520,
+      "first_call_wall_ns": 1413819500,
+      "claim": "fresh-child first call includes resident index startup; warm values include JSONL transport and exclude file-content reads"
+    },
+    "native_resident_filesystem_search": {
+      "scope": "1000 warm contained fs.search queries for ToolRegistry in *.py at repository root; case-sensitive, bounded recursive search",
+      "pre_freshness_python_to_native_median_ns": 392458,
+      "pre_freshness_python_to_native_p95_ns": 442833,
+      "pre_freshness_native_reported_median_ns": 368208,
+      "pre_freshness_first_call_wall_ns": 1432557875,
+      "freshness_validated_python_to_native_median_ns": 8296937,
+      "freshness_validated_python_to_native_p95_ns": 8687375,
+      "freshness_validated_native_reported_median_ns": 8241249,
+      "freshness_validated_probe_calls": 200,
+      "scoped_parallel_freshness_python_to_native_median_ns": 2065833,
+      "scoped_parallel_freshness_python_to_native_p95_ns": 2299667,
+      "scoped_parallel_freshness_native_reported_median_ns": 1908354,
+      "scoped_parallel_freshness_native_reported_p95_ns": 2107417,
+      "scoped_parallel_freshness_first_call_wall_ns": 1427927167,
+      "scoped_parallel_freshness_probe_calls": 200,
+      "claim": "current values include tracked file/directory metadata validation; a changed source triggers a coherent rebuild before evidence is returned"
+    },
+    "native_resident_repository_path_rank": {
+      "scope": "200 warm exact path-like rank_code_paths queries on the current Hawking checkout after prewarm; resident path-only index contains 10615 candidate files",
+      "native_reported_median_ns": 394375,
+      "native_reported_p95_ns": 409166,
+      "python_to_native_median_ns": 495875,
+      "python_to_native_p95_ns": 525709,
+      "repo_context_paths_for_median_ns": 484729,
+      "repo_context_paths_for_p95_ns": 501708,
+      "repo_context_volatile_block_median_ns": 517791,
+      "repo_context_volatile_block_p95_ns": 532208,
+      "first_call_wall_ns": 1478874666,
+      "probe_calls": 200,
+      "files_seen": 10615,
+      "result_paths": [
+        "hcli/serve.py"
+      ],
+      "complete": true,
+      "prior_live_tree_python_to_native_median_ns": 72434791,
+      "claim": "exact named relative code paths use containment-checked direct validation and a resident path index; non-exact path queries retain directory freshness validation; the first cold request includes child startup and complete text/path index construction"
+    },
+    "native_resident_repository_content_rank": {
+      "scope": "20 warm objective/content orientation queries on the current Hawking checkout after prewarm; eight indexable terms, bounded to four returned code paths",
+      "native_reported_median_ns": 2296688,
+      "native_reported_p95_ns": 2362667,
+      "python_to_native_median_ns": 2394312,
+      "python_to_native_p95_ns": 2469416,
+      "repo_context_paths_for_median_ns": 2449312,
+      "repo_context_paths_for_p95_ns": 2720875,
+      "first_call_wall_ns": 1479569833,
+      "probe_calls": 20,
+      "files_seen": 1702,
+      "terms_used": 8,
+      "result_paths": [
+        "H-MANIFESTO.md",
+        ".aider.chat.history.md",
+        "CLAUDE-CODEX-EXODUS.md",
+        "hcli/tool_registry.py"
+      ],
+      "prior_warm_repo_context_paths_for_median_ns": 583104917,
+      "compatibility_fallback_one_call_ns": 872244292,
+      "stable_file_index_score_optimization": {
+        "scope": "same resident release service and current hcli/ checkout; 200 calls; six terms (repository, context, stream, handling, hcli, serve); maximum four returned paths",
+        "algorithm": "score stable file indexes during term accumulation and clone PathBuf values only for the bounded final response",
+        "baseline_native_median_ns": 1581896,
+        "baseline_native_p95_ns": 1609792,
+        "optimized_native_median_ns": 394917,
+        "optimized_native_p95_ns": 408291,
+        "native_ranking_reduction_percent": 75.04,
+        "optimized_python_to_native_median_ns": 488187,
+        "optimized_python_to_native_p95_ns": 522584,
+        "optimized_adapter_native_median_ns": 394562,
+        "optimized_adapter_native_p95_ns": 414875,
+        "optimized_adapter_median_overhead_ns": 93624,
+        "probe_calls": 200,
+        "parity_tests": "24 passed, 0 failed",
+        "claim": "resident ranking bookkeeping reduction only; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "dense_score_vector_optimization": {
+        "scope": "same resident release service and current hcli/ checkout; 200 calls; six terms (repository, context, stream, handling, hcli, serve); maximum four returned paths",
+        "algorithm": "replace ordered-map score accumulation with a dense score vector and touched-index list; retain deterministic final score/path ordering and scope fallback",
+        "prior_native_median_ns": 394917,
+        "prior_native_p95_ns": 408291,
+        "optimized_native_median_ns": 367250,
+        "optimized_native_p95_ns": 403333,
+        "native_median_reduction_percent": 7.01,
+        "prior_python_to_native_median_ns": 488187,
+        "optimized_python_to_native_median_ns": 461625,
+        "optimized_python_to_native_p95_ns": 505708,
+        "probe_calls": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "claim": "second resident ranking bookkeeping reduction; deterministic parity tests pass; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "hash_term_index_and_path_text_optimization": {
+        "scope": "same resident release service and current hcli/ checkout; 200 calls; six terms (repository, context, stream, handling, hcli, serve); maximum four returned paths",
+        "algorithm": "replace ordered exact-term index lookup with hash lookup and precompute stable relative path text for scope and tie comparisons",
+        "prior_native_median_ns": 367250,
+        "prior_native_p95_ns": 403333,
+        "optimized_native_median_ns": 233687,
+        "optimized_native_p95_ns": 239208,
+        "native_median_reduction_percent": 36.37,
+        "native_p95_reduction_percent": 40.69,
+        "prior_python_to_native_median_ns": 461625,
+        "prior_python_to_native_p95_ns": 505708,
+        "optimized_python_to_native_median_ns": 325812,
+        "optimized_python_to_native_p95_ns": 335584,
+        "adapter_median_reduction_percent": 29.42,
+        "adapter_p95_reduction_percent": 33.64,
+        "probe_calls": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "claim": "third resident ranking bookkeeping reduction; deterministic result/order parity remains green; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "reused_match_buffer_optimization": {
+        "scope": "three fresh sequential resident release probes; each 200 warm calls; six terms (repository, context, stream, handling, hcli, serve); maximum four returned paths",
+        "algorithm": "reuse one bounded per-query match buffer across terms and iterate the non-indexable fallback directly instead of allocating a full candidate-index range",
+        "prior_native_median_ns": 233687,
+        "prior_native_p95_ns": 239208,
+        "optimized_native_median_of_run_medians_ns": 219750,
+        "optimized_native_p95_median_of_runs_ns": 225000,
+        "native_median_reduction_percent": 5.96,
+        "native_p95_reduction_percent": 5.94,
+        "prior_python_to_native_median_ns": 325812,
+        "prior_python_to_native_p95_ns": 335584,
+        "optimized_python_to_native_median_of_run_medians_ns": 233458,
+        "optimized_python_to_native_p95_median_of_runs_ns": 240208,
+        "adapter_median_reduction_percent": 28.35,
+        "adapter_p95_reduction_percent": 28.42,
+        "run_results": [
+          {
+            "native_median_ns": 219750,
+            "native_p95_ns": 223417,
+            "python_to_native_median_ns": 233458,
+            "python_to_native_p95_ns": 238583
+          },
+          {
+            "native_median_ns": 226541,
+            "native_p95_ns": 228958,
+            "python_to_native_median_ns": 239833,
+            "python_to_native_p95_ns": 243625
+          },
+          {
+            "native_median_ns": 219250,
+            "native_p95_ns": 225000,
+            "python_to_native_median_ns": 232541,
+            "python_to_native_p95_ns": 240208
+          }
+        ],
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "claim": "fourth resident ranking bookkeeping reduction; three fresh sequential probes and deterministic result/order parity remain green; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "precomputed_file_classification_optimization": {
+        "scope": "three fresh sequential resident release probes; each 200 warm calls; six terms (repository, context, stream, handling, hcli, serve); maximum four returned paths",
+        "algorithm": "precompute immutable context-code and test-path flags during index construction instead of reclassifying extensions and filenames during every query",
+        "prior_native_median_ns": 219750,
+        "prior_native_p95_ns": 225000,
+        "optimized_native_median_of_run_medians_ns": 23292,
+        "optimized_native_p95_median_of_runs_ns": 23625,
+        "native_median_reduction_percent": 89.40,
+        "native_p95_reduction_percent": 89.50,
+        "prior_python_to_native_median_ns": 233458,
+        "prior_python_to_native_p95_ns": 240208,
+        "optimized_python_to_native_median_of_run_medians_ns": 36000,
+        "optimized_python_to_native_p95_median_of_runs_ns": 39584,
+        "adapter_median_reduction_percent": 84.58,
+        "adapter_p95_reduction_percent": 83.52,
+        "run_results": [
+          {
+            "native_median_ns": 23208,
+            "native_p95_ns": 23583,
+            "python_to_native_median_ns": 35625,
+            "python_to_native_p95_ns": 39792
+          },
+          {
+            "native_median_ns": 24250,
+            "native_p95_ns": 24750,
+            "python_to_native_median_ns": 36584,
+            "python_to_native_p95_ns": 39416
+          },
+          {
+            "native_median_ns": 23292,
+            "native_p95_ns": 23625,
+            "python_to_native_median_ns": 36000,
+            "python_to_native_p95_ns": 39584
+          }
+        ],
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "claim": "fifth resident ranking bookkeeping reduction; three fresh sequential probes and deterministic result/order parity remain green; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "reusable_query_scratch_optimization": {
+        "scope": "three fresh sequential resident release probes; each 200 warm calls; six terms (repository, context, stream, handling, hcli, serve); maximum four returned paths",
+        "algorithm": "reuse daemon-owned score, generation-mark, touched-index, match, and selected-result buffers; invalidate scores by query epoch instead of clearing the full file-count vector",
+        "prior_native_median_ns": 23292,
+        "prior_native_p95_ns": 23625,
+        "optimized_native_median_of_run_medians_ns": 21792,
+        "optimized_native_p95_median_of_runs_ns": 22125,
+        "native_median_reduction_percent": 6.44,
+        "native_p95_reduction_percent": 6.35,
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "run_results": [
+          {
+            "native_median_ns": 21875,
+            "native_p95_ns": 22292,
+            "native_min_ns": 18250,
+            "native_max_ns": 36583
+          },
+          {
+            "native_median_ns": 21750,
+            "native_p95_ns": 22125,
+            "native_min_ns": 17750,
+            "native_max_ns": 33792
+          },
+          {
+            "native_median_ns": 21792,
+            "native_p95_ns": 22125,
+            "native_min_ns": 18458,
+            "native_max_ns": 26875
+          }
+        ],
+        "claim": "sixth resident ranking bookkeeping reduction; result paths, scope behavior, and deterministic ordering remain unchanged; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "context_filtered_term_index_optimization": {
+        "scope": "three fresh sequential resident release probes; each 200 warm scoped calls; six terms (repository, context, stream, handling, hcli, serve); scope_prefix hcli/; maximum four returned paths",
+        "algorithm": "build a second immutable exact-term index containing only context-code files so ranked identifier terms do not recheck the precomputed context flag on every hit",
+        "prior_native_median_ns": 21792,
+        "prior_native_p95_ns": 22125,
+        "optimized_native_median_of_run_medians_ns": 20250,
+        "optimized_native_p95_median_of_runs_ns": 20625,
+        "native_median_reduction_percent": 7.07,
+        "native_p95_reduction_percent": 6.78,
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "scope_prefix": "hcli/",
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "run_results": [
+          {
+            "native_median_ns": 20209,
+            "native_p95_ns": 20667,
+            "native_min_ns": 16250,
+            "native_max_ns": 77542
+          },
+          {
+            "native_median_ns": 20250,
+            "native_p95_ns": 20625,
+            "native_min_ns": 16417,
+            "native_max_ns": 22333
+          },
+          {
+            "native_median_ns": 20271,
+            "native_p95_ns": 20584,
+            "native_min_ns": 16292,
+            "native_max_ns": 22250
+          }
+        ],
+        "claim": "seventh resident ranking bookkeeping reduction; identical scoped result/order and bounded context-code semantics; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "scoped_top_k_selection_optimization": {
+        "scope": "three fresh sequential resident release probes; each 200 warm scoped calls; six terms (repository, context, stream, handling, hcli, serve); scope_prefix hcli/; maximum four returned paths",
+        "algorithm": "retain scope fallback semantics while selecting the bounded top-k prefix with select_nth_unstable_by and sorting only the retained rows; full sort remains when the requested limit covers all candidates",
+        "prior_native_median_ns": 19000,
+        "prior_native_p95_ns": 19583,
+        "optimized_native_median_of_run_medians_ns": 11500,
+        "optimized_native_p95_median_of_runs_ns": 11750,
+        "native_median_reduction_percent": 39.47,
+        "native_p95_reduction_percent": 39.99,
+        "optimized_jsonl_wall_median_of_run_medians_ns": 19604.5,
+        "optimized_jsonl_wall_p95_median_of_runs_ns": 23417,
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "scope_prefix": "hcli/",
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "run_results": [
+          {
+            "native_median_ns": 11500,
+            "native_p95_ns": 11750,
+            "jsonl_wall_median_ns": 19500,
+            "jsonl_wall_p95_ns": 20125
+          },
+          {
+            "native_median_ns": 11583,
+            "native_p95_ns": 12250,
+            "jsonl_wall_median_ns": 19834,
+            "jsonl_wall_p95_ns": 23750
+          },
+          {
+            "native_median_ns": 11417,
+            "native_p95_ns": 11708,
+            "jsonl_wall_median_ns": 19605,
+            "jsonl_wall_p95_ns": 23417
+          }
+        ],
+        "claim": "eighth resident ranking reduction; bounded top-k selection preserves deterministic result/order and all existing fallback semantics; excludes index construction, freshness validation, file reads, transport-independent model work, and model execution"
+      },
+      "rejected_lowercase_allocation_candidate": {
+        "scope": "five fresh sequential scoped release probes after the accepted top-k pass",
+        "candidate": "avoid allocating lowercase strings for already-lowercase query terms with a Cow-based ASCII fold",
+        "candidate_native_median_of_run_medians_ns": 11459,
+        "candidate_native_p95_median_of_runs_ns": 11750,
+        "status": "REJECTED_NO_MEASURED_GAIN",
+        "reason": "median was statistically flat to the accepted 11500 ns result and the tail was slightly worse; source was reverted"
+      },
+      "direct_rank_response_serialization_optimization": {
+        "scope": "five fresh sequential resident release probes; each 200 warm scoped calls; same six terms, hcli/ scope, and maximum four returned paths",
+        "algorithm": "serialize the validated rank-content response struct directly instead of constructing an intermediate serde_json::Value; request schema and error path remain unchanged",
+        "prior_native_median_ns": 11500,
+        "prior_native_p95_ns": 11750,
+        "optimized_native_median_of_run_medians_ns": 11459,
+        "optimized_native_p95_median_of_runs_ns": 11750,
+        "optimized_jsonl_wall_median_of_run_medians_ns": 19042,
+        "optimized_jsonl_wall_p95_median_of_runs_ns": 22500,
+        "wall_median_reduction_percent": 2.87,
+        "wall_p95_reduction_percent": 3.91,
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "scope_prefix": "hcli/",
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "run_results": [
+          {
+            "native_median_ns": 11416,
+            "native_p95_ns": 11709,
+            "jsonl_wall_median_ns": 19021,
+            "jsonl_wall_p95_ns": 22500
+          },
+          {
+            "native_median_ns": 11417,
+            "native_p95_ns": 11875,
+            "jsonl_wall_median_ns": 19042,
+            "jsonl_wall_p95_ns": 23792
+          },
+          {
+            "native_median_ns": 11459,
+            "native_p95_ns": 11709,
+            "jsonl_wall_median_ns": 19000,
+            "jsonl_wall_p95_ns": 21208
+          },
+          {
+            "native_median_ns": 11480,
+            "native_p95_ns": 11750,
+            "jsonl_wall_median_ns": 19125,
+            "jsonl_wall_p95_ns": 20959
+          },
+          {
+            "native_median_ns": 11541,
+            "native_p95_ns": 12792,
+            "jsonl_wall_median_ns": 19230,
+            "jsonl_wall_p95_ns": 23750
+          }
+        ],
+        "claim": "ninth transport allocation reduction; output fields, schema, result paths, ordering, and failure behavior remain unchanged; excludes model or end-to-end HCLI TPS"
+      },
+      "borrowed_postings_optimization": {
+        "scope": "five fresh sequential resident release probes; each 200 warm scoped calls; same six terms, hcli/ scope, and maximum four returned paths",
+        "algorithm": "borrow immutable context-term posting lists for indexable terms instead of copying up to 1000 file indexes into query scratch; retain the reusable buffer for substring terms",
+        "prior_native_median_ns": 11459,
+        "prior_native_p95_ns": 11750,
+        "optimized_native_median_of_run_medians_ns": 10104.5,
+        "optimized_native_p95_median_of_runs_ns": 10375,
+        "native_median_reduction_percent": 11.82,
+        "native_p95_reduction_percent": 11.70,
+        "prior_jsonl_wall_median_ns": 19042,
+        "prior_jsonl_wall_p95_ns": 22500,
+        "optimized_jsonl_wall_median_of_run_medians_ns": 17833,
+        "optimized_jsonl_wall_p95_median_of_runs_ns": 20375,
+        "jsonl_wall_median_reduction_percent": 6.35,
+        "jsonl_wall_p95_reduction_percent": 9.44,
+        "probe_calls_per_run": 200,
+        "files_seen": 1563,
+        "terms_used": 6,
+        "scope_prefix": "hcli/",
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "run_results": [
+          {
+            "native_median_ns": 10125,
+            "native_p95_ns": 10333,
+            "jsonl_wall_median_ns": 17833,
+            "jsonl_wall_p95_ns": 20375
+          },
+          {
+            "native_median_ns": 10041,
+            "native_p95_ns": 10416,
+            "jsonl_wall_median_ns": 17813,
+            "jsonl_wall_p95_ns": 21208
+          },
+          {
+            "native_median_ns": 10208,
+            "native_p95_ns": 11000,
+            "jsonl_wall_median_ns": 18125,
+            "jsonl_wall_p95_ns": 20917
+          },
+          {
+            "native_median_ns": 10105,
+            "native_p95_ns": 10375,
+            "jsonl_wall_median_ns": 17896,
+            "jsonl_wall_p95_ns": 19750
+          },
+          {
+            "native_median_ns": 10000,
+            "native_p95_ns": 10250,
+            "jsonl_wall_median_ns": 17625,
+            "jsonl_wall_p95_ns": 19542
+          }
+        ],
+        "claim": "tenth resident ranking/transport reduction; indexed-term result/order, scope fallback, and non-indexable substring behavior remain covered by the existing tests; excludes model and end-to-end HCLI TPS"
+      },
+      "rejected_python_byte_bridge": {
+        "scope": "five fresh sequential adapter probes; each 200 warm scoped native ranking calls with identical six terms and result paths",
+        "candidate": "replace the resident JSONL adapter's text-mode pipes with binary unbuffered pipes and compact JSON",
+        "candidate_median_of_run_medians_ns": 153208,
+        "candidate_p95_median_of_runs_ns": 165250,
+        "prior_adapter_median_reference_ns": 97000,
+        "status": "REJECTED_REGRESSION",
+        "reason": "adapter wall time increased materially while native result parity held; source was reverted"
+      },
+      "compact_json_adapter_optimization": {
+        "scope": "five fresh sequential adapter probes; each 200 warm scoped native ranking calls with identical six terms and result paths",
+        "algorithm": "retain text-mode JSONL pipes while using compact separators for the small request envelope",
+        "prior_adapter_median_of_run_medians_ns": 97416.5,
+        "prior_adapter_p95_median_of_runs_ns": 105041,
+        "optimized_adapter_median_of_run_medians_ns": 95791.5,
+        "optimized_adapter_p95_median_of_runs_ns": 101750,
+        "adapter_median_reduction_percent": 1.67,
+        "adapter_p95_reduction_percent": 3.13,
+        "probe_calls_per_run": 200,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "status": "ACCEPTED",
+        "claim": "compatibility transport-envelope reduction with native ranking/result parity; excludes model and end-to-end HCLI TPS"
+      },
+      "native_path_validation_optimization": {
+        "scope": "five fresh sequential RepoContext.paths_for probes; each 200 warm scoped native ranking calls with the same question and four returned paths",
+        "algorithm": "validate the native owner's canonical relative code paths with bounded string checks instead of constructing a Path for every returned row; reject absolute, traversal, dot-segment, backslash, empty, and non-code paths",
+        "prior_paths_for_median_of_run_medians_ns": 128145.5,
+        "prior_paths_for_p95_median_of_runs_ns": 131000,
+        "optimized_paths_for_median_of_run_medians_ns": 123791.5,
+        "optimized_paths_for_p95_median_of_runs_ns": 130750,
+        "paths_for_median_reduction_percent": 3.4,
+        "paths_for_p95_reduction_percent": 0.19,
+        "probe_calls_per_run": 200,
+        "result_paths": [
+          "hcli/chat_tools.py",
+          "hcli/agentos/event_sink.py",
+          "hcli/agentos/vmcp/behavior_lab.py",
+          "hcli/serve.py"
+        ],
+        "focused_tests": 26,
+        "status": "ACCEPTED",
+        "claim": "fail-closed adapter validation reduction with native result parity; excludes model and end-to-end HCLI TPS"
+      },
+      "native_binary_resolution_cache_optimization": {
+        "scope": "five fresh sequential adapter probes; each 200 warm scoped native ranking calls with the exact six-term resident query",
+        "algorithm": "cache positive hawking-gravityd resolution by repository root and explicit override, revalidate cached executable paths, and avoid caching negative lookups",
+        "binary_resolution_probe_median_ns": 70750,
+        "prior_adapter_median_of_run_medians_ns": 95791.5,
+        "prior_adapter_p95_median_of_runs_ns": 101750,
+        "optimized_adapter_median_of_run_medians_ns": 35084,
+        "optimized_adapter_p95_median_of_runs_ns": 39125,
+        "adapter_median_reduction_percent": 63.37,
+        "adapter_p95_reduction_percent": 61.55,
+        "paths_for_prior_median_ns": 128145.5,
+        "paths_for_prior_p95_ns": 131000,
+        "paths_for_optimized_median_ns": 54145.5,
+        "paths_for_optimized_p95_ns": 60500,
+        "paths_for_median_reduction_percent": 57.75,
+        "paths_for_p95_reduction_percent": 53.82,
+        "installed_snapshot_adapter_median_of_run_medians_ns": 35083,
+        "installed_snapshot_adapter_p95_median_of_runs_ns": 37958,
+        "installed_snapshot_paths_for_median_of_run_medians_ns": 53916,
+        "installed_snapshot_paths_for_p95_median_of_runs_ns": 57458,
+        "result_paths": [
+          "hcli/serve.py",
+          "hcli/chat_state.py",
+          "hcli/chat_tools.py",
+          "hcli/repo_context.py"
+        ],
+        "status": "ACCEPTED",
+        "claim": "binary-discovery and adapter-boundary reduction with result parity; excludes model and end-to-end HCLI TPS"
+      },
+      "fresh_search_candidate_scan_elision": {
+        "scope": "five fresh sequential probes; each 100 warm contained fs.search calls for needle hawkingd under hcli/ with glob *.py, max_results 20, max_per_file 3",
+        "algorithm": "reuse the freshness-selected scope-and-glob candidate indexes on the coherent generation; rebuild paths publish a new index and re-query it; identifier-like substring candidates use a safe three-byte token-gram superset before unchanged case-sensitive line matching",
+        "prior_python_to_native_median_of_run_medians_ns": 1042937.5,
+        "prior_python_to_native_p95_median_of_runs_ns": 1059375,
+        "optimized_python_to_native_median_of_run_medians_ns": 969270.5,
+        "optimized_python_to_native_p95_median_of_runs_ns": 994958,
+        "median_reduction_percent": 7.06,
+        "p95_reduction_percent": 6.08,
+        "installed_snapshot_median_of_run_medians_ns": 974375,
+        "installed_snapshot_p95_median_of_runs_ns": 1010625,
+        "installed_snapshot_median_reduction_percent": 6.57,
+        "installed_snapshot_p95_reduction_percent": 4.60,
+        "probe_calls_per_run": 100,
+        "warmup_calls": 20,
+        "files_seen": 448,
+        "match_count": 20,
+        "truncated": true,
+        "result_prefix": [
+          [
+            "hcli/agentos/resident.py",
+            2446
+          ],
+          [
+            "hcli/agentos/resident.py",
+            2450
+          ],
+          [
+            "hcli/agentos/resident.py",
+            2455
+          ],
+          [
+            "hcli/chat_tools.py",
+            1492
+          ],
+          [
+            "hcli/chat_tools.py",
+            1550
+          ]
+        ],
+        "focused_tests": 15,
+        "status": "ACCEPTED",
+        "claim": "fresh resident filesystem-search bookkeeping reduction with substring-completeness regression coverage and bounded result parity; excludes model and end-to-end HCLI TPS"
+      },
+      "fresh_search_candidate_cache_optimization": {
+        "scope": "five fresh sequential probes; each 100 warm contained fs.search calls for needle hawkingd under hcli/ with glob *.py, max_results 20, max_per_file 3",
+        "algorithm": "cache scope-and-glob candidate file indexes by resident index generation and invalidate the cache atomically when a rebuilt generation is published; freshness metadata validation remains per request",
+        "prior_trigram_candidate_median_of_run_medians_ns": 969270.5,
+        "prior_trigram_candidate_p95_median_of_runs_ns": 994958,
+        "original_control_median_of_run_medians_ns": 1042937.5,
+        "original_control_p95_median_of_runs_ns": 1059375,
+        "optimized_python_to_native_median_of_run_medians_ns": 896354,
+        "optimized_python_to_native_p95_median_of_runs_ns": 914750,
+        "installed_snapshot_median_of_run_medians_ns": 889271,
+        "installed_snapshot_p95_median_of_runs_ns": 967125,
+        "installed_snapshot_total_median_reduction_percent": 14.73,
+        "installed_snapshot_total_p95_reduction_percent": 8.71,
+        "incremental_median_reduction_percent": 7.52,
+        "incremental_p95_reduction_percent": 8.06,
+        "total_median_reduction_percent": 14.05,
+        "total_p95_reduction_percent": 13.65,
+        "probe_calls_per_run": 100,
+        "warmup_calls": 20,
+        "files_seen": 448,
+        "match_count": 20,
+        "truncated": true,
+        "focused_tests": 15,
+        "status": "ACCEPTED",
+        "claim": "generation-safe resident filesystem-search candidate-discovery reduction with rebuild invalidation and bounded result parity; excludes model and end-to-end HCLI TPS"
+      },
+      "fresh_search_parallel_metadata_and_dispatch_cache": {
+        "scope": "ten fresh sequential probes; each 100 warm full ToolRegistry.invoke fs.search calls for needle hawkingd under hcli/ with glob *.py, max_results 20, max_per_file 3",
+        "algorithm": "cache positive native dispatch admission for the live immutable child; validate scoped file and directory metadata with bounded parallel workers when more than 128 stamps are present, with all workers required to agree",
+        "prior_full_tool_registry_median_of_run_medians_ns": 1232875,
+        "prior_full_tool_registry_p95_ns": 1261429.15,
+        "admission_cache_intermediate_median_of_run_medians_ns": 1207750,
+        "admission_cache_intermediate_p95_ns": 1228929.45,
+        "native_internal_median_of_run_medians_ns": 619666.5,
+        "native_internal_p95_ns": 644877.1,
+        "python_adapter_wall_median_of_run_medians_ns": 696197.75,
+        "python_adapter_wall_p95_ns": 724237.15,
+        "optimized_full_tool_registry_median_of_run_medians_ns": 967156.5,
+        "optimized_full_tool_registry_p95_ns": 1002683.65,
+        "total_median_reduction_percent": 21.55,
+        "total_p95_reduction_percent": 20.51,
+        "metadata_sequential_threshold": 128,
+        "metadata_stamps_per_worker": 128,
+        "metadata_max_workers": 8,
+        "probe_calls_per_run": 100,
+        "warmup_calls": 50,
+        "files_seen": 448,
+        "match_count": 20,
+        "truncated": true,
+        "focused_rust_tests": "749 passed, 8 ignored, 0 failed",
+        "status": "ACCEPTED",
+        "claim": "deterministic bounded filesystem freshness and native dispatch transport reduction with result parity; excludes model and end-to-end HCLI TPS"
+      },
+      "native_service_lookup_ns_optimization": {
+        "scope": "eight fresh sequential probes; each 100 warm resident rank_content_paths requests for the same eight-term repository query",
+        "algorithm": "read-mostly native service lookup; executable discovery and creation-lock acquisition are paid only on first creation or explicit prewarm recovery",
+        "timing_unit": "ns",
+        "control_lookup_median_of_run_medians_ns": 104291,
+        "control_lookup_p95_median_of_runs_ns": 112125,
+        "optimized_lookup_median_of_run_medians_ns": 24781,
+        "optimized_lookup_p95_median_of_runs_ns": 27416,
+        "median_reduction_percent": 76.24,
+        "p95_reduction_percent": 75.55,
+        "result_paths_unchanged": true,
+        "generation_unchanged": true,
+        "dead_child_fallback_preserved": true,
+        "prewarm_dead_child_recovery_preserved": true,
+        "focused_tests": "56 passed, 0 failed",
+        "status": "ACCEPTED",
+        "claim": "resident native service lookup and adapter bookkeeping only; excludes model speed, tool-body latency, end-to-end HCLI TPS, capability, and Odyssey readiness",
+        "receipt": "receipts/future/GRAVITY_RUST_NATIVE_SERVICE_LOOKUP_NS_20260911.json"
+      },
+      "accelerator_regression_ns_migration": {
+        "scope": "accelerator regression audit request and whole-run timing producers",
+        "timing_unit": "ns",
+        "canonical_fields": [
+          "run_started_ns",
+          "elapsed_ns",
+          "experiment.live.wall_ns"
+        ],
+        "compatibility_fields": [
+          "started_at",
+          "finished_at",
+          "elapsed_s"
+        ],
+        "verification": "py_compile, diff check, and focused suite passed: 26 passed, 0 failed; installed snapshot module compile passed",
+        "installed_snapshot": "/Users/scammermike/.local/share/hcli/build-20260911-165131",
+        "status": "ACCEPTED",
+        "claim": "measurement-contract precision migration only; no model speed, TPS, capability, or Odyssey claim",
+        "receipt": "receipts/future/GRAVITY_RUST_ACCELERATOR_REGRESSION_NS_20260911.json"
+      },
+      "connectivity_probe_ns_migration": {
+        "scope": "active hcli.connectivity public HTTP probe producer",
+        "change": "replace floating-point perf_counter elapsed_ms writes with integer monotonic elapsed_ns and timing_unit ns",
+        "legacy_fields": "historical receipts remain readable; this producer no longer emits elapsed_ms",
+        "focused_test": "hcli/tests/test_connectivity.py::test_public_probe_writes_integer_nanoseconds",
+        "status": "ACCEPTED",
+        "claim": "telemetry precision/contract migration only; no network or model latency claim"
+      },
+      "rejected_direct_indexing_candidate": {
+        "scope": "same three fresh sequential scoped release probes after the accepted context-filtered index",
+        "candidate": "replace safe indexed-file classification closures in scope and test-focus scoring with direct indexing",
+        "candidate_native_median_of_run_medians_ns": 20542,
+        "candidate_native_p95_median_of_runs_ns": 20959,
+        "status": "REJECTED_REGRESSION",
+        "reason": "median and p95 were slower than the accepted 20250 ns / 20625 ns baseline; source was reverted"
+      },
+      "native_resident_file_read_experiment": {
+        "scope": "repository-contained hcli/serve.py; 66,674 bytes; 200 warm calls; complete fs.read ToolRegistry path and handler-only isolation",
+        "python_handler_median_ns": 108729,
+        "python_handler_p95_ns": 118250,
+        "native_core_reported_median_ns": 80000,
+        "native_handler_through_jsonl_median_ns": 466666,
+        "native_handler_through_jsonl_p95_ns": 495959,
+        "complete_python_fallback_median_ns": 2935458,
+        "complete_python_fallback_p95_ns": 3013959,
+        "complete_native_admission_and_body_transport_median_ns": 3354354,
+        "complete_native_admission_and_body_transport_p95_ns": 3420958,
+        "sha256": "ae2f1ffba0da5950975e32b42b5f7c192d6d8517239b7a04d51e5b0299406afe",
+        "status": "WITHHELD__JSONL_CONTENT_TRANSPORT_NOT_COMPETITIVE",
+        "default_route": "python_in_process",
+        "lab_route": "HCLI_NATIVE_GRAVITY_READ=1",
+        "reopen_when": "direct shared-buffer or fused resident read ABI removes body serialization and re-earns whole-tool parity",
+        "claim": "native Rust file-read semantics are tested, but the current JSONL body transport is slower than the Python handler and is not a production speed claim"
+      },
+      "claim": "one resident multi-term request replaces the redundant Python inventory walk and repeated native requests; native uses exact-token indexed terms with the existing bounded weighting, HCLI scope, and test bias. The rg fallback remains available and may differ in lower-ranked paths because it uses substring matching. Cold startup includes complete index construction."
+    },
+    "native_resident_process_observer": {
+      "scope": "four classified Hawking processes; persistent JSONL observer owned by hawkingd; ten warm release-binary no-footprint calls and eight warm release-binary footprint calls",
+      "unit": "ns",
+      "prior_one_shot_debug_median_ns": 2938228604,
+      "prior_one_shot_debug_p95_ns": 2951485750,
+      "persistent_release_no_footprint_first_ns": 293952375,
+      "persistent_release_no_footprint_warm_median_ns": 24709,
+      "persistent_release_no_footprint_warm_p95_ns": 40125,
+      "persistent_release_no_footprint_warm_min_ns": 22250,
+      "persistent_release_no_footprint_warm_max_ns": 78750,
+      "persistent_release_footprint_first_ns": 111530208,
+      "persistent_release_footprint_warm_median_ns": 21000,
+      "persistent_release_footprint_warm_p95_ns": 26542,
+      "classified_process_count": 4,
+      "native_hcli_release_sha256": "d28226df6c7a51f969988c2c8961815c109ad785fc6948ea8815e4f0d4218a71",
+      "claim": "daemon-owned release server uses a bounded 250 ms diagnostic snapshot cache for repeated inspect polls; cache age and timing unit are explicit, while orphan detection and reaping always bypass the cache and inspect the host afresh. One sovereign hawkingd process tree remains the invariant, not one literal OS PID.",
+      "uncached_persistent_release_no_footprint_warm_median_ns": 28282125,
+      "uncached_persistent_release_no_footprint_warm_p95_ns": 29053500,
+      "uncached_persistent_release_footprint_warm_median_ns": 107371167,
+      "uncached_persistent_release_footprint_warm_p95_ns": 107523167,
+      "persistent_release_footprint_warm_min_ns": 18125,
+      "persistent_release_footprint_warm_max_ns": 62417,
+      "cache": {
+        "ttl_ns": 250000000,
+        "no_footprint_cache_hits": 30,
+        "footprint_cache_hits": 10,
+        "expiry_verified": true,
+        "fresh_safety_operations_bypass_cache": [
+          "orphaned",
+          "reap"
+        ],
+        "sampling_metadata": [
+          "cache_hit",
+          "age_ns",
+          "max_age_ns",
+          "timing_unit",
+          "safety"
+        ]
+      }
+    },
+    "hcli_http_control_surface": {
+      "scope": "live loopback HCLI surface; twelve GET requests per endpoint; no model generation",
+      "unit": "ns",
+      "health": {
+        "first_ns": 15032209,
+        "warm_median_ns": 387250,
+        "warm_p95_ns": 474833,
+        "http_status": 200,
+        "body_bytes": 2442
+      },
+      "v1_models": {
+        "first_ns": 2900375,
+        "warm_median_ns": 633083,
+        "warm_p95_ns": 677500,
+        "http_status": 200,
+        "body_bytes": 2462
+      },
+      "claim": "HTTP control-plane response only; excludes chat completion, provider decode, tool execution, and model TPS"
+    },
+    "hcli_runtime_latency_authority": {
+      "scope": "Engine live events, executor wrappers, cycle verdict reads, and hcli report resident benchmarks",
+      "unit": "monotonic integer nanoseconds",
+      "new_fields": [
+        "elapsed_ns",
+        "wall_ns",
+        "timing_unit"
+      ],
+      "compatibility_reads": [
+        "elapsed_s",
+        "wall_s"
+      ],
+      "claim": "new hot-path duration producers and calculations preserve integer nanoseconds; wall-clock started_at/finished_at remain provenance timestamps; this does not claim model execution speed"
+    },
+    "rust_startup_timing_authority": {
+      "scope": "hawking-core startup_timing phase/process diagnostics, including model admission, streamed preparation, Metal library/pipeline creation, and activation-weighted payload buckets",
+      "unit": "monotonic integer nanoseconds",
+      "schema": "hawking.startup_timing.v2",
+      "new_fields": [
+        "timing_unit",
+        "process_wall_ns",
+        "phases[].elapsed_ns"
+      ],
+      "compatibility_fields": [
+        "process_wall_ms",
+        "phases[].ms"
+      ],
+      "compatibility_apis": [
+        "time_ms",
+        "time_ms_result",
+        "record_ms",
+        "duration_ms"
+      ],
+      "direct_ns_callers": [
+        "hawking-core/src/metal/mod.rs",
+        "hawking-core/src/model/qwen_complete_binary/activation_weighted_svd.rs",
+        "hawking-core/src/gravity_deepseek_v4.rs",
+        "hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+        "hawking-core/src/gravity_deepseek_v4_streamed_forward.rs",
+        "hawking-core/src/model/qwen_complete_binary/mod.rs",
+        "hawking-core/src/model/qwen_complete_binary/uniform_q4.rs",
+        "hawking-core/src/model/qwen_complete_binary/uniform_qn.rs",
+        "hawking-core/src/model/qwen_complete_binary/qwen80_uniform_q4.rs"
+      ],
+      "verification": "hawking-core library suite passed: 748 passed, 8 ignored, 0 failed; startup_timing unit tests passed: 2 passed, 0 failed; cargo fmt check passed; release binaries rebuilt",
+      "claim": "shared Rust timing now preserves sub-millisecond phase precision; this changes measurement fidelity and does not claim a runtime speedup"
+    },
+    "hawking_core_generation_timing": {
+      "scope": "native hawking-core GenStats producers, stats_json serialization, Hawking CLI receipts, and decode benchmark helpers",
+      "unit": "monotonic integer nanoseconds",
+      "canonical_fields": [
+        "timing_unit",
+        "prefill_ns",
+        "decode_ns",
+        "decode_token_ns"
+      ],
+      "compatibility_fields": [
+        "prefill_ms",
+        "decode_ms",
+        "decode_token_ms"
+      ],
+      "producers": [
+        "Llama",
+        "Qwen dense",
+        "DeepSeek v2",
+        "Mixtral",
+        "RWKV-7",
+        "Gravity engine"
+      ],
+      "calculation_rule": "sample each monotonic duration once as integer nanoseconds; derive milliseconds only for compatibility; complete-forward TPS uses decode_ns",
+      "verification": "hawking-core library suite passed: 748 passed, 8 ignored, 0 failed; hawking package cargo check passed; hawking-serve native endpoint suite passed: 5 passed, 0 failed",
+      "claim": "active model timing now preserves sub-millisecond precision at the engine boundary; this is measurement authority and does not claim a model-TPS speedup"
+    },
+    "rust_reachability_index_timing": {
+      "scope": "active hawking-index ReachabilityDump IndexStats collection timing",
+      "unit": "monotonic integer nanoseconds",
+      "canonical_field": "index.elapsed_ns",
+      "compatibility_field": "index.elapsed_ms",
+      "measurement_rule": "sample elapsed_ns once and derive elapsed_ms by integer division; do not time the same pass twice",
+      "verification": "hawking-index suite passed: 78 passed, 0 failed; cargo fmt check passed",
+      "claim": "sub-millisecond reachability collection work remains measurable without changing the facts, cache, or citation contract"
+    },
+    "vmcp_tool_receipt_timing": {
+      "scope": "active PTY capture and local tool-doctor receipts, including refusal/probe paths",
+      "unit": "monotonic integer nanoseconds",
+      "canonical_fields": [
+        "timing_unit",
+        "elapsed_ns",
+        "performance_ns",
+        "event_boundaries[].t_ns"
+      ],
+      "compatibility_input": "tool_receipt(elapsed_ms=...) is accepted only for older adapters and is normalized to elapsed_ns",
+      "verification": "focused VMCP suite passed: 14 passed, 0 failed; Python compileall passed",
+      "claim": "VMCP timing precision was upgraded without changing refusal, network, dangerous-command, PTY, or subprocess semantics"
+    },
+    "hcli_gravity_gauntlet": {
+      "scope": "candidate observation and resumable Gravity search cost ledger",
+      "unit": "monotonic integer nanoseconds",
+      "new_fields": [
+        "iterations[].wall_ns",
+        "iterations[].timing_unit",
+        "observation.wall_ns",
+        "observation.verification_wall_ns",
+        "cost.wall_ns",
+        "cost.verification_wall_ns"
+      ],
+      "compatibility_reads": [
+        "wall_s",
+        "verification_wall_s"
+      ],
+      "algorithmic_change": "resume normalizes historical duration totals once; each candidate adds its measured totals instead of rescanning all prior observations",
+      "verification": "30 focused tests passed; durable atomic checkpoint serialization remains intentionally present and is not claimed constant-time",
+      "claim": "Gravity search bookkeeping now preserves exact duration units and removes repeated in-memory history scans without weakening resumability",
+      "microbenchmark": {
+        "history_rows": 4000,
+        "candidate_rows": 5000,
+        "legacy_rescan_median_ns": 1552791,
+        "indexed_bookkeeping_median_ns": 818834,
+        "bookkeeping_reduction_percent": 47.26,
+        "scope": "in-memory bookkeeping only; excludes atomic checkpoint serialization, candidate selection, receipt evaluation, and model execution"
+      }
+    },
+    "hcli_resident_filesystem_search_tool": {
+      "scope": "1000 warm ToolRegistry.invoke fs.search calls; two-result, one-hit-per-file query for ToolRegistry in *.py",
+      "pre_freshness_median_ns": 523708,
+      "pre_freshness_p95_ns": 572833,
+      "pre_freshness_native_reported_median_ns": 230938,
+      "pre_freshness_first_call_wall_ns": 1305292667,
+      "freshness_validated_median_ns": 8488208,
+      "freshness_validated_p95_ns": 8871916,
+      "freshness_validated_native_reported_median_ns": 8099916,
+      "freshness_validated_probe_calls": 200,
+      "scoped_parallel_freshness_median_ns": 2332291,
+      "scoped_parallel_freshness_p95_ns": 2535875,
+      "scoped_parallel_freshness_native_reported_median_ns": 1901896,
+      "scoped_parallel_freshness_native_reported_p95_ns": 2057292,
+      "scoped_parallel_freshness_first_call_wall_ns": 1299780500,
+      "scoped_parallel_freshness_probe_calls": 200,
+      "claim": "current values include source freshness validation; cold first call includes child/index startup and no model execution"
+    },
+    "unmeasured_or_not_yet_native": [
+      "full HCLI request dispatch",
+      "daemon lifecycle/control plane",
+      "repository-context compilation",
+      "ModelLake classification and provenance",
+      "representation experiment fanout",
+      "all direct model kernels and device scheduling"
+    ],
+    "hcli_native_connector_timing": {
+      "scope": "HawkingNativeConnector one-shot and resident completion boundary",
+      "unit": "monotonic integer nanoseconds",
+      "canonical_fields": [
+        "timing_unit",
+        "wall_ns",
+        "generation_wall_ns"
+      ],
+      "compatibility_fields": [
+        "wall_ms",
+        "generation_wall_s"
+      ],
+      "calculation_rule": "sample connector wall duration once with perf_counter_ns; derive TPS and presentation projections from the integer duration",
+      "verification": "hcli/tests/test_hawking_native.py and hcli/test_native_json_grammar.py passed: 38 passed, 0 failed",
+      "claim": "connector transport timing now preserves sub-millisecond precision; no model capability or TPS improvement is claimed by the unit migration"
+    },
+    "resident_gate_timing": {
+      "scope": "resident_gate per-request and whole-gate lifecycle receipts",
+      "unit": "monotonic integer nanoseconds",
+      "canonical_fields": [
+        "timing_unit",
+        "elapsed_ns"
+      ],
+      "compatibility_fields": [
+        "elapsed_s"
+      ],
+      "calculation_rule": "sample each gate/request duration once and derive elapsed_s only for compatibility",
+      "verification": "resident gate module compiles; existing resident contract suite remains green",
+      "claim": "resident-gate measurement precision/contract migration only; no new residency, capability, or model-TPS claim"
+    }
+  },
+  "earned_native_owners": [
+    "complete representation accounting",
+    "fail-closed dynamic candidate policy",
+    "safetensors source inventory and bounded tensor range reads",
+    "repository text index and identifier discovery",
+    "JSONL native discovery service with atomic index rebuild/swap",
+    "read-only ModelLake catalog schema validation and exact-slug lookup",
+    "native tool-catalog ranking over Python-owned canonical tool contracts",
+    "native fail-closed HCLI tool-dispatch admission over immutable contracts",
+    "bounded content-free filesystem discovery for the fs.list operation",
+    "bounded indexed filesystem search for the fs.search operation",
+    "resident deterministic repository path ranking with exact-path fast validation",
+    "resident bounded multi-term repository content ranking"
+  ],
+  "bridge_state": {
+    "source_integration": "hcli.repo_context uses one hawking-gravityd child when HCLI_NATIVE_GRAVITY=1; hcli.serve enables that only for its daemon-owned process and prewarms the child during resident startup. HCLI lake.catalog adopts the same native child for exact catalog queries, with a schema-checked catalog-file compatibility fallback only. ToolRegistry.invoke uses the same child as an additional fail-closed tool name/mutation/permission admission fence before Python schema validation and handlers. The canonical fs.list handler uses the child for contained, bounded, content-free discovery and retains the Python os.walk implementation only as a compatibility fallback. The canonical fs.search handler uses the resident bounded text index for contained searches and retains its exact Python walker as a compatibility fallback. Path-shaped RepoContext queries use native resident path ranking; explicitly named relative files take a containment-checked direct fast lane, while non-exact path queries retain directory freshness validation. Content-oriented RepoContext queries use one native multi-term rank request when available and retain the rg/content fallback otherwise.",
+    "manual_round_trip": "verified case-insensitive repo-context retrieval through the real built native binary",
+    "temporary_process_cleanup": "verified: controlled test leaves no hawking-gravityd child alive",
+    "production_deployment": "RELEASE_SNAPSHOT_BUNDLED__LIVE_DAEMON_NOT_RESTARTED; /Users/scammermike/.local/share/hcli/build-20260911-165131 bundles ns-first native-model, daemon-gate, and accelerator-regression timing, resident Rust repository search, read-mostly native service lookup, positive native dispatch admission cache, bounded parallel freshness validation, and generation-keyed fresh-search candidate cache; HCLI package digest 4420d89e0986ba6cf45ce38756cb8275fdf11f2e3b9ea0cb3cd8ba51c0d7f99a; native HCLI release digest 457e335e7ea547f5fa6a6339edcffce5f7a139bc74115e9965634767ca848f54; bundled hcli-rust digest 457e335e7ea547f5fa6a6339edcffce5f7a139bc74115e9965634767ca848f54; bundled hawking-gravityd digest 1ef21197043fc804f568c05e0b83a32b06de8cac7f08740b38948e8721893c35. The running hawkingd tree was not restarted; a controlled future restart is required before claiming live serving adoption."
+  },
+  "migration_law": [
+    "Port a stable Python owner into Rust with a differential/parity fixture before retiring it.",
+    "The release path must call a persistent native owner, not spawn a Rust subprocess per request.",
+    "Every hot migration needs a measured before/after wall-time receipt; Rust syntax alone earns no performance claim.",
+    "Odyssey remains active while this census advances in parallel; new native owners still require a working resident bridge, differential parity, and measured before/after evidence."
+  ],
+  "next_native_owners": [
+    "hawkingd-resident repository index lifecycle and incremental rebuild",
+    "HCLI repository-context retrieval adapter",
+    "ModelLake/source inventory/build and complete byte accounting adapter",
+    "native tool-handler execution parity for stable read-only operations",
+    "direct/shared-buffer read-result transport for file-body operations",
+    "representation decoder ABI and direct compact execution"
+  ]
+}

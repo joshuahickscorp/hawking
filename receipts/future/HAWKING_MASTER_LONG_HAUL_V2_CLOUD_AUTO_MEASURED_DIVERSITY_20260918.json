@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.long_haul.v2.cloud_auto_measured_diversity.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:42:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "policy_revision": "hawking-auto-aggressive-v2-measured-diversity-unbounded-14",
+  "roster": [
+    "deepseek/deepseek-v4.1-flash",
+    "moonshotai/kimi-k3",
+    "z-ai/glm-5.3",
+    "qwen/qwen3.8-2.4t-a95b",
+    "nvidia/nemotron-3-ultra-550b-a55b"
+  ],
+  "core_models": [
+    "deepseek/deepseek-v4.1-flash",
+    "moonshotai/kimi-k3",
+    "z-ai/glm-5.3"
+  ],
+  "escalation_models": [
+    "qwen/qwen3.8-2.4t-a95b",
+    "nvidia/nemotron-3-ultra-550b-a55b"
+  ],
+  "routing_contract": {
+    "fixed_traffic_shares": false,
+    "measured_dimensions": [
+      "accepted",
+      "failed",
+      "output_unusable",
+      "transport_failure",
+      "tool_compliance",
+      "source_grounding",
+      "provider_semantic_success",
+      "terminal_packet_success",
+      "wall_time",
+      "cost",
+      "review_overturn",
+      "independence_value"
+    ],
+    "glm_exploration": "bounded comparable trials across source mapping, implementation, architecture planning, test design, security analysis, and long-context synthesis before measured rebalance",
+    "qwen_nemotron_policy": "information-gain, disagreement, falsification, or explicit escalation only",
+    "ordinary_route_policy": "DeepSeek/Kimi/GLM core candidates are scored by task-class evidence, provider health, quality, cost, latency, and initial role bias",
+    "routing_score": "acceptance quality is weighted with tool compliance, source grounding, provider semantic success, terminal-packet success, failure/reversal penalties, cost, latency, and independence value",
+    "parallelism": "no artificial worker-count ceiling; resource, provider-health, dependency, budget, and disjoint-effect-scope gates remain authoritative"
+  },
+  "local_residency_boundary": {
+    "daemon_model": null,
+    "daemon_resident": null,
+    "requested_model": "hawking-auto",
+    "health_state": "waiting_for_native_runtime",
+    "provider_children": "none while native role is withheld",
+    "claim": "Cloud Auto roster admission does not load or pin local Kimi/MLX weights."
+  },
+  "first_real_glm_trials": [
+    {
+      "workunit_id": "WORKUNIT-20260918-B836307C",
+      "task_class": "general (pre-hardening child contract)",
+      "requested_model": "z-ai/glm-5.3",
+      "terminal_observation": "PAUSED_PROVIDER after repeated HTTP 502 upstream responses",
+      "claim_boundary": "provider transport evidence only"
+    },
+    {
+      "workunit_id": "WORKUNIT-20260918-381E1E2A",
+      "task_class": "general (pre-hardening child contract)",
+      "requested_model": "z-ai/glm-5.3",
+      "terminal_observation": "PAUSED_PROVIDER after repeated HTTP 502 upstream responses",
+      "claim_boundary": "provider transport evidence only"
+    },
+    {
+      "workunit_id": "WORKUNIT-20260918-4FC59DD0",
+      "task_class": "general (pre-hardening child contract)",
+      "requested_model": "z-ai/glm-5.3",
+      "terminal_observation": "COMPLETE owner edge but no structured result packet fields; not accepted as quality evidence",
+      "claim_boundary": "provider/output evidence only; no task-quality claim"
+    }
+  ],
+  "contract_hardening": {
+    "task_class_propagation": "Goal child WorkUnits now persist the Auto classification and planned worker role, so routing outcomes are scored by empirical task class rather than default general.",
+    "focused_verification": "py_compile and the focused suite passed after the propagation change."
+  },
+  "verification": {
+    "focused_command": "python3 -m pytest -q hawking/test_auto_mode.py hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py hawking/tests/test_remote_workunit_contract.py hawking/tests/test_serve_openai_surface.py",
+    "focused_result": "100 passed",
+    "compile": "python3 -m py_compile hawking/auto_mode.py hawking/auto_orchestration.py hawking/goal_surface.py hawking/serve.py hawking/workunit_owner.py",
+    "diff_check": "git diff --check",
+    "http_200_boundary": "Existing live semantic HTTP 200 gate remains authoritative; this receipt adds routing policy only."
+  },
+  "claim_boundary": "Policy and focused-test acceptance only. GLM quality, cost, latency, and provider-health claims require real Hawking WorkUnit trials and durable outcome rows; no release or production qualification is asserted."
+}

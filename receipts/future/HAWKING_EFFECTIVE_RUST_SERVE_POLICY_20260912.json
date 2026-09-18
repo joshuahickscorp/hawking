@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.effective_rust_serve_policy.receipt.v1",
+  "status": "OFFLINE_RUST_SERVING_PRECEDENCE_VERIFIED",
+  "recorded_at": "2026-09-12T04:25:27-04:00",
+  "base_commit": "7f5d0960bbf20e883b664d755b8b5ecae73ca776",
+  "scope": {
+    "canonical_owner": "crates/hawking-serve/src/policy.rs",
+    "production_callers": [
+      "hawking serve",
+      "hawking gravity serve",
+      "direct hawking_serve::ServeOptions embedders through the legacy adapter"
+    ],
+    "contract": "Pure resolution of Rust serving profile, workload, energy, batch, F16-KV, inherited environment, and bounded auto-selection provenance; process environment mutation remains at the serving or CLI boundary."
+  },
+  "preserved_behavior": {
+    "ordered_environment": "CLI front-door profile operations, then serving baseline, then resolved serving profile, then F16-KV policy.",
+    "inherited_values": "Set-if-unset preserves present UTF-8 and non-UTF-8 environment values; Exact force-off operations remain unconditional.",
+    "legacy_sentinels": "Explicit default/off values retain their parsed presence but keep the current workload-fallback result until a separately qualified behavior change.",
+    "f16_kv": "An explicit false request does not clear an inherited true value, matching the prior serving path.",
+    "concurrent_qkv": "A Fast/Race/Efficient serving profile enables concurrent QKV even when the inherited variable says 0, matching the prior profile-or-environment rule.",
+    "entry_boundary": "Embedded callers cannot apply CLI-only global profile operations through an inconsistent policy request.",
+    "auto": "The metadata-only --auto adapter retains observed model and machine facts, intent, rationale, advisory context, and choices as Automatic rather than mislabeling them as explicit operator flags."
+  },
+  "validation": {
+    "policy_regression": "cargo test -p hawking-serve --test effective_policy -- --test-threads=1: 11 passed",
+    "cli_unit_regression": "cargo test -p hawking --bin hawking -- --test-threads=1: 43 passed",
+    "core_compile_lane": "tools/ci/rust_test_fast.sh compile core: passed with TQ enabled in the same Cargo invocation",
+    "topology": "python3 tools/ci/check_rust_test_topology.py: passed; 135 direct integration sources across 10 packages",
+    "format": "rustfmt --edition 2021 --check passed for changed Rust sources",
+    "diff": "git diff --check passed"
+  },
+  "runtime": {
+    "weights_loaded": false,
+    "model_execution": false,
+    "gpu_or_ane_execution": false,
+    "daemon_or_service_restart": false,
+    "deployment": false
+  },
+  "claim_boundary": "This receipt proves the stated Rust serving-policy extraction and its pure model-free characterization suite. It does not prove runtime behavior against a loaded artifact, GPU/ANE parity, capacity changes from the advisory auto context, Python runtime_env/fusion_env policy equivalence, full Hawking-wide policy unification, admission identity, or deployment behavior."
+}

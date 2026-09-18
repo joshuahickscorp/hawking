@@ -1,0 +1,66 @@
+{
+  "active_job": "job-56f5f34b-8621-46c7-b304-1db10a783add",
+  "blocker": {
+    "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+    "last_failure": {
+      "at": "2026-09-16T04:14:20.199246+00:00",
+      "kind": "continue_prose_rejected",
+      "note": "SEAL_B64 machine-readable CONTINUE required",
+      "turn": 1
+    },
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.00290772,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260916-3C726AF1",
+    "tool_less_continue_streak": 1
+  },
+  "context_packet_digest": "01f8cb8e78493448eed9d28a0d5d4f7a58696b919d9a21afb85a5d62ed2c3897",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 35987,
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 1,
+  "latest_real_seal": "",
+  "objective": "Implement one bounded Hawking-owned document capture/OCR slice through the existing perception and tool-registry owners. Native text first; explicit image OCR fallback only when requested; root, size, and time bounded; no original overwrite; deterministic tests; no macOS actions, browser actions, Flash, Pulsar, or ModelLake.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-b0ad07dc5caf4569a88156b0:tool-14",
+    "gen-1789532047-iDTZ9kHEL5rEfo3tSJnp"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T04:16:12.121417+00:00",
+  "worker_attempt_id": "hawking-attempt-d66f73007df14c81",
+  "worker_cost_usd": 0.00290772,
+  "worker_id": "hawking-worker-9455500c89dd4a59",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789531871.842609,
+  "worker_spawned_at": 1789531871.482937,
+  "worker_status": "KILLED",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260916-3C726AF1"
+}

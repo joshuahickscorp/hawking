@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T08:35:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P8_NOVA_CANDIDATE_LIVE_EVIDENCE",
+  "workunit_id": "WORKUNIT-20260918-9805730C",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-9805730C_RESULT_PACKET.json",
+  "source_owner": {
+    "path": "tools/future/kimi_operator_live_evidence.py",
+    "focused_tests": "tools/future/test_kimi_operator_live_evidence.py",
+    "candidate_set": ["OPA", "OPB", "OPC", "OPD", "OPE", "OPF", "OPG", "OPH"],
+    "candidate_id_pattern": "KIMI_OPERATOR_CANDIDATE_{method}",
+    "p8_nova_identity": null
+  },
+  "local_evidence": {
+    "build_empty_status": "CANDIDATE_LIVE_EVIDENCE_INCOMPLETE",
+    "build_empty_qualified_candidates": [],
+    "serving_candidate_separate": true,
+    "focused_tests": "41 passed across candidate/live/gate evidence tests",
+    "promotion_gate": "PROMOTION_REFUSED with heldout_behavior, causal_behavior, candidate_live_evaluation, and provenance missing"
+  },
+  "reopen_condition": "A concrete P8 NOVA candidate identity plus candidate-specific clean-process live receipts must exist before this lane can reopen.",
+  "falsifier": "An exact current P8 NOVA candidate binding with qualified candidate-specific live evidence invalidates the owner-absent finding.",
+  "claim_boundary": "Owner-absent and fail-closed live-evidence reconciliation only; no candidate, training, learned descendant, full-model capability, hardware qualification, or promotion is claimed."
+}

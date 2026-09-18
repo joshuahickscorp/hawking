@@ -1,0 +1,33 @@
+{
+ "obligation": "G118",
+ "architecture": "HunyuanVideo text-to-video diffusion transformer: 40 single_blocks plus 20 double_blocks with separate image and text modulation, and a VAE",
+ "execution_class": "iterative diffusion denoising over video latents; compute scales with steps x frames, so it is neither prefill nor decode in the LM sense",
+ "why_it_was_open": "the config is nested under hunyuan-video-t2v-720p/ where the top-level reader never looked -- and the real blocker was worse than that: the transformer is a DeepSpeed mp_rank checkpoint whose tensors live under `module`, so a state_dict lookup returned ZERO tensors from a 12.28 GiB file without raising, and the specimen measured 0.92 GiB against 13.2 on disk, a 14x undercount",
+ "structure": "13.064B matrix params, 1424 tensors across a fp8 transformer (12.28 GiB) and an fp32 VAE (0.92 GiB)",
+ "gravity_note": "NATIVELY FP8 and therefore the BitNet lesson from the other direction: 87.9% of bytes are float8_e4m3fn, yet complete EBPW is 8.678, not 8. The excess is 7.0% fp32 and 5.1% bf16 -- the VAE and the norms and modulation tensors that a 'this model is 8-bit' claim would omit.",
+ "capability_note": "video generation; the campaign has no verifier for it, and a perceptual one is a separate build",
+ "disposition": "HARDWARE / REPRESENTATION RESEARCH SPECIMEN -- the lake's clearest natively-fp8 body and a useful control for byte-accounting claims about low-bit models; deep Gravity DEFERRED for want of a verifier",
+ "reopen": "when a perceptual verifier exists, or when a native-low-bit family study needs a non-ternary member",
+ "date": "2026-09-09",
+ "identity": "tencent--HunyuanVideo@6204ad6aea1a",
+ "complete_byte_anatomy": {
+  "n_tensors": 1424,
+  "tensor_gib": 13.2,
+  "on_disk_gib": 13.2,
+  "matrix_params_b": 13.0641,
+  "dtype_bytes": {
+   "torch.float8_e4m3fn": 12457082880,
+   "torch.float32": 985916492,
+   "torch.bfloat16": 727859328
+  },
+  "per_container_gib": {
+   "mp_rank_00_model_states_fp8.pt": 12.28,
+   "pytorch_model.pt": 0.92,
+   "mp_rank_00_model_states_fp8_map.pt": 0.0
+  },
+  "tensor_bytes_vs_disk": 1.0,
+  "distinct_roles": 157,
+  "n_repeated_roles": 61
+ },
+ "accounting_verified": "tensor bytes equal on-disk bytes to two decimals after two producer defects were fixed: a DeepSpeed container that yielded zero tensors silently, and logical bytes that double-counted a storage-aliased EMA copy by 48%."
+}

@@ -250,7 +250,11 @@ fn spec_decode_section(data: &[u8]) -> Vec<i64> {
             .wrapping_add(slot)
             .wrapping_sub(start);
         while s < SPEC_L {
-            let b = if rpos < payload.len() { payload[rpos] } else { 0 };
+            let b = if rpos < payload.len() {
+                payload[rpos]
+            } else {
+                0
+            };
             rpos += 1;
             s = (s << 8) | b as u32;
         }
@@ -376,7 +380,10 @@ fn spec_rans_decoder_agrees_exhaustive_small_alphabet() {
             // production decode
             let mut p = 0usize;
             let prod = decode_stream(&enc, &mut p).expect("prod decode");
-            assert_eq!(prod, raw, "production round-trip broke (len={len}, idx={idx})");
+            assert_eq!(
+                prod, raw,
+                "production round-trip broke (len={len}, idx={idx})"
+            );
 
             // INDEPENDENT from-spec decode of the SAME production bytes
             let spec = spec_decode_section(&enc);
@@ -436,7 +443,9 @@ fn spec_rans_decoder_agrees_wide_random_sweep() {
             "from-spec rANS decode disagrees with production (trial {trial}, regime {regime})"
         );
     }
-    eprintln!("[crosspath] spec-rANS == production over 2000 random streams (5 regimes incl. full i64)");
+    eprintln!(
+        "[crosspath] spec-rANS == production over 2000 random streams (5 regimes incl. full i64)"
+    );
 }
 
 #[test]
@@ -446,18 +455,47 @@ fn production_zigzag_matches_from_spec() {
     // (Symbol identity through the model + escape blob rides on this being the
     // exact same map on every device.)
     for v in [
-        0i64, 1, -1, 2, -2, 63, -64, 127, -128, 128, -129,
-        i32::MIN as i64, i32::MAX as i64, i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1,
+        0i64,
+        1,
+        -1,
+        2,
+        -2,
+        63,
+        -64,
+        127,
+        -128,
+        128,
+        -129,
+        i32::MIN as i64,
+        i32::MAX as i64,
+        i64::MIN,
+        i64::MAX,
+        i64::MIN + 1,
+        i64::MAX - 1,
     ] {
-        assert_eq!(zigzag(v), spec_zigzag(v), "production zigzag != spec at {v}");
-        assert_eq!(spec_unzigzag(spec_zigzag(v)), v, "spec zigzag not bijective at {v}");
+        assert_eq!(
+            zigzag(v),
+            spec_zigzag(v),
+            "production zigzag != spec at {v}"
+        );
+        assert_eq!(
+            spec_unzigzag(spec_zigzag(v)),
+            v,
+            "spec zigzag not bijective at {v}"
+        );
     }
     let mut s = 0x9999_7777_5555_3333u64;
     for _ in 0..200_000 {
         let v = splitmix64(&mut s) as i64;
-        assert_eq!(zigzag(v), spec_zigzag(v), "production zigzag != spec at {v}");
+        assert_eq!(
+            zigzag(v),
+            spec_zigzag(v),
+            "production zigzag != spec at {v}"
+        );
     }
-    eprintln!("[crosspath] production zigzag == from-spec over boundaries + 200000-sample i64 sweep");
+    eprintln!(
+        "[crosspath] production zigzag == from-spec over boundaries + 200000-sample i64 sweep"
+    );
 }
 
 #[test]
@@ -531,10 +569,17 @@ fn production_cdf_matches_from_spec_normalizer() {
         );
 
         // Strong invariants the moat depends on:
-        assert_eq!(*prod_cum.last().unwrap(), SCALE_TOTAL, "cum must sum to SCALE_TOTAL");
+        assert_eq!(
+            *prod_cum.last().unwrap(),
+            SCALE_TOTAL,
+            "cum must sum to SCALE_TOTAL"
+        );
         assert_eq!(prod_cum[0], 0, "cum must start at 0");
         for w in prod_cum.windows(2) {
-            assert!(w[1] > w[0], "every modelled slot must have freq >= 1 (no zero-freq)");
+            assert!(
+                w[1] > w[0],
+                "every modelled slot must have freq >= 1 (no zero-freq)"
+            );
         }
     }
     eprintln!("[crosspath] production CDF == from-spec normalizer over 400 distributions");
@@ -582,8 +627,11 @@ fn from_spec_normalizer_matches_production_over_raw_counts() {
         // 0, -1, 1, -2, 2, … ) Reconstruct that exact order before normalizing,
         // or the cum tables won't line up. Pinning this is itself a determinism
         // guard: the canonical slot order is a wire-visible invariant.
-        let mut pairs: Vec<(u64, u64)> =
-            vals.iter().zip(cnts.iter()).map(|(&v, &c)| (spec_zigzag(v), c)).collect();
+        let mut pairs: Vec<(u64, u64)> = vals
+            .iter()
+            .zip(cnts.iter())
+            .map(|(&v, &c)| (spec_zigzag(v), c))
+            .collect();
         pairs.sort_unstable_by_key(|&(z, _)| z);
         let mut canonical: Vec<u64> = pairs.iter().map(|&(_, c)| c).collect();
         canonical.push(1); // ESC floor (all distinct symbols modelled -> esc mass 0 -> floor 1)
@@ -655,7 +703,10 @@ fn from_stream_is_invariant_to_input_order() {
             debug_assert_eq!(perm.len(), base.len());
 
             let m = Model::from_stream(&perm);
-            assert_eq!(m, m0, "from_stream model changed with input order (trial {trial}, shuf {shuf})");
+            assert_eq!(
+                m, m0,
+                "from_stream model changed with input order (trial {trial}, shuf {shuf})"
+            );
             let mut b = Vec::new();
             m.serialize(&mut b);
             assert_eq!(
@@ -679,7 +730,9 @@ fn from_stream_is_invariant_to_input_order() {
             );
         }
     }
-    eprintln!("[crosspath] from_stream model + CDF bytes invariant over 300 multisets x 6 shuffles");
+    eprintln!(
+        "[crosspath] from_stream model + CDF bytes invariant over 300 multisets x 6 shuffles"
+    );
 }
 
 #[test]
@@ -704,7 +757,10 @@ fn from_stream_invariant_with_escape_tail() {
     let mut b0 = Vec::new();
     m0.serialize(&mut b0);
     // The model must have hit the cap (esc tail present).
-    assert!(m0.symbols.len() <= 4097, "model exceeded MAX_MODEL_SYMBOLS+1");
+    assert!(
+        m0.symbols.len() <= 4097,
+        "model exceeded MAX_MODEL_SYMBOLS+1"
+    );
 
     for shuf in 0..8 {
         let mut perm = base.clone();
@@ -764,7 +820,10 @@ fn deserialize_rejects_all_malformed_models() {
     // (a) VALID baseline must deserialize.
     let good = build_model_bytes(&[(0, 8000), (zigzag(1), 8000), (0, st - 16000)]);
     let mut pos = 0usize;
-    assert!(Model::deserialize(&good, &mut pos).is_ok(), "valid model rejected");
+    assert!(
+        Model::deserialize(&good, &mut pos).is_ok(),
+        "valid model rejected"
+    );
     assert_eq!(pos, good.len());
 
     // (b) freq sum != SCALE_TOTAL -> error.
@@ -791,20 +850,29 @@ fn deserialize_rejects_all_malformed_models() {
     // descending too
     let desc = build_model_bytes(&[(9, 8000), (3, 8000), (0, st - 16000)]);
     let mut pos = 0usize;
-    assert!(Model::deserialize(&desc, &mut pos).is_err(), "descending symbols accepted");
+    assert!(
+        Model::deserialize(&desc, &mut pos).is_err(),
+        "descending symbols accepted"
+    );
 
     // (e) out-of-range symbol count (n == 0, and n > MAX+1) -> error.
     let mut n_zero = Vec::new();
     n_zero.extend_from_slice(&0u32.to_le_bytes());
     let mut pos = 0usize;
-    assert!(Model::deserialize(&n_zero, &mut pos).is_err(), "n=0 model accepted");
+    assert!(
+        Model::deserialize(&n_zero, &mut pos).is_err(),
+        "n=0 model accepted"
+    );
 
     let mut n_huge = Vec::new();
     n_huge.extend_from_slice(&(4096u32 + 2).to_le_bytes()); // MAX_MODEL_SYMBOLS+2
-    // pad with a few bytes so it doesn't fail on truncation before the range check
+                                                            // pad with a few bytes so it doesn't fail on truncation before the range check
     n_huge.extend_from_slice(&[0u8; 8]);
     let mut pos = 0usize;
-    assert!(Model::deserialize(&n_huge, &mut pos).is_err(), "n > MAX+1 model accepted");
+    assert!(
+        Model::deserialize(&n_huge, &mut pos).is_err(),
+        "n > MAX+1 model accepted"
+    );
 
     // (f) truncated model (declares n=3 but no body) -> error, no panic.
     let mut trunc = Vec::new();
@@ -842,7 +910,10 @@ fn deserialize_rejects_random_corrupt_models_without_panic() {
         let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             Model::deserialize(&bad, &mut pos)
         }));
-        assert!(r.is_ok(), "deserialize panicked on corrupt model bytes: {bad:?}");
+        assert!(
+            r.is_ok(),
+            "deserialize panicked on corrupt model bytes: {bad:?}"
+        );
         if let Ok(Ok(m)) = r {
             // If it accepted, the rebuilt CDF MUST satisfy every moat invariant
             // (a valid-but-wrong CDF is fine — the bytes describe it — but it can
@@ -855,7 +926,11 @@ fn deserialize_rejects_random_corrupt_models_without_panic() {
             m.serialize(&mut rebuf);
             let mut p2 = 0usize;
             let (_syms, cum) = spec_parse_model(&rebuf, &mut p2);
-            assert_eq!(*cum.last().unwrap(), SCALE_TOTAL, "accepted model with bad sum");
+            assert_eq!(
+                *cum.last().unwrap(),
+                SCALE_TOTAL,
+                "accepted model with bad sum"
+            );
             for w in cum.windows(2) {
                 assert!(w[1] > w[0], "accepted model with a zero-freq slot");
             }
@@ -866,9 +941,14 @@ fn deserialize_rejects_random_corrupt_models_without_panic() {
             let enc = encode_stream_with_model(&probe, &m);
             let mut pd = 0usize;
             let dec = decode_stream(&enc, &mut pd).expect("accepted model must decode");
-            assert_eq!(dec, probe, "accepted model produced a non-round-tripping CDF");
+            assert_eq!(
+                dec, probe,
+                "accepted model produced a non-round-tripping CDF"
+            );
         }
         checked += 1;
     }
-    eprintln!("[crosspath] {checked} corrupt-model fuzz inputs: deserialize total + invariant-preserving");
+    eprintln!(
+        "[crosspath] {checked} corrupt-model fuzz inputs: deserialize total + invariant-preserving"
+    );
 }

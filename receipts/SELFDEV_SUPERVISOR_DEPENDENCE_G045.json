@@ -1,0 +1,35 @@
+{
+ "obligation": "G045 (supervisor-intervention rate) + G044 input",
+ "date": "2026-09-09",
+ "verdict": "MEASURED. THE TREND IS NOT YET IMPROVING, AND SAYING OTHERWISE WOULD BE THE FAILURE THIS GATE EXISTS TO CATCH.",
+ "counters": {
+  "harness_restarts": 13,
+  "phase_transitions_logged": 5,
+  "failed_cycles_logged": 5,
+  "stuck_events": 2,
+  "accepted_hcli_changes": 0,
+  "landed_through_landing_service": 0,
+  "supervisor_interventions_recorded_in_state": "4 -- and that counter UNDERCOUNTS. It was only incremented from the point the deploy scripts started doing so; the true count for today is at least the 9 substrate commits plus the two state corrections. Recorded as a known defect in the metric rather than silently reported as 4.",
+  "claude_substrate_commits_today": 9,
+  "cycles_in_campaign_log": "1..76 (experiment 1 and 2 share the log; experiment 2 begins at 67)"
+ },
+ "claude_substrate_commits": [
+  "f355281d0 fix(hcli): stop reserving the answer's room twice, and let tests.run run a suite",
+  "628c7aba0 fix(builder): the trace says what a mutation DID, and the menu names every op",
+  "234f5f75f fix(repo.edit): a refusal the body cannot act on is churn, not a refusal",
+  "74f90f202 fix(chat_tools): builder-door arguments were being dropped on the floor",
+  "b68fa26b6 feat(chat_tools): give the body a door that actually runs its discriminator",
+  "bdb3f3aa0 fix(fs.read): an out-of-range window must not report itself as a clean read",
+  "beceadd25 fix(chat_tools): the opener keeps eroding past the leading bracket",
+  "4d3ec4ae7 fix(chat_tools,serve): admission-guard every completion inside the tool loop",
+  "dbf816f3d fix(chat_tools): execute every batched tool call, not just the first"
+ ],
+ "the_honest_reading": "Experiment 1: 66 cycles, 0 accepted HCLI changes. Experiment 2 so far: cycles 67-76, 0 accepted HCLI changes, against 8 substrate repairs Claude authored today. The ratio of accepted-HCLI-work to supervisor-intervention is 0/8. It has not improved because it has not yet started.",
+ "what_HAS_improved_and_is_measurable": {
+  "failure_specificity": "Experiment 1 could not distinguish 'the body did not act' from 'the body acted and was refused'. It now names which, and when refused, why -- down to the character offset where a payload broke.",
+  "false_positives_closed": "Two supervisor false positives were found and closed IN THIS SESSION, both of which would have manufactured evidence: a rejected mutation read as accepted (cycle 74) and a body's explicit refusal to commit read as a hypothesis (cycle 76). Both were the supervisor's bugs, not the body's.",
+  "body_behaviour": "Cycle 75 is the strongest self-directed work in the record: the body ran its discriminator AND the negative control in the same file, reported honestly that it had no evidence on neighbours, and named the exact substrate limit that stopped it (asked tests.run for 120s, got a 30s cap). It diagnosed a real defect in its own tooling, which was then confirmed and fixed."
+ },
+ "the_measurement_that_matters_next": "G044, the detached-supervisor test, is now the discriminating experiment and cannot be run while the substrate is still being repaired underneath the body. It becomes valid once a bounded interval passes with no Claude intervention -- and the interventions must stop because they run out of defects, not because the clock is convenient.",
+ "why_this_is_recorded_as_NOT_MET": "S011 asks whether supervisor dependence is DECREASING. With zero accepted HCLI changes the ratio is undefined in the numerator and every honest reading of it is 'not yet'. Recording the substrate repairs as progress toward autonomy would be exactly the fake completion the ULTRAGOAL forbids: Claude's repairs explicitly DO NOT count (S007)."
+}

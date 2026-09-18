@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.megakernel.persistent_decode_state_contract.v1",
+  "status": "ACCEPTED_CONTRACT__EXECUTION_WITHHELD",
+  "objective": "Make model-scoped persistent decode state explicit in the shared Rust MegaKernel so per-model CPU/GPU/ANE work cannot misclassify prefix replay as repeated decode.",
+  "implementation": {
+    "rust_owner": "crates/hawking-core/src/mega_kernel.rs",
+    "cross_language_owner": "hcli.physical_graph._decode_state_layout",
+    "model_card_owner": "hcli.ane_provider.ANEProvider.characterize_model",
+    "regions": [
+      "runtime.route_cache",
+      "<recurrent-organ>.recurrent",
+      "<attention-organ>.kv"
+    ],
+    "continuation_rule": "advance position only after state update and accepted token; retain all state regions across steps",
+    "replay_is_not_decode": true
+  },
+  "model_scope": {
+    "flash_next": "Recognized state-update and SDPA organs produce recurrent and KV regions in its model card.",
+    "kimi_p0": "Its model card receives only the state regions implied by its exact recognized organs; no Flash result transfers automatically."
+  },
+  "verification": {
+    "rust": "cargo test -p hawking-core mega_kernel --quiet",
+    "native_protocol": "Built hawking-gravityd emitted exactly runtime.route_cache, linear_attention_state.recurrent, and full_attention_sdpa.kv for the Flash model-scoped organ request; linear attention was verified not to receive a false KV region.",
+    "python": "python3 -m pytest -q hcli/test_daemon_delegation_supervisor.py hcli/test_delegate.py hcli/tests/test_serve_openai_surface.py hcli/test_hawkingd_daemon_name.py hcli/test_processes.py hcli/test_ane_provider.py hcli/test_architecture.py",
+    "python_result": "101 passed, 1 skipped",
+    "syntax_and_diff": "python3 -m py_compile hcli/physical_graph.py hcli/ane_provider.py && git diff --check"
+  },
+  "claim_boundary": "This is a deterministic plan/state-lifecycle contract. It does not allocate a GPU or ANE buffer, execute Flash or KIMI, establish source parity, measure repeated decode, report TPS, or promote any backend."
+}

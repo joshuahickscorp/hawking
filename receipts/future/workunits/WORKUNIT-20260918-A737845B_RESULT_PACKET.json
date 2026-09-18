@@ -1,0 +1,260 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-18T15:46:29.436860+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 with one bounded source mutation in tools/accelerator/backend_contract.py adding an explicit no-hardware-qualification boundary marker, verified by the",
+      "outcome": "CONTINUE",
+      "reply_chars": 1199,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T15:46:44.919532+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:46:44.919542+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:46:44.922001+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the rejected proposal: the prior replace ops produced syntactically invalid files. Re-issue the bounded qualification-support tranche of P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 using a complet",
+      "outcome": "CONTINUE",
+      "reply_chars": 2842,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T15:47:05.979351+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:47:05.979357+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:47:05.981029+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the rejected P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 tranche: prior append attempts concatenated onto the final line without a leading newline, producing a SyntaxError. This attempt uses repla",
+      "outcome": "CONTINUE",
+      "reply_chars": 2579,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-18T15:47:11.858856+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:47:11.858865+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:47:11.859517+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"MUTATION_PAYLOAD_MISSING\"}",
+      "outcome": "CONTINUE",
+      "reply_chars": 37,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 5
+    },
+    {
+      "at": "2026-09-18T15:47:26.880761+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:47:26.880770+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:47:26.882325+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the append failure by inserting the deterministic contract-surface helper and focused test at exact observed statement boundaries using replace with a unique existing anchor line, without cl",
+      "outcome": "CONTINUE",
+      "reply_chars": 1996,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 6
+    },
+    {
+      "at": "2026-09-18T15:47:41.070274+00:00",
+      "calls_used": 0,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "git.diff",
+        "git.status",
+        "repo.edit",
+        "tests.run",
+        "tests.run:verified"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T15:47:41.070291+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:47:41.072545+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Repair the rejected P13 insert by replacing the existing test function definition line with a complete, compiling test function, using the qualified alternate model route, without release or hardwa",
+      "outcome": "CONTINUE",
+      "reply_chars": 1610,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 7
+    },
+    {
+      "at": "2026-09-18T15:48:22.833104+00:00",
+      "calls_used": 0,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "git.diff",
+        "git.status",
+        "mutation.proposal",
+        "repo.edit",
+        "tests.run"
+      ],
+      "unmet": [],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-18T15:48:22.833112+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 1,
+      "repo_edit_offered": false,
+      "tool_count": 6,
+      "write_authority": true
+    },
+    {
+      "at": "2026-09-18T15:48:22.834508+00:00",
+      "has_tool_json": true,
+      "head": "{\"status\":\"MUTATION_PROPOSED\",\"objective\":\"Advance P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 with one bounded implementation tranche: add a no-hardware-qualification boundary constant to tools/accelerator/backend_contract.py and a focused red-b",
+      "outcome": "CONTINUE",
+      "reply_chars": 1720,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 8
+    },
+    {
+      "files": [
+        "tools/accelerator/test_backend_contract.py",
+        "tools/accelerator/backend_contract.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "WORKUNIT-20260918-A737845B_SEAL_B1",
+      "turn": 8
+    }
+  ],
+  "files_changed": [
+    "tools/accelerator/test_backend_contract.py",
+    "tools/accelerator/backend_contract.py"
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Advance P13_NVIDIA_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded implementation or qualification-support tranche. Inspect the current owner and existing receipt, make only the aligned source change in the declared scope, run focused verification, and record exact evidence. Do not repeat source mapping, replay terminal provider outcomes, or claim phase/release completion. Use the explicitly qualified alternate model route for this fresh attempt; do not replay the prior provider turn.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "WORKUNIT-20260918-A737845B_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      8
+    ]
+  },
+  "workunit_id": "WORKUNIT-20260918-A737845B"
+}

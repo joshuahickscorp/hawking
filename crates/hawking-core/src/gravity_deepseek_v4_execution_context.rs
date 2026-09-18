@@ -3,7 +3,7 @@
 //! It owns source-backed control staging, an explicit mHC state slot, 43
 //! explicit KV/state-slot layouts, a bounded routed-expert cache, and a
 //! deterministic command-graph ledger. It intentionally has no Engine,
-//! Metal encoder, forward, sampling, HCLI, or TPS surface.
+//! Metal encoder, forward, sampling, Hawking, or TPS surface.
 
 use std::collections::{BTreeMap, VecDeque};
 
@@ -430,7 +430,7 @@ pub enum DeepSeekV4CommandNodeKind {
     MhcFfnResidual,
     FinalMhcHeadAndNorm,
     LmHeadTopKSampling,
-    ReadbackAndHcliStream,
+    ReadbackAndHawkingStream,
 }
 
 impl DeepSeekV4CommandNodeKind {
@@ -448,7 +448,7 @@ impl DeepSeekV4CommandNodeKind {
             Self::MhcFfnResidual => "mhc_ffn_residual",
             Self::FinalMhcHeadAndNorm => "final_mhc_head_and_norm",
             Self::LmHeadTopKSampling => "lm_head_top_k_sampling",
-            Self::ReadbackAndHcliStream => "readback_and_hcli_stream",
+            Self::ReadbackAndHawkingStream => "readback_and_hawking_stream",
         }
     }
 }
@@ -974,7 +974,7 @@ fn canonical_token_graph(
     for kind in [
         DeepSeekV4CommandNodeKind::FinalMhcHeadAndNorm,
         DeepSeekV4CommandNodeKind::LmHeadTopKSampling,
-        DeepSeekV4CommandNodeKind::ReadbackAndHcliStream,
+        DeepSeekV4CommandNodeKind::ReadbackAndHawkingStream,
     ] {
         push_node(&mut nodes, None, kind, final_group);
     }

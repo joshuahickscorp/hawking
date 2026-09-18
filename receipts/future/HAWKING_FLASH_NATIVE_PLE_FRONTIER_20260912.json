@@ -1,0 +1,137 @@
+{
+  "schema": "hawking.flash.native_ple_frontier.v1",
+  "status": "NATIVE_PLE_ADDRESS_SOURCE_ROW_EXACT__BOS_INJECTION_BOUNDED__PERSISTENT_STATE_UNQUALIFIED",
+  "observed_at_utc": "2026-09-12T19:57:42Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "specimen": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"
+  },
+  "owners": {
+    "native_ple": {
+      "path": "crates/hawking-core/src/flash_ple.rs",
+      "sha256": "dbc412b3f85095679043af586e341c22c8f9aec092326a6cba03373f015f1dc3",
+      "lines": 862,
+      "scope": [
+        "Qwen4-Exp PLE config and address contract",
+        "EOS-aware two-token lexical history",
+        "source BF16 range-read row identity",
+        "checkpoint PLE support identity",
+        "native CPU F32 projection, norm, gate, convolution, injection, and persistent state formula"
+      ]
+    },
+    "source_row_control": {
+      "path": "crates/hawking-core/examples/flash_ple_source_row_control.rs",
+      "sha256": "3bb93bf24b74cc520547a392648af0f27226bd9be64b07ed360602f6aa05387b",
+      "lines": 240
+    },
+    "formula_control": {
+      "path": "crates/hawking-core/examples/flash_ple_formula_control.rs",
+      "sha256": "9bf4d170d1f4fdc29135a18b53b04a58bda412543ce5fd3a7611cbcba3420f72",
+      "lines": 365
+    },
+    "canonical_receipt_serializer": {
+      "path": "crates/hawking-core/src/gravity_deepseek_v4.rs::canonical_json",
+      "file_sha256": "bd9258a2b477baf1a76299cd3fab5d033fe0cc7cf61233b9e9d88506ec41192d",
+      "python_compatibility": "sort_keys=True, separators=(comma,colon), ensure_ascii=False, including Python float exponent spelling"
+    }
+  },
+  "address_and_source_row_control": {
+    "receipt": "receipts/headless/FLASH_PLE_NATIVE_SOURCE_ROWS_PROMPT_BOUNDARY_V2_20260912.json",
+    "receipt_sha256": "c75991aa9dde39dd041969ed110dd5b3d74ccacf9d2def5438f400b06d8bfb49",
+    "receipt_seal_sha256": "6385ec2a0c1f0fd443b4f91dd04071b67d6ffea035bab718d3f5489d31336179",
+    "prompt_token_ids": [
+      5423,
+      799,
+      4581,
+      3817,
+      13
+    ],
+    "tokens": 5,
+    "rows": 80,
+    "source_payload_bytes_read": 25600,
+    "ordered_all_token_rows_sha256": "8cdf231db37f8db4e528707225838505a9b04f925e28da92334e4ab423346a32",
+    "independent_python_crosscheck": "EXACT_ADDRESSES_SHARDS_LOCAL_ROWS_AND_ROW_PAYLOAD_HASHES",
+    "full_lookup_materialized": false,
+    "model_loaded": false,
+    "gpu_or_metal_started": false
+  },
+  "bos_formula_control": {
+    "receipt": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V4_20260912.json",
+    "receipt_sha256": "29ac9cbab6527c75c0fbeed4e13920f69766252e1af6190129281130e553fe8a",
+    "receipt_seal_sha256": "f710f80decf0c7685d4b6cb43646b4c6fc19588510c256c38c065d644f19594a",
+    "status": "NATIVE_RUST_PLE_FORMULA_BOUNDED_PARITY_FAIL",
+    "token_id": 248044,
+    "source_payload_bytes_read": 65684760,
+    "predeclared_max_abs_threshold": 0.000005,
+    "predeclared_relative_l2_threshold": 0.000005,
+    "injection": {
+      "max_abs": 2.086162567138672e-7,
+      "relative_l2": 1.3165579670060782e-6,
+      "within_predeclared_bound": true,
+      "native_payload_sha256": "14e9a26d2e95763d643806caf1fb2df09d7f1fc07a0243613669541384c6d44e"
+    },
+    "persistent_conv_state": {
+      "max_abs": 0.000019073486328125,
+      "relative_l2": 1.1466480253682527e-6,
+      "within_predeclared_bound": false,
+      "native_payload_sha256": "89cd343e458e8cbab54583ba1ec7ad89e78f08cc21a0f3a361f7312dc0591269"
+    },
+    "interpretation": "The native BOS injection formula is inside both declared bounds. The persistent conv state exceeds the max-abs bound and remains unqualified. The overall control correctly fails closed; no tolerance was changed after observation."
+  },
+  "supersession": {
+    "v1": {
+      "receipt": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_20260912.json",
+      "receipt_sha256": "327dcd4e0e3a3c3f6ccaa62aba6b7cb002d87858991e1b12e806550c147b0f9a",
+      "disposition": "PRESERVED_NUMERICAL_FAILURE__NONCANONICAL_INSERTION_ORDER_SEAL"
+    },
+    "v2": {
+      "receipt": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V2_20260912.json",
+      "receipt_sha256": "826d7fb9c393b7ba89451d1e7304f4412f3255a0775d8cb48a5b555a6c994bfd",
+      "disposition": "PRESERVED_NUMERICAL_FAILURE__SORTED_KEYS_BUT_FLOAT_EXPONENT_SEAL_MISMATCH"
+    },
+    "v3": {
+      "receipt": "receipts/headless/FLASH_PLE_NATIVE_FORMULA_BOS_CONTROL_V3_20260912.json",
+      "receipt_sha256": "157a8087eb9db2817f2353aa3794cb34de866a1ad55b19e1d67940e5f3ab5108",
+      "disposition": "PRESERVED_NUMERICAL_FAILURE__SCIENTIFIC_THRESHOLD_SEAL_MISMATCH"
+    },
+    "v4": "FIRST_FORMULA_RECEIPT_INDEPENDENTLY_VERIFIED_UNDER_DECLARED_PYTHON_CANONICAL_SEAL"
+  },
+  "validation": {
+    "native_ple_unit_tests": "6 passed, 0 failed",
+    "canonical_json_unit_tests": "2 passed, 0 failed",
+    "focused_examples_cargo_check": "passed",
+    "hawking_core_cargo_check": "passed",
+    "cargo_fmt": "passed",
+    "json_validation": "passed",
+    "git_diff_check": "passed",
+    "v2_source_row_receipt_python_seal": "verified",
+    "v4_formula_receipt_python_seal": "verified",
+    "formula_repeat_against_v1_payloads_and_metrics": "exact",
+    "boundary_transaction_dry_status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+    "boundary_release_executable_closure_reverified": true,
+    "protected_model_run_started": false
+  },
+  "kimi": {
+    "state": "COLD",
+    "fresh_calls": 0,
+    "provider_loaded": false,
+    "retirement_earned": false
+  },
+  "frontier": {
+    "source_teacher_authority": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+    "source_native_correctness": "layer 4 / token 0 remains the last bounded frontier",
+    "native_ple": "Address/history/source-row ownership exists. A one-token CPU F32 injection control passes its bound; persistent state does not. No multi-token source-authorized PLE trajectory exists yet.",
+    "complete_runnable_nr": false,
+    "complete_ebpw": null,
+    "native_worker_tps": null,
+    "capability_qualified": false,
+    "pulsar_promoted": false
+  },
+  "next_safe_action": "Preserve the failed persistent-state bound. After the machine owner admits the exact captured teacher, run the existing bounded source-boundary transaction once. Use the resulting PLE-inclusive source trajectory to discriminate persistent-state reduction order and continuity before any full-body replay.",
+  "claim_boundary": "This establishes exact native PLE address/history and source-row identity plus bounded one-token CPU F32 formula evidence. It does not establish persistent-state parity, multi-token PLE continuity, source/full-model parity, a compact or admitted NR, source independence, Metal execution, EBPW, TPS, capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "seal_sha256": "27270f6c738d886190d027528fa7ba17425b92e9cd127009238b80d4db430af7"
+}

@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 4,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "c42a98821457647e9bdfb4544905c87c1e20423b4424734f19af4d775a8b973e",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:12:53.632304+00:00",
+      "calls_used": 4,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:12:53.632323+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:12:53.636667+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root /Users/scammermike/Downloads/hawking contains top-level directories including crates, docs, receipts, reports, research, tests, tools, artifacts, and hawking, plus governance files GRAVITY-CANON.md, GRAVITY",
+      "outcome": "CONTINUE",
+      "reply_chars": 5220,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root /Users/scammermike/Downloads/hawking contains top-level directories including crates, docs, receipts, reports, research, tests, tools, artifacts, and hawking, plus governance files GRAVITY-CANON.md, GRAVITY-MIGRATION-MAP.md, GRAVITY-SLIMMING-WORKORDER.md, and HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md.\",\"A full-corpus search for the literal token DARKMATTER across the all-authorized corpus returned zero matches; the scan saw 5000 files, was flagged truncated=true, and skipped 10 large files, so absence of DARKMATTER is not proven for the unscanned tail.\",\"A search for the token P9 returned mostly binary-fixture noise (gravity_glm/gravity_llama .gravity and .f32 fixtures, .raw_module, .gif, .enc artifacts) plus two semantically meaningful text hits: docs/reports/HAWKING_PROVIDER_INDEPENDENT_MUTATION_20260917.md line 144 ('The independent P6\u2013P9 local slice also passes 112 tests across') and research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json line 134 ('\\\"id\\\": \\\"P9\\\"').\",\"The only structured P9 phase definition observed in the authorized corpus is inside research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json; no Hawking-owned source file, receipt, or workorder observed names a DARKMATTER core tranche or a DARKMATTER owner.\",\"No receipts under receipts/ and no reports under reports/ were opened during this bounded pass, so receipt-side evidence for a dependency-valid P9 DARKMATTER core tranche remains unverified rather than falsified.\",\"No child Hawking Goal/WorkUnit was spawned; all evidence was gathered within this worker's admitted read-only budget, and no files were mutated.\"],\"sources\":[\"fs.list invocation tool-300e9713-5645-4de0-bd21-e1143b6b3ac5 (root listing of /Users/scammermike/Downloads/hawking)\",\"fs.search invocation tool-8009ade3-c7b7-4fd4-bc07-a9a4c67ba24e (pattern DARKMATTER, corpus all-authorized, 0 matches, truncated=true, files_seen=5000)\",\"fs.search invocation tool-fa707446-628c-4d23-8ac4-d809e35d12c8 (pattern P9, corpus all-authorized, truncated=true)\",\"docs/reports/HAWKING_PROVIDER_INDEPENDENT_MUTATION_20260917.md:144\",\"research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json:134\"],\"recommendations\":[\"Do not admit a DARKMATTER implementation child yet: the objective's premise (a dependency-valid P9 DARKMATTER core tranche with a precise Hawking-owned owner) is not confirmed by any observed source; admitting now would rest on ungrounded prose.\",\"Proposed smallest independent follow-on contract (research-only, admit-ready): objective = 'Locate the authoritative definition and Hawking-owned owner of the P9 DARKMATTER core tranche and enumerate its dependency-valid receipt set'; focus files = research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json, docs/reports/HAWKING_PROVIDER_INDEPENDENT_MUTATION_20260917.md, receipts/ (targeted listing), reports/ (targeted listing), GRAVITY-SLIMMING-WORKORDER.md, GRAVITY-MIGRATION-MAP.md; focused tests = none (read-only contract; verification is by cited file:line evidence); acceptance checks = (a) at least one file:line citation naming DARKMATTER or an explicit negative result over a non-truncated corpus, (b) named owner module/crate or explicit owner-absent finding, (c) dependency list for the P9 tranche quoted from FRANKENSTEIN_PROGRAM_PLAN.json; writer/effect scope = read-only, zero file mutation, zero receipt writes, zero git mutation; protected resources = receipts/, .hawking/, target/, all binary fixtures; falsifier = 'a non-truncated authorized-corpus search plus targeted reads of FRANKENSTEIN_PROGRAM_PLAN.json and the P6\u2013P9 mutation report yield no DARKMATTER definition and no owner, in which case the tranche is declared unowned/undefined and no implementation child may be admitted.'\",\"Close the search gap first: rerun the DARKMATTER query against a non-truncated or specifically scoped corpus (docs/, receipts/, reports/, research/, crates/",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-5105f52ddaed4fbe",
+  "worker_id": "hawking-worker-9723f2ae37e94699",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-F3FE2C16"
+}

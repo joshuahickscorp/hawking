@@ -1,0 +1,93 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "0632db9a92f0aebf9c6dd05f97bd2990a109647c9e5da346aaf75a0acf8ecba3",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:10:51.138763+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:10:51.138780+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:10:51.143694+00:00",
+      "has_tool_json": false,
+      "head": "We need answer exactly one JSON object. We have real observation from earlier. Need not call tools. Must not name/describe any tool. We can mention file paths? That's not tool. We can mention sha. We must not name/describe any tool. Avoid t",
+      "outcome": "CONTINUE",
+      "reply_chars": 6720,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T08:11:04.660424+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:11:04.660446+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:11:04.662739+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Observed hawking/tool_registry.py as a 273683-byte file with full-file sha256 7e790152bd46aeeedc42a84563a0ac6b6d418cb7260f5d300d06927e1a8d101a; the read was truncated to the first 4000 bytes, so only the file header and in",
+      "outcome": "CONTINUE",
+      "reply_chars": 3036,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Observed hawking/tool_registry.py as a 273683-byte file with full-file sha256 7e790152bd46aeeedc42a84563a0ac6b6d418cb7260f5d300d06927e1a8d101a; the read was truncated to the first 4000 bytes, so only the file header and initial definitions were inspected.\",\"The observed header states the registry is for typed, permissioned tools and that the model may request a tool but may not smuggle a shell command, credential, or unbounded path operation through a generic exec escape hatch.\",\"The observed header states every registered tool has an input schema, an output contract, a mutation class, and a provenance-bearing result.\",\"The observed header states the default registry is intentionally conservative and provides filesystem, Git, public research, receipt, ModelLake, PERCEPTION, Doctor, Gravity, accelerator, roadmap, and test-discovery surfaces, with write-capable tools denied unless the application explicitly grants the corresponding permission.\",\"Observed mutation-class constants include READ_ONLY, RESEARCH, WORKSPACE_WRITE, REPO_WRITE, REVERSIBLE_REPO, REVERSIBLE_RUNTIME, COSTLY, DESTRUCTIVE, and EXTERNAL_WRITE, and MUTATION_CLASSES is a frozenset containing those plus compatibility labels WORKSPACE_WRITE and REPO_WRITE.\",\"Observed context-local controls for native helpers and network credentials, including suppress_native_helpers and suppress_restricted_worker_capabilities; the latter sets both native-helper and network-credential allowances to false for one constrained-worker dispatch.\",\"No observation was made of hawking/perception/tools.py, hawking/test_tool_registry.py, or hawking/tests/test_sealed_capabilities_reach_the_backend.py in this checkpoint.\"],\"sources\":[{\"path\":\"hawking/tool_registry.py\",\"sha256\":\"7e790152bd46aeeedc42a84563a0ac6b6d418cb7260f5d300d06927e1a8d101a\",\"sha256_scope\":\"full_file\",\"bytes\":273683,\"observed_range\":\"first 4000 bytes\",\"truncated\":true}],\"recommendations\":[\"Continue read-only inspection of the admitted focus files, starting with hawking/perception/tools.py to locate the typed allowlist/register definitions and any path-escape checks.\",\"Then inspect hawking/test_tool_registry.py and hawking/tests/test_sealed_capabilities_reach_the_backend.py for focused assertions covering allowlist/register behavior, path-escape rejection, and sealed-capability reachability.\",\"Return exact line ranges, function or test names, and observed assertions; do not mutate files or claim capability promotion.\"],\"unresolved_questions\":[\"Does hawking/perception/tools.py implement a typed allowlist/register as claimed by the accepted P5 perception contract?\",\"How does the perception path handling normalize and reject path-escape attempts?\",\"Do the admitted tests contain focused evidence for allowlist/register behavior and path-escape rejection?\",\"Does hawking/tests/test_sealed_capabilities_reach_the_backend.py provide evidence that sealed capabilities reach the backend without bypassing the registry?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-8580b5ea65274120",
+  "worker_id": "hawking-worker-2090b793a2e1495f",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-B07079B7"
+}

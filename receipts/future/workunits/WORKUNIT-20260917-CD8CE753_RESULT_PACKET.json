@@ -1,0 +1,170 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 10,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "baf290dc1324122cc5c21a97583232dbfa6c1a52ab96cb99e02dc928f123fcf6",
+  "evidence": [
+    {
+      "at": "2026-09-18T03:38:58.849351+00:00",
+      "calls_used": 10,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:38:58.849360+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:38:58.854362+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"programme_binding\",\"detail\":\"WORKUNIT-20260917-CD8CE753 sits under GOAL-A52AB48501, programme HAWKING_MASTER_LONG_HAUL_V2; canonical objective bound at /Users/scammermike/Downloads/HAWKING_MASTER_LONG_HAU",
+      "outcome": "CONTINUE",
+      "reply_chars": 5641,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-18T03:42:25.124848+00:00",
+      "calls_used": 12,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:42:25.124860+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:42:25.126632+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\":\"EVIDENCE_PACKET_COMPLETE\",\"observations\":[{\"frontier\":\"artifact\",\"owner\":\"hawking/agentos/flash_vocabulary_prefilter.py\",\"evidence\":\"_control_artifact_path/_evidence_artifact enforce declared artifact_sha256 vs observed sha256; r",
+      "outcome": "CONTINUE",
+      "reply_chars": 5831,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-18T03:43:36.511354+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:child_worker_ids,observations,recommendations,sources,unresolved_questions",
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:43:36.511364+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:43:36.511725+00:00",
+      "has_tool_json": false,
+      "head": "{\"status\": \"READING_REAL_EVIDENCE\"}",
+      "outcome": "CONTINUE",
+      "reply_chars": 35,
+      "tool_less_continue_streak": 3,
+      "tool_signal": "theater",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-18T03:46:23.301586+00:00",
+      "calls_used": 10,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T03:46:23.301596+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T03:46:23.306710+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"memory_owners\",\"claim\":\"Memory frontier has four owners: session memory=hawking/chat_state.py:277; bounded worker memory image=hawking/auto_orchestration.py:498 via hawking/controller.py:914-946 session.s",
+      "outcome": "CONTINUE",
+      "reply_chars": 5008,
+      "tool_less_continue_streak": 4,
+      "tool_signal": "none",
+      "turn": 4
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[{\"id\":\"O1\",\"kind\":\"memory_owners\",\"claim\":\"Memory frontier has four owners: session memory=hawking/chat_state.py:277; bounded worker memory image=hawking/auto_orchestration.py:498 via hawking/controller.py:914-946 session.set_memory; mission context_memory cache=hawking/mission.py:318-341 and hawking/executors.py:586; cross-specimen memory=hawking/knowledge_store.py with durable store receipts/future/ODYSSEY_KNOWLEDGE.json, scopes SPECIMEN/FAMILY_PRIOR/TRANSFERABLE_LAW/MACHINE_LAW, TRANSFERABLE_LAW refused below 2 specimens, entries require measurement+reopen_condition+oracle_strength.\",\"evidence\":[\"hawking/knowledge_store.py sha256=2fd25dc9f6293efcb2f4e50629357cd57158dda8dc5be611178f8878e26f00fe\",\"hawking/controller.py:914\",\"hawking/mission.py:341\"]},{\"id\":\"O2\",\"kind\":\"artifact_owners\",\"claim\":\"Artifact frontier: hawking/catalog.py:38 is the single admission list (workspace/campaign/odyssey/gravity-artifacts.json); hawking/canonical_runtime.py:8 addresses admitted native artifacts by immutable identity; artifact.read/artifact.search in hawking/chat_tools.py:69-70; hawking/architecture.py:91 resolves artifact_root; hawking/genesis_resident.py:122 discover_artifact; hawking/context_budget.py:427 per-artifact context ceiling.\",\"evidence\":[\"hawking/catalog.py:38\",\"hawking/chat_tools.py:69-70\",\"hawking/canonical_runtime.py:8\"]},{\"id\":\"O3\",\"kind\":\"source_context_controller_owners\",\"claim\":\"Source/context owners: hawking/repo_context.py, hawking/source_tools.py, hawking/context_budget.py, hawking/frontier_scheduler.py:305 (evidence over memory). Controller owners: hawking/controller.py, hawking/remote_cognition.py (WorkUnit completion-contract normalization point, active continuation GOAL-F4F72EFC0A/t14), hawking/goal_surface.py, hawking/supervisor_watcher.py, hawking/workunit_owner.py.\",\"evidence\":[\"hawking/frontier_scheduler.py:305\",\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md sha256=6fc245eb367a7471d28d711a3d70747afe1a57ffdc5c545fa2c14e2a7518336e sec.3\",\"campaign.state continuation\"]},{\"id\":\"O4\",\"kind\":\"frontier_state\",\"claim\":\"Bottleneck: nx_disposition is the only depth axis with ZERO measurements (30 REFUSED, 26 OWED). 31 priors live; read via odyssey.read op=priors before proposing experiments. Latest evidence: HAWKING_MASTER_LONG_HAUL_V2 receipt family under receipts/future/; ledger receipts/future/G034_ODYSSEY_LEDGER.json.\",\"evidence\":[\"campaign.state tool-bbb9ca3b-7c94-4c41-82f2-e52ccc35aae1\"]},{\"id\":\"O5\",\"kind\":\"protected_boundaries\",\"claim\":\"Protected resources untouched: Flash, Pulsar, ModelLake canonical artifacts, Odyssey sealed receipts, credentials, dirty work. KIMI_P0 blind-write Scar sealed at receipts/future/KIMI_P0_BLIND_WRITE_SCAR_20260911.json; provider dead-letters in .hawking/provider-dead-letters/ not replayed. This worker did no mutation, no tests, no git, no paid calls.\",\"evidence\":[\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md sec.5,7,10\",\"civilization/sovereign-goal.txt via campaign.state\"]}],\"sources\":[\"hawking/knowledge_store.py\",\"hawking/chat_state.py\",\"hawking/controller.py\",\"hawking/mission.py\",\"hawking/executors.py\",\"hawking/auto_orchestration.py\",\"hawking/catalog.py\",\"hawking/canonical_runtime.py\",\"hawking/chat_tools.py\",\"hawking/architecture.py\",\"hawking/context_budget.py\",\"hawking/genesis_resident.py\",\"hawking/frontier_scheduler.py\",\"hawking/goal_surface.py\",\"hawking/supervisor_watcher.py\",\"HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md\",\"campaign.state tool-bbb9ca3b-7c94-4c41-82f2-e52ccc35aae1\"],\"recommendations\":[{\"id\":\"R1\",\"tranche\":\"nx_disposition first-measurement\",\"claim\":\"Smallest disjoint tranche: read the 31 priors via odyssey.read op=priors, then take the first MEASURED nx_disposition data point for one already-admitted specimen, writing to the receipt path that axis gate reads. Disjoint from GOAL-F4F72EFC0A contract work and the parked Deep 27B SUB2 search.\",\"falsifier\":\"If a prior already answers nx_disposition for that family the tranche is removed per prio",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-ff1bfa81ecd84c40",
+  "worker_id": "hawking-worker-69a257f442a84334",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260917-CD8CE753"
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.flash_e13.wikinews_corpus_predeclaration.v1",
+  "status": "PREDECLARED_BEFORE_CORPUS_OCCUPANCY_INSPECTION",
+  "recorded_at": "2026-09-12T17:46:30Z",
+  "purpose": "A bilingual, date-pinned, non-evaluation text-frequency corpus for E13 lexical-row stratification only.",
+  "sources": [
+    {
+      "project": "English Wikinews",
+      "language": "English",
+      "script": "Latin",
+      "dump_name": "enwikinews-20260901-pages-articles.xml.bz2",
+      "url": "https://dumps.wikimedia.org/enwikinews/20260901/enwikinews-20260901-pages-articles.xml.bz2",
+      "content_length": 47538740,
+      "upstream_sha1": "abc9721f42340c8fc073078a44d98ee8d3a74959"
+    },
+    {
+      "project": "Chinese Wikinews",
+      "language": "Chinese",
+      "script": "Han",
+      "dump_name": "zhwikinews-20260901-pages-articles.xml.bz2",
+      "url": "https://dumps.wikimedia.org/zhwikinews/20260901/zhwikinews-20260901-pages-articles.xml.bz2",
+      "content_length": 33813849,
+      "upstream_sha1": "ba0117eaedc6e4d76e4a0464c0a57198b14e7582"
+    }
+  ],
+  "source_selection": {
+    "rationale": "Wikinews supplies real article text in both required scripts, is not a held-out Hawking capability corpus, is available from a dated first-party dump, and is small enough for a bounded CPU-only transform.",
+    "excluded": {
+      "FLORES_plus": "withheld because it is gated evaluation data and requests exclusion from model training; E13 representation selection would create avoidable evaluation-contamination ambiguity",
+      "existing_hawking_corpora": "measured insufficient for the four Han cells",
+      "Wikipedia_full_dumps": "unnecessary multi-gigabyte acquisition for this bounded discriminator"
+    },
+    "license_authority": "https://foundation.wikimedia.org/wiki/Legal:Wikimedia_Developer_App_Guidelines#3._What_licenses_apply_to_Wikimedia_content",
+    "license_note": "Most Wikimedia text is CC BY-SA 4.0 and GFDL; this derived corpus is internal evidence and is not committed or redistributed. Source project, dump URL, date, and transformation remain recorded for attribution."
+  },
+  "transform": {
+    "implementation": "this_file.v1",
+    "owner": "tools/future/flash_e13_wikinews_corpus.py",
+    "source_order": [
+      "enwikinews-20260901-pages-articles.xml.bz2",
+      "zhwikinews-20260901-pages-articles.xml.bz2"
+    ],
+    "selection": "namespace 0, non-redirect pages with non-empty current revision text",
+    "emission": "UTF-8 title, LF, exact XML-decoded revision text, LF, in source dump order",
+    "normalization": "XML entity resolution and XML line-ending normalization performed by Python stdlib ElementTree only; no markup stripping, sampling, deduplication, Unicode normalization, or language cleanup",
+    "maximum_output_bytes": 1073741824,
+    "no_clobber": true
+  },
+  "e13_design_frozen_before_occupancy": {
+    "eligible_model_vocab_count": 248044,
+    "row_budget": 4096,
+    "fit_rows_per_stratum": 256,
+    "heldout_rows_per_stratum": 256,
+    "rare_max_count": 1,
+    "common_min_count": 2,
+    "short_max_utf8_bytes": 3,
+    "long_min_utf8_bytes": 4,
+    "selection_seed": 5683489481123170890,
+    "selection_seed_derivation": "first 64 bits, big-endian, of SHA-256('hawking.flash.e13.selection.v1')",
+    "shuffled_null_seed": 15016081310332754406,
+    "shuffled_null_seed_derivation": "first 64 bits, big-endian, of SHA-256('hawking.flash.e13.shuffled_null.v1')",
+    "failure_policy": "If any of the eight cells has fewer than 512 eligible rows, seal the refusal. Do not tune thresholds against observed occupancy."
+  },
+  "runtime_boundary": {
+    "model_load_authorized": false,
+    "tensor_payload_read_authorized": false,
+    "gpu_or_ane_authorized": false,
+    "provider_or_daemon_restart_authorized": false,
+    "modellake_mutation_authorized": false
+  },
+  "claim_boundary": "This freezes corpus sources, transform, strata, splits, and seeds before corpus-derived cell counts are inspected. It does not establish that the corpus fills the design, authorize row extraction, execute E13, establish a representation, construct a complete NR, measure EBPW/TPS/capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "9231754ea9ae9558ad6f224806794fb3041035192091d27d6db16f443b918907"
+}

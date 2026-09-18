@@ -603,6 +603,9 @@ def scan_specimen(
             "num_key_value_heads": fp.get("num_key_value_heads"),
             "vocab_size": fp.get("vocab_size"),
             "organs": fp.get("organs") or [],
+            # Source identity/header facts only.  Gravity owns the passport,
+            # method, Scar, and result layers referenced from this projection.
+            "static_traits": fp.get("static_traits"),
             "strength": fp.get("strength"),
             "n_tensors": fp.get("n_tensors"),
             "loaded_weights": False,

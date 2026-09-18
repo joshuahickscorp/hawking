@@ -1,0 +1,110 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "295145cae1bf8c24285d3f7b3a944679d5afc6d6cebe8fd202c173962f9e1982",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:23:29.569359+00:00",
+      "calls_used": 5,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:23:29.569370+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:23:29.571269+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"claim\":\"normalize_macos_authority completes with strict caps: at most 8 application names (each <=160 chars, deduplicated) and at most 8 bundle_ids matching [A-Za-z0-9_.-]+ (<=160 chars); actions=True with neither applica",
+      "outcome": "CONTINUE",
+      "reply_chars": 5116,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    {
+      "claim": "normalize_macos_authority completes with strict caps: at most 8 application names (each <=160 chars, deduplicated) and at most 8 bundle_ids matching [A-Za-z0-9_.-]+ (<=160 chars); actions=True with neither applications nor bundle_ids raises ValueError('macos actions require at least one exact application or bundle scope').",
+      "evidence": "fs.read lines 260-284, invocation tool-4a6df9c1-88c3-4ebc-96bb-088e4fe0e2bb (untruncated, 3345 bytes)."
+    },
+    {
+      "claim": "The macOS authority lease is bounded: lease_ttl_s must be numeric and is clamped to [1.0, 120.0] seconds with default 30.0; the emitted record carries schema 'hawking.goal.macos_authority.v1', goal_id from workunit_id_for_goal, observe/actions, applications, bundle_ids, lease_ttl_s, preemptible:True, and semantic_actions limited to ['AXPress'] only when actions are granted \u2014 confirming the docstring claim that there is no generic keyboard/mouse/shell escape hatch.",
+      "evidence": "Lines ~285-301 observed in full."
+    },
+    {
+      "claim": "create_goal is the Goal admission entry point with an extensive keyword contract: defaults include authority_boundary='staging worktree only; no production mutation', flash_resource_rule='Flash protected-lane; native resident only; no unqualified provider fallback', completion_contract='RUNNING to COMPLETE only when acceptance met; emit canonical result', resident='KIMI_P0_OPERATIONAL', goal_mode='discrete_goal', worker_policy='auto', auto_scope='cloud', source='h_web', plus optional attachments, browser_authority, macos_authority, cognition_plan, parent_goal_ids, required_capabilities, external_roots, and budget fields.",
+      "evidence": "Lines ~304-334 observed in full."
+    },
+    {
+      "claim": "create_goal begins validation: objective is required (ValueError if blank), goal_mode must be exactly 'discrete_goal' or 'worker_research', and worker_policy normalization begins (body cut at the window boundary, line 340).",
+      "evidence": "Lines ~335-340; content ends mid-validation at the requested window boundary (truncated:false, window-limited)."
+    }
+  ],
+  "provider_status": "INCOMPLETE",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [
+    {
+      "expected_evidence": "Calls to _normalize_attachment_refs, normalize_browser_authority, normalize_macos_authority inside create_goal, and the atomic_write_json persistence under goals_root.",
+      "next_action": "Read hawking/goal_surface.py lines 340-430 to observe the remainder of create_goal validation (worker_policy, budgets, allowed_models) and the assembly of the Goal record with GOAL_SCHEMA, normalized attachments, and both authority fences.",
+      "reason": "create_goal is cut mid-validation at line 340; the composition point proving all fences run before atomic_write_json persistence is the next bounded evidence.",
+      "tool_family": "fs.read"
+    },
+    {
+      "expected_evidence": "Resident validation or an explicit admission flag in the create_goal body or its callees.",
+      "next_action": "Confirm whether create_goal enforces the 'runtime withheld' state for resident='KIMI_P0_OPERATIONAL' or defers it to a downstream dispatcher.",
+      "reason": "Falsifier: if create_goal admits a resident that no dispatcher can run, the UI caption 'canonical runtime admission is withheld' would be contradicted at the admission layer.",
+      "tool_family": "fs.read"
+    }
+  ],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [
+    {
+      "invocation_id": "tool-4a6df9c1-88c3-4ebc-96bb-088e4fe0e2bb",
+      "lines": "260-340 (complete window, untruncated)",
+      "mutation": "read_only",
+      "path": "hawking/goal_surface.py",
+      "sha256": "026eefc2b45f721451de22defc89c7421a4c1bebc72eea55417a90371b9eff4c"
+    },
+    {
+      "invocation_id": "tool-8b9a11b0-6094-4885-8de4-75219603db8b",
+      "lines": "180-260 (complete window)",
+      "mutation": "read_only",
+      "path": "hawking/goal_surface.py",
+      "sha256": "026eefc2b45f721451de22defc89c7421a4c1bebc72eea55417a90371b9eff4c"
+    },
+    {
+      "invocation_id": "tool-9f05cccb-cbee-40ed-96f3-dc0191eb30f3",
+      "lines": "1-220 (partial, three reads)",
+      "mutation": "read_only",
+      "path": "hawking/goal_surface.py",
+      "sha256": "026eefc2b45f721451de22defc89c7421a4c1bebc72eea55417a90371b9eff4c"
+    }
+  ],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.read"
+  ],
+  "unresolved_questions": [
+    "Does create_goal invoke all three normalizers (attachments, browser, macOS) before persisting, and in what order relative to budget/policy validation?",
+    "What worker_policy values beyond 'auto' are admitted, and how does auto_scope='cloud' interact with the Flash protected-lane rule?",
+    "Where is the goal_id minted (uuid imported at line 9) and does it feed workunit_id_for_goal before browser_session_id derivation?"
+  ],
+  "worker_attempt_id": "hawking-attempt-f69093ba385e4fd5",
+  "worker_id": "hawking-worker-9c0405b1fa204be6",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-98A81AC1"
+}

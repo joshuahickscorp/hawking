@@ -1,0 +1,301 @@
+{
+  "candidate_manifest_id": "CANDIDATE-84f6647618d8f54bec780921",
+  "candidate_manifest_path": "/Users/scammermike/Downloads/hawking/.hawking/manifests/candidates/CANDIDATE-84f6647618d8f54bec780921.json",
+  "capability_lease": {
+    "authority": "fresh OS observation plus Goal-scoped logical boundary",
+    "cache_is_not_authority": true,
+    "checked_at": 1789677222.101303,
+    "required": [
+      "WORKSPACE_READ",
+      "WORKSPACE_WRITE",
+      "PROCESS_EXECUTION",
+      "BROWSER",
+      "NETWORK"
+    ],
+    "schema": "hawking.goal.capability_lease.v1",
+    "snapshot": {
+      "cache_path": "/Users/scammermike/Downloads/hawking/.hawking/permissions/state.json",
+      "capabilities": {
+        "ACCESSIBILITY": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "AUTOMATION": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "BROWSER": {
+          "evidence": {
+            "module": true
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.browser_world",
+          "state": "READY"
+        },
+        "DEVELOPER_TOOLS": {
+          "evidence": {
+            "tools": [
+              "/usr/bin/xcrun",
+              "/usr/bin/swiftc",
+              "/usr/bin/codesign"
+            ]
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.native_owner",
+          "state": "READY"
+        },
+        "EXTERNAL_DRIVE_READ": {
+          "evidence": {
+            "paths": [
+              {
+                "path": "/Volumes/corpdrive",
+                "ready": true,
+                "reason": "read probe succeeded"
+              }
+            ],
+            "reason": "at least one mounted volume passed"
+          },
+          "kind": "logical_external_drive",
+          "owner": "hawking.permissions.ExternalDriveBoundary",
+          "state": "READY"
+        },
+        "EXTERNAL_DRIVE_WRITE": {
+          "evidence": {
+            "paths": [
+              {
+                "path": "/Volumes/corpdrive",
+                "ready": true,
+                "reason": "directory write access reported by the OS"
+              }
+            ],
+            "reason": "at least one mounted volume passed"
+          },
+          "kind": "logical_external_drive",
+          "owner": "hawking.permissions.ExternalDriveBoundary",
+          "state": "READY"
+        },
+        "FULL_DISK_ACCESS": {
+          "evidence": {
+            "paths": [
+              {
+                "path": "/Users/scammermike/Library/Mail",
+                "ready": false,
+                "reason": "read probe failed: PermissionError"
+              },
+              {
+                "path": "/Users/scammermike/Library/Messages",
+                "ready": false,
+                "reason": "read probe failed: PermissionError"
+              },
+              {
+                "path": "/Users/scammermike/Library/Safari",
+                "ready": false,
+                "reason": "read probe failed: PermissionError"
+              }
+            ],
+            "probe": "protected user-library paths",
+            "reason": "protected paths were denied"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "MISSING"
+        },
+        "INPUT_MONITORING": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "MICROPHONE": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "NETWORK": {
+          "evidence": {
+            "probe": "loopback bind"
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.network",
+          "state": "READY"
+        },
+        "PROCESS_EXECUTION": {
+          "evidence": {
+            "executable": "/opt/homebrew/opt/python@3.14/bin/python3.14"
+          },
+          "kind": "logical_non_tcc",
+          "owner": "hawking.processes",
+          "state": "READY"
+        },
+        "SCREEN_CAPTURE": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "SPEECH_RECOGNITION": {
+          "evidence": {
+            "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current"
+          },
+          "kind": "tcc",
+          "owner": "com.hawking.native-helper",
+          "state": "NOT_REQUESTED"
+        },
+        "WORKSPACE_READ": {
+          "evidence": {
+            "path": "/Users/scammermike/Downloads/hawking",
+            "reason": "read probe succeeded"
+          },
+          "kind": "logical_workspace",
+          "owner": "hawking.permissions.WorkspaceBoundary",
+          "state": "READY"
+        },
+        "WORKSPACE_WRITE": {
+          "evidence": {
+            "path": "/Users/scammermike/Downloads/hawking",
+            "reason": "directory write access reported by the OS"
+          },
+          "kind": "logical_workspace",
+          "owner": "hawking.permissions.WorkspaceBoundary",
+          "state": "READY"
+        }
+      },
+      "checked_at": 1789677222.101303,
+      "code_identity": {
+        "schema": "hawking.native.code_identity.v1",
+        "stable_identifier": "com.hawking.native-helper",
+        "stable_owner": false,
+        "state": "MISSING"
+      },
+      "fresh": true,
+      "helper_revision": null,
+      "native": {
+        "available": false,
+        "reason": "no stable Hawking native helper is installed; build/sign hawking-native-helper and promote it to /Users/scammermike/Library/Application Support/Hawking/native-owner/current",
+        "state": "UNAVAILABLE"
+      },
+      "required": [
+        "WORKSPACE_READ",
+        "WORKSPACE_WRITE",
+        "PROCESS_EXECUTION",
+        "BROWSER",
+        "NETWORK"
+      ],
+      "schema": "hawking.permissions.v1",
+      "workspace": "/Users/scammermike/Downloads/hawking"
+    }
+  },
+  "child_worker_ids": [],
+  "classification": "",
+  "compact_crossings": 0,
+  "context_packet_digest": "79076b61bae2125ffd8fd76c0fd8432551430b29afc580788e4739172dacf793",
+  "contract": "/Users/scammermike/Downloads/hawking/.hawking/goals/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-7FC5CF14.contract.json",
+  "current_phase": "BUILD",
+  "driver": "hawking.workunit_owner",
+  "driver_pid": 90367,
+  "endpoint": {
+    "base_url": "http://127.0.0.1:8014/v1",
+    "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+    "host": "127.0.0.1",
+    "port": 8014,
+    "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+  },
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "execution_binding_digest": "9b079f3f15841894e79e74cdb97020fdc967473de976756eacc8cb3a4ff7475a",
+  "last_outcome": "CONTINUE",
+  "last_turn": 23,
+  "objective": "P1 bounded mutation: make hawking/workunit.py WorkUnit.to_dict/from_dict the single durable owner for the persisted fields already represented by WorkUnit, and remove only the redundant dag_store serialization overlay in hawking/dag_store.py. Add one deterministic regression in hawking/tests/test_dag_store.py proving a unit with worker identity, tool fields, and capability lease survives DagStore round-trip through WorkUnit serialization. Use Hawking builder tools: inspect current source, make the smallest repo.edit, run the focused test, repair if needed, then git.status and git.diff. Do not change other files. Do not touch Flash/Pulsar/ModelLake or unrelated dirty work. Complete only with grounded edit/test/status/diff evidence.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "plan_id": "PLAN-3936EDD7DF1F",
+  "provider_request_ids": [
+    "gateway-95b008a986fd49828a155556:tool-1",
+    "gen-1789676958-3PobtiC5OLJmoVc8x79A",
+    "gateway-54c86dc1a2cb4ba4a37f660c:tool-1",
+    "gen-1789676966-yyGrCtEQgqjTAA7COu4T",
+    "gateway-f033bd585a444d7fb4251c89:tool-1",
+    "gen-1789676975-uqtQmC60gEWUr0pqQA8b",
+    "gateway-ccb391919f7f4e50b74a0b3e:tool-1",
+    "gen-1789676983-Jh8oKHGP4QCHOzSYWQ5L",
+    "gateway-28bfa97ff232416ca642adf2:tool-1",
+    "gen-1789677053-6RDYZ1lAZzOz4QpTOWAM",
+    "gateway-f0a69d4880da4db7b4937580:tool-1",
+    "gen-1789677063-EJ7KAUHo74ffQPP2PNLm",
+    "gateway-74dfc84b360746f5bb31117d:tool-1",
+    "gen-1789677072-mDwMwhvVWKDYgAvhyj7Y",
+    "gateway-c879278337f24285a1080c4a:tool-1",
+    "gen-1789677081-7VfWAAi5V2QQJFC5BRug",
+    "gateway-69f1a63648bf48cda3d0345a:tool-1",
+    "gen-1789677090-xPIgBVBTJinxp6igwGcT",
+    "gateway-0a1c5ccf391f4b3ab7805f11:tool-1",
+    "gen-1789677112-Qv4f9S0eilFwHONGtTXv",
+    "gateway-7cb3bf96f2044805b640733f:tool-1",
+    "gen-1789677121-9uAZDulMySZeg4tNmlth",
+    "gateway-52f93f3364ac4440adfb0361:tool-1",
+    "gen-1789677130-40ptxMb1lIisCTpl4yuj",
+    "gateway-931347d9214d4b64825c0c6d:tool-1",
+    "gen-1789677156-UfzpUtqBH4GdsrC1ZOGa",
+    "gateway-b56b958f9cd9406e85c812f9:tool-1",
+    "gen-1789677166-mZOJb7icgivGcDEAbvO2",
+    "gateway-66ec89ee3d3543fb9b0fa928:tool-1",
+    "gen-1789677216-g1O9D7Z0erjWxHxFcSiI",
+    "gateway-4cc02700b2034e738ea27ff6:tool-1",
+    "gen-1789677225-Ehf4xodEvYcM1CiFnWAI"
+  ],
+  "qualification": "UNEARNED",
+  "qualification_unearned": true,
+  "required_capabilities": [
+    "WORKSPACE_READ",
+    "WORKSPACE_WRITE",
+    "PROCESS_EXECUTION",
+    "BROWSER",
+    "NETWORK"
+  ],
+  "resource_state": "GPU_YIELDABLE",
+  "role": "worker",
+  "schema": "hawking.kimi.workunit_checkpoint.v1",
+  "session_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-7FC5CF14-r22",
+  "status": "OUTPUT_UNUSABLE",
+  "task_class": "general",
+  "tool_less_continue_streak": 1,
+  "ultragoal": "",
+  "updated_at": "2026-09-17T21:01:49.455233+00:00",
+  "wall_ceiling_s": 86400.0,
+  "worker_artifact": {
+    "artifact_revision": null,
+    "grant_digest": null,
+    "kind": "remote_openrouter",
+    "model_id": "deepseek/deepseek-v4.1-flash",
+    "name": "deepseek/deepseek-v4.1-flash",
+    "path": null
+  },
+  "worker_attempt_id": "hawking-attempt-4aaf7d06fbdd4b21",
+  "worker_cost_usd": 0.021920964,
+  "worker_id": "hawking-worker-4ec370147a3a4a5d",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789677222.098324,
+  "worker_packet_path": "/Users/scammermike/Downloads/hawking/.hawking/auto/packets/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-7FC5CF14.json",
+  "worker_policy": "auto",
+  "worker_spawned_at": 1789636191.104505,
+  "worker_status": "WAITING_RETRY",
+  "worktree": {
+    "branch": "worker/WORKER_INTEGRATION_SNAPSHOT",
+    "root": "/Users/scammermike/Downloads/hawking"
+  },
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-7FC5CF14"
+}

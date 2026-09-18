@@ -1,0 +1,41 @@
+{
+  "active_layer_index": null,
+  "active_stage": "embedding",
+  "claim_boundary": "provider/runtime failure only; not source evidence, teacher admission, or a Flash scientific disposition",
+  "execution_schedule": "exact_qwen4_exp_row_addressed_ple_and_experts_with_evaluated_sublayer_boundaries",
+  "failure": {
+    "exception_type": "RuntimeError",
+    "message": "[METAL] Command buffer execution failed: Caused GPU Timeout Error (00000002:kIOGPUCommandBufferCallbackErrorTimeout).",
+    "scientific_disposition": "none"
+  },
+  "finished_unix_ns": 1789414224135291000,
+  "generated_token_ids": [],
+  "no_sampling": true,
+  "ple_storage_manifest": {
+    "layout": "safetensors_ranges",
+    "patched_layer_ids": [
+      1
+    ],
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_CURRENT_SOURCE_SERIAL_EVAL_20260914/provider-ple-range-manifest.json",
+    "row_count": 320001536,
+    "row_width": 160,
+    "schema": "hawking.flash.external_reference_bf16_ple_ranges.v1",
+    "schema_version": 1,
+    "sha256": "4c90319bd24f9bb3bfba956eafdd6a7e929af73f0f3c679fef5f3b7943d6952e",
+    "source_mutated": false,
+    "weight_payload_copied": false
+  },
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash.external_greedy_reference_mlx_worker.v1",
+  "started_unix_ns": 1789414218908437000,
+  "status": "FAILED_EXTERNAL_PROVIDER_RUNTIME__NO_NEW_SOURCE_RESULT",
+  "steps": [],
+  "updated_unix_ns": 1789414219131081000
+}

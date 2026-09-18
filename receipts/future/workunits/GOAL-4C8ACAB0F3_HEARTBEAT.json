@@ -1,0 +1,58 @@
+{
+  "active_job": "job-49054f65-3659-4289-b5aa-0ef69ab16b57",
+  "blocker": {
+    "exact_next_action": "Inspect the staging repository and the acceptance criteria; plan one smallest useful edit, then test and seal it.",
+    "last_failure": null,
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "GOAL-4C8ACAB0F3",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "164df172093f383cb96753ae271b732997c0dd9f9c4bb07e85d1f247de76fb04",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 74182,
+  "exact_next_action": "Inspect the staging repository and the acceptance criteria; plan one smallest useful edit, then test and seal it.",
+  "goal_id": "GOAL-4C8ACAB0F3",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "",
+  "last_tool_dispatch": null,
+  "last_turn": 0,
+  "latest_real_seal": "",
+  "objective": "Ide",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T04:36:19.538080+00:00",
+  "worker_attempt_id": "hawking-attempt-b3fffb5ee9d04d1c",
+  "worker_cost_usd": 0.0,
+  "worker_id": "hawking-worker-1160858212d04c6c",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789533311.4095092,
+  "worker_spawned_at": 1789533311.035939,
+  "worker_status": "KILLED",
+  "workunit_id": "GOAL-4C8ACAB0F3"
+}

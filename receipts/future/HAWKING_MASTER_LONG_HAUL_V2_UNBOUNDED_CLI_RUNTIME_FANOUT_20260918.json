@@ -1,0 +1,23 @@
+{
+  "schema": "hawking.v2.boundary-receipt.v1",
+  "programme": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T04:55:29Z",
+  "claim_boundary": "The public CLI no longer imposes a fixed runtime-count ceiling; machine, OS, process, memory, provider, budget, dependency, decode, and effect-scope gates remain authoritative.",
+  "change": {
+    "file": "hawking/cli.py",
+    "old_boundary": "MAX_RUNTIME_COUNT=8 and positional counts above 8 rejected",
+    "new_boundary": "positive positional runtime counts are accepted without a Hawking count clamp; max uses the measured resident limit",
+    "compatibility_symbol": "MAX_RUNTIME_COUNT=None"
+  },
+  "verification": {
+    "focused_tests": "26 passed",
+    "compileall": "passed",
+    "git_diff_check": "passed",
+    "large_count_probe": "hawking CLI parser accepted 64 runtimes",
+    "zero_negative_guard": "still rejects non-positive counts"
+  },
+  "source_digests": {
+    "hawking/cli.py": "ef5ca70edc150d9066b4173cf3bb50282e6a3976166fd0747170017fa6924180",
+    "hawking/tests/test_grammar.py": "bdf63cdf92e075500c2a44542f10f9e005d7499c6e807232a3add15c07bf6de3"
+  }
+}

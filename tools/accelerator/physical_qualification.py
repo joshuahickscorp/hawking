@@ -24,8 +24,8 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from hcli.persist import atomic_write_json
-from hcli.workunit import WorkUnit
+from hawking.persist import atomic_write_json
+from hawking.workunit import WorkUnit
 
 
 SCHEMA = "hawking.accelerator.physical_qualification_queue.v1"
@@ -360,11 +360,10 @@ def _hcli_qwen_command(
     command = [
         "python3",
         "-m",
-        "hcli",
-        "agentos",
+        "hawking",
         "protected-accelerator-bench",
         "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
+        "hawking/hawking-native.sealed-3.14.json",
         "--repo-root",
         ".",
         "--warmup-requests",
@@ -475,7 +474,7 @@ def _qwen_candidate(
         candidate_id=candidate_id,
         model="Qwen27",
         affected_physical_region=region,
-        baseline_path="hcli/hawking-native.sealed-3.14.json",
+        baseline_path="hawking/hawking-native.sealed-3.14.json",
         exact_mutation={"child_fusion_env": candidate_env},
         control_configuration={"child_fusion_env": dict(control)},
         expected_eliminated_work=eliminated,
@@ -712,7 +711,7 @@ def frontier_candidates() -> list[PhysicalCandidate]:
             dependencies=("qwen27-commit-timing-elision",),
             source_evidence=(
                 "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
-                "tools/agentos/genesis_body/src/main.rs",
+                "crates/hawking/src/bin/genesis-resident.rs",
                 "crates/hawking-core/src/metal/mod.rs",
             ),
         ),

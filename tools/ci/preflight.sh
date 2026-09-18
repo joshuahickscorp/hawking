@@ -24,8 +24,16 @@ step "clippy (exact CI allowlist)"
 step "build --workspace"
 [ "${SKIP_BUILD:-0}" = 1 ] || run cargo build --workspace
 
-step "compile all tests (--no-run; a broken test can't hide behind a skip)"
-[ "${SKIP_BUILD:-0}" = 1 ] || run cargo test --workspace --no-run
+step "compile all test sources (--no-run; a broken test can't hide behind a skip)"
+if [ "${SKIP_BUILD:-0}" != 1 ]; then
+  # The topology guard proves every integration source has one compile-only
+  # aggregate target and one separately selectable isolated target. This lane
+  # links the aggregates without running their model/hardware cases.
+  run tools/ci/rust_test_fast.sh compile
+
+  step "effective serving-policy regression"
+  run tools/ci/rust_test_fast.sh policy
+fi
 
 if [ "${FAST:-0}" != 1 ]; then
   step "parity subset (release; model/GPU gates skip cleanly without weights)"

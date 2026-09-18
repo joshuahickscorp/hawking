@@ -1,0 +1,70 @@
+{
+  "active_job": "job-1da341ab-d273-4c44-a42c-80b8d58a1fad",
+  "blocker": {
+    "pid": 38916,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0012423360000000001,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-BDB2BCCC",
+    "tool_less_continue_streak": 6
+  },
+  "context_packet_digest": "0d2654d60e09c9e6c9cc683d4f30efe09341458ea9a74c9807259488d56a23ef",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 38916,
+  "exact_next_action": "Child provider output was unusable after bounded recovery; preserve evidence and continue an independent dependency-valid WorkUnit. Resume only with a fresh packet.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Perform one bounded read-only command-owner reconnaissance for the next Hawking programme seam. Use Hawking source/search tools to inspect hawking/web.py, hawking/cli.py, hawking/serve.py, and the focused launcher tests. Identify the single canonical public Web/CLI launch owner and one remaining duplicate or stale call path, if present. Return exact paths, symbols, call direction, and one focused regression target. Do not edit files or run mutation tools.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-75992ed0cf014e43957d2da5:tool-6",
+    "gen-1789683265-D8SsXYPd9R17wsb5PITw",
+    "gateway-d122470fc88d4ca6a49e1171:tool-5",
+    "gen-1789683270-Z0FYjUHdMvxwglyfcJrB",
+    "gateway-a28e36e913eb4b0ea7933ede:tool-5",
+    "gen-1789683276-vgQQ9BsWk0vjxwXulRAN",
+    "gateway-dac74f56a4814adcbac99df9:tool-5",
+    "gen-1789683281-MViCXxuEi6Tywh27hcwI",
+    "gateway-701e316b2f9846528dec68e4:tool-5",
+    "gen-1789683287-YzG3e6NbHIOJn1Z7uMHm",
+    "gateway-e7e1ec56fff144e2bdf79b09:tool-5",
+    "gen-1789683294-wobOSLpwMIXxW9vkKxDG"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-17T22:18:44.173186+00:00",
+  "worker_attempt_id": "hawking-attempt-6f08dba0c3f84d6e",
+  "worker_cost_usd": 0.0012423360000000001,
+  "worker_id": "hawking-worker-b3c80553370c4bc3",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789683289.679729,
+  "worker_spawned_at": 1789683254.748652,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-BDB2BCCC"
+}

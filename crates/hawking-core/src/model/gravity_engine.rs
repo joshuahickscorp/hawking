@@ -483,12 +483,13 @@ impl Engine for GravityEngine {
 
         let t_prefill = Instant::now();
         let (mut logits, prefill_physical) = self.model.forward(&ids)?;
-        let prefill_ms = t_prefill.elapsed().as_secs_f64() * 1e3;
+        let prefill_ns = t_prefill.elapsed().as_nanos().min(u64::MAX as u128) as u64;
 
         let mut sampler = Sampler::new(req.sampling.seed.unwrap_or(0));
         let mut pos = ids.len();
         let mut text = String::new();
         let mut completion = 0usize;
+        let mut decode_token_ns = Vec::new();
         let mut decode_token_ms = Vec::new();
         let mut decode_dispatches = 0usize;
         let mut decode_command_buffers = 0usize;
@@ -538,8 +539,9 @@ impl Engine for GravityEngine {
             let step = Instant::now();
             let (next_logits, physical) = self.model.forward_at(&[next], pos)?;
             logits = next_logits;
-            let complete_forward_ms = step.elapsed().as_secs_f64() * 1e3;
-            decode_token_ms.push(complete_forward_ms);
+            let complete_forward_ns = step.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+            decode_token_ns.push(complete_forward_ns);
+            decode_token_ms.push(complete_forward_ns as f64 / 1_000_000.0);
             completed_decode_forwards += 1;
             if let Some(physical) = physical {
                 decode_dispatches += physical.dispatches;
@@ -552,11 +554,15 @@ impl Engine for GravityEngine {
             }
         };
 
+        let decode_ns = t_decode.elapsed().as_nanos().min(u64::MAX as u128) as u64;
         let stats = GenStats {
             prompt_tokens,
             completion_tokens: completion,
-            prefill_ms,
-            decode_ms: t_decode.elapsed().as_secs_f64() * 1e3,
+            prefill_ns,
+            decode_ns,
+            decode_token_ns,
+            prefill_ms: prefill_ns as f64 / 1_000_000.0,
+            decode_ms: decode_ns as f64 / 1_000_000.0,
             decode_token_ms,
             device_id: self.model.device_name(),
             metal_dispatches: last_dispatches,

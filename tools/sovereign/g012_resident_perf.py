@@ -130,7 +130,7 @@ def _run_arm(streams: int, tokens: int) -> dict:
 
 
 def _arm_main(args) -> int:
-    from hcli.hawking_native import HawkingNativeConnector, config_for_model_path
+    from hawking.hawking_native import HawkingNativeConnector, config_for_model_path
     cfg = config_for_model_path(str(ENVELOPE))
     conn = HawkingNativeConnector(cfg)
     prompt = ("Count upward from one, one number per line, and do not stop early. "
@@ -166,7 +166,7 @@ def main() -> int:
 
     cfg = None
     try:
-        from hcli.hawking_native import config_for_model_path
+        from hawking.hawking_native import config_for_model_path
         cfg = config_for_model_path(str(ENVELOPE))
     except Exception:
         pass

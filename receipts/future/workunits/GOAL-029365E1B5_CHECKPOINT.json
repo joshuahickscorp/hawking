@@ -1,0 +1,51 @@
+{
+  "child_worker_ids": [],
+  "compact_crossings": 0,
+  "contract": "/Users/scammermike/Downloads/hawking/.hawking/goals/GOAL-029365E1B5.contract.json",
+  "current_phase": "STEERED",
+  "driver": "hawking.workunit_owner",
+  "driver_pid": 57180,
+  "endpoint": {
+    "base_url": "http://127.0.0.1:8014/v1",
+    "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+    "host": "127.0.0.1",
+    "port": 8014,
+    "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+  },
+  "exact_next_action": "Keep this bounded and read-only; return one concise owning-symbol evidence line.",
+  "last_outcome": "",
+  "last_turn": 0,
+  "objective": "Read one Hawking source file and report the owning symbol; do not edit or run tests.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [],
+  "qualification": "UNEARNED",
+  "qualification_unearned": true,
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.kimi.workunit_checkpoint.v1",
+  "session_id": "GOAL-029365E1B5",
+  "status": "CANCELLED",
+  "tool_less_continue_streak": 0,
+  "ultragoal": "",
+  "updated_at": "2026-09-15T18:23:41.374889+00:00",
+  "wall_ceiling_s": 86400.0,
+  "worker_artifact": {
+    "artifact_revision": null,
+    "grant_digest": null,
+    "kind": "remote_openrouter",
+    "model_id": "deepseek/deepseek-v4.1-flash",
+    "name": "deepseek/deepseek-v4.1-flash",
+    "path": null
+  },
+  "worker_cost_usd": 0.0,
+  "worker_id": "hawking-worker-c4848945932748d3",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789496577.679852,
+  "worker_spawned_at": 1789496577.5131662,
+  "worker_status": "KILLED",
+  "worktree": {
+    "branch": "worker/WORKER_INTEGRATION_SNAPSHOT",
+    "root": "/Users/scammermike/Downloads/hawking"
+  },
+  "workunit_id": "GOAL-029365E1B5"
+}

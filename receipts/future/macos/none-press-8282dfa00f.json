@@ -1,0 +1,19 @@
+{
+  "at": 1789525819.028074,
+  "claim_boundary": "Hawking admitted one scoped semantic AXPress; the native helper performed mechanics and did not own authority.",
+  "details": {},
+  "goal_id": "GOAL-B33C69F193",
+  "lease_id": null,
+  "operation": "press",
+  "outcome": "REFUSED",
+  "reason": "PREEMPTED: user focus preempted the semantic action lease (PREEMPTED)",
+  "schema": "hawking.macos.action_receipt.v1",
+  "state": "REFUSED",
+  "target": {
+    "application": "hawking-macos-fixture-20260915",
+    "identifier": "hawking.fixture.toggle",
+    "role": "AXButton"
+  },
+  "worker_id": "hawking-worker-afa8b15014af4177",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-946ED80B"
+}

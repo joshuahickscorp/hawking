@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "12d7dacb6db91fa003ed4ad235d9aaf7d90b4934e4f64e797bbc6bb4bac53221",
+  "evidence": [
+    {
+      "at": "2026-09-17T08:56:33.941508+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-17T08:56:33.941530+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-17T08:56:33.942902+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":\"partial: fs.search located long_haul_programme at line 136 of GOAL-B33C69F193.json; prior P0 packet read (truncated at 4000/6236 bytes). Need to fs.read the long_haul_programme section before final reconciliation.\",\"sources",
+      "outcome": "CONTINUE",
+      "reply_chars": 933,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "none",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":\"partial: fs.search located long_haul_programme at line 136 of GOAL-B33C69F193.json; prior P0 packet read (truncated at 4000/6236 bytes). Need to fs.read the long_haul_programme section before final reconciliation.\",\"sources\":[\".hawking/goals/GOAL-B33C69F193.json\",\"receipts/future/workunits/E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-F79103DB_RESULT_PACKET.json\"],\"recommendations\":[\"Read lines ~130-260 of the goal file to capture the full long_haul_programme block\"],\"unresolved_questions\":[\"Exact programme_phase, budget, and next_workunit values inside long_haul_programme\"],\"child_worker_ids\":[],\"status\":\"IN_PROGRESS\",\"next_action\":\"fs.read .hawking/goals/GOAL-B33C69F193.json lines 130-260\",\"reason\":\"long_haul_programme section not yet observed in full\",\"expected_evidence\":\"JSON block with schema hawking.long_haul_programme.v1 containing programme_phase, budget, next_workunit\",\"tool_family\":\"fs.read\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-43d2d6edf28a47f9",
+  "worker_id": "hawking-worker-94d6c49d0ddf410d",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-65938888"
+}

@@ -1,0 +1,165 @@
+{
+ "schema": "hawking.future.organ_byte_anatomy.v1",
+ "obligation": "KSB001",
+ "steer": "S013",
+ "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+ "closure": {
+  "file_bytes": 32816098528,
+  "safetensors_header_bytes": 782976,
+  "tensor_payload_bytes": 32815315552,
+  "accounted_bytes": 32816098528,
+  "residual_bytes": 0,
+  "closes_exactly": true
+ },
+ "unclassified_tensors": [],
+ "organs": {
+  "routed_experts": {
+   "tower": "language",
+   "bytes": 28789702656,
+   "params": 14394851328,
+   "tensors": 4992,
+   "dtypes": {
+    "BF16": 14394851328
+   },
+   "bytes_pct": 87.7325
+  },
+  "shared_experts": {
+   "tower": "language",
+   "bytes": 899678208,
+   "params": 449839104,
+   "tensors": 78,
+   "dtypes": {
+    "BF16": 449839104
+   },
+   "bytes_pct": 2.7416
+  },
+  "vision": {
+   "tower": "vision",
+   "bytes": 833732064,
+   "params": 416866032,
+   "tensors": 329,
+   "dtypes": {
+    "BF16": 416866032
+   },
+   "bytes_pct": 2.5407
+  },
+  "attention_mla": {
+   "tower": "language",
+   "bytes": 743178240,
+   "params": 371589120,
+   "tensors": 108,
+   "dtypes": {
+    "BF16": 371589120
+   },
+   "bytes_pct": 2.2647
+  },
+  "embeddings": {
+   "tower": "language",
+   "bytes": 671088640,
+   "params": 335544320,
+   "tensors": 1,
+   "dtypes": {
+    "BF16": 335544320
+   },
+   "bytes_pct": 2.045
+  },
+  "lm_head": {
+   "tower": "language",
+   "bytes": 671088640,
+   "params": 335544320,
+   "tensors": 1,
+   "dtypes": {
+    "BF16": 335544320
+   },
+   "bytes_pct": 2.045
+  },
+  "dense_mlp": {
+   "tower": "language",
+   "bytes": 138412032,
+   "params": 69206016,
+   "tensors": 3,
+   "dtypes": {
+    "BF16": 69206016
+   },
+   "bytes_pct": 0.4218
+  },
+  "mm_projector": {
+   "tower": "vision",
+   "bytes": 61359616,
+   "params": 30679808,
+   "tensors": 6,
+   "dtypes": {
+    "BF16": 30679808
+   },
+   "bytes_pct": 0.187
+  },
+  "router": {
+   "tower": "language",
+   "bytes": 6819072,
+   "params": 3409536,
+   "tensors": 52,
+   "dtypes": {
+    "BF16": 3409536
+   },
+   "bytes_pct": 0.0208
+  },
+  "layer_norms": {
+   "tower": "language",
+   "bytes": 221184,
+   "params": 110592,
+   "tensors": 54,
+   "dtypes": {
+    "BF16": 110592
+   },
+   "bytes_pct": 0.0007
+  },
+  "attention_norms": {
+   "tower": "language",
+   "bytes": 27648,
+   "params": 13824,
+   "tensors": 27,
+   "dtypes": {
+    "BF16": 13824
+   },
+   "bytes_pct": 0.0001
+  },
+  "final_norm": {
+   "tower": "language",
+   "bytes": 4096,
+   "params": 2048,
+   "tensors": 1,
+   "dtypes": {
+    "BF16": 2048
+   },
+   "bytes_pct": 0.0
+  },
+  "rotary_buffers": {
+   "tower": "language",
+   "bytes": 3456,
+   "params": 1728,
+   "tensors": 27,
+   "dtypes": {
+    "BF16": 1728
+   },
+   "bytes_pct": 0.0
+  }
+ },
+ "objects": {
+  "FULL": {
+   "bytes": 32816098528,
+   "params": 16407657776,
+   "note": "everything in the checkpoint, vision included; header charged"
+  },
+  "LANGUAGE": {
+   "bytes": 31920223872,
+   "params": 15960111936,
+   "source_bits_per_weight": 16.0,
+   "note": "language tower only -- vision tower and its projector removed from BOTH numerator and denominator"
+  },
+  "VISION_EXCLUDED": {
+   "bytes": 895091680,
+   "params": 447545840,
+   "source_bits_per_weight": 16.0
+  }
+ }
+}

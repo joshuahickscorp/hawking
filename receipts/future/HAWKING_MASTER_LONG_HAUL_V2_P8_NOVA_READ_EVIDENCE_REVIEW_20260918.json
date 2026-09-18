@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T08:05:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P8_NOVA",
+  "source_owner": {
+    "implementation": "tools/future/gravity_nova_lineage.py",
+    "focused_tests": "tools/future/test_gravity_nova_lineage.py",
+    "continuation_context": "docs/HANDOFF.md:339-387",
+    "owner_boundary": "Validation-only Nova lineage contract; it does not load weights, train a descendant, write artifacts, or promote capability."
+  },
+  "observed_contract": [
+    "validate requires immutable KIMI_BASE parent identity and parent/descendant SHA-256 hashes.",
+    "The transformation, five independent measurement axes, and reversible immutable-parent rollback are required.",
+    "Train/freeze overlap and mismatched descendant hashes are refused.",
+    "policy_adapter_preregistration remains PREREGISTERED_NOT_RUN with promotion WITHHELD and the closed projection family disallowed."
+  ],
+  "verification": {
+    "focused_command": "python3 -m pytest -q tools/future/test_gravity_nova_lineage.py",
+    "focused_result": "5 passed",
+    "selftest_command": "python3 tools/future/gravity_nova_lineage.py --selftest",
+    "selftest_result": "selftest OK: complete Nova lineage accepted; checklist refused",
+    "handoff_source_range": "docs/HANDOFF.md:339-387"
+  },
+  "follow_on_contract": "Define and verify the smallest bounded P8 implementation/gate tranche that consumes this lineage validator without loading weights, mutating protected artifacts, or claiming full-model capability.",
+  "falsifier": "A focused source/test observation showing an incomplete lineage, mismatched descendant hash, train/freeze overlap, or policy adapter can pass validation invalidates this acceptance.",
+  "claim_boundary": "Accepted as bounded P8 read evidence only; Nova implementation, learned descendant, full-model capability, hardware qualification, and promotion remain incomplete."
+}

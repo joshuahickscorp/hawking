@@ -1,0 +1,110 @@
+{
+  "claim_boundary": "Deterministic sampled PLE windows only. No full-table result, codec artifact, complete EBPW, activation/capability, direct execution, runtime, or TPS claim.",
+  "generated_at": "2026-09-11T08:14:54.742032+00:00",
+  "next_gate": "A positive static signal earns a held-out PLE codec discriminator; a negative signal rules out only the tested linear/per-row base families.",
+  "result": {
+    "columns": 160,
+    "covariance_deficit_pct": 0.21291433568159876,
+    "norm_matched_gaussian_null": {
+      "columns": 160,
+      "participation": 159.7912357390242,
+      "rank_90": 143,
+      "ratio": 0.9986952233689012
+    },
+    "row_norm": {
+      "max": 0.19856204092502594,
+      "mean": 0.09357800334692001,
+      "min": 0.0474538579583168,
+      "std": 0.012142317369580269
+    },
+    "sample_rows": 65536,
+    "static_relative_l2": {
+      "binary_per_row": 0.5999083518981934,
+      "ternary_per_row": 0.778631236400623
+    },
+    "within_table_covariance": {
+      "columns": 160,
+      "participation": 159.45101729097303,
+      "rank_90": 142,
+      "ratio": 0.9965688580685814
+    }
+  },
+  "sampling": {
+    "dtype": "BF16",
+    "shape": [
+      2500012,
+      160
+    ],
+    "source_file": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00005-of-00131.safetensors",
+    "windows": [
+      {
+        "row_start": 0,
+        "rows": 4096
+      },
+      {
+        "row_start": 166394,
+        "rows": 4096
+      },
+      {
+        "row_start": 332788,
+        "rows": 4096
+      },
+      {
+        "row_start": 499183,
+        "rows": 4096
+      },
+      {
+        "row_start": 665577,
+        "rows": 4096
+      },
+      {
+        "row_start": 831972,
+        "rows": 4096
+      },
+      {
+        "row_start": 998366,
+        "rows": 4096
+      },
+      {
+        "row_start": 1164760,
+        "rows": 4096
+      },
+      {
+        "row_start": 1331155,
+        "rows": 4096
+      },
+      {
+        "row_start": 1497549,
+        "rows": 4096
+      },
+      {
+        "row_start": 1663944,
+        "rows": 4096
+      },
+      {
+        "row_start": 1830338,
+        "rows": 4096
+      },
+      {
+        "row_start": 1996732,
+        "rows": 4096
+      },
+      {
+        "row_start": 2163127,
+        "rows": 4096
+      },
+      {
+        "row_start": 2329521,
+        "rows": 4096
+      },
+      {
+        "row_start": 2495916,
+        "rows": 4096
+      }
+    ]
+  },
+  "schema": "hawking.odyssey.ple_static_screen.v1",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "status": "STATIC_SAMPLE_ONLY",
+  "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_0.weight"
+}

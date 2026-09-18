@@ -1,0 +1,17 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P17_COLLAPSE_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-D5B5685A",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded bounded collapse contract only; no source move or release claim.",
+  "source_observation": {"owner": "hawking/goal_surface.py", "sha256": "0dc5abf7329d6bbdae02a8958acf910f39f89cc3e23704d18f26e878ec0dc570", "observed_focus_bytes": 4000},
+  "focused_tests": [
+    {"path": "hawking/tests/test_auto_orchestration.py"},
+    {"path": "hawking/tests/test_serve_openai_surface.py"},
+    {"path": "hawking/test_tool_registry.py"}
+  ],
+  "local_verification": {"command": "python3 -m pytest -q hawking/tests/test_auto_orchestration.py hawking/tests/test_serve_openai_surface.py hawking/test_tool_registry.py", "result": "70 passed"},
+  "next_seam": "If collapse proceeds, isolate only the pure attachment-validation helper cluster with a re-export and prove unchanged behavior; keep schemas and persistence in goal_surface.py.",
+  "falsifier": "The proposed extraction changes attachment limits/allowlists or breaks the public Goal surface tests, falsifying the contract."
+}

@@ -1,0 +1,146 @@
+{
+  "schema": "hawking.unification.flash_scoped_scar_migration.v1",
+  "status": "EXACT_SCOPED_NEGATIVE_REUSE_VALIDATED__DYNAMIC_CONTROLS_STILL_REQUIRED",
+  "observed_at_utc": "2026-09-12T21:42:14Z",
+  "owners": {
+    "registry": {
+      "path": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "sha256": "fb098c5ce6ef63edec0a09997152ca9aac3c79b4c5529eec4fedd8631a785fe3"
+    },
+    "selector": {
+      "path": "tools/foundry/query_gravity_methods.py",
+      "sha256": "8029bb4a558c60468309f1157ff942ecd6b4d921013ef6f693c7b55655e068f4"
+    },
+    "verification": {
+      "path": "tools/foundry/tests/test_query_gravity_methods.py",
+      "sha256": "d548cdc5b6e77c3d1e3f0e1850af3e07ce7bb3a3e8f12da40aa9ec32d8e7133f"
+    }
+  },
+  "migration_contract": {
+    "required_candidate_scope_keys": [
+      "source_revision",
+      "organ_scope",
+      "representation_family",
+      "tested_contract",
+      "rate_scope",
+      "control_id",
+      "control_sha256"
+    ],
+    "evidence_binding": "Every scoped Scar stores the SHA-256 of its exact receipt; registry loading fails if the evidence file does not match.",
+    "selection_semantics": "An exact Scar with all named passport controls is SCAR_SKIP. An exact Scar without those controls is SCAR_RECORDED__WITHHELD_MISSING_CONTROL: the historical negative remains visible, but no candidate control is treated as verified.",
+    "transfer_boundary": "All Flash passports remain source-identity pinned. A different specimen does not inherit a Flash result or a skip; it first receives WITHHELD_SOURCE_IDENTITY_MISMATCH until a later fresh-control transfer tier exists."
+  },
+  "migrated_scars": [
+    {
+      "id": "flash.ple.uniform-pq-fixed-sparse-repair",
+      "change": "new automatic exact-scope Scar",
+      "method_id": "M-source-ple-output-pq-sparse-repair-screen",
+      "law_id": "L-flash-ple-uniform-pq-fixed-repair",
+      "evidence": "receipts/headless/FLASH_PLE_LOOKUP_PQ_SOURCE_OUTPUT_REPAIR_SCREEN.json",
+      "evidence_sha256": "9abf99cad126f6cdae6ad69d867e8962453961f87478745654e5c68c1d7cffa7"
+    },
+    {
+      "id": "flash.ple.fixed-shard-local-pq",
+      "change": "new automatic exact-scope Scar",
+      "method_id": "M-source-ple-shard-local-pq-output-screen",
+      "law_id": "L-flash-ple-fixed-shard-local-pq",
+      "evidence": "receipts/headless/FLASH_PLE_SHARD_LOCAL_PQ_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "2d4b79aa7a83b985b04845c75368a26ae190d19f73f1ced9f0fbc5c0338016f2"
+    },
+    {
+      "id": "flash.ple.fixed-greedy-additive-pq",
+      "change": "new automatic exact-scope Scar",
+      "method_id": "M-source-ple-additive-pq-output-screen",
+      "law_id": "L-flash-ple-fixed-greedy-additive-pq",
+      "evidence": "receipts/headless/FLASH_PLE_ADDITIVE_PQ_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "cfd90c676ea171642347b80733ebe8257bb58df7cc85676f8fd3ac6da5d04c01"
+    },
+    {
+      "id": "flash.ple.smooth-address-only-generator",
+      "change": "tightened from family-only to exact protocol/rate/control/digest scope",
+      "method_id": "M-source-ple-address-generator-screen",
+      "law_id": "L-flash-ple-address-only-generator",
+      "evidence": "receipts/headless/FLASH_PLE_ADDRESS_GENERATOR_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "731f0448b6eba3f96251566c41d37e52e59447a38167737c393b95a6abb9a850"
+    },
+    {
+      "id": "flash.ple.fixed-additive-hash-address-prior",
+      "change": "new automatic exact-scope Scar",
+      "method_id": "M-source-ple-additive-hash-factor-screen",
+      "law_id": "L-flash-ple-additive-hash-address-prior",
+      "evidence": "receipts/headless/FLASH_PLE_ADDITIVE_HASH_FUNCTION_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "73f76b47845789e87c6959c5c183622d941dbc670824bd2d1eb7cab575996d55"
+    },
+    {
+      "id": "flash.routed-moe.fixed-shared-vector-code",
+      "change": "tightened from family-only to exact protocol/rate/control/digest scope",
+      "method_id": "M-source-expert-shared-vector-code-screen",
+      "law_id": "L-flash-shared-expert-vector-code-fails-output-control",
+      "evidence": "receipts/headless/FLASH_EXPERT_VECTOR_CODE_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "2d0ae111bfe5039d96b15ca159b2ca973e8dc818cca2f796a2962d7a1c43402b"
+    },
+    {
+      "id": "flash.routed-moe.fixed-shared-input-basis",
+      "change": "new automatic exact-scope Scar",
+      "method_id": "M-source-expert-shared-input-basis-screen",
+      "law_id": "L-flash-shared-input-basis-fails-output-control",
+      "evidence": "receipts/headless/FLASH_EXPERT_SHARED_BASIS_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "2fdfa1c888db1b65000ae0996a970e980721539f6c77dbb64ac56a93fecb200c"
+    },
+    {
+      "id": "flash.routed-moe.fixed-pairwise-atom-sharing",
+      "change": "tightened to the preregistered all-three top-eight replication protocol",
+      "method_id": "M-source-expert-lawful-nonlinear-atom-sharing-screen",
+      "law_id": "L-flash-lawful-atom-sharing-source-output-survives-null",
+      "evidence": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json",
+      "evidence_sha256": "e610ab44f639536a15861100d35b52c55b709eb334a3763d076ec5a0f57bab30"
+    },
+    {
+      "id": "flash.router.fixed-rowwise-int4",
+      "change": "tightened from family-only to exact protocol/rate/control/digest scope",
+      "method_id": "M-flash-router-source-output-fixed-int4",
+      "law_id": "L-flash-fixed-int4-router-route-identity-fails",
+      "evidence": "receipts/headless/FLASH_ROUTER_SOURCE_OUTPUT_SCREEN.json",
+      "evidence_sha256": "ec2c0d5893f742b3dd41b3a2f1665d25fe5155815012e6ddc844804d93da6617"
+    },
+    {
+      "id": "flash.hyperconnection.exact-stream-quotient",
+      "change": "tightened from family-only to exact symbolic-consumer protocol/digest scope",
+      "method_id": "M-flash-hyperconnection-symbolic-closure-screen",
+      "law_id": "L-flash-hyperconnection-stream-quotient-fails-full-rank",
+      "evidence": "receipts/headless/FLASH_HYPERCONNECTION_SYMBOLIC_CLOSURE_SCREEN.json",
+      "evidence_sha256": "52eca5331535a03a03ae0b8ca240aa8919d467b5eede9bd84b69102ff42c7e78"
+    }
+  ],
+  "excluded_from_scar_migration": [
+    {
+      "evidence": "receipts/headless/FLASH_PLE_CONTEXT_RESPONSE_SCREEN.json",
+      "reason": "Synthetic local tangent geometry is a data-boundary/control result, not a representation-family negative."
+    },
+    {
+      "evidence": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+      "reason": "The native non-PLE session is a withheld source-parity boundary, not a representation-family negative."
+    }
+  ],
+  "validation": {
+    "registry_load": "12 passports and 10 digest-bound scoped Scars",
+    "focused_query_suite": "37 passed, 0 failed",
+    "exactness_tests": "An exact scope skips; a changed tested contract, omitted rate scope, or changed control hash does not skip; matching historical Scars remain withheld when named controls are absent.",
+    "static_checks": [
+      "py_compile passed",
+      "JSON validation passed",
+      "git diff --check passed"
+    ]
+  },
+  "runtime_actions": {
+    "source_model_loaded": false,
+    "native_model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "Keep the owner-authorized PLE-inclusive source teacher as the next execution gate. Use the new exact Scars only to remove already-sealed protocol retries; do not turn them into source parity, complete-NR, EBPW, TPS, capability, deployment, Pulsar, or Kimi-retirement claims.",
+  "claim_boundary": "This is a deterministic knowledge-distillation and selector-hardening change. It executes no model and creates no new scientific measurement; the cited sealed method verdicts retain their original source/control scope.",
+  "seal_sha256": "7cf8d0ffde4b73fda368eb9c0c5b573922542943423295d6f2ac1cf88840af47"
+}

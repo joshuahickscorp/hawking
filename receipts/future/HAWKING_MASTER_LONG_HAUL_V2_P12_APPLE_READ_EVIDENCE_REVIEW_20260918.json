@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:10:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P12_APPLE_BACKEND",
+  "workunit_id": "WORKUNIT-20260918-24EE231A",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-24EE231A_RESULT_PACKET.json",
+  "local_verification": "9 passed, 2 skipped: hawking/test_ane_provider.py and hawking/tests/test_metal_status_actually_tests_metal.py",
+  "accepted_scope": "Read-only owner/capability map for ANEProvider, its receipt-backed placement eligibility, PhysicalGraph integration, and the focused local test surface.",
+  "source_observations": [
+    "hawking/ane_provider.py is a public-Core-ML evidence adapter, explicitly not an ANE driver.",
+    "Promotion requires device availability, a planned MLComputePlan, operation placement evidence, a measured atlas, and measured complete useful work.",
+    "hawking/physical_graph.py consumes ANEProvider context; hawking/test_ane_provider.py covers provider gating and PhysicalGraph integration."
+  ],
+  "falsifier": "Any source or receipt showing that placement/promotion bypasses the stated plan, atlas, and measured-complete-work gates invalidates this bounded map.",
+  "limitations": [
+    "The remote source read was truncated and is not independently promoted.",
+    "No Apple hardware, Metal execution, Core ML compilation, or production qualification was run or claimed."
+  ],
+  "claim_boundary": "Acceptance is dependency-valid read evidence only. It does not accept a mutation tranche or an Apple backend release."
+}

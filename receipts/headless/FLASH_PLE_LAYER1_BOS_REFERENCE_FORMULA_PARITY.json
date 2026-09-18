@@ -1,0 +1,52 @@
+{
+  "candidate": {
+    "bytes": 40960,
+    "dtype": "F32_LE",
+    "elements": 10240,
+    "l2": 1.3452072143554688,
+    "max": 0.2050073742866516,
+    "min": -0.24837079644203186,
+    "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.ple_injection.f32",
+    "sha256": "2761917fb36a92fd579689800a0e9eb10d67de90c57811df0a3b12ff4f7721d8"
+  },
+  "claim_boundary": "This passes or fails only the bounded PLE formula evaluation for one sealed Flash BOS control. It verifies the canonical F32 formula against the pinned Transformers implementation with exact source lookup/support values. It does not establish full checkpoint forward parity, layer-1/full-model execution, a native PLE kernel, repeated token state, complete NR EBPW, TPS, or capability.",
+  "generated_at": "2026-09-12T04:00:57.370352+00:00",
+  "metrics": {
+    "cosine": 1.0,
+    "finite": true,
+    "max_abs": 4.470348358154297e-08,
+    "relative_l2": 1.498442827596591e-07,
+    "rmse": 1.9919543169561657e-09
+  },
+  "next": "Use this independently checked PLE output as the bounded target for non-uniform lookup representation and native-runtime discriminators. Preserve its one-control scope until additional source inputs and token boundaries are tested.",
+  "promotion_allowed": false,
+  "reference": {
+    "class": "Qwen4ExpTextPLELayer",
+    "device": "cpu",
+    "dtype": "float32",
+    "framework": "transformers",
+    "framework_version": "transformers 5.17.0",
+    "implementation": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/transformers/models/qwen4_exp/modeling_qwen4_exp.py",
+    "implementation_sha256": "ca9f00bbd73cfcfbad7ba6073b5ecc23ca27bdace58b746fe6ead6ab175efc0c",
+    "lookup_substitution": "FixedSourceEmbedding over the exact source-bound rows; giant source table was not instantiated"
+  },
+  "reference_output": {
+    "bytes": 40960,
+    "dtype": "F32_LE",
+    "elements": 10240,
+    "path": "receipts/headless/FLASH_PLE_LAYER1_BOS_REFERENCE_FORMULA_PARITY.reference_ple_injection.f32",
+    "sha256": "23207e7651cb2f8b65133996ec34da205bd71e9283f70d063c1de43209ce5658"
+  },
+  "schema": "hawking.odyssey.ple_reference_formula_oracle.v1",
+  "seal_sha256": "ccc33c4ee3acbdb02a628e9a12bb21465526c47cdc45d83d15aa2af94db746b4",
+  "source_control": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_PLE_LAYER1_BOS_SOURCE_OUTPUT_CONTROL.json",
+    "seal_sha256": "7a2afdd2505b1d4c5705bce8cb7fe2d4a06c32d50d1105cdc86cff589e3071d4",
+    "sha256": "14115ce240230d79d6d2048dff67b4f1a4af272457c1c739bb7df587fb71bf66"
+  },
+  "status": "REFERENCE_FRAMEWORK_PLE_FORMULA_PARITY_PASS",
+  "thresholds": {
+    "max_abs": 5e-06,
+    "relative_l2": 5e-06
+  }
+}

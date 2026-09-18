@@ -32,7 +32,7 @@ from typing import Any, Iterable, Iterator, Mapping, Sequence
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from hcli.engine import is_accepted_work  # noqa: E402  the authority, not a copy
+from hawking.engine import is_accepted_work  # noqa: E402  the authority, not a copy
 from tools.future._common import write_receipt  # noqa: E402
 
 RECEIPT_NAME = "G016_RELIABILITY_AXIS.json"

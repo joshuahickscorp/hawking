@@ -1,0 +1,215 @@
+{
+  "schema": "hawking.odyssey.flash_source_correctness_frontier.v1",
+  "artifact_kind": "current_execution_checkpoint",
+  "status": "BLOCKED_MISSING_MACHINE_OWNER_AUTHORIZATION_FOR_CAPTURED_EXTERNAL_TEACHER",
+  "observed_at_utc": "2026-09-12T16:39:00Z",
+  "specimen": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "supersedes_as_current_next_action": [
+    {
+      "path": "workspace/campaign/odyssey/CONTINUATION.json",
+      "superseded_claim": "continue token-major resident decode optimization from the prior native reference chain"
+    },
+    {
+      "path": "receipts/future/GRAVITY_METHOD_EXECUTION_FRONTIER_20260912.json",
+      "superseded_claim": "rerun E05 with the self-derived native argmax token 271"
+    }
+  ],
+  "source_teacher_gate": {
+    "runner": "tools/odyssey/flash_repeated_accepted_decode.py",
+    "runner_sha256": "a0d91e4d14a51b0a72e64844322640d7c79de6257bc94a0f2c737f4f23d5fbf8",
+    "required_contract_schema": "hawking.flash.external_greedy_reference.v2",
+    "required_contract_status": "ADMITTED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE",
+    "required_authorization_schema": "hawking.flash.external_greedy_reference_owner_authorization.v1",
+    "required_authorization_scope": "admit_external_greedy_reference_v2",
+    "required_evidence": [
+      "exact canonical ModelLake manifest and pinned source identity",
+      "complete exact-hash source shard ledger",
+      "independent provider implementation, runtime-lock, and producer artifacts",
+      "canonical tokenizer and prompt/token boundary",
+      "PLE-inclusive deterministic greedy execution",
+      "raw little-endian F32 logits for every generated step with verifier-recomputed argmax",
+      "detached machine-admin Ed25519 owner authorization"
+    ],
+    "disk_search": "CAPTURED_V2_CANDIDATE_PRESENT__OWNER_AUTHORIZATION_ABSENT",
+    "machine_admin_trust_anchor": {
+      "path": "/Library/Application Support/Hawking/owner_ed25519_public_key",
+      "exists": false,
+      "loadable_as_32_byte_ed25519_public_key": false,
+      "disposition": "owner provisioning is required; no per-user fallback or model-generated authorization is permitted"
+    },
+    "dry_run_status": "DRY_RUN",
+    "dry_run_claim_boundary": "no GPU work and no repeated-decode result",
+    "native_binary": {
+      "path": "target/release/examples/flash_stateful_complete_token_session",
+      "exists": false,
+      "disposition": "do not build or launch until the source teacher is admitted and the protected lane is revalidated"
+    },
+    "source_shard_ledger": {
+      "path": "receipts/headless/FLASH_SOURCE_SHARD_LEDGER_20260912.json",
+      "sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "status": "VERIFIED_COMPLETE_SOURCE_SHARD_LEDGER",
+      "indexed_shard_count": 131,
+      "indexed_shard_bytes": 360000192888,
+      "all_indexed_shards_verified": true,
+      "accepted_by_v2_gate": true,
+      "gpu_or_provider_started": false,
+      "model_loaded": false
+    },
+    "external_oracle": {
+      "producer": "tools/odyssey/flash_external_greedy_reference_mlx.py",
+      "worker": "tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "runtime_lock": "tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED",
+      "provider": "isolated MLX-VLM 0.7.0 Qwen4-Exp research/reference adapter",
+      "capture": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+      "capture_sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+      "reference_contract": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "owner_authorization_request_sha256": "f9b94584376ca49ba812e5e8d0cf3ec66b4c7ee46ccbb9599228972f833d77d4",
+      "generated_token_ids": [
+        271,
+        248045
+      ],
+      "step_0_top_logit_margin": 2.75,
+      "step_1_top_logit_margin": 1.8125,
+      "elapsed_ns": 230795638000,
+      "max_resident_set_size_bytes": 10567942144,
+      "expert_source_bytes_read": 19120128000,
+      "ple_source_bytes_read": 30720,
+      "output_exists": true,
+      "protected_native_lane_clean": true,
+      "gate_validation": "all contract, exact-source, provider, raw-F32, argmax, PLE, and seal checks passed through the final owner-authorization requirement",
+      "failed_attempts_preserved": [
+        "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_20260912",
+        "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_LAYER_CHECKPOINTED_20260912",
+        "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_DIRECT_SOURCE_SLICES_20260912"
+      ],
+      "claim_boundary": "captured and internally verified external source candidate; not admitted until the detached machine-admin owner authorization verifies, and not Kimi or native runtime authority"
+    }
+  },
+  "source_correctness": {
+    "last_bounded_frontier": "layer 4 / token 0",
+    "older_native_state_bank": {
+      "path": "receipts/headless/FLASH_PLE_NATIVE_STATE_BANK_SESSION_20260912.json",
+      "sha256": "8c248203f284f1f8889ba4bba3bc28c628fa9101a7cb0bbf07b2d744dabc9c05",
+      "expected_token_id": 2972,
+      "predicted_token_id": 271,
+      "accepted_generation_tokens": 0,
+      "authority": "diagnostic self-control only; not the source teacher"
+    },
+    "captured_external_candidate": {
+      "generated_token_ids": [
+        271,
+        248045
+      ],
+      "comparison_to_older_chain": "candidate source step 0 agrees with the older native prediction 271 and contradicts the historical expected token 2972; the historical chain remains non-authoritative",
+      "admitted": false,
+      "blocked_only_on": "detached machine-admin Ed25519 trust anchor and authorization"
+    },
+    "next": "provision the canonical machine-admin trust anchor and owner-authorize the exact captured V2 reference; after admission, supersede the historical 2972 chain as teacher evidence and localize source parity from the current layer-4/token-0 frontier before another native full-body replay"
+  },
+  "representation": {
+    "sealed": {
+      "E01": "fixed shared-vector-code family negative",
+      "E02": "fixed top-eight pairwise lawful atom-sharing replication negative; original pair remains a bounded non-generalized signal",
+      "E03": "fixed INT4 router negative",
+      "E04": "exact HyperConnection quotient negative",
+      "E06": "conditional-information/auxiliary-cost prefilter negative at the fixed layer-0 gate/up row-norm scope",
+      "E07": "negative-transfer selection/refusal sealed"
+    },
+    "survivor": {},
+    "blocked": {
+      "E05": "captured source-chain candidate exists; PLE/state teaching remains gated on machine-owner admission",
+      "E13": "tokenizer/tensor partition is resolved; extraction remains withheld pending frequency, decoded-script, split/null controls and an admitted canonical producer"
+    }
+  },
+  "e02": {
+    "receipt": "receipts/headless/FLASH_EXPERT_LAWFUL_ATOM_SHARING_TOP8_REPLICATION_SEALED_20260912.json",
+    "receipt_sha256": "e610ab44f639536a15861100d35b52c55b709eb334a3763d076ec5a0f57bab30",
+    "receipt_seal_sha256": "7e9cace3970c8f4a14d51b82ee248542fbba13857a2f1ccc512d47e463618735",
+    "status": "NOT_REPLICATED_ACROSS_PREDECLARED_TOP8_ROUTE_BANK",
+    "scope": "four disjoint adjacent pairs across the sealed layer-0 top-eight route; first pair calibration plus three independent pairs; one sealed source activation",
+    "original_pair_reproduced": true,
+    "independent_replication_pairs": 3,
+    "independent_survivors": 2,
+    "failing_pair": [291, 106],
+    "failing_pair_full_route_matched_relative_l2": 0.6146082878112793,
+    "failing_pair_full_route_shuffled_relative_l2": 0.4744339883327484,
+    "source_payload_bytes_read": 78643200,
+    "model_loaded": false,
+    "gpu_session_started": false,
+    "disposition": "close the fixed top-eight pairwise replication branch; retain the original pair only as a bounded non-generalized signal and do not call it a usable representation"
+  },
+  "e06": {
+    "receipt": "receipts/headless/FLASH_E06_CONDITIONAL_INFORMATION_PREFILTER_BOUND_20260912.json",
+    "receipt_sha256": "5d18d19fa51278d81d9a0f4e70ada9d930f3aa6cc96d716dcee3fc815b1573fe",
+    "receipt_seal_sha256": "e98db1bdee8724ef97ef0a3f525dd1f02ab6203d67845bde37dc7c26d29bb7b8",
+    "status": "E06_PREFILTER_STOP_AUXILIARY_COST_OR_NULL_CONTROL_NOT_CLEARED",
+    "scope": "pinned layer-0 gate/up tensor; row L2-norm 8-bin code; expert-axis predictor; 1024 fit plus 1024 held-out rows",
+    "source_payload_bytes_read": 10485760,
+    "heldout_largest_codeword_share": 0.1455078125,
+    "heldout_shannon_entropy_bits": 2.980076793947129,
+    "conditional_code_saving_percent_of_global": 3.1584898630777993,
+    "actual_minus_shuffled_null_saving_bits_per_symbol": 0.17135190963745117,
+    "conditional_net_saving_bits_after_auxiliary_cost": -74645.5625,
+    "candidate_for_separate_source_output_review": false,
+    "model_loaded": false,
+    "gpu_session_started": false,
+    "disposition": "seal this exact row-norm conditional-information family at current scope; it misses both declared signal thresholds and its measured predictor/decoder obligation erases the conditional gain"
+  },
+  "e13": {
+    "receipt": "receipts/headless/FLASH_E13_VOCABULARY_PARTITION_FRONTIER_20260912.json",
+    "receipt_sha256": "58bce293f004d9f16557e926579b230e6d49092182b86281434b1241d1eeae7c",
+    "receipt_seal_sha256": "5c9c81734eacc590c455eeda78e2cbf3138bcfc3dae825eb2b9cc81a3972c37b",
+    "status": "WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN",
+    "tensor_rows": 248320,
+    "tokenizer_addressable_tokens": 248077,
+    "tokenizer_unaddressable_tail_rows": 243,
+    "e13_eligible_model_vocab_tokens": 248044,
+    "excluded_added_control_tokens": 33,
+    "lexical_id_range": [0, 248043],
+    "added_control_id_range": [248044, 248076],
+    "tensor_only_tail_id_range": [248077, 248319],
+    "partition_status": "RESOLVED_EXACT_CONTIGUOUS_TOKENIZER_TENSOR_PARTITION",
+    "complete_tensor_accounting": "retain all 248320 rows",
+    "raw_source_logits": "preserve all 248320 rows",
+    "tail_sampling_policy": "WITHHELD_PENDING_ADMITTED_SOURCE_OR_RUNTIME_CONTROL",
+    "tensor_payload_bytes_read": 0,
+    "gpu_session_started": false,
+    "disposition": "E13 lexical strata are exactly model-vocab ids 0..248043; added/control and tensor-only tail rows remain named controls and complete-accounting obligations, not lexical examples; do not extract payload until frequency, decoded-script, split/null controls and a canonical producer exist"
+  },
+  "runtime": {
+    "hawkingd": "NOT_RUNNING",
+    "kimi_provider": "NOT_RUNNING",
+    "flash_execution": "NOT_RUNNING",
+    "protected_run_reattachment": "NO_LIVE_RUN_HANDLE",
+    "restart_authorized": false
+  },
+  "unification": {
+    "receipt": "receipts/future/HAWKING_UNIFICATION_MAIN_INTEGRATION_20260912.json",
+    "receipt_sha256": "ea7f0c8104bd3343394c3a53e7c54ce440dfd9d0db583f0ad719edd4319916cb",
+    "status": "SOURCE_INTEGRATED_AND_STATICALLY_VALIDATED__NOT_DEPLOYED"
+  },
+  "validation": {
+    "source_reference_and_route_union_tests": "45 passed",
+    "external_oracle_capture": "two-step PLE-inclusive candidate captured; raw F32 argmax recomputed as [271, 248045]; fail-closed admission reached and refused only at missing owner authorization",
+    "e13_prefilter_tests": "21 passed",
+    "e06_prefilter_tests": "9 passed",
+    "e06_receipt_verification": "VERIFIED_E06_RECEIPT",
+    "e02_replication_tests": "8 passed",
+    "e02_replication_receipt_verification": "VERIFIED_E02_REPLICATION_RECEIPT",
+    "e13_receipt_verification": "VERIFIED_E13_RECEIPT",
+    "e13_cli_identity_fix": {
+      "module": "hcli.agentos.flash_vocabulary_prefilter",
+      "module_sha256": "203032e908d3df3dd3300b334f672e9e501f2b5e91db200292982ff7f4cee17a",
+      "finding": "the CLI retains canonical producer identity and now owns the exact lexical/added/tensor-tail partition without truncating complete accounting or raw-logit surfaces"
+    }
+  },
+  "claim_boundary": "This checkpoint corrects the active source and representation frontier. It is not a source-fidelity, repeated-decode, state-teacher, EBPW, capability, TPS, promotion, deployment, or Kimi-retirement claim."
+}

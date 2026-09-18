@@ -1,0 +1,64 @@
+{
+  "active_job": "job-9249b2de-d8ca-4caf-91ab-dfaa3f124c85",
+  "blocker": {
+    "pid": 41971,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.0083810292,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "GOAL-7FD0AAE541-r2",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "dd823ba9e6878d19614f6890559626d6b90083823c124dbf3286e4229d2e7d99",
+  "current_phase": "COMPLETE",
+  "driver_alive": false,
+  "driver_pid": 41971,
+  "exact_next_action": "Goal complete; durable result packet is available",
+  "goal_id": "GOAL-7FD0AAE541",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "receipts/future/workunits/GOAL-7FD0AAE541_SEAL_B1.json",
+  "last_outcome": "COMPLETE",
+  "last_tool_dispatch": null,
+  "last_turn": 3,
+  "latest_real_seal": "receipts/future/workunits/GOAL-7FD0AAE541_SEAL_B1.json",
+  "objective": "Identify the attached fixture as a Hawking artifact and report its safe read path. Do not modify source.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-0f776d47e67c443492997930:tool-12",
+    "gen-1789536054-pQwOssPGkKi6QYd6qmAN",
+    "gateway-0cb20db5a2d7448e86894659:tool-11",
+    "gen-1789536170-0aWRxu7Cw5URKtmsRjQU",
+    "gateway-be1a1530a8364fe1a809f2fc:tool-10",
+    "gen-1789536239-bSBWwWoydM1nxMbAoYwT"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "COMPLETE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T05:24:02.764021+00:00",
+  "worker_attempt_id": "hawking-attempt-265e6d0a8e654d27",
+  "worker_cost_usd": 0.0083810292,
+  "worker_id": "hawking-worker-66aaa7cc9c0246e8",
+  "worker_kill_reason": "goal_complete",
+  "worker_last_heartbeat_at": 1789536184.2125828,
+  "worker_spawned_at": 1789535935.5732749,
+  "worker_status": "RELEASED",
+  "workunit_id": "GOAL-7FD0AAE541"
+}

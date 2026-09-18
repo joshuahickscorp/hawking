@@ -1,0 +1,31 @@
+{
+ "kind": "PRE-REGISTRATION -- committed BEFORE the run it predicts",
+ "written_at": "2026-09-09T14:19:42",
+ "why_this_exists": "The per-organ activation-aware gate was refuted in its stated form (a within-model ordering) by Falcon3-1B, where the ordering inverts at 3 bits. A weaker ABSOLUTE-THRESHOLD reading fits all four measurements taken so far, but it was fitted AFTER seeing them. A hypothesis fitted to its own evidence predicts nothing. So the threshold is fixed here, in a commit that precedes the run, and the next specimen either satisfies it or does not.",
+ "the_four_points_the_threshold_was_fitted_to": {
+  "Qwen3-0.6B down_proj": {
+   "r99": 0.402,
+   "gained_4b": true
+  },
+  "Qwen3-0.6B gate/up": {
+   "r99": 0.605,
+   "gained_4b": false
+  },
+  "Falcon3-1B down_proj": {
+   "r99": 0.094,
+   "gained_4b": true
+  },
+  "Falcon3-1B gate/up": {
+   "r99": 0.287,
+   "gained_4b": false
+  }
+ },
+ "note_on_the_bracket": "Falcon's gate/up at r99 0.287 LOST at 4 bits (-0.0029) and GAINED at 3 (+0.0137), so it is the ambiguous point. Taking the 4-bit result as the reference, the bracket separating gainers from losers is 0.287 to 0.402 -- NARROWER than the 0.287-0.605 stated earlier, and that earlier statement was loose. Corrected here before it is used.",
+ "DECLARED_THRESHOLD": 0.35,
+ "threshold_rationale": "midpoint of the corrected 0.287-0.402 bracket",
+ "PREDICTION": "At 4 bits, on a specimen not yet measured: every MLP organ whose r99 fraction of its input dimension is BELOW 0.35 gains held-out top-1 from error-compensating quantization relative to round-to-nearest, and every organ ABOVE 0.35 does not.",
+ "specimen_chosen_in_advance": "LiquidAI--LFM2.5-1.2B-Instruct (hybrid conv+attention, 16 layers, d=2048)",
+ "why_that_specimen": "a different architecture family from both bodies the threshold was fitted to, small enough to run on CPU without touching the resident's GPU, and its feed_forward organ naming (w1/w2/w3) differs from both, so the probe's structural organ discovery is exercised rather than its name matching.",
+ "WHAT_WOULD_REFUTE_IT": "any organ below 0.35 that loses, or any organ above 0.35 that gains, at 4 bits on held-out data. A specimen whose organs all fall on one side of the threshold is UNINFORMATIVE rather than confirming, and must be reported as such -- that is the trap Falcon fell into for the ordering claim, where both organs turned out concentrated and 'all-MLP wins' was mistaken for a result.",
+ "pre_committed_so_that": "if the prediction succeeds it is a prediction and not a fit, and if it fails the failure is on the record in the same form the success would have been."
+}

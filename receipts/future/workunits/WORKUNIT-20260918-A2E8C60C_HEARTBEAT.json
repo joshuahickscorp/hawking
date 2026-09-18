@@ -1,0 +1,60 @@
+{
+  "active_job": "job-67cff7ca-9613-47de-9031-dddae380ea5b",
+  "blocker": {
+    "pid": 54004,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.002828304,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260918-A2E8C60C",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "bb788b4709d6306eb2f71ae487588968eb5404dc3572d8f3921911cf0a48cb53",
+  "current_phase": "WORKUNIT_COMPLETE",
+  "driver_alive": false,
+  "driver_pid": 54004,
+  "exact_next_action": "WorkUnit complete; the parent Goal remains authoritative for the next tranche",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "receipts/future/workunits/WORKUNIT-20260918-A2E8C60C_SEAL_B1.json",
+  "last_outcome": "COMPLETE",
+  "last_tool_dispatch": null,
+  "last_turn": 1,
+  "latest_real_seal": "receipts/future/workunits/WORKUNIT-20260918-A2E8C60C_SEAL_B1.json",
+  "objective": "Advance P19_SANDBOX_IMPLEMENTATION_CONTRACT_V2 beyond accepted read evidence with one bounded, substantive implementation change in the declared scope. Inspect the current owner and existing receipt, implement the narrowest missing executable behavior, run a focused test that exercises that behavior, and record exact evidence. Do not satisfy this tranche with a phase/contract/qualification marker, a version constant, an import-only assertion, or a test-only change. Do not repeat source mapping, ",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-6c4ced9a4e154daa90853c99:tool-1",
+    "gen-1789754876-ZKJ0EtrktxZRZqtck2zZ"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "COMPLETE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T18:08:03.156828+00:00",
+  "worker_attempt_id": "hawking-attempt-5c68f1484d604e68",
+  "worker_cost_usd": 0.002828304,
+  "worker_id": "hawking-worker-9adf79aa6cfc4536",
+  "worker_kill_reason": "workunit_complete",
+  "worker_last_heartbeat_at": 1789754876.312365,
+  "worker_spawned_at": 1789754875.79157,
+  "worker_status": "RELEASED",
+  "workunit_id": "WORKUNIT-20260918-A2E8C60C"
+}

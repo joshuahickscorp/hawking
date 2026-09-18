@@ -35,8 +35,8 @@ use strand_quant::encode::{
     encode_tensor, encode_tensor_with, encode_tensor_with_lut, n_sub_blocks, unpack_sub_scales,
     vector_lut_from_scalar, EncodeOpts, EncodedTensor, SUB_BLOCK,
 };
-use strand_quant::QUANTILE_SHIFT;
 use strand_quant::TrellisConfig;
+use strand_quant::QUANTILE_SHIFT;
 
 const SCALE_SHIFT: u32 = 16;
 const SUB_SCALE_SHIFT: u32 = 6;
@@ -68,7 +68,11 @@ fn ind_eff_min_q(min_base_q: i32, code: u8) -> i32 {
         return 0;
     }
     let base = (min_base_q.unsigned_abs()) as i64;
-    let signed = if code & 0x20 != 0 { base * mag } else { -(base * mag) };
+    let signed = if code & 0x20 != 0 {
+        base * mag
+    } else {
+        -(base * mag)
+    };
     (signed / 31) as i32
 }
 
@@ -100,10 +104,16 @@ fn replay(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], d: usize) -> Ve
         } else {
             unpack_sub_scales(&blk.sub_scales, n_sub)
         };
-        let eff: Vec<i32> = scodes.iter().map(|&c| ind_eff_scale_q(blk.scale_q, c)).collect();
+        let eff: Vec<i32> = scodes
+            .iter()
+            .map(|&c| ind_eff_scale_q(blk.scale_q, c))
+            .collect();
         let offs: Vec<i32> = if enc.has_affine_min {
             let mcodes = unpack_sub_scales(&blk.mins, n_sub);
-            mcodes.iter().map(|&c| ind_eff_min_q(blk.min_base_q, c)).collect()
+            mcodes
+                .iter()
+                .map(|&c| ind_eff_min_q(blk.min_base_q, c))
+                .collect()
         } else {
             Vec::new()
         };
@@ -180,7 +190,10 @@ fn assert_scalar_equivalence(weights: &[f32], cfg: &TrellisConfig, opts: &Encode
     // 2) All production decoders must equal it, bit-for-bit.
     let fixed = decode_tensor_fixed(&enc, cfg);
     let lean = decode_lean(&enc, cfg);
-    assert_eq!(fixed, expected, "decode_tensor_fixed != independent replay [{ctx}]");
+    assert_eq!(
+        fixed, expected,
+        "decode_tensor_fixed != independent replay [{ctx}]"
+    );
     assert_eq!(lean, expected, "decode_lean != independent replay [{ctx}]");
 
     // 3) Explicit-LUT decoders agree (same path, different entry point).
@@ -200,7 +213,11 @@ fn assert_scalar_equivalence(weights: &[f32], cfg: &TrellisConfig, opts: &Encode
     assert_eq!(enc, enc2, "re-encode produced different bits [{ctx}]");
 
     // 5) Decode is reproducible.
-    assert_eq!(decode_tensor_fixed(&enc, cfg), fixed, "re-decode drift [{ctx}]");
+    assert_eq!(
+        decode_tensor_fixed(&enc, cfg),
+        fixed,
+        "re-decode drift [{ctx}]"
+    );
 
     // 6) f32 public wrapper is EXACTLY q * 2^-12 of the integer recon.
     let f = decode_tensor(&enc, cfg);
@@ -246,7 +263,11 @@ fn encode_decode_scalar_equivalence_sweep() {
             ] {
                 let cfg = TrellisConfig::new(l, k, block_len);
                 // Confirm the config realised what we asked (clamping caveats).
-                assert_eq!(cfg.k_bits, k.clamp(1, TrellisConfig::MAX_K), "k clamp [{l},{k}]");
+                assert_eq!(
+                    cfg.k_bits,
+                    k.clamp(1, TrellisConfig::MAX_K),
+                    "k clamp [{l},{k}]"
+                );
                 assert!(cfg.l_bits >= cfg.k_bits, "L>=k invariant [{l},{k}]");
                 assert_eq!(cfg.block_len, block_len.max(1), "block_len [{l},{k}]");
 
@@ -314,8 +335,7 @@ fn encode_decode_vector_equivalence_sweep() {
                                     affine_min,
                                     ..Default::default()
                                 };
-                                let enc =
-                                    encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
+                                let enc = encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
                                 assert_eq!(enc.total, n, "vec total");
 
                                 let expected = replay(&enc, &cfg, &vlut, d as usize);
@@ -323,8 +343,7 @@ fn encode_decode_vector_equivalence_sweep() {
 
                                 // The vec decode path is reached via the
                                 // *_with_lut entry points when vec_dim > 1.
-                                let fixed =
-                                    decode_tensor_fixed_with_lut(&enc, &cfg, &vlut);
+                                let fixed = decode_tensor_fixed_with_lut(&enc, &cfg, &vlut);
                                 let lean = decode_lean_with_lut(&enc, &cfg, &vlut);
                                 let ctx = format!(
                                     "VEC L={l} k={k} d={d} n={n} adapt={adaptive} tail={tail_biting} affine={affine_min}"
@@ -339,8 +358,7 @@ fn encode_decode_vector_equivalence_sweep() {
                                 );
 
                                 // Reproducible encode + decode.
-                                let enc2 =
-                                    encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
+                                let enc2 = encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
                                 assert_eq!(enc, enc2, "vec re-encode drift [{ctx}]");
                                 assert_eq!(
                                     decode_tensor_fixed_with_lut(&enc, &cfg, &vlut),
@@ -400,7 +418,10 @@ fn tail_biting_decode_ignores_stored_init_state() {
                 let n = nblk * block_len;
                 let cfg = TrellisConfig::new(l, k, block_len);
                 let weights = gen_weights(n, (l * 17 + k * 3 + n as u32) as u64, 0.4);
-                let opts = EncodeOpts { tail_biting: true, ..Default::default() };
+                let opts = EncodeOpts {
+                    tail_biting: true,
+                    ..Default::default()
+                };
                 let enc = encode_tensor_with(&weights, &cfg, &opts);
                 let base = decode_tensor_fixed(&enc, &cfg);
 
@@ -467,7 +488,10 @@ fn f32_metric_encode_decodes_float_free() {
             for &n in &[1usize, 33, 200, 257] {
                 let weights = gen_weights(n, (l * 53 + k * 11 + n as u32) as u64, 0.5);
                 for &tail_biting in &[false, true] {
-                    let opts = EncodeOpts { tail_biting, ..Default::default() };
+                    let opts = EncodeOpts {
+                        tail_biting,
+                        ..Default::default()
+                    };
                     let enc = encode_tensor_with(&weights, &cfg, &opts);
                     let lut = codebook_lut(l);
                     let expected = replay(&enc, &cfg, lut, 1);
@@ -515,7 +539,10 @@ fn degenerate_inputs_round_trip() {
             for &n in &[1usize, 33, 200] {
                 let zeros = vec![0.0f32; n];
                 for &affine in &[false, true] {
-                    let opts = EncodeOpts { affine_min: affine, ..Default::default() };
+                    let opts = EncodeOpts {
+                        affine_min: affine,
+                        ..Default::default()
+                    };
                     let enc = encode_tensor_with(&zeros, &cfg, &opts);
                     let expected = replay(&enc, &cfg, codebook_lut(l), 1);
                     let got = decode_tensor_fixed(&enc, &cfg);

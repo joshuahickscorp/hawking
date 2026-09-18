@@ -1,0 +1,136 @@
+{
+  "schema": "hawking.long_haul_v2_scaffold_closeout.v1",
+  "generated_at": "2026-09-18T21:10:08Z",
+  "goal_id": "GOAL-A52AB48501",
+  "disposition": "CLOSED_WITH_CARRY_FORWARD",
+  "remote_main_source_baseline": "b6fac000db664f2e0ee0588664973790b1a4588e",
+  "remote_main_source_parent": "5bcdb20a693d2989a74fd0bd3165ea0c1af00d91",
+  "architecture_scaffold": "ACCEPTED",
+  "full_p_phase_release": false,
+  "new_workunits_enabled": false,
+  "provider_budget_spend_for_closeout_usd": 0.0,
+  "deep_pass_goal_required": true,
+  "phase_boundary": {
+    "coverage": "BROAD_ARCHITECTURE_SOURCE_CONTRACT_COVERAGE_COMPLETE_ENOUGH_FOR_HANDOFF",
+    "qualification": "DEEP_RUNTIME_HARDWARE_RELEASE_NOT_COMPLETE",
+    "p0_to_p20_promoted_to_release_complete": [],
+    "p0_to_p20_handoff_ready": true
+  },
+  "accepted_architectural_owners": [
+    "HAWKING",
+    "Hawking",
+    "Gravity",
+    "AgentOS",
+    "Nova",
+    "Noetic",
+    "NX",
+    "Odyssey",
+    "ModelLake",
+    "Tunnel",
+    "Sandbox",
+    "Auto",
+    "provider_independent_mutation"
+  ],
+  "implemented_infrastructure": [
+    "Goal_WorkUnit_Auto_architecture",
+    "dynamic_frontier_and_refill",
+    "dead_letter_and_child_failure_isolation",
+    "writer_scope_protection",
+    "compact_worker_protocol_surface",
+    "source_anchors",
+    "hawking_side_mutation_compilation",
+    "deterministic_mutation_preflight",
+    "http_semantic_boundary",
+    "route_diversity_and_provider_evidence",
+    "model_residency_boundary",
+    "tunnel_scaffolding",
+    "sandbox_scaffolding",
+    "science_and_runtime_contract_surfaces",
+    "modellake_odyssey_scheduling",
+    "fast_python_and_isolated_rust_ci"
+  ],
+  "test_baseline": {
+    "full_test_collection": 3488,
+    "pytest_collected_total": 3491,
+    "pytest_deselected": 3,
+    "focused_python": "111 passed",
+    "rust_topology": "PASS",
+    "rust_format": "PASS",
+    "git_diff_check": "PASS",
+    "protected_gate": "receipts/sovereign/G008_metabolism.json",
+    "protected_gate_status": "PENDING_NEXT_GOAL_DEPENDENCY"
+  },
+  "known_evidence_gates": [
+    "canonical autonomous mutation acceptance",
+    "Gravity_to_NR_vertical_proof",
+    "DARKMATTER_to_NX_physical_proof",
+    "native_runtime_admission",
+    "Apple_hardware_qualification",
+    "NVIDIA_hardware_qualification",
+    "FPGA_hardware_qualification",
+    "autotuning_measurements",
+    "P17_broad_codebase_collapse",
+    "final_release_qualification"
+  ],
+  "mutation_funnel": {
+    "compact_cognition": "IMPLEMENTED_PARTIAL",
+    "source_anchors": "IMPLEMENTED_PARTIAL",
+    "hawking_mutation_compiler": "IMPLEMENTED_PARTIAL",
+    "deterministic_preflight": "IMPLEMENTED_PARTIAL",
+    "circuit_breaker": "IMPLEMENTED_PARTIAL",
+    "canonical_autonomous_mutation_acceptance": "PENDING_DEEP_PASS",
+    "provider_failure_classes": "CONTAINED_DEAD_LETTERS"
+  },
+  "provider_economics": {
+    "financial_authority": "ACTUAL_PROVIDER_BILLING",
+    "real_billed_dollars_reconciled": false,
+    "internal_telemetry_is_not_financial_authority": true,
+    "new_provider_spend_in_closeout_usd": 0.0
+  },
+  "science_runtime_status": {
+    "Gravity": "SOURCE_MAPPED_READ_EVIDENCE_VERTICAL_PROOF_PENDING",
+    "NR": "CONTRACT_COVERAGE_VERTICAL_PROOF_PENDING",
+    "Nova": "COMPACT_AGENT_SCAFFOLD_QUALIFICATION_PENDING",
+    "DARKMATTER": "SOURCE_CONTRACT_EVIDENCE_PHYSICAL_PROOF_PENDING",
+    "NX": "CONTRACT_ADMISSION_SCAFFOLD_NATIVE_EXECUTION_PENDING",
+    "Apple": "SOURCE_CONTRACT_HARDWARE_QUALIFICATION_PENDING",
+    "NVIDIA": "CUDA_SOURCE_CONTRACT_HARDWARE_QUALIFICATION_PENDING",
+    "FPGA": "SOURCE_CONTRACT_HARDWARE_QUALIFICATION_PENDING",
+    "Autotuning": "TELEMETRY_SCAFFOLD_MEASUREMENTS_PENDING",
+    "Odyssey_ModelLake": "SCHEDULER_SOURCE_EVIDENCE_END_TO_END_QUALIFICATION_PENDING"
+  },
+  "collapse_targets": [
+    "P17_broad_codebase_collapse",
+    "duplicate_owner_retirement",
+    "compatibility_layer_retirement",
+    "production_deletion_after_evidence",
+    "final_release_reconciliation"
+  ],
+  "protected_resources": [
+    ".hawking",
+    "model_and_runtime_caches",
+    "generated_planes",
+    "session_artifacts",
+    "Flash",
+    "Pulsar",
+    "ModelLake",
+    "receipts/sovereign/G008_metabolism.json"
+  ],
+  "ci_fix_published_in_follow_on_change_set": {
+    "format_gate": "cargo fmt --all -- --check passes locally",
+    "cargo_package_name_fix": "hide-backend -> hawking-process-authority",
+    "deployment_or_release_job_added": false,
+    "release_promoted": false,
+    "ai_attribution_added": false
+  },
+  "continuation": {
+    "resume_this_goal": false,
+    "create_new_deep_pass_goal": true,
+    "first_dependencies": [
+      "G008_metabolism_protected_evidence",
+      "canonical_mutation_canary",
+      "Gravity_to_NR_vertical_proof",
+      "DARKMATTER_to_NX_physical_proof"
+    ]
+  }
+}

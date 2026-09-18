@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.odyssey.kimi_linear48.static_anatomy.v1",
+  "recorded_at": "2026-09-11T08:05:00Z",
+  "status": "STATIC_DISCRIMINATOR_PASS",
+  "specimen": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+  "method": {"tool": "tools/future/representational_anatomy.py", "layer": 1, "runtime_loaded": false},
+  "architecture": {"model_type": "kimi_linear", "routed_experts": 256, "shared_experts_present": true, "latent_attention": true, "recurrent_state": true},
+  "observations": {
+    "cross_expert": {
+      "w1_deficit_pct": 0.001,
+      "w2_deficit_pct": 0.0,
+      "w3_deficit_pct": 0.0,
+      "verdict": "DEAD_FOR_SHARED_BASIS_COMMON_DELTA_AND_CLUSTERING"
+    },
+    "within_expert": {
+      "shape": [1024, 2304],
+      "ratio": 0.7424,
+      "matched_null_ratio": 0.8003,
+      "deficit_pct": 7.228,
+      "rank_90": 664,
+      "verdict": "ABSENT_BY_PREDECLARED_10_PERCENT_MATCHED_NULL_THRESHOLD"
+    }
+  },
+  "transfer_result": "The cross-expert sharing negative transfers from LFM2 to a 256-expert linear/recurrent MoE. The within-expert low-rank lever does not transfer: LFM2 had 22.7--37.6% deficits across tested depth, while Kimi-Linear layer 1 is 7.23%.",
+  "next_discriminator": "Do not run linear-factor or shared-basis fanouts. Test a nonlinear/generated or router-conditioned static representation only after a concrete byte accounting and falsifier are specified.",
+  "claim_boundary": "One static layer and no model execution. This is neither a capability, physical, direct-execution, nor complete-body compression result."
+}

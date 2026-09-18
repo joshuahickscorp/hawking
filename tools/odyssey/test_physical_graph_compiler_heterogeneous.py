@@ -226,3 +226,20 @@ def test_generic_layer_still_has_no_vendor_keyed_control_flow():
             elif isinstance(node, ast.Match):
                 scan(node.subject, node.lineno, path.name)
     assert hits == []
+def test_reconcile_darkmatter_owner_missing_owner():
+    from tools.odyssey.physical_graph_compiler import _reconcile_darkmatter_owner
+
+    record = _reconcile_darkmatter_owner({"id": "n1"})
+    assert record == {
+        "node": "n1",
+        "owner": "darkmatter",
+        "reconciled": True,
+        "reason": "heterogeneous_node_missing_owner",
+    }
+
+
+def test_reconcile_darkmatter_owner_declared_owner():
+    from tools.odyssey.physical_graph_compiler import _reconcile_darkmatter_owner
+
+    record = _reconcile_darkmatter_owner({"id": "n2", "owner": "alice"})
+    assert record == {"node": "n2", "owner": "alice", "reconciled": False}

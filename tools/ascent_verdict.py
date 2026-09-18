@@ -113,7 +113,7 @@ def integrity() -> tuple[bool, list[str]]:
     for label, path in (
         ("skew guard", "tools/branch_skew_guard.py"),
         ("controller", "tools/ascent_controller.py"),
-        ("resource governor", "tools/agentos/machine_state.py"),
+        ("resource governor", "hawking/machine_state.py"),
         ("disk governor", "tools/reclaim_safe.sh"),
         ("gpu lane mutex", "tools/gpu_lane_lock.sh"),
     ):

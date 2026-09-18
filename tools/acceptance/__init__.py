@@ -48,7 +48,7 @@ code already described as correct:
       serial path to the threaded path through the same function.
     residual_factors and residual_factors_batch returned r raw rows of R instead
       of the projection U^T R, and 20 tests passed.
-    VMCP_RECEIPT_LAW was BUILT -- wired, acceptance-receipted -- with no test
+    The perception receipt law was BUILT -- wired, acceptance-receipted -- with no test
       citing it at all, until its E.4 field list was transcribed from the
       roadmap and asserted here.
 """

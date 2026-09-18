@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.future.kimi_p1_capability_smoke.v1",
+  "generated_at": "2026-09-13T09:07:00-04:00",
+  "status": "NO_GROSS_COLLAPSE_OBSERVED_NOT_QUALIFICATION",
+  "p0": {
+    "endpoint": "http://127.0.0.1:8014",
+    "artifact_id": "KIMI_P0_OPERATIONAL"
+  },
+  "p1": {
+    "endpoint": "http://127.0.0.1:8024",
+    "artifact_id": "KIMI_P1_MIXED48_STAGING",
+    "artifact_revision": "db5082f85b2f424cd2cc974e000b087db6045090910534cbdf0a9909e2725b00"
+  },
+  "contract": {
+    "requests": 3,
+    "tools": false,
+    "writes": false,
+    "temperature": 0.0,
+    "max_tokens": 64
+  },
+  "observations": [
+    {
+      "case": "receipt_extract",
+      "p1": "exact structured object with JSON-style booleans; no gross failure",
+      "p0": "tool-loop detour before correction; not a clean capability comparison"
+    },
+    {
+      "case": "scope_partition",
+      "p1": "exact structured object",
+      "p0": "exact structured object"
+    },
+    {
+      "case": "staging_reason",
+      "p1": "same reasoning class as P0",
+      "p0": "same reasoning class as P1"
+    }
+  ],
+  "claim_boundary": "Three short read-only endpoint smokes only. This is not the existing KIMI capability, authorization, epistemic, HCLI, or promotion battery."
+}

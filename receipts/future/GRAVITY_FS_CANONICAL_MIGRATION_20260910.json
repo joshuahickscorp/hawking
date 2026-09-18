@@ -1,0 +1,51 @@
+{
+  "authority": {
+    "aliases_removed": false,
+    "external_writes": false,
+    "folders_moved": false,
+    "weights_written": false
+  },
+  "canonical_owner": "fs (op=read)",
+  "claim_boundary": "One production caller now names the canonical fs family. The old alias remains callable; this receipt claims parity and vocabulary migration only, not alias retirement or broad repository cleanup.",
+  "compatibility_alias": "filesystem.read",
+  "generated_at": "2026-09-10T12:00:46.681041+00:00",
+  "measurements": {
+    "alias": {
+      "median_ms": 0.126875,
+      "mutation": "read_only",
+      "ok": true,
+      "p95_ms": 0.132125,
+      "rounds": 200,
+      "sha256": "79bd9440fe84926b9393e8d61feb4f9e1d6a335b2da2775d90ee3ca639ba839b",
+      "tool": "filesystem.read"
+    },
+    "canonical": {
+      "median_ms": 0.136916,
+      "mutation": "read_only",
+      "ok": true,
+      "p95_ms": 0.156166,
+      "rounds": 200,
+      "sha256": "79bd9440fe84926b9393e8d61feb4f9e1d6a335b2da2775d90ee3ca639ba839b",
+      "tool": "fs"
+    }
+  },
+  "migrated_production_caller": "hcli.agentos.vmcp_gate.run_vmcp_gate",
+  "parity": {
+    "both_ok": true,
+    "canonical_is_primary": true,
+    "same_mutation": true,
+    "same_output_sha256": true
+  },
+  "rollback": "restore the vmcp_gate call literal to filesystem.read; alias remains callable",
+  "schema": "hawking.gravity.fs_canonical_migration.v1",
+  "source": {
+    "path": "/Users/scammermike/Downloads/hawking/hcli/agentos/vmcp_gate.py",
+    "sha256": "d7d909d3c1951a8aee10b3bc1ae892bf808d6c689ea533f1e6ccb84aacbd6edb"
+  },
+  "source_checks": {
+    "compatibility_alias_remains_callable": true,
+    "production_call_uses_canonical_name": true,
+    "receipt_row_accepts_canonical_name": true
+  },
+  "status": "MIGRATION_PARITY_PASSED"
+}

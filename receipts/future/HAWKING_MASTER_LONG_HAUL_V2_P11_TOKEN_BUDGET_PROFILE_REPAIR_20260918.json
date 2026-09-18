@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P11_NATIVE_TOKEN_BUDGET_PROFILE_REPAIR_V1",
+  "state": "IMPLEMENTED_ACCEPTED",
+  "accepted_workunit_id": "LOCAL-P11-TOKEN-BUDGET-PROFILE-REPAIR-20260918",
+  "owner": "tools/accelerator/qwen27_token_budget.py",
+  "repair": {
+    "old_profile": "hcli/hawking-native.sealed-3.14.json",
+    "new_profile": "hawking/hawking-native.sealed-3.14.json",
+    "scope": "derived Qwen27 planning receipt identity only; physical metrics remain explicitly unmeasured"
+  },
+  "focused_tests": {
+    "command": "python3 -m pytest -q tools/accelerator/test_qwen27_token_budget.py tools/accelerator/test_physical_qualification.py tools/accelerator/test_physical_graph_scoring.py tools/accelerator/test_backend_contract.py",
+    "result": "60 passed",
+    "git_diff_check": "PASS"
+  },
+  "claim_boundary": "The token-budget planning artifact now names the current profile path consistently. It remains PLANNED_UNTIL_NATIVE_PROTECTED_EXECUTION and makes no physical qualification claim.",
+  "falsifier": "Any newly emitted token-budget artifact containing the obsolete hcli profile path invalidates this repair."
+}

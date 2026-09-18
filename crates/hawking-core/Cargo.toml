@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 authors.workspace = true
 description = "Apple Silicon LLM inference engine core"
+autotests = false
 
 [lib]
 crate-type = ["rlib", "cdylib"]
@@ -22,7 +23,6 @@ tq = ["dep:strand-quant"]
 # probe `feature = "cargo-clippy"` internally, and declaring the empty feature
 # keeps rustc's `unexpected_cfgs` check quiet without enabling a build mode.
 cargo-clippy = []
-
 [dependencies]
 # strand-quant — the absorbed codec backing TQ: owner of the wire format (STR2) + the
 # integer-deterministic Q12 decode. Optional + behind the `tq` feature.
@@ -56,3 +56,518 @@ tempfile = "3"
 
 [build-dependencies]
 cc = "1"
+
+# BEGIN HAWKING TEST TOPOLOGY — generated targets keep routine source checks
+# compact while preserving every historical test file as an explicit, isolated
+# target when selected with `cargo test --test <name>`.
+
+[[test]]
+name = "compile_default"
+path = "tests/compile_default.rs"
+test = false
+
+[[test]]
+name = "compile_tq"
+path = "tests/compile_tq.rs"
+test = false
+required-features = ["tq"]
+
+[[test]]
+name = "add_rmsnorm_fused_q8_parity"
+path = "tests/add_rmsnorm_fused_q8_parity.rs"
+test = false
+
+[[test]]
+name = "broker_kernel_ab_gate"
+path = "tests/broker_kernel_ab_gate.rs"
+test = false
+
+[[test]]
+name = "chat_special_token_detok"
+path = "tests/chat_special_token_detok.rs"
+test = false
+
+[[test]]
+name = "checkpoint_refuses_across_reset"
+path = "tests/checkpoint_refuses_across_reset.rs"
+test = false
+
+[[test]]
+name = "chunk_workspace_residency"
+path = "tests/chunk_workspace_residency.rs"
+test = false
+
+[[test]]
+name = "cpu_backend_parity"
+path = "tests/cpu_backend_parity.rs"
+test = false
+
+[[test]]
+name = "cpu_backend_parity_deepseek"
+path = "tests/cpu_backend_parity_deepseek.rs"
+test = false
+
+[[test]]
+name = "dsv4f_admission_trust"
+path = "tests/dsv4f_admission_trust.rs"
+test = false
+
+[[test]]
+name = "dsv4f_artifact_index"
+path = "tests/dsv4f_artifact_index.rs"
+test = false
+
+[[test]]
+name = "dsv4f_native_token_graph_e2e"
+path = "tests/dsv4f_native_token_graph_e2e.rs"
+test = false
+
+[[test]]
+name = "dsv4f_streamed_native_e2e"
+path = "tests/dsv4f_streamed_native_e2e.rs"
+test = false
+
+[[test]]
+name = "dsv4f_zerocopy_reader"
+path = "tests/dsv4f_zerocopy_reader.rs"
+test = false
+
+[[test]]
+name = "e3_user_draft_gate_rule"
+path = "tests/e3_user_draft_gate_rule.rs"
+test = false
+
+[[test]]
+name = "embed_rmsnorm_fused_parity"
+path = "tests/embed_rmsnorm_fused_parity.rs"
+test = false
+
+[[test]]
+name = "gemm_q4k_v4r_predec_parity"
+path = "tests/gemm_q4k_v4r_predec_parity.rs"
+test = false
+
+[[test]]
+name = "gemma2_smoke"
+path = "tests/gemma2_smoke.rs"
+test = false
+
+[[test]]
+name = "gk_family_parity"
+path = "tests/gk_family_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_artifact_suite"
+path = "tests/gravity_artifact_suite.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_compact_mla_live_parity"
+path = "tests/gravity_glm_compact_mla_live_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_compact_mla_parity"
+path = "tests/gravity_glm_compact_mla_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_device_only_mlp"
+path = "tests/gravity_glm_device_only_mlp.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_expert_wave_parity"
+path = "tests/gravity_glm_expert_wave_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_forward"
+path = "tests/gravity_glm_forward.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_gpu_forward"
+path = "tests/gravity_glm_gpu_forward.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_icb_encode_benchmark"
+path = "tests/gravity_glm_icb_encode_benchmark.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_lm_head_device_parity"
+path = "tests/gravity_glm_lm_head_device_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_math_preserve_byte_census"
+path = "tests/gravity_glm_math_preserve_byte_census.rs"
+test = false
+
+[[test]]
+name = "gravity_glm_resident_parity"
+path = "tests/gravity_glm_resident_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_llama_forward"
+path = "tests/gravity_llama_forward.rs"
+test = false
+
+[[test]]
+name = "gravity_pq_kernel_registry"
+path = "tests/gravity_pq_kernel_registry.rs"
+test = false
+
+[[test]]
+name = "gravity_pq_kernel_variants_metal"
+path = "tests/gravity_pq_kernel_variants_metal.rs"
+test = false
+
+[[test]]
+name = "gravity_raw32_metal_parity"
+path = "tests/gravity_raw32_metal_parity.rs"
+test = false
+
+[[test]]
+name = "gravity_residual_pq_metal"
+path = "tests/gravity_residual_pq_metal.rs"
+test = false
+
+[[test]]
+name = "greedy_token_only_parity"
+path = "tests/greedy_token_only_parity.rs"
+test = false
+
+[[test]]
+name = "integration_greedy_64"
+path = "tests/integration_greedy_64.rs"
+test = false
+
+[[test]]
+name = "llama32_smoke"
+path = "tests/llama32_smoke.rs"
+test = false
+
+[[test]]
+name = "llama_cpp_oracle"
+path = "tests/llama_cpp_oracle.rs"
+test = false
+
+[[test]]
+name = "load_robustness"
+path = "tests/load_robustness.rs"
+test = false
+
+[[test]]
+name = "mamba2_smoke"
+path = "tests/mamba2_smoke.rs"
+test = false
+
+[[test]]
+name = "megakernel_2layer_parity"
+path = "tests/megakernel_2layer_parity.rs"
+test = false
+
+[[test]]
+name = "mha_decode_f16kv_parity"
+path = "tests/mha_decode_f16kv_parity.rs"
+test = false
+
+[[test]]
+name = "mha_decode_flash_int4kv_parity"
+path = "tests/mha_decode_flash_int4kv_parity.rs"
+test = false
+
+[[test]]
+name = "mha_never_silently_overruns"
+path = "tests/mha_never_silently_overruns.rs"
+test = false
+
+[[test]]
+name = "mixed_quant_store_build"
+path = "tests/mixed_quant_store_build.rs"
+test = false
+
+[[test]]
+name = "moe_topk_gate_exact_ties_parity"
+path = "tests/moe_topk_gate_exact_ties_parity.rs"
+test = false
+
+[[test]]
+name = "multiseq_aggregate_bench"
+path = "tests/multiseq_aggregate_bench.rs"
+test = false
+
+[[test]]
+name = "multiseq_churn_parity"
+path = "tests/multiseq_churn_parity.rs"
+test = false
+
+[[test]]
+name = "multiseq_decode_parity"
+path = "tests/multiseq_decode_parity.rs"
+test = false
+
+[[test]]
+name = "multiseq_mha_parity"
+path = "tests/multiseq_mha_parity.rs"
+test = false
+
+[[test]]
+name = "p3_batched_prefill_parity"
+path = "tests/p3_batched_prefill_parity.rs"
+test = false
+
+[[test]]
+name = "pair_8r_parity"
+path = "tests/pair_8r_parity.rs"
+test = false
+
+[[test]]
+name = "phase1_kernel_parity"
+path = "tests/phase1_kernel_parity.rs"
+test = false
+
+[[test]]
+name = "phase2_foundation_parity"
+path = "tests/phase2_foundation_parity.rs"
+test = false
+
+[[test]]
+name = "phase2_mla_metal_parity"
+path = "tests/phase2_mla_metal_parity.rs"
+test = false
+
+[[test]]
+name = "phase2_weight_pinning_parity"
+path = "tests/phase2_weight_pinning_parity.rs"
+test = false
+
+[[test]]
+name = "phi3_smoke"
+path = "tests/phi3_smoke.rs"
+test = false
+
+[[test]]
+name = "prefill_slot_into_multiseq_parity"
+path = "tests/prefill_slot_into_multiseq_parity.rs"
+test = false
+
+[[test]]
+name = "prefix_cache_e2e"
+path = "tests/prefix_cache_e2e.rs"
+test = false
+
+[[test]]
+name = "prefix_cache_parity"
+path = "tests/prefix_cache_parity.rs"
+test = false
+
+[[test]]
+name = "q3k_fused_2r_parity"
+path = "tests/q3k_fused_2r_parity.rs"
+test = false
+
+[[test]]
+name = "q3k_predec_parity"
+path = "tests/q3k_predec_parity.rs"
+test = false
+
+[[test]]
+name = "q4k_batched_gemm_parity"
+path = "tests/q4k_batched_gemm_parity.rs"
+test = false
+
+[[test]]
+name = "q4k_fast_parity"
+path = "tests/q4k_fast_parity.rs"
+test = false
+
+[[test]]
+name = "q6k_gemv_parity"
+path = "tests/q6k_gemv_parity.rs"
+test = false
+
+[[test]]
+name = "q6k_swiglu_2r_parity"
+path = "tests/q6k_swiglu_2r_parity.rs"
+test = false
+
+[[test]]
+name = "q6k_swiglu_4r_parity"
+path = "tests/q6k_swiglu_4r_parity.rs"
+test = false
+
+[[test]]
+name = "qkv_concurrent_parity"
+path = "tests/qkv_concurrent_parity.rs"
+test = false
+
+[[test]]
+name = "quantize_int8_kernel_parity"
+path = "tests/quantize_int8_kernel_parity.rs"
+test = false
+
+[[test]]
+name = "qwen30_direct_packed_gate_up_swiglu_fused_metal"
+path = "tests/qwen30_direct_packed_gate_up_swiglu_fused_metal.rs"
+test = false
+
+[[test]]
+name = "qwen38_batched_prefill_constrained"
+path = "tests/qwen38_batched_prefill_constrained.rs"
+test = false
+
+[[test]]
+name = "qwen38_batched_prefill_greedy"
+path = "tests/qwen38_batched_prefill_greedy.rs"
+test = false
+
+[[test]]
+name = "qwen38_prefill_gemm_parity"
+path = "tests/qwen38_prefill_gemm_parity.rs"
+test = false
+
+[[test]]
+name = "qwen80_capture_speed_invariants"
+path = "tests/qwen80_capture_speed_invariants.rs"
+test = false
+
+[[test]]
+name = "qwen80_direct_packed_attention_stage"
+path = "tests/qwen80_direct_packed_attention_stage.rs"
+test = false
+
+[[test]]
+name = "qwen80_uniform_q4_hybrid_decode"
+path = "tests/qwen80_uniform_q4_hybrid_decode.rs"
+test = false
+
+[[test]]
+name = "qwen_q4k_metal_pipeline_fixture"
+path = "tests/qwen_q4k_metal_pipeline_fixture.rs"
+test = false
+
+[[test]]
+name = "qwen_source_gravity_live"
+path = "tests/qwen_source_gravity_live.rs"
+test = false
+
+[[test]]
+name = "qwen_tq_serve_parity"
+path = "tests/qwen_tq_serve_parity.rs"
+test = false
+
+[[test]]
+name = "ram_prefix_cache_e2e"
+path = "tests/ram_prefix_cache_e2e.rs"
+test = false
+
+[[test]]
+name = "rwkv7_metal_bench"
+path = "tests/rwkv7_metal_bench.rs"
+test = false
+
+[[test]]
+name = "rwkv7_metal_parity"
+path = "tests/rwkv7_metal_parity.rs"
+test = false
+
+[[test]]
+name = "rwkv7_multiseq_parity"
+path = "tests/rwkv7_multiseq_parity.rs"
+test = false
+
+[[test]]
+name = "rwkv7_parity"
+path = "tests/rwkv7_parity.rs"
+test = false
+
+[[test]]
+name = "rwkv7_prefill_slot_multiseq_parity"
+path = "tests/rwkv7_prefill_slot_multiseq_parity.rs"
+test = false
+
+[[test]]
+name = "rwkv7_state_checkpoint_parity"
+path = "tests/rwkv7_state_checkpoint_parity.rs"
+test = false
+
+[[test]]
+name = "rwkv7_tq_bench"
+path = "tests/rwkv7_tq_bench.rs"
+test = false
+
+[[test]]
+name = "rwkv7_tq_loader"
+path = "tests/rwkv7_tq_loader.rs"
+test = false
+
+[[test]]
+name = "rwkv7_tq_parity"
+path = "tests/rwkv7_tq_parity.rs"
+test = false
+
+[[test]]
+name = "rwkv_world_tokenizer_parity"
+path = "tests/rwkv_world_tokenizer_parity.rs"
+test = false
+
+[[test]]
+name = "sidecar_tier_map_consume"
+path = "tests/sidecar_tier_map_consume.rs"
+test = false
+
+[[test]]
+name = "tcb_dispatch_cost"
+path = "tests/tcb_dispatch_cost.rs"
+test = false
+
+[[test]]
+name = "tq_llama_probe"
+path = "tests/tq_llama_probe.rs"
+test = false
+
+[[test]]
+name = "tq_output_space_quality"
+path = "tests/tq_output_space_quality.rs"
+test = false
+
+[[test]]
+name = "tq_trellis_parity"
+path = "tests/tq_trellis_parity.rs"
+test = false
+
+[[test]]
+name = "user_draft_parity_e2e"
+path = "tests/user_draft_parity_e2e.rs"
+test = false
+
+[[test]]
+name = "w4a8_activation_distribution"
+path = "tests/w4a8_activation_distribution.rs"
+test = false
+
+[[test]]
+name = "w4a8_per_channel_calibrate"
+path = "tests/w4a8_per_channel_calibrate.rs"
+test = false
+
+[[test]]
+name = "w4a8_per_channel_lmhead_kernel_parity"
+path = "tests/w4a8_per_channel_lmhead_kernel_parity.rs"
+test = false
+
+[[test]]
+name = "w4a8_per_channel_parity"
+path = "tests/w4a8_per_channel_parity.rs"
+test = false
+
+[[test]]
+name = "w4a8_qwen3b_quality_gate"
+path = "tests/w4a8_qwen3b_quality_gate.rs"
+test = false

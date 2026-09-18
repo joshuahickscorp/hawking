@@ -1,0 +1,115 @@
+{
+  "accounting_audit": {
+    "complete_bytes_match": true,
+    "dense_parent_materialized": false,
+    "expected_complete_bytes": 749568,
+    "factor_components_bytes": 679936,
+    "payload_matches_factor_components": true,
+    "recorded_complete_bytes": 749568
+  },
+  "activation_corpus": {
+    "path": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "rows": {
+      "0": {
+        "heldout": 33,
+        "train": 34
+      },
+      "1": {
+        "heldout": 9,
+        "train": 10
+      },
+      "2": {
+        "heldout": 1,
+        "train": 1
+      },
+      "3": {
+        "heldout": 10,
+        "train": 10
+      },
+      "4": {
+        "heldout": 7,
+        "train": 8
+      },
+      "5": {
+        "heldout": 7,
+        "train": 8
+      },
+      "6": {
+        "heldout": 17,
+        "train": 18
+      },
+      "7": {
+        "heldout": 50,
+        "train": 51
+      }
+    },
+    "split": "same interleaved split as training receipt"
+  },
+  "claim_boundary": "Independent replay of a saved BF16 factor payload on the bounded KIMI organ. This verifies artifact/accounting/direct-consumer consistency only; it is not full-model capability, end-to-end TPS, NX, or promotion evidence.",
+  "factor_artifact": {
+    "compressed_file_bytes": 547862,
+    "logical_payload_bytes": 679936,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/representations/kimi_nova_local_residual/nova_local_residual_u32_v32_r8.npz",
+    "sha256": "71f41f9788a5136f664c314b412de1e3f29da1f82f6b7b918a814b602827dd4b"
+  },
+  "generated_at": "2026-09-10T17:18:02.142573+00:00",
+  "immutable_base": true,
+  "metric_deltas_replayed_minus_reported": {
+    "max_relative_l2": 0.0003983754833096764,
+    "mean_cosine": 5.180544372818119e-06,
+    "mean_relative_l2": 1.2417178409940277e-06,
+    "p95_relative_l2": -0.000528427165430112
+  },
+  "remeasured_heldout": {
+    "max_relative_l2": 1.091840505531901,
+    "mean_cosine": 0.661501938004547,
+    "mean_relative_l2": 0.7002393062675566,
+    "p95_relative_l2": 0.9862338083989405,
+    "total_heldout_rows": 134
+  },
+  "reported_heldout": {
+    "heldout_rows_by_expert": [
+      33,
+      9,
+      1,
+      10,
+      7,
+      7,
+      17,
+      50
+    ],
+    "max_relative_l2": 1.0914421300485913,
+    "mean_cosine": 0.6614967574601742,
+    "mean_relative_l2": 0.7002380645497156,
+    "p95_relative_l2": 0.9867622355643706,
+    "total_heldout_rows": 134
+  },
+  "schema": "hawking.future.kimi_nova_factor_artifact_audit.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_nova_factor_artifact_audit.py",
+  "selected_variant": {
+    "col_rank": 32,
+    "residual_rank": 8,
+    "row_rank": 32,
+    "tensor_family": "up_proj.weight"
+  },
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "source_model": "KIMI_BASE",
+  "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "NOVA_FACTOR_ARTIFACT_AUDIT_PASS",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+  ],
+  "training_receipt": "receipts/future/KIMI_NOVA_LOCAL_RESIDUAL_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json"
+}

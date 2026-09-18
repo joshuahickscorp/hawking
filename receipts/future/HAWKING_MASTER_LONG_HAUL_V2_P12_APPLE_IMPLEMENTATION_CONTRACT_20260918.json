@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P12_APPLE_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-DE908EC0",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded ANE/Apple evidence contract only; no hardware promotion or release claim.",
+  "source_observation": {"owner": "hawking/ane_provider.py", "sha256": "86ab120e8b7e70825ca969e956282e1c3f1974f1188325b2ec5e631516e280da"},
+  "focused_tests": [
+    {"path": "hawking/test_ane_provider.py", "sha256": "327034043401c3f74100353d6ecdff6e43aa026c8bff783cd78a257f0072daa6"},
+    {"path": "hawking/tests/test_metal_status_actually_tests_metal.py", "sha256": "1ef7fcba79831a62cc07f48c3f18c349cf2c90bc1e8dacd641e03fe0fb1c67ba"}
+  ],
+  "local_verification": {"command": "python3 -m pytest -q hawking/test_ane_provider.py hawking/tests/test_metal_status_actually_tests_metal.py", "result": "9 passed, 2 skipped (hardware-dependent)"},
+  "next_seam": "Preserve evidence-gated score_candidate/characterize_model behavior and private-interface prohibition; do not infer ANE readiness from absent receipts.",
+  "falsifier": "Promotion becomes eligible without PLANNED/MEASURED evidence and positive model-scoped timing, falsifying the contract."
+}

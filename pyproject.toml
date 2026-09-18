@@ -3,24 +3,29 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hcli"
+name = "hawking"
 version = "0.1.0"
-description = "HCLI — autonomous local model engineering"
+description = "Hawking — autonomous local model engineering"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+# The default full suite runs without MLX; MLX-backed science probes skip with
+# an explicit reason when the host has no native MLX runtime.
+test = ["numpy", "pytest", "pytest-xdist"]
+
 [project.scripts]
-hcli = "hcli.cli:main"
-jhcli = "hcli.cli:main"
+hawking = "hawking.cli:main"
+h = "hawking.cli:main"
 # The long-lived daemon gets its own name so `ps` describes the process rather
-# than the interpreter that happens to host it. `hcli` is the client; hawkingd
+# than the interpreter that happens to host it. `hawking` is the client; hawkingd
 # is what keeps running after the client exits, and it is deliberately not
 # named for any one model -- a supervisor may hold several bodies, in parallel
 # or in succession.
-hawkingd = "hcli.hawkingd:main"
+hawkingd = "hawking.hawkingd:main"
 
 [tool.setuptools.packages.find]
-include = ["hcli*"]
-exclude = ["hcli.tests*", "tools*", "lab*"]
+include = ["hawking*"]
+exclude = ["hawking.tests*", "tools*", "lab*"]
 
 [tool.pytest.ini_options]
 # `slow` is real hardware evidence, not a slow unit test: compiling Swift ANE
@@ -31,12 +36,12 @@ markers = ["slow: real hardware/compile evidence; deselected by default"]
 # NOT `-n auto`: addopts applies to every interpreter that runs this repo, and
 # the Framework python that runs tools/odyssey has no xdist -- it failed with
 # "unrecognized arguments: -n". Parallelism is opt-in per invocation instead:
-#     python3 -m pytest hcli/ -n auto      # 77.82s -> ~3.0s on this host
+#     python3 -m pytest hawking/ -n auto      # 77.82s -> ~3.0s on this host
 addopts = "-m 'not slow'"
-# Collect the live HCLI package, including its root-level contract tests and
-# the deeper hcli/tests suite. Retained tools/future modules are exercised by
+# Collect the live HAWKING package, including its root-level contract tests and
+# the deeper hawking/tests suite. Retained tools/future modules are exercised by
 # current acceptance/audit callers; the uncalled producer/test farm is retired.
-testpaths = ["hcli"]
+testpaths = ["hawking"]
 pythonpath = [
     ".",
     # research/ is a source root: `lab.*` and the frankenstein packages are

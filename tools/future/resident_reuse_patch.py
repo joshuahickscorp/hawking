@@ -38,7 +38,7 @@ def _key(config: Any) -> tuple:
 def apply() -> bool:
     """Memoise ResidentProcess construction. Returns False if already applied."""
     global _ORIG
-    from hcli import hawking_native as N
+    from hawking import hawking_native as N
 
     if _ORIG is not None:
         return False
@@ -70,7 +70,7 @@ def apply() -> bool:
 
 def revert() -> bool:
     global _ORIG
-    from hcli import hawking_native as N
+    from hawking import hawking_native as N
 
     if _ORIG is None:
         return False

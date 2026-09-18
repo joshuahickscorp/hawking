@@ -25,14 +25,15 @@ use crate::model::qwen80_complete_runtime::{
     source_qwen80_residual_rms_norm, source_qwen80_split_linear_qkvz, source_qwen80_topk_router,
     Qwen80CanonicalGqaLayout, Qwen80CanonicalLinearDeltaNetLayout,
 };
+use crate::model::source_safetensors::read_safetensors_header;
 use crate::{Error, Result};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
-use std::io::{Read, Write};
+use std::io::Write;
 #[cfg(not(unix))]
-use std::io::{Seek, SeekFrom};
+use std::io::{Read, Seek, SeekFrom};
 #[cfg(unix)]
 use std::os::unix::fs::FileExt;
 #[cfg(target_os = "macos")]
@@ -1289,12 +1290,20 @@ pub(crate) struct TensorLoc {
     data_offset: u64,
     nbytes: usize,
     shape: Vec<usize>,
+    /// Source-declared Safetensors dtype.  Keep this with auxiliary control
+    /// locations so an architecture-specific consumer cannot decode a
+    /// byte-compatible non-BF16 payload under an invented scalar type.
+    dtype: String,
 }
 
 /// Index over the source BF16 safetensors shards. Headers only; payloads range-read.
 pub struct SourceBf16Index {
     pub model_dir: PathBuf,
     map: HashMap<String, TensorLoc>,
+    /// Small non-BF16 source controls (for example Flash PLE's I64 address
+    /// buffers). They remain header-indexed/range-read rather than becoming
+    /// resident model payloads.
+    aux_map: HashMap<String, TensorLoc>,
     handles: Mutex<HashMap<PathBuf, File>>,
     /// Cumulative payload bytes successfully range-read.
     pub bytes_read: Mutex<u64>,
@@ -1328,6 +1337,7 @@ impl SourceBf16Index {
         }
 
         let mut map = HashMap::new();
+        let mut aux_map = HashMap::new();
         for (shard_name, names) in by_shard {
             let shard_path = model_dir.join(&shard_name);
             let header = read_safetensors_header(&shard_path)?;
@@ -1337,16 +1347,6 @@ impl SourceBf16Index {
                     .tensors
                     .get(&name)
                     .ok_or_else(|| model_err(format!("shard {shard_name} lacks tensor {name}")))?;
-                // Flash-Next safetensors indexes also carry integer control
-                // tensors (for example n-gram offsets).  This reader is a
-                // BF16 payload view, so admit the mixed index at header time
-                // but keep only BF16 locations.  A later `read_raw` of a
-                // non-BF16 tensor therefore fails closed as an absent source
-                // BF16 tensor instead of poisoning admission of the whole
-                // model.
-                if info.dtype != "BF16" && info.dtype != "BFLOAT16" {
-                    continue;
-                }
                 let (begin, end) = info.data_offsets;
                 if end < begin {
                     return Err(model_err(format!(
@@ -1354,20 +1354,24 @@ impl SourceBf16Index {
                     )));
                 }
                 let nbytes = (end - begin) as usize;
-                map.insert(
-                    name,
-                    TensorLoc {
-                        shard: shard_path.clone(),
-                        data_offset: 8 + header_len + begin,
-                        nbytes,
-                        shape: info.shape.clone(),
-                    },
-                );
+                let loc = TensorLoc {
+                    shard: shard_path.clone(),
+                    data_offset: 8 + header_len + begin,
+                    nbytes,
+                    shape: info.shape.clone(),
+                    dtype: info.dtype.clone(),
+                };
+                if info.dtype == "BF16" || info.dtype == "BFLOAT16" {
+                    map.insert(name, loc);
+                } else {
+                    aux_map.insert(name, loc);
+                }
             }
         }
         Ok(Self {
             model_dir: model_dir.to_path_buf(),
             map,
+            aux_map,
             handles: Mutex::new(HashMap::new()),
             bytes_read: Mutex::new(0),
         })
@@ -1375,6 +1379,32 @@ impl SourceBf16Index {
 
     pub fn tensor_count(&self) -> usize {
         self.map.len()
+    }
+
+    /// Exact logical shape from the pinned safetensors header without reading
+    /// the tensor payload.  Architecture-specific direct executors use this
+    /// to bound selective range reads instead of assuming shard geometry.
+    pub fn tensor_shape(&self, name: &str) -> Result<&[usize]> {
+        Ok(&self.require(name)?.shape)
+    }
+
+    /// Exact BF16 payload size from the pinned safetensors header without
+    /// materializing the tensor.
+    pub fn tensor_nbytes(&self, name: &str) -> Result<usize> {
+        Ok(self.require(name)?.nbytes)
+    }
+
+    /// Exact logical shape for a non-BF16 source control without reading its
+    /// payload.
+    pub fn aux_tensor_shape(&self, name: &str) -> Result<&[usize]> {
+        Ok(&self.require_aux(name)?.shape)
+    }
+
+    /// Exact source-declared Safetensors dtype for a non-BF16 control without
+    /// reading its payload.  Consumers of typed control planes must check it
+    /// before interpreting the raw bytes.
+    pub fn aux_tensor_dtype(&self, name: &str) -> Result<&str> {
+        Ok(&self.require_aux(name)?.dtype)
     }
 
     pub fn bytes_read_total(&self) -> u64 {
@@ -1387,6 +1417,12 @@ impl SourceBf16Index {
             .ok_or_else(|| model_err(format!("source index lacks tensor {name}")))
     }
 
+    fn require_aux(&self, name: &str) -> Result<&TensorLoc> {
+        self.aux_map
+            .get(name)
+            .ok_or_else(|| model_err(format!("source index lacks non-BF16 control tensor {name}")))
+    }
+
     /// Range-read a tensor's raw BF16 payload. Does not keep other tensors resident.
     ///
     /// On Unix this uses `pread` (`read_exact_at`) so concurrent callers on the
@@ -1395,6 +1431,19 @@ impl SourceBf16Index {
     pub fn read_raw(&self, name: &str) -> Result<Vec<u8>> {
         let loc = self.require(name)?;
         // Avoid zero-fill: pread overwrites every byte.
+        let mut buf = Vec::with_capacity(loc.nbytes);
+        unsafe {
+            buf.set_len(loc.nbytes);
+        }
+        self.read_raw_into(loc, name, &mut buf)?;
+        Ok(buf)
+    }
+
+    /// Read an exact non-BF16 control tensor. This remains separate from
+    /// [`Self::read_raw`] so matrix consumers cannot silently interpret an
+    /// integer source control as BF16 weights.
+    pub fn read_aux_raw(&self, name: &str) -> Result<Vec<u8>> {
+        let loc = self.require_aux(name)?;
         let mut buf = Vec::with_capacity(loc.nbytes);
         unsafe {
             buf.set_len(loc.nbytes);
@@ -1621,103 +1670,6 @@ impl SourceBf16Index {
         }
         widen_native("native.bf16", &buf)
     }
-}
-
-struct SafetensorsHeader {
-    header_nbytes: u64,
-    tensors: HashMap<String, SafetensorsTensorInfo>,
-}
-
-struct SafetensorsTensorInfo {
-    dtype: String,
-    shape: Vec<usize>,
-    data_offsets: (u64, u64),
-}
-
-fn read_safetensors_header(path: &Path) -> Result<SafetensorsHeader> {
-    let mut file =
-        File::open(path).map_err(|e| model_err(format!("cannot open {}: {e}", path.display())))?;
-    let mut len_buf = [0u8; 8];
-    file.read_exact(&mut len_buf).map_err(|e| {
-        model_err(format!(
-            "cannot read header length of {}: {e}",
-            path.display()
-        ))
-    })?;
-    let header_nbytes = u64::from_le_bytes(len_buf);
-    if header_nbytes == 0 || header_nbytes > 64 * 1024 * 1024 {
-        return Err(model_err(format!(
-            "implausible safetensors header length {header_nbytes} in {}",
-            path.display()
-        )));
-    }
-    let mut raw = vec![0u8; header_nbytes as usize];
-    file.read_exact(&mut raw)
-        .map_err(|e| model_err(format!("cannot read header of {}: {e}", path.display())))?;
-    let value: Value = serde_json::from_slice(&raw).map_err(|e| {
-        model_err(format!(
-            "safetensors header JSON invalid in {}: {e}",
-            path.display()
-        ))
-    })?;
-    let object = value.as_object().ok_or_else(|| {
-        model_err(format!(
-            "safetensors header is not an object in {}",
-            path.display()
-        ))
-    })?;
-    let mut tensors = HashMap::new();
-    for (name, info_v) in object {
-        if name == "__metadata__" {
-            continue;
-        }
-        let info = info_v
-            .as_object()
-            .ok_or_else(|| model_err(format!("tensor {name} header is not an object")))?;
-        let dtype = info
-            .get("dtype")
-            .and_then(Value::as_str)
-            .ok_or_else(|| model_err(format!("tensor {name} lacks dtype")))?
-            .to_string();
-        let shape = info
-            .get("shape")
-            .and_then(Value::as_array)
-            .ok_or_else(|| model_err(format!("tensor {name} lacks shape")))?
-            .iter()
-            .map(|v| {
-                v.as_u64()
-                    .and_then(|n| usize::try_from(n).ok())
-                    .ok_or_else(|| model_err(format!("tensor {name} has non-integer shape")))
-            })
-            .collect::<Result<Vec<_>>>()?;
-        let offsets = info
-            .get("data_offsets")
-            .and_then(Value::as_array)
-            .ok_or_else(|| model_err(format!("tensor {name} lacks data_offsets")))?;
-        if offsets.len() != 2 {
-            return Err(model_err(format!(
-                "tensor {name} data_offsets is not a pair"
-            )));
-        }
-        let begin = offsets[0]
-            .as_u64()
-            .ok_or_else(|| model_err(format!("tensor {name} data_offsets[0] invalid")))?;
-        let end = offsets[1]
-            .as_u64()
-            .ok_or_else(|| model_err(format!("tensor {name} data_offsets[1] invalid")))?;
-        tensors.insert(
-            name.clone(),
-            SafetensorsTensorInfo {
-                dtype,
-                shape,
-                data_offsets: (begin, end),
-            },
-        );
-    }
-    Ok(SafetensorsHeader {
-        header_nbytes,
-        tensors,
-    })
 }
 
 fn layer_name(layer: usize, suffix: &str) -> String {

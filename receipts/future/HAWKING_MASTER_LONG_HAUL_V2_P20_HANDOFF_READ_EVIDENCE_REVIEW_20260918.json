@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:22:00Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "tranche": "P20_FINAL_HANDOFF",
+  "workunit_id": "WORKUNIT-20260918-8DD7AF5A",
+  "provider_packet": "receipts/future/workunits/WORKUNIT-20260918-8DD7AF5A_RESULT_PACKET.json",
+  "accepted_scope": "Read-only handoff/reconciliation owner map: Hawking owns Goal, WorkUnit, authority, effects, tests, Git evidence, frontier reconciliation, leases, supervision, and continuation; providers remain cognition workers and do not own mutation or acceptance.",
+  "local_screening": "Bounded closeout/handoff source review; no release or final-handoff completion claim.",
+  "follow_on_contract": "P20-V2-HANDOFF-RECON-READONLY-01: inspect the remaining closeout tail and targeted handoff/architecture references without replaying provider-dead letters.",
+  "falsifier": "A current canonical source naming another owner for Goal/WorkUnit authority or reconciliation would invalidate this owner map.",
+  "limitations": [
+    "The P20-specific token was not found in the observed closeout range; the follow-on narrow search remains required.",
+    "No protected artifact, release, or final handoff was mutated or claimed."
+  ],
+  "claim_boundary": "Accepted as bounded read evidence only; P20 final handoff remains incomplete."
+}

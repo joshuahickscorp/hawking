@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.long_haul.v2.local_reconciliation_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P4_AUTO_MEASURED_POOL_V5",
+  "workunit_id": "WORKUNIT-20260918-6D0F3857",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Independent local Auto policy/refill verification only; no provider-output promotion or release claim.",
+  "source_observation": {
+    "hawking/auto_mode.py": "5e30720cbf8ca6af0c23d0bef16b4bde6ac4bf3cceaa47a53ad9355cba3b0865",
+    "hawking/auto_orchestration.py": "ba25ac35e91db93dc485ba4f12772f48a1ab58044c089bcd69c46f50946ded23",
+    "hawking/goal_surface.py": "d95e9747171306a061f251322da34799d6497493e038167a1c9b3e6803732597"
+  },
+  "focused_verification": {
+    "command": "python3 -m pytest -q hawking/tests/test_auto_orchestration.py hawking/tests/test_discrete_goal_completion_state.py hawking/tests/test_remote_workunit_contract.py",
+    "result": "101 passed"
+  },
+  "accepted_invariants": [
+    "Auto roster is diversified and measured-value routing is persisted",
+    "refill has no fixed Hawking worker ceiling",
+    "explicit task class and worker role survive durable WorkUnit admission"
+  ],
+  "falsifier": "A fixed legacy count blocks a dependency-valid lane, or task-class/model selection is lost before durable WorkUnit creation."
+}

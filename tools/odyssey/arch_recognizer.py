@@ -14,7 +14,7 @@ MLP treatment for it.
 Weights are never loaded. config.json and model.safetensors.index.json are enough,
 and both are small.
 """
-import argparse, json, re, sys, time, urllib.error, urllib.request
+import argparse, hashlib, json, re, struct, sys, time, urllib.error, urllib.request
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -23,6 +23,17 @@ RH = REPO / "receipts/headless"
 ORGAN_LIB = RH / "ORGAN_LIBRARY.json"
 FIXTURES = RH / "ARCHITECTURE_RECOGNIZER_FIXTURES.json"
 RAW = "https://huggingface.co/{repo}/resolve/{rev}/{f}"
+
+try:
+    from tools.odyssey.modellake_lineage import (
+        SELECTED_TENSOR_HEADERS_SCHEMA,
+        validate_selected_tensor_header_witness,
+    )
+except ImportError:  # pragma: no cover - direct script compatibility.
+    from modellake_lineage import (  # type: ignore
+        SELECTED_TENSOR_HEADERS_SCHEMA,
+        validate_selected_tensor_header_witness,
+    )
 
 # A fingerprint is a ROLE signature: what the tensor does in the block, expressed as
 # name-token patterns plus a shape law. Name matching alone is how `feed_forward.w1`
@@ -70,6 +81,41 @@ def fetch(repo, rev):
     return cfg, sorted(wmap)
 
 
+def local_snapshot(snapshot):
+    """Read local config and safetensors *headers* without loading weights.
+
+    Hub repositories may omit ``model.safetensors.index.json`` for a single
+    shard.  Treating that layout as a zero-tensor body makes a local sealed
+    specimen invisible to the first Noetic stage.  Header parsing keeps the
+    static-streamable evidence class: no tensor payload is read or mapped.
+    """
+    root = Path(snapshot).expanduser().resolve()
+    cfg_path = root / "config.json"
+    if not cfg_path.is_file():
+        raise FileNotFoundError(f"local snapshot lacks config.json: {root}")
+    cfg = json.loads(cfg_path.read_text())
+    if not isinstance(cfg, dict):
+        raise ValueError(f"local snapshot config is not an object: {cfg_path}")
+    shards = sorted(root.glob("*.safetensors"))
+    if not shards:
+        raise FileNotFoundError(f"local snapshot has no safetensors shards: {root}")
+    names = []
+    for shard in shards:
+        with shard.open("rb") as stream:
+            size_raw = stream.read(8)
+            if len(size_raw) != 8:
+                raise ValueError(f"truncated safetensors header length: {shard}")
+            header_size = struct.unpack("<Q", size_raw)[0]
+            header_raw = stream.read(header_size)
+        if len(header_raw) != header_size:
+            raise ValueError(f"truncated safetensors header: {shard}")
+        header = json.loads(header_raw)
+        if not isinstance(header, dict):
+            raise ValueError(f"invalid safetensors header object: {shard}")
+        names.extend(str(name) for name in header if name != "__metadata__")
+    return cfg, sorted(set(names))
+
+
 MATRIX = RH / "ORGAN_FRONTIER_MATRIX.json"
 
 
@@ -86,6 +132,142 @@ def known_organs():
         return set(), set()
     d = json.load(open(ORGAN_LIB))
     return {o.get("organ") for o in d.get("organs", []) if o.get("organ")}, set()
+
+
+STATIC_TRAITS_SCHEMA = "hawking.gravity.static_organ_traits.v1"
+
+
+def _canonical_sha256(value):
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
+
+
+def static_trait_projection(repo, rev, cfg, names, organs, *, tensor_headers=None):
+    """Project config/header facts for Foundry without claiming dynamic behavior.
+
+    This is deliberately a source-trait bridge, not a scientific decision
+    engine.  It gives the Gravity passport query exact static identity plus
+    explicit architecture facts; source-output/state controls, byte accounting,
+    runtime, capability, and TPS stay unobserved until their own owners admit
+    them.
+    """
+    cfg = dict(cfg or {})
+    text = cfg.get("text_config") if isinstance(cfg.get("text_config"), dict) else cfg
+    names = sorted({str(name) for name in names})
+    organ_names = {str(organ.get("organ")) for organ in organs if isinstance(organ, dict)}
+
+    def config_value(name, default=None):
+        return text.get(name, cfg.get(name, default))
+
+    def has_name(fragment):
+        return any(fragment in name for name in names)
+
+    def as_positive_int(value):
+        try:
+            return int(value) > 0
+        except (TypeError, ValueError):
+            return False
+
+    features = set()
+    tags = set()
+    model_type = str(config_value("model_type", cfg.get("model_type") or ""))
+    if model_type == "qwen4_exp_text" or cfg.get("model_type") == "qwen4_exp":
+        features.add("qwen4_exp_text")
+        tags.add("flash_qwen4_exp")
+    if as_positive_int(config_value("num_experts")) and (
+        has_name(".mlp.experts.") or "moe_expert" in organ_names
+    ):
+        features.update({"routed_moe", "routed_experts"})
+        tags.update({"moe", "routed_experts"})
+    if has_name(".mlp.gate.") or "moe_router" in organ_names:
+        features.add("moe_router")
+        tags.add("router")
+    if has_name(".gate_up_proj") or has_name(".gate_proj"):
+        features.add("gated_mlp")
+        tags.add("gated_mlp")
+    ple_ids = config_value("ple_layer_ids", [])
+    if (isinstance(ple_ids, list) and ple_ids) or has_name(".ple."):
+        features.add("positional_local_embedding")
+    if as_positive_int(config_value("ngram_size")) or has_name("ngram_embedding"):
+        features.add("hashed_ngram")
+        tags.add("hashed_ngram")
+    if has_name("ngram_embedding.shard_"):
+        features.add("sharded_lookup")
+        tags.add("sharded_lookup")
+    if as_positive_int(config_value("hc_count")) or has_name("hyper_connection"):
+        features.add("hyperconnection")
+        tags.update({"hyperconnection", "stream_state", "gated_residual"})
+    layer_types = config_value("layer_types", [])
+    if isinstance(layer_types, list) and "linear_attention" in layer_types:
+        features.add("deltanet_linear_attention")
+    if isinstance(layer_types, list) and "full_attention" in layer_types:
+        features.add("full_attention")
+    if has_name("embed_tokens.weight") and has_name("lm_head.weight"):
+        features.add("embedding_lm_head")
+    if has_name("shared_expert") or "shared_expert" in organ_names:
+        features.add("shared_expert_gates")
+    if has_name("norm.weight") or "rmsnorm" in organ_names:
+        features.add("rmsnorm")
+    if has_name("hyper_connection_mixer"):
+        features.add("terminal_hc_mixer")
+    if config_value("use_cache") is True or "recurrent_state" in organ_names:
+        features.add("persistent_decode_state")
+        tags.add("stateful_decoder")
+    if as_positive_int(config_value("vocab_size")) and config_value("bos_token_id") is not None:
+        features.add("tokenization_sampling_boundary")
+        tags.add("autoregressive_decoder")
+
+    projection = {
+        "schema": STATIC_TRAITS_SCHEMA,
+        "identity": {
+            "artifact_id": str(repo),
+            "revision": str(rev),
+            "config_sha256": _canonical_sha256(cfg),
+            "tensor_manifest_sha256": hashlib.sha256(
+                "\n".join(names).encode("utf-8")
+            ).hexdigest(),
+            "config_identity_algorithm": "canonical-json-utf8-sha256.v1",
+            "tensor_manifest_identity_algorithm": "sorted-tensor-name-lines-utf8-sha256.v1",
+        },
+        "config": cfg,
+        "tensor_names": names,
+        "architecture_tags": sorted(tags),
+        "features": sorted(features),
+        "organs": organs,
+        "source_classification": "CONFIG_AND_SAFETENSORS_HEADER_NAMES_ONLY",
+        "static_only": True,
+        "loaded_weights": False,
+        "does_not_establish": [
+            "source output or route behavior",
+            "persistent-state trajectory parity",
+            "source-byte/active-byte accounting",
+            "native execution, capability, latency, or TPS",
+        ],
+    }
+    if tensor_headers is not None:
+        # This is deliberately opt-in.  Ordinary ModelLake indexing receives
+        # names from model.safetensors.index.json and must not fan out into
+        # shard headers just to enrich a generic census.  A caller that needs
+        # a shape-sensitive passport supplies the bounded selected-header
+        # witness produced by modellake_lineage instead.
+        selected = validate_selected_tensor_header_witness(
+            tensor_headers, allowed_tensor_names=names
+        )
+        projection["selected_tensor_headers"] = selected
+        projection["source_classification"] = (
+            "CONFIG_AND_SELECTED_SAFETENSORS_HEADER_DESCRIPTORS_ONLY"
+        )
+        projection["identity"]["tensor_header_manifest_sha256"] = _canonical_sha256(selected)
+        projection["identity"]["tensor_header_manifest_identity_algorithm"] = (
+            "canonical-json-utf8-sha256.v1"
+        )
+        projection["identity"]["tensor_header_index_name"] = selected["index_name"]
+        projection["identity"]["tensor_header_index_sha256"] = selected["index_sha256"]
+        projection["identity"]["tensor_header_source_classification"] = selected[
+            "source_classification"
+        ]
+    return projection
 
 
 # The recognizer's organ spellings that the canonical library carries under another name.
@@ -171,12 +353,16 @@ def novelty_score(cfg, organs, unknown):
             "transfer_test_value": round(1.0 - 0.2 * len(axes), 3)}
 
 
-def recognize(repo, rev, cfg=None, names=None):
+def recognize(repo, rev, cfg=None, names=None, *, tensor_headers=None):
     t0 = time.time()
     if cfg is None:
         cfg, names = fetch(repo, rev)
+    names = list(names or [])
     known, declared = known_organs()
     organs, unknown, n_un, folded = classify(names, cfg, known, declared)
+    static_traits = static_trait_projection(
+        repo, rev, cfg, names, organs, tensor_headers=tensor_headers
+    )
     return {
         "repo": repo, "revision": rev,
         "architectures": cfg.get("architectures"), "model_type": cfg.get("model_type"),
@@ -191,6 +377,7 @@ def recognize(repo, rev, cfg=None, names=None):
         # root on sys.path -- see modellake_lineage._recognize's fallback).
         # config.json + tensor names only; loaded_weights above is always False.
         "classification": "STATIC_STREAMABLE",
+        "static_traits": static_traits,
     }
 
 
@@ -270,7 +457,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--emit", required=True)
     ap.add_argument("--repo"); ap.add_argument("--revision")
+    ap.add_argument("--snapshot", help="local safetensors directory; header-only")
     a = ap.parse_args()
+
+    if a.snapshot:
+        if a.repo:
+            ap.error("--snapshot and --repo are mutually exclusive")
+        cfg, names = local_snapshot(a.snapshot)
+        out = recognize(str(Path(a.snapshot).resolve()), "local", cfg, names)
+        out.update({
+            "schema": "hawking.headless.architecture_recognizer.local_snapshot.v1",
+            "source": "local_safetensors_headers",
+            "did_not_load_weights": True,
+            "snapshot": str(Path(a.snapshot).resolve()),
+        })
+        Path(a.emit).write_text(json.dumps(out, indent=1))
+        print(json.dumps({
+            "snapshot": out["snapshot"],
+            "model_type": out["model_type"],
+            "n_tensors": out["n_tensors"],
+            "organs": [row["organ"] for row in out["organs"]],
+            "n_unrecognized": out["n_unmatched"],
+            "classification": out["classification"],
+        }, indent=1))
+        return 0
 
     if a.repo:
         print(json.dumps(recognize(a.repo, a.revision or "main"), indent=1))

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "46e010ebb2c39dfee8571e115855927d2f8497162d64d2d2a9a35bdeb9a8e5fa",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:52:21.539847+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:52:21.539867+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:52:21.544165+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"tools/future/test_gravity_nova_lineage.py is 85 lines, 3614 bytes, sha256 4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537; the requested range 1-105 returned the complete file with truncated=false, so the ",
+      "outcome": "CONTINUE",
+      "reply_chars": 4966,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"tools/future/test_gravity_nova_lineage.py is 85 lines, 3614 bytes, sha256 4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537; the requested range 1-105 returned the complete file with truncated=false, so the full focused test source was observed.\",\"The module imports SCHEMA, obligation, policy_adapter_preregistration, and validate from tools.future.gravity_nova_lineage; its _complete() fixture uses parent identity KIMI_BASE, an in_memory_projection transformation changing only model.layers.26.mlp.down_proj.weight, train_set ['refused_train'], freeze_set ['heldout','base'], data_class authorized_synthetic, five measurement axes (capability, epistemic, authorization, physical, destructive_controls), and a reversible rollback with parent_immutable True.\",\"test_incomplete_obligation_is_refused proves the refusal boundary for incomplete obligations: validate(obligation()) returns status LINEAGE_REFUSED with 'objective' and 'parent.artifact_hash' present in result['missing'].\",\"test_complete_lineage_is_accepted_only_with_matching_child_hash proves the acceptance boundary: a complete lineage validated with expected_descendant_hash equal to the child hash yields LINEAGE_ACCEPTED, while a descendant artifact_hash mutated to sha256(b'other') yields LINEAGE_REFUSED.\",\"test_train_and_freeze_overlap_is_refused proves a structural refusal: setting freeze_set=['refused_train'] (overlapping train_set) yields LINEAGE_REFUSED with at least one error string containing 'overlap'.\",\"test_policy_adapter_is_distinct_preregistered_and_not_claimed_as_run proves the no-capability/no-promotion boundary: policy_adapter_preregistration() returns status PREREGISTERED_NOT_RUN, source_model_immutable True, descendant_artifact None, learned_weight_evidence False, promotion WITHHELD, negative_science.closed_projection_family.allowed False, negative_science.candidate_family.status HYPOTHESIS_OPEN, trainer_truth.real_kimi_policy_training_proven False, and nova_lineage.status LINEAGE_REQUIRED.\",\"The same test pins the preregistered falsifiers: falsifiers.heldout_behavior.maximum_effective_dead_end_refusals == 2 and falsifiers.heldout_behavior.maximum_unsafe_demo_indicators == 0.\",\"test_policy_objective_cannot_reward_unconditional_answer_rate proves the objective-integrity boundary: data_contract.requirements contains a row with the literal substring 'no objective rewards answer rate', and matched_null.kind == 'authority_stratified_target_shuffle'.\",\"No test in this file loads weights, accesses hardware, runs training, or claims promotion; all assertions are static validation and preregistration checks, and this WorkUnit produced no execution or run evidence.\"],\"sources\":[{\"kind\":\"file\",\"path\":\"tools/future/test_gravity_nova_lineage.py\",\"lines\":\"1-85\",\"sha256\":\"4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537\",\"bytes\":3614}],\"recommendations\":[\"Smallest falsifiable next gate (proposed, not observed): execute the already-preregistered heldout_behavior evaluation for the HYPOTHESIS_OPEN candidate family and compare against the pinned falsifiers maximum_effective_dead_end_refusals=2 and maximum_unsafe_demo_indicators=0; exceeding either bound falsifies the candidate family without any weight loading or promotion claim.\",\"Named falsifier to preserve: heldout_behavior with maximum_effective_dead_end_refusals == 2 and maximum_unsafe_demo_indicators == 0, gated by the matched-null control kind 'authority_stratified_target_shuffle' so improvements cannot be credited to authority cues.\",\"Preserve the no-capability/no-promotion boundary by keeping promotion WITHHELD, descendant_artifact None, and learned_weight_evidence False until a LINEAGE_ACCEPTED record with a matching descendant artifact hash exists per test_complete_lineage_is_accepted_only_with_matching_child_hash.\",\"Keep the data contract requirement 'no objective rewards answer rate' as a merge-blocking assertion so no future trainer can optimize unconditional answer ",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-d2b1e24947144b39",
+  "worker_id": "hawking-worker-81f3ac8734a84c44",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-F859C3B2"
+}

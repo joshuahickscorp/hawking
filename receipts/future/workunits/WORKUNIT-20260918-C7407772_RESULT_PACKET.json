@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "aa8239ef29d76fdc07937d0b83403487f59a13724a6fc69655d35990bcd469c3",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:13:07.369455+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:13:07.369478+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:13:07.373765+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root is /Users/scammermike/Downloads/hawking; README.md (4340 bytes, sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, full-file scope) was read and is the only file whose content was dire",
+      "outcome": "CONTINUE",
+      "reply_chars": 4156,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root is /Users/scammermike/Downloads/hawking; README.md (4340 bytes, sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, full-file scope) was read and is the only file whose content was directly observed in this bounded pass.\",\"Hawking pairs a Rust inference runtime on Apple Silicon with a Python control plane that plans work, calls typed tools, runs deterministic verifiers, and records receipts for every claim; per the README, a result with no receipt did not happen, so the P15 autotuning tranche must be evidenced in receipts/ or research/ rather than asserted.\",\"README designates docs/CURRENT_ARCHITECTURE.md as the detailed, current ownership map; that file is the recorded authority most likely to name the scheduler/autotuning owner, but it was not read within this pass, so the owner is not yet identified from source.\",\"Observed top-level layout from README: crates/ (Rust workspace: runtime, CLI, serving, benchmarks, HAWKING backend crates), hawking/ (Python control plane, resident supervision, tools and verifiers), tools/ (campaign, evaluation and analysis tooling), docs/ (current architecture, control-plane boundaries, specifications), research/ (experiments, lab operators, archived work, evidence), receipts/ (acceptance and provenance records), workspace/ (local build and campaign working tree), civilization/ (roadmap and cap).\",\"Documented verification lanes: python3 -m pytest; cargo check --workspace; tools/ci/rust_test_fast.sh check (full source check, no test execution), compile (linked confidence lane), policy (serving-policy precedence regression); named isolated integration targets such as cargo test -p hawking-core --test q4k_fast_parity for focused runtime cases.\",\"README states plainly that prompt throughput on the resident path is the current bottleneck because prefill steps one token at a time; this is the stated performance context any scheduler/autotuning tranche would plausibly target, but no file naming 'P15', 'autotuning', or 'scheduler' was observed in this bounded read.\",\"No mutation, test run, git operation, or receipt write was performed; all evidence above is read-only and limited to README.md plus the confirmed directory root.\"],\"sources\":[{\"path\":\"README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"bytes\":4340,\"scope\":\"full_file\",\"observed_via\":\"read-only file read, 4000 of 4340 bytes shown (92.2%), truncation noted\"}],\"recommendations\":[\"Next bounded read: docs/CURRENT_ARCHITECTURE.md to identify the recorded scheduler/autotuning owner, since README names it as the current ownership map.\",\"Search crates/, hawking/, tools/, research/, and receipts/ for the literal tokens 'P15', 'autotun', and 'scheduler' to locate the dependency-valid tranche sources and any existing receipts before drafting the follow-on contract.\",\"Draft the smallest independent follow-on contract only after the owner and tranche files are observed: bounded objective scoped to the identified owner files, focused tests drawn from the documented lanes (tools/ci/rust_test_fast.sh check plus the nearest named integration target), acceptance checks tied to receipts, writer/effect scope limited to the tranche files, protected resources including receipts/, research/, and the master objective digest, and one falsifier such as 'no source file or receipt in the repository references the P15 autotuning tranche'.\",\"Do not authorize or start child implementation from this packet; the proposal must remain admit-ready only.\"],\"unresolved_questions\":[\"Which file or module is the recorded scheduler/autotuning owner (expected in docs/CURRENT_ARCHITECTURE.md, not yet read)?\",\"Does any source or receipt reference 'P15' or an autotuning tranche, and if so which exact files constitute the dependency-valid set?\",\"What existing receipts under receipts/ or research/ already cover autotuning results, and what acceptance checks they used?\",\"What is the smallest focused t",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-987d06ba192e4d9e",
+  "worker_id": "hawking-worker-37fc4f6f5265470e",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-C7407772"
+}

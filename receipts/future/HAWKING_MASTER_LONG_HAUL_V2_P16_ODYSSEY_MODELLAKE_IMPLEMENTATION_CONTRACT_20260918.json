@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P16_ODYSSEY_MODELLAKE_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-75D4589F",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded Odyssey/ModelLake contract only; no download, experiment, or runtime qualification claim.",
+  "source_observation": {"owner":"hawking/odyssey.py","sha256":"41f616eddc2a485173099a8f3d089463fb4e9a1815f384f91891912fed223b7d"},
+  "focused_tests": ["hawking/test_odyssey.py","hawking/test_modellake_index_mount_guard.py","tools/odyssey/test_modellake_admission_cap.py","tools/odyssey/test_modellake_watch.py"],
+  "local_verification": {"command":"python3 -m pytest -q hawking/test_odyssey.py hawking/test_modellake_index_mount_guard.py tools/odyssey/test_modellake_admission_cap.py tools/odyssey/test_modellake_watch.py","result":"69 passed, 1 deselected"},
+  "next_seam":"Keep HAWKING_LEDGER.json single-writer, ODYSSEY_STATE.json driver-owned/read-only, confirm=True gates, and no-phase-barrier ordering once a law exists.",
+  "falsifier":"Any registered continue/own verb mutates without confirm=True or Hawking writes driver-owned ODYSSEY_STATE.json."
+}

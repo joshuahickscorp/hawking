@@ -1149,6 +1149,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-process-authority"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "blake3",
+ "futures",
+ "globset",
+ "hawking-context",
+ "hawking-events",
+ "hawking-index",
+ "hawking-orch",
+ "hawking-research",
+ "hawking-speculate",
+ "hide-core",
+ "hide-fleet",
+ "hide-kernel",
+ "hide-protocol",
+ "libc",
+ "parking_lot",
+ "rand 0.8.6",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "strand-quant",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokio",
+ "tree-sitter",
+ "ulid",
+ "walkdir",
+]
+
+[[package]]
 name = "hawking-research"
 version = "0.2.2"
 dependencies = [
@@ -1199,45 +1234,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-web"
+version = "0.2.2"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
-
-[[package]]
-name = "hide-backend"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "async-trait",
- "blake3",
- "futures",
- "globset",
- "hawking-context",
- "hawking-events",
- "hawking-index",
- "hawking-orch",
- "hawking-research",
- "hawking-speculate",
- "hide-core",
- "hide-fleet",
- "hide-kernel",
- "hide-protocol",
- "libc",
- "parking_lot",
- "rand 0.8.6",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "strand-quant",
- "tempfile",
- "thiserror 2.0.18",
- "tokio",
- "tree-sitter",
- "ulid",
- "walkdir",
-]
 
 [[package]]
 name = "hide-core"

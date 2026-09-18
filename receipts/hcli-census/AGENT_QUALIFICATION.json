@@ -1,0 +1,46 @@
+{
+ "obligation": "G018 \u2014 a population of agents, not one resident",
+ "date": "2026-09-09",
+ "question": "which bodies are fit to run bounded Odyssey census WorkUnits?",
+ "method": "a CALIBRATION set of four specimens Epoch I already measured -- two diffusion LMs, a natively ternary body, and a bidirectional encoder. All four must pass. An agent that cannot classify a body we have characterised is not qualified to classify one we have not.",
+ "results": [
+  {
+   "agent": "Qwen3-4B-Instruct-2507",
+   "score": "2/4",
+   "qualified": false,
+   "passed": [
+    "bitnet (ternary)",
+    "ModernBERT (encoder)"
+   ],
+   "failed": [
+    "Dream-v0 -> 'DreamModel'",
+    "iLLaDA -> 'ILLaDA'"
+   ],
+   "failure_mode": "echoes the config's `architectures` string as the architecture family and calls the execution class autoregressive"
+  },
+  {
+   "agent": "Phi-4-mini-instruct",
+   "score": "1/4",
+   "qualified": false,
+   "passed": [
+    "bitnet (ternary)"
+   ],
+   "failed": [
+    "Dream-v0",
+    "iLLaDA",
+    "ModernBERT -> 'transformer'"
+   ],
+   "failure_mode": "same echo, plus it missed ModernBertForMaskedLM as an encoder"
+  },
+  {
+   "agent": "Phi-4-mini-instruct + PRIOR KNOWLEDGE injected",
+   "score": "0/4",
+   "qualified": false,
+   "failure_mode": "WORSE. Given a block of general architecture rules it applied the most salient one indiscriminately, answering 'iterative diffusion denoising' as the execution class for BitNet AND ModernBERT. It got the diffusion specimens' execution class right and sprayed the same answer over everything else."
+  }
+ ],
+ "THE_FINDING": "Injecting prior knowledge into a small instruct body's prompt made it STRICTLY WORSE, from 1/4 to 0/4. The rules were general and named no specimen; the body still latched onto the most salient one and applied it everywhere. Handing over accumulated knowledge is the Epoch II thesis, and on a small body it behaves as a prior so strong it overrides the evidence in front of it.",
+ "what_this_does_not_say": "It does not say small bodies are useless, and it does not say the knowledge transfer idea is wrong. It says THIS task -- open-vocabulary architecture classification -- is knowledge-bound rather than reasoning-bound, and a body without the knowledge cannot be given it in a prompt without also giving it a bias it cannot resist. A task decomposed into narrower questions with fewer plausible answers may still suit these agents.",
+ "cost_measured": "4B agent: 5s per unit, 3 units accepted before quarantine. Fast is not the problem.",
+ "status": "OPEN -- no agent qualified yet. Larger bodies still to test."
+}

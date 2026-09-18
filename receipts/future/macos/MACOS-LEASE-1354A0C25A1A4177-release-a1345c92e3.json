@@ -1,0 +1,18 @@
+{
+  "at": 1789526719.26395,
+  "claim_boundary": "Hawking admitted one scoped semantic AXPress; the native helper performed mechanics and did not own authority.",
+  "details": {},
+  "goal_id": "GOAL-B33C69F193",
+  "lease_id": "MACOS-LEASE-1354A0C25A1A4177",
+  "operation": "release",
+  "outcome": "RELEASED",
+  "reason": "Second lease exercised preemption/release teardown; explicit release to leave no open lease",
+  "schema": "hawking.macos.action_receipt.v1",
+  "state": "RELEASED",
+  "target": {
+    "application": "hawking-macos-fixture-20260915",
+    "pid": 537
+  },
+  "worker_id": "hawking-worker-0f1940ccbbce4e68",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-28604131"
+}

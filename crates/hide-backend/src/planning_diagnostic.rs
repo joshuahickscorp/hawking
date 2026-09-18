@@ -1,4 +1,4 @@
-//! HCLI Agent OS — Planning Diagnostic scaffold (Ascension Bible §14).
+//! HAWKING Agent OS — Planning Diagnostic scaffold (Ascension Bible §14).
 //!
 //! **What this is:** typed stage pipeline + per-stage receipts + the kernel-
 //! research contract that forbids unbounded “try optimizations” plans.
@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 /// Schema id for durable planning-diagnostic receipts.
-pub const PLANNING_DIAGNOSTIC_SCHEMA: &str = "hcli.planning_diagnostic.v1";
+pub const PLANNING_DIAGNOSTIC_SCHEMA: &str = "hawking.planning_diagnostic.v1";
 
 // ---------------------------------------------------------------------------
 // Stage pipeline (bible §14)

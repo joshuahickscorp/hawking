@@ -1,0 +1,7 @@
+[build]
+# The path is deliberately relative to the checkout. Linked worktrees must not
+# share Cargo's artifact lock or incremental state with the main checkout; a
+# shared target directory turns independent edits into serialized builds.
+# Existing scripts still find artifacts at workspace/ops/build/rust relative to
+# whichever checkout invoked them.
+target-dir = "workspace/ops/build/rust"

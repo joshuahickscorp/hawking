@@ -1,0 +1,87 @@
+{
+  "schema": "hawking.flash_next.continuation_handoff.v1",
+  "recorded_at": "2026-09-14T17:50:00-0400",
+  "phase": "FLASH_NEXT_HC_PRECISION_BOUNDARY_LOCALIZED",
+  "g6": {
+    "discrete_goal_autonomy": "EARNED",
+    "evidence": "receipts/future/HAWKING_G6_CANONICAL_INTEGRATION_20260914.json",
+    "goal_id": "GOAL-EF8338B8A5",
+    "canonical_promoted": true,
+    "production_smoke": "import/help/status read-only smoke passed; no daemon restart"
+  },
+  "kimi_u001": {
+    "local_engineering_autonomy": "UNQUALIFIED",
+    "state": "BLOCKED",
+    "latest_real_seal": "KIMI-U001_SEAL_B83",
+    "blocker": "stale driver; the long-run multi-step gate is not equivalent to one completed discrete Goal",
+    "resident": "KIMI_P1_RESIDENT_CANDIDATE",
+    "endpoint": "http://127.0.0.1:8014/v1"
+  },
+  "flash": {
+    "scientific_frontier": "layer-0/token-0 attention HyperConnection normalized output has one remaining BF16-bin mismatch after an explicit source-boundary precision materialization",
+    "source_teacher": {
+      "state": "admitted local-canonical V5 source capture reused exactly once; no source runtime relaunch for the candidate",
+      "capture": "receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/capture.json",
+      "capture_seal_sha256": "4129097399b4c5db4a02283452998d0b87b8c08f0bf43ec58e4a30c929e407a9",
+      "preflight_seal_sha256": "11cfef02c012886d9a29708f074267c2a2a1467cb1342e9f517e8587129294b5"
+    },
+    "v5_f32_baseline": {
+      "comparison": "receipts/headless/FLASH_SOURCE_NATIVE_ORDERED_COMPARISON_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914.json",
+      "comparison_seal_sha256": "e5c48c7ba7dada6825401f54df5279a311c4e130676eccf0f29491a537590318",
+      "first_difference": "layer-0 trace ordinal 0 attention_hyper_connection_normalized",
+      "exact_f32_elements": 0,
+      "elements": 10240,
+      "max_abs": 0.028275489807128906,
+      "relative_l2": 0.0017103514850125591
+    },
+    "attention_hc_precision_candidate": {
+      "static_closure": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_TASK029_LAYER0_HC_PRECISION_TRANSACTION_BINDING_REBIND_20260914.json",
+      "static_closure_seal_sha256": "8f25704a8d9927b129ba3a2651a4f7f9bb29a0e346e35524fe05bf3f04344e30",
+      "mode": "SOURCE_BF16_ROUNDTRIP_AFTER_ATTENTION_HC_RMSNORM",
+      "scope": "explicit bounded source-boundary diagnostic only; F32 accumulation, BF16 logical rounding, F32 carrier",
+      "native_capture": "receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_CANDIDATE_20260914.json",
+      "native_capture_seal_sha256": "965cea764e437bb40ec3b94d3e8cf99e1df28b106514743ddb86d179ff8febf6",
+      "comparison": "receipts/headless/FLASH_SOURCE_NATIVE_ORDERED_COMPARISON_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_CANDIDATE_20260914.json",
+      "comparison_seal_sha256": "b1126b98d7e20500b4597d081b398143cb630f7340f6579d6fe559dae740a140",
+      "native_execution": "one native-only layers-0-through-4/token-0 diagnostic; source runtime was not relaunched",
+      "ordered_result": "first difference remains layer-0 trace ordinal 0 attention_hyper_connection_normalized; ordered comparison stopped there",
+      "saved_payload_scan": {
+        "elements": 10240,
+        "exact_f32_elements": 10239,
+        "different_f32_elements": 1,
+        "max_abs": 0.00390625,
+        "relative_l2": 0.0000349110989594383,
+        "source_low16_nonzero": 0,
+        "candidate_low16_nonzero": 0,
+        "residual": {
+          "index": 8268,
+          "source_f32": 0.7578125,
+          "source_bits": "0x3f420000",
+          "candidate_f32": 0.76171875,
+          "candidate_bits": "0x3f430000"
+        }
+      }
+    },
+    "interpretation": "The explicit BF16 boundary materially converged the first observed seam, but one exact payload difference remains. This supports a remaining reduction-scheduling or source numerical-policy hypothesis; it is not a source-parity, semantic, performance, or promotion verdict.",
+    "next_safe_action": "Preserve the one source capture and the one native candidate. Before any new GPU run, predeclare a distinct causal hypothesis for the single residual; do not repeat source capture, full body, or resident execution merely to seek a pass.",
+    "full_replay": "withheld",
+    "gpu_or_model_run": "one bounded native-only diagnostic completed; no source-model relaunch, full body, resident, or TPS/EBPW measurement"
+  },
+  "pulsar": {
+    "candidate": false,
+    "complete_nr": false,
+    "complete_ebpw": null,
+    "resident_decode_tps": null,
+    "capability_qualified": false,
+    "promotion": "withheld"
+  },
+  "odyssey": {
+    "status": "single-source-capture precision boundary localized; one residual remains",
+    "preserve": ["E01", "E03", "E04", "E07"],
+    "e02": "bounded signal only; replication/representation not earned",
+    "e06": "producer/control missing; no fabrication",
+    "e13": "vocabulary/tail-row contract withheld; no truncation",
+    "next_boundary": "only a separately predeclared causal experiment may proceed from the saved artifacts; do not restart source capture, a full body, or a resident"
+  },
+  "claim_boundary": "This handoff records durable continuation state and sealed artifact pointers. It is not a Flash source-parity result, complete NR, TPS, EBPW, capability, Pulsar promotion, or Kimi retirement claim."
+}

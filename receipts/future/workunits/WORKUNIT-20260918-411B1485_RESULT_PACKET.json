@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 4,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "feab4e6fa1f81379797999393c6c61475e84b26328b834dc67da7fdf64529841",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:02:04.306354+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:02:04.306376+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:02:04.311085+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"First read-only observation targeted the admitted focus file hawking/auto_orchestration.py; full-file sha256 is cbbc1e5f62eac5c0d7feeea37c836408ecfee4433bb3c753188b0b35d4a24a1c, size 64409 bytes, and only the first 4000 by",
+      "outcome": "CONTINUE",
+      "reply_chars": 5727,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"First read-only observation targeted the admitted focus file hawking/auto_orchestration.py; full-file sha256 is cbbc1e5f62eac5c0d7feeea37c836408ecfee4433bb3c753188b0b35d4a24a1c, size 64409 bytes, and only the first 4000 bytes (6.2%) were shown, so conclusions are bounded to that region.\",\"The module docstring states Auto is deliberately a control-plane decision, not a provider prompt; it produces a small inspectable CognitionPlan from deterministic signals, keeps routing inspectable, and persists a redacted Worker Packet for each WorkUnit.\",\"The docstring explicitly states provider conversation state is never used as Goal authority, which is the strongest observed invariant for the seam.\",\"Observed schema constants: AUTO_PLAN_SCHEMA = hawking.auto.cognition_plan.v1, WORKER_PACKET_SCHEMA = hawking.worker_packet.v1, METRICS_SCHEMA = hawking.auto.model_metrics.v1, AUTO_REFILL_SCHEMA = hawking.auto.refill.v1.\",\"Observed imports include hashlib, json, os, re, threading, time, uuid, contextlib.contextmanager, dataclasses.dataclass, pathlib.Path, typing, from .auto_mode import CORE_AUTO_MODELS, ESCALATION_AUTO_MODELS, MODEL_ROLE_BIASES, REMOTE_AUTO_ROSTER, request_text, and from .persist import atomic_write_json.\",\"Observed concurrency constants: BASE_MAX_REMOTE_COGNITION_WORKERS=12, BASE_MAX_PREMIUM_WORKERS=4, FRONTIER_BURST_FACTOR=1.25, UNBOUNDED_CONCURRENCY=None, MAX_REMOTE_COGNITION_WORKERS=UNBOUNDED_CONCURRENCY, MAX_PREMIUM_WORKERS=UNBOUNDED_CONCURRENCY, MAX_AUTOTUNED_WORKERS=UNBOUNDED_CONCURRENCY, with a comment that the old 12/4 and 25% burst values are telemetry only and actual admission is gated by resource/provider health, dependency readiness, budget authority, and disjoint writer leases.\",\"Observed AUTO_TASK_CLASSES includes legacy labels (deterministic, research, repo_engineering, debugging, planning, architecture, review, browser, desktop, document, reverse_engineering, model_science, benchmark, multimodal, physical_engineering, synthesis, general) plus empirical labels (source_mapping, routine_implementation, large_refactor, architecture_planning, bug_repair, test_design, falsification, security_analysis, hardware_reasoning, long_context_synthesis).\",\"Observed TASK_CLASS_ALIASES maps legacy to empirical labels, e.g. research->source_mapping, repo_engineering->routine_implementation, debugging->bug_repair, planning/architecture->architecture_planning, review->high_value_review, benchmark->test_design, physical_engineering->hardware_reasoning, synthesis/model_science->long_context_synthesis.\",\"Observed GLM_TRIAL_CLASSES is a frozenset of source_mapping, routine_implementation, architecture_planning, test_design, security_analysis, long_context_synthesis.\",\"Observed MODEL_PRIORS maps task classes to provider model ids such as deepseek/deepseek-v4.1-flash and moonshotai/kimi-k3.\",\"Observed _SECRET_PATTERNS begins with regexes for bearer tokens and openrouter_api_key assignments, indicating redaction is applied before persistence.\",\"Observed fcntl is imported under try/except with fcntl=None fallback on Windows, indicating file-locking is part of the persistence path.\",\"The admitted focus tests hawking/tests/test_auto_orchestration.py and hawking/tests/test_discrete_goal_completion_state.py were not read in this observation, so their assertions are unverified.\"],\"sources\":[{\"path\":\"hawking/auto_orchestration.py\",\"sha256\":\"cbbc1e5f62eac5c0d7feeea37c836408ecfee4433bb3c753188b0b35d4a24a1c\",\"bytes\":64409,\"observed_region\":\"first 4000 bytes (6.2%)\",\"mutation\":\"read_only\"}],\"recommendations\":[\"Smallest safe seam: introduce or extend a single pure function in hawking/auto_orchestration.py that maps deterministic signals to a CognitionPlan and returns the plan plus a redacted Worker Packet, keeping provider conversation state out of the input contract, consistent with the observed docstring invariant.\",\"Focused RED test: assert that a plan built from a fixed deterministic signal set yields the declared AUTO_PLAN_S",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-0bcb1980df044bff",
+  "worker_id": "hawking-worker-6a7ed5b170a548b6",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-411B1485"
+}

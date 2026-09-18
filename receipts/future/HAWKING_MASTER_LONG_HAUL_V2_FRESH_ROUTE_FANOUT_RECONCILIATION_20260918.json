@@ -1,0 +1,54 @@
+{
+  "schema": "hawking.long_haul.v2.frontier_reopen.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T05:07:29Z",
+  "claim_boundary": "Four fresh WorkUnits were admitted from existing terminal tranche contracts after a fresh semantic-generation route receipt. Prior provider turns remain preserved and were not replayed. WorkUnit evidence is not parent Goal acceptance.",
+  "fresh_route_receipt": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_HTTP_200_CAPABILITY_SEMANTIC_20260918.json",
+  "admission": {
+    "ceiling": null,
+    "active_before": 0,
+    "lanes": [
+      {
+        "tranche": "P6_GRAVITY",
+        "workunit_id": "WORKUNIT-20260918-826938FD",
+        "writer_scope": "gravity",
+        "final_state": "TERMINAL_PROVIDER_OUTCOME"
+      },
+      {
+        "tranche": "P11_NATIVE_CPU",
+        "workunit_id": "WORKUNIT-20260918-36432726",
+        "writer_scope": "native-cpu",
+        "final_state": "COMPLETE_PENDING_ACCEPTANCE"
+      },
+      {
+        "tranche": "P12_APPLE_BACKEND",
+        "workunit_id": "WORKUNIT-20260918-A84AE3D5",
+        "writer_scope": "apple",
+        "final_state": "TERMINAL_PROVIDER_OUTCOME"
+      },
+      {
+        "tranche": "P16_ODYSSEY_MODELLAKE",
+        "workunit_id": "WORKUNIT-20260918-17CDC9DA",
+        "writer_scope": "odyssey-modellake",
+        "final_state": "TERMINAL_PROVIDER_OUTCOME"
+      }
+    ]
+  },
+  "http_200_boundary_observed": {
+    "empty_or_incomplete_upstream_200": "gateway HTTP 502 REMOTE_SEMANTIC_INCOMPLETE; not accepted",
+    "qualified_tool_call": "gateway HTTP 200 with route_probe tool call; accepted as route evidence only"
+  },
+  "state_reconciliation": {
+    "graph_runnable_frontier": [],
+    "provider_output_promotion": "withheld",
+    "p11_result": "structured read-only packet durable; independent acceptance still required",
+    "other_results": "provider-output-unusable/paused outcomes durable; no automatic replay"
+  },
+  "verification": {
+    "auto_refill_reopen_tests": "7 passed",
+    "owner_and_frontier_tests": "43 passed",
+    "compileall": "passed",
+    "git_diff_check": "passed"
+  }
+}

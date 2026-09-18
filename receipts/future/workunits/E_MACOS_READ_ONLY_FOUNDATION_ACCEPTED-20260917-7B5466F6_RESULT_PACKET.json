@@ -1,0 +1,101 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 10,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 1,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.read",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "f6134dc70ad84bae8f9a528f429dfd84316cc12f37f59f8ca7e013ccf7f1f175",
+  "evidence": [
+    {
+      "at": "2026-09-17T09:07:12.604552+00:00",
+      "calls_used": 16,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-17T09:07:12.604561+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-17T09:07:12.607352+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"concern\":\"Goal persistence\",\"owner\":\"hawking/goal_bank.py\",\"evidence\":\"class GoalBank at goal_bank.py:88; workspace-scoped FIFO queue persisted to .hawking/goal-bank.json via atomic_write_json (imported from .persist at g",
+      "outcome": "CONTINUE",
+      "reply_chars": 6429,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-17T09:08:23.071709+00:00",
+      "calls_used": 10,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.read",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-17T09:08:23.071718+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-17T09:08:23.073167+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[{\"claim\":\"Active Goal persistence: hawking/goal.py WorkUnitDAG is compiler IR over workunit.py; persistence delegates to dag_store.py atomic writer; explicitly not a second DAG and not the mission ledger (ledger.py).\",\"evid",
+      "outcome": "CONTINUE",
+      "reply_chars": 5336,
+      "tool_less_continue_streak": 2,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[{\"claim\":\"Active Goal persistence: hawking/goal.py WorkUnitDAG is compiler IR over workunit.py; persistence delegates to dag_store.py atomic writer; explicitly not a second DAG and not the mission ledger (ledger.py).\",\"evidence\":\"fs.read hawking/goal.py lines 1-11\"},{\"claim\":\"Banked Goal persistence: hawking/goal_bank.py class GoalBank (line 88), workspace-scoped goal-bank.json + goal-bank.lock, fcntl-serialized, atomic_write_json, owner liveness via owner_pid/owner_start_token. Distinct scope from active Goal; not a duplicate.\",\"evidence\":\"fs.read hawking/goal_bank.py lines 1-200\"},{\"claim\":\"WorkUnit persistence: hawking/dag_store.py writes <workspace>/.hawking/dag.json via temp file + os.replace; serializes WorkUnit from hawking/workunit.py; crash recovery marks running units interrupted, never silently completed.\",\"evidence\":\"fs.read hawking/dag_store.py lines 1-37\"},{\"claim\":\"DUPLICATE SEAM: dag_store.py lines 40-77 _PERSISTED_EXTRAS (14 fields) plus _unit_to_disk/_apply_disk_extras belt loops re-serialize fields the source comment says 'the parent WorkUnit already serializes'. Serialization ownership is split in parallel between workunit.py WorkUnit.to_dict and dag_store.py.\",\"evidence\":\"fs.read hawking/dag_store.py lines 38-77\"},{\"claim\":\"Session persistence: hawking/session.py class Session, bounded hot tail (SESSION_MESSAGE_LIMIT=64, SESSION_MESSAGE_CHARS=8000), semantic memory checkpoint (hawking.context.memory.v1, 16000-char guard), writes via persist.atomic_write_bytes/atomic_write_json; ui dict explicitly not a second mission/evidence store.\",\"evidence\":\"fs.read hawking/session.py lines 1-90\"},{\"claim\":\"Provider request construction located but not read in budget: hawking/providers.py (38480 bytes); hawking/remote_cognition.py is the active campaign specimen. No internals claim made.\",\"evidence\":\"fs.list hawking/*.py; campaign_state continuation.active_specimen\"}],\"sources\":[{\"path\":\"hawking/goal.py\",\"lines\":\"1-120\",\"sha256\":\"96afff94c4cb62ea04429efded0d96301eca5c233278a71ade02279c619ea37b\"},{\"path\":\"hawking/goal_bank.py\",\"lines\":\"1-200\",\"sha256\":\"4e24075e266b6f51c14df68982c3275f696117f0f0a6a2350de69de29defa64c\"},{\"path\":\"hawking/dag_store.py\",\"lines\":\"1-90\",\"sha256\":\"9ceb11e283f358ca8b47382f613318168c872e07bba04b9f150fbfef07f2a24e\"},{\"path\":\"hawking/session.py\",\"lines\":\"1-90\",\"sha256\":\"98ba676711bb946beb1501010f167abbda364174ae623a233de83fea6564cc9c\"},{\"path\":\"hawking/providers.py\",\"lines\":\"existence-only via fs.list; not read\",\"sha256\":null}],\"recommendations\":[\"Collapse the seam: make workunit.py WorkUnit.to_dict/from_dict the single owner of all 14 _PERSISTED_EXTRAS fields; delete _unit_to_disk/_apply_disk_extras in dag_store.py so it calls wu.to_dict() directly.\",\"Keep a one-generation from_dict shim accepting the extras keys so legacy dag.json files still round-trip through crash recovery.\",\"Do NOT merge goal_bank.py into goal.py/dag_store.py: banked-future vs active-compiled are different scopes, not duplicates.\",\"No contact with Flash/Pulsar/ModelLake; seam is entirely inside hawking/workunit.py + hawking/dag_store.py.\"],\"unresolved_questions\":[\"Does any on-disk legacy dag.json depend on _apply_disk_extras to restore fields older WorkUnit.to_dict snapshots dropped? The from_dict shim de-risks this for one generation.\",\"Provider request construction owner split (providers.py vs remote_cognition.py) unread in this budget; a follow-up bounded read is owed before any seam claim there.\"],\"child_worker_ids\":[],\"status\":\"COMPLETE\",\"proposed_owner\":{\"Goal_persistence_active\":\"hawking/goal.py (WorkUnitDAG compiler IR) delegating writes to hawking/dag_store.py\",\"Goal_persistence_banked\":\"hawking/goal_bank.py (GoalBank, goal-bank.json, workspace-scoped FIFO)\",\"WorkUnit_persistence\":\"hawking/dag_store.py (dag.json, atomic os.replace) over hawking/workunit.py (WorkUnit)\",\"Session_persistence\":\"hawking/session.py (Session, bounded hot tail + semantic memory checkpoint)\",\"Provider_request_construction\":\"h",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-16d3858daed946d9",
+  "worker_id": "hawking-worker-28f07e15d9de4b26",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-7B5466F6"
+}

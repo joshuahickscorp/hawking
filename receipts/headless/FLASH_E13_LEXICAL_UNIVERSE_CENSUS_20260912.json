@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.gravity.flash_e13_lexical_universe.v1",
+  "status": "STRUCTURALLY_CAPABLE__CORPUS_FREQUENCY_UNPROVEN",
+  "recorded_at": "2026-09-12T18:06:02Z",
+  "source": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "tokenizer_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "eligible_model_vocab_count": 248044
+  },
+  "declaration": {
+    "path": "receipts/headless/FLASH_E13_WIKINEWS_EVIDENCE_DECLARATION_20260912.json",
+    "sha256": "ce1b59a9c011ca984396a4e67ac875026e9481e9d85ee80178f8fdc7ee7bd9b4",
+    "row_budget": 4096,
+    "required_rows_per_script_byte_cell": 512,
+    "short_max_utf8_bytes": 3,
+    "long_min_utf8_bytes": 4
+  },
+  "owner": {
+    "symbol": "crates/hawking-core/src/flash_e13_vocabulary_evidence.rs::inspect_e13_lexical_universe",
+    "source_sha256": "19bf8254fcefbf97b6cd684ccae73c5cb028bdce9ae4222a4f58820e53e44f66",
+    "cli": "hawking gravity e13-universe",
+    "cli_source_sha256": "ff0024df9db1e0e4726bfdd82149a5ab7f44d8fdc2d68b7844759297e20d41f9",
+    "runtime": "hawking-core Rust tokenizer; CPU only"
+  },
+  "cells": [
+    {
+      "id": "latin-short",
+      "eligible_rows": 12369,
+      "required_rows": 512,
+      "structurally_possible": true
+    },
+    {
+      "id": "latin-long",
+      "eligible_rows": 125872,
+      "required_rows": 512,
+      "structurally_possible": true
+    },
+    {
+      "id": "han-short",
+      "eligible_rows": 5426,
+      "required_rows": 512,
+      "structurally_possible": true
+    },
+    {
+      "id": "han-long",
+      "eligible_rows": 49909,
+      "required_rows": 512,
+      "structurally_possible": true
+    }
+  ],
+  "excluded_unclassifiable_rows": 54468,
+  "excluded_byte_gap_rows": 0,
+  "all_script_byte_cells_structurally_possible": true,
+  "execution": {
+    "command": "cargo run -q -p hawking -- gravity e13-universe --declaration receipts/headless/FLASH_E13_WIKINEWS_EVIDENCE_DECLARATION_20260912.json --tokenizer /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json",
+    "exit_code": 0,
+    "wall_seconds": 2.862735042
+  },
+  "runtime_boundary": {
+    "corpus_opened": false,
+    "model_loaded": false,
+    "tensor_payload_bytes_read": 0,
+    "row_extraction_performed": false,
+    "gpu_session_started": false,
+    "provider_started": false,
+    "daemon_or_web_restart": false,
+    "modellake_mutated": false
+  },
+  "disposition": {
+    "wikinews_failure_attribution": "CORPUS_COVERAGE_NOT_TOKENIZER_GEOMETRY",
+    "broader_corpus_attempt_earned": true,
+    "threshold_change_earned": false,
+    "tensor_row_extraction_authorized": false,
+    "next": "Predeclare one materially broader bilingual corpus using the same frozen thresholds. If that control remains underpowered, revisit the scientific design rather than tuning occupancy."
+  },
+  "validation": {
+    "native_unit_tests": "3 passed, 0 failed",
+    "cargo_check_hawking": "passed",
+    "cli_help": "passed"
+  },
+  "claim_boundary": "Tokenizer-decoded lexical capacity only. This attributes the Wikinews refusal to corpus coverage at the declared design; corpus frequency, E13 evidence admission, tensor-row extraction, representation quality, complete NR, EBPW, TPS, capability, and promotion remain unmeasured.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "226da98d8cabd096a57622356ed8bdb73ca2144cce5d9e4d71dd8e7562844b34"
+}

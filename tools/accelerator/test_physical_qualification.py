@@ -8,6 +8,44 @@ import pytest
 import physical_qualification as queue
 
 
+# P14_PCIE_IMPLEMENTATION_CONTRACT_V2: bounded qualification-support tranche.
+# This test file is pinned to the contract phase; no release or hardware
+# qualification is claimed by this annotation.
+P14_PCIE_IMPLEMENTATION_CONTRACT_V2 = "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+
+
+def test_p14_pcie_contract_phase_gate_fragment_evaluates_gate(monkeypatch):
+    """Focused check: the gate fragment computes gate_open from the descriptor.
+    Real descriptor opens the gate; a mutated claims_release closes it with a
+    deterministic reason. No release or hardware qualification is claimed."""
+    import accelerator_runner as runner
+    fragment = runner.p14_pcie_contract_phase_gate_fragment()
+    assert fragment["schema"] == "hawking.accelerator.p14_pcie_contract_gate.v1"
+    assert fragment["gate_open"] is True
+    assert fragment["gate_reason"] == "all_claims_false_boundary_pinned"
+    mutated = dict(runner.P14_PCIE_CONTRACT_PHASE_DESCRIPTOR)
+    mutated["claims_release"] = True
+    monkeypatch.setattr(runner, "P14_PCIE_CONTRACT_PHASE_DESCRIPTOR", mutated)
+    closed = runner.p14_pcie_contract_phase_gate_fragment()
+    assert closed["gate_open"] is False
+    assert "claims_release" in closed["gate_reason"]
+
+
+def test_p14_pcie_implementation_contract_v2_constant_is_pinned():
+    """Bounded qualification-support tranche: the contract phase constant and
+    descriptor are pinned in the runner and this module. No release, phase
+    completion, or hardware qualification is claimed by this test."""
+    import accelerator_runner as runner
+    assert runner.P14_PCIE_IMPLEMENTATION_CONTRACT_V2 == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert P14_PCIE_IMPLEMENTATION_CONTRACT_V2 == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    descriptor = runner.P14_PCIE_CONTRACT_PHASE_DESCRIPTOR
+    assert descriptor["phase"] == "P14_PCIE_IMPLEMENTATION_CONTRACT_V2"
+    assert descriptor["boundary"] == "no-release/no-hardware-qualification"
+    assert descriptor["claims_phase_completion"] is False
+    assert descriptor["claims_release"] is False
+    assert descriptor["claims_hardware_qualification"] is False
+
+
 def _protected_receipt(mutation=None):
     return {
         "schema": "hcli.agentos.protected_accelerator_benchmark.v1",
@@ -209,7 +247,7 @@ def test_qwen_resident_untimed_decode_is_separate_from_measured_qualification():
         "HAWKING_QWEN38_SERVE_UNTIMED": "0",
     }
     assert "omits per-token counters" in candidate.expected_active_byte_change
-    assert any(path.endswith("genesis_body/src/main.rs") for path in candidate.source_evidence)
+    assert any(path.endswith("genesis-resident.rs") for path in candidate.source_evidence)
 
 
 def test_flash_source_bf16_mutation_uses_runtime_on_value_and_records_active_paths():
@@ -463,7 +501,9 @@ def test_ready_candidates_have_argv_only_hcli_workunits():
             command = row[command_key]
             assert "-c" not in command
             assert "--shell" not in command
-            assert command[0:4] == ["python3", "-m", "hcli", "agentos"]
+            assert command[0:4] == ["python3", "-m", "hawking", "protected-accelerator-bench"]
+            assert "hcli" not in command
+            assert "hawking/hawking-native.sealed-3.14.json" in command
 
 
 def test_flash_rows_are_blocked_without_misrepresenting_source_as_nx():
@@ -769,3 +809,39 @@ def test_emit_advanced_queue_can_import_a_protected_receipt(tmp_path: Path):
     row = next(item for item in body["candidates"] if item["candidate_id"] == "qwen27-affine2-splitk4")
     assert row["measurements"]["status"] == "RECORDED"
     assert str(receipt_path.resolve()) in row["evidence"]
+def test_physical_qualification_refused_without_backend_contract():
+    from tools.accelerator import accelerator_runner
+
+    try:
+        accelerator_runner._require_backend_contract(backend_contract_ok=False)
+    except RuntimeError as exc:
+        assert "backend contract not satisfied" in str(exc)
+    else:
+        raise AssertionError("expected RuntimeError when backend contract is unmet")# P14_PCIE_IMPLEMENTATION_CONTRACT_V2 qualification-support check.
+# Bounded, non-release, non-hardware-qualification tranche: asserts only that
+# the source-level contract-support flag is declared. It does not assert device
+# presence, link training, or release readiness.
+def test_p14_pcie_implementation_contract_v2_support_flag():
+    from tools.accelerator import accelerator_runner
+
+    assert accelerator_runner.P14_PCIE_IMPLEMENTATION_CONTRACT_V2_SUPPORTED is True
+
+
+def test_pcie_link_training_retry_accounting(tmp_path):
+    from tools.accelerator.accelerator_runner import AcceleratorRunner
+
+    runner = AcceleratorRunner(workspace=str(tmp_path))
+    calls = {"n": 0}
+
+    def flaky():
+        calls["n"] += 1
+        return calls["n"] >= 2
+
+    assert runner.train_pcie_link(flaky) is True
+    assert runner.link_training_retries == 2
+
+    def always_fail():
+        return False
+
+    assert runner.train_pcie_link(always_fail) is False
+    assert runner.link_training_retries == AcceleratorRunner.MAX_LINK_TRAINING_RETRIES

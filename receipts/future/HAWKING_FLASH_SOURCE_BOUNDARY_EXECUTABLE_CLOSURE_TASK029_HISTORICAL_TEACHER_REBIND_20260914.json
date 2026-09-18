@@ -1,0 +1,142 @@
+{
+  "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+  "build": {
+    "commands": [
+      "CARGO_TARGET_DIR=/Users/scammermike/Downloads/hawking/target/flash-task029-current-source-rebind-20260914 cargo build --release -p hawking-core --example flash_stateful_complete_token_session",
+      "CARGO_TARGET_DIR=/Users/scammermike/Downloads/hawking/target/flash-task029-current-source-rebind-20260914 cargo build --release -p hawking"
+    ],
+    "compiler_provenance_attested": false,
+    "reproducible_build_claimed": false,
+    "rustc_version": "rustc 1.94.1 (e408947bf 2026-03-25) (Homebrew)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-apple-darwin\nrelease: 1.94.1\nLLVM version: 21.1.8",
+    "target_dir": "target/flash-task029-current-source-rebind-20260914"
+  },
+  "claim_boundary": "This is a static executable/source closure for bounded localization only. It is not a source/native comparison, source-parity result, complete NR, EBPW, TPS, capability, deployment, Pulsar promotion, or Kimi retirement.",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "hawking_metric_owner": {
+    "bytes": 10281840,
+    "format": "Mach-O 64-bit executable arm64",
+    "orchestrator": {
+      "bytes": 23742,
+      "path": "tools/odyssey/flash_source_boundary_compare.py",
+      "sha256": "53df3dddf72daafe9b95479647976fcc7240dd9b87c52f680c5840baef3bf00d"
+    },
+    "path": "target/flash-task029-current-source-rebind-20260914/release/hawking",
+    "sha256": "30ee364038e57696e9edfaef3c3f16fc914666fa0a909340f3aea6411e5e9463",
+    "source": [
+      {
+        "bytes": 8419,
+        "path": "crates/hawking-core/src/flash_boundary_compare.rs",
+        "sha256": "31088a944ab9b194b7f44e9312fd934629ce54b6d169f500d20cdc6ad9ddbca5"
+      },
+      {
+        "bytes": 263861,
+        "path": "crates/hawking/src/main.rs",
+        "sha256": "c130a7b5f4b09dfbbb4e510378b2b6ee47d94a7cd5cf6a6766d8197772c18603"
+      },
+      {
+        "bytes": 96427,
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "version": "hawking 0.2.2"
+  },
+  "native_diagnostic": {
+    "bytes": 3064768,
+    "executed": false,
+    "format": "Mach-O 64-bit executable arm64",
+    "path": "target/flash-task029-current-source-rebind-20260914/release/examples/flash_stateful_complete_token_session",
+    "preexecution_identity_rechecked_after_build": true,
+    "sha256": "16e9ced0e348d6e966b51a1b167f86e7534626648e67c16be4ae531f8c6d029a",
+    "source_closure": [
+      {
+        "bytes": 87220,
+        "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+        "sha256": "454b88f9b5d9b3cc86699ce4460340a66a70bf41c770e0c0a65283cd2f2c7b18"
+      },
+      {
+        "bytes": 12910,
+        "path": "crates/hawking-core/src/lib.rs",
+        "sha256": "a01560292aeb546411630310de6d7993692efc712628edbb5f119475d577349b"
+      },
+      {
+        "bytes": 205260,
+        "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+        "sha256": "3f72b93fd9d9f5be43b2ad5bef5f6139c3fa2368b031e8b3a0f30dbea31c91f5"
+      },
+      {
+        "bytes": 137975,
+        "path": "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "acb0e7dcf641e948a590d0a1517dd3b5c810a52895ec13d177e324258c55813a"
+      },
+      {
+        "bytes": 203027,
+        "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "3b31137e3700da3d4a683c5ab0dc32bf7697af969c16b70ea8d2df8d21c014c1"
+      },
+      {
+        "bytes": 20650,
+        "path": "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+        "sha256": "e6d61c0effd4c25ed84d8e8d88f6132835926f4751e57b3e2c4dba58f1513602"
+      },
+      {
+        "bytes": 35406,
+        "path": "crates/hawking-core/src/flash_ple.rs",
+        "sha256": "bf9b9940e6a00eddea5f10c3067083232e56078ba0987a9c6c86d1ea1a95495c"
+      },
+      {
+        "bytes": 13488,
+        "path": "crates/hawking-core/src/model/source_safetensors.rs",
+        "sha256": "7cba58d2595a68c02d3b62271a8344bae837f3c9622f9f4978ddb26e5ce2c7eb"
+      },
+      {
+        "bytes": 165129,
+        "path": "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+        "sha256": "e614040d20f816ccd188f8607c578c8d0cb261177197f12d61d9c874e82aef5c"
+      },
+      {
+        "bytes": 96427,
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ],
+    "wrapper": {
+      "bytes": 16772,
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "19680f92c89e66d86330d0d24387ead1bdc97bc08673e284a5cdb14e91dbee6d"
+    }
+  },
+  "next_safe_action": "Use this closure only with the independently admitted local-canonical reference for one bounded source/native transaction; stop at the first exact payload or route difference. science_status remains UNEARNED.",
+  "observed_unix_ns": 1789414955874217000,
+  "owner_gate": {
+    "detached_ed25519_required_for_local_canonical": false,
+    "local_canonical_admission_accepted": true,
+    "source_boundary_transaction_executed": false
+  },
+  "runtime_actions": {
+    "daemon_restarted": false,
+    "deployment_performed": false,
+    "gpu_or_metal_started": false,
+    "kimi_loaded": false,
+    "native_model_loaded": false,
+    "source_model_loaded": false
+  },
+  "schema": "hawking.flash.source_boundary_executable_closure.v1",
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "seal_sha256": "5ec497a24fbff6a84b5f2bda05cca1839fab969b1bbcddd0e0a8f26cbab47878",
+  "status": "TASK029_RECONCILED_RELEASE_EXECUTABLES_OBSERVED__LOCAL_CANONICAL_ADMISSION",
+  "supersession": {
+    "predecessor": {
+      "bytes": 6450,
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_TASK029_CURRENT_SOURCE_REBIND_20260914.json",
+      "seal_sha256": "de342c3d9b9899aaffc2c90d9b7a8416f6a08ccc5f9cd931903e2b48205db494",
+      "sha256": "f274c82937f734324996ea5eb53a3ff79c7f5989c6d1e2dbdd332a81f32af0e7",
+      "status": "TASK029_RECONCILED_RELEASE_EXECUTABLES_OBSERVED__LOCAL_CANONICAL_ADMISSION"
+    },
+    "reason": "TASK 029 local-canonical admission wiring changes the transaction's declared Python closure. The predecessor remains immutable and must not be reused after source drift.",
+    "scientific_evidence_changed": false
+  },
+  "task_id": "029",
+  "worktree_dirty": true
+}

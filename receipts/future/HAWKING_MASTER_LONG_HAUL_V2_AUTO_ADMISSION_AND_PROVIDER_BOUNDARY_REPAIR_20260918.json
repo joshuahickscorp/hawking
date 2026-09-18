@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.v2.repair.receipt.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T13:59:00Z",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "claim_boundary": "Control-plane repair and live runtime observation only; no phase, release, hardware, or provider-prose promotion.",
+  "repairs": [
+    {
+      "owner": "hawking/auto_orchestration.py",
+      "change": "Generated route-reopen continuations may pass graph admission by explicit source-tranche lineage plus a qualified fresh-route receipt; retry depth is bounded at 16 without imposing a worker-count ceiling."
+    },
+    {
+      "owner": "hawking/remote_cognition.py",
+      "change": "After the admitted read-only tool-call budget is consumed in mutation-proposal mode, the next provider round removes the read menu and requests one typed mutation proposal."
+    }
+  ],
+  "verification": {
+    "focused_tests": "83 passed",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "live_refill": "6 fresh lanes admitted after the lineage repair",
+    "http_health": 200,
+    "http_models": 200,
+    "daemon": {
+      "pid": 61054,
+      "endpoint": "http://127.0.0.1:8014/v1",
+      "requested_model": "hawking-auto",
+      "resident_model": null,
+      "provider_children": "none while native role is withheld"
+    }
+  },
+  "live_goal_snapshot": {
+    "accepted_heads": 79,
+    "active_workunits": 6,
+    "complete_workunits": 89,
+    "ready_queue_entries": 22,
+    "known_terminal_provider_outcomes": 3732,
+    "remaining_failure_boundary": [
+      "MUTATION_PAYLOAD_MISSING",
+      "PROVIDER_TRANSPORT_ERROR"
+    ]
+  }
+}

@@ -17,6 +17,7 @@ from .status_causality import (
     check_claim,
     emit,
     stamp,
+    stamp_gate,
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "check_claim",
     "emit",
     "stamp",
+    "stamp_gate",
 ]

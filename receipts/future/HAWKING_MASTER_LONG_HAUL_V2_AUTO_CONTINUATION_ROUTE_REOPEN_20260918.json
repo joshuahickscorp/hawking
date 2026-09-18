@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.long_haul.v2.auto_continuation_route_reopen.v1",
+  "recorded_at": "2026-09-18T10:32:00Z",
+  "goal_id": "GOAL-A52AB48501",
+  "status": "FRESH_ROUTE_ADMITTED",
+  "prior_failure_class": "MUTATION_PAYLOAD_MISSING",
+  "prior_provider_route": "deepseek/deepseek-v4.1-flash",
+  "fresh_provider_route": "moonshotai/kimi-k3",
+  "fresh_route_receipt": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_KIMI_ROUTE_REQUALIFICATION_20260918.json",
+  "claim_boundary": "Fresh qualified model route only; prior provider dead letters remain terminal and unreplayed. No provider prose or implementation result is accepted by this receipt.",
+  "focused_auto_tests": "18 passed",
+  "reopened_workunits": [
+    {"prior_workunit_id": "WORKUNIT-20260918-17BD955F", "workunit_id": "WORKUNIT-20260918-F8DB678C", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-73953C79", "workunit_id": "WORKUNIT-20260918-A2C68BE9", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-A941CB8B", "workunit_id": "WORKUNIT-20260918-A538BD78", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-78D2FF2B", "workunit_id": "WORKUNIT-20260918-7DDF9D24", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-B917A4E6", "workunit_id": "WORKUNIT-20260918-05C2611A", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-BEF16746", "workunit_id": "WORKUNIT-20260918-4E63D5EA", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-6B18C6C9", "workunit_id": "WORKUNIT-20260918-D277F5F6", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-1CEE092F", "workunit_id": "WORKUNIT-20260918-677959C9", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-DE893168", "workunit_id": "WORKUNIT-20260918-A0CE2943", "model": "moonshotai/kimi-k3"},
+    {"prior_workunit_id": "WORKUNIT-20260918-23EA7218", "workunit_id": "WORKUNIT-20260918-F03A8CC4", "model": "moonshotai/kimi-k3"}
+  ],
+  "execution_policy": {
+    "known_terminal_outcomes_replayed": false,
+    "hardware_quiescence_weakened": false,
+    "codex_worker_launches": 0
+  }
+}

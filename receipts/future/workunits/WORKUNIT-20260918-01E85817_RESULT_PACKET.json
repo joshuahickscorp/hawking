@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 3,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "95cff6e273fe621559ca86373aafec1b790db33b67a6ffb56859b5ce4fe759d5",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:25:51.580911+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:25:51.580933+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:25:51.586055+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"tools/future/test_gravity_nova_lineage.py was read in full (3614 bytes, sha256 4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537); it imports SCHEMA, obligation, policy_adapter_preregistration, and validate ",
+      "outcome": "CONTINUE",
+      "reply_chars": 5833,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"tools/future/test_gravity_nova_lineage.py was read in full (3614 bytes, sha256 4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537); it imports SCHEMA, obligation, policy_adapter_preregistration, and validate from tools.future.gravity_nova_lineage.\",\"The file defines exactly five focused NOVA lineage tests: test_incomplete_obligation_is_refused, test_complete_lineage_is_accepted_only_with_matching_child_hash, test_train_and_freeze_overlap_is_refused, test_policy_adapter_is_distinct_preregistered_and_not_claimed_as_run, and test_policy_objective_cannot_reward_unconditional_answer_rate.\",\"test_incomplete_obligation_is_refused asserts validate(obligation()) returns status 'LINEAGE_REFUSED' with 'objective' and 'parent.artifact_hash' in result['missing'].\",\"test_complete_lineage_is_accepted_only_with_matching_child_hash asserts a complete lineage is 'LINEAGE_ACCEPTED' only when expected_descendant_hash matches the descendant artifact_hash, and 'LINEAGE_REFUSED' when the hash is replaced with sha256(b'other').\",\"test_train_and_freeze_overlap_is_refused asserts that setting freeze_set=['refused_train'] (overlapping the train_set entry) yields 'LINEAGE_REFUSED' with at least one error containing 'overlap'.\",\"test_policy_adapter_is_distinct_preregistered_and_not_claimed_as_run asserts policy_adapter_preregistration() returns status 'PREREGISTERED_NOT_RUN', source_model_immutable True, descendant_artifact None, learned_weight_evidence False, promotion 'WITHHELD', negative_science.closed_projection_family.allowed False, negative_science.candidate_family.status 'HYPOTHESIS_OPEN', falsifiers.heldout_behavior.maximum_effective_dead_end_refusals 2, falsifiers.heldout_behavior.maximum_unsafe_demo_indicators 0, trainer_truth.real_kimi_policy_training_proven False, and nova_lineage.status 'LINEAGE_REQUIRED'.\",\"test_policy_objective_cannot_reward_unconditional_answer_rate asserts data_contract.requirements contains a row containing 'no objective rewards answer rate' and matched_null.kind == 'authority_stratified_target_shuffle'.\",\"The _complete() fixture shows the lineage contract shape: parent identity 'KIMI_BASE' with artifact_hash, descendant identity 'candidate' with artifact_hash, objective 'reduce dead-end refusals without unsafe compliance', transformation kind 'in_memory_projection' with changed_tensors ['model.layers.26.mlp.down_proj.weight'], train_set ['refused_train'], freeze_set ['heldout','base'], data_class 'authorized_synthetic', teacher 'KIMI_BASE', optimization_objective 'heldout_boundary_and_capability_parity', representation_constraints 'no_dense_parent_rematerialization', measurements over five axes (capability, epistemic, authorization, physical, destructive_controls) each with before/after/receipt, and rollback with reversible True, recipe 'discard copied descendant', parent_immutable True.\",\"docs/HANDOFF.md is 42025 bytes (full-file sha256 5192259f550e94e952678b6356a330f3f881bfd8a3d450e47591912792f71138); the admitted read window covered only the first 4000 bytes (9.5%), which contains HCLI handoff material dated 2026-09-02/2026-09-04 (daemon disposition, Blocker 1 SIGTERM-vs-SIGKILL evacuation defect at hcli/agentos/resident.py:1517, Blocker 2 cancelled mission 8ee9a7d3) and no NOVA or P8 content.\",\"The current P8 NOVA owner was not observed in the admitted evidence: the NOVA sections of docs/HANDOFF.md lie outside the 4000-byte window that was read, so no owner is claimed; naming one without an exact line citation would be fabrication.\",\"No files were mutated, no tests were executed, no git mutation occurred, and no child workers were spawned; all evidence comes from two real read-only file reads.\"],\"sources\":[\"tools/future/test_gravity_nova_lineage.py (full file, 3614 bytes, sha256 4fb079ef2c0233b3f17839038865b18edd402a7aecf3bc6e2528a629d2e95537)\",\"docs/HANDOFF.md (first 4000 of 42025 bytes, truncated window, full-file sha256 5192259f550e94e952678b6356a330f3f881bfd8a3d450e47591912792f711",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-819998b69b2b4def",
+  "worker_id": "hawking-worker-461bcfc8839e4da2",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-01E85817"
+}

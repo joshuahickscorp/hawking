@@ -1,0 +1,58 @@
+{
+  "bounded_follow_on": {
+    "acceptance": [
+      "restart the Hawking gateway without interrupting active WorkUnits",
+      "fresh Kimi tool-call route health check",
+      "observe live 15 remote / 5 premium admission ceilings",
+      "only then refill durable dependency-valid queue entries"
+    ],
+    "falsifier": "live counts remain 12/4 or any route/admission gate fails",
+    "state": "DEFERRED_UNTIL_ACTIVE_KIMI_BATCH_RELEASES",
+    "tranche": "activate-frontier-capacity-at-safe-daemon-boundary"
+  },
+  "claim_boundary": "Read-only control-plane owner map accepted; no P1 mutation completion or release claim.",
+  "focused_verification": {
+    "commands": [
+      "python3 -m pytest -q hawking/tests/test_discrete_goal_completion_state.py hawking/tests/test_supervisor_watcher.py",
+      "python3 -m pytest -q hawking/tests/test_auto_orchestration.py hawking/tests/test_arsenal_contracts.py hawking/tests/test_supervisor_watcher.py hawking/tests/test_openrouter_gateway.py"
+    ],
+    "compile": "passed for changed Auto/gateway modules",
+    "diff_check": "passed for changed Auto/gateway modules",
+    "tests": "14 passed"
+  },
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "Goal compilation, durable WorkUnit state, frontier reconciliation, Auto routing, supervision, and completion-contract normalization have distinct Hawking owners.",
+    "Auto capacity is now source-configured for a 25% active-frontier burst from 12/4 to 15/5, while the live daemon remains truthfully 12/4 until a safe restart.",
+    "The collapse risk is a control-plane/frontier seam, not a new subsystem; durable graph visibility and disjoint writer/effect scopes remain admission constraints."
+  ],
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T03:51:39.607952+00:00",
+  "result_packet": "receipts/future/workunits/WORKUNIT-20260917-28190B0B_RESULT_PACKET.json",
+  "schema": "hawking.long_haul.v2.read_evidence_acceptance.v1",
+  "source_hashes": {
+    "hawking/auto_orchestration.py": "fc07ac76419dc874fb5d85448e2cdf854a612c96ab6ebe3d29fa2942003ff60f",
+    "hawking/goal.py": "96afff94c4cb62ea04429efded0d96301eca5c233278a71ade02279c619ea37b",
+    "hawking/goal_surface.py": "026eefc2b45f721451de22defc89c7421a4c1bebc72eea55417a90371b9eff4c",
+    "hawking/remote_cognition.py": "f418178b1aeed4fbdb3fe0d088ece9a0717e59f9944d4ecd1041cb09be226b22",
+    "hawking/serve.py": "18ef904cb627b45cfd2889e277b5a21015abe0d9f5614a0640467321a0b90e7b",
+    "hawking/supervisor_watcher.py": "7ce978c6b0e8d46192f384faf0cf8f62aa71a1ce0812da2001d7a3145c392c3e",
+    "hawking/workunit.py": "cb7644ba8d1e888ed6b958d4ff0f8efe4b9a1a1b786152ced945388223796cf3",
+    "hawking/workunit_owner.py": "5574735c5f1e675b952dfa186f8c120dcf19a2f777504a971379c80ef09c86e5"
+  },
+  "sources": [
+    "hawking/goal.py",
+    "hawking/workunit.py",
+    "hawking/workunit_owner.py",
+    "hawking/goal_surface.py",
+    "hawking/auto_orchestration.py",
+    "hawking/supervisor_watcher.py",
+    "hawking/remote_cognition.py",
+    "hawking/serve.py",
+    "receipts/future/workunits/WORKUNIT-20260917-28190B0B_RESULT_PACKET.json",
+    "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_FRONTIER_CAPACITY_20260918.json"
+  ],
+  "status": "REMOTE_READ_EVIDENCE_ACCEPTED",
+  "tranche": "P1_CONTROL_PLANE_COLLAPSE",
+  "workunit_id": "WORKUNIT-20260917-28190B0B"
+}

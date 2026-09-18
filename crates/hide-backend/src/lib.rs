@@ -27,7 +27,7 @@
 //!   descriptor registry; the wasmtime component host is post-shell. No
 //!   `wasmtime` dep.
 
-/// HCLI Agent OS — many logical agents on one loaded model (Ascension §13).
+/// HAWKING Agent OS — many logical agents on one loaded model (Ascension §13).
 /// Scaffold: pure state machine + fairness/starvation/tool-wait; no model I/O.
 pub mod agent_scheduler;
 pub mod approval;
@@ -37,21 +37,21 @@ pub mod commands;
 pub mod compat_instructions;
 pub mod connectors;
 pub mod digest;
-/// Transport-neutral JSONL machine-control contract for the HCLI surface.
-// The former undeclared `src/hcli/` scaffold, its `hcli-backend` wrapper, and
-// `hcli_parallel` integration test were removed in Phase III. They had never
+/// Transport-neutral JSONL machine-control contract for the HAWKING surface.
+// The former undeclared `src/hawking/` scaffold, its `hawking-backend` wrapper, and
+// `hawking_parallel` integration test were removed in Phase III. They had never
 // been part of a build, and declaring the scaffold exposed 14 compile errors;
-// the live Rust HCLI surface is the declared bridge/profile/research/source/
+// the live Rust HAWKING surface is the declared bridge/profile/research/source/
 // swarm set below.
-pub mod hcli_bridge;
-/// Named, bounded compute profiles for the HCLI surface.
-pub mod hcli_profile;
+pub mod hawking_bridge;
+/// Named, bounded compute profiles for the HAWKING surface.
+pub mod hawking_profile;
 /// Evidence-first, checkpointed local-model research and data procurement.
-pub mod hcli_research;
-/// Bounded, durable local-file/stdin evidence ingestion for the HCLI surface.
-pub mod hcli_sources;
-/// Actual parallel analysis lanes for HCLI, with sealed aggregate receipts.
-pub mod hcli_swarm;
+pub mod hawking_research;
+/// Bounded, durable local-file/stdin evidence ingestion for the HAWKING surface.
+pub mod hawking_sources;
+/// Actual parallel analysis lanes for HAWKING, with sealed aggregate receipts.
+pub mod hawking_swarm;
 /// Headless agent runner that emits sealed, evidence-oriented audit receipts.
 pub mod headless;
 pub mod host;
@@ -61,12 +61,12 @@ pub mod live_thread;
 pub mod memory;
 pub mod model_provider;
 pub mod plan_domain;
-/// HCLI Agent OS — planning diagnostic stage pipeline + research contract (§14).
+/// HAWKING Agent OS — planning diagnostic stage pipeline + research contract (§14).
 /// Scaffold: receipts + validation; no model plan synthesis or tool execution.
 pub mod planning_diagnostic;
 pub mod policy;
 pub mod process;
-/// Canonical Rust owner for host-wide HCLI process observation and safe startup reaping.
+/// Canonical Rust owner for host-wide HAWKING process observation and safe startup reaping.
 pub mod process_inspector;
 pub mod program;
 pub mod replay;
@@ -96,7 +96,8 @@ pub use compat_instructions::{
 };
 pub use connectors::{Connector, ConnectorRegistry, ConnectorStatus};
 pub use host::{
-    BackendHost, BackendStatus, EvidenceLink, HcliTurnResult, SideChatResult, StaticAnalysisReceipt,
+    BackendHost, BackendStatus, EvidenceLink, HawkingTurnResult, SideChatResult,
+    StaticAnalysisReceipt,
 };
 pub use initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 pub use interrupt::InterruptHub;

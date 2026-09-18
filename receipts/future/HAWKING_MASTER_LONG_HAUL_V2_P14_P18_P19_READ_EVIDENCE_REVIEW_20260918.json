@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:59:10Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "reviewed_tranches": [
+    {
+      "tranche": "P14_PCIE_FPGA",
+      "workunits": ["WORKUNIT-20260918-6CFC2016", "WORKUNIT-20260918-95F2263B"],
+      "local_verification": "53 passed: tools/accelerator/test_backend_contract.py and tools/accelerator/test_physical_qualification.py",
+      "accepted_scope": "Read-only hardware-withheld source evidence: FPGA-HWIR remains static/simulated/COST_MODEL only; no hardware qualification.",
+      "claim_boundary": "No implementation, hardware access, or HARDWARE_MEASURED promotion."
+    },
+    {
+      "tranche": "P18_TUNNEL",
+      "workunits": ["WORKUNIT-20260918-64AC91C0", "WORKUNIT-20260918-4F27F3C2"],
+      "local_verification": "19 passed: share bridge and H-Web tunnel-focused tests",
+      "accepted_scope": "Read-only local tunnel contract evidence: digest-only tokens, permission-scoped operations, and no relay/release claim.",
+      "claim_boundary": "Exact frame/session handler bodies remain a follow-on evidence target; no remote relay hosting or production release."
+    },
+    {
+      "tranche": "P19_SANDBOX",
+      "workunits": ["WORKUNIT-20260918-5F7D0885"],
+      "local_verification": "98 passed: sandbox world, Option-C worker, and special-unit focused tests",
+      "accepted_scope": "Read-only S0 sandbox foundation evidence: durable world ownership, branch isolation, redaction, and evaluator/controller boundary.",
+      "claim_boundary": "No live worker allocation, evaluator execution, hardware, mutation, or release claim."
+    }
+  ],
+  "unaccepted_tranche": {
+    "tranche": "P17_CODEBASE_COLLAPSE",
+    "reason": "The current packet could not ground an owner-overlap map in its intended source surfaces; do not promote it."
+  },
+  "claim_boundary": "Accepted entries are bounded read evidence only; phase/release completion remains withheld."
+}

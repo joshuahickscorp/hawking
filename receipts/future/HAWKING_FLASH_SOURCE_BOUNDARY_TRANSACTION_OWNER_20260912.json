@@ -1,0 +1,114 @@
+{
+  "schema": "hawking.flash.source_boundary_transaction_owner.v1",
+  "status": "STATIC_TRANSACTION_GREEN__WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+  "observed_at_utc": "2026-09-12T19:24:48Z",
+  "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+  "specimen": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "teacher": {
+    "candidate_path": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "candidate_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+    "generated_token_ids": [
+      271,
+      248045
+    ],
+    "authority": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+    "trust_anchor": "/Library/Application Support/Hawking/owner_ed25519_public_key",
+    "trust_anchor_present": false
+  },
+  "contract": {
+    "preflight_path": "receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V2_20260912.json",
+    "preflight_sha256": "668007e149a1d04fb62aa1d6fc306fa79b24e7183f2b182f7a26c57867061f4c",
+    "preflight_seal_sha256": "dc510ba27473aa6bfc180e1d8317614d69e20cd0a473b63ee4f977e896452a04",
+    "token_index": 0,
+    "token_id": 5423,
+    "layers": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "native_ple_implemented": false,
+    "source_post_ple_diagnostic_injection": true,
+    "full_body_replay_allowed": false,
+    "promotion_allowed": false
+  },
+  "transaction_owner": {
+    "path": "tools/odyssey/flash_source_boundary_transaction.py",
+    "sha256": "4b864907efe65d4764f676ee85a6565f0191972f71730721b13d06783ffbb3f4",
+    "lines": 508,
+    "schema": "hawking.flash.source_boundary_transaction.v1",
+    "ordered_stages": [
+      "OWNER_ADMISSION",
+      "GPU_LANE_ACQUIRE",
+      "OWNER_READMISSION_INSIDE_LEASE",
+      "FRESH_OUTPUT_AND_EXECUTABLE_CLOSURE_ADMISSION",
+      "SOURCE_CAPTURE_LAYERS_0_THROUGH_4_TOKEN_0",
+      "NATIVE_CAPTURE_WITH_SOURCE_POST_PLE_DIAGNOSTIC_INJECTION",
+      "ORDERED_RUST_COMPARISON_WITH_PYTHON_CROSSCHECK",
+      "EXECUTABLE_CLOSURE_RECHECK",
+      "GPU_LANE_RELEASE"
+    ]
+  },
+  "canonical_lease": {
+    "owner": "tools/gpu_lane_lock.sh",
+    "lane_name": "flash-source-boundary-token0",
+    "default_path": "/tmp/hawking-gpu-lane.lock",
+    "new_lock_ontology_created": false,
+    "direct_child_owner_identity_required": true,
+    "unsafe_broad_or_symlink_lock_targets_rejected": true,
+    "lease_held_across_source_native_and_comparison": true,
+    "release_observed_after_lane_command_exit": true
+  },
+  "executable_closure": {
+    "receipt_path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_20260912.json",
+    "receipt_sha256": "56e74a63e6e6b316a63fc43e85b18aabd8557e20c6cbc1420142ab83b56c16db",
+    "receipt_seal_sha256": "94033f3a192bffe79bcf86a9fff24784ad4e6a0ab956fc3c7e02aedda8cb4185",
+    "native_binary_sha256": "20b344f5d18ee24340e71f66f915271ff49a428e225316e136707c82245a91d8",
+    "hawking_binary_sha256": "701fa6e7832d8190a48ec6107116eaff402050849fff6c5de9f0401987eb470e",
+    "all_declared_source_files_reverified_before_and_after_execution": true
+  },
+  "fresh_output_plan": {
+    "source_capture": "receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_V2_OWNER_AUTHORIZED_20260912/capture.json",
+    "native_capture": "receipts/headless/FLASH_NATIVE_SOURCE_BOUNDARY_V2_OWNER_AUTHORIZED_20260912.json",
+    "ordered_comparison": "receipts/headless/FLASH_SOURCE_NATIVE_BOUNDARY_COMPARISON_V2_20260912.json",
+    "transaction": "receipts/headless/FLASH_SOURCE_BOUNDARY_TRANSACTION_V2_20260912.json",
+    "all_absent_at_dry_preflight": true,
+    "collision_and_nesting_refusal": true,
+    "failure_progress_preserved": true
+  },
+  "validation": {
+    "test_path": "tools/odyssey/test_flash_source_boundary_transaction.py",
+    "test_sha256": "f773cf3bf3b593851b47852ab551f1c85eb2a65aaa15b72bab307143418ebe1a",
+    "focused_union": "39 passed, 0 failed",
+    "py_compile": "passed",
+    "diff_check": "passed",
+    "dry_status": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION",
+    "dry_owner_authorization_verified": false,
+    "dry_lane_free": true,
+    "dry_process_lane_clean": true,
+    "dry_executable_closure": "EXACT_EXECUTABLE_CLOSURE_PRESENT",
+    "dry_outputs_fresh": true
+  },
+  "kimi": {
+    "state": "COLD",
+    "fresh_calls": 0,
+    "provider_loaded": false,
+    "retirement_earned": false
+  },
+  "runtime_actions": {
+    "source_model_loaded": false,
+    "native_model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "The machine owner provisions the pinned Ed25519 trust anchor and signs the exact existing V2 teacher request. Then invoke this one transaction at a safe runtime boundary. It will acquire the canonical GPU lane and stop at the first ordered source/native seam difference before any full replay.",
+  "claim_boundary": "This proves a statically validated, fail-closed, lease-owned transaction around the already-built bounded capture and comparison owners. It does not admit the unsigned teacher, execute either model, establish parity, implement native PLE, produce a complete NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "seal_sha256": "73e55d701b08813be09284bc3284e0bc6c424f0d3f9752daae4bc41307a6d478"
+}

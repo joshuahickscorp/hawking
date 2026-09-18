@@ -1045,19 +1045,22 @@ pub fn lm_head_path_from_env() -> &'static str {
 
 /// PURE: build the native final stats object from server-observed values.
 /// Field NAMES mirror GenStats::stats_json() so native + OpenAI clients parse
-/// the same keys. dec_tps = completion_tokens / (decode_ms/1000).
+/// the same keys. `decode_ns` is the canonical duration and `decode_ms` is a
+/// derived compatibility projection. `dec_tps` uses the nanosecond value.
 pub fn hawking_generate_stats_json(
     prompt_tokens: usize,
     completion_tokens: usize,
-    decode_ms: f64,
+    decode_ns: u64,
     token_only_path_used: bool,
     lm_head_path: &str,
 ) -> serde_json::Value {
-    let dec_tps = (completion_tokens as f64) / (decode_ms / 1000.0).max(1e-6);
+    let dec_tps = (completion_tokens as f64) * 1_000_000_000.0 / decode_ns.max(1) as f64;
     serde_json::json!({
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "decode_ms": decode_ms,
+        "timing_unit": "ns",
+        "decode_ns": decode_ns,
+        "decode_ms": decode_ns as f64 / 1_000_000.0,
         "dec_tps": dec_tps,
         "token_only_path_used": token_only_path_used,
         "lm_head_path": lm_head_path,
@@ -1278,11 +1281,11 @@ fn hawking_generate_sse(
         // channel closes), or client disconnect — so the native SSE terminates
         // cleanly. Previously stats/[DONE] fired only on the EOS signal, so a
         // max_tokens-bounded request ended without them.
-        let decode_ms = start.elapsed().as_secs_f64() * 1000.0;
+        let decode_ns = start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
         let stats = hawking_generate_stats_json(
             prompt_tokens,
             completion_tokens,
-            decode_ms,
+            decode_ns,
             token_only_snapshot,
             lm_head,
         );

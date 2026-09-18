@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.future.kimi_p0_exact_025_freeze.v1",
+  "generated_at": "2026-09-10",
+  "status": "FROZEN_P0_DENSITY_SNAPSHOT_OPERATIONAL_ADMISSION_WITHHELD",
+  "name": "KIMI_P0",
+  "freeze_kind": "developmental_density_control_exact_target",
+  "freeze_scope": "layer10 down-projection organ; three-projection graph control with dense model remainder",
+  "requested_target_complete_ebpw": 0.25,
+  "effective_complete_ebpw": 0.19477982954545456,
+  "effective_complete_ebpw_scope": "layer10 down-projection organ only",
+  "full_model_complete_ebpw": null,
+  "snapshot_root": "workspace/campaign/odyssey/p0/KIMI_P0_EXACT_025_20260910",
+  "supersedes_band_freeze": "receipts/future/KIMI_P0_DENSITY_FREEZE_20260910.json",
+  "source_model": "KIMI_BASE",
+  "immutable_base": true,
+  "lineage": {
+    "scope": "layer10 routed gate_proj + up_proj + down_proj; all other model weights remain unchanged dense KIMI_BASE",
+    "gate_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_GATE_EXPERTS0_63_20260910.json",
+    "up_receipt": "receipts/future/KIMI_EXPERT_LOWRANK_NOVA_FANOUT_LAYER10_UP_EXPERTS0_63_20260910.json",
+    "down_receipt": "receipts/future/KIMI_INT8_RELATIVE_QUARTER_BAND_FANOUT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "down_audit_receipt": "receipts/future/KIMI_INT8_RELATIVE_P0_RANK16_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "graph_receipt": "receipts/future/KIMI_NOVA_FULL_MODEL_THREE_PROJECTION_INT8_RELATIVE_P0_RANK16_INTEGRATION_CONTROLLED_EXIT_20260910.json"
+  },
+  "representation": {
+    "gate_proj": {
+      "family": "BF16 independent expert lowrank",
+      "rank": 32,
+      "complete_ebpw": 0.6166548295454546,
+      "artifact": "workspace/campaign/odyssey/p0/KIMI_P0_EXACT_025_20260910/gate_proj_r32.npz",
+      "sha256": "5fe262b9cef40f7db2d32fe2471bbfd88352faaca155e98f0c68a946b01b34ce"
+    },
+    "up_proj": {
+      "family": "BF16 independent expert lowrank",
+      "rank": 32,
+      "complete_ebpw": 0.6166548295454546,
+      "artifact": "workspace/campaign/odyssey/p0/KIMI_P0_EXACT_025_20260910/up_proj_r32.npz",
+      "sha256": "16c280b9b3bf09334310006768f279fcb5c2d3414d184347e9d3f85a035dea64"
+    },
+    "down_proj": {
+      "family": "row-relative symmetric INT8 factors with FP32 row scales",
+      "rank": 16,
+      "complete_ebpw": 0.19477982954545456,
+      "heldout_mean_relative_l2": 0.8327197947750874,
+      "artifact": "workspace/campaign/odyssey/p0/KIMI_P0_EXACT_025_20260910/down_proj_r16.npz",
+      "sha256": "ae8f3a74116cac0d9861309ff7d85458765ce2ae2a2f35a25cab62213e1ef1b6"
+    },
+    "dense_parent_rematerialization": false,
+    "direct_execution": "three selected organs only",
+    "full_model_direct_execution": false
+  },
+  "evidence": {
+    "direct_routed_audit": "PASS",
+    "sorted_kernel_equivalence_mean_relative_l2": 0.004322659224271774,
+    "sorted_direct_median_ms": 1.0635420330800116,
+    "graph_capability": {
+      "status": "FAIL",
+      "baseline_median_fourgram_repeat_fraction": 0.053763440860215006,
+      "patched_median_fourgram_repeat_fraction": 0.4623655913978495,
+      "gate": 0.1614,
+      "ppl_ratio": 1.0064192906634397
+    },
+    "canonical_physical_receipt": "receipts/future/KIMI_CANONICAL_TPS_PARETO_RAW_VS_INT8_ROWRELATIVE_20260910.json",
+    "resident_adoption": "INTEGRATED_NOT_QUALIFIED; worker admission RED"
+  },
+  "operational_gate": {
+    "frozen": true,
+    "operational_p0_admitted": false,
+    "reason": "The exact <=0.25 down-organ density control is reproducible and directly audited, but the full model remains dense, the real graph fails capability, and resident adoption remains RED.",
+    "promotion": "WITHHELD",
+    "odyssey_admission": "WITHHELD",
+    "allowed_use": "bounded offline representation, kernel, and regression work only"
+  },
+  "next_frontier": {
+    "target_complete_ebpw": 0.1,
+    "best_direct_organ_current_complete_ebpw": 0.09889914772727272,
+    "best_direct_organ_current_rank": 6,
+    "audit_receipt": "receipts/future/KIMI_INT8_RELATIVE_TENTH_BAND_ROUTED_AUDIT_LAYER10_DOWN_EXPERTS0_63_20260910.json",
+    "next_method": "selective sensitivity/recoverability-weighted protection below the uniform 0.10 control"
+  },
+  "claim_boundary": "KIMI_P0 is a frozen exact <=0.25 layer10 down-organ developmental density snapshot with a dense model remainder; a full-model <=0.25 representation is not yet earned. It is not an operationally admitted worker, capability-preserving Star, qualified TPS result, NX artifact, or Odyssey promotion."
+}

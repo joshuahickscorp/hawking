@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.external_worker.context_projection.v1",
+  "status": "IMPLEMENTED_DERIVED_VIEW_STATIC_VALIDATED__NO_PROVIDER_CALL",
+  "objective": "Project task-scoped canonical Hawking intelligence into a compact external-worker context without creating a second knowledge store or granting runtime authority.",
+  "canonical_owner": "crates/hawking/src/external_worker.rs",
+  "command": "hawking agent context grok <task>",
+  "context_schema": "hawking.external_worker.context.v1",
+  "outputs": [
+    "staging_root/packets/<task>.context.json",
+    "staging_root/packets/<task>.context.md"
+  ],
+  "derived_sources": [
+    {
+      "path": "workspace/campaign/odyssey/CONTINUATION.json",
+      "sha256": "8b750af9e93795941ec2a2e7e29cf8dd55849df78b6b853474027ec630616a76"
+    },
+    {
+      "path": "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+      "sha256": "fb098c5ce6ef63edec0a09997152ca9aac3c79b4c5529eec4fedd8631a785fe3"
+    },
+    {
+      "path": "staging_root/receipts/<task>.json",
+      "binding": "task-specific stage receipt digest"
+    }
+  ],
+  "projection": {
+    "identity": "task, worker, canonical/base revision, source branch, worktree, worker branch",
+    "objective": "exact stage objective",
+    "authority": "allowed scope/actions, forbidden actions, staging boundary, promotion=false",
+    "frontier": "compact continuation source/organ/NR/accounting facts",
+    "organ_knowledge": "task-term selected compact Organ Passport summaries",
+    "gravity_knowledge": "bounded method candidates plus controls, Laws, evidence, reopen conditions, and execution frontier",
+    "evidence": "task-relevant receipt/file handles with SHA-256 where present",
+    "stop_conditions": "authority, protected-runtime, credential, and scientific-adjudication returns",
+    "stale_detection": "canonical/base revision and source digests are embedded in every generated packet"
+  },
+  "first_task_packet": "docs/worker/GROK_BOT_FIRST_QUALIFICATION_TASK.md",
+  "validation": [
+    {"command": "cargo fmt --all -- --check", "result": "PASS"},
+    {"command": "cargo check -p hawking --bin hawking", "result": "PASS"},
+    {"command": "cargo test -p hawking --bin hawking -- --nocapture", "result": "PASS", "tests": 46},
+    {"command": "cargo test -p hawking --test external_worker -- --nocapture", "result": "PASS", "tests": 2, "asserts": ["task-bound context", "isolated staging", "forbidden authority absent", "canonical state unchanged"]}
+  ],
+  "boundary": {
+    "provider_call": false,
+    "grok_qualification": "NOT_RUN_UNAVAILABLE_OR_UNAUTHENTICATED",
+    "kimi_loaded": false,
+    "flash_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "promotion_allowed": false,
+    "new_knowledge_store": false,
+    "new_orchestration_framework": false
+  },
+  "claim_boundary": "This proves a derived context-view command and focused static/E2E coverage only. It does not qualify Grok Bot, execute a worker, authorize source-teacher admission, qualify a model, establish EBPW/TPS/capability, promote Pulsar, deploy, or retire Kimi."
+}

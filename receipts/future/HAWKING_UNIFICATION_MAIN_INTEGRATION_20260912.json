@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.unification.main_integration.receipt.v1",
+  "recorded_at": "2026-09-12T10:55:47-0400",
+  "status": "MAIN_OWNER_INTEGRATED_OFFLINE_VALIDATED_NO_DEPLOY",
+  "claim_boundary": "This records a semantic source integration into the existing dirty main owner. It does not qualify a model, establish source parity, construct an NR, run a GPU/ANE workload, restart Hawkingd/Web, mutate ModelLake, or establish capability, density, or TPS.",
+  "integration": {
+    "canonical_main_before": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+    "source_branch": "codex/hawking-unification-implementation",
+    "source_submission_refresh": "e37cb3f5f",
+    "validated_behavior_tip": "cc9e8c6c6",
+    "validated_graft_tip": "1c1163693",
+    "validated_graft_worktree": ".worktrees/hawking-pulsar-unification-graft-20260912",
+    "landing": "non-overlap source was applied first; 11 true overlap paths were hash-recorded, semantically reconciled in the disposable graft, then applied only after a clean dry run. The dirty Pulsar/Flash frontier was neither reset, cleaned, nor committed by this integration.",
+    "ordered_behavior_commits": [
+      "e90e6dcd3",
+      "998209267",
+      "59aeae8c6",
+      "7f5d0960b",
+      "c39c320ff",
+      "3b21ea830",
+      "ef1cc9b90",
+      "f17e6a232",
+      "962fbf61b",
+      "c6d795930",
+      "68bd177f4",
+      "4c8edb82a",
+      "cc9e8c6c6"
+    ]
+  },
+  "overlap_sha256_before_to_validated_graft": {
+    "crates/hawking-core/src/kernels/mod.rs": {
+      "main_before": "dd727c4433b8fc269c29b81d07a4fe2e50faf2098155e941724a0eec7fa5c236",
+      "graft": "9bd7f945a81a0e0de05edfa0c599703f6e18ab35cbcf05300a221eeea05d833c"
+    },
+    "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs": {
+      "main_before": "96c1e06888acda0dca774e9df23bafd28a18d38325ce910a5e300799230e2743",
+      "graft": "bac9734163b25e4aed67faa70ccc8086fa04a08efa71cf5d0407271370731a3d"
+    },
+    "hcli/agentos/flash_tensor_probe.py": {
+      "main_before": "b6a77647b4e6093091f961d70dd1e2995d17d99cec36b13b559ec64412330d3f",
+      "graft": "f2fa43e5f04ca05001070d4c04858560dfea6062df61257d3623272ee042a05c"
+    },
+    "hcli/resources.py": {
+      "main_before": "e0d123a347e8002350f1943ab45e31f6fcb05a6870ffce3f62c0522cd5750485",
+      "graft": "392988f05287bc6dcbbadf1e0e0af72dde7c3289ae3e9e6a8be49ebca55c8306"
+    },
+    "hcli/serve.py": {
+      "main_before": "d1113e49656485db767db44dc3b940ad1d0927252ffee3bf2d0009b8c36b08dc",
+      "graft": "abc22799e07ba94ea3e4ec23452ce68dc95b640a6691e12175ae367496fb4399"
+    },
+    "hcli/tests/test_catalog_and_switching.py": {
+      "main_before": "7db957cd595922c940c4c9d7b9835ce7ff3ff8695724656fe69bce3e91d14152",
+      "graft": "a3fbf01bfdb60b1309e51bd9cb3d6ec94afe3d06385b669f07d04d687bd6bc96"
+    },
+    "hcli/tool_registry.py": {
+      "main_before": "fe3612e1c0c52047be18f017384150635dd01a1d60686de4c69883724f146a0e",
+      "graft": "83381aef518539c4fcb66cbc854fc6c7b75082eefab1442d059e09ef85cfc716"
+    },
+    "tools/flash_complete_nr.py": {
+      "main_before": "449bdccf6be0557bb7d41225b78060443529a9c070fbaaddaad41986143eaca4",
+      "graft": "97b84b5135f1c81a12536addb4b0d512345a41e604f2aff130d0aa94929ff6cc"
+    },
+    "tools/foundry/GRAVITY_METHOD_REGISTRY.json": {
+      "main_before": "05dee2c146267beb9222cbdf4df62eb0404903bb58273003e02bb8f4cb05ff4d",
+      "graft": "33d00842654faa7243e4f0093e72de7722f2a127c37cec1323616ec4ee4fb7a7"
+    },
+    "tools/foundry/query_gravity_methods.py": {
+      "main_before": "c0e43a1751f0e5137bd2165ac31d33b05fd0d9d4abfe22178c9a97788c4c01f9",
+      "graft": "d691cfffdbe9b89bc9d6866b0732c35be90e1cb4c48003dc35018b6e902f54e7"
+    },
+    "tools/foundry/tests/test_query_gravity_methods.py": {
+      "main_before": "f2ce7d42ef13b9f7e1caf1c20c7b384b8cd11d661418b01947e89b50d7737b03",
+      "graft": "2474f35d4addff91d7141e3a6bd231859c5607e892448de6e7e6167bfcfae6b9"
+    }
+  },
+  "authoritative_owners_now_landed": {
+    "action_and_serving": "ResolvedAction/revalidation crosses Rust selection, terminal action, resident switching, HTTP, and Web; typed Rust effective serving policy remains the serving/default owner.",
+    "provider_and_worker_lifecycle": "Hawkingd owns supervised executor/provider lifecycle. Restricted workers retain read-only/reason-only fences, no model-proposed generic shell, bounded spawning, and fail-closed cleanup.",
+    "gravity": "The current Flash accounting method retains its newer science while gaining typed adapter parsing, staging freshness, actual verifier identity, immutable verification, atomic promotion, and race rejection.",
+    "source_and_persistence": "Llama Q4_K/Q6_K packed-weight windows and Qwen Safetensors headers have one Rust owner. Optional bounded JSON-object reads, streaming/in-memory SHA-256, and JSON-compatible copies have one Python persistence owner.",
+    "causality_and_feedback": "AgentOS/Future causality shims use shared stamping/predicate infrastructure; the Rust fast test topology/policy lane is available for development feedback only, not an all-suite speed claim."
+  },
+  "preserved_newer_frontier": {
+    "gravity_and_nr": "Current registry content, Flash accounting, E-frontier dispositions, adapters, worker policy, and fail-closed NR admission were semantically retained rather than replaced by branch snapshots.",
+    "source_evidence": "Main's newer MODELLAKE_EVENTS.json and FLASH_E13_VOCABULARY_PREFLIGHT.json were retained. The latter remains WITHHELD_MISSING_VOCABULARY_CONTROL_PLAN with 248320 tensor rows, 248077 addressable tokenizer tokens, and 243 unresolved tail rows.",
+    "audit_integrity": "The disposable graft's GRAVITY_METHOD_FRONTIER_AUDIT_20260912.json was a truncated splice and was excluded. Canonical main's same-path receipt validates as JSON with SHA-256 908b666b8e7378edd830e4cbb1c0784edce90e3613ccf089f612bc81c0ee9db0.",
+    "execution_boundary": "No source-state/session artifact, ModelLake watcher configuration, or active source capture was changed."
+  },
+  "validation": {
+    "main_focused_python": "436 passed, 1 skipped, 28 subtests: action/serve/HTTP/Web, worker policy/lifecycle, persistence, Gravity, NR/accounting, E-frontier and source-route/static controls.",
+    "rust_fast_lane": "rust_test_fast.sh verify: 135 direct integration sources across 10 packages; policy: 11 passed; check all: passed.",
+    "affected_rust": "hawking-core llama_b9430_weight_window: 2 passed; hawking-core source_safetensors: 6 passed; hawking-serve lib: 56 passed.",
+    "workspace_compile": "cargo check --workspace --all-targets: passed; warnings are pre-existing/current-frontier unused-code and vendor cfg warnings, not integration failures.",
+    "static": "Changed Python py_compile, changed JSON json.tool plus canonical E13/audit JSON, and staged/unstaged git diff --check: passed."
+  },
+  "runtime": {
+    "daemon_or_web_restart": false,
+    "deployment": false,
+    "gpu_or_ane_execution": false,
+    "model_execution": false,
+    "weights_loaded": false,
+    "kimi_provider_started": false,
+    "observation": "No hawkingd, HCLI executor, Kimi/MLX provider, or Flash/Qwen execution child was observed. The pre-existing ModelLake watcher and Ollama service were observed but not modified."
+  },
+  "current_scientific_frontier": {
+    "sealed": ["E01", "E03", "E04", "E07"],
+    "bounded_survivor": "E02 lawful nonlinear expert sharing; replication remains required and it is not a usable representation.",
+    "source_gate": "E05/native bank-state remains blocked by the repeated-decode/reference discrepancy. The next expensive action is an independently admitted PLE-inclusive source greedy teacher with pinned source/tokenizer/prompt/state/shard identity and required raw F32 logits, not another ambiguous replay.",
+    "e06": "No canonical occupancy/entropy + predictor-cost + shuffled-null producer exists; none was fabricated.",
+    "e13": "Withheld pending exact tokenizer/tail-row contract; no silent truncation or vocabulary redefinition."
+  },
+  "remaining_authority_conflicts": [
+    "One generated typed action graph is still not the universal runtime owner.",
+    "Flash-adjacent runtime, source/admission, and broader method execution still have Rust/Python overlap outside this safe tranche.",
+    "Kimi remains an isolated transitional MLX-VLM research provider, never final Pulsar serving authority."
+  ],
+  "next_safe_boundary": "Do not restart a service from this receipt. Preserve rollback and wait for a safe runtime boundary. Resume source-bound correctness by obtaining the admitted PLE-inclusive greedy source teacher before any new full replay."
+}

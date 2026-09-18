@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.long_haul.v2.morning_checkpoint.v2",
+  "generated_at": "2026-09-18T18:06:03Z",
+  "goal_id": "GOAL-A52AB48501",
+  "checkpoint_kind": "post-http-boundary-hardening-live-checkpoint",
+  "baseline": "receipts/future/HAWKING_MASTER_LONG_HAUL_V2_OVERNIGHT_BASELINE_20260918.json",
+  "objective": {
+    "bound_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+    "full_objective_reread_this_pass": false,
+    "objective_rereads_this_pass": 0
+  },
+  "source": {
+    "v2_starting_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+    "current_head": "d66e3b9c8fff833603b6c7599c1e3d8875bb3ed3",
+    "worktree": "dirty; shared pre-existing changes are not attributed to this checkpoint",
+    "controlled_changes_since_prior_checkpoint": [
+      "serve.py flushes every direct byte-response path, including JSON/error and static HTML responses",
+      "remote WorkUnit semantic HTTP-200 misses remain typed and are not converted into local 502s",
+      "mutation contract propagation preserves existing regression-test paths and exact replace semantics",
+      "Auto acceptance circuit remains open and admits one canary only"
+    ]
+  },
+  "verification": {
+    "focused_tests": "139 passed in 17.08s",
+    "py_compile": "passed for serve.py, remote_cognition.py, workunit_owner.py",
+    "git_diff_check": "passed",
+    "broad_python": "not rerun; known missing-mlx and unrelated sparse-hcli failures remain tracked",
+    "http_runtime": "daemon PID 49342 healthy at 127.0.0.1:8014; resident=null; model=null; requested_model=hawking-auto"
+  },
+  "live_acceptance": {
+    "status": "RUNNING",
+    "phase": "V2_ACCEPTANCE_HANDSHAKE_REPAIR",
+    "accepted_heads": 79,
+    "accepted_read_evidence_tranches": 17,
+    "accepted_architectural_tranches": 1,
+    "accepted_implementation_tranches": 7,
+    "read_canary": "COMPLETE",
+    "mutation_canary": "REPAIRED_BUT_NOT_ACCEPTED",
+    "latest_canary": {
+      "workunit_id": "WORKUNIT-20260918-798510F6",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "state": "OUTPUT_UNUSABLE",
+      "classification": "MUTATION_PROPOSAL_UNACCEPTED",
+      "evidence": "HTTP request completed and repo.edit was invoked; deterministic focused test failed, so canonical acceptance correctly rejected the proposal",
+      "cost_usd": 0.001390476
+    },
+    "acceptance_circuit": "OPEN; at most one same-generation mutation canary; broad mutation fan-out withheld",
+    "runnable_frontier": "one bounded canary was admitted; no broad refill",
+    "waiting_dependencies": "native resident-role admission and physical qualification remain separate release conditions"
+  },
+  "provider_economics": {
+    "goal_ledger_worker_provider_cost_usd": 1.59369871,
+    "accepted_read_evidence_cost_usd": 0.527760698,
+    "accepted_provider_tranche_cost_usd": 0.0575418,
+    "cost_per_accepted_architectural_tranche_usd": 0.26992157,
+    "invoice_reconciliation": "NOT_YET_MEASURED; Goal telemetry is not treated as provider billing authority",
+    "model_routing": "DeepSeek primary for routine implementation; Kimi reserved for architecture/hard review; GLM remains bounded trial"
+  },
+  "runtime_health": {
+    "hawkingd_pid": 49342,
+    "requested_model": "hawking-auto",
+    "resident_model": null,
+    "active_provider_children": "none resident in daemon; provider requests are ephemeral",
+    "local_kimi_resident": false,
+    "health": "HTTP 200; waiting_for_native_runtime because no native artifact has an explicit resident role binding"
+  },
+  "true_release_blockers": [
+    "fresh mutation canary has not crossed repo.edit -> tests.run -> git.status -> git.diff -> accepted",
+    "native resident-role admission is absent",
+    "physical/runtime/hardware qualification remains unaccepted",
+    "P20 release convergence remains open"
+  ],
+  "ready_for_unattended_continuation": "YES",
+  "next_action": "preserve rejected canary evidence, admit the next fresh bounded canary through Auto, and reopen broad mutation fan-out only after one complete accepted canary"
+}

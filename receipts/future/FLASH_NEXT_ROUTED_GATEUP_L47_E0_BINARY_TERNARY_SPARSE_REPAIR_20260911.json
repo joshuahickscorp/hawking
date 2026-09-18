@@ -1,0 +1,176 @@
+{
+  "claim_boundary": "One selected source expert and complete scoped byte accounting with BF16 row scales. No held-out output objective, routing, activation/capability, direct execution, full-body EBPW, runtime, or TPS claim.",
+  "curves": {
+    "binary": [
+      {
+        "complete_bytes": 477824,
+        "complete_scoped_ebpw": 1.1665625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 409600,
+        "relative_l2": 0.6282172799110413,
+        "residual_entries": 0,
+        "residual_fraction": 0.0,
+        "residual_index_bytes": 0,
+        "residual_value_bytes": 0,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 497486,
+        "complete_scoped_ebpw": 1.2145654296875,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 409600,
+        "relative_l2": 0.5944885015487671,
+        "residual_entries": 3277,
+        "residual_fraction": 0.001,
+        "residual_index_bytes": 13108,
+        "residual_value_bytes": 6554,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 576128,
+        "complete_scoped_ebpw": 1.4065625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 409600,
+        "relative_l2": 0.5713247656822205,
+        "residual_entries": 16384,
+        "residual_fraction": 0.005,
+        "residual_index_bytes": 65536,
+        "residual_value_bytes": 32768,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 674432,
+        "complete_scoped_ebpw": 1.6465625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 409600,
+        "relative_l2": 0.5537964701652527,
+        "residual_entries": 32768,
+        "residual_fraction": 0.01,
+        "residual_index_bytes": 131072,
+        "residual_value_bytes": 65536,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 871040,
+        "complete_scoped_ebpw": 2.1265625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 409600,
+        "relative_l2": 0.5279219150543213,
+        "residual_entries": 65536,
+        "residual_fraction": 0.02,
+        "residual_index_bytes": 262144,
+        "residual_value_bytes": 131072,
+        "row_scale_bytes": 2560
+      }
+    ],
+    "ternary": [
+      {
+        "complete_bytes": 887424,
+        "complete_scoped_ebpw": 2.1665625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 819200,
+        "relative_l2": 0.9235973954200745,
+        "residual_entries": 0,
+        "residual_fraction": 0.0,
+        "residual_index_bytes": 0,
+        "residual_value_bytes": 0,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 907086,
+        "complete_scoped_ebpw": 2.2145654296875,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 819200,
+        "relative_l2": 0.9075126051902771,
+        "residual_entries": 3277,
+        "residual_fraction": 0.001,
+        "residual_index_bytes": 13108,
+        "residual_value_bytes": 6554,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 985728,
+        "complete_scoped_ebpw": 2.4065625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 819200,
+        "relative_l2": 0.8866360783576965,
+        "residual_entries": 16384,
+        "residual_fraction": 0.005,
+        "residual_index_bytes": 65536,
+        "residual_value_bytes": 32768,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 1084032,
+        "complete_scoped_ebpw": 2.6465625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 819200,
+        "relative_l2": 0.8705457448959351,
+        "residual_entries": 32768,
+        "residual_fraction": 0.01,
+        "residual_index_bytes": 131072,
+        "residual_value_bytes": 65536,
+        "row_scale_bytes": 2560
+      },
+      {
+        "complete_bytes": 1280640,
+        "complete_scoped_ebpw": 3.1265625,
+        "decoder_support_bytes": 65536,
+        "metadata_bytes": 128,
+        "packed_code_bytes": 819200,
+        "relative_l2": 0.8457601070404053,
+        "residual_entries": 65536,
+        "residual_fraction": 0.02,
+        "residual_index_bytes": 262144,
+        "residual_value_bytes": 131072,
+        "row_scale_bytes": 2560
+      }
+    ]
+  },
+  "generated_at": "2026-09-11T17:48:54.455660+00:00",
+  "matrix_shape": [
+    1280,
+    2560
+  ],
+  "next_gate": "Only a Pareto survivor with a valid runtime/resource path earns a held-out routed-output discriminator.",
+  "representation": {
+    "bases": [
+      "binary",
+      "ternary"
+    ],
+    "billed": {
+      "decoder_support_bytes": 65536,
+      "metadata_bytes": 128,
+      "residual_index_bytes": 4,
+      "residual_value_bytes": 2,
+      "row_scale_bytes": 2
+    },
+    "binary": "per-row BF16 mean-abs scale plus packed 1-bit sign code",
+    "repair": "largest residual entries, BF16 value plus uint32 flattened index",
+    "ternary": "per-row BF16 absmax scale plus packed 2-bit {-1,0,+1} code"
+  },
+  "schema": "hawking.odyssey.stacked_expert_binary_ternary_sparse_repair.v1",
+  "source": {
+    "dtype": "BF16",
+    "expert": 0,
+    "payload_bytes_read": 6553600,
+    "source_file": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00119-of-00131.safetensors",
+    "stacked_shape": [
+      512,
+      1280,
+      2560
+    ]
+  },
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "status": "STATIC_RATE_DISTORTION_ONLY",
+  "tensor": "model.language_model.layers.47.mlp.experts.gate_up_proj"
+}

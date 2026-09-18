@@ -1,0 +1,1461 @@
+{
+  "NOT_FOR_PROMOTION": true,
+  "aggregate": {
+    "active_bytes_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "active_weight_bytes_per_generated_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "actual_read_bytes_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "complete_wall_ns": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "complete_wall_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "decode": [],
+    "decode_steps": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "dispatches": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "dispatches_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "generated_token_ids": [],
+    "generated_token_ids_exact_and_stable": false,
+    "generated_tokens": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "gpu_ns": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "gpu_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "kernel_genome_exact_and_stable": false,
+    "kernel_genomes": [],
+    "native_wall_minus_gpu_ns": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "native_wall_minus_gpu_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "prefill": [],
+    "prefill_steps": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "resident_weight_bytes": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "transient_bytes_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "wall_minus_gpu_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "workspace_resident_bytes": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    }
+  },
+  "bench": {
+    "machine": "Darwin arm64 (macOS-27.0-arm64-arm-64bit-Mach-O)",
+    "note": "Protected persistent-resident complete-token measurement; the resident is stopped before the closing sample.",
+    "quiescence": {
+      "contenders": [
+        {
+          "comm": "(top)",
+          "cpu_pct": 67.6,
+          "pid": 33857,
+          "rss_gib": 0.01
+        }
+      ],
+      "max_rss_gib": 0.01,
+      "method": "enumerate",
+      "n_contenders": 1,
+      "no_name_filter": true,
+      "quiet": false,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 67.6
+    },
+    "recorded_at": "2026-09-18T10:23:18Z",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "samples": {
+      "after": {
+        "contenders": [
+          {
+            "comm": "(top)",
+            "cpu_pct": 67.6,
+            "pid": 33857,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.01,
+        "method": "enumerate",
+        "n_contenders": 1,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 67.6
+      },
+      "before": {
+        "contenders": [],
+        "max_rss_gib": 0.0,
+        "method": "enumerate",
+        "n_contenders": 0,
+        "no_name_filter": true,
+        "quiet": true,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 0
+      }
+    },
+    "state": "CONTENDED"
+  },
+  "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
+  "checks": {
+    "all_measurements_ok": false,
+    "all_requested_measurements_completed": false,
+    "capability_sanity": false,
+    "exact_kernel_genome_recorded": true,
+    "no_connector_restart": true,
+    "no_unqualified_promotion": true,
+    "one_persistent_pid_when_declared": true,
+    "profile_or_resident_started": true,
+    "required_physical_metrics_present": false,
+    "zero_fallbacks": false
+  },
+  "claim_boundary": "This receipt is a protected provider-neutral execution baseline when all physical metrics and quiescence checks pass. It never promotes a resident, representation, or model; a separate capability/quality verifier must accept any candidate.",
+  "contamination": [
+    "(top)"
+  ],
+  "elapsed_s": 544.442,
+  "errors": [
+    {
+      "message": "native generation: model: qwen38 mixed hybrid decode: qwen38 gated MHA (mha_decode_f32_qwen38_gated_tcb) is not in this commit's kernels; leave HAWKING_QWEN38_FUSE_ATTENTION_GATE off",
+      "phase": "setup",
+      "type": "HawkingNativeError"
+    }
+  ],
+  "experiment_contract": {
+    "complete_wall_includes_request_round_trip": true,
+    "complete_wall_minus_gpu_uses_complete_wall_scope": true,
+    "fusion_env_overrides_are_child_only": true,
+    "gpu_metric_must_be_provider_declared_or_explicitly_derived": true,
+    "machine_quiescence_before_and_after": true,
+    "missing_metrics_never_become_zero": true,
+    "native_subphase_residual_recorded_separately": true,
+    "one_experiment_at_a_time": true,
+    "one_persistent_resident": true,
+    "profile_and_source_mutation": false,
+    "promotion_requires_separate_capability_and_quality_gate": true
+  },
+  "finished_at": 1789726998.322556,
+  "fusion_env_overrides": {
+    "HAWKING_QWEN38_FAST": "1"
+  },
+  "health": {
+    "connector_restart_count": 0,
+    "final": {},
+    "health_fields_are_optional_provider_telemetry": true,
+    "model_open_count_declared_once": false,
+    "no_connector_restart": true,
+    "one_pid_reused": false,
+    "ready": {
+      "architecture": "unknown",
+      "artifact_inventory": {
+        "artifact_bytes": 10554328856,
+        "artifact_bytes_exact": true,
+        "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+        "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+        "mix_id": "mix_all_mlp_affine_g64_ls",
+        "n_tensors": 755
+      },
+      "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "backend": "hawking_native",
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+      "binary_sha256_16": "e5ceb5e0a4765d3d",
+      "capabilities": {
+        "features": {
+          "grammar": "supported",
+          "response_format": "unsupported"
+        },
+        "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+      },
+      "compiler": {
+        "language": "rust",
+        "profile": "release-fast",
+        "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+      },
+      "current_runtime": {
+        "complete_tps_current_measured": 24.4086,
+        "complete_tps_historical_qualified": 34.0,
+        "fallbacks": 0
+      },
+      "executable_profile": "release-fast",
+      "fallbacks": [
+        "transformers tokenizer fallback when unavailable"
+      ],
+      "family": "qwen3.8",
+      "fusion_env": {
+        "HAWKING_QWEN38_FAST": "1",
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "generation": {
+        "do_sample": false,
+        "enable_thinking": false,
+        "max_new_tokens": 2048,
+        "temperature": 0.0,
+        "top_k": 1,
+        "top_p": 1.0
+      },
+      "hot_bytes": null,
+      "limits": {
+        "context": 8192,
+        "max_new_tokens": 2048
+      },
+      "machine_genome": {},
+      "max_seq_len": 8192,
+      "mode": "resident",
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "param_class": "?B",
+      "physical_ebpw": 3.1393,
+      "pid": 33795,
+      "profile_schema": "hawking.provider.profile.v1",
+      "prompt_contract": {
+        "fallback_template": "qwen_closed_think",
+        "renderer": "qwen-chat-template-or-closed-think-fallback",
+        "token_count_authority": "native-resident"
+      },
+      "protocol": "hawking.qwen38.resident.v1",
+      "provider": "native",
+      "qualification": "capability 30/43 historical sealed contract",
+      "quantisation": "unknown",
+      "receipts": [
+        "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+        "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+      ],
+      "representation": {
+        "kind": "native-packed",
+        "physical_ebpw": 3.1393,
+        "weights_loaded_once": true
+      },
+      "require_fusion_env": false,
+      "resident_health": {
+        "model_open_count": 1,
+        "pid": 33795,
+        "protocol": "hawking.qwen38.resident.v1",
+        "ready": true,
+        "resident_identity": "sealed-3.14",
+        "restart_count": 0,
+        "weight_upload_count": 1
+      },
+      "resident_identity": "sealed-3.14",
+      "restart_count": 0,
+      "runtime": "hawking-native",
+      "runtime_env": {
+        "HAWKING_TRACE_DISPATCH": "1"
+      },
+      "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+      "tokenizer_sha256_16": "0997f410c57a1f4e"
+    },
+    "ready_pid": 33795,
+    "request_pids": [],
+    "weight_upload_count_declared_once": false
+  },
+  "identity": {
+    "child_fusion_env_overrides": {
+      "HAWKING_QWEN38_FAST": "1"
+    },
+    "child_runtime_env_overrides": {
+      "HAWKING_TRACE_DISPATCH": "1"
+    },
+    "profile": {
+      "architecture": "unknown",
+      "artifact_inventory": {
+        "artifact_bytes": 10554328856,
+        "artifact_bytes_exact": true,
+        "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+        "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+        "mix_id": "mix_all_mlp_affine_g64_ls",
+        "n_tensors": 755
+      },
+      "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+      "binary_sha256_16": "e5ceb5e0a4765d3d",
+      "capabilities": {
+        "features": {
+          "grammar": "supported",
+          "response_format": "unsupported"
+        },
+        "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+      },
+      "compiler": {
+        "language": "rust",
+        "profile": "release-fast",
+        "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+      },
+      "current_runtime": {
+        "complete_tps_current_measured": 24.4086,
+        "complete_tps_historical_qualified": 34.0,
+        "fallbacks": 0
+      },
+      "executable_profile": "release-fast",
+      "fallbacks": [
+        "transformers tokenizer fallback when unavailable"
+      ],
+      "family": "qwen3.8",
+      "fusion_env": {
+        "HAWKING_QWEN38_FAST": "1",
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "generation": {
+        "do_sample": false,
+        "enable_thinking": false,
+        "max_new_tokens": 2048,
+        "temperature": 0.0,
+        "top_k": 1,
+        "top_p": 1.0
+      },
+      "hot_bytes": null,
+      "limits": {
+        "context": 8192,
+        "max_new_tokens": 2048
+      },
+      "machine_genome": {},
+      "max_seq_len": 8192,
+      "mode": "resident",
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "param_class": "?B",
+      "physical_ebpw": 3.1393,
+      "profile_schema": "hawking.provider.profile.v1",
+      "prompt_contract": {
+        "fallback_template": "qwen_closed_think",
+        "renderer": "qwen-chat-template-or-closed-think-fallback",
+        "token_count_authority": "native-resident"
+      },
+      "protocol": "hawking.qwen38.resident.v1",
+      "provider": "native",
+      "qualification": "capability 30/43 historical sealed contract",
+      "quantisation": "unknown",
+      "receipts": [
+        "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+        "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+      ],
+      "representation": {
+        "kind": "native-packed",
+        "physical_ebpw": 3.1393,
+        "weights_loaded_once": true
+      },
+      "require_fusion_env": false,
+      "resident_identity": "sealed-3.14",
+      "runtime": "hawking-native",
+      "runtime_env": {
+        "HAWKING_TRACE_DISPATCH": "1"
+      },
+      "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+      "tokenizer_sha256_16": "0997f410c57a1f4e"
+    }
+  },
+  "interval_s": 30.0,
+  "machine": {
+    "architecture": "arm64",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O"
+  },
+  "machine_after": {
+    "contenders": [
+      {
+        "comm": "(top)",
+        "cpu_pct": 67.6,
+        "pid": 33857,
+        "rss_gib": 0.01
+      }
+    ],
+    "max_rss_gib": 0.01,
+    "method": "enumerate",
+    "n_contenders": 1,
+    "no_name_filter": true,
+    "quiet": false,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+    "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+    },
+    "total_cpu_pct": 67.6
+  },
+  "machine_snapshot": {
+    "after": {
+      "contenders": [
+        {
+          "comm": "(top)",
+          "cpu_pct": 67.6,
+          "pid": 33857,
+          "rss_gib": 0.01
+        }
+      ],
+      "max_rss_gib": 0.01,
+      "method": "enumerate",
+      "n_contenders": 1,
+      "no_name_filter": true,
+      "quiet": false,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 67.6
+    },
+    "before": {
+      "contenders": [],
+      "max_rss_gib": 0.0,
+      "method": "enumerate",
+      "n_contenders": 0,
+      "no_name_filter": true,
+      "quiet": true,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 0
+    }
+  },
+  "measurement_verdict": "INCONCLUSIVE",
+  "measurements": [],
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V3",
+  "profile_path": "/Users/scammermike/Downloads/hawking/hawking/hawking-native.sealed-3.14.json",
+  "promotion_allowed": false,
+  "protected_window": false,
+  "qualification": false,
+  "readiness_polls": [
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 20.3,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 35.5,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 33.5,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 50.2,
+            "pid": 21723,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.67,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 139.5
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 22.3,
+            "pid": 280,
+            "rss_gib": 1.4
+          },
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 20.0,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 34.1,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 31.8,
+            "pid": 180,
+            "rss_gib": 0.11
+          }
+        ],
+        "max_rss_gib": 1.4,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 108.2
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+            "cpu_pct": 179.8,
+            "pid": 560,
+            "rss_gib": 0.6
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 22.5,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 25.9,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "/usr/libexec/biomesyncd",
+            "cpu_pct": 89.4,
+            "pid": 22896,
+            "rss_gib": 0.02
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 44.3,
+            "pid": 23047,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.6,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 361.9
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 97.8,
+            "pid": 280,
+            "rss_gib": 1.45
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 26.7,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 23.0,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "/Library/Developer/CommandLineTools/usr/bin/git",
+            "cpu_pct": 99.2,
+            "pid": 23714,
+            "rss_gib": 0.01
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 73.2,
+            "pid": 23740,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 1.45,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 319.9
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 20.8,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 29.0,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 35.0,
+            "pid": 180,
+            "rss_gib": 0.11
+          }
+        ],
+        "max_rss_gib": 0.67,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 84.8
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 68.0,
+            "pid": 280,
+            "rss_gib": 1.42
+          },
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 38.1,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 30.6,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 28.7,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 75.0,
+            "pid": 25087,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 1.42,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 240.4
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 20.2,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 34.5,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 33.3,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "(top)",
+            "cpu_pct": 74.4,
+            "pid": 25858,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.67,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 162.4
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 39.1,
+            "pid": 280,
+            "rss_gib": 1.41
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 30.1,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 32.4,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 51.9,
+            "pid": 26525,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 1.41,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 153.5
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 34.0,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 32.1,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "/Library/Developer/CommandLineTools/usr/bin/git",
+            "cpu_pct": 97.9,
+            "pid": 27203,
+            "rss_gib": 0.01
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 58.8,
+            "pid": 27221,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.16,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 222.8
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 58.6,
+            "pid": 280,
+            "rss_gib": 1.39
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 24.8,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 36.1,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 68.6,
+            "pid": 27911,
+            "rss_gib": 0.01
+          },
+          {
+            "comm": "/Library/Developer/CommandLineTools/usr/bin/git",
+            "cpu_pct": 50.9,
+            "pid": 27922,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 1.39,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 239.0
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 20.0,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 34.9,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 32.0,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 42.7,
+            "pid": 28564,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.67,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 129.6
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 88.6,
+            "pid": 280,
+            "rss_gib": 1.45
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 28.0,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 31.2,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 66.4,
+            "pid": 29269,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 1.45,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 214.2
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/152.0.7977.83/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 20.5,
+            "pid": 54773,
+            "rss_gib": 0.67
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 37.4,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 35.7,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 27.1,
+            "pid": 29937,
+            "rss_gib": 0.0
+          }
+        ],
+        "max_rss_gib": 0.67,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 120.7
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 87.9,
+            "pid": 280,
+            "rss_gib": 1.44
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 30.2,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 31.0,
+            "pid": 180,
+            "rss_gib": 0.11
+          }
+        ],
+        "max_rss_gib": 1.44,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 149.1
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Resources/codex",
+            "cpu_pct": 66.4,
+            "pid": 68219,
+            "rss_gib": 0.48
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 29.2,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 34.2,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 52.3,
+            "pid": 31179,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 0.48,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 182.1
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 93.2,
+            "pid": 280,
+            "rss_gib": 1.42
+          },
+          {
+            "comm": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+            "cpu_pct": 29.9,
+            "pid": 33097,
+            "rss_gib": 0.16
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 26.5,
+            "pid": 180,
+            "rss_gib": 0.11
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 63.4,
+            "pid": 31884,
+            "rss_gib": 0.01
+          }
+        ],
+        "max_rss_gib": 1.42,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 213.0
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/usr/libexec/duetexpertd",
+            "cpu_pct": 98.8,
+            "pid": 94904,
+            "rss_gib": 0.09
+          },
+          {
+            "comm": "top",
+            "cpu_pct": 21.0,
+            "pid": 32543,
+            "rss_gib": 0.0
+          }
+        ],
+        "max_rss_gib": 0.09,
+        "method": "enumerate",
+        "n_contenders": 2,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 119.8
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+            "cpu_pct": 84.2,
+            "pid": 280,
+            "rss_gib": 1.45
+          },
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+            "cpu_pct": 310.7,
+            "pid": 560,
+            "rss_gib": 0.62
+          }
+        ],
+        "max_rss_gib": 1.45,
+        "method": "enumerate",
+        "n_contenders": 2,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 394.9
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": true,
+      "sample": {
+        "contenders": [],
+        "max_rss_gib": 0.0,
+        "method": "enumerate",
+        "n_contenders": 0,
+        "no_name_filter": true,
+        "quiet": true,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 0
+      }
+    }
+  ],
+  "ready_timeout_s": 3600.0,
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/HAWKING_MASTER_LONG_HAUL_V2_P11_NATIVE_FAST_PROFILE_DIAGNOSTIC_AUTOWAIT_20260918.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "request_contract": {
+    "max_new_tokens": 8,
+    "measure_requests": 3,
+    "prompt": "Return exactly: HAWKING_OK",
+    "same_prompt_for_all_requests": true,
+    "thinking_disabled": true,
+    "warmup_requests": 1
+  },
+  "request_timeout_s": 180.0,
+  "required_metrics": {
+    "all_required_metrics_present": false,
+    "fields": {
+      "complete_wall_ns_per_token": true,
+      "decode": true,
+      "dispatches_per_token": true,
+      "gpu_ns_per_token": true,
+      "kernel_genome": true,
+      "prefill": true,
+      "wall_minus_gpu_ns_per_token": true
+    },
+    "missing_for_generic_provider_is_explicit": true,
+    "optional_physical_fields": {
+      "active_bytes_per_token": false,
+      "actual_read_bytes_per_token": false,
+      "resident_weight_bytes": false,
+      "transient_bytes_per_token": false,
+      "workspace_resident_bytes": false
+    }
+  },
+  "resident_binary_override": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "resident_ready": {
+    "architecture": "unknown",
+    "artifact_inventory": {
+      "artifact_bytes": 10554328856,
+      "artifact_bytes_exact": true,
+      "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+      "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+      "mix_id": "mix_all_mlp_affine_g64_ls",
+      "n_tensors": 755
+    },
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "backend": "hawking_native",
+    "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "binary_sha256_16": "e5ceb5e0a4765d3d",
+    "capabilities": {
+      "features": {
+        "grammar": "supported",
+        "response_format": "unsupported"
+      },
+      "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+    },
+    "compiler": {
+      "language": "rust",
+      "profile": "release-fast",
+      "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+    },
+    "current_runtime": {
+      "complete_tps_current_measured": 24.4086,
+      "complete_tps_historical_qualified": 34.0,
+      "fallbacks": 0
+    },
+    "executable_profile": "release-fast",
+    "fallbacks": [
+      "transformers tokenizer fallback when unavailable"
+    ],
+    "family": "qwen3.8",
+    "fusion_env": {
+      "HAWKING_QWEN38_FAST": "1",
+      "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+      "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+      "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+    },
+    "generation": {
+      "do_sample": false,
+      "enable_thinking": false,
+      "max_new_tokens": 2048,
+      "temperature": 0.0,
+      "top_k": 1,
+      "top_p": 1.0
+    },
+    "hot_bytes": null,
+    "limits": {
+      "context": 8192,
+      "max_new_tokens": 2048
+    },
+    "machine_genome": {},
+    "max_seq_len": 8192,
+    "mode": "resident",
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "param_class": "?B",
+    "physical_ebpw": 3.1393,
+    "pid": 33795,
+    "profile_schema": "hawking.provider.profile.v1",
+    "prompt_contract": {
+      "fallback_template": "qwen_closed_think",
+      "renderer": "qwen-chat-template-or-closed-think-fallback",
+      "token_count_authority": "native-resident"
+    },
+    "protocol": "hawking.qwen38.resident.v1",
+    "provider": "native",
+    "qualification": "capability 30/43 historical sealed contract",
+    "quantisation": "unknown",
+    "receipts": [
+      "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+      "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+    ],
+    "representation": {
+      "kind": "native-packed",
+      "physical_ebpw": 3.1393,
+      "weights_loaded_once": true
+    },
+    "require_fusion_env": false,
+    "resident_health": {
+      "model_open_count": 1,
+      "pid": 33795,
+      "protocol": "hawking.qwen38.resident.v1",
+      "ready": true,
+      "resident_identity": "sealed-3.14",
+      "restart_count": 0,
+      "weight_upload_count": 1
+    },
+    "resident_identity": "sealed-3.14",
+    "restart_count": 0,
+    "runtime": "hawking-native",
+    "runtime_env": {
+      "HAWKING_TRACE_DISPATCH": "1"
+    },
+    "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "tokenizer_sha256_16": "0997f410c57a1f4e"
+  },
+  "schema": "hawking.agentos.protected_accelerator_benchmark.v1",
+  "started_at": 1789726453.880992,
+  "status": "FAILED",
+  "warmup": []
+}

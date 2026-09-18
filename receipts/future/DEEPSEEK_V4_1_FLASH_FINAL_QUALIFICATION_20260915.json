@@ -1,0 +1,105 @@
+{
+  "schema": "hawking.deepseek.final_qualification.receipt.v1",
+  "recorded_at": "2026-09-15",
+  "provider": "openrouter",
+  "model": {
+    "id": "deepseek/deepseek-v4.1-flash",
+    "name": "DeepSeek: DeepSeek V4.1 Flash",
+    "canonical_slug": "deepseek/deepseek-v4.1-flash-20260910",
+    "catalog_count_observed": 445,
+    "context_length": 1048576,
+    "capabilities_observed": [
+      "tools",
+      "tool_choice",
+      "structured_outputs",
+      "reasoning",
+      "reasoning_effort",
+      "max_tokens"
+    ],
+    "input_modalities": ["text", "image"],
+    "output_modalities": ["text"]
+  },
+  "budget": {
+    "hard_max_usd": 0.25,
+    "observed_cost_usd": 0.03147002,
+    "within_hard_max": true,
+    "provider_retries": 0
+  },
+  "usage": {
+    "prompt_tokens": 199800,
+    "completion_tokens": 2794,
+    "total_tokens": 202594,
+    "reasoning_tokens": null,
+    "provider_generation_turns": null,
+    "provider_generation_turns_note": "The current response envelope did not expose a separate generation-turn count."
+  },
+  "qualification": {
+    "status": "INCOMPLETE",
+    "corrected_score_out_of_100": 42.0,
+    "tool_trace_entries": 26,
+    "search_calls": 5,
+    "targeted_current_source_reads": 4,
+    "completed_successful_tools": [
+      "tools.catalog",
+      "fs.list",
+      "fs.search",
+      "fs.read",
+      "tests.list",
+      "git.status",
+      "git.diff"
+    ],
+    "requested_but_not_completed_tools": [
+      "filesystem.write",
+      "tests.run"
+    ],
+    "implementation": {
+      "worker_files_changed": [],
+      "authoritative_test_verified": false,
+      "disposable_test_count": 0,
+      "source_snapshot_changed": false
+    },
+    "repair_iterations": 0,
+    "git_observations": {
+      "status_observed": true,
+      "diff_observed": true,
+      "diff_grounded_in_worker_changes": false,
+      "disposable_scope_clean": false
+    },
+    "self_critique": {
+      "same_provider_instance": true,
+      "read_test_result": true,
+      "read_diff": true,
+      "useful_critique_signals_returned": false
+    },
+    "claim_boundary": "This run qualifies current-source archaeology and bounded read/research navigation only; it does not qualify autonomous mutation, testing, repair, or production Odyssey work."
+  },
+  "important_findings": [
+    "The exact live DeepSeek model ID was present in the refreshed OpenRouter catalog.",
+    "The worker used the current registry names fs.search and fs.read; repo.search and repo.read were not available in the current registry.",
+    "The worker completed current-source and evidence reads, then stopped before writing the disposable implementation or running tests.",
+    "No production Hawking, ModelLake, Odyssey, Flash, or Pulsar files were changed by this qualification.",
+    "The temporary fixture and worker output were discarded after grading."
+  ],
+  "comparison": {
+    "prior_deepseek_bakeoff_cost_usd": 0.010269654,
+    "prior_deepseek_bakeoff_tool_trace_entries": 7,
+    "prior_deepseek_bakeoff_token_usage": null,
+    "combined_deepseek_observed_cost_usd": 0.041739674,
+    "note": "The comparison is a small empirical sample; no accepted source change was produced in either disposable run."
+  },
+  "readiness": "CONDITIONAL",
+  "readiness_detail": {
+    "bounded_read_research": "READY",
+    "autonomous_odyssey_writer": "NOT_READY",
+    "production_promotion": "NOT_AUTHORIZED"
+  },
+  "authoritative_sources_consulted": [
+    "civilization/sovereign-goal.txt",
+    "docs/HAWKING_NEXT_GOAL_CONTINUITY_2026-09-10.md",
+    "docs/ULTRAGOAL_HANDOFF_2026-09-09.md",
+    "docs/odyssey-i.md",
+    "receipts/future/ODYSSEY_MISSION_CONTROLLER.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json"
+  ],
+  "next_action": "Hold the full Odyssey and requalify only after the bounded worker contract is repaired to force write, independent tests, repair, and grounded Git evidence within an explicitly authorized budget."
+}

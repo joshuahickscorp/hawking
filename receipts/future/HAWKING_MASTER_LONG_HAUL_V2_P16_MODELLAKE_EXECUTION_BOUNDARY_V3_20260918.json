@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.long_haul.v2.local_reconciliation_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P16_MODELLAKE_EXECUTION_BOUNDARY_V3",
+  "workunit_id": "WORKUNIT-20260918-3EC027E9",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "objective_digest_checked": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "full_objective_reread": false,
+  "claim_boundary": "Local Odyssey/ModelLake owner and gate evidence only; no download, experiment, or runtime qualification claim.",
+  "source_observation": {"hawking/odyssey.py":"41f616eddc2a485173099a8f3d089463fb4e9a1815f384f91891912fed223b7d","hawking/modellake_gate.py":"300c6dc1542c01ec242d39a32e6e9e822363bafcee0b0e8cfd81cd09cf321fb6","tools/odyssey/modellake_watch.py":"42b1d3088c64c95f5d2c87de805a54b8272984517163208f5421ba40f2c9b37f"},
+  "focused_verification": {"command":"python3 -m pytest -q hawking/test_odyssey.py hawking/test_modellake_index_mount_guard.py tools/odyssey/test_modellake_watch.py","result":"included in 146 passed, 1 deselected non-MLX suite"},
+  "accepted_invariants":["driver-owned ODYSSEY_STATE is read-only from Hawking","HAWKING_LEDGER is single-writer","continue/own verbs require confirm=True","no-phase-barrier ordering is preserved"],
+  "falsifier":"A gated continue/own verb mutates without confirm=True or Hawking writes driver-owned state."
+}

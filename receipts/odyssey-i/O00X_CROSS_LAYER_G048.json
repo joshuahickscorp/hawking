@@ -1,0 +1,138 @@
+{
+ "obligation": "G048",
+ "specimen": "Qwen3-0.6B",
+ "date": "2026-09-09",
+ "question": "Individual tensors being full-rank says nothing about 28 of them playing the same role. Do same-role tensors across layers share a basis a shared dictionary could exploit?",
+ "verdict": "REFUTED for storage, with a mechanism -- and one transferable structural finding",
+ "method": {
+  "pairwise": "overlap_r(i,j) = ||V_i^T V_j||_F^2 / r over top-64 right singular subspaces, for all 378 layer pairs per role.",
+  "null": "MEASURED, not assumed: 12 pairs of random orthonormal r-frames of the same shape. Two random r-dim subspaces of R^d overlap at r/d.",
+  "collective": "The number storage would actually exploit. Stack all 28 layers' top-r bases (1792 vectors) and take the rank holding 90% of the stack's energy, against a stack of random frames of identical shape."
+ },
+ "rows": [
+  {
+   "role": "mlp.gate_proj",
+   "layers": 28,
+   "in_dim": 1024,
+   "r": 64,
+   "pairwise_overlap_mean": 0.1062,
+   "pairwise_overlap_max": 0.3268,
+   "pairwise_null_mean": 0.0621,
+   "pairwise_ratio_vs_null": 1.71,
+   "stack_vectors": 1792,
+   "stack_rank90": 573,
+   "stack_rank90_random_control": 661,
+   "stack_ratio_vs_null": 0.867
+  },
+  {
+   "role": "mlp.up_proj",
+   "layers": 28,
+   "in_dim": 1024,
+   "r": 64,
+   "pairwise_overlap_mean": 0.0863,
+   "pairwise_overlap_max": 0.2436,
+   "pairwise_null_mean": 0.0631,
+   "pairwise_ratio_vs_null": 1.367,
+   "stack_vectors": 1792,
+   "stack_rank90": 596,
+   "stack_rank90_random_control": 661,
+   "stack_ratio_vs_null": 0.902
+  },
+  {
+   "role": "mlp.down_proj",
+   "layers": 28,
+   "in_dim": 3072,
+   "r": 64,
+   "pairwise_overlap_mean": 0.0221,
+   "pairwise_overlap_max": 0.024,
+   "pairwise_null_mean": 0.0207,
+   "pairwise_ratio_vs_null": 1.067,
+   "stack_vectors": 1792,
+   "stack_rank90": 1129,
+   "stack_rank90_random_control": 1145,
+   "stack_ratio_vs_null": 0.986
+  },
+  {
+   "role": "self_attn.q_proj",
+   "layers": 28,
+   "in_dim": 1024,
+   "r": 64,
+   "pairwise_overlap_mean": 0.1176,
+   "pairwise_overlap_max": 0.3121,
+   "pairwise_null_mean": 0.062,
+   "pairwise_ratio_vs_null": 1.896,
+   "stack_vectors": 1792,
+   "stack_rank90": 553,
+   "stack_rank90_random_control": 662,
+   "stack_ratio_vs_null": 0.835
+  },
+  {
+   "role": "self_attn.k_proj",
+   "layers": 28,
+   "in_dim": 1024,
+   "r": 64,
+   "pairwise_overlap_mean": 0.1321,
+   "pairwise_overlap_max": 0.3938,
+   "pairwise_null_mean": 0.0622,
+   "pairwise_ratio_vs_null": 2.123,
+   "stack_vectors": 1792,
+   "stack_rank90": 543,
+   "stack_rank90_random_control": 662,
+   "stack_ratio_vs_null": 0.82
+  },
+  {
+   "role": "self_attn.v_proj",
+   "layers": 28,
+   "in_dim": 1024,
+   "r": 64,
+   "pairwise_overlap_mean": 0.101,
+   "pairwise_overlap_max": 0.4248,
+   "pairwise_null_mean": 0.062,
+   "pairwise_ratio_vs_null": 1.631,
+   "stack_vectors": 1792,
+   "stack_rank90": 562,
+   "stack_rank90_random_control": 662,
+   "stack_ratio_vs_null": 0.849
+  },
+  {
+   "role": "self_attn.o_proj",
+   "layers": 28,
+   "in_dim": 2048,
+   "r": 64,
+   "pairwise_overlap_mean": 0.0342,
+   "pairwise_overlap_max": 0.0558,
+   "pairwise_null_mean": 0.0315,
+   "pairwise_ratio_vs_null": 1.085,
+   "stack_vectors": 1792,
+   "stack_rank90": 958,
+   "stack_rank90_random_control": 982,
+   "stack_ratio_vs_null": 0.976
+  }
+ ],
+ "why_refuted": "The collective measurement decides and it says no. gate_proj's 28 stacked bases span 573 dimensions where random frames span 661 -- sharing buys 88 of 1792, 13% below chance. down_proj buys 16 (1.4%). Break-even for a shared basis of rank R across 28 gate_proj layers is R=1012 of 1024 (1024R basis + 28*3072*R coefficients vs 28*3072*1024), so a 13% concentration is not close to paying for itself.",
+ "transferable_finding": {
+  "claim": "Cross-layer subspace alignment is a property of the INPUT SPACE, not of the role. Every organ that reads the RESIDUAL STREAM aligns above chance; every organ that reads a non-residual space sits at chance.",
+  "residual_readers_in_dim_1024": {
+   "self_attn.q_proj": 1.896,
+   "self_attn.k_proj": 2.123,
+   "self_attn.v_proj": 1.631,
+   "mlp.gate_proj": 1.71,
+   "mlp.up_proj": 1.367
+  },
+  "non_residual_readers": {
+   "mlp.down_proj": {
+    "in_dim": 3072,
+    "ratio_vs_null": 1.067
+   },
+   "self_attn.o_proj": {
+    "in_dim": 2048,
+    "ratio_vs_null": 1.085
+   }
+  },
+  "mechanism": "The residual stream is one shared object every layer reads from, so it carries a preferred basis and every reader partially aligns to it. down_proj reads the per-layer MLP intermediate and o_proj reads the head-concatenation space; neither is shared across layers, so neither has a common basis to align to. The split is exact in the data: 1.37-2.12x for all five residual readers, 1.07-1.08x for both non-residual readers.",
+  "status": "MEASURED ON ONE SPECIMEN. Stated as a transfer HYPOTHESIS, not a law: it predicts that on any residual-stream architecture the residual readers will align above chance and the writers will not, and it is falsified by a specimen where o_proj/down_proj align as well as q/k/v.",
+  "cheap_to_test": "Weights only, no forward pass, 35s on CPU for a 0.6B. Runs on any specimen already on disk."
+ },
+ "reopen_condition": "Cross-layer sharing reopens if a specimen shows a collective stack rank below ~50% of its random control, or if sharing is sought on the RESIDUAL-READER organs only, where the signal is real (up to 2.12x) even though it is too small to pay at this model's dimensions.",
+ "artifacts": "cross_layer.py / cross_layer.json"
+}

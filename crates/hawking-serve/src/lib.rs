@@ -6,12 +6,21 @@
 pub mod batch;
 pub mod glm_chat;
 pub mod http;
+pub mod policy;
 pub mod spec_gov;
 pub mod system_kv_bank;
 pub mod tool_calls;
 
 pub use batch::scheduler::BatchPolicy;
 pub use hawking_adapters::{bridge_surface_document, bridge_surface_json, EndpointStatus};
+pub use policy::{
+    apply_environment_operations, legacy_rust_serve_policy_input, resolve_front_door_profile,
+    resolve_rust_serve_policy, AutoPolicyArtifactFacts, AutoPolicyDecision, AutoPolicyMachineFacts,
+    AutoPolicySelection, EffectiveRustServePolicy, EnvironmentOperation,
+    EnvironmentOperationSource, EnvironmentValue, FrontDoorProfilePolicy, PolicyEnvironment,
+    PolicySource, Requested, ResolvedPolicyValue, RustServeEntry, RustServePolicyInput,
+    RustServePolicyRequest, RustServeRequestedControls,
+};
 pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};
 
 use anyhow::Result;
@@ -107,8 +116,8 @@ impl RuntimeProfile {
     /// Policy: which profile an UNSET `--profile` resolves to on the CLI front
     /// door. The ONE place the "fast is the default" decision lives. The library
     /// default (`RuntimeProfile::Default`) is deliberately NOT changed — embedders
-    /// and serve integration tests keep the conservative default;
-    /// only the CLI `generate`/`bench` front door flips.
+    /// and serve integration tests keep the conservative default; Hawking CLI
+    /// front doors (`generate`, `bench`, and `serve`) apply this policy.
     pub fn default_when_unset() -> Self {
         Self::Fast
     }
@@ -400,6 +409,9 @@ pub struct ServeOptions {
     /// SSE keep-alive interval in seconds. `None` uses axum's default for
     /// non-gravity; gravity serve sets [`GRAVITY_DEFAULT_SSE_KEEP_ALIVE_SECS`].
     pub sse_keep_alive_secs: Option<u64>,
+    /// Presence-aware policy request supplied by the Hawking CLI. Direct
+    /// embedders may omit it and retain the legacy ServeOptions adapter.
+    pub policy_request: Option<RustServePolicyRequest>,
 }
 
 impl Default for ServeOptions {
@@ -428,6 +440,7 @@ impl Default for ServeOptions {
             workload: WorkloadPack::Default,
             request_timeout_secs: None,
             sse_keep_alive_secs: None,
+            policy_request: None,
         }
     }
 }
@@ -525,88 +538,23 @@ fn require_glm_fast_intake(expected_index_sha256: Option<&str>) -> Result<()> {
 pub async fn run(opts: ServeOptions) -> Result<()> {
     use hawking_core::{profile::KernelProfile, EngineConfig, SpeculateMode};
 
-    // ── Track 9.3: apply workload-pack defaults ───────────────────────────────
-    // Pack defaults are applied FIRST so that explicit per-flag values (profile,
-    // energy_mode, batch_policy, f16_kv) set later always win over them.
-    // The pack only influences fields that are still at their zero-values
-    // (Default/Off/None) — this is expressed by the caller setting fields to
-    // non-default values to override. Because opts is already parsed before
-    // run() is called, we derive an "effective" set here and shadow opts.
-    let (effective_profile, effective_energy, effective_batch_policy) = {
-        let (pack_profile, pack_energy, pack_policy) = opts.workload.defaults();
-        // Explicit flags win: use opts value when it is non-Default/non-Off/non-None.
-        let profile = if opts.runtime_profile != RuntimeProfile::Default {
-            opts.runtime_profile.clone()
-        } else {
-            pack_profile
-        };
-        let energy = if opts.energy_mode != EnergyMode::Off {
-            opts.energy_mode.clone()
-        } else {
-            pack_energy
-        };
-        let policy = if opts.batch_policy != BatchPolicy::Default {
-            opts.batch_policy.clone()
-        } else {
-            pack_policy
-        };
-        (profile, energy, policy)
-    };
+    // The resolver is pure and records every legacy sentinel/environment
+    // decision. This adapter snapshots then applies its ordered result, so
+    // direct embedders retain the pre-existing behavior while callers migrate
+    // to explicit presence-aware requests.
+    let inherited_environment = PolicyEnvironment::from_process();
+    let policy_input = opts
+        .policy_request
+        .clone()
+        .map(|request| request.with_inherited_environment(inherited_environment.clone()))
+        .unwrap_or_else(|| legacy_rust_serve_policy_input(&opts, inherited_environment));
+    let effective_policy = resolve_rust_serve_policy(policy_input);
+    apply_environment_operations(&effective_policy.environment_operations);
+    let effective_workload = effective_policy.workload.value.clone();
+    let effective_profile = effective_policy.runtime_profile.value.clone();
+    let effective_energy = effective_policy.energy_mode.value.clone();
+    let effective_batch_policy = effective_policy.batch_policy.value.clone();
     let max_prefill_tokens = opts.max_prefill_tokens.unwrap_or(usize::MAX);
-
-    // ── Serve-mode optimisation defaults ─────────────────────────────────────
-    // These are the same knobs that `hawking generate --kernel-profile` uses.
-    // Each can be overridden by the caller's environment (set var before invoking
-    // the server). We only set them when the variable is absent so that explicit
-    // HAWKING_QWEN_*=0 opt-outs are honoured.
-    for (var, val) in [
-        ("HAWKING_QWEN_Q4K_PREDEC", "1"), // pre-decoded scales → fast GEMV
-        ("HAWKING_QWEN_Q4K_LMHEAD", "1"), // GPU Q4K LM-head (vs CPU f16)
-        ("HAWKING_QWEN_VOCAB_PRUNE", "32000"), // prune to 32K most-frequent tokens
-        ("HAWKING_QWEN_TCB", "1"),        // token command buffers
-        ("HAWKING_QWEN_FFN_DOWN_Q4K", "1"), // FFN down Q4K path
-    ] {
-        if std::env::var_os(var).is_none() {
-            std::env::set_var(var, val);
-        }
-    }
-
-    // ── Apply runtime profile env overrides ──────────────────────────────────
-    // Fast / Race / Efficient: opt into the both-metrics-optimal fast-path.
-    // Exact: clear quality-trade vars so the path is bit-identical.
-    // All of these respect explicit HAWKING_QWEN_*=0 opt-outs set before launch.
-    // Single source of truth = RuntimeProfile::lever_plan() (shared with the CLI
-    // generate path). set_if_unset respects explicit HAWKING_QWEN_*=0 opt-outs;
-    // force_off enforces Exact's bit-identity even if a quality-trade var was set.
-    let plan = effective_profile.lever_plan();
-    for (k, v) in &plan.set_if_unset {
-        if std::env::var_os(k).is_none() {
-            std::env::set_var(k, v);
-        }
-    }
-    for k in &plan.force_off {
-        std::env::set_var(k, "0");
-    }
-
-    // ── Track 5.3: f16 KV cache env var ─────────────────────────────────────
-    // Race and Efficient profiles enable f16 KV by default: halves KV memory
-    // and frees bandwidth for long-context workloads. Fast/Exact/Default leave
-    // it off to preserve bit-identity with the exact path.
-    //
-    // The per-field override (`opts.f16_kv`) wins over the profile default:
-    //   Some(true)  → force on regardless of profile
-    //   Some(false) → force off regardless of profile
-    //   None        → use the profile/workload default
-    {
-        let profile_wants_f16_kv = plan.f16_kv.unwrap_or(false);
-        let enable = match opts.f16_kv {
-            Some(v) => v,
-            None => profile_wants_f16_kv,
-        };
-        if enable && std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
-            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-        }
-    }
 
     let speculate_mode = SpeculateMode::from_cli(opts.speculate.as_deref(), false)
         .map_err(|e| anyhow::anyhow!("{e}"))?;
@@ -614,13 +562,9 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    // concurrent_qkv: ON for fast/race/efficient — overlaps Q/K/V projections
-    // on-GPU via MTLDispatchTypeConcurrent. +1.68% at B=1 (below prior +5% gate)
-    // but valuable for the race/efficient profile throughput maximization.
-    let concurrent_qkv = plan.concurrent_qkv
-        || std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+    // The projected answer preserves current profile-or-env semantics for
+    // concurrent Q/K/V while making its inherited-value precedence inspectable.
+    let concurrent_qkv = effective_policy.concurrent_qkv;
 
     let cfg = EngineConfig {
         max_seq_len: 4096,
@@ -747,7 +691,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
              \x20 expected lanes:     greedy → token-only, sampled → full logits\n\
              \x20 full-logits cost:   B×vocab×4 bytes per step (~{full_logits_mb:.1} MB at B={max_batch}, Qwen)\n\
              \x20 greedy-lane cost:   B×4 bytes per step ({greedy_bytes} bytes at B={max_batch})",
-            opts.workload,
+            effective_workload,
         );
     }
 

@@ -33,7 +33,7 @@ def main() -> int:
     if len(sys.argv) < 2:
         print("usage: goal_preview.py <goal-file>")
         return 2
-    from hcli.goal import GoalCompiler
+    from hawking.goal import GoalCompiler
 
     text = pathlib.Path(sys.argv[1]).read_text()
     c = GoalCompiler()

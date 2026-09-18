@@ -1,5 +1,6 @@
 #![cfg(target_os = "macos")]
 use half::f16;
+use hawking_core::kernels::megakernel::qwen3b_pass_through_poc_plan;
 use hawking_core::kernels::megakernel::{
     megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner, MK_PROBE_ATTN_OUT,
     MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0,
@@ -33,6 +34,18 @@ const RTOL_MULTILAYER: f32 = 2e-2;
 /// guidance on comparing networks up to ~1% relative without flagging
 /// model-correctness regressions.
 const ATOL_MULTILAYER: f32 = 5e-3;
+
+#[test]
+fn qwen3b_poc_declares_its_shared_spine_boundary() {
+    let plan = qwen3b_pass_through_poc_plan();
+    assert_eq!(plan.model_id, "qwen2.5-3b-style-dense-poc");
+    assert_eq!(plan.registered_native_lowerings.len(), 1);
+    let lowering = &plan.registered_native_lowerings[0];
+    assert_eq!(lowering.lowering_id, "qwen3b_metal_pass_through_poc");
+    assert!(!lowering.source_parity_verified);
+    assert!(!lowering.full_model_execution_verified);
+    assert!(!lowering.promotion_eligible);
+}
 fn weights_path() -> PathBuf {
     if let Ok(p) = std::env::var("HAWKING_QWEN_GGUF") {
         return PathBuf::from(p);

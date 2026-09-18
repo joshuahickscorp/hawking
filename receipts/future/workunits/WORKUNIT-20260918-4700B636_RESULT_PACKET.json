@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "76f942a682e51218eed5c6e1c9c3dee08d10241342e4ea2dd2758b3b13290106",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:22:32.852160+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:22:32.852184+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:22:32.855364+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"tools/future/gravity_nova_lineage.py lines 1-120 define SCHEMA='hawking.gravity.nova_lineage.v1' and POLICY_PREREG_SCHEMA='hawking.gravity.nova_policy_adapter_preregistration.v1'.\",\"The module docstring states it is a smal",
+      "outcome": "CONTINUE",
+      "reply_chars": 2330,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"tools/future/gravity_nova_lineage.py lines 1-120 define SCHEMA='hawking.gravity.nova_lineage.v1' and POLICY_PREREG_SCHEMA='hawking.gravity.nova_policy_adapter_preregistration.v1'.\",\"The module docstring states it is a small pure validation function used before a candidate can cross the Noetic/NX bridge; it does not load weights, write an artifact, or promote a candidate.\",\"validate() returns an explicit acceptance/refusal and treats missing fields as refusals rather than inferred defaults.\",\"validate() defaults expected_parent_identity='KIMI_BASE' and checks parent.identity, parent.artifact_hash, descendant.identity, descendant.artifact_hash, objective, and transformation fields.\",\"TRANSFORMATION_FIELDS are kind, changed_tensors, train_set, freeze_set, data_class, teacher, optimization_objective, and representation_constraints.\",\"If train_set and freeze_set overlap, validate() appends an error.\",\"No current Hawking-owned P8 NOVA owner, focused test path, protected boundary, writer/effect scope, or follow-on contract was observed in the read range.\"],\"sources\":[{\"path\":\"tools/future/gravity_nova_lineage.py\",\"lines\":\"1-120\",\"sha256\":\"a69f8a5cb9582d3161fc71cd9d8254dbd777c8023460f54825dc204bf1dfb5b6\"}],\"recommendations\":[\"Next bounded read: tools/future/test_gravity_nova_lineage.py with narrow symbol/range reads to identify focused tests and expected refusal/acceptance cases.\",\"Next bounded read: docs/HANDOFF.md NOVA sections to identify the current Hawking-owned P8 NOVA owner, protected boundary, and smallest admit-ready follow-on contract.\",\"Continuation capsule: {\\\"next_action\\\":\\\"read test_gravity_nova_lineage.py and HANDOFF.md NOVA sections\\\",\\\"reason\\\":\\\"owner, focused tests, protected boundary, and follow-on contract were not in the observed range\\\",\\\"expected_evidence\\\":\\\"exact line citations for owner, focused tests, writer/effect scope, and one falsifier\\\",\\\"tool_family\\\":\\\"fs.read\\\"}\"],\"unresolved_questions\":[\"Who is the current Hawking-owned P8 NOVA owner?\",\"What are the focused tests in tools/future/test_gravity_nova_lineage.py?\",\"What is the protected boundary and writer/effect scope?\",\"What is the smallest admit-ready follow-on contract?\",\"What is one falsifier for the NOVA lineage validation contract?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-1efc75079f154082",
+  "worker_id": "hawking-worker-245c38f6f7f046ef",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-4700B636"
+}

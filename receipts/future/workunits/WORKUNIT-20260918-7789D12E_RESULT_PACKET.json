@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 3,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "campaign.state",
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "a34d506073ee9598675a26a35c75d6a71fe07483f9e43882d9bfc23da9e2d00c",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:04:53.149553+00:00",
+      "calls_used": 3,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:04:53.149576+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:04:53.153287+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Bounded source search across the admitted source corpus (roots: hawking/, crates/, tools/, app/, native/, visionmcp/; 5001 files seen, 152 skipped large) for the case-insensitive pattern family apple|metal|ane|ANE|Metal re",
+      "outcome": "CONTINUE",
+      "reply_chars": 3682,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Bounded source search across the admitted source corpus (roots: hawking/, crates/, tools/, app/, native/, visionmcp/; 5001 files seen, 152 skipped large) for the case-insensitive pattern family apple|metal|ane|ANE|Metal returned ZERO matches; no CPU/Metal/ANE backend owners, capability probes, registrations, callers, or focused tests were observable in the admitted source roots.\",\"Repository root listing confirms native/ and crates/ directories exist and were inside the searched roots, so the absence of matches is not explained by those directories being unsearched; the Apple accelerator backend contract referenced by P12_APPLE_BACKEND has no observable code footprint in this snapshot's source corpus.\",\"The search index reported an expansion route to corpus 'all-authorized', indicating the admitted source corpus is a strict subset of the repository (tests, docs, receipts, and generated evidence were excluded by the source-corpus policy), so the contract may exist only as planning/receipt artifacts rather than code.\",\"No files were mutated, no tests were run, no git mutation occurred, and the previous DeepSeek Worker Packet was not replayed; all findings are negative findings from read-only inspection.\",\"No production Metal or ANE hardware qualification was established, observed, or claimed; no capability probe output for Apple silicon exists in the observed evidence.\"],\"sources\":[\"fs.search pattern='apple|metal|ane|ANE|Metal' corpus=source root=/Users/scammermike/Downloads/hawking -> matches=[], files_seen=5001, skipped_large=152, index_revision=fs-scope-v1:15dd6bdca95a46e68055aafe2bd18f5509f86eacadb936c23f9b64c2f4641464\",\"fs.list path='.' root=/Users/scammermike/Downloads/hawking -> top-level directories including hawking/, crates/, native/, tools/, app/, visionmcp/, receipts/, docs/, tests/\",\"campaign.state -> sovereign goal context and recent evidence receipts (no Apple-backend receipts among recent_evidence)\"],\"recommendations\":[\"Bounded disjoint follow-on tranche: run one all-authorized-corpus search (the expansion route the source search itself advertised) for the contract identifiers 'P12_APPLE_BACKEND', 'accelerator backend', 'capability probe', 'CoreML', 'MLX', and 'ggml-metal' across docs/, receipts/, research/, and tests/ to determine whether the Apple backend contract exists as a planning artifact, a receipt, or not at all; this is disjoint from the completed source-corpus search and requires no mutation.\",\"Falsifiable blocker if the follow-on is declined: the claim 'an Apple accelerator backend contract exists in this repository' is falsified for the admitted source corpus; any future WorkUnit asserting Metal/ANE owners must cite a file path that a bounded search can independently confirm before architecture review work is scheduled.\",\"Do not schedule Metal/ANE hardware qualification work from this evidence base; per the sovereign law that physical claims follow physical measurement, qualification requires an on-device probe receipt that does not yet exist.\"],\"unresolved_questions\":[\"Does the P12_APPLE_BACKEND contract exist anywhere outside the admitted source corpus (docs/, receipts/, research/, .worktrees/, or generated evidence), or is it a planning label with no artifact behind it?\",\"If an Apple backend is intended, which module is designated as its owner, and why does no capability probe, registration, or caller reference apple/metal/ane terminology in the searched source?\",\"Is there a prior Worker Packet or receipt (outside recent_evidence) that defined the Apple backend contract terms this review was asked to inspect?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-92160b18b7664572",
+  "worker_id": "hawking-worker-91e33691bf3546ec",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-7789D12E"
+}

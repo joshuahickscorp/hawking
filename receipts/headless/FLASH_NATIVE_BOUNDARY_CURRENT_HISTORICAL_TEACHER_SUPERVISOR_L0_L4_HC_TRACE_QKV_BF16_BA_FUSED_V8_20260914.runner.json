@@ -1,0 +1,183 @@
+{
+  "schema": "hawking.flash.native_source_boundary_runner.v1",
+  "status": "CAPTURED_NATIVE_LAYERS_0_THROUGH_4_TOKEN_0_WITH_OWNER_BOUND_SOURCE_PLE_INJECTION",
+  "source_reference": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "authorization_binding_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+    "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+    "owner_authorization": {
+      "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+      "schema": "hawking.flash.external_greedy_reference_local_canonical_admission.v1",
+      "authorization_scope": "admit_external_greedy_reference_v2",
+      "path": null,
+      "sha256": null,
+      "owner_signature_required": false,
+      "owner_signature_present": false,
+      "science_status": "UNEARNED",
+      "science_unearned": true,
+      "producer_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+      "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+      "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+      "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+      "sibling_capture": {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+        "sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+        "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED",
+        "hawking_packager_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+        "hawking_packager_sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6",
+        "historical_owner_authorization_required_suffix": true,
+        "historical_suffix_policy": "CAPTURED_...__OWNER_AUTHORIZATION_REQUIRED remains a sealed historical label; local-canonical admission supersedes the Ed25519 mandate without mutating capture.json."
+      },
+      "historical_git_snapshot": "a9c8b603fe2f06311324582ca722c55fd32aefb8",
+      "contract_status_vocabulary_note": "EXTERNAL_REFERENCE_STATUS names a sealed-complete source greedy reference; authority is admission_class, and science_status remains UNEARNED until ordered compare.",
+      "policy_note": "Detached machine-owner Ed25519 is not required for provenance-complete canonical local source captures. Scientific correctness remains unearned and is established only by later source/native comparison.",
+      "claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion."
+    }
+  },
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V5_LAYER0_HC_PRECISION_TRACE_20260914.json",
+    "sha256": "2184f3384e7d910567d63ce8a10e3f400d7c93971b267baefe6b4fd1034187b1",
+    "seal_sha256": "11cfef02c012886d9a29708f074267c2a2a1467cb1342e9f517e8587129294b5"
+  },
+  "source_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/capture.json",
+    "sha256": "2e55dbe6c28ef1304e53f7523c2e9d34e3dc1a925d594bdaa54c0b5958cf2b63",
+    "seal_sha256": "4129097399b4c5db4a02283452998d0b87b8c08f0bf43ec58e4a30c929e407a9"
+  },
+  "native_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.json",
+    "sha256": "06514d78b9486c4a99e970a71914d1e1c121fa16f564a2b62dcdc75b55edf5a9",
+    "seal_sha256": "a2a2bc296e5463c644a17b147629c40b7e70f2372285d5da7a35d3eb1d1522af",
+    "schema": "hawking.flash.native_source_boundary_capture.v1",
+    "status": "CAPTURED_NATIVE_LAYERS_0_THROUGH_4_TOKEN_0_WITH_SOURCE_PLE_INJECTION",
+    "capture_scope": null,
+    "seam_count": 14,
+    "layer0_trace_count": 9,
+    "attention_hc_norm_precision": {
+      "accumulation_dtype": "F32",
+      "logical_dtype": "BF16",
+      "mode": "SOURCE_BF16_ROUNDTRIP_AFTER_EACH_ATTENTION_HC_STAGE_FULL_PAIRWISE_F32_REDUCTION",
+      "reduction_threadgroup_size": 256,
+      "reduction_topology": "CONTIGUOUS_FULL_PAIRWISE_F32",
+      "rounding_points": [
+        "after attention HyperConnection grouped RMSNorm",
+        "after attention HyperConnection down projection",
+        "after attention HyperConnection SiLU",
+        "after attention HyperConnection up projection"
+      ],
+      "scope": "explicit bounded source-boundary diagnostic only",
+      "storage_dtype": "F32 carrier with BF16-representable values"
+    }
+  },
+  "build": {
+    "captured_before_native_execution": true,
+    "attestation": "observed_executable_and_source_closure_only",
+    "compiler_provenance_attested": false,
+    "promotion_allowed": false,
+    "git_head": "8f10e8bb8ad4b1888c024a22db67b24472cf30f8",
+    "git_status_porcelain_sha256": "c33fee77b75fa5ae4305a090a6e4f597111fc450c66b4375163f5bdfb53bd56b",
+    "worktree_dirty": true,
+    "rustc_version": "rustc 1.94.1 (e408947bf 2026-03-25) (Homebrew)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-apple-darwin\nrelease: 1.94.1\nLLVM version: 21.1.8",
+    "native_executable": {
+      "path": "target/flash-task029-attention-only-trace-speed-20260914/release/examples/flash_stateful_complete_token_session",
+      "sha256": "c600927460d7685777e6ffbedcc87751c197e97162bd6f0894b32713a1ed9d7f"
+    },
+    "source_closure": [
+      {
+        "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+        "sha256": "8fae155610a5ce497a0569def5095cca1706ca83ef504fd27d8f8005fa78b541"
+      },
+      {
+        "path": "crates/hawking-core/src/lib.rs",
+        "sha256": "a01560292aeb546411630310de6d7993692efc712628edbb5f119475d577349b"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+        "sha256": "3bd81e2d1af92f377c21e20efd71cd2b145025275e7bf612c53c918cb8630ed4"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "acb0e7dcf641e948a590d0a1517dd3b5c810a52895ec13d177e324258c55813a"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "d271e0a8618ae3de8515e67451ae89354d8db95432e91039f00fd877772ce4c7"
+      },
+      {
+        "path": "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+        "sha256": "e6d61c0effd4c25ed84d8e8d88f6132835926f4751e57b3e2c4dba58f1513602"
+      },
+      {
+        "path": "crates/hawking-core/src/flash_ple.rs",
+        "sha256": "bf9b9940e6a00eddea5f10c3067083232e56078ba0987a9c6c86d1ea1a95495c"
+      },
+      {
+        "path": "crates/hawking-core/src/model/source_safetensors.rs",
+        "sha256": "7cba58d2595a68c02d3b62271a8344bae837f3c9622f9f4978ddb26e5ce2c7eb"
+      },
+      {
+        "path": "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+        "sha256": "e614040d20f816ccd188f8607c578c8d0cb261177197f12d61d9c874e82aef5c"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "678c5a7eb4634fbf11272cc1202357ac55c47250645ed291b2a0f262aff43d61"
+      }
+    ]
+  },
+  "command": [
+    "/Users/scammermike/Downloads/hawking/target/flash-task029-attention-only-trace-speed-20260914/release/examples/flash_stateful_complete_token_session",
+    "--root",
+    "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "--token-ids",
+    "5423",
+    "--out",
+    "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NATIVE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_L0_L4_HC_TRACE_QKV_BF16_BA_FUSED_V8_20260914.json",
+    "--capture-source-boundary",
+    "--source-post-ple-state",
+    "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/seam-03-ple_additive_output.f32",
+    "--source-post-ple-state-sha256",
+    "c278efff956911998b1fd5941f954616be22d1356e3627f9af3efece51cb8ee6",
+    "--source-boundary-capture-sha256",
+    "2e55dbe6c28ef1304e53f7523c2e9d34e3dc1a925d594bdaa54c0b5958cf2b63",
+    "--source-boundary-preflight-sha256",
+    "2184f3384e7d910567d63ce8a10e3f400d7c93971b267baefe6b4fd1034187b1",
+    "--wrapper-admitted-source-control",
+    "--supervising-launcher-pid",
+    "16132",
+    "--diagnostic-attention-hc-source-bf16-stages",
+    "--diagnostic-attention-hc-norm-full-pairwise"
+  ],
+  "diagnostic_attention_hc_source_bf16_norm": false,
+  "diagnostic_attention_hc_source_bf16_stages": true,
+  "diagnostic_attention_hc_norm_threadgroup": 256,
+  "diagnostic_attention_hc_norm_full_pairwise": true,
+  "comparison_performed": false,
+  "promotion_allowed": false,
+  "source_post_ple_state": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_SUPERVISOR_LAYER0_HC_PRECISION_TRACE_20260914/seam-03-ple_additive_output.f32",
+    "sha256": "c278efff956911998b1fd5941f954616be22d1356e3627f9af3efece51cb8ee6",
+    "dtype": "F32_LE",
+    "elements": 10240,
+    "bytes": 40960
+  },
+  "teacher_injection": {
+    "layer": 1,
+    "native_ple_implemented": false,
+    "ordinary_inference_dependency_allowed": false,
+    "purpose": "diagnostic localization beyond the missing native PLE seam"
+  },
+  "claim_boundary": "Bounded admitted (owner-authorized or local-canonical) native payload capture only. It injects one source PLE state and cannot establish native PLE, complete source parity, complete inference, EBPW/TPS/capability, deployment, Pulsar promotion, or Kimi retirement. science_status=UNEARNED.",
+  "seal_sha256": "a5ac93e3b6049aaed5a587d05d426a880b2eadc55270db8c58be1506528b6b7a"
+}

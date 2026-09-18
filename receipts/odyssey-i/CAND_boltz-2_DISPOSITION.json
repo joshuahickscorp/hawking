@@ -1,0 +1,30 @@
+{
+ "obligation": "G093",
+ "architecture": "Boltz-2 -- AlphaFold3-class biomolecular structure and binding-affinity predictor, PyTorch Lightning checkpoints",
+ "execution_class": "scientific inference over a pairformer trunk; NOT autoregressive, no tokenizer, no KV cache",
+ "why_it_was_open": "ships boltz2_aff.ckpt and boltz2_conf.ckpt with NO config.json at all; the census reader needed metadata that was never written",
+ "structure": "two separate models (confidence 2.13 GiB, affinity 1.92 GiB); pairformer blocks repeat 64x with 128 proj_z tensors; Lightning optimizer_states and an EMA copy present in the archive",
+ "gravity_note": "SHIPPED ENTIRELY IN FP32. Complete EBPW 32.031 across 1.085B matrix params. Every other specimen in the lake is bf16 or lower. A bf16 cast is a 2x file win before any Gravity work begins, and the interesting question is not whether it compresses but why nobody has taken the free half.",
+ "capability_note": "domain-specific; no language capability, so the campaign's verifier (perplexity/top-1/KL over text) does not apply and a structural-accuracy verifier would have to be built first",
+ "disposition": "RESEARCH SPECIMEN -- fp32 headroom is a real and cheap finding; deep Gravity work is DEFERRED because the verifier does not exist and building one is a separate campaign",
+ "reopen": "if a structure-prediction verifier is built, this is the lake's only fp32 body and therefore its cleanest headroom test",
+ "date": "2026-09-09",
+ "identity": "boltz-community--boltz-2@6fdef46d763f",
+ "complete_byte_anatomy": {
+  "n_tensors": 11963,
+  "tensor_gib": 4.05,
+  "on_disk_gib": 4.05,
+  "matrix_params_b": 1.0851,
+  "dtype_bytes": {
+   "torch.float32": 4344623536
+  },
+  "per_container_gib": {
+   "boltz2_conf.ckpt": 2.13,
+   "boltz2_aff.ckpt": 1.92
+  },
+  "tensor_bytes_vs_disk": 0.999,
+  "distinct_roles": 576,
+  "n_repeated_roles": 226
+ },
+ "accounting_verified": "tensor bytes equal on-disk bytes to two decimals after two producer defects were fixed: a DeepSpeed container that yielded zero tensors silently, and logical bytes that double-counted a storage-aliased EMA copy by 48%."
+}

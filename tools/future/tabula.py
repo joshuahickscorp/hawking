@@ -10,7 +10,7 @@ vector — targeted behavioral change AND capability, tool use, reasoning,
 instruction following. Zero refusal is never the only score. Security
 policy is the authority lattice, not whether a language model says no.
 
-No weights are modified. Fitting is a SLEEPING WorkUnit that HCLI wakes
+No weights are modified. Fitting is a SLEEPING WorkUnit that HAWKING wakes
 when the hardware qualifies. Blocked physical work never becomes a
 synthetic result.
 
@@ -34,15 +34,27 @@ from tools.future._common import write_receipt, load_json, REPO
 import argparse
 import hashlib
 import json
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
 
-from hcli.workunit import WorkUnit, is_ready
+from hawking.workunit import WorkUnit, is_ready
+from hawking.behavior import (
+    BEHAVIORAL_TARGET,
+    NON_BEHAVIORAL_AXES,
+    REGRESSION_LIMIT,
+    SCORE_AXES,
+    IncompleteScoreVector,
+    ScoreVector,
+    Verdict,
+    evaluate,
+    scores_from_behavior_lab,
+)
 from tools.future._common import git
-from tools.future.workunit_species import emit_hcli_workunit, validate_emitted_unit
+from tools.future.workunit_species import emit_hawking_workunit, validate_emitted_unit
 
 RECEIPT = "TABULA_FLOOR.json"
 SCHEMA = "hawking.future.tabula.v1"
@@ -74,16 +86,6 @@ CLAIM_BOUNDARY = (
 )
 SIDECAR_STATUS = "BUILT_NOT_PROMOTED"
 
-# Independent evaluation axes. rank() and evaluate() both require the full set.
-SCORE_AXES: tuple[str, ...] = (
-    "behavioral",
-    "capability",
-    "tool_use",
-    "reasoning",
-    "instruction_following",
-)
-NON_BEHAVIORAL_AXES: tuple[str, ...] = tuple(a for a in SCORE_AXES if a != "behavioral")
-
 CONTRACT_KINDS: tuple[str, ...] = (
     "behavioral_direction",
     "layer_effect",
@@ -92,11 +94,9 @@ CONTRACT_KINDS: tuple[str, ...] = (
     "reversible_transform",
 )
 
-# Scores are signed deltas versus the declared parent/null. Target hit iff
-# behavioral >= behavioral_target. Any non-behavioral axis below
-# regression_limit is a capability regression.
-BEHAVIORAL_TARGET = 0.5
-REGRESSION_LIMIT = 0.0
+# Scores are signed deltas versus the declared parent/null.  The PERCEPTION behavior
+# kernel owns the threshold constants and scorer so ordinary runtime imports do
+# not need this optional numerical experiment stack.
 
 # Synthetic geometry is a contract proof, not the 5120-d patient instrument.
 SYNTH_OUT = 32
@@ -159,16 +159,65 @@ DEFAULT_HELD_AUTHORITY = frozenset(
     }
 )
 
-# Codex's live physical blockers. Recorded as wake-condition text, never
-# converted into a synthetic measurement.
+# Non-probed fitting blockers. Host GPU/compiler state is measured when the
+# wake receipt is built; hard-coding the original host observation left Tabula
+# claiming that an M3 Ultra had no Metal GPU long after the runtime proved it.
 PHYSICAL_BLOCKERS = (
-    "MetalContext reports NO Metal-capable GPU on this host",
-    "xcrun cannot locate the Metal compiler under CommandLineTools",
     "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
     "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
     "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
-    "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)",
 )
+
+
+def physical_environment() -> dict[str, Any]:
+    """Probe host Metal facts without claiming authority to run a fit."""
+    try:
+        display = subprocess.run(
+            ["system_profiler", "SPDisplaysDataType"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+        display_text = display.stdout or ""
+        metal_gpu = display.returncode == 0 and "Metal Support:" in display_text
+        chipset = None
+        for line in display_text.splitlines():
+            if line.strip().startswith("Chipset Model:"):
+                chipset = line.split(":", 1)[1].strip()
+                break
+    except (OSError, subprocess.SubprocessError):
+        metal_gpu = False
+        chipset = None
+    try:
+        compiler = subprocess.run(
+            ["xcrun", "-f", "metal"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+        compiler_path = (compiler.stdout or "").strip() if compiler.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        compiler_path = None
+    return {
+        "metal_capable_gpu": bool(metal_gpu),
+        "chipset": chipset,
+        "metal_compiler": bool(compiler_path),
+        "metal_compiler_path": compiler_path,
+        "measurement": "host command probe; not accelerator authority or a benchmark",
+    }
+
+
+def physical_blockers_today(environment: Mapping[str, Any] | None = None) -> list[str]:
+    env = dict(environment) if environment is not None else physical_environment()
+    blockers: list[str] = []
+    if not env.get("metal_capable_gpu"):
+        blockers.append("system_profiler does not report a Metal-capable GPU")
+    if not env.get("metal_compiler"):
+        blockers.append("xcrun cannot locate the Metal compiler under the active toolchain")
+    blockers.extend(PHYSICAL_BLOCKERS)
+    return blockers
 
 # Recovered paths. Presence is recorded, never asserted as a test of absence.
 RECOVERY_CANDIDATES: tuple[tuple[str, str], ...] = (
@@ -213,7 +262,7 @@ RECOVERY_CANDIDATES: tuple[tuple[str, str], ...] = (
         "patient Tabula cell: 0/8 refusals treated as behavioural authority — the collapse this floor refuses",
     ),
     (
-        "hcli/agentos/autonomy_gate.py",
+        "hawking/agentos/autonomy_gate.py",
         "live authority: Mission is DAG/receipt, AgentOS is typed-tool/checkpoint, "
         "provider is cognition; the model cannot nominate the verifier",
     ),
@@ -222,8 +271,8 @@ RECOVERY_CANDIDATES: tuple[tuple[str, str], ...] = (
         "child-generation economy; Tabula is one method of CHILD generation and must carry lineage",
     ),
     (
-        "hcli/agentos/vmcp/behavior_lab.py",
-        "VMCP E.11 fixture matrix scores through evaluate(); zero-refusal is still refused",
+        "hawking/behavior.py",
+        "PERCEPTION E.11 fixture matrix scores through evaluate(); zero-refusal is still refused",
     ),
 )
 
@@ -256,23 +305,23 @@ FLOOR_CALL_SITES: tuple[dict[str, str], ...] = (
     },
     {
         "file": "tools/future/power_torture.py",
-        "symbol": "tools.future.tabula.evaluate",
+        "symbol": "hawking.behavior.evaluate",
         "kind": "call",
     },
     {
         "file": "tools/roadmap/capability_reachability.py",
-        "symbol": "tools.future.tabula.evaluate",
+        "symbol": "hawking.behavior.evaluate",
         "kind": "call",
         "via": "WIRED future.tabula",
     },
     {
-        "file": "hcli/agentos/vmcp/behavior_lab.py",
-        "symbol": "tools.future.tabula.evaluate",
+        "file": "hawking/behavior.py",
+        "symbol": "hawking.behavior.evaluate",
         "kind": "call",
     },
     {
-        "file": "hcli/agentos/vmcp/behavior_lab.py",
-        "symbol": "tools.future.tabula.scores_from_behavior_lab",
+        "file": "hawking/behavior.py",
+        "symbol": "hawking.behavior.scores_from_behavior_lab",
         "kind": "call",
     },
 )
@@ -280,10 +329,6 @@ FLOOR_CALL_SITES: tuple[dict[str, str], ...] = (
 
 class RankRefusal(ValueError):
     """rank() refused: behavioral-axis-only ordering is not a ranking."""
-
-
-class IncompleteScoreVector(ValueError):
-    """A score was missing a required independent-evaluation axis."""
 
 
 class AuthorityError(ValueError):
@@ -387,7 +432,7 @@ def recovered_doctrine() -> dict[str, Any]:
 class AuthorityLattice:
     """Frozen held-authority set. Tabula cannot grant or widen it.
 
-    Recovered from hcli/agentos/autonomy_gate.py: Mission owns the DAG and
+    Recovered from hawking/agentos/autonomy_gate.py: Mission owns the DAG and
     receipts, AgentOS owns typed tools and control checkpoints, the provider
     owns cognition, and the model cannot nominate the verifier. Tabula is
     none of those authorities.
@@ -410,11 +455,11 @@ class AuthorityLattice:
             self,
             "_owners",
             {
-                "dag_receipts": "hcli Mission",
-                "typed_tools_checkpoints": "hcli AgentOS",
+                "dag_receipts": "hawking Mission",
+                "typed_tools_checkpoints": "hawking AgentOS",
                 "cognition": "selected provider",
                 "verifier": "fixed WorkUnit verifier; the model cannot nominate it",
-                "source": "hcli/agentos/autonomy_gate.py",
+                "source": "hawking/agentos/autonomy_gate.py",
             },
         )
 
@@ -471,149 +516,11 @@ def may_external_action(
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class ScoreVector:
-    behavioral: float
-    capability: float
-    tool_use: float
-    reasoning: float
-    instruction_following: float
-
-    def to_dict(self) -> dict[str, float]:
-        return {axis: float(getattr(self, axis)) for axis in SCORE_AXES}
-
-    @classmethod
-    def from_mapping(cls, mapping: Mapping[str, Any]) -> "ScoreVector":
-        missing = [axis for axis in SCORE_AXES if mapping.get(axis) is None]
-        if missing:
-            raise IncompleteScoreVector(
-                f"missing axes {missing}; zero-refusal / behavioral-only scores "
-                "are refused. Independent evaluation requires "
-                + ",".join(SCORE_AXES)
-            )
-        extra_null = [axis for axis in SCORE_AXES if not isinstance(mapping[axis], (int, float))]
-        if extra_null:
-            raise IncompleteScoreVector(f"non-numeric axes {extra_null}")
-        return cls(**{axis: float(mapping[axis]) for axis in SCORE_AXES})
-
-
-@dataclass(frozen=True)
-class Verdict:
-    outcome: str
-    target_hit: bool
-    regressions: tuple[str, ...]
-    reason: str
-    scores: dict[str, float]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "outcome": self.outcome,
-            "target_hit": self.target_hit,
-            "regressions": list(self.regressions),
-            "reason": self.reason,
-            "scores": dict(self.scores),
-            "evidence_class": "STATIC_ONLY",
-            "bench_state": "UNKNOWN",
-        }
-
-
 def scores_from_refusal_rate(_refusal_rate: float) -> ScoreVector:
     """Refuse the historical collapse: 0/N refusals is not a Tabula score."""
     raise IncompleteScoreVector(
         "zero-refusal is never the only score; independent evaluation requires "
         + ",".join(SCORE_AXES)
-    )
-
-
-def evaluate(
-    scores: ScoreVector | Mapping[str, Any],
-    *,
-    behavioral_target: float = BEHAVIORAL_TARGET,
-    regression_limit: float = REGRESSION_LIMIT,
-) -> Verdict:
-    """Score a transformation. Behavioral target + capability regression = FAILURE."""
-    vec = scores if isinstance(scores, ScoreVector) else ScoreVector.from_mapping(scores)
-    body = vec.to_dict()
-    hit = float(vec.behavioral) >= float(behavioral_target)
-    regressions = tuple(
-        axis for axis in NON_BEHAVIORAL_AXES if float(getattr(vec, axis)) < float(regression_limit)
-    )
-    if hit and regressions:
-        return Verdict(
-            outcome="FAILURE",
-            target_hit=True,
-            regressions=regressions,
-            reason=(
-                "behavioral target hit while regressing "
-                + ",".join(regressions)
-                + "; a transformation that achieves its behavioral target while "
-                "destroying tool use / capability / reasoning / instruction "
-                "following is a FAILURE"
-            ),
-            scores=body,
-        )
-    if not hit:
-        return Verdict(
-            outcome="FAILURE",
-            target_hit=False,
-            regressions=regressions,
-            reason="behavioral target not met",
-            scores=body,
-        )
-    return Verdict(
-        outcome="PASS",
-        target_hit=True,
-        regressions=(),
-        reason="behavioral target met with no independent-axis regression",
-        scores=body,
-    )
-
-
-# VMCP E.11 fixture rows -> independent vector. Refusal rate is not an input.
-_BHV_REASONING_IDS = frozenset({"BHV-16", "BHV-21", "BHV-22", "BHV-23"})
-_BHV_INSTRUCTION_IDS = frozenset({"BHV-09", "BHV-14", "BHV-15"})
-
-
-def scores_from_behavior_lab(rows: Sequence[Mapping[str, Any]]) -> ScoreVector:
-    """Map BHV fixture outcomes onto the five-axis vector.
-
-    An empty matrix is not a zero-refusal pass. Empty-success rows do not
-    count as capability. Axes that have no applicable fixture fall back to
-    the capability fraction rather than being omitted (omission is a
-    IncompleteScoreVector).
-    """
-    if not rows:
-        raise IncompleteScoreVector(
-            "behavior lab produced no fixtures; that is not a zero-refusal pass. "
-            "Independent evaluation requires " + ",".join(SCORE_AXES)
-        )
-    n = float(len(rows))
-
-    def _frac(pred: Any) -> float:
-        return sum(1.0 for row in rows if pred(row)) / n
-
-    behavioral = _frac(lambda r: bool(r.get("ran")) and not r.get("blocked"))
-    capability = _frac(lambda r: bool(r.get("goal_met") or r.get("ok")) and not r.get("empty_success"))
-    tool_use = _frac(lambda r: bool(r.get("tool_receipt_ok")) and not r.get("empty_success"))
-
-    reasoning_rows = [r for r in rows if str(r.get("id")) in _BHV_REASONING_IDS]
-    if reasoning_rows:
-        reasoning = sum(1.0 for r in reasoning_rows if r.get("reasoning_ok")) / float(len(reasoning_rows))
-    else:
-        reasoning = capability
-    instruction_rows = [r for r in rows if str(r.get("id")) in _BHV_INSTRUCTION_IDS]
-    if instruction_rows:
-        instruction = sum(1.0 for r in instruction_rows if r.get("instruction_ok")) / float(
-            len(instruction_rows)
-        )
-    else:
-        instruction = capability
-    return ScoreVector(
-        behavioral=float(behavioral),
-        capability=float(capability),
-        tool_use=float(tool_use),
-        reasoning=float(reasoning),
-        instruction_following=float(instruction),
     )
 
 
@@ -693,16 +600,18 @@ class InvertRecipe:
     scale: float
     v: np.ndarray
     vT_W: np.ndarray
+    projection_scale: float = 1.0
 
     def apply(self, W_out: np.ndarray) -> np.ndarray:
         W_proj = np.asarray(W_out, dtype=np.float64) / float(self.scale)
-        return W_proj + np.outer(self.v, self.vT_W)
+        return W_proj + float(self.projection_scale) * np.outer(self.v, self.vT_W)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "method": self.method,
             "scale": float(self.scale),
-            "stores": ["v", "vT_W", "scale"],
+            "stores": ["v", "vT_W", "scale", "projection_scale"],
+            "projection_scale": float(self.projection_scale),
             "v_sha256": _sha_bytes(self.v),
             "vT_W_sha256": _sha_bytes(self.vT_W),
         }
@@ -953,12 +862,104 @@ def project(
             scale=float(restore),
             v=v.copy(),
             vT_W=np.asarray(vT_W, dtype=np.float64).copy(),
+            projection_scale=float(scale),
         )
     residual = float(np.linalg.norm(v @ W_out))
     parent_residual = float(np.linalg.norm(v @ W))
     metrics = {
         "residual_vT_W_out": residual,
         "residual_vT_W_parent": parent_residual,
+        "frobenius_parent": parent_f,
+        "frobenius_out": float(np.linalg.norm(W_out, ord="fro")),
+        "restore_scale": float(restore),
+        "norm_preserve_error": abs(float(np.linalg.norm(W_out, ord="fro")) - parent_f)
+        if norm_preserve
+        else 0.0,
+    }
+    return W_out, recipe, metrics
+
+
+@dataclass(frozen=True)
+class SubspaceInvertRecipe:
+    """Reversible recipe for projecting a causal refusal subspace."""
+
+    method: str
+    scale: float
+    basis: np.ndarray
+    basisT_W: np.ndarray
+    projection_scale: float
+
+    def apply(self, W_out: np.ndarray) -> np.ndarray:
+        W_proj = np.asarray(W_out, dtype=np.float64) / float(self.scale)
+        return W_proj + float(self.projection_scale) * (self.basis @ self.basisT_W)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "method": self.method,
+            "scale": float(self.scale),
+            "rank": int(self.basis.shape[1]),
+            "stores": ["basis", "basisT_W", "scale", "projection_scale"],
+            "basis_sha256": _sha_bytes(self.basis),
+            "basisT_W_sha256": _sha_bytes(self.basisT_W),
+            "projection_scale": float(self.projection_scale),
+        }
+
+
+def orthonormal_basis(vectors: np.ndarray, *, tolerance: float = 1e-10) -> np.ndarray:
+    """Return an independent, deterministic orthonormal column basis."""
+    vectors = np.asarray(vectors, dtype=np.float64)
+    if vectors.ndim == 1:
+        vectors = vectors[:, None]
+    if vectors.ndim != 2 or vectors.shape[1] == 0:
+        raise ExperimentContractError("subspace basis must be a non-empty rank-2 array")
+    q, r = np.linalg.qr(vectors, mode="reduced")
+    diagonal = np.abs(np.diag(r))
+    keep = diagonal > float(tolerance) * max(1.0, float(diagonal.max(initial=0.0)))
+    if not np.any(keep):
+        raise ExperimentContractError("subspace basis is numerically zero")
+    q = q[:, keep]
+    # QR signs are not stable across all BLAS implementations. Canonicalise
+    # each column so artifact hashes do not change merely because a sign flipped.
+    for i in range(q.shape[1]):
+        pivot = int(np.argmax(np.abs(q[:, i])))
+        if q[pivot, i] < 0:
+            q[:, i] *= -1.0
+    return q
+
+
+def project_subspace(
+    W: np.ndarray,
+    basis: np.ndarray,
+    *,
+    norm_preserve: bool,
+    store_component: bool,
+    scale: float = 1.0,
+) -> tuple[np.ndarray, SubspaceInvertRecipe | None, dict[str, float]]:
+    """Project a rank-k output subspace, preserving Tabula's write contract."""
+    W = np.asarray(W, dtype=np.float64)
+    U = orthonormal_basis(basis)
+    if W.ndim != 2 or W.shape[0] != U.shape[0]:
+        raise ExperimentContractError(
+            f"subspace width {U.shape[0]} does not match weight shape {W.shape}")
+    component = U.T @ W
+    W_proj = W - float(scale) * (U @ component)
+    parent_f = float(np.linalg.norm(W, ord="fro"))
+    proj_f = float(np.linalg.norm(W_proj, ord="fro"))
+    restore = (parent_f / proj_f) if (norm_preserve and proj_f > 0.0) else 1.0
+    W_out = W_proj * restore
+    recipe = None
+    if store_component:
+        recipe = SubspaceInvertRecipe(
+            method="unscale_then_add_subspace(U, U_T_W)",
+            scale=float(restore),
+            basis=U.copy(),
+            basisT_W=component.copy(),
+            projection_scale=float(scale),
+        )
+    metrics = {
+        "rank": float(U.shape[1]),
+        "residual_basisT_W_out": float(np.linalg.norm(U.T @ W_out)),
+        "residual_basisT_W_parent": float(np.linalg.norm(component)),
         "frobenius_parent": parent_f,
         "frobenius_out": float(np.linalg.norm(W_out, ord="fro")),
         "restore_scale": float(restore),
@@ -1248,7 +1249,7 @@ def apply_to_weights(*_args: Any, **_kwargs: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Sleeping fit WorkUnit. HCLI wakes it when hardware qualifies.
+# Sleeping fit WorkUnit. HAWKING wakes it when hardware qualifies.
 # ---------------------------------------------------------------------------
 
 
@@ -1286,11 +1287,17 @@ def teacher_capture_progress() -> dict[str, Any]:
 
 def fitting_wake_condition(capture: Mapping[str, Any] | None = None) -> dict[str, Any]:
     progress = dict(capture) if capture is not None else teacher_capture_progress()
+    environment = physical_environment()
+    blockers = physical_blockers_today(environment)
+    if not progress.get("complete"):
+        blockers.append(
+            "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json)"
+        )
     return {
         "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
         "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
         "protected_lease": (
-            "HCLI protected-accelerator-bench lock is held by this process; "
+            "HAWKING protected-accelerator-bench lock is held by this process; "
             "flock of an unproven holder is a seizure and is refused"
         ),
         "machine_class": (
@@ -1308,15 +1315,16 @@ def fitting_wake_condition(capture: Mapping[str, Any] | None = None) -> dict[str
             "rule": "wake only when executed_units == units and units > 0",
         },
         "specimens": "weight specimens present on disk; this sidecar never loads them",
+        "physical_environment": environment,
         "rule": (
             "Blocked physical work stays SLEEPING. It never becomes a synthetic result."
         ),
-        "physical_blockers_today": list(PHYSICAL_BLOCKERS),
+        "physical_blockers_today": blockers,
     }
 
 
 def _sleeping_blocked_reason(capture: Mapping[str, Any]) -> str:
-    parts = list(PHYSICAL_BLOCKERS[:-1])
+    parts = physical_blockers_today()
     executed = capture.get("executed_units")
     units = capture.get("units")
     targets = list(capture.get("target_row_counts") or [])
@@ -1336,7 +1344,7 @@ def emit_workunits(
     """Resident-callable units: a pending floor unit and a SLEEPING fit unit."""
     del lattice  # held authority is recorded on each unit; not mutated
     wake = fitting_wake_condition(capture)
-    floor = emit_hcli_workunit(
+    floor = emit_hawking_workunit(
         id="future.tabula.floor",
         role="science",
         description=(
@@ -1363,7 +1371,7 @@ def emit_workunits(
             "contract_ids": [c.id for c in contracts],
         },
     )
-    eval_unit = emit_hcli_workunit(
+    eval_unit = emit_hawking_workunit(
         id="future.tabula.independent-eval",
         role="science",
         description=(
@@ -1387,7 +1395,7 @@ def emit_workunits(
             "score_axes": list(SCORE_AXES),
         },
     )
-    fit = emit_hcli_workunit(
+    fit = emit_hawking_workunit(
         id="future.tabula.fit-weights",
         role="science",
         description=(
@@ -1428,7 +1436,7 @@ def emit_workunits(
 
 
 def sleeping_unit_is_not_ready(units: Sequence[Mapping[str, Any]]) -> bool:
-    """HCLI identify_ready skips status=sleeping. That is the fail-closed wake."""
+    """HAWKING identify_ready skips status=sleeping. That is the fail-closed wake."""
     mapped = {str(row["id"]): WorkUnit.from_dict(dict(row)) for row in units}
     sleeping = [u for u in mapped.values() if u.status == "sleeping"]
     if not sleeping:
@@ -1630,7 +1638,7 @@ def frontier_proposal() -> dict[str, Any]:
         "feeds": FRONTIER_REL,
         "owner_module": "tools/future/global_frontier.py",
         "this_lane_writes_frontier": False,
-        "integration_point": "hcli/frontier_scheduler.py (canonical scheduler owner)",
+        "integration_point": "hawking/frontier_scheduler.py (canonical scheduler owner)",
         "detail": (
             "Contracts, vector scorer, lineage and authority lattice are sealed. "
             "Fitting stays SLEEPING until hardware qualifies. Zero-refusal collapse "
@@ -1684,12 +1692,12 @@ def resident_callable(
             "(or any independent axis) regresses; AuthorityLattice.grant/widen "
             "and TabulaFloor.widen_authority raise; apply_to_weights raises "
             "WeightsFrozen; irreversible children raise IrreversibleAuthorityError; "
-            "the fit WorkUnit is status=sleeping so hcli.workunit.is_ready is false "
+            "the fit WorkUnit is status=sleeping so hawking.workunit.is_ready is false "
             "until hardware qualifies; write_receipt raises HardwareClaimError on a "
             "numeric hardware field; promote() does not exist."
         ),
         "discovery": (
-            "HCLI discovers the pending floor unit (future.tabula.floor) from this "
+            "HAWKING discovers the pending floor unit (future.tabula.floor) from this "
             "receipt, invokes the entry point, schedules the independent-eval unit, "
             "and leaves future.tabula.fit-weights SLEEPING. A later wakeup.py "
             "(this-wave; not imported) is the swap point that flips sleeping -> pending "
@@ -1715,14 +1723,21 @@ def gaps_closed() -> list[str]:
 
 
 def negative_findings(recovered: Sequence[Mapping[str, Any]], capture: Mapping[str, Any]) -> list[str]:
+    environment = physical_environment()
     findings = [
         "historical Tabula scored refusal counts (0/8 on TABULA_PATIENT) as behavioural authority — that collapse is now a watched FAILURE",
         "G123 drift ladder did not reproduce its recorded range (constant ~2.5x); Doctor seal records instrument_validated=false",
         "gravity_tabula_behaviour.py is explicitly the WEAKER half and cannot certify absence of drift",
-        "this host has no Metal GPU and no Metal compiler; fitting stays SLEEPING and is not simulated as a result",
+        (
+            "host Metal probe reports "
+            f"gpu={environment['metal_capable_gpu']} "
+            f"chipset={environment['chipset']!r} "
+            f"compiler={environment['metal_compiler']}; fitting stays SLEEPING "
+            "while any remaining wake clause fails and is not simulated as a result"
+        ),
         "tools/future/succession.py is a this-wave sibling and is not imported; lineage schema is local until that swap",
         "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench is UNKNOWN",
-        "Tabula cannot widen the HCLI authority lattice; security policy is not a model personality trait",
+        "Tabula cannot widen the HAWKING authority lattice; security policy is not a model personality trait",
         f"teacher capture path_taken={capture.get('path_taken')} executed_units={capture.get('executed_units')} of units={capture.get('units')}",
     ]
     unlocated = [r["path"] for r in recovered if r.get("path_taken") == "unlocated"]
@@ -1748,10 +1763,10 @@ def disposition() -> dict[str, Any]:
         "kind": "SLEEPING_FIT",
         "required_kind": WAKE_REQUIRED_KIND,
         "required_symbol": "tools.future.tabula.apply_to_weights",
-        "required_caller_prefix": "hcli/",
+        "required_caller_prefix": "hawking/",
         "predicate": (
             "production AST Call of tools.future.tabula.apply_to_weights from "
-            "an HCLI entry AFTER every fitting_wake_condition clause holds "
+            "an HAWKING entry AFTER every fitting_wake_condition clause holds "
             "(Metal-capable GPU, Metal compiler, protected lease held by this "
             "process, machine not HEAVY, Flash NX QUALIFIED, teacher capture "
             "executed_units == units > 0, specimens on disk). Until then the "
@@ -1759,7 +1774,7 @@ def disposition() -> dict[str, Any]:
         ),
         "blocker": _sleeping_blocked_reason(capture),
         "missing_dependency": (
-            "Metal-capable GPU + Metal compiler + HCLI-held protected "
+            "Metal-capable GPU + Metal compiler + HAWKING-held protected "
             "accelerator lease + completed teacher capture + specimen tensors "
             "on disk. apply_to_weights currently raises WeightsFrozen."
         ),
@@ -1771,10 +1786,10 @@ def disposition() -> dict[str, Any]:
         "kind": "SPECIMEN_DRIFT_INSTRUMENT",
         "required_kind": WAKE_REQUIRED_KIND,
         "required_symbol": "tools.tabula_drift.recover_direction",
-        "required_caller_prefix": "hcli/",
+        "required_caller_prefix": "hawking/",
         "predicate": (
             "production AST Call of tools.tabula_drift.recover_direction (or "
-            "tools.gravity_tabula_probe.smallest_left_dir) from an HCLI entry "
+            "tools.gravity_tabula_probe.smallest_left_dir) from an HAWKING entry "
             "after language_model.model.layers.*.mlp.down_proj.weight tensors "
             "for the abliterated patient are loadable from "
             "workspace/campaign/records/runs/qwen38-27b/bf16"
@@ -1797,10 +1812,10 @@ def disposition() -> dict[str, Any]:
         "kind": "BEHAVIOURAL_REFUSAL_PROBE",
         "required_kind": WAKE_REQUIRED_KIND,
         "required_symbol": "tools.gravity_tabula_behaviour.run",
-        "required_caller_prefix": "hcli/",
+        "required_caller_prefix": "hawking/",
         "predicate": (
             "production AST Call of tools.gravity_tabula_behaviour.run from an "
-            "HCLI entry after the hybrid greedy binary and tokenizer exist. "
+            "HAWKING entry after the hybrid greedy binary and tokenizer exist. "
             "The probe is the WEAKER half and cannot certify absence of drift."
         ),
         "blocker": (
@@ -1846,7 +1861,7 @@ def disposition() -> dict[str, Any]:
                 "id": "tabula.floor",
                 "disposition": "CONNECTED",
                 "implementation": "tools/future/tabula.py",
-                "symbol": "tools.future.tabula.evaluate",
+                "symbol": "hawking.behavior.evaluate",
                 "also_called": [
                     "tools.future.tabula.project",
                     "tools.future.tabula.rank",
@@ -1911,7 +1926,7 @@ def build() -> Path:
     capture = teacher_capture_progress()
     units = emit_workunits(contracts=contracts, lattice=floor.lattice, capture=capture)
     if not sleeping_unit_is_not_ready(units):
-        raise AssertionError("sleeping fit unit was ready; HCLI would dispatch a GPU fit")
+        raise AssertionError("sleeping fit unit was ready; HAWKING would dispatch a GPU fit")
     refusals = _prove_negative_controls()
     if not refusals or not all(r.get("refused") for r in refusals):
         raise AssertionError(f"negative controls did not all fire: {refusals}")

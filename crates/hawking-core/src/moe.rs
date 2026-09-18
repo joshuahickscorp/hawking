@@ -41,6 +41,55 @@ pub fn topk_gate(logits: &mut [f32], top_k: usize, normalize: bool) -> Vec<(usiz
     out
 }
 
+/// Kimi/DeepSeek-TC routing: sigmoid scores are used for the expert weights,
+/// while the learned correction bias is used only for the top-k choice.  The
+/// selected sigmoid scores are optionally normalized and then multiplied by
+/// the model's routed scaling factor.
+pub fn topk_gate_kimi(
+    logits: &[f32],
+    correction_bias: &[f32],
+    top_k: usize,
+    normalize: bool,
+    routed_scaling_factor: f32,
+) -> Vec<(usize, f32)> {
+    let mut choice: Vec<f32> = logits
+        .iter()
+        .enumerate()
+        .map(|(i, &logit)| {
+            let score = 1.0 / (1.0 + (-logit).exp());
+            score + correction_bias.get(i).copied().unwrap_or(0.0)
+        })
+        .collect();
+    let scores: Vec<f32> = logits
+        .iter()
+        .map(|&logit| 1.0 / (1.0 + (-logit).exp()))
+        .collect();
+    let mut out = Vec::with_capacity(top_k.min(choice.len()));
+    for _ in 0..top_k.min(choice.len()) {
+        let Some((best, _)) = choice.iter().enumerate().max_by(|(ia, a), (ib, b)| {
+            a.partial_cmp(b)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| ib.cmp(ia))
+        }) else {
+            break;
+        };
+        out.push((best, scores[best]));
+        choice[best] = f32::NEG_INFINITY;
+    }
+    if normalize {
+        let sum: f32 = out.iter().map(|(_, w)| *w).sum();
+        if sum > 0.0 {
+            for (_, w) in out.iter_mut() {
+                *w /= sum;
+            }
+        }
+    }
+    for (_, w) in out.iter_mut() {
+        *w *= routed_scaling_factor;
+    }
+    out
+}
+
 /// Run one expert's SwiGLU FFN on a single token vector.
 ///
 /// `gate_w`, `up_w`, `down_w` are row-major:
@@ -151,5 +200,15 @@ mod tests {
         assert_eq!(chosen[1].0, 2);
         let sum: f32 = chosen.iter().map(|(_, w)| *w).sum();
         assert!((sum - 1.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn kimi_choice_bias_does_not_replace_sigmoid_weight() {
+        let routes = topk_gate_kimi(&[0.0, 0.0, -4.0], &[0.0, 1.0, 0.0], 2, true, 2.446);
+        assert_eq!(routes[0].0, 1);
+        assert_eq!(routes[1].0, 0);
+        let expected = 0.5 / (0.5 + 0.5) * 2.446;
+        assert!((routes[0].1 - expected).abs() < 1e-5);
+        assert!((routes[1].1 - expected).abs() < 1e-5);
     }
 }

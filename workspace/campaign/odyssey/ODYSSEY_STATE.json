@@ -27,7 +27,9 @@
    "est_4bit_gib": 0.47,
    "acquire_pid": 87393,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O000_google_gemma-3-1b-it.log",
-   "acquire_started": "2026-08-20T00:30:51Z"
+   "acquire_started": "2026-08-20T00:30:51Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O001",
@@ -57,7 +59,9 @@
    "reclaim_ref": "receipts/odyssey-i/O001_WEIGHTS_RECLAIM.json",
    "acquire_pid": 13989,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O001_tiiuae_Falcon-H1-7B-Instruct.log",
-   "acquire_started": "2026-08-20T00:58:16Z"
+   "acquire_started": "2026-08-20T00:58:16Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O002",
@@ -86,7 +90,9 @@
    "est_4bit_gib": 2.0,
    "acquire_pid": 87476,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O002_google_gemma-3-4b-it.log",
-   "acquire_started": "2026-08-20T00:31:06Z"
+   "acquire_started": "2026-08-20T00:31:06Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O003",
@@ -116,7 +122,9 @@
    "reclaim_ref": "receipts/odyssey-i/O003_WEIGHTS_RECLAIM.json",
    "acquire_pid": 14037,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O003_moonshotai_Kimi-VL-A3B-Instruct.log",
-   "acquire_started": "2026-08-20T00:58:21Z"
+   "acquire_started": "2026-08-20T00:58:21Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O004",
@@ -145,7 +153,9 @@
    "est_4bit_gib": 11.18,
    "acquire_pid": 8007,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O004_mistralai_Mistral-Small-3.1-24B-Instruct-2503.log",
-   "acquire_started": "2026-08-20T00:50:13Z"
+   "acquire_started": "2026-08-20T00:50:13Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O005",
@@ -174,7 +184,9 @@
    "est_4bit_gib": 14.22,
    "acquire_pid": 8059,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O005_Qwen_Qwen3-30B-A3B.log",
-   "acquire_started": "2026-08-20T00:50:20Z"
+   "acquire_started": "2026-08-20T00:50:20Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O006",
@@ -200,7 +212,9 @@
    "active_bpw_pressure": "UNKNOWN",
    "doctor_bar": "multimodal PASS",
    "kernel_effort": "low",
-   "est_4bit_gib": 14.47
+   "est_4bit_gib": 14.47,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O007",
@@ -228,7 +242,9 @@
    "est_4bit_gib": 22.87,
    "acquire_pid": 8090,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O007_moonshotai_Kimi-Linear-48B-A3B-Instruct.log",
-   "acquire_started": "2026-08-20T00:50:25Z"
+   "acquire_started": "2026-08-20T00:50:25Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O008",
@@ -256,7 +272,9 @@
    "est_4bit_gib": 24.01,
    "acquire_pid": 8718,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O008_ai21labs_AI21-Jamba-Mini-1.5.log",
-   "acquire_started": "2026-08-20T00:51:25Z"
+   "acquire_started": "2026-08-20T00:51:25Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O009",
@@ -284,7 +302,9 @@
    "est_4bit_gib": 33.86,
    "acquire_pid": 8762,
    "acquire_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/O009_Qwen_Qwen2.5-72B-Instruct.log",
-   "acquire_started": "2026-08-20T00:51:30Z"
+   "acquire_started": "2026-08-20T00:51:30Z",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O010",
@@ -309,7 +329,9 @@
    "active_bpw_pressure": 1.5,
    "doctor_bar": "PASS",
    "kernel_effort": "moderate",
-   "est_4bit_gib": 51.44
+   "est_4bit_gib": 51.44,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O011",
@@ -322,7 +344,9 @@
    "phase": "",
    "on_disk": false,
    "blocked_reason": null,
-   "_evidence": "VERIFIED (ODYSSEY.md patient table)"
+   "_evidence": "VERIFIED (ODYSSEY.md patient table)",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O012",
@@ -335,7 +359,9 @@
    "phase": "",
    "on_disk": false,
    "blocked_reason": null,
-   "_evidence": "VERIFIED (ODYSSEY.md patient table)"
+   "_evidence": "VERIFIED (ODYSSEY.md patient table)",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   },
   {
    "oxx": "O013",
@@ -348,7 +374,9 @@
    "phase": "",
    "on_disk": false,
    "blocked_reason": null,
-   "_evidence": "VERIFIED (ODYSSEY.md patient table)"
+   "_evidence": "VERIFIED (ODYSSEY.md patient table)",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)"
   }
  ],
  "work": [
@@ -3501,7 +3529,7 @@
   "grok_lanes_bootstrap": 3,
   "gpu_seconds": 0,
   "gpu_owner": "none",
-  "_evidence": "INFERRED (ODYSSEY.md \u00a772 session bootstrap)"
+  "_evidence": "INFERRED (ODYSSEY.md §72 session bootstrap)"
  },
  "acquisitions": [
   {
@@ -3598,6 +3626,1366 @@
    "bytes": 32823063084,
    "at": "2026-08-20T00:54:13Z",
    "_evidence": "MEASURED (reclaim of RETIRED patient weights)"
+  }
+ ],
+ "candidate_board": [
+  {
+   "specimen": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "source_repo": "Dream-org/Dream-v0-Instruct-7B",
+   "revision": "05334cb9faaf",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "source_repo": "GSAI-ML/iLLaDA-8B-Base",
+   "revision": "a1b5b5f8a31a",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "source_repo": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+   "revision": "482adb537c02",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "source_repo": "LiquidAI/LFM2-24B-A2B",
+   "revision": "a3bbacd91a67",
+   "disposition": "PARETO CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "odyssey_remote",
+   "active_owner_evidence": "CLAIMED (explicit Hawking owner claim)",
+   "owner_status": "CLAIMED",
+   "tier_state": {
+    "tier0": "OBSERVED",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Bounded Tier-1 cheap capability/tool/context/latency screen; no deep Gravity until Star promotion",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "remote_evidence": [
+    {
+     "schema": "hawking.odyssey.remote_evidence.v1",
+     "tier": "TIER0_TIER1",
+     "status": "OBSERVED",
+     "provider": "openrouter",
+     "model": "openai/gpt-5.6-luna",
+     "usage": {
+      "prompt_tokens": 1626,
+      "completion_tokens": 864,
+      "total_tokens": 2490,
+      "cost_usd": 0.00141865,
+      "latency_ms": 2154.124975204468,
+      "retries": 0
+     },
+     "tool_trace": [
+      {
+       "tool": "fs.search",
+       "wire_tool": "fs_search",
+       "dispatched": true,
+       "ok": true
+      },
+      {
+       "tool": "fs.search",
+       "wire_tool": "fs_search",
+       "dispatched": true,
+       "ok": true
+      },
+      {
+       "tool": "fs.search",
+       "wire_tool": "fs_search",
+       "dispatched": false,
+       "ok": false
+      }
+     ],
+     "observations": [
+      "{\n  \"observations\": [\n    \"Read-only Hawking filesystem search for the exact specimen string \\\"LiquidAI--LFM2-24B-A2B\\\" returned no matches.\",\n    \"Read-only Hawking filesystem search for revision \\\"a3bbacd91a67\\\" returned no matches.\",\n    \"Both searches reported files_seen=0 under /Users/scammermike/Downloads/hawking.\",\n    \"The sealed disposition receipt search could not be executed because the tool-call budget was exhausted.\"\n  ],\n  \"operations\": [\n    \"Performed only read-only filesystem searches.\",\n    \"Did not download or load weights, execute code, benchmark, modify files, or touch Fla"
+     ],
+     "content_excerpt": "",
+     "validation": {
+      "ok": false,
+      "reason": "REMOTE_COGNITION_REQUIRES_CENTRAL_VALIDATION"
+     },
+     "recorded_at": "2026-09-15T05:31:11.728634+00:00",
+     "_evidence": "OBSERVED (Hawking remote Luna WorkUnit; not acceptance)"
+    },
+    {
+     "schema": "hawking.odyssey.remote_evidence.v1",
+     "tier": "TIER0",
+     "status": "OBSERVED",
+     "provider": "openrouter",
+     "model": "openai/gpt-5.6-luna",
+     "usage": {
+      "prompt_tokens": 1657,
+      "completion_tokens": 498,
+      "total_tokens": 2155,
+      "cost_usd": 0.0009906,
+      "latency_ms": 2118.4298992156982,
+      "retries": 0
+     },
+     "tool_trace": [
+      {
+       "tool": "fs.read",
+       "wire_tool": "fs_read",
+       "dispatched": true,
+       "ok": true
+      }
+     ],
+     "observations": [
+      "{\"observations\":[\"The requested read-only window was retrieved successfully.\",\"The window contains entries for other specimens, not LiquidAI--LFM2-24B-A2B@a3bbacd91a67.\"],\"operations\":[\"Only the existing read-only fs.read boundary was used; no mutation, execution, loading, benchmarking, or acceptance operation was performed.\",\"Hawking central validation remains required.\"],\"tests\":[\"SEALED/MEASURED: fs.read returned ok=true for lines 90-105 of the specified file.\",\"SEALED/MEASURED: artifact SHA-256 is dd50f333329f80e58d1db2857cfc65e43989df0659523b127a1853a89cc92d67.\",\"UNKNOWN: no target-specif"
+     ],
+     "content_excerpt": "",
+     "validation": {
+      "ok": false,
+      "reason": "REMOTE_COGNITION_REQUIRES_CENTRAL_VALIDATION"
+     },
+     "recorded_at": "2026-09-15T05:32:47.921806+00:00",
+     "_evidence": "OBSERVED (Hawking remote Luna WorkUnit; not acceptance)"
+    },
+    {
+     "schema": "hawking.odyssey.remote_evidence.v1",
+     "tier": "TIER0",
+     "status": "OBSERVED",
+     "provider": "openrouter",
+     "model": "openai/gpt-5.6-luna",
+     "usage": {
+      "prompt_tokens": 1457,
+      "completion_tokens": 429,
+      "total_tokens": 1886,
+      "cost_usd": 0.000858,
+      "latency_ms": 1671.9958782196045,
+      "retries": 0
+     },
+     "tool_trace": [
+      {
+       "tool": "fs.read",
+       "wire_tool": "fs_read",
+       "dispatched": true,
+       "ok": true
+      }
+     ],
+     "observations": [
+      "{\n  \"observations\": {\n    \"SEALED\": {\n      \"identity\": \"LiquidAI--LFM2-24B-A2B\",\n      \"revision\": \"a3bbacd91a67\",\n      \"disposition\": \"PARETO CANDIDATE\",\n      \"basis\": \"Triple hybrid conv+attention+MoE, 9.76% active. Richest architecture surveyed; corrected the LFM2 family rule.\"\n    },\n    \"MEASURED\": {\n      \"dir_gib\": 44.418\n    },\n    \"UNKNOWN\": [\n      \"Weight integrity and runtime behavior\",\n      \"Independent verifier acceptance\",\n      \"Benchmark performance\"\n    ]\n  },\n  \"operations\": [\n    \"Read-only evidence observed at Hawking's existing mutation/verifier boundary.\",\n    \"No mu"
+     ],
+     "content_excerpt": "",
+     "validation": {
+      "ok": false,
+      "reason": "REMOTE_COGNITION_REQUIRES_CENTRAL_VALIDATION"
+     },
+     "recorded_at": "2026-09-15T05:33:19.700070+00:00",
+     "_evidence": "OBSERVED (Hawking remote Luna WorkUnit; not acceptance)"
+    }
+   ]
+  },
+  {
+   "specimen": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "source_repo": "LiquidAI/LFM2.5-1.2B-Instruct",
+   "revision": "0f604ada3f76",
+   "disposition": "PULSAR CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "source_repo": "LiquidAI/LFM2.5-2.6B-Base",
+   "revision": "c57bdaed1ef1",
+   "disposition": "HCLI RESIDENT CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "source_repo": "Qwen/Qwen2.5-72B-Instruct",
+   "revision": "495f39366efe",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": "O009",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "ACQUIRING",
+   "patient_phase": ""
+  },
+  {
+   "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "source_repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a0",
+   "disposition": "HARDWARE / REPRESENTATION RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Qwen--Qwen3-14B@40c069824f42",
+   "source_repo": "Qwen/Qwen3-14B",
+   "revision": "40c069824f42",
+   "disposition": "PARETO CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "odyssey_remote",
+   "active_owner_evidence": "CLAIMED (explicit Hawking owner claim)",
+   "owner_status": "CLAIMED",
+   "tier_state": {
+    "tier0": "OBSERVED",
+    "tier1": "OBSERVED",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Central validation of the bounded Tier 0/Tier 1 packet; no deep Gravity until Star promotion",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "remote_evidence": [
+    {
+     "schema": "hawking.odyssey.remote_evidence.v1",
+     "tier": "TIER0_TIER1",
+     "status": "OBSERVED",
+     "provider": "openrouter",
+     "model": "openai/gpt-5.6-luna",
+     "usage": {
+      "prompt_tokens": 1683,
+      "completion_tokens": 576,
+      "total_tokens": 2259,
+      "cost_usd": 0.00108555,
+      "latency_ms": 3080.368757247925,
+      "retries": 0
+     },
+     "tool_trace": [
+      {
+       "tool": "fs.read",
+       "wire_tool": "fs_read",
+       "dispatched": true,
+       "ok": true
+      }
+     ],
+     "observations": [
+      "{\n  \"observations\": {\n    \"SEALED\": {\n      \"identity\": \"Qwen--Qwen3-14B@40c069824f42\",\n      \"disposition\": \"PARETO CANDIDATE\",\n      \"family\": \"Qwen3\",\n      \"parameters\": \"14.77B dense\",\n      \"context\": \"40k\",\n      \"artifact_size_gib\": 27.523,\n      \"sealed_basis\": \"dense mid-tier reference\",\n      \"tier0_score\": \"4/6: identity, family, parameters, and artifact fit supported; license and exact context/artifact integrity remain unverified\"\n    },\n    \"MEASURED\": {\n      \"provider_model\": \"qwen/qwen3-14b\",\n      \"context_length\": 131072,\n      \"prompt_price\": \"0.00000012\",\n      \"completion"
+     ],
+     "content_excerpt": "",
+     "validation": {
+      "ok": false,
+      "reason": "REMOTE_COGNITION_REQUIRES_CENTRAL_VALIDATION"
+     },
+     "recorded_at": "2026-09-15T05:36:56.734814+00:00",
+     "_evidence": "OBSERVED (Hawking remote Luna WorkUnit; not acceptance)"
+    }
+   ]
+  },
+  {
+   "specimen": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "source_repo": "Qwen/Qwen3-30B-A3B",
+   "revision": "ad44e777bcd1",
+   "disposition": "PARETO CANDIDATE",
+   "patient_oxx": "O005",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "ACQUIRING",
+   "patient_phase": "SEALED"
+  },
+  {
+   "specimen": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "source_repo": "Qwen/Qwen3-4B-Instruct-2507",
+   "revision": "cdbee75f17c0",
+   "disposition": "PULSAR CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "source_repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+   "revision": "b2cff646eb4b",
+   "disposition": "HCLI RESIDENT CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "source_repo": "Qwen/Qwen3-Embedding-0.6B",
+   "revision": "97b0c614be4d",
+   "disposition": "CEPHEID CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "source_repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "revision": "9c4b90e1e4ba",
+   "disposition": "PARETO CANDIDATE",
+   "patient_oxx": "O006",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "READY",
+   "patient_phase": ""
+  },
+  {
+   "specimen": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "source_repo": "Qwen/Qwen3-VL-8B-Instruct",
+   "revision": "0c351dd01ed8",
+   "disposition": "DATA-ONLY",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "source_repo": "Qwen/Qwen3.8-Flash-Next",
+   "revision": "34567a4712bc",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "local_flash_lane",
+   "active_owner_evidence": "SEALED (receipts/odyssey-i/MODELLAKE_SCHEDULING_OVERRIDE_20260910.json)",
+   "owner_status": "SEALED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "source_repo": "RWKV/RWKV7-13.3B-20260805",
+   "revision": "64ffe5934178",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "source_repo": "Wan-AI/Wan2.2-T2V-A14B",
+   "revision": "c8c270b13ee0",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "source_repo": "ai21labs/AI21-Jamba2-3B",
+   "revision": "525c6c8e1d9f",
+   "disposition": "DATA-ONLY",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "source_repo": "allenai/Olmo-3-1025-7B",
+   "revision": "a81bae42db39",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "source_repo": "answerdotai/ModernBERT-large",
+   "revision": "45bb4654a4d5",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "arcinstitute--evo2_40b@d529aa57c307",
+   "source_repo": "arcinstitute/evo2_40b",
+   "revision": "d529aa57c307",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "arcinstitute--evo2_7b@bda0089f9258",
+   "source_repo": "arcinstitute/evo2_7b",
+   "revision": "bda0089f9258",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "bigcode--starcoder2-7b@bb9afde76d79",
+   "source_repo": "bigcode/starcoder2-7b",
+   "revision": "bb9afde76d79",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "boltz-community--boltz-2@6fdef46d763f",
+   "source_repo": "boltz-community/boltz-2",
+   "revision": "6fdef46d763f",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "source_repo": "deepseek-ai/DeepSeek-V4-Flash",
+   "revision": "60d8d70770c6",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "source_repo": "depth-anything/Depth-Anything-V2-Large-hf",
+   "revision": "7581137eff8d",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "facebook--musicgen-large@15ccdc920998",
+   "source_repo": "facebook/musicgen-large",
+   "revision": "15ccdc920998",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "source_repo": "facebook/sam2.1-hiera-large",
+   "revision": "665f8e2ad61c",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "source_repo": "facebook/vjepa2-vitg-fpc64-256",
+   "revision": "875c192b7b70",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "google--flan-t5-large@0613663d0d48",
+   "source_repo": "google/flan-t5-large",
+   "revision": "0613663d0d48",
+   "disposition": "DATA-ONLY",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "source_repo": "google/timesfm-2.0-500m-pytorch",
+   "revision": "dc2443792ce5",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "source_repo": "ibm-granite/granite-4.0-h-micro",
+   "revision": "d5f01a3ea75f",
+   "disposition": "DATA-ONLY",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "source_repo": "ibm-granite/granite-4.0-h-tiny",
+   "revision": "791e0d3d28c8",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "source_repo": "kyutai/moshika-pytorch-bf16",
+   "revision": "a49141e28b3d",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "lerobot--pi0_base@25c379b52ba2",
+   "source_repo": "lerobot/pi0_base",
+   "revision": "25c379b52ba2",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "source_repo": "microsoft/Phi-4-mini-instruct",
+   "revision": "cfbefacb9925",
+   "disposition": "PULSAR CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "source_repo": "microsoft/Phi-4-multimodal-instruct",
+   "revision": "93f923e1a772",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "source_repo": "microsoft/Phi-4-reasoning-plus",
+   "revision": "69baf8528e1b",
+   "disposition": "MAGNETAR CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "source_repo": "microsoft/bitnet-b1.58-2B-4T-bf16",
+   "revision": "276681394656",
+   "disposition": "DATA-ONLY",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "source_repo": "microsoft/bitnet-b1.58-2B-4T",
+   "revision": "04c3b9ad9361",
+   "disposition": "HARDWARE / REPRESENTATION RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "source_repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "revision": "68faf511d618",
+   "disposition": "MAGNETAR CANDIDATE",
+   "patient_oxx": "O004",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "ACQUIRING",
+   "patient_phase": "SEALED"
+  },
+  {
+   "specimen": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "source_repo": "moonshotai/Kimi-K3",
+   "revision": "9f62e4e9fffb",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": "O013",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "READY",
+   "patient_phase": ""
+  },
+  {
+   "specimen": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "source_repo": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+   "revision": "e1df551a4471",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": "O007",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "ACQUIRING",
+   "patient_phase": ""
+  },
+  {
+   "specimen": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "source_repo": "moonshotai/Kimi-VL-A3B-Instruct",
+   "revision": "398eede0903c",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": "O003",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "READY",
+   "patient_phase": "CENSUS"
+  },
+  {
+   "specimen": "nvidia--audio-flamingo-3@ee26c5842398",
+   "source_repo": "nvidia/audio-flamingo-3",
+   "revision": "ee26c5842398",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "source_repo": "openai/whisper-large-v3-turbo",
+   "revision": "41f01f3fe87f",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "source_repo": "state-spaces/mamba3-mimo-1.5b",
+   "revision": "bc6b5d0f7994",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "source_repo": "state-spaces/mamba3-siso-1.5b",
+   "revision": "5cfc721542ec",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "tencent--HunyuanVideo@6204ad6aea1a",
+   "source_repo": "tencent/HunyuanVideo",
+   "revision": "6204ad6aea1a",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "source_repo": "thinkingmachines/Inkling-Small",
+   "revision": "8cc5877b44d3",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "source_repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "revision": "41e72f27effb",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": "O001",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "ACQUIRING",
+   "patient_phase": "SEALED"
+  },
+  {
+   "specimen": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "source_repo": "tiiuae/Falcon3-1B-Instruct",
+   "revision": "28ba2251970a",
+   "disposition": "PULSAR CANDIDATE",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "source_repo": "windowsxp811203/Qwen3.8-Flash-Next-Abliterated",
+   "revision": "deb02632504b",
+   "disposition": "RESEARCH SPECIMEN",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  },
+  {
+   "specimen": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "source_repo": "zai-org/GLM-4.5-Air",
+   "revision": "a24ceef6ce4f",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": "O010",
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)",
+   "patient_state": "READY",
+   "patient_phase": ""
+  },
+  {
+   "specimen": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "source_repo": "zai-org/GLM-5.3-Flash",
+   "revision": "04c4e9e95c5d",
+   "disposition": "DEEP ODYSSEY REQUIRED",
+   "patient_oxx": null,
+   "active_owner": "unregistered",
+   "active_owner_evidence": "NOT_REGISTERED (no current owner claim)",
+   "owner_status": "UNREGISTERED",
+   "tier_state": {
+    "tier0": "PENDING",
+    "tier1": "PENDING",
+    "tier2": "NOT_STARTED",
+    "star": "NOT_STARTED"
+   },
+   "next_experiment": "Tier 0 identity/family/params/context/license/artifact screen; then bounded Tier 1 capability/tool/context/latency screen",
+   "evidence_refs": [
+    "receipts/odyssey-i/MODELLAKE_SPECIMEN_DISPOSITIONS.json"
+   ],
+   "_evidence": "DERIVED (sealed ModelLake disposition + Odyssey state)"
+  }
+ ],
+ "active_owner_history": [
+  {
+   "specimen": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "previous_owner": "unregistered",
+   "owner": "odyssey_remote",
+   "recorded_at": "2026-09-15T05:27:12.763628+00:00",
+   "_evidence": "RECORDED (explicit owner claim)"
+  },
+  {
+   "specimen": "Qwen--Qwen3-14B@40c069824f42",
+   "previous_owner": "unregistered",
+   "owner": "odyssey_remote",
+   "recorded_at": "2026-09-15T05:36:18.629961+00:00",
+   "_evidence": "RECORDED (explicit owner claim)"
   }
  ]
 }

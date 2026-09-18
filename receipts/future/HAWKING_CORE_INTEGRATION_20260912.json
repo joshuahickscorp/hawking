@@ -1,0 +1,76 @@
+{
+  "schema": "hawking.integration.receipt.v1",
+  "status": "OFFLINE_INTEGRATION_VERIFIED__RUNTIME_UNCHANGED",
+  "recorded_at": "2026-09-12T00:06:59-04:00",
+  "base_commit": "0ebc649b3baf182157544a03f0018df89a28b64c",
+  "feature_branch": "codex/hawking-core-unification",
+  "feature_tip": "2ea343f70af5da74cbe38d03c21dd3292c2f0aa0",
+  "feature_behavior_tip": "1146b62012577ca12d6dba26af5d8ed8318b611f",
+  "semantic_resolution": {
+    "normal_execution_authority": "workspace/campaign/odyssey/gravity-artifacts.json",
+    "research_discovery": "ModelLake specimens remain explicit and unadmitted",
+    "artifact_binding": "admitted registry identity plus existing path plus content-derived SHA-256 revision plus supported action",
+    "live_admitted_artifact": "KIMI_P0_OPERATIONAL",
+    "live_artifact_revision": "b63fa8d400918ac12cf880f8618402e2cfc323b858262b7db644c9ea175380a7",
+    "overlapping_files_resolved": [
+      "docs/HCLI_WEB.md",
+      "hcli/catalog.py",
+      "hcli/nomenclature.py",
+      "hcli/tests/test_catalog_and_switching.py",
+      "hcli/use.py"
+    ],
+    "cleanly_merged_overlaps_reviewed": [
+      "crates/hawking/src/main.rs",
+      "hcli/serve.py",
+      "hcli/web.py"
+    ]
+  },
+  "validation": {
+    "python_surface_science": "44 passed",
+    "python_flash_and_method_registry": "34 passed",
+    "native_execution_regions": "10 passed",
+    "native_ratio_zero_real_caller": "1 passed",
+    "rust_public_action_surface": "4 passed",
+    "newest_flash_megakernel_boundary": "1 passed",
+    "cargo_check": "hawking and hawking-core passed",
+    "terminology": "base-diff and selfcheck passed",
+    "changed_rust_format": "rustfmt check passed for all four changed Rust implementation files",
+    "workspace_format_baseline": "cargo fmt --package hawking-core --package hawking -- --check reports pre-existing formatting drift in newer Flash and core files outside this integration diff"
+  },
+  "source_census": {
+    "policy": "physical tracked active source; generated, documentation archives, vendor and build output excluded; path tests and complete inline Rust cfg(test) items excluded from strict runtime measures",
+    "whole_active": {
+      "rust_loc": 454034,
+      "python_loc": 561381,
+      "denominator_loc": 1015415,
+      "rust_percent": 44.714132
+    },
+    "minimum_product_test_inclusive": {
+      "rust_loc": 381550,
+      "python_loc": 93396,
+      "denominator_loc": 474946,
+      "rust_percent": 80.335449
+    },
+    "minimum_product_test_excluding": {
+      "rust_loc": 328178,
+      "python_loc": 93396,
+      "denominator_loc": 421574,
+      "rust_percent": 77.845882
+    },
+    "whole_runtime_test_excluding": {
+      "rust_loc": 369789,
+      "python_loc": 448271,
+      "denominator_loc": 818060,
+      "rust_percent": 45.203164
+    },
+    "included_paths": "tracked active source extensions enumerated by tools/loc/hawking_loc.py; minimum product is hcli non-test Python and crates/*/src plus crates/*/shaders",
+    "excluded_paths": "vendor roots, generated files, documentation archives, build outputs, test and bench paths, crate examples for minimum product, and inline Rust cfg(test) items for strict measures"
+  },
+  "runtime": {
+    "services_restarted": false,
+    "weights_loaded": false,
+    "gpu_measurement_run": false,
+    "deployment_performed": false
+  },
+  "claim_boundary": "This receipt proves an offline semantic integration and its stated static tests. It does not deploy the merged source, restart a resident, establish GPU parity or throughput for the new legal-region contract, close the whole-repository Rust-share target, or promote any Flash candidate."
+}

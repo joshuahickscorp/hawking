@@ -2,11 +2,13 @@
 // owns dispatch, runtime, and benchmark lifecycle.
 mod bench;
 mod capture;
+mod external_worker;
 // `studio` (quant-campaign orchestration) extracted to the hawking-lab pack (Architecture B).
 
 use anyhow::Result;
 use clap::{Args, Parser, Subcommand};
 use std::collections::BTreeMap;
+use std::io::{IsTerminal, Read};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -34,79 +36,53 @@ struct Cli {
     cmd: Cmd,
 }
 
-/// Apply a named lever bundle by setting the corresponding HAWKING_QWEN_* env
-/// vars *only if the user has not already set them* (explicit env always wins).
-/// No `--profile` ⇒ no change ⇒ the default decode stays conservative.
-///
-/// Known profiles:
-///   `fast`      — validated fast-path: vocab-prune-32k + Q4K LM-head + Q4K
-///                 FFN-down + predec + f16-scales (mild quality trade).
-///   `race`      — same as fast; explicitly signals max throughput, quality
-///                 trade-offs OK.
-///   `efficient` — same as fast plus HAWKING_ENERGY_EFFICIENT=1.
-///   `exact`     — conservative path (no profile-level quality trade-offs).
-///   `default`   — no profile-level change from the conservative default.
-///
-/// Explicitly-set HAWKING_QWEN_* env vars always take precedence.
-fn apply_runtime_lever_plan(plan: &hawking_serve::LeverPlan) {
-    for (k, v) in &plan.set_if_unset {
-        if std::env::var_os(k).is_none() {
-            std::env::set_var(k, v);
-        }
-    }
-    for k in &plan.force_off {
-        // Unconditional: exact opts out of quality trades even if set upstream.
-        std::env::set_var(k, "0");
-    }
-    if let Some(true) = plan.f16_kv {
-        if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
-            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-        }
-    }
-    if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
-        std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
-    }
+/// Parse the global profile once, preserving the old warning-and-ignore path
+/// for an unknown spelling. Serve passes the successful request to its unified
+/// policy resolver; other front doors apply it directly.
+fn parse_front_door_profile_request(
+    profile: &Option<String>,
+) -> Option<hawking_serve::Requested<hawking_serve::RuntimeProfile>> {
+    Some(match profile.as_deref() {
+        None => hawking_serve::Requested::Omitted,
+        // Autotune's hardware string ("m3-pro-18gb") is a different concept,
+        // not a global runtime profile. Keep the existing warning and make no
+        // policy mutation for an unknown spelling.
+        Some(name) => match hawking_serve::RuntimeProfile::from_str(name) {
+            Some(profile) => hawking_serve::Requested::Explicit(profile),
+            None => {
+                eprintln!(
+                    "[hawking] warning: unknown --profile '{name}' \
+                     (known: default, fast, race, efficient, exact); ignoring"
+                );
+                return None;
+            }
+        },
+    })
 }
 
-fn apply_profile(profile: &Option<String>, announce: bool) {
-    let Some(name) = profile.as_deref() else {
-        // Unset --profile → policy default = `fast` MINUS the f16-scales lever
-        // that failed quality_oracle (e613dde): vocab-prune + Q4K LM-head +
-        // Q4K FFN-down + predec, f16-scales OFF (~38–39 t/s, low quality risk).
-        // Explicit HAWKING_QWEN_*=0 still wins (set_if_unset); the force-off
-        // is unconditional. Pass --profile exact for the conservative path.
-        let rp = hawking_serve::RuntimeProfile::default_when_unset();
-        let plan = rp.lever_plan();
-        apply_runtime_lever_plan(&plan);
-        for k in hawking_serve::RuntimeProfile::default_unset_force_off() {
-            std::env::set_var(k, "0");
-        }
-        if announce {
+fn announce_front_door_profile(resolved: &hawking_serve::FrontDoorProfilePolicy, announce: bool) {
+    if announce {
+        if resolved.profile.source == hawking_serve::PolicySource::FrontDoorOmittedProfile {
             eprintln!(
                 "[hawking] no --profile → default=fast (minus f16-scales, ~38-39 t/s); \
                  pass --profile exact for conservative levers, --profile fast for full ~42 t/s"
             );
+        } else {
+            eprintln!("[hawking] {}", resolved.profile.value.contract());
         }
-        return;
-    };
-    // autotune's hardware string ("m3-pro-18gb") is a different concept (a
-    // subcommand arg), not this global runtime lever — only known runtime
-    // profiles apply. The mapping is the SAME LeverPlan that serve::run uses,
-    // so generate/bench and serve never drift (fixes: race/efficient were silent
-    // aliases of fast here, and `exact` did not actually force-off the f16-scales
-    // quality lever → a non-conservative configuration despite its contract).
-    let Some(rp) = hawking_serve::RuntimeProfile::from_str(name) else {
-        eprintln!(
-            "[hawking] warning: unknown --profile '{name}' \
-             (known: default, fast, race, efficient, exact); ignoring"
-        );
-        return;
-    };
-    let plan = rp.lever_plan();
-    apply_runtime_lever_plan(&plan);
-    if announce {
-        eprintln!("[hawking] {}", rp.contract());
     }
+}
+
+/// Apply the policy-owned front-door profile operations. The pure resolver
+/// keeps omission, explicit defaults, inherited environment, and forced-off
+/// levers inspectable before this process-boundary adapter mutates anything.
+fn apply_profile(profile: &Option<String>, announce: bool) {
+    let Some(request) = parse_front_door_profile_request(profile) else {
+        return;
+    };
+    let resolved = hawking_serve::resolve_front_door_profile(request);
+    hawking_serve::apply_environment_operations(&resolved.environment_operations);
+    announce_front_door_profile(&resolved, announce);
 }
 
 fn apply_qwen_tq_flags(
@@ -263,7 +239,7 @@ struct ServeArgs {
     /// Serve a sealed `.gravity` / activation-aware artifact (directory or shard
     /// file). Also accepted via env `HAWKING_GRAVITY`; the first ordered shard in
     /// a valid model directory is resolved before the real server starts.
-    #[arg(long, visible_alias = "artifact", value_name = "PATH")]
+    #[arg(long = "artifact", visible_alias = "gravity", value_name = "PATH")]
     gravity: Option<PathBuf>,
     #[command(flatten)]
     controls: ServeControls,
@@ -347,6 +323,58 @@ struct GravityVerifyArgs {
     expected_sha256: Option<String>,
 }
 
+/// Produce the source-hash-bound CPU control artifacts required before a
+/// Flash-Next E13 tensor-row extraction may be admitted.
+#[derive(Args, Debug)]
+struct GravityE13EvidenceArgs {
+    /// Predeclared hashes, strata thresholds, split sizes, and source binding.
+    #[arg(long, value_name = "PATH")]
+    declaration: PathBuf,
+    /// Exact pinned tokenizer.json consumed by hawking-core.
+    #[arg(long, value_name = "PATH")]
+    tokenizer: PathBuf,
+    /// Exact predeclared UTF-8 corpus. Its SHA-256 must match the declaration.
+    #[arg(long, value_name = "PATH")]
+    corpus: PathBuf,
+    /// Existing root under which the immutable evidence directory is created.
+    #[arg(long, default_value = "receipts/headless", value_name = "PATH")]
+    control_root: PathBuf,
+    /// New single-component directory name. Existing output is never replaced.
+    #[arg(long, value_name = "NAME")]
+    run_name: String,
+}
+
+/// Inspect the tokenizer-decoded E13 script/byte capacity without opening a
+/// corpus or model payload.
+#[derive(Args, Debug)]
+struct GravityE13UniverseArgs {
+    /// Existing E13 declaration carrying the frozen row counts and byte bands.
+    #[arg(long, value_name = "PATH")]
+    declaration: PathBuf,
+    /// Exact pinned tokenizer.json consumed by hawking-core.
+    #[arg(long, value_name = "PATH")]
+    tokenizer: PathBuf,
+}
+
+/// Compare one already-admitted source/native boundary payload pair through
+/// hawking-core. Receipt admission and ordered stop policy stay with the
+/// supervising capture-comparison owner.
+#[derive(Args, Debug)]
+struct GravityBoundaryPayloadCompareArgs {
+    /// Direct regular source/reference payload.
+    #[arg(long, value_name = "PATH")]
+    reference: PathBuf,
+    /// Direct regular native/candidate payload.
+    #[arg(long, value_name = "PATH")]
+    candidate: PathBuf,
+    /// Closed payload dtype: F32_LE or I32_LE.
+    #[arg(long, value_name = "DTYPE")]
+    dtype: String,
+    /// Exact element extent already admitted by the supervising manifest.
+    #[arg(long)]
+    expected_elements: usize,
+}
+
 /// Execute the bounded DeepSeek-V4 diagnostic Condense engine behind the
 /// canonical Gravity namespace.  The implementation is deliberately a thin
 /// launcher over the reviewed internal Python engine: it does not invent a
@@ -397,10 +425,126 @@ enum GravityCmd {
     Execute(GravityExecuteArgs),
     /// Stream SHA-256 verification for an existing artifact/shard file.
     Verify(GravityVerifyArgs),
+    /// Build E13 corpus-frequency, decoded-script, split, and shuffled-null
+    /// controls. CPU/tokenizer only: it cannot inspect or extract model rows.
+    E13Evidence(GravityE13EvidenceArgs),
+    /// Count E13 tokenizer-decoded script/byte capacity before acquiring or
+    /// tokenizing another corpus. CPU/tokenizer only.
+    E13Universe(GravityE13UniverseArgs),
+    /// Compare one admitted Flash boundary payload pair. CPU-only metrics;
+    /// this command owns no teacher admission, threshold, or semantic verdict.
+    BoundaryPayloadCompare(GravityBoundaryPayloadCompareArgs),
 }
+
+#[derive(Subcommand, Debug, Clone, Copy, PartialEq, Eq)]
+enum SelectAction {
+    /// Open the selected artifact in Hawking's local terminal surface.
+    Execute,
+    /// Start the configured headless service with this artifact.
+    Serve,
+    /// Start or reuse the configured service and open Hawking Web.
+    Web,
+}
+
+impl SelectAction {
+    fn id(self) -> &'static str {
+        match self {
+            Self::Execute => "execute",
+            Self::Serve => "serve",
+            Self::Web => "web",
+        }
+    }
+
+    fn python_verb(self) -> Option<&'static str> {
+        match self {
+            Self::Execute => None,
+            Self::Serve => Some("serve"),
+            Self::Web => Some("web"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+enum PublicActionBinding {
+    Native,
+    HawkingPythonAdapter,
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+struct PublicActionSpec {
+    id: &'static str,
+    category: &'static str,
+    invocation: &'static str,
+    binding: PublicActionBinding,
+    implemented: bool,
+}
+
+const PUBLIC_ACTIONS: &[PublicActionSpec] = &[
+    PublicActionSpec {
+        id: "gravity",
+        category: "gravity",
+        invocation: "hawking gravity",
+        binding: PublicActionBinding::Native,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "models",
+        category: "models",
+        invocation: "hawking models",
+        binding: PublicActionBinding::HawkingPythonAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.execute",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> execute",
+        binding: PublicActionBinding::HawkingPythonAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.serve",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> serve",
+        binding: PublicActionBinding::HawkingPythonAdapter,
+        implemented: true,
+    },
+    PublicActionSpec {
+        id: "select.web",
+        category: "models",
+        invocation: "hawking select <ARTIFACT> web",
+        binding: PublicActionBinding::HawkingPythonAdapter,
+        implemented: true,
+    },
+];
 
 #[derive(Subcommand, Debug)]
 enum Cmd {
+    /// Provision and observe isolated workspaces for external engineering workers.
+    Agent {
+        #[command(subcommand)]
+        command: external_worker::AgentCmd,
+    },
+    /// List exact artifact identities known to Hawking.
+    Models {
+        /// Emit the shared catalog as JSON for menus and automation.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+        /// Resident URL used only to mark the currently loaded artifact.
+        #[arg(long, default_value = "http://127.0.0.1:8011/v1")]
+        base: String,
+    },
+    /// Select one artifact for one explicit action in this invocation.
+    Select {
+        artifact: String,
+        #[command(subcommand)]
+        action: SelectAction,
+    },
+    /// Print the CLI action metadata projection available to launchers and menus.
+    Actions {
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
     /// Start the OpenAI-compatible HTTP server. For sealed Gravity artifacts,
     /// prefer `hawking gravity serve --artifact <PATH>`; this compatibility form
     /// retains the historical `--gravity` and `HAWKING_GRAVITY` selectors.
@@ -843,8 +987,51 @@ fn main() -> Result<()> {
             ..
         }
     );
-    apply_profile(&cli.profile, announce_profile);
+    let policy_owned_serve = matches!(
+        &cli.cmd,
+        Cmd::Serve(_)
+            | Cmd::Gravity {
+                command: Some(GravityCmd::Serve(_)),
+                ..
+            }
+    );
+    let external_worker_command = matches!(&cli.cmd, Cmd::Agent { .. });
+    // A normal CLI front door applies its profile immediately. `serve` carries
+    // the parsed request across its remaining input resolution so `run()` can
+    // resolve the root and serving layers against one environment snapshot.
+    let front_door_profile_request = if policy_owned_serve {
+        parse_front_door_profile_request(&cli.profile)
+    } else if external_worker_command {
+        // External-worker staging is model/runtime neutral. In particular, do
+        // not let the legacy global profile option mutate runtime environment
+        // variables on a command whose boundary never loads a model.
+        None
+    } else {
+        apply_profile(&cli.profile, announce_profile);
+        None
+    };
     match cli.cmd {
+        Cmd::Agent { command } => external_worker::run(command),
+        Cmd::Models { json, base } => {
+            let mut args = vec!["models".to_owned(), "--include-specimens".to_owned()];
+            if json {
+                args.push("--json".to_owned());
+            }
+            args.push("--base".to_owned());
+            args.push(base);
+            run_hawking_public_action_owned("models", args)
+        }
+        Cmd::Select { artifact, action } => {
+            let resolved = resolve_hawking_action(&artifact, action)?;
+            if matches!(action, SelectAction::Execute) && !std::io::stdin().is_terminal() {
+                return Err(anyhow::anyhow!(
+                    "select ... execute requires an interactive terminal; automation must use serve or web"
+                ));
+            }
+            let args = hawking_action_args(action, &resolved)?;
+            run_hawking_public_action_owned("select", args)
+        }
+        Cmd::Actions { json } => public_actions_main(json),
         Cmd::Serve(args)
         | Cmd::Gravity {
             command: Some(GravityCmd::Serve(args)),
@@ -881,6 +1068,13 @@ fn main() -> Result<()> {
                         tq_require_gpu,
                     },
             } = args;
+            let front_door_policy = front_door_profile_request
+                .clone()
+                .map(hawking_serve::resolve_front_door_profile);
+            if let Some(policy) = &front_door_policy {
+                announce_front_door_profile(policy, announce_profile);
+            }
+            let profile_was_omitted = cli.profile.is_none();
             require_canonical_gravity_artifact(gravity_namespace_serve, gravity.as_deref())?;
             // Resolve --gravity / HAWKING_GRAVITY to a loadable shard. Default
             // off: when neither flag nor env is set, require --weights as before.
@@ -925,6 +1119,13 @@ fn main() -> Result<()> {
                         return Err(anyhow::anyhow!(
                             "the DeepSeek-V4 diagnostic adapter supports only --artifact/--gravity and --addr; Metal, batching, TQ, profile, and request-control flags are not implemented"
                         ));
+                    }
+                    // This sealed diagnostic bypasses `hawking_serve::run()`.
+                    // Preserve the root CLI profile behavior at its own
+                    // process boundary; normal serve requests carry the same
+                    // policy into `run()` for one combined resolution.
+                    if let Some(policy) = &front_door_policy {
+                        hawking_serve::apply_environment_operations(&policy.environment_operations);
                     }
                     return run_gravity_v4_diagnostic_serve(gpath, addr);
                 }
@@ -975,50 +1176,52 @@ fn main() -> Result<()> {
             // --hardware-profile is the preferred alias for --kernel-profile.
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
 
-            // Parse --profile (global flag) into RuntimeProfile.
-            let mut runtime_profile = cli
-                .profile
-                .as_deref()
-                .and_then(hawking_serve::RuntimeProfile::from_str)
-                .unwrap_or(hawking_serve::RuntimeProfile::Default);
-
-            // Parse --energy-mode.
-            let mut resolved_energy_mode = energy_mode
+            // Preserve the parsed-request shape through the serving boundary.
+            // The resolver retains explicit `default` / `off` spellings while
+            // keeping their current legacy sentinel outcomes, so a future
+            // behavior change can be isolated from CLI parsing.
+            let mut requested_runtime_profile = front_door_profile_request
+                .clone()
+                .unwrap_or(hawking_serve::Requested::Omitted);
+            let mut requested_energy_mode = match energy_mode
                 .as_deref()
                 .and_then(hawking_serve::EnergyMode::from_str)
-                .unwrap_or(hawking_serve::EnergyMode::Off);
-
-            // Parse --batch-policy.
-            let resolved_batch_policy = batch_policy
-                .as_deref()
-                .and_then(|s| match s {
-                    "default" => Some(hawking_serve::BatchPolicy::Default),
-                    "greedy-first" => Some(hawking_serve::BatchPolicy::GreedyFirst),
-                    "prefix-grouped" => Some(hawking_serve::BatchPolicy::PrefixGrouped),
-                    other => {
-                        eprintln!(
-                            "[hawking] warning: unknown --batch-policy {other:?} \
-                             (known: default, greedy-first, prefix-grouped); using default"
-                        );
-                        None
-                    }
-                })
-                .unwrap_or(hawking_serve::BatchPolicy::Default);
-
-            // Parse --workload.
-            let resolved_workload = workload
-                .as_deref()
-                .and_then(hawking_serve::WorkloadPack::from_str)
-                .unwrap_or(hawking_serve::WorkloadPack::Default);
-
-            // Resolve --f16-kv / --no-f16-kv into Option<bool>.
-            let mut resolved_f16_kv = if f16_kv {
-                Some(true)
-            } else if no_f16_kv {
-                Some(false)
-            } else {
-                None
+            {
+                Some(value) => hawking_serve::Requested::Explicit(value),
+                None => hawking_serve::Requested::Omitted,
             };
+            let requested_batch_policy = match batch_policy.as_deref().and_then(|s| match s {
+                "default" => Some(hawking_serve::BatchPolicy::Default),
+                "greedy-first" => Some(hawking_serve::BatchPolicy::GreedyFirst),
+                "prefix-grouped" => Some(hawking_serve::BatchPolicy::PrefixGrouped),
+                other => {
+                    eprintln!(
+                        "[hawking] warning: unknown --batch-policy {other:?} \
+                         (known: default, greedy-first, prefix-grouped); using default"
+                    );
+                    None
+                }
+            }) {
+                Some(value) => hawking_serve::Requested::Explicit(value),
+                None => hawking_serve::Requested::Omitted,
+            };
+            let requested_workload = match workload.as_deref() {
+                Some("default") => {
+                    hawking_serve::Requested::Explicit(hawking_serve::WorkloadPack::Default)
+                }
+                Some(value) => hawking_serve::WorkloadPack::from_str(value)
+                    .map(hawking_serve::Requested::Explicit)
+                    .unwrap_or(hawking_serve::Requested::Omitted),
+                None => hawking_serve::Requested::Omitted,
+            };
+            let mut requested_f16_kv = if f16_kv {
+                hawking_serve::Requested::Explicit(true)
+            } else if no_f16_kv {
+                hawking_serve::Requested::Explicit(false)
+            } else {
+                hawking_serve::Requested::Omitted
+            };
+            let mut auto_policy_selection = None;
 
             // Apple Fit auto mode (A3): choose the strongest STABLE config for the
             // intent, announce it (capability-first; downgrades printed — never hidden),
@@ -1055,23 +1258,49 @@ fn main() -> Result<()> {
                                 "[serve --auto] anti-throttle OK: strongest stable config, no hidden downgrade."
                             ),
                         }
-                        if resolved_f16_kv.is_none() {
-                            resolved_f16_kv = Some(pick.kv_f16);
+                        auto_policy_selection = Some(hawking_serve::AutoPolicySelection {
+                            intent: intent.clone(),
+                            artifact: hawking_serve::AutoPolicyArtifactFacts {
+                                path: weights.display().to_string(),
+                                model_name: facts.name.clone(),
+                                architecture: facts.arch.clone(),
+                                byte_len: fb,
+                                native_context_tokens: facts.native_ctx,
+                            },
+                            machine: hawking_serve::AutoPolicyMachineFacts {
+                                name: mac.chip.clone(),
+                                total_memory_bytes: mac.total_mem,
+                                os_version: mac.os.clone(),
+                            },
+                            decision: hawking_serve::AutoPolicyDecision {
+                                f16_kv: pick.kv_f16,
+                                fast_profile: pick.profile_fast,
+                                energy_efficient: pick.energy_efficient,
+                                context_tokens: pick.context,
+                                rationale: pick.rationale.clone(),
+                                safety_downgrade: pick.safety_downgrade.clone(),
+                            },
+                        });
+                        if matches!(requested_f16_kv, hawking_serve::Requested::Omitted) {
+                            requested_f16_kv = hawking_serve::Requested::Automatic(pick.kv_f16);
                         }
                         if pick.profile_fast
-                            && cli.profile.is_none()
-                            && matches!(runtime_profile, hawking_serve::RuntimeProfile::Default)
+                            && profile_was_omitted
+                            && matches!(
+                                requested_runtime_profile,
+                                hawking_serve::Requested::Omitted
+                            )
                         {
-                            if let Some(rp) = hawking_serve::RuntimeProfile::from_str("fast") {
-                                runtime_profile = rp;
-                            }
+                            requested_runtime_profile = hawking_serve::Requested::Automatic(
+                                hawking_serve::RuntimeProfile::Fast,
+                            );
                         }
                         if pick.energy_efficient
-                            && matches!(resolved_energy_mode, hawking_serve::EnergyMode::Off)
+                            && matches!(requested_energy_mode, hawking_serve::Requested::Omitted)
                         {
-                            if let Some(em) = hawking_serve::EnergyMode::from_str("efficient") {
-                                resolved_energy_mode = em;
-                            }
+                            requested_energy_mode = hawking_serve::Requested::Automatic(
+                                hawking_serve::EnergyMode::Efficient,
+                            );
                         }
                         println!(
                             "[serve --auto] context cap {} is advisory (serve KV capacity is set elsewhere); \
@@ -1084,6 +1313,35 @@ fn main() -> Result<()> {
                     ),
                 }
             }
+
+            // Keep the legacy fields populated for direct `ServeOptions`
+            // consumers and diagnostics. The presence-aware request below is
+            // the authoritative policy input for this CLI invocation.
+            let runtime_profile = match &requested_runtime_profile {
+                hawking_serve::Requested::Explicit(value)
+                | hawking_serve::Requested::Automatic(value) => value.clone(),
+                hawking_serve::Requested::Omitted => hawking_serve::RuntimeProfile::Default,
+            };
+            let resolved_energy_mode = match &requested_energy_mode {
+                hawking_serve::Requested::Explicit(value)
+                | hawking_serve::Requested::Automatic(value) => value.clone(),
+                hawking_serve::Requested::Omitted => hawking_serve::EnergyMode::Off,
+            };
+            let resolved_batch_policy = match &requested_batch_policy {
+                hawking_serve::Requested::Explicit(value)
+                | hawking_serve::Requested::Automatic(value) => value.clone(),
+                hawking_serve::Requested::Omitted => hawking_serve::BatchPolicy::Default,
+            };
+            let resolved_workload = match &requested_workload {
+                hawking_serve::Requested::Explicit(value)
+                | hawking_serve::Requested::Automatic(value) => value.clone(),
+                hawking_serve::Requested::Omitted => hawking_serve::WorkloadPack::Default,
+            };
+            let resolved_f16_kv = match &requested_f16_kv {
+                hawking_serve::Requested::Explicit(value)
+                | hawking_serve::Requested::Automatic(value) => Some(*value),
+                hawking_serve::Requested::Omitted => None,
+            };
 
             apply_qwen_tq_flags(
                 tq.as_deref(),
@@ -1112,6 +1370,16 @@ fn main() -> Result<()> {
                 batch_policy: resolved_batch_policy,
                 workload: resolved_workload,
                 request_timeout_secs: gravity_request_timeout_secs,
+                policy_request: Some(hawking_serve::RustServePolicyRequest {
+                    entry: hawking_serve::RustServeEntry::HawkingCliServe,
+                    front_door_profile: front_door_profile_request,
+                    profile: requested_runtime_profile,
+                    workload: requested_workload,
+                    energy_mode: requested_energy_mode,
+                    batch_policy: requested_batch_policy,
+                    f16_kv: requested_f16_kv,
+                    auto_selection: auto_policy_selection,
+                }),
                 ..Default::default()
             }))
         }
@@ -1140,6 +1408,18 @@ fn main() -> Result<()> {
             command: Some(GravityCmd::Verify(args)),
             ..
         } => verify_main(args.artifact, args.expected_sha256),
+        Cmd::Gravity {
+            command: Some(GravityCmd::E13Evidence(args)),
+            ..
+        } => run_gravity_e13_evidence(args),
+        Cmd::Gravity {
+            command: Some(GravityCmd::E13Universe(args)),
+            ..
+        } => run_gravity_e13_universe(args),
+        Cmd::Gravity {
+            command: Some(GravityCmd::BoundaryPayloadCompare(args)),
+            ..
+        } => run_gravity_boundary_payload_compare(args),
         Cmd::Generate {
             weights,
             prompt,
@@ -1345,6 +1625,526 @@ fn main() -> Result<()> {
     }
 }
 
+fn public_actions_main(json: bool) -> Result<()> {
+    if json {
+        println!("{}", serde_json::to_string_pretty(PUBLIC_ACTIONS)?);
+    } else {
+        for action in PUBLIC_ACTIONS {
+            println!("{:<18} {}", action.id, action.invocation);
+        }
+    }
+    Ok(())
+}
+
+fn run_hawking_public_action_owned(label: &str, args: Vec<String>) -> Result<()> {
+    let python = hawking_python();
+    let mut command = std::process::Command::new(&python);
+    configure_hawking_python(&mut command)?;
+    let status = command
+        .arg("-m")
+        .arg("hawking")
+        .args(&args)
+        .status()
+        .map_err(|error| {
+            anyhow::anyhow!(
+                "could not start Hawking {label} through the Hawking Python adapter: {error}"
+            )
+        })?;
+    if !status.success() {
+        return Err(anyhow::anyhow!("Hawking {label} exited with {status}"));
+    }
+    Ok(())
+}
+
+fn hawking_python() -> std::ffi::OsString {
+    std::env::var_os("HAWKING_PYTHON").unwrap_or_else(|| "python3".into())
+}
+
+const HAWKING_RESOLVED_ACTION_SCHEMA: &str = "hawking.resolved_action.v1";
+
+/// The complete, admitted action record returned by Hawking's catalog owner.
+///
+/// Rust validates the portions that determine an invocation, then retains the
+/// entire JSON value for the next action boundary. Hawking independently
+/// revalidates it against the current catalog before it starts or reuses a
+/// resident, so this adapter never turns an admitted record back into a bare
+/// filesystem path.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ResolvedHawkingAction {
+    action: String,
+    path: String,
+    revision: String,
+    supported_actions: Vec<String>,
+    wire_json: String,
+}
+
+fn action_execution_intent(action: &str) -> Option<&'static str> {
+    match action {
+        "execute" => Some("interactive_execute"),
+        "serve" => Some("resident_serve"),
+        "web" => Some("web_surface"),
+        _ => None,
+    }
+}
+
+fn required_action_string<'a>(
+    value: &'a serde_json::Value,
+    field: &str,
+    context: &str,
+) -> Result<&'a str> {
+    value
+        .get(field)
+        .and_then(serde_json::Value::as_str)
+        .filter(|text| !text.is_empty())
+        .ok_or_else(|| anyhow::anyhow!("resolved action {context} omitted {field}"))
+}
+
+fn require_exact_object_fields(
+    value: &serde_json::Value,
+    context: &str,
+    expected: &[&str],
+) -> Result<()> {
+    let object = value
+        .as_object()
+        .ok_or_else(|| anyhow::anyhow!("resolved action {context} is not an object"))?;
+    if object.len() != expected.len() || expected.iter().any(|field| !object.contains_key(*field)) {
+        return Err(anyhow::anyhow!(
+            "resolved action {context} has unknown or missing fields"
+        ));
+    }
+    Ok(())
+}
+
+fn is_lower_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || matches!(byte, b'a'..=b'f'))
+}
+
+fn required_lower_sha256(value: &serde_json::Value, field: &str, context: &str) -> Result<String> {
+    let revision = required_action_string(value, field, context)?;
+    if !is_lower_sha256(revision) {
+        return Err(anyhow::anyhow!(
+            "resolved action {context} omitted an exact lowercase SHA-256 {field}"
+        ));
+    }
+    Ok(revision.to_owned())
+}
+
+fn require_matching_binding(
+    binding: &serde_json::Value,
+    field: &str,
+    expected: &str,
+) -> Result<()> {
+    let actual = required_action_string(binding, field, "reuse binding")?;
+    if actual != expected {
+        return Err(anyhow::anyhow!(
+            "resolved action reuse binding {field} does not match its admitted record"
+        ));
+    }
+    Ok(())
+}
+
+fn parse_hawking_action(
+    value: &serde_json::Value,
+    expected_action: &str,
+) -> Result<ResolvedHawkingAction> {
+    if value.get("schema").and_then(serde_json::Value::as_str)
+        != Some(HAWKING_RESOLVED_ACTION_SCHEMA)
+    {
+        return Err(anyhow::anyhow!(
+            "resolved action returned an unknown schema"
+        ));
+    }
+    require_exact_object_fields(
+        value,
+        "record",
+        &[
+            "schema",
+            "action",
+            "execution_intent",
+            "artifact",
+            "catalog",
+            "grant",
+            "reuse_binding",
+        ],
+    )?;
+
+    let action = required_action_string(value, "action", "record")?.to_owned();
+    let expected_intent = action_execution_intent(&action)
+        .ok_or_else(|| anyhow::anyhow!("resolved action names an unsupported action {action:?}"))?;
+    if action != expected_action {
+        return Err(anyhow::anyhow!(
+            "resolved action is bound to {action:?}, not requested action {expected_action:?}"
+        ));
+    }
+    if required_action_string(value, "execution_intent", "record")? != expected_intent {
+        return Err(anyhow::anyhow!(
+            "resolved action execution intent does not match {action:?}"
+        ));
+    }
+
+    let artifact = value
+        .get("artifact")
+        .filter(|record| record.is_object())
+        .ok_or_else(|| anyhow::anyhow!("resolved action omitted an artifact record"))?;
+    require_exact_object_fields(
+        artifact,
+        "artifact",
+        &["id", "path", "kind", "revision", "revision_basis"],
+    )?;
+    let _name = required_action_string(artifact, "id", "artifact")?;
+    let path = required_action_string(artifact, "path", "artifact")?;
+    if !Path::new(path).is_absolute() {
+        return Err(anyhow::anyhow!(
+            "resolved action artifact path is not canonical and absolute"
+        ));
+    }
+    let _kind = required_action_string(artifact, "kind", "artifact")?;
+    let revision = required_lower_sha256(artifact, "revision", "artifact")?;
+    let revision_basis = required_action_string(artifact, "revision_basis", "artifact")?;
+
+    let catalog = value
+        .get("catalog")
+        .filter(|record| record.is_object())
+        .ok_or_else(|| anyhow::anyhow!("resolved action omitted a catalog record"))?;
+    require_exact_object_fields(catalog, "catalog", &["identity", "revision"])?;
+    let catalog_identity = required_action_string(catalog, "identity", "catalog")?;
+    let catalog_revision = required_lower_sha256(catalog, "revision", "catalog")?;
+
+    let grant = value
+        .get("grant")
+        .filter(|record| record.is_object())
+        .ok_or_else(|| anyhow::anyhow!("resolved action omitted an admission grant"))?;
+    require_exact_object_fields(
+        grant,
+        "grant",
+        &["identity", "digest", "admitted", "supported_actions"],
+    )?;
+    let grant_identity = required_action_string(grant, "identity", "grant")?;
+    let grant_digest = required_lower_sha256(grant, "digest", "grant")?;
+    if grant.get("admitted").and_then(serde_json::Value::as_bool) != Some(true) {
+        return Err(anyhow::anyhow!("resolved action grant is not admitted"));
+    }
+    let raw_supported_actions = grant
+        .get("supported_actions")
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| anyhow::anyhow!("resolved action grant omitted supported actions"))?;
+    if raw_supported_actions.is_empty() {
+        return Err(anyhow::anyhow!(
+            "resolved action grant has no supported actions"
+        ));
+    }
+    let mut supported_actions = Vec::with_capacity(raw_supported_actions.len());
+    for supported in raw_supported_actions {
+        let supported = supported
+            .as_str()
+            .filter(|supported| action_execution_intent(supported).is_some())
+            .ok_or_else(|| anyhow::anyhow!("resolved action grant has an invalid action"))?;
+        if supported_actions.iter().any(|known| known == supported) {
+            return Err(anyhow::anyhow!(
+                "resolved action grant repeats a supported action"
+            ));
+        }
+        supported_actions.push(supported.to_owned());
+    }
+    if !supported_actions
+        .iter()
+        .any(|supported| supported == &action)
+    {
+        return Err(anyhow::anyhow!(
+            "resolved action grant does not admit action {action:?}"
+        ));
+    }
+
+    let binding = value
+        .get("reuse_binding")
+        .and_then(serde_json::Value::as_object)
+        .ok_or_else(|| anyhow::anyhow!("resolved action omitted a reuse binding"))?;
+    if binding.len() != 7 {
+        return Err(anyhow::anyhow!(
+            "resolved action reuse binding has unexpected fields"
+        ));
+    }
+    let binding_value = serde_json::Value::Object(binding.clone());
+    require_matching_binding(&binding_value, "path", path)?;
+    require_matching_binding(&binding_value, "artifact_revision", &revision)?;
+    require_matching_binding(&binding_value, "artifact_revision_basis", revision_basis)?;
+    require_matching_binding(&binding_value, "catalog_identity", catalog_identity)?;
+    require_matching_binding(&binding_value, "catalog_revision", &catalog_revision)?;
+    require_matching_binding(&binding_value, "grant_identity", grant_identity)?;
+    require_matching_binding(&binding_value, "grant_digest", &grant_digest)?;
+
+    Ok(ResolvedHawkingAction {
+        action,
+        path: path.to_owned(),
+        revision,
+        supported_actions,
+        wire_json: serde_json::to_string(value)
+            .map_err(|error| anyhow::anyhow!("could not serialize resolved action: {error}"))?,
+    })
+}
+
+fn hawking_resolver_args(artifact: &str, action: SelectAction) -> Vec<String> {
+    vec![
+        // Keep the caller's current directory from shadowing the paired
+        // Hawking source root that configure_hawking_python prepends to PYTHONPATH.
+        "-P".to_owned(),
+        "-m".to_owned(),
+        "hawking".to_owned(),
+        "models".to_owned(),
+        artifact.to_owned(),
+        "--resolve-only".to_owned(),
+        "--action".to_owned(),
+        action.id().to_owned(),
+    ]
+}
+
+fn parse_hawking_action_output(
+    wire_json: &str,
+    action: SelectAction,
+) -> Result<ResolvedHawkingAction> {
+    let value: serde_json::Value = serde_json::from_str(wire_json)
+        .map_err(|error| anyhow::anyhow!("artifact resolver returned invalid JSON: {error}"))?;
+    let mut resolved = parse_hawking_action(&value, action.id())?;
+    // The resolver's complete value is the identity transport. Preserve its
+    // serialization instead of reconstructing a smaller path-based command.
+    resolved.wire_json = wire_json.to_owned();
+    Ok(resolved)
+}
+
+fn resolve_hawking_action(artifact: &str, action: SelectAction) -> Result<ResolvedHawkingAction> {
+    let mut command = std::process::Command::new(hawking_python());
+    configure_hawking_python(&mut command)?;
+    let output = command
+        .args(hawking_resolver_args(artifact, action))
+        .output()
+        .map_err(|error| anyhow::anyhow!("could not resolve Hawking artifact: {error}"))?;
+    if !output.status.success() {
+        let reason = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+        return Err(anyhow::anyhow!(
+            "artifact selection refused: {}",
+            if reason.is_empty() {
+                output.status.to_string()
+            } else {
+                reason
+            }
+        ));
+    }
+    let wire_json = std::str::from_utf8(&output.stdout)
+        .map_err(|error| anyhow::anyhow!("artifact resolver returned non-UTF-8 JSON: {error}"))?
+        .trim();
+    parse_hawking_action_output(wire_json, action)
+}
+
+fn hawking_action_args(
+    action: SelectAction,
+    resolved: &ResolvedHawkingAction,
+) -> Result<Vec<String>> {
+    if resolved.action != action.id()
+        || !resolved
+            .supported_actions
+            .iter()
+            .any(|supported| supported == action.id())
+    {
+        return Err(anyhow::anyhow!(
+            "resolved action {:?} at {} revision {} cannot invoke {}",
+            resolved.action,
+            resolved.path,
+            resolved.revision,
+            action.id()
+        ));
+    }
+    let mut args = Vec::new();
+    if let Some(verb) = action.python_verb() {
+        args.push(verb.to_owned());
+    }
+    args.push("--resolved-action-json".to_owned());
+    args.push(resolved.wire_json.clone());
+    Ok(args)
+}
+
+fn configure_hawking_python(command: &mut std::process::Command) -> Result<()> {
+    let configured = std::env::var_os("HAWKING_PYTHON_ROOT").map(PathBuf::from);
+    let source_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .map(Path::to_path_buf);
+    let root = configured
+        .or(source_root)
+        .ok_or_else(|| anyhow::anyhow!("Hawking Python source root is unavailable"))?;
+    if !root.join("hawking/__main__.py").is_file() {
+        return Err(anyhow::anyhow!(
+            "Hawking Python package is absent at {}; set HAWKING_PYTHON_ROOT to the paired source root",
+            root.display()
+        ));
+    }
+    let mut paths = vec![root];
+    if let Some(existing) = std::env::var_os("PYTHONPATH") {
+        paths.extend(std::env::split_paths(&existing));
+    }
+    command.env("PYTHONPATH", std::env::join_paths(paths)?);
+    Ok(())
+}
+
+#[cfg(test)]
+mod public_surface_tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    #[test]
+    fn typed_public_actions_have_unique_ids() {
+        let ids = PUBLIC_ACTIONS
+            .iter()
+            .map(|action| action.id)
+            .collect::<BTreeSet<_>>();
+        assert_eq!(ids.len(), PUBLIC_ACTIONS.len());
+        assert!(PUBLIC_ACTIONS.iter().all(|action| action.implemented));
+    }
+
+    #[test]
+    fn select_grammar_is_artifact_then_action() {
+        let cli = Cli::try_parse_from(["hawking", "select", "sealed-3.14", "web"]).unwrap();
+        assert!(matches!(
+            cli.cmd,
+            Cmd::Select {
+                artifact,
+                action: SelectAction::Web,
+            } if artifact == "sealed-3.14"
+        ));
+    }
+
+    #[test]
+    fn select_requires_an_action() {
+        assert!(Cli::try_parse_from(["hawking", "select", "sealed-3.14"]).is_err());
+    }
+
+    fn resolved_action_fixture(action: &str) -> serde_json::Value {
+        let revision = "a".repeat(64);
+        let catalog_revision = "b".repeat(64);
+        let grant_digest = "c".repeat(64);
+        serde_json::json!({
+            "schema": HAWKING_RESOLVED_ACTION_SCHEMA,
+            "action": action,
+            "execution_intent": action_execution_intent(action).unwrap(),
+            "artifact": {
+                "id": "admitted-artifact",
+                "path": "/tmp/admitted-profile.json",
+                "kind": "noetic_native",
+                "revision": revision,
+                "revision_basis": "native_profile_bytes_sha256"
+            },
+            "catalog": {
+                "identity": "native-profile:/tmp/admitted-profile.json",
+                "revision": catalog_revision
+            },
+            "grant": {
+                "identity": "native-profile:/tmp/admitted-profile.json:admitted-artifact",
+                "digest": grant_digest,
+                "admitted": true,
+                "supported_actions": ["execute", "serve", "web"]
+            },
+            "reuse_binding": {
+                "path": "/tmp/admitted-profile.json",
+                "artifact_revision": "a".repeat(64),
+                "artifact_revision_basis": "native_profile_bytes_sha256",
+                "catalog_identity": "native-profile:/tmp/admitted-profile.json",
+                "catalog_revision": "b".repeat(64),
+                "grant_identity": "native-profile:/tmp/admitted-profile.json:admitted-artifact",
+                "grant_digest": "c".repeat(64)
+            },
+        })
+    }
+
+    #[test]
+    fn resolved_action_contract_requires_bound_revision_and_admission() {
+        let value = resolved_action_fixture("serve");
+        let parsed = parse_hawking_action(&value, "serve").unwrap();
+        assert_eq!(parsed.path, "/tmp/admitted-profile.json");
+        assert_eq!(parsed.revision, "a".repeat(64));
+        assert_eq!(parsed.supported_actions, vec!["execute", "serve", "web"]);
+
+        let mut missing_revision = value.clone();
+        missing_revision["artifact"]
+            .as_object_mut()
+            .unwrap()
+            .remove("revision");
+        assert!(parse_hawking_action(&missing_revision, "serve").is_err());
+
+        let mut malformed_binding = value;
+        malformed_binding["reuse_binding"]["path"] = serde_json::json!("/tmp/other.json");
+        assert!(parse_hawking_action(&malformed_binding, "serve").is_err());
+    }
+
+    #[test]
+    fn resolved_action_rejects_a_different_requested_action() {
+        let value = resolved_action_fixture("serve");
+        let error = parse_hawking_action(&value, "web").unwrap_err();
+        assert!(error.to_string().contains("not requested action"));
+    }
+
+    #[test]
+    fn hawking_action_argv_carries_the_full_record_without_a_model_path() {
+        let value = resolved_action_fixture("web");
+        let parsed = parse_hawking_action(&value, "web").unwrap();
+        let args = hawking_action_args(SelectAction::Web, &parsed).unwrap();
+
+        assert_eq!(args[0], "web");
+        assert_eq!(args[1], "--resolved-action-json");
+        assert!(!args.iter().any(|argument| argument == "--model"));
+        let forwarded: serde_json::Value = serde_json::from_str(&args[2]).unwrap();
+        assert_eq!(forwarded, value);
+    }
+
+    #[test]
+    fn hawking_resolver_argv_requests_the_exact_action_contract() {
+        assert_eq!(
+            hawking_resolver_args("admitted-artifact", SelectAction::Web),
+            vec![
+                "-P",
+                "-m",
+                "hawking",
+                "models",
+                "admitted-artifact",
+                "--resolve-only",
+                "--action",
+                "web",
+            ]
+        );
+    }
+
+    #[test]
+    fn resolver_json_is_forwarded_without_path_reconstruction() {
+        let value = resolved_action_fixture("web");
+        let raw = serde_json::to_string_pretty(&value).unwrap();
+        let parsed = parse_hawking_action_output(&raw, SelectAction::Web).unwrap();
+        let args = hawking_action_args(SelectAction::Web, &parsed).unwrap();
+
+        assert_eq!(args[1], "--resolved-action-json");
+        assert_eq!(args[2], raw);
+        assert!(!args.iter().any(|argument| argument == "--model"));
+    }
+
+    #[test]
+    fn resolved_action_rejects_an_unadmitted_grant() {
+        let mut value = resolved_action_fixture("execute");
+        value["grant"]["admitted"] = serde_json::json!(false);
+        assert!(parse_hawking_action(&value, "execute").is_err());
+    }
+
+    #[test]
+    fn legacy_artifact_selection_contract_is_not_an_action_contract() {
+        let value = serde_json::json!({
+            "schema": "hawking.artifact_selection.v1",
+            "path": "/tmp/profile.json",
+            "revision": "a".repeat(64),
+            "supported_actions": ["serve"]
+        });
+        assert!(parse_hawking_action(&value, "serve").is_err());
+    }
+}
+
 /// Print the truthful capability identity for bare `hawking gravity`. This is
 /// deliberately model-state-free: it does not search for, download, convert,
 /// or load a model merely to report command availability.
@@ -1361,6 +2161,9 @@ fn gravity_status_main(json: bool) -> Result<()> {
         );
         println!("  plan    metadata-only estimate; requires --dry-run; creates nothing");
         println!("  verify  streaming SHA-256 for one existing artifact/shard file");
+        println!(
+            "  boundary-payload-compare  CPU-only metrics for one admitted Flash source/native payload pair"
+        );
         println!("  canonical: gravity execute --artifact-dir <PATH> --xet-root <NEW_EMPTY_PATH>");
         println!(
             "  plan intent: --equilibrium / --intent-profile / --target-device and optional limits"
@@ -1447,10 +2250,281 @@ fn gravity_status_json() -> serde_json::Value {
             "verify": {
                 "state": "implemented",
                 "method": "streaming SHA-256 file verification"
+            },
+            "e13_evidence": {
+                "state": "implemented_cpu_only",
+                "canonical_command": "hawking gravity e13-evidence --declaration <PATH> --tokenizer <PATH> --corpus <PATH> --run-name <NAME>",
+                "reads": ["declaration", "tokenizer.json", "predeclared UTF-8 corpus"],
+                "writes": "new immutable directory beneath the declared control root",
+                "model_weights": false,
+                "tensor_payload_bytes_read": 0,
+                "model_loaded": false,
+                "gpu": false,
+                "experiment_executed": false
+            },
+            "e13_lexical_universe": {
+                "state": "implemented_cpu_only",
+                "canonical_command": "hawking gravity e13-universe --declaration <PATH> --tokenizer <PATH>",
+                "reads": ["declaration", "tokenizer.json"],
+                "corpus": false,
+                "model_weights": false,
+                "tensor_payload_bytes_read": 0,
+                "model_loaded": false,
+                "gpu": false,
+                "experiment_executed": false
+            },
+            "boundary_payload_compare": {
+                "state": "implemented_cpu_only",
+                "canonical_command": "hawking gravity boundary-payload-compare --reference <PATH> --candidate <PATH> --dtype <F32_LE|I32_LE> --expected-elements <N>",
+                "receipt_admission": false,
+                "ordered_stop_policy": false,
+                "numerical_acceptance_bound": null,
+                "semantic_verdict": false,
+                "model_loaded": false,
+                "gpu": false
             }
         },
         "compatibility": gravity_compatibility_json()
     })
+}
+
+fn read_direct_stable_boundary_payload(path: &Path, label: &str) -> Result<(PathBuf, Vec<u8>)> {
+    let selected = path;
+    let selected_metadata = std::fs::symlink_metadata(selected).map_err(|error| {
+        anyhow::anyhow!(
+            "cannot inspect {label} boundary payload {}: {error}",
+            selected.display()
+        )
+    })?;
+    if selected_metadata.file_type().is_symlink() || !selected_metadata.is_file() {
+        return Err(anyhow::anyhow!(
+            "{label} boundary payload must be a direct regular file: {}",
+            selected.display()
+        ));
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt as _;
+        if selected_metadata.nlink() != 1 {
+            return Err(anyhow::anyhow!(
+                "{label} boundary payload must not be hard-linked: {}",
+                selected.display()
+            ));
+        }
+    }
+    let resolved = selected.canonicalize().map_err(|error| {
+        anyhow::anyhow!(
+            "cannot resolve {label} boundary payload {}: {error}",
+            selected.display()
+        )
+    })?;
+    let mut file = std::fs::File::open(&resolved).map_err(|error| {
+        anyhow::anyhow!(
+            "cannot open {label} boundary payload {}: {error}",
+            resolved.display()
+        )
+    })?;
+    let before = file.metadata()?;
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes)?;
+    let after = file.metadata()?;
+    if before.len() != after.len() || before.modified()? != after.modified()? {
+        return Err(anyhow::anyhow!(
+            "{label} boundary payload changed while it was read: {}",
+            resolved.display()
+        ));
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt as _;
+        if before.dev() != after.dev() || before.ino() != after.ino() || after.nlink() != 1 {
+            return Err(anyhow::anyhow!(
+                "{label} boundary payload identity changed while it was read: {}",
+                resolved.display()
+            ));
+        }
+    }
+    Ok((resolved, bytes))
+}
+
+fn run_gravity_boundary_payload_compare(args: GravityBoundaryPayloadCompareArgs) -> Result<()> {
+    let (reference_path, reference) =
+        read_direct_stable_boundary_payload(&args.reference, "reference")?;
+    let (candidate_path, candidate) =
+        read_direct_stable_boundary_payload(&args.candidate, "candidate")?;
+    let comparison = hawking_core::flash_boundary_compare::compare_flash_boundary_payloads(
+        &reference,
+        &candidate,
+        &args.dtype,
+        args.expected_elements,
+    )?;
+    println!(
+        "{}",
+        serde_json::json!({
+            "schema": "hawking.gravity.flash_boundary_payload_compare.v1",
+            "status": "COMPARED_ADMITTED_PAYLOAD_PAIR__NO_SEMANTIC_VERDICT",
+            "reference_path": reference_path,
+            "candidate_path": candidate_path,
+            "comparison": comparison,
+            "model_loaded": false,
+            "gpu_or_metal_started": false,
+            "promotion_allowed": false
+        })
+    );
+    Ok(())
+}
+
+fn read_e13_declaration(
+    path: &Path,
+) -> Result<(
+    hawking_core::flash_e13_vocabulary_evidence::E13EvidenceDeclaration,
+    Vec<u8>,
+)> {
+    use hawking_core::flash_e13_vocabulary_evidence::E13EvidenceDeclaration;
+
+    let declaration_metadata = std::fs::symlink_metadata(path).map_err(|error| {
+        anyhow::anyhow!("cannot inspect E13 declaration {}: {error}", path.display())
+    })?;
+    if declaration_metadata.file_type().is_symlink()
+        || !declaration_metadata.file_type().is_file()
+        || declaration_metadata.len() > 1024 * 1024
+    {
+        return Err(anyhow::anyhow!(
+            "E13 declaration must be a direct regular JSON file no larger than 1 MiB"
+        ));
+    }
+    let declaration_bytes = std::fs::read(path)?;
+    if declaration_bytes.len() as u64 != declaration_metadata.len() {
+        return Err(anyhow::anyhow!("E13 declaration changed while it was read"));
+    }
+    let declaration: E13EvidenceDeclaration = serde_json::from_slice(&declaration_bytes)
+        .map_err(|error| anyhow::anyhow!("invalid E13 declaration JSON: {error}"))?;
+    Ok((declaration, declaration_bytes))
+}
+
+fn run_gravity_e13_universe(args: GravityE13UniverseArgs) -> Result<()> {
+    use hawking_core::flash_e13_vocabulary_evidence::inspect_e13_lexical_universe;
+    use sha2::{Digest, Sha256};
+
+    let (declaration, declaration_bytes) = read_e13_declaration(&args.declaration)?;
+    let mut census = inspect_e13_lexical_universe(&declaration, &args.tokenizer)?;
+    census
+        .as_object_mut()
+        .ok_or_else(|| anyhow::anyhow!("internal E13 universe census is not an object"))?
+        .insert(
+            "declaration".into(),
+            serde_json::json!({
+                "path": args.declaration,
+                "sha256": format!("{:x}", Sha256::digest(&declaration_bytes)),
+            }),
+        );
+    println!("{}", serde_json::to_string_pretty(&census)?);
+    Ok(())
+}
+
+fn run_gravity_e13_evidence(args: GravityE13EvidenceArgs) -> Result<()> {
+    use hawking_core::flash_e13_vocabulary_evidence::produce_e13_evidence;
+    use sha2::{Digest, Sha256};
+    use std::io::Write;
+    use std::path::Component;
+
+    let run_path = Path::new(&args.run_name);
+    if run_path.components().count() != 1
+        || !matches!(run_path.components().next(), Some(Component::Normal(_)))
+    {
+        return Err(anyhow::anyhow!(
+            "--run-name must be one normal path component"
+        ));
+    }
+    let (declaration, declaration_bytes) = read_e13_declaration(&args.declaration)?;
+
+    let control_root = std::fs::canonicalize(&args.control_root).map_err(|error| {
+        anyhow::anyhow!(
+            "cannot resolve E13 control root {}: {error}",
+            args.control_root.display()
+        )
+    })?;
+    if !control_root.is_dir() {
+        return Err(anyhow::anyhow!(
+            "E13 control root is not a directory: {}",
+            control_root.display()
+        ));
+    }
+    let frequency_relative = format!("{}/frequency-evidence.json", args.run_name);
+    let script_relative = format!("{}/script-evidence.json", args.run_name);
+    let bundle = produce_e13_evidence(
+        &declaration,
+        &args.tokenizer,
+        &args.corpus,
+        &frequency_relative,
+        &script_relative,
+    )?;
+    let frequency_bytes = bundle.frequency_bytes()?;
+    let script_bytes = bundle.script_bytes()?;
+    let plan_bytes = bundle.plan_bytes()?;
+    let output_dir = control_root.join(&args.run_name);
+    std::fs::create_dir(&output_dir).map_err(|error| {
+        anyhow::anyhow!(
+            "refusing to replace E13 evidence directory {}: {error}",
+            output_dir.display()
+        )
+    })?;
+
+    fn write_new(path: &Path, bytes: &[u8]) -> Result<()> {
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(path)
+            .map_err(|error| anyhow::anyhow!("refusing to replace {}: {error}", path.display()))?;
+        file.write_all(bytes)?;
+        file.sync_all()?;
+        Ok(())
+    }
+    fn digest(bytes: &[u8]) -> String {
+        format!("{:x}", Sha256::digest(bytes))
+    }
+
+    let frequency_path = output_dir.join("frequency-evidence.json");
+    let script_path = output_dir.join("script-evidence.json");
+    let plan_path = output_dir.join("plan.json");
+    let receipt_path = output_dir.join("producer-receipt.json");
+    write_new(&frequency_path, &frequency_bytes)?;
+    write_new(&script_path, &script_bytes)?;
+    write_new(&plan_path, &plan_bytes)?;
+    let mut receipt = bundle.producer_receipt;
+    receipt
+        .as_object_mut()
+        .ok_or_else(|| anyhow::anyhow!("internal E13 producer receipt is not an object"))?
+        .insert(
+            "artifacts".into(),
+            serde_json::json!({
+                "control_root": control_root,
+                "output_directory": output_dir,
+                "declaration": {
+                    "path": args.declaration,
+                    "sha256": digest(&declaration_bytes),
+                },
+                "frequency_evidence": {
+                    "path": frequency_path,
+                    "sha256": digest(&frequency_bytes),
+                    "bytes": frequency_bytes.len(),
+                },
+                "script_evidence": {
+                    "path": script_path,
+                    "sha256": digest(&script_bytes),
+                    "bytes": script_bytes.len(),
+                },
+                "plan": {
+                    "path": plan_path,
+                    "sha256": digest(&plan_bytes),
+                    "bytes": plan_bytes.len(),
+                },
+            }),
+        );
+    let receipt_bytes = serde_json::to_vec(&receipt)?;
+    write_new(&receipt_path, &receipt_bytes)?;
+    println!("{}", serde_json::to_string_pretty(&receipt)?);
+    Ok(())
 }
 
 /// Legacy spellings remain parse-compatible, but machine clients can make an
@@ -3453,6 +4527,7 @@ fn stats_main(
     println!("finish_reason: {:?}", reason);
     println!("prompt_tokens: {}", stats.prompt_tokens);
     println!("completion_tokens: {}", stats.completion_tokens);
+    println!("decode_ns: {}", stats.decode_elapsed_ns());
     println!("decode_ms: {:.1}", stats.decode_ms);
     println!(
         "offload_budget_mb: {}",
@@ -3869,7 +4944,7 @@ fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Op
             engine
                 .generate(req, &mut |ev| {
                     if let StreamEvent::Done { stats, .. } = ev {
-                        measured_tps = (stats.decode_ms > 0.0).then(|| stats.dec_tps());
+                        measured_tps = (stats.decode_elapsed_ns() > 0).then(|| stats.dec_tps());
                     }
                 })
                 .ok()?;
@@ -4297,10 +5372,12 @@ fn generate_main(
                 let dec = stats.dec_tps();
                 let reason_s = stop_reason_label(&reason);
                 eprintln!(
-                    "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
+                    "\n[stats] reason={} prompt={} completion={} prefill_ns={} decode_ns={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
                     reason_s,
                     stats.prompt_tokens,
                     stats.completion_tokens,
+                    stats.prefill_elapsed_ns(),
+                    stats.decode_elapsed_ns(),
                     stats.prefill_ms,
                     stats.decode_ms,
                     dec,
@@ -4465,6 +5542,9 @@ fn write_native_tq_serve_report(
                 "completion_tokens",
                 serde_json::json!(stats.completion_tokens),
             ),
+            ("timing_unit", serde_json::json!("ns")),
+            ("prefill_ns", serde_json::json!(stats.prefill_elapsed_ns())),
+            ("decode_ns", serde_json::json!(stats.decode_elapsed_ns())),
             ("prefill_ms", serde_json::json!(stats.prefill_ms)),
             ("decode_ms", serde_json::json!(stats.decode_ms)),
             ("stop_reason", serde_json::json!(stop_reason_label(reason))),
@@ -4948,6 +6028,45 @@ mod gravity_cli_tests {
             "implemented_bounded_diagnostic"
         );
         assert_eq!(status["operations"]["execute"]["full_model"], false);
+    }
+
+    #[test]
+    fn gravity_boundary_payload_compare_is_typed_cpu_only_surface() {
+        let cli = Cli::try_parse_from([
+            "hawking",
+            "gravity",
+            "boundary-payload-compare",
+            "--reference",
+            "/tmp/source.f32",
+            "--candidate",
+            "/tmp/native.f32",
+            "--dtype",
+            "F32_LE",
+            "--expected-elements",
+            "10240",
+        ])
+        .unwrap();
+        match cli.cmd {
+            Cmd::Gravity {
+                command: Some(GravityCmd::BoundaryPayloadCompare(args)),
+                ..
+            } => {
+                assert_eq!(args.reference, std::path::PathBuf::from("/tmp/source.f32"));
+                assert_eq!(args.candidate, std::path::PathBuf::from("/tmp/native.f32"));
+                assert_eq!(args.dtype, "F32_LE");
+                assert_eq!(args.expected_elements, 10_240);
+            }
+            other => panic!("expected Gravity boundary payload comparison, got {other:?}"),
+        }
+        let status = gravity_status_json();
+        assert_eq!(
+            status["operations"]["boundary_payload_compare"]["state"],
+            "implemented_cpu_only"
+        );
+        assert_eq!(
+            status["operations"]["boundary_payload_compare"]["semantic_verdict"],
+            false
+        );
     }
 
     #[test]

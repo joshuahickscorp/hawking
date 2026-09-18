@@ -63,7 +63,7 @@ MAX_CONCURRENT = 10    # raised again per user steer: the 0-byte stall is now gu
 # organism advancing, without turning the campaign ledger into a polling storm.
 POLL_SECONDS = 60
 DELEGATE_LOG = REPO / "workspace" / "ops" / "ascent-delegates.log"
-# Candidate requests are produced by durable AgentOS work but never promote from
+# Candidate requests are produced by durable Hawking work but never promote from
 # inside a model session. The daemon may *dispatch* this separate external
 # controller when an inbox item is ready; all protected evidence and lineage
 # mutation remain in tools/genesis_lifecycle.py.
@@ -71,12 +71,15 @@ GENESIS_CANDIDATE_ROOT = REPO / "workspace" / "ops" / "genesis-candidates"
 GENESIS_LIFECYCLE = REPO / "tools" / "genesis_lifecycle.py"
 GENESIS_LIFECYCLE_LOG = REPO / "workspace" / "ops" / "genesis-lifecycle.log"
 GENESIS_LIFECYCLE_STATE = REPO / "workspace" / "ops" / "genesis-lifecycle-controller.json"
-# One bounded HCLI turn gives each logical worker a real implementation surface
+# One bounded Hawking turn gives each logical worker a real implementation surface
 # between protected experiments.  It is a separate process because the daemon
 # remains only a scheduler: the worker cannot gain lifecycle authority from it.
-GENESIS_AGENTOS = REPO / "tools" / "genesis_agentos.py"
-GENESIS_AGENTOS_LOG = REPO / "workspace" / "ops" / "genesis-agentos.log"
-GENESIS_AGENTOS_STATE = REPO / "workspace" / "ops" / "genesis-agentos-controller.json"
+GENESIS_WORKER = REPO / "tools" / "genesis_worker.py"
+GENESIS_WORKER_LOG = REPO / "workspace" / "ops" / "genesis-worker.log"
+GENESIS_WORKER_STATE = REPO / "workspace" / "ops" / "genesis-worker-controller.json"
+# Existing worker state is user-owned durable evidence. It is input-only until
+# the next truthful dispatch writes the canonical Hawking-named record.
+LEGACY_WORKER_STATE = REPO / "workspace" / "ops" / "genesis-agentos-controller.json"
 
 # Real Tier-1 gates. Reject-only: passing here is NOT promotion.
 TIER1 = {
@@ -201,9 +204,9 @@ def save(path: Path, obj) -> None:
 # ---------------------------------------------------------------- governors
 
 def machine() -> dict:
-    sys.path.insert(0, str(REPO / "tools"))
+    sys.path.insert(0, str(REPO))
     try:
-        from agentos.machine_state import clean_box_ok, snapshot  # type: ignore
+        from hawking.machine_state import clean_box_ok, snapshot
         snap = snapshot()
         snap["clean_box_ok"], snap["clean_box_reason"] = clean_box_ok(snap, DISK_FLOOR_GIB)
         return snap
@@ -562,7 +565,7 @@ _DEFAULT_GENESIS_TOKENIZER = (
 GENESIS_BIN = _DEFAULT_GENESIS_BIN
 GENESIS_ARTIFACT = _DEFAULT_GENESIS_ARTIFACT
 GENESIS_TOKENIZER = _DEFAULT_GENESIS_TOKENIZER
-GENESIS_RESIDENT_CLIENT = REPO / "tools" / "agentos" / "genesis_resident.py"
+GENESIS_RESIDENT_CLIENT = REPO / "hawking" / "genesis_resident.py"
 GENESIS_RESIDENT_PROPOSE_TIMEOUT_S = 1800
 # A reasoning model spends most of its budget inside <think>. At 900 the body ran
 # out mid-reasoning and never emitted an answer, so every proposal came back empty
@@ -570,16 +573,16 @@ GENESIS_RESIDENT_PROPOSE_TIMEOUT_S = 1800
 #
 # The parent proposal asks for four machine-minimal fields, not an essay.  A 2,600
 # token cap let a speculative parent decode monopolize the one resident for minutes,
-# starving the child_a/child_b HCLI action plane.  512 is ample for a concrete
+# starving the child_a/child_b Hawking action plane. 512 is ample for a concrete
 # mechanism/discriminator while preserving frequent closed-loop scheduling.  The
 # 8,192-token resident still leaves generous room for the integrity capsule and task.
 GENESIS_PROPOSE_MAX_NEW_TOKENS = 512
 # A resident proposal is serial GPU work.  Keep the generic generator capable of
 # batch construction for CPU/test callers, but production one_pass admits at most
-# this many model decodes before yielding to AgentOS and protected work.
+# this many model decodes before yielding to Hawking worker and protected work.
 MAX_RESIDENT_PROPOSALS_PER_PASS = 1
 GENESIS_SYSTEM_CONTRACT = (
-    REPO / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
+    REPO / "docs" / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
 )
 
 
@@ -603,7 +606,7 @@ def _genesis_prompt(bottleneck: str) -> str:
         "or complete-token wall before any convenience feature. Be resourceful in the "
         "actual checkout: inspect current receipts, code, and negative science; choose "
         "one high-leverage mechanism that changes a measured cost; and give its cheapest "
-        "falsifier. AgentOS/HCLI work may improve tool-wait utilization only when it is "
+        "falsifier. Hawking worker activity may improve tool-wait utilization only when it is "
         "CPU-safe and cannot delay protected Gravity/kernel work. Do not ask for a plan, "
         "repeat dead theories, or substitute aspiration for a measurable mechanism.\n\n"
         "Already REFUTED by measurement - do not propose these again: fusing tiny kernels "
@@ -624,25 +627,16 @@ def _genesis_prompt(bottleneck: str) -> str:
 
 
 def _resident_mod():
-    path = Path(__file__).resolve().parent / "agentos" / "genesis_resident.py"
-    spec = importlib.util.spec_from_file_location("genesis_resident", path)
-    if spec is None or spec.loader is None:
-        return None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    from hawking import genesis_resident
+
+    return genesis_resident
 
 
 def _genesis_contract_mod():
     """Load the fail-closed canonical contract compiler in this checkout."""
-    path = REPO / "tools" / "agentos" / "genesis_contract.py"
-    spec = importlib.util.spec_from_file_location("genesis_system_contract", path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load Genesis system contract helper at {path}")
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    from hawking import genesis_contract
+
+    return genesis_contract
 
 
 def _mechanism_mod():
@@ -721,7 +715,7 @@ def gpu_lane_busy() -> bool:
     An incomplete lock still fails closed.  A numeric PID that is definitely
     dead is different: a fresh resident acquisition will atomically reclaim it
     in ``gpu_lane_lock.sh``/``GpuLaneGuard``.  Treating that stale directory as
-    permanently busy stranded the post-restart AgentOS loop before it could
+    permanently busy stranded the post-restart Hawking worker loop before it could
     make the very acquisition that repairs the lock.
     """
     if not GPU_LANE_LOCK.exists():
@@ -766,7 +760,7 @@ def protected_gpu_target_running(state: dict | None = None) -> bool:
     """Whether an already-launched protected target occupies the GPU now.
 
     Pending targets still reserve the lane from speculative parent proposals,
-    but a short AgentOS tool turn may run between them. This distinction keeps
+    but a short Hawking worker turn may run between them. This distinction keeps
     both loops alive while never overlapping a resident decode with an actual
     protected capture.
     """
@@ -873,28 +867,38 @@ def dispatch_candidate_lifecycle() -> dict:
     return {**status, "status": "started", "pid": proc.pid}
 
 
-def _agentos_interval_s() -> int:
+def _worker_interval_s() -> int:
     """Bound retry pressure if the resident emits malformed/no tool calls."""
     try:
-        requested = int(os.environ.get("GENESIS_AGENTOS_MIN_INTERVAL_S", "180"))
+        requested = int(
+            os.environ.get(
+                "HAWKING_GENESIS_WORKER_MIN_INTERVAL_S",
+                os.environ.get("GENESIS_AGENTOS_MIN_INTERVAL_S", "180"),
+            )
+        )
     except ValueError:
         requested = 180
     return min(max(requested, 30), 3_600)
 
 
-def agentos_turn_status() -> dict:
-    """Observe one bounded HCLI turn without treating a worker as a child.
+def _load_worker_dispatch_state() -> dict:
+    """Read a canonical dispatch record or the pre-migration record."""
+    path = GENESIS_WORKER_STATE if GENESIS_WORKER_STATE.is_file() else LEGACY_WORKER_STATE
+    try:
+        saved = load(path, {})
+    except (OSError, ValueError):
+        saved = {}
+    return saved if isinstance(saved, dict) else {}
 
-    A live AgentOS process owns a serial resident decode even though it does
+
+def worker_turn_status() -> dict:
+    """Observe one bounded Hawking turn without treating a worker as a child.
+
+    A live Hawking worker process owns a serial resident decode even though it does
     not hold the protected GPU benchmark lock.  The scheduler uses this state
     to avoid launching a protected target into that decode.
     """
-    try:
-        saved = load(GENESIS_AGENTOS_STATE, {})
-    except (OSError, ValueError):
-        saved = {}
-    if not isinstance(saved, dict):
-        saved = {}
+    saved = _load_worker_dispatch_state()
     pid = saved.get("pid")
     worker_id = saved.get("worker_id")
     if process_alive(pid):
@@ -908,7 +912,7 @@ def agentos_turn_status() -> dict:
         started_at = float(saved.get("started_at", 0.0))
     except (TypeError, ValueError):
         started_at = 0.0
-    remaining = max(0, int(_agentos_interval_s() - (time.time() - started_at))) if started_at else 0
+    remaining = max(0, int(_worker_interval_s() - (time.time() - started_at))) if started_at else 0
     if remaining:
         return {
             "status": "cooldown",
@@ -918,28 +922,24 @@ def agentos_turn_status() -> dict:
     return {"status": "idle", "worker_id": worker_id}
 
 
-def _next_agentos_worker() -> str:
+def _next_worker() -> str:
     """Round-robin separate durable fronts instead of starving kernel work."""
-    try:
-        saved = load(GENESIS_AGENTOS_STATE, {})
-    except (OSError, ValueError):
-        saved = {}
-    previous = saved.get("worker_id") if isinstance(saved, dict) else None
+    previous = _load_worker_dispatch_state().get("worker_id")
     return "kernel" if previous == "gravity" else "gravity"
 
 
-def dispatch_agentos_turn() -> dict:
-    """Launch one bounded non-authoritative AgentOS/HCLI implementation turn."""
-    status = agentos_turn_status()
+def dispatch_worker_turn() -> dict:
+    """Launch one bounded non-authoritative Hawking implementation turn."""
+    status = worker_turn_status()
     if status["status"] != "idle":
         return status
-    if not GENESIS_AGENTOS.is_file():
-        return {**status, "status": "unavailable", "reason": "genesis AgentOS CLI missing"}
-    worker_id = _next_agentos_worker()
-    GENESIS_AGENTOS_LOG.parent.mkdir(parents=True, exist_ok=True)
+    if not GENESIS_WORKER.is_file():
+        return {**status, "status": "unavailable", "reason": "Genesis worker CLI missing"}
+    worker_id = _next_worker()
+    GENESIS_WORKER_LOG.parent.mkdir(parents=True, exist_ok=True)
     command = [
         sys.executable,
-        str(GENESIS_AGENTOS),
+        str(GENESIS_WORKER),
         "tick",
         "--repo",
         str(REPO),
@@ -949,7 +949,7 @@ def dispatch_agentos_turn() -> dict:
         "1",
     ]
     try:
-        with GENESIS_AGENTOS_LOG.open("a", encoding="utf-8") as log:
+        with GENESIS_WORKER_LOG.open("a", encoding="utf-8") as log:
             proc = subprocess.Popen(
                 command,
                 cwd=REPO,
@@ -962,9 +962,9 @@ def dispatch_agentos_turn() -> dict:
     except OSError as exc:
         return {**status, "status": "launch_failed", "worker_id": worker_id, "reason": str(exc)}
     save(
-        GENESIS_AGENTOS_STATE,
+        GENESIS_WORKER_STATE,
         {
-            "schema": "hawking.genesis.agentos_dispatch.v1",
+            "schema": "hawking.genesis.worker_dispatch.v1",
             "status": "running",
             "pid": proc.pid,
             "worker_id": worker_id,
@@ -1206,7 +1206,7 @@ def generate_targets(
 
     # CPU-only Hawking work is deliberately allowed to overlap a protected
     # Gravity/kernel lane.  Treating every Qwen-labelled task as an active
-    # experiment made an HCLI backfill suppress the next catalog kernel trial
+    # experiment made a Hawking backfill suppress the next catalog kernel trial
     # after the current GPU lane completed—the inverse of the continuity
     # directive's "A + B dominate until >=100 TPS" rule.  Unknown admission
     # classes fail closed as GPU-consuming; only classes explicitly mapped to
@@ -1248,7 +1248,7 @@ def generate_targets(
             break
         # A failed/empty resident response still consumed a real decode, so it
         # consumes budget too.  Otherwise a batch of empty answers could hold
-        # the serial body for an entire unattended pass and starve AgentOS.
+        # the serial body for an entire unattended pass and starve Hawking workers.
         if (
             resident_proposal_budget is not None
             and resident_proposals >= resident_proposal_budget
@@ -1535,17 +1535,17 @@ def one_pass() -> dict:
     # parent exists. The daemon dispatches a separate external controller; it
     # does not parse the request, run a gate, or write a lineage slot itself.
     lifecycle = candidate_lifecycle_status()
-    agentos = agentos_turn_status()
+    worker_turn = worker_turn_status()
     report["candidate_lifecycle"] = lifecycle
-    report["agentos_turn"] = agentos
+    report["worker_turn"] = worker_turn
     if lifecycle["status"] != "idle":
         save(STATE, state)
         # A worker turn owns a serial resident decode but does not acquire the
         # protected benchmark lock. Never launch the protected lifecycle
         # controller into that decode; the candidate stays durably pending.
-        if agentos["status"] == "running":
+        if worker_turn["status"] == "running":
             report["launched"] = None
-            report["hold"] = "candidate lifecycle waiting for active AgentOS turn"
+            report["hold"] = "candidate lifecycle waiting for active Hawking worker turn"
             return report
         if lifecycle["status"] == "pending":
             priority_hold = govern(snap)
@@ -1563,27 +1563,27 @@ def one_pass() -> dict:
     # One worker at a time may use child_a/child_b to implement a bounded
     # source/test step. It is intentionally interleaved with protected work:
     # an already-running capture wins, but a merely pending queue item cannot
-    # starve the AgentOS/HCLI front forever. While the turn is live, hold this
+    # starve the Hawking worker front forever. While the turn is live, hold this
     # scheduler so no new protected target can contend for the serial body.
-    if agentos["status"] == "running":
+    if worker_turn["status"] == "running":
         save(STATE, state)
         report["launched"] = None
-        report["hold"] = f"AgentOS {agentos.get('worker_id', 'worker')} turn running"
+        report["hold"] = f"Hawking worker {worker_turn.get('worker_id', 'worker')} turn running"
         return report
     if (
-        agentos["status"] == "idle"
+        worker_turn["status"] == "idle"
         and not _candidate_pending()
         and not gpu_lane_busy()
         and not protected_gpu_target_running(state)
         and _resident_process_alive()
         and float(snap.get("disk_free_gib") or 0.0) >= DISK_FLOOR_GIB
     ):
-        launched_agentos = dispatch_agentos_turn()
-        report["agentos_turn"] = launched_agentos
-        if launched_agentos["status"] in {"started", "running"}:
+        launched_worker = dispatch_worker_turn()
+        report["worker_turn"] = launched_worker
+        if launched_worker["status"] in {"started", "running"}:
             save(STATE, state)
             report["launched"] = None
-            report["hold"] = f"AgentOS {launched_agentos.get('worker_id', 'worker')} turn {launched_agentos['status']}"
+            report["hold"] = f"Hawking worker {launched_worker.get('worker_id', 'worker')} turn {launched_worker['status']}"
             return report
 
     # 2a. Refill only after liveness reconciliation.  Otherwise a dead target

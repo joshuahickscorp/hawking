@@ -1,0 +1,59 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "16096e4ff9e54cee056d52857bbc89975e5862d543ece25edc5e914c4bf0cf11",
+  "evidence": [
+    {
+      "at": "2026-09-18T05:00:04.241753+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "campaign.state",
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T05:00:04.241773+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T05:00:04.243666+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\": [\"Making real read-only tool calls now: searching source for CPU frontier naming.\"], \"sources\": [], \"recommendations\": [], \"unresolved_questions\": [], \"child_worker_ids\": [], \"status\": \"IN_PROGRESS\"}",
+      "outcome": "CONTINUE",
+      "reply_chars": 216,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    "Making real read-only tool calls now: searching source for CPU frontier naming."
+  ],
+  "provider_status": "IN_PROGRESS",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.list",
+    "fs.search"
+  ],
+  "unresolved_questions": [],
+  "worker_attempt_id": "hawking-attempt-e9dd054d36884d3f",
+  "worker_id": "hawking-worker-1b101167e97a4723",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-36432726"
+}

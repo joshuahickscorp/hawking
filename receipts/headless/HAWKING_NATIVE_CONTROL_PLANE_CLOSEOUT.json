@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.native_control_plane_closeout.v1",
+  "date": "2026-09-14",
+  "status": "CONTROL_PLANE_STATIC_READY",
+  "scope": "Public Hawking ingress and lazy H Web boundary only; this receipt is the closeout before returning to the Flash/Pulsar runtime frontier.",
+  "native_profile": {
+    "profile": "hawking/hawking-native.sealed-3.14.json",
+    "mode": "resident",
+    "selected_binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "binary_exists": true,
+    "binary_sha256": "4891504fb56a9d9011cb819aa4f7c5fa8261efe73a512ac5443fcfab6822b6d3",
+    "validation": "HawkingNativeConfig.from_file(absolute_profile).validate() completed without launching the binary or loading model weights."
+  },
+  "control_plane_probe": {
+    "command": "env -u HAWKING_MODEL_PATH -u HAWKING_NATIVE_CONFIG python3 [isolated probe]",
+    "hawking_help_fresh_process_ms": [
+      43.535,
+      42.682,
+      43.918
+    ],
+    "hawking_help_loaded_modules": [
+      "hawking",
+      "hawking.cli"
+    ],
+    "hawking_help_forbidden_modules": [],
+    "hawking_help_heavy_modules": [],
+    "hawkingd_help": {
+      "returncode": 0,
+      "first_line": "usage: hawking resident [-h]"
+    },
+    "fresh_imports": {
+      "hawking.web": {
+        "elapsed_ms": 32.019,
+        "worker": false,
+        "agentos": false,
+        "serve": false,
+        "research_lab": false,
+        "heavy": []
+      },
+      "hawking.serve": {
+        "elapsed_ms": 36.192,
+        "worker": false,
+        "agentos": false,
+        "serve": true,
+        "research_lab": false,
+        "heavy": []
+      },
+      "hawking.worker": {
+        "elapsed_ms": 10.077,
+        "agentos": false,
+        "research_lab": false,
+        "heavy": []
+      },
+      "hawking.lineage": {
+        "elapsed_ms": 8.37,
+        "agentos": false,
+        "research_lab": false,
+        "lineage_modules": 1,
+        "heavy": []
+      }
+    },
+    "mlx_server_processes": []
+  },
+  "focused_verification": [
+    {
+      "command": "env -u HAWKING_MODEL_PATH -u HAWKING_NATIVE_CONFIG python3 -m pytest -q hawking/test_sovereign_goal_file.py hawking/tests/test_actionable_first_output.py hawking/tests/test_gate_emit_binding_is_a_noop.py hawking/tests/test_persist_identity_io.py",
+      "result": "131 passed in 0.70s"
+    },
+    {
+      "command": "env -u HAWKING_MODEL_PATH -u HAWKING_NATIVE_CONFIG python3 -m pytest -q hawking/tests/test_gate_emit_binding_is_a_noop.py hawking/tests/test_persist_identity_io.py hawking/agentos/test_native_gate_timing.py hawking/test_recovery_fixture_does_not_leak.py tools/acceptance/test_lake_acceptance.py",
+      "result": "109 passed in 4.82s"
+    },
+    {
+      "command": "env -u HAWKING_MODEL_PATH -u HAWKING_NATIVE_CONFIG python3 -m pytest -q hawking/tests/test_control_plane_performance.py hawking/tests/test_serve_openai_surface.py hawking/tests/test_web_explicit_selection.py hawking/tests/test_mutation_bundle_completeness.py",
+      "result": "70 passed in 16.24s"
+    }
+  ],
+  "claim_boundary": [
+    "No model, GPU inference, native resident, H Web server, or Odyssey run was started for this closeout.",
+    "The timings above measure process startup and Python import boundaries only; they do not measure decode TPS, prefill TPS, EBPW, quality, or Flash qualification.",
+    "The native profile retains its historical admission and performance claims; this receipt neither renews nor enlarges them.",
+    "An empty MLX-server process census is an observed negative control, not proof that every historical MLX artifact has been erased."
+  ],
+  "next_frontier": "Inspect the current Flash/Pulsar receipts and native runner for the narrowest reproducible qualification blocker, then run only the bounded evidence-producing experiment that blocker permits."
+}

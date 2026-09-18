@@ -1,0 +1,80 @@
+{
+  "claim_boundary": "in-flight bounded source capture; no source-parity verdict",
+  "failure": {
+    "exit_code": 1,
+    "scientific_disposition": "none",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py\", line 337, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py\", line 324, in main\n    result = run(\n        args.root,\n    ...<4 lines>...\n        preflight_sha256=args.preflight_sha256,\n    )\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py\", line 259, in run\n    source._checkpointed_qwen4_exp_logits(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        language_model,\n        ^^^^^^^^^^^^^^^\n    ...<7 lines>...\n        capture_path=manifest_path,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py\", line 487, in _checkpointed_qwen4_exp_logits\n    _eval_stage(\n    ~~~~~~~~~~~^\n        mx,\n        ^^^\n    ...<6 lines>...\n        stage=\"attention_hyper_connection\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py\", line 203, in capture_seam\n    cache_records[\"pre_attention\"] = _capture_cache(\n                                     ~~~~~~~~~~~~~~^\n        out_dir, mx_arg, np, tree_flatten_arg, cache_arg[4], \"pre-attention\"\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py\", line 108, in _capture_cache\n    raise ValueError(f\"layer-4 {boundary} cache exposed no arrays\")\nValueError: layer-4 pre-attention cache exposed no arrays\n",
+    "stdout_tail": ""
+  },
+  "finished_unix_ns": 1789415047152720000,
+  "preflight": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V2_20260912.json",
+    "seal_sha256": "dc510ba27473aa6bfc180e1d8317614d69e20cd0a473b63ee4f977e896452a04",
+    "sha256": "668007e149a1d04fb62aa1d6fc306fa79b24e7183f2b182f7a26c57867061f4c"
+  },
+  "provider": {
+    "boundary_worker": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_source_boundary_mlx_worker.py",
+      "sha256": "e3e01d297f86ccd5baf7272f9ee47eb1fb0a227a7f42798ae0ab0fd7c6d9fba9"
+    },
+    "implementation": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_BOUNDARY_CURRENT_HISTORICAL_TEACHER_REBIND_20260914/provider-implementation.json",
+      "sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117"
+    },
+    "reused_forward_owner": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "sha256": "2397ab0ad42345564fb0d58275f32b543964f019bb4f4f0cb9c47eb53536b19d"
+    },
+    "runtime_lock": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    }
+  },
+  "schema": "hawking.flash.source_boundary_capture.v1",
+  "science_status": "UNEARNED",
+  "science_unearned": true,
+  "source_reference": {
+    "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+    "authorization_binding_sha256": "9cf303d2afff5b060bf4d7e56d4602f018dc2026d99c4b13bd76e29b5dd3c459",
+    "owner_authorization": {
+      "admission_class": "ADMITTED_LOCAL_CANONICAL_CAPTURE",
+      "authorization_scope": "admit_external_greedy_reference_v2",
+      "claim_boundary": "ADMITTED_LOCAL_CANONICAL_CAPTURE grants permission to use this provenance-bound external source capture as the teacher for bounded diagnostics only. It does not prove native Flash correctness, PLE parity, capability, complete NR, EBPW, TPS, or Pulsar promotion.",
+      "contract_status_vocabulary_note": "EXTERNAL_REFERENCE_STATUS names a sealed-complete source greedy reference; authority is admission_class, and science_status remains UNEARNED until ordered compare.",
+      "historical_git_snapshot": "a9c8b603fe2f06311324582ca722c55fd32aefb8",
+      "logits_trace_seal_sha256": "503d0b06b23f7e46225550275a66804004ba1f85f14149581d7278c9e306d88e",
+      "logits_trace_sha256": "3a71dd78b6e762127749b8f7bdb5984c7b47bdfd22a1c4fe45bd6ed8d904cb03",
+      "model_lake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268",
+      "owner_signature_present": false,
+      "owner_signature_required": false,
+      "path": null,
+      "policy_note": "Detached machine-owner Ed25519 is not required for provenance-complete canonical local source captures. Scientific correctness remains unearned and is established only by later source/native comparison.",
+      "producer_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "producer_sha256": "3007e4b6d4a65493bf8eb795681d72bbba4195a00cc9b01f8f9a7a7e02d3b418",
+      "provider_implementation_sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117",
+      "provider_runtime_lock_sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea",
+      "reference_contract_seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+      "reference_contract_sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "schema": "hawking.flash.external_greedy_reference_local_canonical_admission.v1",
+      "science_status": "UNEARNED",
+      "science_unearned": true,
+      "sha256": null,
+      "shard_ledger_seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "shard_ledger_sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "sibling_capture": {
+        "hawking_packager_path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+        "hawking_packager_sha256": "034dd2073e8b3aea3d08e5efb1b7a13d352b48eace0dac576580491c54aa26e6",
+        "historical_owner_authorization_required_suffix": true,
+        "historical_suffix_policy": "CAPTURED_...__OWNER_AUTHORIZATION_REQUIRED remains a sealed historical label; local-canonical admission supersedes the Ed25519 mandate without mutating capture.json.",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/capture.json",
+        "sha256": "82738cfe0302cce8efc3fd017f94265e7afd0a4b9b688066213d61e80f754274",
+        "status": "CAPTURED_EXTERNAL_COMPLETE_SOURCE_GREEDY_REFERENCE__OWNER_AUTHORIZATION_REQUIRED"
+      }
+    },
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+    "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b",
+    "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f"
+  },
+  "started_unix_ns": 1789415027720201000,
+  "status": "FAILED_EXTERNAL_BOUNDARY_PROVIDER__NO_PARITY_RESULT"
+}

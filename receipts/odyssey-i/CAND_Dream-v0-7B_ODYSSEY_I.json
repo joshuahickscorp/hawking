@@ -1,0 +1,65 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-Dream-v0-Instruct-7B",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + generation_config.json + safetensors index/headers + the specimen's OWN bundled generation_utils.py source, read directly). No GPU/mlx/torch load was performed -- this is a static-code read of Python source, not a live trace, but it is the ACTUAL code that would run, not a guess about diffusion-LM behavior in general.",
+ "_label": "Odyssey I DISCOVERY. The weight architecture is boringly standard (verified below); the real finding is the GENERATION ALGORITHM, confirmed by reading the actual denoising loop.",
+ "identity": {
+  "name": "Dream-org/Dream-v0-Instruct-7B",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+  "architectures": [
+   "DreamModel"
+  ],
+  "model_type": "Dream"
+ },
+ "architecture_weights": {
+  "note": "STANDARD dense GQA transformer shape -- nothing structurally unusual in the static weights. The Dream-specific behavior lives entirely in HOW these weights are used at generation time (non-causal, iterative), not in their shape.",
+  "n_layer": 28,
+  "hidden_size": 3584,
+  "n_attn_heads": 28,
+  "n_kv_heads": 4,
+  "intermediate_size": 18944,
+  "vocab_size": 152064,
+  "max_position_embeddings": 131072,
+  "mask_token_id": 151666,
+  "n_tensors_exact": 339,
+  "total_bytes_exact": 15231233024,
+  "total_params_B": 7.6156,
+  "name_implied_params_B": 7
+ },
+ "GENERATION_ALGORITHM_the_real_discovery": {
+  "paradigm": "MASKED DIFFUSION -- confirmed from generation_utils.py's _sample method, not inferred",
+  "mechanism": "1) The FULL output sequence (up to max_length) is pre-allocated and padded with [MASK] tokens beyond the prompt -- the entire generation length exists from step 0, not built token-by-token. 2) attention_mask is 'full' by default (a bidirectional-style mask over the WHOLE padded sequence, not a causal lower-triangular mask) -- confirmed by the literal string 'attention_mask = \"full\"' in the fallback branch when no explicit padding mask is given. 3) EVERY diffusion step (default 512, see generation_config.json) runs a FRESH FULL forward pass over the ENTIRE sequence: self(x, attention_mask, tok_idx) -- no KV-cache argument is threaded through this call in the loop, despite config.json declaring use_cache=true (a config field that does NOT reflect actual generation behavior -- VESTIGIAL, likely inherited boilerplate from the Qwen2-style base config this architecture was built from). 4) At each step, a NOISE-SCHEDULE-derived count of currently-masked positions gets 'transferred' (revealed) based on model CONFIDENCE -- the highest-confidence masked positions are committed to sampled tokens first (algorithms: 'origin'/'maskgit_plus'/'topk_margin'/'entropy', default 'origin'). This is confidence-guided PARALLEL, iterative, non-sequential decoding -- architecturally unrelated to left-to-right autoregressive generation despite sharing a standard transformer weight shape.",
+  "default_steps": 512,
+  "default_alg": "origin",
+  "eps": 0.001,
+  "verified_source_lines": [
+   "'attention_mask = \"full\"'",
+   "'mask_index = (x == mask_token_id)'",
+   "'torch.topk(full_confidence, number_transfer_tokens)'"
+  ]
+ },
+ "obvious_physical_bottlenecks": [
+  "COMPUTE SCALING is fundamentally different from causal decode: standard KV-cached autoregressive generation does O(1) new-token work per step with cached attention over prior tokens (O(L) total attention cost amortized once). Here, EVERY one of the default 512 steps is a FULL, UNCACHED forward pass over the entire padded sequence -- total compute scales as steps x full-sequence-forward-cost, not steps x incremental-cost. For a generation whose desired length approaches max_length, this is plausibly MUCH more total FLOPs than an equivalent-length causal generation would need, UNLESS 'steps' is tuned well below sequence length in practice (a real, exposed quality/speed tradeoff knob that autoregressive generation does not have an equivalent of).",
+  "use_cache=true in config.json does NOT reflect actual _sample behavior (no cache is threaded through the loop) -- a genuine config/behavior MISMATCH worth flagging so a future runtime integration does not assume KV-cache reuse works the normal way here.",
+  "attention_mask='full' (bidirectional-style over the padded sequence) means any Hawking execution path built around causal-mask assumptions (most of what this session's other specimens have used) would need real changes, not just a config flag, to serve this correctly."
+ ],
+ "obvious_representation_opportunities": [
+  "Because the weight architecture is a standard dense GQA transformer, EVERY dense-architecture Gravity prior from this session (and prior campaigns) plausibly transfers to the WEIGHTS unchanged -- the generation-time behavior (steps, masking, confidence-unmasking) is an orthogonal axis Gravity's existing quantization/allocation rules were never designed to touch. A genuinely separate lever: 'steps' reduction is itself a compression axis (fewer, larger unmasking jumps trade quality for speed) that has no analog in anything else surveyed this session."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery.",
+  "No physical steps-vs-quality sweep.",
+  "No measurement of whether a lower step count preserves capability -- this is THE efficiency question for this architecture family and is entirely untested."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN. Genuinely different generative paradigm (confirmed from source, not assumed) with an otherwise standard, Gravity-compatible weight architecture. The real open question for this family is the steps-vs-quality tradeoff, not weight representation -- a different kind of Odyssey II/Gravity question than any MoE/SSM specimen this session has touched.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "UNCLEAR, GENUINELY NOVEL QUESTION: if 'steps' can be tuned down aggressively without losing capability, parallel full-sequence generation could plausibly beat causal decode wall-time for SHORT, well-bounded outputs (exactly HCLI's typical per-cycle DID/NEXT shape) -- but this is UNTESTED, not claimed.",
+  "pulsar_candidate": "PLAUSIBLE IF steps CAN BE CUT AGGRESSIVELY -- untested.",
+  "magnetar_candidate": "UNTESTED.",
+  "cepheid_candidate": "NOT EVALUATED.",
+  "verdict": "NO CLAIM BEYOND 'GENUINELY WORTH A steps-vs-capability SWEEP' -- this is the single most interesting untested question this census has surfaced, precisely because the generation mechanism is unlike anything else in the lake."
+ },
+ "commit": "61718ab73",
+ "emitted_at": "2026-09-09T13:40:43Z"
+}

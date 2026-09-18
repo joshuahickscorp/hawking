@@ -1,0 +1,43 @@
+[
+ {
+  "specimen": "moonshotai--Kimi-VL-A3B-Instruct",
+  "path": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "n_tensors": 5679,
+  "tensor_bytes": 32815315552,
+  "tensor_gib": 30.56,
+  "on_disk_bytes": 32823066069,
+  "on_disk_gib": 30.57,
+  "matrix_params_b": 16.4071,
+  "dtype_bytes": {
+   "BF16": 32815315552
+  },
+  "per_container_gib": {
+   "model-00005-of-00007.safetensors": 4.65,
+   "model-00003-of-00007.safetensors": 4.65,
+   "model-00004-of-00007.safetensors": 4.65,
+   "model-00006-of-00007.safetensors": 4.65,
+   "model-00002-of-00007.safetensors": 4.65,
+   "model-00001-of-00007.safetensors": 4.65,
+   "model-00007-of-00007.safetensors": 2.65
+  },
+  "tensor_bytes_vs_disk": 1.0,
+  "coverage_warning": null,
+  "distinct_roles": 45,
+  "repeated_blocks": {
+   "language_model.model.layers.<L>.mlp.experts.<L>.down_proj.weight": 1664,
+   "language_model.model.layers.<L>.mlp.experts.<L>.gate_proj.weight": 1664,
+   "language_model.model.layers.<L>.mlp.experts.<L>.up_proj.weight": 1664,
+   "language_model.model.layers.<L>.input_layernorm.weight": 27,
+   "language_model.model.layers.<L>.post_attention_layernorm.weight": 27,
+   "language_model.model.layers.<L>.self_attn.kv_a_layernorm.weight": 27,
+   "language_model.model.layers.<L>.self_attn.kv_a_proj_with_mqa.weight": 27,
+   "language_model.model.layers.<L>.self_attn.kv_b_proj.weight": 27,
+   "language_model.model.layers.<L>.self_attn.o_proj.weight": 27,
+   "language_model.model.layers.<L>.self_attn.q_proj.weight": 27,
+   "language_model.model.layers.<L>.self_attn.rotary_emb.inv_freq": 27,
+   "vision_tower.encoder.blocks.<L>.mlp.fc0.bias": 27
+  },
+  "n_repeated_roles": 28,
+  "complete_ebpw_if_bf16": 16.001
+ }
+]

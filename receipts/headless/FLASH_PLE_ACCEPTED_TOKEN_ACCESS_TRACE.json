@@ -1,0 +1,2097 @@
+{
+  "active_lookup": {
+    "embedding_values_per_token": 2560,
+    "lookup_events": 112,
+    "lookup_events_per_token": 16,
+    "source_bytes_referenced_across_events": 35840,
+    "source_passes": 1,
+    "source_range_read_sha256": "31b6e1bece077a6aac71d1bbfc295c677bb093ad1a7501c8418bec8d60c32b5d",
+    "source_row_bytes": 320,
+    "source_row_records": [
+      {
+        "combined_row": 2608171,
+        "local_row": 108159,
+        "payload_sha256": "5e27c6c6cad1278d666e39e9b1c5e11b97dca40af8875674970d82e26101b347",
+        "row_bytes": 320,
+        "shard_ordinal": 1,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+      },
+      {
+        "combined_row": 4155854,
+        "local_row": 1655842,
+        "payload_sha256": "d693652ef091cc001b2a4634251950272a86d841b816d6b2bf8df3d4ac010037",
+        "row_bytes": 320,
+        "shard_ordinal": 1,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_1.weight"
+      },
+      {
+        "combined_row": 5040598,
+        "local_row": 40574,
+        "payload_sha256": "fdec35cf5cb8a4a978f9c0edf3ab126b72a8ac4798384171788e62d6bb27ee20",
+        "row_bytes": 320,
+        "shard_ordinal": 2,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_2.weight"
+      },
+      {
+        "combined_row": 8832859,
+        "local_row": 1332823,
+        "payload_sha256": "48e5d3964cfd3fbef1d0d0684027a74b03ffdc1b9b6d8d30f81d8322d54c677d",
+        "row_bytes": 320,
+        "shard_ordinal": 3,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+      },
+      {
+        "combined_row": 9949239,
+        "local_row": 2449203,
+        "payload_sha256": "3e1b6422bf06f253ce3489ecbcde71640ca56532e3af728fbc38688445a8ffe3",
+        "row_bytes": 320,
+        "shard_ordinal": 3,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_3.weight"
+      },
+      {
+        "combined_row": 12272008,
+        "local_row": 2271960,
+        "payload_sha256": "3f44fb697497080c9964d6af05262df6fba50e4ac0552d6869ca1adfa28a7f6e",
+        "row_bytes": 320,
+        "shard_ordinal": 4,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_4.weight"
+      },
+      {
+        "combined_row": 14372315,
+        "local_row": 1872255,
+        "payload_sha256": "c5767212bc15a8e49a20280e61802e0aa05fdcee37282e9aa84e1b6c203eddbb",
+        "row_bytes": 320,
+        "shard_ordinal": 5,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_5.weight"
+      },
+      {
+        "combined_row": 21303122,
+        "local_row": 1303026,
+        "payload_sha256": "1f2c4e30b077c53d3df6f27d493e584eed46273d2d152d64714c7effcfde3b60",
+        "row_bytes": 320,
+        "shard_ordinal": 8,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+      },
+      {
+        "combined_row": 21827640,
+        "local_row": 1827544,
+        "payload_sha256": "37e2a4725ebb62226e4ae6834065a8a8010fb84632ed92726ad726d8cbbe22ad",
+        "row_bytes": 320,
+        "shard_ordinal": 8,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+      },
+      {
+        "combined_row": 22295646,
+        "local_row": 2295550,
+        "payload_sha256": "5e18e31123a04b12acac3696614ba7f53d543d70f00801bbaaaee4703504a4b5",
+        "row_bytes": 320,
+        "shard_ordinal": 8,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_8.weight"
+      },
+      {
+        "combined_row": 27542821,
+        "local_row": 42689,
+        "payload_sha256": "6c34dde41a6f8b35f46449bd4a7cbcfd029769c5289122c25e8a1ae9a2b0b552",
+        "row_bytes": 320,
+        "shard_ordinal": 11,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+      },
+      {
+        "combined_row": 28866003,
+        "local_row": 1365871,
+        "payload_sha256": "8ef17c085b073ded1b24a313b9052f6dd4fd94e83bebd6d99202822be58fc21a",
+        "row_bytes": 320,
+        "shard_ordinal": 11,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_11.weight"
+      },
+      {
+        "combined_row": 36400117,
+        "local_row": 1399949,
+        "payload_sha256": "49d8bb31a2142b4ec074386a6a0952bda51bd1f5596b7c5f5c1a30e4d64354bc",
+        "row_bytes": 320,
+        "shard_ordinal": 14,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_14.weight"
+      },
+      {
+        "combined_row": 37554332,
+        "local_row": 54152,
+        "payload_sha256": "6293657dd94fdfc0c8665506b595801e930f47847604abcd8e0f1d3990785ae8",
+        "row_bytes": 320,
+        "shard_ordinal": 15,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_15.weight"
+      },
+      {
+        "combined_row": 42137645,
+        "local_row": 2137453,
+        "payload_sha256": "841a2eeb6be91099ea3ae076ea863cb96ef742e42fb2636bee3852f24433bbf2",
+        "row_bytes": 320,
+        "shard_ordinal": 16,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+      },
+      {
+        "combined_row": 42232465,
+        "local_row": 2232273,
+        "payload_sha256": "fbee1da45949247cdc01d6a9cd04aa2a4c57ca5cb2dc4069932676f1411573f4",
+        "row_bytes": 320,
+        "shard_ordinal": 16,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_16.weight"
+      },
+      {
+        "combined_row": 49289246,
+        "local_row": 1789018,
+        "payload_sha256": "ff1189989762a021743e64b767ca9512e458ec513b65faf79bf38d273bb12710",
+        "row_bytes": 320,
+        "shard_ordinal": 19,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_19.weight"
+      },
+      {
+        "combined_row": 50196804,
+        "local_row": 196564,
+        "payload_sha256": "a373816f17b03c5434affcee7655f8147bb1463640f5d229f26f950d01d04ac8",
+        "row_bytes": 320,
+        "shard_ordinal": 20,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_20.weight"
+      },
+      {
+        "combined_row": 58419028,
+        "local_row": 918752,
+        "payload_sha256": "ea10bce8ed361ec096dd1dc6492fdd32496e379d68550b0233bac5db885e744c",
+        "row_bytes": 320,
+        "shard_ordinal": 23,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+      },
+      {
+        "combined_row": 59229408,
+        "local_row": 1729132,
+        "payload_sha256": "5840c1ecd66eba810093781c95f314d6eafcb13d862430eed96c97c03a1e69b3",
+        "row_bytes": 320,
+        "shard_ordinal": 23,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+      },
+      {
+        "combined_row": 59280967,
+        "local_row": 1780691,
+        "payload_sha256": "16f690c6dd6724a08ff02b8fad3f4fcaab47fcb010da7b41dc86206380ef6387",
+        "row_bytes": 320,
+        "shard_ordinal": 23,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_23.weight"
+      },
+      {
+        "combined_row": 62234912,
+        "local_row": 2234624,
+        "payload_sha256": "0ab94835bb6edaf688a7f03e4314ea009e3400e55dc5a12da842325fbf75cd34",
+        "row_bytes": 320,
+        "shard_ordinal": 24,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_24.weight"
+      },
+      {
+        "combined_row": 63888239,
+        "local_row": 1387939,
+        "payload_sha256": "1ccd8e59b3b8a77c320a4e0a84001c46da9a09893f5e24ddc68e61e75902d011",
+        "row_bytes": 320,
+        "shard_ordinal": 25,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_25.weight"
+      },
+      {
+        "combined_row": 66248249,
+        "local_row": 1247937,
+        "payload_sha256": "1a9928b52703fadfd427c4647365325812f65b9a2a577f52ef2ab090c8c9db85",
+        "row_bytes": 320,
+        "shard_ordinal": 26,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_26.weight"
+      },
+      {
+        "combined_row": 75897748,
+        "local_row": 897388,
+        "payload_sha256": "1b542ea4f947d44039fa3c122497d5a94f705ea36d3690a3aa2983ec19e3c9bb",
+        "row_bytes": 320,
+        "shard_ordinal": 30,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_30.weight"
+      },
+      {
+        "combined_row": 78220209,
+        "local_row": 719837,
+        "payload_sha256": "7e2b5cdf36cef7f21bd7681feba9be3bdce5804da19d120f21bd1b275d8e99e3",
+        "row_bytes": 320,
+        "shard_ordinal": 31,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+      },
+      {
+        "combined_row": 79793531,
+        "local_row": 2293159,
+        "payload_sha256": "8c210ed43caa18580be8014029957f4975eae7455b421bae4fedd8fb26c3882a",
+        "row_bytes": 320,
+        "shard_ordinal": 31,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+      },
+      {
+        "combined_row": 79899210,
+        "local_row": 2398838,
+        "payload_sha256": "3b2755b2b1aefcdd0f557259ac335a68524f6ff4851de9ca1f47449cf247495b",
+        "row_bytes": 320,
+        "shard_ordinal": 31,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_31.weight"
+      },
+      {
+        "combined_row": 80283410,
+        "local_row": 283026,
+        "payload_sha256": "dabdf6a81804ba7f34d43be4c0d9d68cc67eb871d1062e8e6f79fc06709d10ca",
+        "row_bytes": 320,
+        "shard_ordinal": 32,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_32.weight"
+      },
+      {
+        "combined_row": 85235536,
+        "local_row": 235128,
+        "payload_sha256": "d52ed72e353219c9133d428dcecb10b67673d9b15cdc26e874e362aa39132859",
+        "row_bytes": 320,
+        "shard_ordinal": 34,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+      },
+      {
+        "combined_row": 85995058,
+        "local_row": 994650,
+        "payload_sha256": "76faff2358d6e1e51f2806a6dd2997c53d2ebf2b5b541046ed03f61e3005ad7d",
+        "row_bytes": 320,
+        "shard_ordinal": 34,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_34.weight"
+      },
+      {
+        "combined_row": 95071347,
+        "local_row": 70891,
+        "payload_sha256": "9805d23ebda26d8ad8b91661c6f321568769e0bb594a892d079eb1484a79afe0",
+        "row_bytes": 320,
+        "shard_ordinal": 38,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+      },
+      {
+        "combined_row": 95552045,
+        "local_row": 551589,
+        "payload_sha256": "69e60e7da29fb15d8a718003928e331335f7c34817957072edda3872ce9466f3",
+        "row_bytes": 320,
+        "shard_ordinal": 38,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_38.weight"
+      },
+      {
+        "combined_row": 98358609,
+        "local_row": 858141,
+        "payload_sha256": "c0000bfb8128850619338c68adb86bbef46dc7833d35ad07907264932c41c558",
+        "row_bytes": 320,
+        "shard_ordinal": 39,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+      },
+      {
+        "combined_row": 99113944,
+        "local_row": 1613476,
+        "payload_sha256": "7c464282eb139f46a939aee2e02f7dbd09333d758a0b2cad851cbf73d454f4e7",
+        "row_bytes": 320,
+        "shard_ordinal": 39,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_39.weight"
+      },
+      {
+        "combined_row": 102415232,
+        "local_row": 2414752,
+        "payload_sha256": "cd0e301c598fb1311891ef3df9421af908ebfd2c37f9aa358cc18b5d31917570",
+        "row_bytes": 320,
+        "shard_ordinal": 40,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_40.weight"
+      },
+      {
+        "combined_row": 106543326,
+        "local_row": 1542822,
+        "payload_sha256": "784f515cd0c3b76ca03db47654a708396ef0b2bfa61e7980b37498f93407be68",
+        "row_bytes": 320,
+        "shard_ordinal": 42,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+      },
+      {
+        "combined_row": 107456527,
+        "local_row": 2456023,
+        "payload_sha256": "44ddb386cf44fbc738c380a09c1dc4043586a663fe33fe0d2fbaf5156d319a13",
+        "row_bytes": 320,
+        "shard_ordinal": 42,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_42.weight"
+      },
+      {
+        "combined_row": 108129513,
+        "local_row": 628997,
+        "payload_sha256": "06e29f4623c7ef16b3306b927d9bb23f191fd6f464efb4b05910a84f544c013b",
+        "row_bytes": 320,
+        "shard_ordinal": 43,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_43.weight"
+      },
+      {
+        "combined_row": 114740271,
+        "local_row": 2239731,
+        "payload_sha256": "38a01f2b50b2a4e8e1b644b8b82e327ad9ef7e46b780a7e9be70dc346e4e7901",
+        "row_bytes": 320,
+        "shard_ordinal": 45,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_45.weight"
+      },
+      {
+        "combined_row": 119581488,
+        "local_row": 2080924,
+        "payload_sha256": "ac35268e4867c418f3359b8604cf7446e94513acf5abcbd83a92fd65e75481f2",
+        "row_bytes": 320,
+        "shard_ordinal": 47,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+      },
+      {
+        "combined_row": 119772667,
+        "local_row": 2272103,
+        "payload_sha256": "61f250796d33113531f160bd2220dfb27b5485f836a651ac18232027f93a67c1",
+        "row_bytes": 320,
+        "shard_ordinal": 47,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_47.weight"
+      },
+      {
+        "combined_row": 121098877,
+        "local_row": 1098301,
+        "payload_sha256": "0e35f1fc742dac767ac32ca9449a831357ba3b4db6798831b15cae8251743ca4",
+        "row_bytes": 320,
+        "shard_ordinal": 48,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_48.weight"
+      },
+      {
+        "combined_row": 125332174,
+        "local_row": 331574,
+        "payload_sha256": "d4b333d43519bd504c1caecb8ce86e92748166d9f6ff80db0bf0c1fea22eec9a",
+        "row_bytes": 320,
+        "shard_ordinal": 50,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+      },
+      {
+        "combined_row": 126678265,
+        "local_row": 1677665,
+        "payload_sha256": "f96df31b01bb70919ffb49ed0447ac2fbf92cb431651230322b5641101704d76",
+        "row_bytes": 320,
+        "shard_ordinal": 50,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_50.weight"
+      },
+      {
+        "combined_row": 127717026,
+        "local_row": 216414,
+        "payload_sha256": "852e3d83adba6d06e20f4d971144d73d104e18c4c32fe730d6dab26254312897",
+        "row_bytes": 320,
+        "shard_ordinal": 51,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+      },
+      {
+        "combined_row": 127868586,
+        "local_row": 367974,
+        "payload_sha256": "bdbbacf44cfa9e0c399c62c88607d385c0e72bff46ef2159d852b82d3d7c58fc",
+        "row_bytes": 320,
+        "shard_ordinal": 51,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_51.weight"
+      },
+      {
+        "combined_row": 131111852,
+        "local_row": 1111228,
+        "payload_sha256": "d6d7ec3a8cef663eefa75359d1bf4a909eeeb3d1ace9b6336ef6421987f83db6",
+        "row_bytes": 320,
+        "shard_ordinal": 52,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_52.weight"
+      },
+      {
+        "combined_row": 138518879,
+        "local_row": 1018219,
+        "payload_sha256": "a29cf99e5c4a6640c06a737f079769fa0b5c8eb337b33e752c025539238e15ca",
+        "row_bytes": 320,
+        "shard_ordinal": 55,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_55.weight"
+      },
+      {
+        "combined_row": 141582367,
+        "local_row": 1581695,
+        "payload_sha256": "1b89d4df3ecd233d84d9c93221537d6362ac013fed3ecda1f630b0ff06cfec0e",
+        "row_bytes": 320,
+        "shard_ordinal": 56,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_56.weight"
+      },
+      {
+        "combined_row": 143498570,
+        "local_row": 997886,
+        "payload_sha256": "fa16b27e4490b45b00bf1285a420ad80a2ce1ddcfb794098d6c820f5d4d1b14d",
+        "row_bytes": 320,
+        "shard_ordinal": 57,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_57.weight"
+      },
+      {
+        "combined_row": 145392766,
+        "local_row": 392070,
+        "payload_sha256": "e232f6cd5b26466b215db225338031781f2f051593f29b7ba453fc29f85f4b98",
+        "row_bytes": 320,
+        "shard_ordinal": 58,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+      },
+      {
+        "combined_row": 146691689,
+        "local_row": 1690993,
+        "payload_sha256": "85b7681b645cd6cd428b7573af0bbc08749d2009142b8ee6e25e07f676f336ad",
+        "row_bytes": 320,
+        "shard_ordinal": 58,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_58.weight"
+      },
+      {
+        "combined_row": 149201698,
+        "local_row": 1700990,
+        "payload_sha256": "5161d586be501134f992dedd8a0ec734d24989a71b6d2b08e1135c8d3e62d3f8",
+        "row_bytes": 320,
+        "shard_ordinal": 59,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_59.weight"
+      },
+      {
+        "combined_row": 153834206,
+        "local_row": 1333474,
+        "payload_sha256": "9be003170d45fad2b53236bc20a6680e73d2c54f165a582f7e7094b32527380d",
+        "row_bytes": 320,
+        "shard_ordinal": 61,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_61.weight"
+      },
+      {
+        "combined_row": 159840626,
+        "local_row": 2339870,
+        "payload_sha256": "f432feb3ded57471d52e9da7a09c827c02e487b5f2397e5475dbfbbde438b9f7",
+        "row_bytes": 320,
+        "shard_ordinal": 63,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_63.weight"
+      },
+      {
+        "combined_row": 160234128,
+        "local_row": 233360,
+        "payload_sha256": "7599daa3e148a4bf7b8e5d19825d1c0f0099475d3447d67fbee709f7e6038f1a",
+        "row_bytes": 320,
+        "shard_ordinal": 64,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+      },
+      {
+        "combined_row": 160348493,
+        "local_row": 347725,
+        "payload_sha256": "29b4acdd15cbee2cc61bb8b19e51026d2950ff5c75e7850554000c6caf90fd19",
+        "row_bytes": 320,
+        "shard_ordinal": 64,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_64.weight"
+      },
+      {
+        "combined_row": 164894268,
+        "local_row": 2393488,
+        "payload_sha256": "ae1c0e2bbfd81d0c53c0a4c404e0ab86eb96123af49b95c8206d3d788ab42dc3",
+        "row_bytes": 320,
+        "shard_ordinal": 65,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_65.weight"
+      },
+      {
+        "combined_row": 166267475,
+        "local_row": 1266683,
+        "payload_sha256": "df68c8864ed4cc09edd5f81213384e7645570c503eb4d3a0d8aa1ee2ff4d5218",
+        "row_bytes": 320,
+        "shard_ordinal": 66,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_66.weight"
+      },
+      {
+        "combined_row": 167530236,
+        "local_row": 29432,
+        "payload_sha256": "66a87c22a4560d07ad010ca65d1bd316187e06c62a1e47f37be53dbc17ba759d",
+        "row_bytes": 320,
+        "shard_ordinal": 67,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_67.weight"
+      },
+      {
+        "combined_row": 173291479,
+        "local_row": 790651,
+        "payload_sha256": "1eb171b9b7b87141bb665613a7b39b5a06cef848437d5e283b596fa6bd09dcf9",
+        "row_bytes": 320,
+        "shard_ordinal": 69,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+      },
+      {
+        "combined_row": 173802232,
+        "local_row": 1301404,
+        "payload_sha256": "ec6d099dc594294b8825473c884b80fd59bb5ac1fc91cfdf4203ed7968b61b63",
+        "row_bytes": 320,
+        "shard_ordinal": 69,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_69.weight"
+      },
+      {
+        "combined_row": 180001640,
+        "local_row": 776,
+        "payload_sha256": "d8c562ffa165050859f64e0afa182c1adae46c9774e4ecd3034578c82544134a",
+        "row_bytes": 320,
+        "shard_ordinal": 72,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_72.weight"
+      },
+      {
+        "combined_row": 186415225,
+        "local_row": 1414337,
+        "payload_sha256": "0f80a9d3b87b32a57052b1eca54a422b2d4ef87a0f1853d977a5ef3987d726b9",
+        "row_bytes": 320,
+        "shard_ordinal": 74,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+      },
+      {
+        "combined_row": 186956960,
+        "local_row": 1956072,
+        "payload_sha256": "883d77adc0d898cb92a62f320dec43e892878d12cc492229a2455b5b46297821",
+        "row_bytes": 320,
+        "shard_ordinal": 74,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_74.weight"
+      },
+      {
+        "combined_row": 191323675,
+        "local_row": 1322763,
+        "payload_sha256": "9e289c0b685c70df1d77339bb9a7bae38abe6a6ae2d08130706c6016e951d0ea",
+        "row_bytes": 320,
+        "shard_ordinal": 76,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_76.weight"
+      },
+      {
+        "combined_row": 193534463,
+        "local_row": 1033539,
+        "payload_sha256": "4ae42009ffc4a64f4b6716668700ad897e2dc30bf61799227ce6450c81e8d3eb",
+        "row_bytes": 320,
+        "shard_ordinal": 77,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_77.weight"
+      },
+      {
+        "combined_row": 195474054,
+        "local_row": 473118,
+        "payload_sha256": "9cfc26fb1a7b6cdcdf0e99f4aa8beaee100146565ecfc9da2f19fb4585940acc",
+        "row_bytes": 320,
+        "shard_ordinal": 78,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+      },
+      {
+        "combined_row": 195724011,
+        "local_row": 723075,
+        "payload_sha256": "daf0d8197b91246107178a9f7da152d1c116383d29e21c4ac88fef96b1cb1389",
+        "row_bytes": 320,
+        "shard_ordinal": 78,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_78.weight"
+      },
+      {
+        "combined_row": 204213856,
+        "local_row": 1712884,
+        "payload_sha256": "11d0e05efe51db83fd404618ae1a015372e2e5b7ff6179cc810c650305329a1e",
+        "row_bytes": 320,
+        "shard_ordinal": 81,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_81.weight"
+      },
+      {
+        "combined_row": 206063729,
+        "local_row": 1062745,
+        "payload_sha256": "a02f5a02c9614acff848612f2bce30260cca1b6a700a504532bc071797b8618b",
+        "row_bytes": 320,
+        "shard_ordinal": 82,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_82.weight"
+      },
+      {
+        "combined_row": 209126214,
+        "local_row": 1625218,
+        "payload_sha256": "1c0edc7ece32c58c17ca27bf006b0c98a80ffd58be19f094a56a674cfda43884",
+        "row_bytes": 320,
+        "shard_ordinal": 83,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_83.weight"
+      },
+      {
+        "combined_row": 210052063,
+        "local_row": 51055,
+        "payload_sha256": "5045ff363fa7610bbf537fec26568488b77b1cb77c0daad6a9df0f9a0edc3c28",
+        "row_bytes": 320,
+        "shard_ordinal": 84,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+      },
+      {
+        "combined_row": 211884213,
+        "local_row": 1883205,
+        "payload_sha256": "70f57f320f8bc649d41b9c16e3718acfdd72187725bcf39a25c9be51bdac9614",
+        "row_bytes": 320,
+        "shard_ordinal": 84,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+      },
+      {
+        "combined_row": 212365591,
+        "local_row": 2364583,
+        "payload_sha256": "e60d82661492accec4e5f65d84a8f93dab1aa62d4286a157c11435c9f348fbd5",
+        "row_bytes": 320,
+        "shard_ordinal": 84,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_84.weight"
+      },
+      {
+        "combined_row": 212886084,
+        "local_row": 385064,
+        "payload_sha256": "60f522242ac9f09c1172a8c95d57166848f4738a98394ffef3da8bd71a2b2763",
+        "row_bytes": 320,
+        "shard_ordinal": 85,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_85.weight"
+      },
+      {
+        "combined_row": 222407311,
+        "local_row": 2406255,
+        "payload_sha256": "ad2e1816c3b1b5a188acd73805f633f6e3506e9a9b9b8f5c7654b010bcf576ee",
+        "row_bytes": 320,
+        "shard_ordinal": 88,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_88.weight"
+      },
+      {
+        "combined_row": 225545542,
+        "local_row": 544462,
+        "payload_sha256": "f52097d857939d743cea31c134371f27c9155d10f618a7750f40fdbdc0dfe645",
+        "row_bytes": 320,
+        "shard_ordinal": 90,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_90.weight"
+      },
+      {
+        "combined_row": 230077049,
+        "local_row": 75945,
+        "payload_sha256": "886e7fa0891cda6a5469a62b31628e8de9f9eda99b35d0c31792bfafcc370ebe",
+        "row_bytes": 320,
+        "shard_ordinal": 92,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+      },
+      {
+        "combined_row": 232185672,
+        "local_row": 2184568,
+        "payload_sha256": "5d3680827a9284a433cda60b1b3a44b14e403d704f93d06d2c6350256d3de6c3",
+        "row_bytes": 320,
+        "shard_ordinal": 92,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_92.weight"
+      },
+      {
+        "combined_row": 232510937,
+        "local_row": 9821,
+        "payload_sha256": "1ff90dafb2fd4c85ba0c2a9a3232fffd4d07e7ed3c4079c06ef065684aca0257",
+        "row_bytes": 320,
+        "shard_ordinal": 93,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+      },
+      {
+        "combined_row": 234117767,
+        "local_row": 1616651,
+        "payload_sha256": "088107632fb41b36c48a594d77067c105ca5c5024581cdb3a79ff35c451a7a82",
+        "row_bytes": 320,
+        "shard_ordinal": 93,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_93.weight"
+      },
+      {
+        "combined_row": 236785465,
+        "local_row": 1784337,
+        "payload_sha256": "8e83b28102bbcabc5e630a073333b3e9a3c60f7b743e509687291f54fa75dbc3",
+        "row_bytes": 320,
+        "shard_ordinal": 94,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_94.weight"
+      },
+      {
+        "combined_row": 240923228,
+        "local_row": 922076,
+        "payload_sha256": "15f03d4aaa5e56cf244fb859757fdbaf10c02de35a34cd10700c6bec43196d7d",
+        "row_bytes": 320,
+        "shard_ordinal": 96,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+      },
+      {
+        "combined_row": 241536077,
+        "local_row": 1534925,
+        "payload_sha256": "8f1ef6019e66c3ea94b8b1e31547d02894da96d0d80ea9275d156cd6de92edc6",
+        "row_bytes": 320,
+        "shard_ordinal": 96,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+      },
+      {
+        "combined_row": 242064112,
+        "local_row": 2062960,
+        "payload_sha256": "547c35cb4cf51dd8e3a029b1de79306e734dfd67ba28f6303dcf9df6557a6a33",
+        "row_bytes": 320,
+        "shard_ordinal": 96,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_96.weight"
+      },
+      {
+        "combined_row": 244351338,
+        "local_row": 1850174,
+        "payload_sha256": "cec59885a185428b6678d72023acb4e745c69337823069cbfba9b268819c688d",
+        "row_bytes": 320,
+        "shard_ordinal": 97,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_97.weight"
+      },
+      {
+        "combined_row": 248971874,
+        "local_row": 1470686,
+        "payload_sha256": "28d01ceb1e43d620ad807fa972dda0ff0f6ad64aef523ead803274ed4d0345e0",
+        "row_bytes": 320,
+        "shard_ordinal": 99,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+      },
+      {
+        "combined_row": 249133513,
+        "local_row": 1632325,
+        "payload_sha256": "d264ecea6fe8a4ac565b8049af05cd086c194fba55bf50ef7f99663ef88bb855",
+        "row_bytes": 320,
+        "shard_ordinal": 99,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_99.weight"
+      },
+      {
+        "combined_row": 259482876,
+        "local_row": 1981640,
+        "payload_sha256": "9bd93d3a12f2f60c3d88f1b02264ba2a99094bd65d9d3053572cfbfc5995b0a1",
+        "row_bytes": 320,
+        "shard_ordinal": 103,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_103.weight"
+      },
+      {
+        "combined_row": 261741319,
+        "local_row": 1740071,
+        "payload_sha256": "0271f98acba37baa9d3f7aeb1215c314187715cdadee49a036219c580c946dd2",
+        "row_bytes": 320,
+        "shard_ordinal": 104,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_104.weight"
+      },
+      {
+        "combined_row": 266089040,
+        "local_row": 1087768,
+        "payload_sha256": "d26dff44369fbf0cf8f5967b660a5c0b1a4de08d5479e759e24f83a916938f5e",
+        "row_bytes": 320,
+        "shard_ordinal": 106,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_106.weight"
+      },
+      {
+        "combined_row": 267743638,
+        "local_row": 242354,
+        "payload_sha256": "664e78082988d0e87109c4b313f454c9667e91ad53b259751a8e05193e329d64",
+        "row_bytes": 320,
+        "shard_ordinal": 107,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+      },
+      {
+        "combined_row": 268210025,
+        "local_row": 708741,
+        "payload_sha256": "61aaf5e75ee3c45aef3a6e895760822225b3d2ae6ce31edd56c1e3f41a024b07",
+        "row_bytes": 320,
+        "shard_ordinal": 107,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_107.weight"
+      },
+      {
+        "combined_row": 270562234,
+        "local_row": 560938,
+        "payload_sha256": "7a760a19fc32b325e3ca9f242ffbb7a9199ada4d474e2b70b063145c7b919c80",
+        "row_bytes": 320,
+        "shard_ordinal": 108,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+      },
+      {
+        "combined_row": 272323240,
+        "local_row": 2321944,
+        "payload_sha256": "e436a5db1e46ce2300b5ab73ba1bcc2fba22586d0d26efd29f1a6d8cc8618e48",
+        "row_bytes": 320,
+        "shard_ordinal": 108,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_108.weight"
+      },
+      {
+        "combined_row": 274655901,
+        "local_row": 2154593,
+        "payload_sha256": "a76a9e0d01dee90e6c6f0538c6dea345035cf4740d5990aff2650b88799cc9ef",
+        "row_bytes": 320,
+        "shard_ordinal": 109,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_109.weight"
+      },
+      {
+        "combined_row": 288305083,
+        "local_row": 803703,
+        "payload_sha256": "372a9c731b872aca3f9481727279305e73b3cd3bf1b47c292eb119e805b76b0f",
+        "row_bytes": 320,
+        "shard_ordinal": 115,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+      },
+      {
+        "combined_row": 288404123,
+        "local_row": 902743,
+        "payload_sha256": "622002b6a22ad068309e0a7aa20eb4757e5482f34b1c0064dbed76732e7c8bd2",
+        "row_bytes": 320,
+        "shard_ordinal": 115,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_115.weight"
+      },
+      {
+        "combined_row": 290020504,
+        "local_row": 19112,
+        "payload_sha256": "2dc0e5115d8077a262bb0b4a3f9dc229b0cd02754a527e4a4c8426247c070659",
+        "row_bytes": 320,
+        "shard_ordinal": 116,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_116.weight"
+      },
+      {
+        "combined_row": 293571253,
+        "local_row": 1069849,
+        "payload_sha256": "84b4371b3ff505d419491da36f723ddff31fc625dede075498ad056484d3b520",
+        "row_bytes": 320,
+        "shard_ordinal": 117,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+      },
+      {
+        "combined_row": 294699197,
+        "local_row": 2197793,
+        "payload_sha256": "da80b44d040496f9fd5da97de2e94f479f673a35ee2b08f59f5806a104bd6987",
+        "row_bytes": 320,
+        "shard_ordinal": 117,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_117.weight"
+      },
+      {
+        "combined_row": 298409471,
+        "local_row": 908043,
+        "payload_sha256": "da99767e5d850682a5fd7b3a63cb52ee6db7ef12d76c5908ccab9eb3a8a7ac2d",
+        "row_bytes": 320,
+        "shard_ordinal": 119,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+      },
+      {
+        "combined_row": 299988367,
+        "local_row": 2486939,
+        "payload_sha256": "eaf1469059e3bc7831f280801135ef33481da0f569d47a179fc12ade3657afb7",
+        "row_bytes": 320,
+        "shard_ordinal": 119,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_119.weight"
+      },
+      {
+        "combined_row": 300023148,
+        "local_row": 21708,
+        "payload_sha256": "2a8280f9ddc87d63c5a828b63ab154cc8d35eb8cbc63dac6196997bca2e447be",
+        "row_bytes": 320,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      },
+      {
+        "combined_row": 301156947,
+        "local_row": 1155507,
+        "payload_sha256": "8ac4e137f6c285ec2ba26c6b86012a6b278f6048edaa4b689085c3c512cb7211",
+        "row_bytes": 320,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      },
+      {
+        "combined_row": 301428689,
+        "local_row": 1427249,
+        "payload_sha256": "fc6199890c12c1acb0984340661230ef9f5a48ef5f379cf2e31d90985adc6aa6",
+        "row_bytes": 320,
+        "shard_ordinal": 120,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_120.weight"
+      },
+      {
+        "combined_row": 307716301,
+        "local_row": 214825,
+        "payload_sha256": "06a49321d235dcee5ddc038170f6070d7c7286317bb455489118c47be16a72af",
+        "row_bytes": 320,
+        "shard_ordinal": 123,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+      },
+      {
+        "combined_row": 308616983,
+        "local_row": 1115507,
+        "payload_sha256": "fa53904a796d68b6dd2522e280b10c0fb9199a2bb778d5b7c56d55f3c7c89d15",
+        "row_bytes": 320,
+        "shard_ordinal": 123,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+      },
+      {
+        "combined_row": 308709461,
+        "local_row": 1207985,
+        "payload_sha256": "659952efa3afe73fef55cd0b16366f3a824118811e02f5aa9b68e5c5ccf3ada7",
+        "row_bytes": 320,
+        "shard_ordinal": 123,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+      },
+      {
+        "combined_row": 309484515,
+        "local_row": 1983039,
+        "payload_sha256": "5a66bf6802c3cc7e4a44e6d8099115a8a36e571d3f7618cc7878aa6f289f5aaa",
+        "row_bytes": 320,
+        "shard_ordinal": 123,
+        "tensor": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_123.weight"
+      }
+    ],
+    "token_count": 7,
+    "unique_source_bytes": 35840,
+    "unique_source_rows": 112
+  },
+  "checkpoint_layout": {
+    "combined_rows": 320001536,
+    "head_dimension": 160,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
+    "sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "shard_count": 128,
+    "source_bytes": 102400491520,
+    "tensor_prefix": "model.language_model.layers.1.ple.ple_embedding.ngram_embedding.shard_"
+  },
+  "claim_boundary": "This receipt proves the source-config/reference-algorithm token-to-row address path and binds each selected physical BF16 row. It does not execute the PLE key/value projections, norms, convolution, hidden-state gates, or any complete Flash forward. It claims no compact representation, complete EBPW, direct runtime, TPS, capability, or source PLE output parity.",
+  "construction": {
+    "elapsed_ns": 1597293708,
+    "model_loads": 0,
+    "source_read_mode": "checkpoint headers plus exact selected BF16 row range reads",
+    "source_tensor_full_materializations": 0
+  },
+  "generated_at": "2026-09-12T03:40:35.721226+00:00",
+  "next": "Collect disjoint source-bound token sequences to measure real lookup reuse; then obtain a source PLE output/activation control before testing a non-uniform compact base plus protected accessed-row repair. Do not materialize uniform global PQ from this address trace.",
+  "promotion_allowed": false,
+  "reference_contract": {
+    "config": {
+      "config_seed": null,
+      "effective_seed": 1234,
+      "model_type": "qwen4_exp_text",
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "ple_layer_ids": [
+        2
+      ],
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+    },
+    "hash_contract": {
+      "head_offsets": [
+        0,
+        20000003,
+        40000026,
+        60000059,
+        80000106,
+        100000165,
+        120000228,
+        140000297,
+        160000374,
+        180000455,
+        200000548,
+        220000655,
+        240000802,
+        260000955,
+        280001114,
+        300001275
+      ],
+      "head_vocab_sizes": [
+        20000003,
+        20000023,
+        20000033,
+        20000047,
+        20000059,
+        20000063,
+        20000069,
+        20000077,
+        20000081,
+        20000093,
+        20000107,
+        20000147,
+        20000153,
+        20000159,
+        20000161,
+        20000171
+      ],
+      "heads_per_ngram": 8,
+      "multipliers": [
+        23703573157769,
+        20109073645365,
+        8052911324071
+      ],
+      "ngram_size": 3,
+      "padded_vocab_size": 320001536,
+      "total_vocab_size": 320001446
+    },
+    "implementation": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/lib/python3.13/site-packages/transformers/models/qwen4_exp/modeling_qwen4_exp.py",
+    "implementation_scope": "Qwen4ExpTextNGramEmbedding.forward",
+    "implementation_sha256": "ca9f00bbd73cfcfbad7ba6073b5ecc23ca27bdace58b746fe6ead6ab175efc0c",
+    "implementation_version": "transformers 5.17.0",
+    "state_contract": {
+      "eos_aware_history_reset": true,
+      "initial_context_token": 248044,
+      "lookup_heads_per_token": 16,
+      "persistent_token_context": 2
+    }
+  },
+  "schema": "hawking.odyssey.ple_access_trace.v1",
+  "seal_sha256": "c698975664f19f087fc0a0dcc5bd88210d0885556ab42f20d61028717046d90e",
+  "sequence": {
+    "binding": "STATEFUL_ACCEPTED_TOKEN_SEQUENCE_RECEIPT",
+    "execution_boundary": "The receipt binds a real accepted token sequence, but it does not by itself establish PLE output parity. This trace remains an address/row-binding control.",
+    "path": "receipts/headless/FLASH_STATEFUL_REPEATED_ACCEPTED_DECODE.json",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "schema": "hawking.flash.stateful_complete_token_session.v1",
+    "segments": [
+      [
+        5423,
+        799,
+        4581,
+        3817,
+        13
+      ],
+      [
+        2972,
+        96125
+      ]
+    ],
+    "sha256": "20177dcaf6ab5f8b6611fd830688eaa6a24ddc640d036ac6ec31ec404f3fa2e4",
+    "status": "PASSED_STATEFUL_REPEATED_ACCEPTED_DECODE",
+    "token_count": 7
+  },
+  "specimen": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "revision_prefix": "34567a4712bc",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "status": "SOURCE_ALGORITHM_BOUND_TOKEN_ACCESS_TRACE__NOT_PLE_OUTPUT_PARITY",
+  "trace": [
+    {
+      "accesses": [
+        {
+          "combined_row": 14372315,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 1872255,
+          "ngram_order": 2,
+          "shard_ordinal": 5,
+          "source_row_sha256": "c5767212bc15a8e49a20280e61802e0aa05fdcee37282e9aa84e1b6c203eddbb"
+        },
+        {
+          "combined_row": 21827640,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 1827544,
+          "ngram_order": 2,
+          "shard_ordinal": 8,
+          "source_row_sha256": "37e2a4725ebb62226e4ae6834065a8a8010fb84632ed92726ad726d8cbbe22ad"
+        },
+        {
+          "combined_row": 59280967,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 1780691,
+          "ngram_order": 2,
+          "shard_ordinal": 23,
+          "source_row_sha256": "16f690c6dd6724a08ff02b8fad3f4fcaab47fcb010da7b41dc86206380ef6387"
+        },
+        {
+          "combined_row": 63888239,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 1387939,
+          "ngram_order": 2,
+          "shard_ordinal": 25,
+          "source_row_sha256": "1ccd8e59b3b8a77c320a4e0a84001c46da9a09893f5e24ddc68e61e75902d011"
+        },
+        {
+          "combined_row": 80283410,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 283026,
+          "ngram_order": 2,
+          "shard_ordinal": 32,
+          "source_row_sha256": "dabdf6a81804ba7f34d43be4c0d9d68cc67eb871d1062e8e6f79fc06709d10ca"
+        },
+        {
+          "combined_row": 106543326,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 1542822,
+          "ngram_order": 2,
+          "shard_ordinal": 42,
+          "source_row_sha256": "784f515cd0c3b76ca03db47654a708396ef0b2bfa61e7980b37498f93407be68"
+        },
+        {
+          "combined_row": 126678265,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 1677665,
+          "ngram_order": 2,
+          "shard_ordinal": 50,
+          "source_row_sha256": "f96df31b01bb70919ffb49ed0447ac2fbf92cb431651230322b5641101704d76"
+        },
+        {
+          "combined_row": 141582367,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 1581695,
+          "ngram_order": 2,
+          "shard_ordinal": 56,
+          "source_row_sha256": "1b89d4df3ecd233d84d9c93221537d6362ac013fed3ecda1f630b0ff06cfec0e"
+        },
+        {
+          "combined_row": 173802232,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 1301404,
+          "ngram_order": 3,
+          "shard_ordinal": 69,
+          "source_row_sha256": "ec6d099dc594294b8825473c884b80fd59bb5ac1fc91cfdf4203ed7968b61b63"
+        },
+        {
+          "combined_row": 195724011,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 723075,
+          "ngram_order": 3,
+          "shard_ordinal": 78,
+          "source_row_sha256": "daf0d8197b91246107178a9f7da152d1c116383d29e21c4ac88fef96b1cb1389"
+        },
+        {
+          "combined_row": 204213856,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 1712884,
+          "ngram_order": 3,
+          "shard_ordinal": 81,
+          "source_row_sha256": "11d0e05efe51db83fd404618ae1a015372e2e5b7ff6179cc810c650305329a1e"
+        },
+        {
+          "combined_row": 225545542,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 544462,
+          "ngram_order": 3,
+          "shard_ordinal": 90,
+          "source_row_sha256": "f52097d857939d743cea31c134371f27c9155d10f618a7750f40fdbdc0dfe645"
+        },
+        {
+          "combined_row": 259482876,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 1981640,
+          "ngram_order": 3,
+          "shard_ordinal": 103,
+          "source_row_sha256": "9bd93d3a12f2f60c3d88f1b02264ba2a99094bd65d9d3053572cfbfc5995b0a1"
+        },
+        {
+          "combined_row": 274655901,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 2154593,
+          "ngram_order": 3,
+          "shard_ordinal": 109,
+          "source_row_sha256": "a76a9e0d01dee90e6c6f0538c6dea345035cf4740d5990aff2650b88799cc9ef"
+        },
+        {
+          "combined_row": 299988367,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 2486939,
+          "ngram_order": 3,
+          "shard_ordinal": 119,
+          "source_row_sha256": "eaf1469059e3bc7831f280801135ef33481da0f569d47a179fc12ade3657afb7"
+        },
+        {
+          "combined_row": 308709461,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 1207985,
+          "ngram_order": 3,
+          "shard_ordinal": 123,
+          "source_row_sha256": "659952efa3afe73fef55cd0b16366f3a824118811e02f5aa9b68e5c5ccf3ada7"
+        }
+      ],
+      "segment_index": 0,
+      "segment_token_index": 0,
+      "session_token_index": 0,
+      "token_id": 5423
+    },
+    {
+      "accesses": [
+        {
+          "combined_row": 9949239,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 2449203,
+          "ngram_order": 2,
+          "shard_ordinal": 3,
+          "source_row_sha256": "3e1b6422bf06f253ce3489ecbcde71640ca56532e3af728fbc38688445a8ffe3"
+        },
+        {
+          "combined_row": 28866003,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 1365871,
+          "ngram_order": 2,
+          "shard_ordinal": 11,
+          "source_row_sha256": "8ef17c085b073ded1b24a313b9052f6dd4fd94e83bebd6d99202822be58fc21a"
+        },
+        {
+          "combined_row": 58419028,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 918752,
+          "ngram_order": 2,
+          "shard_ordinal": 23,
+          "source_row_sha256": "ea10bce8ed361ec096dd1dc6492fdd32496e379d68550b0233bac5db885e744c"
+        },
+        {
+          "combined_row": 79899210,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 2398838,
+          "ngram_order": 2,
+          "shard_ordinal": 31,
+          "source_row_sha256": "3b2755b2b1aefcdd0f557259ac335a68524f6ff4851de9ca1f47449cf247495b"
+        },
+        {
+          "combined_row": 95552045,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 551589,
+          "ngram_order": 2,
+          "shard_ordinal": 38,
+          "source_row_sha256": "69e60e7da29fb15d8a718003928e331335f7c34817957072edda3872ce9466f3"
+        },
+        {
+          "combined_row": 107456527,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 2456023,
+          "ngram_order": 2,
+          "shard_ordinal": 42,
+          "source_row_sha256": "44ddb386cf44fbc738c380a09c1dc4043586a663fe33fe0d2fbaf5156d319a13"
+        },
+        {
+          "combined_row": 125332174,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 331574,
+          "ngram_order": 2,
+          "shard_ordinal": 50,
+          "source_row_sha256": "d4b333d43519bd504c1caecb8ce86e92748166d9f6ff80db0bf0c1fea22eec9a"
+        },
+        {
+          "combined_row": 149201698,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 1700990,
+          "ngram_order": 2,
+          "shard_ordinal": 59,
+          "source_row_sha256": "5161d586be501134f992dedd8a0ec734d24989a71b6d2b08e1135c8d3e62d3f8"
+        },
+        {
+          "combined_row": 164894268,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 2393488,
+          "ngram_order": 3,
+          "shard_ordinal": 65,
+          "source_row_sha256": "ae1c0e2bbfd81d0c53c0a4c404e0ab86eb96123af49b95c8206d3d788ab42dc3"
+        },
+        {
+          "combined_row": 195474054,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 473118,
+          "ngram_order": 3,
+          "shard_ordinal": 78,
+          "source_row_sha256": "9cfc26fb1a7b6cdcdf0e99f4aa8beaee100146565ecfc9da2f19fb4585940acc"
+        },
+        {
+          "combined_row": 212886084,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 385064,
+          "ngram_order": 3,
+          "shard_ordinal": 85,
+          "source_row_sha256": "60f522242ac9f09c1172a8c95d57166848f4738a98394ffef3da8bd71a2b2763"
+        },
+        {
+          "combined_row": 230077049,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 75945,
+          "ngram_order": 3,
+          "shard_ordinal": 92,
+          "source_row_sha256": "886e7fa0891cda6a5469a62b31628e8de9f9eda99b35d0c31792bfafcc370ebe"
+        },
+        {
+          "combined_row": 248971874,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 1470686,
+          "ngram_order": 3,
+          "shard_ordinal": 99,
+          "source_row_sha256": "28d01ceb1e43d620ad807fa972dda0ff0f6ad64aef523ead803274ed4d0345e0"
+        },
+        {
+          "combined_row": 268210025,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 708741,
+          "ngram_order": 3,
+          "shard_ordinal": 107,
+          "source_row_sha256": "61aaf5e75ee3c45aef3a6e895760822225b3d2ae6ce31edd56c1e3f41a024b07"
+        },
+        {
+          "combined_row": 294699197,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 2197793,
+          "ngram_order": 3,
+          "shard_ordinal": 117,
+          "source_row_sha256": "da80b44d040496f9fd5da97de2e94f479f673a35ee2b08f59f5806a104bd6987"
+        },
+        {
+          "combined_row": 307716301,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 214825,
+          "ngram_order": 3,
+          "shard_ordinal": 123,
+          "source_row_sha256": "06a49321d235dcee5ddc038170f6070d7c7286317bb455489118c47be16a72af"
+        }
+      ],
+      "segment_index": 0,
+      "segment_token_index": 1,
+      "session_token_index": 1,
+      "token_id": 799
+    },
+    {
+      "accesses": [
+        {
+          "combined_row": 2608171,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 108159,
+          "ngram_order": 2,
+          "shard_ordinal": 1,
+          "source_row_sha256": "5e27c6c6cad1278d666e39e9b1c5e11b97dca40af8875674970d82e26101b347"
+        },
+        {
+          "combined_row": 22295646,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 2295550,
+          "ngram_order": 2,
+          "shard_ordinal": 8,
+          "source_row_sha256": "5e18e31123a04b12acac3696614ba7f53d543d70f00801bbaaaee4703504a4b5"
+        },
+        {
+          "combined_row": 42232465,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 2232273,
+          "ngram_order": 2,
+          "shard_ordinal": 16,
+          "source_row_sha256": "fbee1da45949247cdc01d6a9cd04aa2a4c57ca5cb2dc4069932676f1411573f4"
+        },
+        {
+          "combined_row": 66248249,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 1247937,
+          "ngram_order": 2,
+          "shard_ordinal": 26,
+          "source_row_sha256": "1a9928b52703fadfd427c4647365325812f65b9a2a577f52ef2ab090c8c9db85"
+        },
+        {
+          "combined_row": 98358609,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 858141,
+          "ngram_order": 2,
+          "shard_ordinal": 39,
+          "source_row_sha256": "c0000bfb8128850619338c68adb86bbef46dc7833d35ad07907264932c41c558"
+        },
+        {
+          "combined_row": 102415232,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 2414752,
+          "ngram_order": 2,
+          "shard_ordinal": 40,
+          "source_row_sha256": "cd0e301c598fb1311891ef3df9421af908ebfd2c37f9aa358cc18b5d31917570"
+        },
+        {
+          "combined_row": 138518879,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 1018219,
+          "ngram_order": 2,
+          "shard_ordinal": 55,
+          "source_row_sha256": "a29cf99e5c4a6640c06a737f079769fa0b5c8eb337b33e752c025539238e15ca"
+        },
+        {
+          "combined_row": 146691689,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 1690993,
+          "ngram_order": 2,
+          "shard_ordinal": 58,
+          "source_row_sha256": "85b7681b645cd6cd428b7573af0bbc08749d2009142b8ee6e25e07f676f336ad"
+        },
+        {
+          "combined_row": 160234128,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 233360,
+          "ngram_order": 3,
+          "shard_ordinal": 64,
+          "source_row_sha256": "7599daa3e148a4bf7b8e5d19825d1c0f0099475d3447d67fbee709f7e6038f1a"
+        },
+        {
+          "combined_row": 193534463,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 1033539,
+          "ngram_order": 3,
+          "shard_ordinal": 77,
+          "source_row_sha256": "4ae42009ffc4a64f4b6716668700ad897e2dc30bf61799227ce6450c81e8d3eb"
+        },
+        {
+          "combined_row": 209126214,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 1625218,
+          "ngram_order": 3,
+          "shard_ordinal": 83,
+          "source_row_sha256": "1c0edc7ece32c58c17ca27bf006b0c98a80ffd58be19f094a56a674cfda43884"
+        },
+        {
+          "combined_row": 234117767,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 1616651,
+          "ngram_order": 3,
+          "shard_ordinal": 93,
+          "source_row_sha256": "088107632fb41b36c48a594d77067c105ca5c5024581cdb3a79ff35c451a7a82"
+        },
+        {
+          "combined_row": 240923228,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 922076,
+          "ngram_order": 3,
+          "shard_ordinal": 96,
+          "source_row_sha256": "15f03d4aaa5e56cf244fb859757fdbaf10c02de35a34cd10700c6bec43196d7d"
+        },
+        {
+          "combined_row": 267743638,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 242354,
+          "ngram_order": 3,
+          "shard_ordinal": 107,
+          "source_row_sha256": "664e78082988d0e87109c4b313f454c9667e91ad53b259751a8e05193e329d64"
+        },
+        {
+          "combined_row": 290020504,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 19112,
+          "ngram_order": 3,
+          "shard_ordinal": 116,
+          "source_row_sha256": "2dc0e5115d8077a262bb0b4a3f9dc229b0cd02754a527e4a4c8426247c070659"
+        },
+        {
+          "combined_row": 301428689,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 1427249,
+          "ngram_order": 3,
+          "shard_ordinal": 120,
+          "source_row_sha256": "fc6199890c12c1acb0984340661230ef9f5a48ef5f379cf2e31d90985adc6aa6"
+        }
+      ],
+      "segment_index": 0,
+      "segment_token_index": 2,
+      "session_token_index": 2,
+      "token_id": 4581
+    },
+    {
+      "accesses": [
+        {
+          "combined_row": 12272008,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 2271960,
+          "ngram_order": 2,
+          "shard_ordinal": 4,
+          "source_row_sha256": "3f44fb697497080c9964d6af05262df6fba50e4ac0552d6869ca1adfa28a7f6e"
+        },
+        {
+          "combined_row": 37554332,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 54152,
+          "ngram_order": 2,
+          "shard_ordinal": 15,
+          "source_row_sha256": "6293657dd94fdfc0c8665506b595801e930f47847604abcd8e0f1d3990785ae8"
+        },
+        {
+          "combined_row": 50196804,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 196564,
+          "ngram_order": 2,
+          "shard_ordinal": 20,
+          "source_row_sha256": "a373816f17b03c5434affcee7655f8147bb1463640f5d229f26f950d01d04ac8"
+        },
+        {
+          "combined_row": 75897748,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 897388,
+          "ngram_order": 2,
+          "shard_ordinal": 30,
+          "source_row_sha256": "1b542ea4f947d44039fa3c122497d5a94f705ea36d3690a3aa2983ec19e3c9bb"
+        },
+        {
+          "combined_row": 95071347,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 70891,
+          "ngram_order": 2,
+          "shard_ordinal": 38,
+          "source_row_sha256": "9805d23ebda26d8ad8b91661c6f321568769e0bb594a892d079eb1484a79afe0"
+        },
+        {
+          "combined_row": 108129513,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 628997,
+          "ngram_order": 2,
+          "shard_ordinal": 43,
+          "source_row_sha256": "06e29f4623c7ef16b3306b927d9bb23f191fd6f464efb4b05910a84f544c013b"
+        },
+        {
+          "combined_row": 127717026,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 216414,
+          "ngram_order": 2,
+          "shard_ordinal": 51,
+          "source_row_sha256": "852e3d83adba6d06e20f4d971144d73d104e18c4c32fe730d6dab26254312897"
+        },
+        {
+          "combined_row": 153834206,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 1333474,
+          "ngram_order": 2,
+          "shard_ordinal": 61,
+          "source_row_sha256": "9be003170d45fad2b53236bc20a6680e73d2c54f165a582f7e7094b32527380d"
+        },
+        {
+          "combined_row": 173291479,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 790651,
+          "ngram_order": 3,
+          "shard_ordinal": 69,
+          "source_row_sha256": "1eb171b9b7b87141bb665613a7b39b5a06cef848437d5e283b596fa6bd09dcf9"
+        },
+        {
+          "combined_row": 191323675,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 1322763,
+          "ngram_order": 3,
+          "shard_ordinal": 76,
+          "source_row_sha256": "9e289c0b685c70df1d77339bb9a7bae38abe6a6ae2d08130706c6016e951d0ea"
+        },
+        {
+          "combined_row": 212365591,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 2364583,
+          "ngram_order": 3,
+          "shard_ordinal": 84,
+          "source_row_sha256": "e60d82661492accec4e5f65d84a8f93dab1aa62d4286a157c11435c9f348fbd5"
+        },
+        {
+          "combined_row": 232510937,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 9821,
+          "ngram_order": 3,
+          "shard_ordinal": 93,
+          "source_row_sha256": "1ff90dafb2fd4c85ba0c2a9a3232fffd4d07e7ed3c4079c06ef065684aca0257"
+        },
+        {
+          "combined_row": 241536077,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 1534925,
+          "ngram_order": 3,
+          "shard_ordinal": 96,
+          "source_row_sha256": "8f1ef6019e66c3ea94b8b1e31547d02894da96d0d80ea9275d156cd6de92edc6"
+        },
+        {
+          "combined_row": 270562234,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 560938,
+          "ngram_order": 3,
+          "shard_ordinal": 108,
+          "source_row_sha256": "7a760a19fc32b325e3ca9f242ffbb7a9199ada4d474e2b70b063145c7b919c80"
+        },
+        {
+          "combined_row": 293571253,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 1069849,
+          "ngram_order": 3,
+          "shard_ordinal": 117,
+          "source_row_sha256": "84b4371b3ff505d419491da36f723ddff31fc625dede075498ad056484d3b520"
+        },
+        {
+          "combined_row": 308616983,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 1115507,
+          "ngram_order": 3,
+          "shard_ordinal": 123,
+          "source_row_sha256": "fa53904a796d68b6dd2522e280b10c0fb9199a2bb778d5b7c56d55f3c7c89d15"
+        }
+      ],
+      "segment_index": 0,
+      "segment_token_index": 3,
+      "session_token_index": 3,
+      "token_id": 3817
+    },
+    {
+      "accesses": [
+        {
+          "combined_row": 5040598,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 40574,
+          "ngram_order": 2,
+          "shard_ordinal": 2,
+          "source_row_sha256": "fdec35cf5cb8a4a978f9c0edf3ab126b72a8ac4798384171788e62d6bb27ee20"
+        },
+        {
+          "combined_row": 36400117,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 1399949,
+          "ngram_order": 2,
+          "shard_ordinal": 14,
+          "source_row_sha256": "49d8bb31a2142b4ec074386a6a0952bda51bd1f5596b7c5f5c1a30e4d64354bc"
+        },
+        {
+          "combined_row": 42137645,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 2137453,
+          "ngram_order": 2,
+          "shard_ordinal": 16,
+          "source_row_sha256": "841a2eeb6be91099ea3ae076ea863cb96ef742e42fb2636bee3852f24433bbf2"
+        },
+        {
+          "combined_row": 62234912,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 2234624,
+          "ngram_order": 2,
+          "shard_ordinal": 24,
+          "source_row_sha256": "0ab94835bb6edaf688a7f03e4314ea009e3400e55dc5a12da842325fbf75cd34"
+        },
+        {
+          "combined_row": 85235536,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 235128,
+          "ngram_order": 2,
+          "shard_ordinal": 34,
+          "source_row_sha256": "d52ed72e353219c9133d428dcecb10b67673d9b15cdc26e874e362aa39132859"
+        },
+        {
+          "combined_row": 119581488,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 2080924,
+          "ngram_order": 2,
+          "shard_ordinal": 47,
+          "source_row_sha256": "ac35268e4867c418f3359b8604cf7446e94513acf5abcbd83a92fd65e75481f2"
+        },
+        {
+          "combined_row": 131111852,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 1111228,
+          "ngram_order": 2,
+          "shard_ordinal": 52,
+          "source_row_sha256": "d6d7ec3a8cef663eefa75359d1bf4a909eeeb3d1ace9b6336ef6421987f83db6"
+        },
+        {
+          "combined_row": 159840626,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 2339870,
+          "ngram_order": 2,
+          "shard_ordinal": 63,
+          "source_row_sha256": "f432feb3ded57471d52e9da7a09c827c02e487b5f2397e5475dbfbbde438b9f7"
+        },
+        {
+          "combined_row": 167530236,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 29432,
+          "ngram_order": 3,
+          "shard_ordinal": 67,
+          "source_row_sha256": "66a87c22a4560d07ad010ca65d1bd316187e06c62a1e47f37be53dbc17ba759d"
+        },
+        {
+          "combined_row": 186415225,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 1414337,
+          "ngram_order": 3,
+          "shard_ordinal": 74,
+          "source_row_sha256": "0f80a9d3b87b32a57052b1eca54a422b2d4ef87a0f1853d977a5ef3987d726b9"
+        },
+        {
+          "combined_row": 211884213,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 1883205,
+          "ngram_order": 3,
+          "shard_ordinal": 84,
+          "source_row_sha256": "70f57f320f8bc649d41b9c16e3718acfdd72187725bcf39a25c9be51bdac9614"
+        },
+        {
+          "combined_row": 222407311,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 2406255,
+          "ngram_order": 3,
+          "shard_ordinal": 88,
+          "source_row_sha256": "ad2e1816c3b1b5a188acd73805f633f6e3506e9a9b9b8f5c7654b010bcf576ee"
+        },
+        {
+          "combined_row": 242064112,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 2062960,
+          "ngram_order": 3,
+          "shard_ordinal": 96,
+          "source_row_sha256": "547c35cb4cf51dd8e3a029b1de79306e734dfd67ba28f6303dcf9df6557a6a33"
+        },
+        {
+          "combined_row": 261741319,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 1740071,
+          "ngram_order": 3,
+          "shard_ordinal": 104,
+          "source_row_sha256": "0271f98acba37baa9d3f7aeb1215c314187715cdadee49a036219c580c946dd2"
+        },
+        {
+          "combined_row": 288305083,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 803703,
+          "ngram_order": 3,
+          "shard_ordinal": 115,
+          "source_row_sha256": "372a9c731b872aca3f9481727279305e73b3cd3bf1b47c292eb119e805b76b0f"
+        },
+        {
+          "combined_row": 301156947,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 1155507,
+          "ngram_order": 3,
+          "shard_ordinal": 120,
+          "source_row_sha256": "8ac4e137f6c285ec2ba26c6b86012a6b278f6048edaa4b689085c3c512cb7211"
+        }
+      ],
+      "segment_index": 0,
+      "segment_token_index": 4,
+      "session_token_index": 4,
+      "token_id": 13
+    },
+    {
+      "accesses": [
+        {
+          "combined_row": 4155854,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 1655842,
+          "ngram_order": 2,
+          "shard_ordinal": 1,
+          "source_row_sha256": "d693652ef091cc001b2a4634251950272a86d841b816d6b2bf8df3d4ac010037"
+        },
+        {
+          "combined_row": 27542821,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 42689,
+          "ngram_order": 2,
+          "shard_ordinal": 11,
+          "source_row_sha256": "6c34dde41a6f8b35f46449bd4a7cbcfd029769c5289122c25e8a1ae9a2b0b552"
+        },
+        {
+          "combined_row": 49289246,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 1789018,
+          "ngram_order": 2,
+          "shard_ordinal": 19,
+          "source_row_sha256": "ff1189989762a021743e64b767ca9512e458ec513b65faf79bf38d273bb12710"
+        },
+        {
+          "combined_row": 79793531,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 2293159,
+          "ngram_order": 2,
+          "shard_ordinal": 31,
+          "source_row_sha256": "8c210ed43caa18580be8014029957f4975eae7455b421bae4fedd8fb26c3882a"
+        },
+        {
+          "combined_row": 85995058,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 994650,
+          "ngram_order": 2,
+          "shard_ordinal": 34,
+          "source_row_sha256": "76faff2358d6e1e51f2806a6dd2997c53d2ebf2b5b541046ed03f61e3005ad7d"
+        },
+        {
+          "combined_row": 114740271,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 2239731,
+          "ngram_order": 2,
+          "shard_ordinal": 45,
+          "source_row_sha256": "38a01f2b50b2a4e8e1b644b8b82e327ad9ef7e46b780a7e9be70dc346e4e7901"
+        },
+        {
+          "combined_row": 127868586,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 367974,
+          "ngram_order": 2,
+          "shard_ordinal": 51,
+          "source_row_sha256": "bdbbacf44cfa9e0c399c62c88607d385c0e72bff46ef2159d852b82d3d7c58fc"
+        },
+        {
+          "combined_row": 145392766,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 392070,
+          "ngram_order": 2,
+          "shard_ordinal": 58,
+          "source_row_sha256": "e232f6cd5b26466b215db225338031781f2f051593f29b7ba453fc29f85f4b98"
+        },
+        {
+          "combined_row": 166267475,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 1266683,
+          "ngram_order": 3,
+          "shard_ordinal": 66,
+          "source_row_sha256": "df68c8864ed4cc09edd5f81213384e7645570c503eb4d3a0d8aa1ee2ff4d5218"
+        },
+        {
+          "combined_row": 180001640,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 776,
+          "ngram_order": 3,
+          "shard_ordinal": 72,
+          "source_row_sha256": "d8c562ffa165050859f64e0afa182c1adae46c9774e4ecd3034578c82544134a"
+        },
+        {
+          "combined_row": 206063729,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 1062745,
+          "ngram_order": 3,
+          "shard_ordinal": 82,
+          "source_row_sha256": "a02f5a02c9614acff848612f2bce30260cca1b6a700a504532bc071797b8618b"
+        },
+        {
+          "combined_row": 232185672,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 2184568,
+          "ngram_order": 3,
+          "shard_ordinal": 92,
+          "source_row_sha256": "5d3680827a9284a433cda60b1b3a44b14e403d704f93d06d2c6350256d3de6c3"
+        },
+        {
+          "combined_row": 249133513,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 1632325,
+          "ngram_order": 3,
+          "shard_ordinal": 99,
+          "source_row_sha256": "d264ecea6fe8a4ac565b8049af05cd086c194fba55bf50ef7f99663ef88bb855"
+        },
+        {
+          "combined_row": 266089040,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 1087768,
+          "ngram_order": 3,
+          "shard_ordinal": 106,
+          "source_row_sha256": "d26dff44369fbf0cf8f5967b660a5c0b1a4de08d5479e759e24f83a916938f5e"
+        },
+        {
+          "combined_row": 298409471,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 908043,
+          "ngram_order": 3,
+          "shard_ordinal": 119,
+          "source_row_sha256": "da99767e5d850682a5fd7b3a63cb52ee6db7ef12d76c5908ccab9eb3a8a7ac2d"
+        },
+        {
+          "combined_row": 300023148,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 21708,
+          "ngram_order": 3,
+          "shard_ordinal": 120,
+          "source_row_sha256": "2a8280f9ddc87d63c5a828b63ab154cc8d35eb8cbc63dac6196997bca2e447be"
+        }
+      ],
+      "segment_index": 1,
+      "segment_token_index": 0,
+      "session_token_index": 5,
+      "token_id": 2972
+    },
+    {
+      "accesses": [
+        {
+          "combined_row": 8832859,
+          "global_head": 0,
+          "head_within_ngram": 0,
+          "local_row": 1332823,
+          "ngram_order": 2,
+          "shard_ordinal": 3,
+          "source_row_sha256": "48e5d3964cfd3fbef1d0d0684027a74b03ffdc1b9b6d8d30f81d8322d54c677d"
+        },
+        {
+          "combined_row": 21303122,
+          "global_head": 1,
+          "head_within_ngram": 1,
+          "local_row": 1303026,
+          "ngram_order": 2,
+          "shard_ordinal": 8,
+          "source_row_sha256": "1f2c4e30b077c53d3df6f27d493e584eed46273d2d152d64714c7effcfde3b60"
+        },
+        {
+          "combined_row": 59229408,
+          "global_head": 2,
+          "head_within_ngram": 2,
+          "local_row": 1729132,
+          "ngram_order": 2,
+          "shard_ordinal": 23,
+          "source_row_sha256": "5840c1ecd66eba810093781c95f314d6eafcb13d862430eed96c97c03a1e69b3"
+        },
+        {
+          "combined_row": 78220209,
+          "global_head": 3,
+          "head_within_ngram": 3,
+          "local_row": 719837,
+          "ngram_order": 2,
+          "shard_ordinal": 31,
+          "source_row_sha256": "7e2b5cdf36cef7f21bd7681feba9be3bdce5804da19d120f21bd1b275d8e99e3"
+        },
+        {
+          "combined_row": 99113944,
+          "global_head": 4,
+          "head_within_ngram": 4,
+          "local_row": 1613476,
+          "ngram_order": 2,
+          "shard_ordinal": 39,
+          "source_row_sha256": "7c464282eb139f46a939aee2e02f7dbd09333d758a0b2cad851cbf73d454f4e7"
+        },
+        {
+          "combined_row": 119772667,
+          "global_head": 5,
+          "head_within_ngram": 5,
+          "local_row": 2272103,
+          "ngram_order": 2,
+          "shard_ordinal": 47,
+          "source_row_sha256": "61f250796d33113531f160bd2220dfb27b5485f836a651ac18232027f93a67c1"
+        },
+        {
+          "combined_row": 121098877,
+          "global_head": 6,
+          "head_within_ngram": 6,
+          "local_row": 1098301,
+          "ngram_order": 2,
+          "shard_ordinal": 48,
+          "source_row_sha256": "0e35f1fc742dac767ac32ca9449a831357ba3b4db6798831b15cae8251743ca4"
+        },
+        {
+          "combined_row": 143498570,
+          "global_head": 7,
+          "head_within_ngram": 7,
+          "local_row": 997886,
+          "ngram_order": 2,
+          "shard_ordinal": 57,
+          "source_row_sha256": "fa16b27e4490b45b00bf1285a420ad80a2ce1ddcfb794098d6c820f5d4d1b14d"
+        },
+        {
+          "combined_row": 160348493,
+          "global_head": 8,
+          "head_within_ngram": 0,
+          "local_row": 347725,
+          "ngram_order": 3,
+          "shard_ordinal": 64,
+          "source_row_sha256": "29b4acdd15cbee2cc61bb8b19e51026d2950ff5c75e7850554000c6caf90fd19"
+        },
+        {
+          "combined_row": 186956960,
+          "global_head": 9,
+          "head_within_ngram": 1,
+          "local_row": 1956072,
+          "ngram_order": 3,
+          "shard_ordinal": 74,
+          "source_row_sha256": "883d77adc0d898cb92a62f320dec43e892878d12cc492229a2455b5b46297821"
+        },
+        {
+          "combined_row": 210052063,
+          "global_head": 10,
+          "head_within_ngram": 2,
+          "local_row": 51055,
+          "ngram_order": 3,
+          "shard_ordinal": 84,
+          "source_row_sha256": "5045ff363fa7610bbf537fec26568488b77b1cb77c0daad6a9df0f9a0edc3c28"
+        },
+        {
+          "combined_row": 236785465,
+          "global_head": 11,
+          "head_within_ngram": 3,
+          "local_row": 1784337,
+          "ngram_order": 3,
+          "shard_ordinal": 94,
+          "source_row_sha256": "8e83b28102bbcabc5e630a073333b3e9a3c60f7b743e509687291f54fa75dbc3"
+        },
+        {
+          "combined_row": 244351338,
+          "global_head": 12,
+          "head_within_ngram": 4,
+          "local_row": 1850174,
+          "ngram_order": 3,
+          "shard_ordinal": 97,
+          "source_row_sha256": "cec59885a185428b6678d72023acb4e745c69337823069cbfba9b268819c688d"
+        },
+        {
+          "combined_row": 272323240,
+          "global_head": 13,
+          "head_within_ngram": 5,
+          "local_row": 2321944,
+          "ngram_order": 3,
+          "shard_ordinal": 108,
+          "source_row_sha256": "e436a5db1e46ce2300b5ab73ba1bcc2fba22586d0d26efd29f1a6d8cc8618e48"
+        },
+        {
+          "combined_row": 288404123,
+          "global_head": 14,
+          "head_within_ngram": 6,
+          "local_row": 902743,
+          "ngram_order": 3,
+          "shard_ordinal": 115,
+          "source_row_sha256": "622002b6a22ad068309e0a7aa20eb4757e5482f34b1c0064dbed76732e7c8bd2"
+        },
+        {
+          "combined_row": 309484515,
+          "global_head": 15,
+          "head_within_ngram": 7,
+          "local_row": 1983039,
+          "ngram_order": 3,
+          "shard_ordinal": 123,
+          "source_row_sha256": "5a66bf6802c3cc7e4a44e6d8099115a8a36e571d3f7618cc7878aa6f289f5aaa"
+        }
+      ],
+      "segment_index": 1,
+      "segment_token_index": 1,
+      "session_token_index": 6,
+      "token_id": 96125
+    }
+  ]
+}

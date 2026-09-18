@@ -1,0 +1,18 @@
+{
+  "candidate_id": "KIMI_OPERATOR_CANDIDATE_OPH",
+  "external_actions": false,
+  "gate_receipt": "receipts/future/KIMI_OPERATOR_GATE_20260910.json",
+  "generated_at": "2026-09-10T23:59:06.896246+00:00",
+  "missing_gates": [
+    "heldout_behavior",
+    "causal_behavior",
+    "candidate_live_evaluation",
+    "candidate_evidence_identity"
+  ],
+  "modellake_owner": "ModelLake seal and provenance consumer",
+  "odyssey_owner": "Odyssey campaign / HCLI WorkUnit emitter",
+  "reason": "KIMI may not become an Odyssey worker before the same gates that govern promotion close. Existing ModelLake WorkUnits continue.",
+  "schema": "hawking.kimi.odyssey_bridge.v1",
+  "scope": [],
+  "status": "KIMI_WORKER_WITHHELD"
+}

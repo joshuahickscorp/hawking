@@ -1,4 +1,4 @@
-"""Run each assigned HCLI gate against its own Appendix D criterion.
+"""Run each assigned Hawking gate against its own Appendix D criterion.
 
 A module import is not a call. Every ACCEPTED gate below invokes the
 catalog symbol (or, for HCLI_CONTEXT_INVALIDATION, ``assert_evidence_fresh``
@@ -180,9 +180,9 @@ def _port_open(port: int, host: str = "127.0.0.1") -> bool:
 
 def run_authority() -> Dict[str, Any]:
     """HCLI_CONTEXT_AUTHORITY_UNIFIED — one resolve() drives root and worker."""
-    from hcli.context_budget import estimate_tokens, preflight, preflight_packet, resolve
-    from hcli.goal import compile_worker_context
-    from hcli.workunit import WorkUnit
+    from hawking.context_budget import estimate_tokens, preflight, preflight_packet, resolve
+    from hawking.goal import compile_worker_context
+    from hawking.workunit import WorkUnit
 
     criterion = quote_roadmap(7642, 7644)
     loc = _symbol_location(resolve)
@@ -251,10 +251,10 @@ def run_authority() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.context_budget.resolve", "note": "single authority"},
-            {"symbol": "hcli.context_budget.preflight", "kind": "root"},
-            {"symbol": "hcli.context_budget.preflight_packet", "kind": "worker"},
-            {"symbol": "hcli.goal.compile_worker_context", "note": "worker packet then preflighted on the same budget"},
+            {"symbol": "hawking.context_budget.resolve", "note": "single authority"},
+            {"symbol": "hawking.context_budget.preflight", "kind": "root"},
+            {"symbol": "hawking.context_budget.preflight_packet", "kind": "worker"},
+            {"symbol": "hawking.goal.compile_worker_context", "note": "worker packet then preflighted on the same budget"},
         ],
         "command": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_AUTHORITY_UNIFIED",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -280,8 +280,8 @@ def run_authority() -> Dict[str, Any]:
 
 def run_focused() -> Dict[str, Any]:
     """HCLI_CONTEXT_FOCUSED_WORKUNITS — worker packet is D.4, not the roadmap."""
-    from hcli.goal import compile_worker_context, refuse_goal_dump
-    from hcli.workunit import WorkUnit
+    from hawking.goal import compile_worker_context, refuse_goal_dump
+    from hawking.workunit import WorkUnit
 
     criterion = quote_roadmap(7420, 7447)
     loc = _symbol_location(compile_worker_context)
@@ -373,9 +373,9 @@ def run_focused() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.goal.compile_worker_context", "unit": child.id},
-            {"symbol": "hcli.goal.compile_worker_context", "unit": other.id},
-            {"symbol": "hcli.goal.refuse_goal_dump"},
+            {"symbol": "hawking.goal.compile_worker_context", "unit": child.id},
+            {"symbol": "hawking.goal.compile_worker_context", "unit": other.id},
+            {"symbol": "hawking.goal.refuse_goal_dump"},
         ],
         "command": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_FOCUSED_WORKUNITS",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -408,19 +408,19 @@ def run_focused() -> Dict[str, Any]:
 
 def run_invalidation() -> Dict[str, Any]:
     """HCLI_CONTEXT_INVALIDATION — changed evidence refuses stale context."""
-    from hcli.goal import (
+    from hawking.goal import (
         StaleEvidenceError,
         assert_evidence_fresh,
         assert_packet_evidence_fresh,
         compile_worker_context,
         identity_for_path,
     )
-    from hcli.workunit import WorkUnit
+    from hawking.workunit import WorkUnit
 
     criterion = quote_roadmap(7420, 7447)
     loc = _symbol_location(assert_evidence_fresh)
     hops: Dict[str, Any] = {}
-    with tempfile.TemporaryDirectory(prefix="hcli-inv-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="hawking-inv-") as tmp:
         notes = Path(tmp) / "notes.txt"
         notes.write_text("snapshot-AAAA", encoding="utf-8")
         gathered = identity_for_path(notes, root=Path(tmp))
@@ -488,10 +488,10 @@ def run_invalidation() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.goal.compile_worker_context"},
-            {"symbol": "hcli.goal.assert_evidence_fresh"},
-            {"symbol": "hcli.goal.assert_packet_evidence_fresh"},
-            {"symbol": "hcli.goal.identity_for_path"},
+            {"symbol": "hawking.goal.compile_worker_context"},
+            {"symbol": "hawking.goal.assert_evidence_fresh"},
+            {"symbol": "hawking.goal.assert_packet_evidence_fresh"},
+            {"symbol": "hawking.goal.identity_for_path"},
         ],
         "command": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_INVALIDATION",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -523,8 +523,8 @@ def _d9_scan(rendered: str) -> Dict[str, Any]:
 
 def run_status() -> Dict[str, Any]:
     """HCLI_STATUS_PHYSICAL — format_status vs the D.9 contract."""
-    from hcli.commands import format_status
-    from hcli.max_policy import grok_pool_snapshot
+    from hawking.commands import format_status
+    from hawking.max_policy import grok_pool_snapshot
 
     criterion = quote_roadmap(7537, 7575)
     loc = _symbol_location(format_status)
@@ -635,8 +635,8 @@ def run_status() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.commands.format_status"},
-            {"symbol": "hcli.max_policy.grok_pool_snapshot"},
+            {"symbol": "hawking.commands.format_status"},
+            {"symbol": "hawking.max_policy.grok_pool_snapshot"},
         ],
         "command": "python3 -m tools.acceptance.context --gate HCLI_STATUS_PHYSICAL",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -665,7 +665,7 @@ def run_mixed_max() -> Dict[str, Any]:
     run 'mixed'. This lane follows that rule: without a live llama-server the
     gate is BLOCKED, not accepted on a weaker substitute.
     """
-    from hcli.max_policy import grok_pool_snapshot, record_rung
+    from hawking.max_policy import grok_pool_snapshot, record_rung
 
     criterion = quote_roadmap(7670, 7672)
     loc = _symbol_location(grok_pool_snapshot)
@@ -693,7 +693,7 @@ def run_mixed_max() -> Dict[str, Any]:
     listening = (lsof_port is not None) or any(llama_ports.values())
     # Isolation is demonstrated by BACKEND_FAILURE_ISOLATION in this same
     # lane. Mixed MAX still requires concurrent useful work on more than
-    # one backend class. We do not dispatch Qwen/Grok here: the live HCLI
+    # one backend class. We do not dispatch Qwen/Grok here: the live Hawking
     # daemon owns those runtimes and this lane must not signal it.
     with tempfile.TemporaryDirectory(prefix="mixed-rung-") as tmp:
         rung_path = record_rung(
@@ -714,7 +714,7 @@ def run_mixed_max() -> Dict[str, Any]:
             "a llama-server listener is visible "
             f"(lsof_port={lsof_port}, socket={llama_ports}); "
             "dispatching a mixed MAX campaign would contend with the live "
-            "HCLI daemon this lane is forbidden to signal, restart, or "
+            "Hawking daemon this lane is forbidden to signal, restart, or "
             "steal runtimes from. Measured heterogeneous throughput was "
             "therefore not taken."
         )
@@ -736,8 +736,8 @@ def run_mixed_max() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.max_policy.grok_pool_snapshot"},
-            {"symbol": "hcli.max_policy.record_rung"},
+            {"symbol": "hawking.max_policy.grok_pool_snapshot"},
+            {"symbol": "hawking.max_policy.record_rung"},
         ],
         "command": "python3 -m tools.acceptance.context --gate HCLI_MIXED_MAX",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -765,8 +765,8 @@ def run_mixed_max() -> Dict[str, Any]:
 
 
 def _load_isolation_mod() -> Any:
-    path = REPO / "tools" / "headless" / "hcli_max_isolation_test.py"
-    spec = importlib.util.spec_from_file_location("hcli_max_isolation_test_acc2", path)
+    path = REPO / "tools" / "headless" / "hawking_max_isolation_test.py"
+    spec = importlib.util.spec_from_file_location("hawking_max_isolation_test_acc2", path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {path}")
     mod = importlib.util.module_from_spec(spec)
@@ -776,8 +776,8 @@ def _load_isolation_mod() -> Any:
 
 def run_isolation() -> Dict[str, Any]:
     """BACKEND_FAILURE_ISOLATION — D.2 classes + one failure does not cascade."""
-    from hcli.backends import terminate_pid
-    from hcli.resources import FAILURE_KINDS, classify_failure
+    from hawking.backends import terminate_pid
+    from hawking.resources import FAILURE_KINDS, classify_failure
 
     criterion = quote_roadmap(7361, 7379)
     loc = _symbol_location(terminate_pid)
@@ -849,9 +849,9 @@ def run_isolation() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.backends.terminate_pid", "pid": term.get("pid")},
-            {"symbol": "hcli.resources.classify_failure"},
-            {"symbol": "hcli.mission.Mission.run", "note": "isolation checks"},
+            {"symbol": "hawking.backends.terminate_pid", "pid": term.get("pid")},
+            {"symbol": "hawking.resources.classify_failure"},
+            {"symbol": "hawking.mission.Mission.run", "note": "isolation checks"},
         ],
         "command": "python3 -m tools.acceptance.context --gate BACKEND_FAILURE_ISOLATION",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -890,10 +890,10 @@ def run_isolation() -> Dict[str, Any]:
 
 
 def run_supplement() -> Dict[str, Any]:
-    """HCLI_SELF_SUPPLEMENT — verified parent admits dependency-ready children."""
-    from hcli.agentos import AgentOS
-    from hcli.agentos.resident import admit_evidence_children
-    from hcli.workunit import WorkUnit
+    """HAWKING_SELF_SUPPLEMENT — verified parent admits dependency-ready children."""
+    from hawking import Hawking
+    from hawking.resident import admit_evidence_children
+    from hawking.workunit import WorkUnit
 
     criterion = quote_roadmap(7674, 7676)
     loc = _symbol_location(admit_evidence_children)
@@ -920,10 +920,10 @@ def run_supplement() -> Dict[str, Any]:
             return raw
 
     hops: Dict[str, Any] = {}
-    with tempfile.TemporaryDirectory(prefix="hcli-supp-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="hawking-supp-") as tmp:
         engine = RecordingEngine()
         parent = WorkUnit(id="parent", role="research", description="bounded parent")
-        agent = AgentOS(tmp, engine=engine)
+        agent = Hawking(tmp, engine=engine)
         agent.start_mission("acceptance self-supplement", units={"parent": parent})
         first = agent.run()
         hops["first"] = {
@@ -980,10 +980,10 @@ def run_supplement() -> Dict[str, Any]:
         },
         "symbol": loc,
         "invocations": [
-            {"symbol": "hcli.agentos.resident.admit_evidence_children"},
-            {"symbol": "hcli.agentos.AgentOS.start_mission"},
-            {"symbol": "hcli.agentos.AgentOS.run"},
-            {"symbol": "hcli.agentos.AgentOS.continue_mission"},
+            {"symbol": "hawking.resident.admit_evidence_children"},
+            {"symbol": "hawking.Hawking.start_mission"},
+            {"symbol": "hawking.Hawking.run"},
+            {"symbol": "hawking.Hawking.continue_mission"},
         ],
         "command": "python3 -m tools.acceptance.context --gate HCLI_SELF_SUPPLEMENT",
         "evidence_tier": "FUNCTIONAL_SIM",
@@ -1005,7 +1005,7 @@ def run_bootstrap() -> Dict[str, Any]:
     run_autonomy_gate is A1–A5 qualification; A3/A4 kill processes, which
     this lane must not do. Existing iteration-2 receipts are prewritten.
     """
-    from hcli.agentos.autonomy_gate import run_autonomy_gate
+    from hawking.autonomy_gate import run_autonomy_gate
 
     criterion = quote_roadmap(7678, 7680)
     loc = _symbol_location(run_autonomy_gate)
@@ -1024,17 +1024,17 @@ def run_bootstrap() -> Dict[str, Any]:
         "D.11 two-iteration law is not demonstrable in this lane. "
         "(1) run_autonomy_gate stages A3_resident_kill and "
         "A4_hcli_process_kill send SIGTERM/SIGKILL; this lane must not "
-        "signal the live HCLI daemon or any other process. Even stage=a1 "
+        "signal the live Hawking daemon or any other process. Even stage=a1 "
         "is census qualification, not self-optimization. "
         "(2) receipts/headless/HCLI_SELF_OPT_ITERATION_2.json is a "
         "prewritten second task (raise RuntimePool admission) — D.11: "
         "'A prewritten second task does not prove self-optimization.' "
         "(3) HCLI_SELF_OPT_ITERATION_2_REMEASURED.json records that the "
         "perf gate never entered the mutated RuntimePool. "
-        "(4) Promoting a bounded improvement would require editing hcli/, "
+        "(4) Promoting a bounded improvement would require editing hawking/, "
         "which this lane must not touch. Missing input: a kill-free, "
         "evidence-chosen iteration-2 loop that independently verifies an "
-        "improvement without mutating hcli/ or signalling processes."
+        "improvement without mutating hawking/ or signalling processes."
     )
     payload = {
         "criterion": {

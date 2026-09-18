@@ -1,0 +1,65 @@
+{
+  "active_job": "job-8077e41a-73e1-4b24-88b4-220e298613d3",
+  "blocker": {
+    "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+    "last_failure": null,
+    "state": "CANCELLED"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.011163768000000001,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-424D7D6B",
+    "tool_less_continue_streak": 0
+  },
+  "context_packet_digest": "5ceeac7499cb3feb87b019549e5e3b8a173319a52e6e30e2fb060f8da2ce5a1c",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 81876,
+  "exact_next_action": "Continue the submitted Goal from the latest checkpoint; inspect the next acceptance item and make the smallest evidence-backed mutation.",
+  "goal_id": "GOAL-B33C69F193",
+  "goal_mode": "discrete_goal",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 3,
+  "latest_real_seal": "",
+  "objective": "Continue the semantic action-lease tranche from durable native evidence in WorkUnit E_MACOS_SEMANTIC_ACTION_LEASE-20260915-54EDA995. This child is mutation-only: no desktop actions, no browser actions, and no search. Use the existing Hawking mutation door for exactly one harmless authorized edit: clarify the ownership comment in hawking/macos_world.py and append the deterministic receipt-schema regression to hawking/tests/test_macos_world.py. Run the focused test file, inspect git.status and git",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-536672dafe8f4532bf45ee6e:tool-9",
+    "gen-1789529997-aQ4sRG4jWNuTEbjI3rKy",
+    "gateway-fa0f693a337b421c86d6fa77:tool-6",
+    "gen-1789530092-fPzGRtpX7hzE4EzT2kYV",
+    "gateway-73ba069c72e2405a85e021a4:tool-10",
+    "gen-1789530252-8Zt8Qc0X7mwcpHQx7L3W"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "CANCELLED",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-16T03:44:55.354349+00:00",
+  "worker_attempt_id": "hawking-attempt-e0bbe766714c4652",
+  "worker_cost_usd": 0.011163768000000001,
+  "worker_id": "hawking-worker-dce8209eb6884ce9",
+  "worker_kill_reason": "operator_cancel",
+  "worker_last_heartbeat_at": 1789530107.544203,
+  "worker_spawned_at": 1789529766.8901892,
+  "worker_status": "KILLED",
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-424D7D6B"
+}

@@ -11,6 +11,7 @@
 
 #[cfg(target_os = "macos")]
 pub mod inner {
+    use crate::mega_kernel::{registered_native_lowerings, MegaKernelPlan};
     use crate::metal::MetalContext;
     use crate::model::qwen_dense::MegakernelLayerWeightsF16;
     use crate::{Error, Result};
@@ -108,6 +109,18 @@ pub mod inner {
     const MK_RMS_EPS: f32 = 1e-6;
     const MK_ROPE_THETA: f32 = 1_000_000.0;
     const MK_TG_SIZE: u32 = 256;
+
+    /// Return the common execution-plan view of this exact Metal harness.
+    ///
+    /// The plan deliberately retains the registered pass-through status.  It
+    /// lets the shared MegaKernel spine discover this implementation without
+    /// granting it automatic selection, source parity, full-model execution,
+    /// or performance authority.
+    pub fn qwen3b_pass_through_poc_plan() -> MegaKernelPlan {
+        let mut plan = MegaKernelPlan::new("qwen2.5-3b-style-dense-poc");
+        plan.registered_native_lowerings = registered_native_lowerings();
+        plan
+    }
 
     /// All Metal buffers backing one layer's weights, kept alive for
     /// the lifetime of the dispatch (their gpu_addresses live in the
@@ -564,7 +577,8 @@ pub mod inner {
 #[cfg(target_os = "macos")]
 #[allow(unused_imports)]
 pub use inner::{
-    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, LayerMetalBuffers, MegakernelRunner,
-    MkArgs, MkLayerArgs, MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
-    MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, qwen3b_pass_through_poc_plan,
+    LayerMetalBuffers, MegakernelRunner, MkArgs, MkLayerArgs, MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN,
+    MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A,
+    MK_PROBE_XNORM_FFN,
 };

@@ -1,0 +1,177 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": 1789498477.863949,
+      "kind": "operator_steer",
+      "note": "Stop broad search; use the isolated fixture owner already found, repair the helper, then prove the focused test and inspect the worktree diff."
+    },
+    {
+      "at": "2026-09-15T18:57:00.368405+00:00",
+      "calls_used": 11,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "unmet": []
+    },
+    {
+      "at": "2026-09-15T18:57:00.372476+00:00",
+      "has_tool_json": true,
+      "head": "Repair accepted and verified. One honest note on the diff: the fixture files are untracked in the worktree (`??`), so `git diff` reports empty stdout by design \u2014 the canonical grounded diff for this mutation is the one emitted inside the `r",
+      "outcome": "COMPLETE",
+      "reply_chars": 3596,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "at": "2026-09-15T18:58:11.339556+00:00",
+      "calls_used": 11,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "unmet": []
+    },
+    {
+      "at": "2026-09-15T18:58:11.342745+00:00",
+      "has_tool_json": true,
+      "head": "Bundle landed and verified. Reporting the structured completion.\n\n## Structured completion result \u2014 GOAL-945600ECD0 (H-Web live qualification)\n\n**Worktree:** `.worktrees/hweb-live-qualification-20260915` (linked worktree, `HEAD (no branch)`",
+      "outcome": "COMPLETE",
+      "reply_chars": 4071,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 2
+    },
+    {
+      "at": "2026-09-15T18:59:52.651687+00:00",
+      "calls_used": 9,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "unmet": [
+        "git.diff",
+        "repo.edit"
+      ]
+    },
+    {
+      "at": "2026-09-15T18:59:52.651956+00:00",
+      "has_tool_json": true,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 3
+    },
+    {
+      "at": "2026-09-15T19:05:58.125145+00:00",
+      "calls_used": 12,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "unmet": [
+        "repo.edit"
+      ]
+    },
+    {
+      "at": "2026-09-15T19:05:58.125752+00:00",
+      "has_tool_json": true,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 4
+    },
+    {
+      "at": "2026-09-15T19:08:34.599020+00:00",
+      "calls_used": 8,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "unmet": [
+        "git.diff",
+        "repo.edit"
+      ]
+    },
+    {
+      "at": "2026-09-15T19:08:34.599236+00:00",
+      "has_tool_json": true,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 5
+    },
+    {
+      "at": "2026-09-15T19:10:25.955124+00:00",
+      "calls_used": 9,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "unmet": [
+        "git.diff",
+        "repo.edit"
+      ]
+    },
+    {
+      "at": "2026-09-15T19:10:25.955294+00:00",
+      "has_tool_json": true,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 6
+    },
+    {
+      "at": "2026-09-15T19:12:01.304732+00:00",
+      "calls_used": 8,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "unmet": [
+        "git.diff",
+        "repo.edit"
+      ]
+    },
+    {
+      "at": "2026-09-15T19:12:01.305071+00:00",
+      "has_tool_json": true,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 7
+    },
+    {
+      "files": [
+        ".worktrees/hweb-live-qualification-20260915/hawking_live_normalize.py",
+        ".worktrees/hweb-live-qualification-20260915/test_hawking_live_normalize.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "GOAL-945600ECD0_SEAL_B1",
+      "turn": 7
+    }
+  ],
+  "files_changed": [
+    ".worktrees/hweb-live-qualification-20260915/hawking_live_normalize.py",
+    ".worktrees/hweb-live-qualification-20260915/test_hawking_live_normalize.py"
+  ],
+  "goal_id": "GOAL-945600ECD0",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "One disposable H-Web live qualification Goal. Hawking has provisioned the isolated linked Git worktree .worktrees/hweb-live-qualification-20260915; first verify it with git.status and work only inside that worktree, never the dirty main checkout. Use the real Hawking tool registry and inspect available capabilities with tools.catalog focused on filesystem, tests, git, and repo.edit. Search the repository efficiently with one targeted fs.search, then read only the necessary current source with fs.read; stop archaeology once the relevant owner is known. Use the isolated fixture files below. Make one harmless authorized repair: update .worktrees/hweb-live-qualification-20260915/hawking_live_normalize.py so normalize_name trims surrounding whitespace and lowercases the value, and make one small meaningful update to .worktrees/hweb-live-qualification-20260915/test_hawking_live_normalize.py that preserves or strengthens the deterministic expectation. Run the focused test .worktrees/hweb-live-qualification-20260915/test_hawking_live_normalize.py::test_normalize_name. The seeded test is intentionally failing before the mutation; inspect that failure, repair the implementation through repo.edit, then rerun the focused test to PASS. Finish by inspecting git.status and grounded git.diff in the isolated worktree. Return a structured completion result listing the real tools used, worktree path, initial failure, repair, passing command, final status, and diff evidence. Required evidence: tools.catalog, fs.search, fs.read, repo.edit, tests.run, git.status, git.diff, plus a structured completion result. Do not modify production or main files, do not touch Flash or Pulsar, do not create another Goal, and do not return chain-of-thought. Focus files: .worktrees/hweb-live-qualification-20260915/hawking_live_normalize.py and .worktrees/hweb-live-qualification-20260915/test_hawking_live_normalize.py. Focus test: .worktrees/hweb-live-qualification-20260915/test_hawking_live_normalize.py::test_normalize_name.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "GOAL-945600ECD0_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      7
+    ]
+  },
+  "workunit_id": "GOAL-945600ECD0"
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.long_haul.v2.frontier_probe_batch.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T06:26:19Z",
+  "objective_digest": "a2fb33c6473138cef05a27683db643064344e4f96947add844f6e1813a558b27",
+  "supervisor_contract_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "claim_boundary": "Provider route measurement only. No provider prose, partial packet, or failed probe is promoted to tranche acceptance; no mutation or release claim.",
+  "probes": [
+    {
+      "tranche": "P17_CODEBASE_COLLAPSE",
+      "workunit_id": "WORKUNIT-20260918-98A81AC1",
+      "model": "moonshotai/kimi-k3",
+      "state": "CANCELLED",
+      "classification": "PROVIDER_TRANSPORT_ERROR",
+      "cost_usd": 0.0236412,
+      "successful_read_tools": ["fs.read"],
+      "promotion": "withheld",
+      "reason": "provider emitted a partial read packet but did not return the required terminal structured result; operator cancellation stopped the hanging continuation",
+      "reopen_condition": "fresh bounded route or independent local evidence; do not replay the provider turns"
+    },
+    {
+      "tranche": "P18_TUNNEL",
+      "workunit_id": "WORKUNIT-20260918-0B2A2C4E",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "state": "OUTPUT_UNUSABLE",
+      "classification": "PROVIDER_OUTPUT_UNUSABLE",
+      "cost_usd": 0.00799488,
+      "successful_read_tools": [],
+      "promotion": "withheld",
+      "reason": "repeated provider continuations did not satisfy the one-tool structured evidence contract",
+      "reopen_condition": "fresh bounded route or independent local evidence; do not replay the provider turns"
+    },
+    {
+      "tranche": "P19_SANDBOX",
+      "workunit_id": "WORKUNIT-20260918-9B8D89A8",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "state": "PAUSED_PROVIDER",
+      "classification": "PROVIDER_OUTPUT_UNUSABLE",
+      "cost_usd": 0.0,
+      "successful_read_tools": [],
+      "promotion": "withheld",
+      "reason": "provider route remained unresponsive after bounded retries",
+      "reopen_condition": "fresh bounded route or independent local evidence; do not replay the provider turns"
+    }
+  ],
+  "daemon_boundary_observed": {
+    "pid": 79999,
+    "rss_kb": 113376,
+    "requested_model": "hawking-auto",
+    "model": null,
+    "resident": null,
+    "local_kimi_or_mlx_process_present": false,
+    "provider_children": "none while native role is withheld"
+  },
+  "verification": {
+    "model_residency_tests": "62 passed",
+    "http_semantic_tests": "53 passed",
+    "objective_full_reread": false,
+    "objective_digest_checked": true,
+    "objective_digest_unchanged": true
+  },
+  "next_action": "Preserve the three provider failures, use independent local focused evidence where its claim boundary is sufficient, and admit only fresh dependency-valid contracts through canonical Auto refill."
+}

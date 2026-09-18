@@ -1,0 +1,144 @@
+{
+  "schema": "hawking.arsenal.capability_manifest.v2",
+  "date": "2026-09-16",
+  "authority": {
+    "execution": "existing Hawking Goal/WorkUnit owner plus shared mutation executor",
+    "mutation": "hawking.mutation.MutationExecutor and MutationIntentStore",
+    "evidence": "existing Hawking result/receipt/event owners",
+    "web": "hawkingd at 127.0.0.1:8014; Rust crate is DTO/projection staging",
+    "remote": "hawkingd gateway admission; OpenRouter is transport/provider only",
+    "state_policy": "one authoritative mutation writer; derived views are rebuildable"
+  },
+  "implemented": [
+    {
+      "workunit": "A0",
+      "capability": "execution.binding",
+      "schemas": ["hawking.execution.binding.v1", "hawking.execution.candidate_manifest.v1"],
+      "effects": ["bind_request_goal_workunit_attempt", "snapshot_git_and_resources", "publish_immutable_manifest"],
+      "source": ["hawking/execution_binding.py", "hawking/workunit_owner.py"],
+      "status": "IMPLEMENTED_AND_OWNER_BOUND"
+    },
+    {
+      "workunit": "A1",
+      "capability": "typed_mutation_and_crash_recovery",
+      "schemas": ["hawking.mutation.request.v1", "hawking.mutation.intent.v1"],
+      "effects": ["scope_paths", "recheck_base_identity", "atomic_publish", "reconcile_unknown_outcome", "verify_completion"],
+      "source": ["hawking/mutation.py", "hawking/engine.py", "hawking/tool_registry.py"],
+      "status": "IMPLEMENTED"
+    },
+    {
+      "workunit": "A1",
+      "capability": "completion_evidence",
+      "schemas": ["hawking.completion.packet.v1", "hawking.result.envelope.v1"],
+      "effects": ["ground_changed_artifacts", "require_applicable_tests", "require_diff", "publish_structured_result"],
+      "source": ["hawking/engine.py", "hawking/result_envelope.py"],
+      "status": "IMPLEMENTED"
+    },
+    {
+      "workunit": "B1",
+      "capability": "scoped_corpus_search",
+      "schema": "hawking.agentos.tool.v1",
+      "effects": ["bounded_read", "explicit_roots", "explicit_exclusions", "content_derived_scope_revision", "bounded_expansion"],
+      "corpora": ["source", "tests", "design", "evidence", "campaign", "dependencies", "all-authorized"],
+      "source": "hawking/tool_registry.py",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "workunit": "B2",
+      "capability": "structural_source_navigation",
+      "schema": "hawking.source.structural.v1",
+      "effects": ["bounded_outline", "symbol_lookup", "references", "ast_query", "affected_tests", "rewrite_preview_only"],
+      "source": ["hawking/source_tools.py", "crates/hawking-index", "crates/hawking-core/src/gravity_repo_search.rs"],
+      "status": "IMPLEMENTED_ADAPTER_WITH_CONTENT_AWARE_INDEX_TESTS"
+    },
+    {
+      "workunit": "C1",
+      "capability": "typed_web_projection_boundary",
+      "schema": "hawking.web.contract.v1",
+      "effects": ["typed_views", "bounded_event_replay", "version_negotiation", "idempotency_validation"],
+      "source": "crates/hawking-web/src/lib.rs",
+      "status": "IMPLEMENTED_STAGING_ONLY_NO_DOMAIN_AUTHORITY"
+    },
+    {
+      "workunit": "H1",
+      "capability": "bounded_remote_admission",
+      "representation": "WorkerLease.to_dict()",
+      "effects": ["global_remote_limit", "premium_model_limit", "unique_lease_identity", "release_on_request_exit"],
+      "source": ["hawking/auto_orchestration.py", "hawking/serve.py"],
+      "status": "LIVE_GATE_ON_HAWKINGD"
+    },
+    {
+      "workunit": "H1",
+      "capability": "attempt_worker_packets_and_routing_evidence",
+      "schema": "hawking.worker_packet.v1",
+      "effects": ["fresh_attempt_identity", "redacted_packet", "restart_readability", "model_task_outcome_metrics"],
+      "source": ["hawking/auto_orchestration.py", "hawking/workunit.py", "hawking/workunit_owner.py"],
+      "status": "IMPLEMENTED"
+    },
+    {
+      "workunit": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-205B3579",
+      "capability": "semantic_desktop_action_lease",
+      "schema": "hawking.macos.action_receipt.v1",
+      "effects": [
+        "exact_ax_target_resolution",
+        "preemptible_action_lease",
+        "semantic_axpress_only",
+        "post_action_revision_delta",
+        "verified_state_change",
+        "durable_action_receipt"
+      ],
+      "source": [
+        "hawking/macos_world.py",
+        "native/hawking-macos/hawking_macos.swift",
+        "native/hawking-macos/hawking_macos_fixture.swift"
+      ],
+      "evidence": "receipts/future/macos/MACOS-LEASE-661F3A2D4C7F48E9-press-f7a8c85a03.json",
+      "status": "ACCEPTED_LIVE_FIXTURE"
+    }
+  ],
+  "existing_authorities_preserved": [
+    "hawking/serve.py",
+    "hawking/goal_surface.py",
+    "hawking/workunit_owner.py",
+    "hawking/events.py",
+    "hawking/repo_context.py",
+    "crates/hawking-index",
+    "hawking/remote_cognition.py",
+    "current dirty user work and receipts"
+  ],
+  "not_complete": [
+    {"workunit": "C2", "reason": "Rust Web DTOs are not the live serving/event-store owner; parity and recovery are pending"},
+    {"workunit": "AUTO_EXECUTOR", "reason": "CognitionPlan is bounded planning; full multi-WorkUnit fan-out, handoff, synthesis, and consolidation are pending"},
+    {"workunit": "D1/D2", "reason": "browser helper and browser parity/refresh/reconnect acceptance are pending"},
+    {"workunit": "E1", "reason": "Read-only and semantic action lease are accepted; native screen capture/OCR remain withheld"},
+    {"workunit": "E_MACOS_CAPTURE_OCR", "reason": "Deferred after child E_MACOS_SEMANTIC_ACTION_LEASE-20260916-3C726AF1 was canonically cancelled before mutation; reopen only through a fresh Hawking red-before-green owner proof"},
+    {"workunit": "G1/G2", "reason": "reverse-engineering adapters not introduced"},
+    {"workunit": "I1+", "reason": "HIDE/AgentOS dependency-graph parity migration remains staged"},
+    {"workunit": "J1", "reason": "generalized capability admission follows concrete adapter proofs"},
+    {"workunit": "native-processes", "reason": "running helper rejects the historical processes subcommand; no restart was authorized"}
+  ],
+  "policy_exclusions": [
+    "legacy Grok adoption/restart semantics remain disabled",
+    "Flash/Pulsar lane remains protected",
+    "provider credentials never enter packets, manifests, receipts, or Web DTOs"
+  ],
+  "protected": [
+    "Flash/Pulsar runtime lane",
+    "/private/tmp/ar-build.log",
+    "/private/tmp/hawking-kimi-p1-native",
+    "historical Claude source under ~/.claude"
+  ],
+  "remote_spend_usd": 0.171421902,
+  "closeout": {
+    "parent_goal_id": "GOAL-B33C69F193",
+    "parent_status": "RUNNING",
+    "parent_phase": "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED",
+    "next_workunit": "E_MACOS_CAPTURE_OCR",
+    "capture_ocr": "DEFERRED",
+    "semantic_action": "ACCEPTED",
+    "layer_ii_started": false,
+    "ghidra_rizin_started": false,
+    "flash_pulsar_disturbed": false
+  },
+  "arsenal_ready": false
+}

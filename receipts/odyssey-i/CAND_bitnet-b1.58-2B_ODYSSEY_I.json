@@ -1,0 +1,52 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-bitnet-b1.58-2B",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (safetensors headers read directly from BOTH the packed-U8 checkpoint AND the expanded-bf16 checkpoint on disk -- every number below is an exact tensor-shape/dtype computation, not a formula guess). Zero mlx/torch load, zero HCLI resident contention.",
+ "_label": "Odyssey I DISCOVERY + a direct Byte Elimination Law comparison point: this specimen was NATIVELY trained at extreme low precision, not Gravity-compressed by Hawking. What does its REAL complete-system EBPW look like under Hawking's own accounting discipline?",
+ "identity": {
+  "name": "microsoft/bitnet-b1.58-2B-4T",
+  "packed_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+  "bf16_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+  "quantization_config_declared": "quant_method=bitnet, linear_class=autobitlinear, quantization_mode=offline (from config.json)"
+ },
+ "native_packing_CONFIRMED_from_header_comparison": {
+  "mechanism": "linear-layer weight matrices are packed 4 ternary values per U8 byte (confirmed by comparing the SAME tensor's shape in both checkpoints: bf16 first-dim is exactly 4x the packed U8 first-dim). Each packed matrix carries ONE extra BF16 'weight_scale' scalar (shape=[1]) -- a single global scale per matrix, negligible overhead.",
+  "ternary_weight_only_bpw_EXACT": 2.0,
+  "ternary_weight_only_bpw_note": "EXACTLY 2.0 bits/weight, not the '1.58' in the model's own name -- 1.58 bits is the theoretical entropy of a 3-state {-1,0,+1} symbol (log2(3)=1.585); the ACTUAL on-disk packing achieves 2.0 bits/weight (4-per-byte), a real, measured, honest gap between theoretical minimum and shipped packing efficiency."
+ },
+ "COMPLETE_SYSTEM_EBPW_the_real_finding": {
+  "total_params_logical": 2412820480,
+  "total_params_B": 2.4128,
+  "u8_ternary_params": 2084044800,
+  "u8_ternary_frac_of_total": 0.8637,
+  "bf16_non_ternary_params": 328775680,
+  "bf16_non_ternary_frac_of_total": 0.1363,
+  "payload_bytes_total": 1178562980,
+  "u8_payload_bytes": 521011200,
+  "bf16_payload_bytes_in_packed_checkpoint": 657551780,
+  "complete_bpw_EXACT": 3.9077,
+  "finding": "86.37% of parameters ARE the packed ternary linear weights (2.0 bpw each), but the remaining 13.63% (token embeddings, all norms, per-matrix scale scalars) stay FULL BF16 (16 bits) and are NOT quantized at all. Because that BF16 remainder still commands a large share of total STORAGE BYTES (even at 13.63% of PARAMS, at 8x the per-param cost of the ternary weights), the COMPLETE payload-accounted EBPW is 3.9077 bits/weight -- 1.95x the ternary-only figure, and 2.47x the model's own '1.58-bit' name. This is EXACTLY the 'no fake sub-bit accounting' trap the Byte Elimination Law warns about: the correct, complete-system EBPW for this NATIVELY-ternary, production-shipped model is ~3.9 bpw, not ~1.6 or even 2.0 -- a real external benchmark for where Hawking's own Gravity ladder (<2.5->2.0->1.5->1.0) stands relative to a real, capability-verified (per the model card) production system."
+ },
+ "sizes_reconciliation": {
+  "packed_file_bytes": 1178623988,
+  "bf16_file_bytes": 4825679400,
+  "size_ratio_bf16_over_packed": 4.094
+ },
+ "obvious_representation_opportunities": [
+  "The embedding table + norms (13.63% of params, staying full BF16) are the DOMINANT contributor to the gap between 2.0 and 3.9 complete_bpw. This session's O006 finding (protect non-expert organs, push the dominant redundant organ aggressively) does NOT directly apply here -- BitNet already pushed its DOMINANT organ (linear weights, 86% of params) to the extreme; the remaining lever is whether the EMBEDDING TABLE SPECIFICALLY (vocab_size=128256 x hidden_size, likely the single largest BF16 tensor) could itself tolerate a more aggressive codec without the same complexity-reduction logic that protects small norm vectors -- untested, a real next question."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery -- the model card claims parity with similar-size full-precision models, not independently verified here."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN / EXTERNAL BENCHMARK. A real, production, natively-ternary model gives Hawking's own EBPW ladder a genuine outside reference point: 3.91 complete_bpw is where a serious production system with deliberate low-bit design actually lands once embeddings/norms are honestly counted -- useful context for judging how aggressive <=1.5/<=1.0 GRAVITY QUALIFIED targets really are.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "PLAUSIBLE ON SIZE: 2.41B params, 1.18GB packed footprint -- one of the smallest specimens surveyed this session. max_position_embeddings=4096 is short but not as constraining as mamba3-siso's 2048. Genuinely worth a capability battery.",
+  "pulsar_candidate": "PLAUSIBLE, UNTESTED.",
+  "magnetar_candidate": "UNLIKELY: small param count.",
+  "cepheid_candidate": "NOT EVALUATED.",
+  "verdict": "WORTH A CAPABILITY BATTERY -- small, natively efficient, real production release with a documented eval suite (per its own model card, not independently reproduced here)."
+ },
+ "commit": "8a4528fd3",
+ "emitted_at": "2026-09-09T13:43:08Z"
+}

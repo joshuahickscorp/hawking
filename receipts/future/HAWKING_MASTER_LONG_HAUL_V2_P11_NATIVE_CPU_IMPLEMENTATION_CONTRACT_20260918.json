@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.long_haul.v2.bounded_contract_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "tranche": "P11_NATIVE_CPU_IMPLEMENTATION_CONTRACT_V2",
+  "workunit_id": "WORKUNIT-20260918-2783D0CF",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "claim_boundary": "Source-grounded native connector contract only; no CPU hardware or production qualification claim.",
+  "source_observation": {"owner":"hawking/hawking_native.py","sha256":"f21f1f5389c025382b36425667607962d11cb3e13285073445518e90f229b6b8"},
+  "focused_tests": ["hawking/tests/test_hawking_native.py","hawking/tests/test_runtime_interface.py","hawking/tests/test_sealed_capabilities_reach_the_backend.py","hawking/agentos/test_native_gate_timing.py","hawking/test_native_artifact_ceiling.py","hawking/test_native_context_budget.py","hawking/test_native_json_grammar.py","hawking/test_native_token_budget_clamp.py"],
+  "local_verification": {"command":"python3 -m pytest -q hawking/tests/test_hawking_native.py hawking/tests/test_runtime_interface.py hawking/tests/test_sealed_capabilities_reach_the_backend.py hawking/agentos/test_native_gate_timing.py hawking/test_native_artifact_ceiling.py hawking/test_native_context_budget.py hawking/test_native_json_grammar.py hawking/test_native_token_budget_clamp.py","result":"65 passed"},
+  "next_seam":"Preserve explicit resident protocol identity and context-local spawn fences; keep runtime selection fail-closed.",
+  "falsifier":"A constrained worker can spawn/revive a native child or implicit runtime selection bypasses the declared native artifact boundary."
+}

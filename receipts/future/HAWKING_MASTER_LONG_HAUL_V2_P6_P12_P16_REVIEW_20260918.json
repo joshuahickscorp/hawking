@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.long_haul.v2.read_evidence_review.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "recorded_at": "2026-09-18T07:03:20Z",
+  "objective_full_reread": false,
+  "objective_digest_checked": true,
+  "objective_digest_unchanged": true,
+  "accepted": [
+    {
+      "tranche": "P6_GRAVITY",
+      "workunit_id": "WORKUNIT-20260918-45C1B809",
+      "local_verification": "13 passed: hawking/test_tool_gravity_focus.py; companion MLX test remains an unrelated missing-MLX collection baseline.",
+      "accepted_scope": "Read-only Gravity charter/owner map and a source-bounded owner-table follow-up.",
+      "claim_boundary": "No autonomous write, migration, or production promotion."
+    },
+    {
+      "tranche": "P16_ODYSSEY_MODELLAKE",
+      "workunit_id": "WORKUNIT-20260918-7923B442",
+      "local_verification": "64 passed, 1 deselected: Odyssey and ModelLake focused tests.",
+      "accepted_scope": "Read-only Odyssey/ModelLake scheduler, queue, registry, receipt, and protected-boundary map.",
+      "claim_boundary": "No model download, experiment, mutation, or runtime qualification."
+    }
+  ],
+  "withheld": {
+    "tranche": "P12_APPLE_BACKEND",
+    "workunit_id": "WORKUNIT-20260918-7789D12E",
+    "reason": "Its claimed zero-match source-corpus result is contradicted by current source: hawking/ane_provider.py and hawking/test_ane_provider.py exist. Reissue a focused source read; do not promote the negative conclusion."
+  },
+  "claim_boundary": "Accepted entries are bounded read evidence only; no phase/release completion is claimed."
+}

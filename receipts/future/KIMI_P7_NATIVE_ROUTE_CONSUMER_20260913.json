@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.kimi.native_route_consumer_frontier.v1",
+  "date": "2026-09-13",
+  "status": "DISPOSITIONED_NO_250_SPEEDUP",
+  "target_tps": 250.0,
+  "qualification": "withheld",
+  "protected_state": {
+    "p0": "untouched",
+    "u001": "untouched",
+    "note": "P1 probes shared the machine with a live P0 provider; measurements are comparative staging evidence, not qualification."
+  },
+  "candidate": {
+    "artifact": "/tmp/kimi-p2-native-route4-q40down.gguf",
+    "sha256": "34fedf8b16d63e20b6fe559df293e2bfcdaa9899039ed413c798471ad8be4ee6",
+    "bytes": 10626566944,
+    "body": "current P1 route4 body with routed ffn_down_exps Q4_0, shared down Q6_K, gate/up Q4_K, attention and head F16",
+    "route_down_block": "Q4_0 / 18 bytes per 32 elements",
+    "source_constraint": "Q4_K routed-down was rejected by the 1408-wide dimension: Q4_K requires 256-column blocks."
+  },
+  "runtime": {
+    "binary": "workspace/ops/build/rust/release/hawking",
+    "binary_sha256": "49ee329ebf0f14d8490c05843f1394ecd7e251efffd097982e5eda6385aae714",
+    "shader_hash": "c29708640587c6cef30385bb",
+    "profile": "/tmp/kimi-native-profile-q8v2t.json",
+    "selected": {
+      "gemm_q4_k_schedule": "v2t_gu_v2",
+      "routed_down_schedule": "v2t",
+      "shared_down_schedule": "basic"
+    }
+  },
+  "measurements": [
+    {
+      "case": "q4_0_route_down_separate",
+      "generated_tokens": 8,
+      "decode_tps": 42.38204782066053,
+      "decode_ms": 188.759166,
+      "dispatches_per_forward": 487,
+      "token_ms": [23.973833, 23.455417, 23.541833, 23.491, 23.353167, 23.500084, 23.487083, 23.632542],
+      "output_status": "native_semantics_unqualified"
+    },
+    {
+      "case": "q4_0_route_accumulate_fused",
+      "control": "HAWKING_Q40_ROUTE_ACCUM_FUSED=1",
+      "generated_tokens": 8,
+      "decode_tps": 14.337465700996056,
+      "decode_ms": 557.978667,
+      "dispatches_per_forward": 461,
+      "token_ms": [35.957083, 31.043042, 28.430167, 28.379334, 28.417375, 100.465708, 148.93225, 155.855458],
+      "output_status": "native_semantics_unqualified"
+    }
+  ],
+  "rejected_levers": [
+    "256-thread paired Q4 gate/up v4: ~32.5 TPS",
+    "512-thread paired Q4 gate/up v3: ~30 TPS",
+    "Q4_0 device-side route accumulation: ~14.3 TPS",
+    "Q4_0 body alone: no gain over Q8-down control"
+  ],
+  "disposition": {
+    "classification": "250_TPS_REQUIRES_BODY_CHANGE_AND_NATIVE_ROUTE_MAJOR_CONSUMER",
+    "reason": "Lowering routed-down bytes did not move steady decode; fused consumer reduced launches but introduced large stalls. The remaining path requires a larger device-resident route-major execution graph, persistent activation/weight residency, and capability-valid native semantics.",
+    "next_safe_action": "keep Q4_0 and route-consumer kernels opt-in/staged; do not promote or restart P0; return to the source-bound frontier or construct the larger native route-major body as a separately measured tranche."
+  }
+}

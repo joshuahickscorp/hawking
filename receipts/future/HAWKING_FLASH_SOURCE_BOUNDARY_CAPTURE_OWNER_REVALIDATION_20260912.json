@@ -1,0 +1,136 @@
+{
+  "schema": "hawking.unification.flash_source_boundary_capture_owner_revalidation.v1",
+  "status": "CURRENT_WRAPPER_REVALIDATED__WITHHELD_PENDING_MACHINE_OWNER_AUTHORIZATION",
+  "observed_at_utc": "2026-09-12T21:31:01Z",
+  "supersedes_for_current_provenance": {
+    "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_CAPTURE_OWNER_V2_20260912.json",
+    "sha256": "f202d5884b9cc88e7d1e6886922b154b1eba55798f3aa7738e99c880687365d4",
+    "seal_sha256": "4dc9a5143a1700a02f836e632d89d7c6d5322dbad35708c9072d2e38bef8fb1d",
+    "scope": "Current wrapper provenance only; the V2 receipt and every historical scientific claim remain intact."
+  },
+  "historical_downstream_receipts": [
+    {
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_COMPARISON_OWNER_20260912.json",
+      "sha256": "0811becfcd84415a111aec19062b4bfc00456675df283727a738a452155dc3cb",
+      "seal_sha256": "16a1b65ed06273f30b7505ea17e62d1bc7f2d2b7f776df8ec3fac339267386f2",
+      "relation": "Historical capture-owner binding only; the transaction does not dynamically consume this record."
+    },
+    {
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_20260912.json",
+      "sha256": "56e74a63e6e6b316a63fc43e85b18aabd8557e20c6cbc1420142ab83b56c16db",
+      "seal_sha256": "94033f3a192bffe79bcf86a9fff24784ad4e6a0ab956fc3c7e02aedda8cb4185",
+      "relation": "Historical supersession link; its current wrapper binding is independently reverified below."
+    }
+  ],
+  "drift": {
+    "field": "owners.native_capture_wrapper.sha256",
+    "path": "tools/odyssey/flash_source_boundary_native.py",
+    "historical_sha256": "49b2eaaa713a6d0bb952550678f68e4ebede0c4dca19c311dd6c3369cea55cb0",
+    "current_sha256": "c4171e01a1b06c442a5693c9eb7d261e8d68e51779e98b917ec4efe95838955e",
+    "scientific_evidence_changed": false,
+    "runtime_action_taken": false
+  },
+  "current_owner_sources": [
+    {
+      "path": "tools/odyssey/flash_repeated_accepted_decode.py",
+      "sha256": "affe8a56fc96c662c55f8bde3087383b78d9217647b0e38b65280456a7da8926",
+      "role": "canonical V2 teacher admission"
+    },
+    {
+      "path": "tools/odyssey/flash_source_boundary_preflight.py",
+      "sha256": "e4125e3218c973f75b1824c24ffc1e8ff08f755bb8618f92056a26de06262aff",
+      "role": "V2 capture preflight"
+    },
+    {
+      "path": "tools/odyssey/flash_source_boundary_capture_mlx.py",
+      "sha256": "67b228624c86680522958ba3f7916bd5cf00165b38f17d73c68e5d5a846b7018",
+      "role": "isolated source capture wrapper; not production inference authority"
+    },
+    {
+      "path": "tools/odyssey/flash_source_boundary_mlx_worker.py",
+      "sha256": "69099e51c778701c7f59bbf6fd221783798023e992d1cb3284fa1493b05724ba",
+      "role": "isolated source worker; not production inference authority"
+    },
+    {
+      "path": "tools/odyssey/flash_source_boundary_native.py",
+      "sha256": "c4171e01a1b06c442a5693c9eb7d261e8d68e51779e98b917ec4efe95838955e",
+      "role": "current native boundary capture wrapper"
+    },
+    {
+      "path": "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "sha256": "3b31137e3700da3d4a683c5ab0dc32bf7697af969c16b70ea8d2df8d21c014c1",
+      "role": "native diagnostic boundary snapshot"
+    },
+    {
+      "path": "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+      "sha256": "3f72b93fd9d9f5be43b2ad5bef5f6139c3fa2368b031e8b3a0f30dbea31c91f5",
+      "role": "native source-boundary capture execution"
+    }
+  ],
+  "input_bindings": {
+    "specimen": {
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+      "safetensors_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+      "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+      "modellake_manifest_sha256": "f11390a2b0f72932e42204d509436c7dbaad7cfca41714bd5c9cb48e81877268"
+    },
+    "reference_contract": {
+      "path": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/external-reference.v2.json",
+      "sha256": "79a452fa40b2ded92af90d7aa4eec9cd14101c8ddf7198816b17bfb5182eb47f",
+      "seal_sha256": "7ef955234ece8372f7f8157cdfe0321aaf23b4853a37b3d9967e5d7243e8b74b"
+    },
+    "owner_authorization_request": {
+      "path": "receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_ROW_ADDRESSED_20260912/owner-authorization-request.json",
+      "sha256": "f9b94584376ca49ba812e5e8d0cf3ec66b4c7ee46ccbb9599228972f833d77d4",
+      "status": "OWNER_ACTION_REQUIRED"
+    },
+    "source_shard_ledger": {
+      "path": "receipts/headless/FLASH_SOURCE_SHARD_LEDGER_20260912.json",
+      "sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9"
+    },
+    "preflight": {
+      "path": "receipts/headless/FLASH_SOURCE_BOUNDARY_CAPTURE_PREFLIGHT_V2_20260912.json",
+      "sha256": "668007e149a1d04fb62aa1d6fc306fa79b24e7183f2b182f7a26c57867061f4c",
+      "seal_sha256": "dc510ba27473aa6bfc180e1d8317614d69e20cd0a473b63ee4f977e896452a04"
+    }
+  },
+  "current_execution_binding": {
+    "executable_closure": {
+      "path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_EXECUTABLE_CLOSURE_20260912.json",
+      "sha256": "56e74a63e6e6b316a63fc43e85b18aabd8557e20c6cbc1420142ab83b56c16db",
+      "seal_sha256": "94033f3a192bffe79bcf86a9fff24784ad4e6a0ab956fc3c7e02aedda8cb4185",
+      "native_binary_sha256": "20b344f5d18ee24340e71f66f915271ff49a428e225316e136707c82245a91d8",
+      "hawking_binary_sha256": "701fa6e7832d8190a48ec6107116eaff402050849fff6c5de9f0401987eb470e"
+    },
+    "transaction_owner": {
+      "receipt_path": "receipts/future/HAWKING_FLASH_SOURCE_BOUNDARY_TRANSACTION_OWNER_20260912.json",
+      "receipt_sha256": "7ac64318a2bbd9ceb1bd5bbf4b7e40e095df3e9f884621b88120437224a7f680",
+      "receipt_seal_sha256": "73e55d701b08813be09284bc3284e0bc6c424f0d3f9752daae4bc41307a6d478",
+      "script_path": "tools/odyssey/flash_source_boundary_transaction.py",
+      "script_sha256": "4b864907efe65d4764f676ee85a6565f0191972f71730721b13d06783ffbb3f4"
+    }
+  },
+  "validation": {
+    "focused_python": "16 passed, 0 failed: preflight, source capture, native capture, ordered comparison, and transaction tests",
+    "current_v2_loader": "All static V2 bindings load; admission stops only at the absent detached machine-owner authorization.",
+    "transaction_dry_run": "WITHHELD_MISSING_MACHINE_OWNER_AUTHORIZATION; exact executable closure present; outputs fresh; lane unacquired; no model or Metal action",
+    "planned_outputs_fresh": true,
+    "protected_gpu_lane_free": true,
+    "process_lane_clean": true,
+    "direct_current_executable_closure": "verified by the transaction dry run against both bound release binaries and current source closure"
+  },
+  "runtime_actions": {
+    "source_model_loaded": false,
+    "native_model_loaded": false,
+    "gpu_or_metal_started": false,
+    "daemon_restarted": false,
+    "kimi_loaded": false,
+    "deployment_performed": false
+  },
+  "next_safe_action": "Machine owner provisions the pinned trust anchor and signs the exact existing V2 owner-authorization request. Then one lease-owned source/native capture transaction may run at a safe runtime boundary and stop at the first ordered seam difference before any full replay.",
+  "claim_boundary": "This revalidates only current wrapper provenance and static fail-closed execution closure. It does not admit the external teacher, execute a source or native model, establish source/native parity, implement native PLE, construct or admit a complete NR, measure EBPW/TPS/capability, deploy, promote Pulsar, or retire Kimi.",
+  "seal_sha256": "588eaa9e8dea9577a35b18be90c4794439ea4e671d76748e9b74c5928446f035"
+}

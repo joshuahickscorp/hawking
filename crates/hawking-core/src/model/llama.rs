@@ -3781,7 +3781,9 @@ impl Engine for LlamaDense {
                 }
             }
         }
-        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        let prefill_ns = prefill_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        stats.prefill_ns = prefill_ns;
+        stats.prefill_ms = prefill_ns as f64 / 1_000_000.0;
 
         if prefill_aborted {
             self.flush_checkpoint_records(&prompt_ids)?;
@@ -3820,6 +3822,8 @@ impl Engine for LlamaDense {
         // the decode interval immediately before the first measured forward,
         // never before that sampling-only event.
         let mut decode_start: Option<Instant> = None;
+        let mut measured_token_ns =
+            Vec::with_capacity(req.max_new_tokens.saturating_sub(matched_warmup_tokens));
         let mut measured_token_ms =
             Vec::with_capacity(req.max_new_tokens.saturating_sub(matched_warmup_tokens));
         let mut measured_metal_dispatches_total = 0usize;
@@ -3875,7 +3879,9 @@ impl Engine for LlamaDense {
             sink(StreamEvent::Token { id: next_id, text });
             produced += 1;
             if let Some(step_start) = measured_step_start {
-                measured_token_ms.push(step_start.elapsed().as_secs_f64() * 1000.0);
+                let elapsed_ns = step_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+                measured_token_ns.push(elapsed_ns);
+                measured_token_ms.push(elapsed_ns as f64 / 1_000_000.0);
             }
             if Some(next_id) == eos {
                 reason = StopReason::Eos;
@@ -3884,10 +3890,13 @@ impl Engine for LlamaDense {
             last_id = next_id;
         }
 
-        stats.decode_ms = decode_start
-            .map(|start| start.elapsed().as_secs_f64() * 1000.0)
-            .unwrap_or(0.0);
+        let decode_ns = decode_start
+            .map(|start| start.elapsed().as_nanos().min(u64::MAX as u128) as u64)
+            .unwrap_or(0);
+        stats.decode_ns = decode_ns;
+        stats.decode_ms = decode_ns as f64 / 1_000_000.0;
         stats.completion_tokens = produced.saturating_sub(matched_warmup_tokens);
+        stats.decode_token_ns = measured_token_ns;
         stats.decode_token_ms = measured_token_ms;
         stats.decode_metal_dispatches_total = measured_metal_dispatches_total;
         stats.completed_decode_forwards = completed_decode_forwards;

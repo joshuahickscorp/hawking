@@ -1,0 +1,114 @@
+{
+  "child_worker_ids": [],
+  "claim_boundary": "Partial Hawking-owned read evidence only. This packet does not mark the WorkUnit COMPLETE, does not change the parent phase, and does not authorize mutation or qualification.",
+  "context_packet_digest": "16eddb45d4445699fcf3bf07ae0e98bab029897ada385fcfebe01f10d707993c",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:08:15.858735+00:00",
+      "calls_used": 1,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [
+        "structured_result:terminal_status"
+      ],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:08:15.858754+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:08:15.862707+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\":[{\"tool\":\"fs.read\",\"invocation_id\":\"tool-60ef00de-5902-4c2b-8ad2-0afdec86d94f\",\"ok\":true,\"path\":\"tools/accelerator/accelerator_runner.py\",\"sha256\":\"c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6\",\"bytes\":30",
+      "outcome": "CONTINUE",
+      "reply_chars": 3473,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "observations": [
+    {
+      "bytes": "30162",
+      "deterministic": "True",
+      "invocation_id": "tool-60ef00de-5902-4c2b-8ad2-0afdec86d94f",
+      "mutation": "read_only",
+      "observed_lines": "1-180",
+      "ok": "True",
+      "path": "tools/accelerator/accelerator_runner.py",
+      "sha256": "c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6",
+      "shown_bytes": "4000",
+      "tool": "fs.read",
+      "total_lines": "709",
+      "truncated": "True"
+    },
+    {
+      "fact": "Module docstring: thin accelerator-specific boundary turning architecture-repatriation hypotheses into explicit inputs, a shell-free command, a verification ladder, and an HCLI WorkUnit-compatible admission record; planning/queue compilation never launch work, and AcceleratorRunner.start only creates a detached job when the caller explicitly asks and the physical-window admission check is true."
+    },
+    {
+      "fact": "Schemas: SPEC_SCHEMA='hawking.accelerator.experiment_spec.v1', COMPILED_QUEUE_SCHEMA='hawking.accelerator.repatriation_queue_compiled.v1', DEFAULT_QUEUE_OUT='receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json'."
+    },
+    {
+      "fact": "_ALLOWED_STATUS=frozenset({'READY','BLOCKED'}); _REQUIRED_METRICS includes complete_useful_wall_ns, active_bytes_per_token, fallback_count, capability_verified."
+    },
+    {
+      "fact": "_RESOURCE_CLASSES maps 'fpga' -> 'COMPILE' (distinct from metal/cuda/ane -> GPU_EXCLUSIVE, cpu -> CPU_HEAVY, remote -> IO_HEAVY)."
+    },
+    {
+      "fact": "_SECRET_ARGUMENT_RE rejects api_key/access_token/authorization/password/secret/private_key/bearer and provider token patterns in arguments."
+    },
+    {
+      "fact": "AcceleratorExperimentSpec is a frozen dataclass with fields including experiment_id, behavior_id, model_identity, nx_identity, nr_identity, organ, organ_range, backend, kernel_lowering, verification_mode, benchmark_mode, state_session_inputs, output_receipt_path, command, candidate, control, metrics, falsifier, status, detached, requires_quiescence, protected_window, atlas_fingerprint, expected_value_score, expected_effect, promotion, source_evidence (field list truncated at line 180)."
+    },
+    {
+      "fact": "Imports include hawking.persist.atomic_write_json, hawking.workunit.WorkUnit, and tools.accelerator.architecture_atlas (PLANNING_BENCH, QUEUE_SCHEMA, SCHEMA, build_atlas, validate_atlas)."
+    },
+    {
+      "fact": "Lines 1-180 truncated (4000 of 6275 bytes, 63.7%); no conclusion drawn about unshown content."
+    }
+  ],
+  "provider_status": "READ_ONLY_OBSERVATION_RECORDED",
+  "reason": "provider_nonterminal_after_read_evidence",
+  "recommendations": [
+    {
+      "action": "For P14_PCIE_FPGA, treat 'fpga' as resource class COMPILE and confirm the physical-window admission gate (requires_quiescence/protected_window) before any execution claim.",
+      "basis": "_RESOURCE_CLASSES and module docstring"
+    },
+    {
+      "action": "Read remaining lines (181-709) in bounded windows to locate AcceleratorRunner.start, the admission check, and the verification ladder before asserting any FPGA/PCIe behavior.",
+      "basis": "truncation at line 180"
+    }
+  ],
+  "schema": "hawking.workunit.research_packet.v1",
+  "sources": [
+    {
+      "invocation_id": "tool-60ef00de-5902-4c2b-8ad2-0afdec86d94f",
+      "lines": "1-180",
+      "path": "tools/accelerator/accelerator_runner.py",
+      "sha256": "c75518399ba04914380e356d5a8def4b4ed20a55957ef0c7bcce2fb509a6f8f6",
+      "tool": "fs.read"
+    }
+  ],
+  "status": "PARTIAL",
+  "successful_read_tools": [
+    "fs.read"
+  ],
+  "unresolved_questions": [
+    "Where is the physical-window admission check implemented and what conditions make it true for fpga/COMPILE?",
+    "Does any code path in this module reference PCIe, FPGA bitstream, or hardware qualification, and is it gated behind capability_verified?",
+    "What does the verification ladder require for capability_verified and fallback_count on the fpga backend?"
+  ],
+  "worker_attempt_id": "hawking-attempt-68a42de824a84493",
+  "worker_id": "hawking-worker-f17c148d4aa34237",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-D8D0882F"
+}

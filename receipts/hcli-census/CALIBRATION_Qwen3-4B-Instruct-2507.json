@@ -1,0 +1,104 @@
+{
+ "agent": "Qwen3-4B-Instruct-2507",
+ "passed": false,
+ "results": [
+  {
+   "specimen": "Dream-org--Dream-v0-Instruct-7B",
+   "passed": false,
+   "why": "architecture_family='DreamModel' lacks any of ['diffusion']; execution_class='autoregressive decode with KV cache' lacks any of ['denois', 'diffusion', 'iterative']",
+   "verdict": {
+    "architecture_family": "DreamModel",
+    "execution_class": "autoregressive decode with KV cache",
+    "dominant_organs": [
+     "self_attn",
+     "mlp",
+     "input_layernorm",
+     "post_attention_layernorm"
+    ],
+    "state_or_kv": "KV cache with recurrent state",
+    "likely_bottleneck": "mlp.gate_proj.weight",
+    "relevant_laws": [
+     "Hawking Law 3: High-dimensional attention layers dominate memory footprint",
+     "Hawking Law 7: Repeated blocks indicate architectural redundancy",
+     "Hawking Law 12: BF16 dtype implies optimized compute efficiency"
+    ],
+    "disposition": "RESEARCH SPECIMEN",
+    "next_experiment": "analyze mlp.gate_proj.weight for activation sparsity"
+   }
+  },
+  {
+   "specimen": "GSAI-ML--iLLaDA-8B-Base",
+   "passed": false,
+   "why": "architecture_family='ILLaDA' lacks any of ['diffusion']; execution_class='autoregressive decode with KV cache' lacks any of ['denois', 'diffusion', 'iterative']",
+   "verdict": {
+    "architecture_family": "ILLaDA",
+    "execution_class": "autoregressive decode with KV cache",
+    "dominant_organs": [
+     "self_attn.q_proj.weight",
+     "self_attn.k_proj.weight",
+     "self_attn.v_proj.weight",
+     "self_attn.o_proj.weight",
+     "mlp.gate_proj.weight",
+     "mlp.down_proj.weight",
+     "mlp.up_proj.weight"
+    ],
+    "state_or_kv": "KV cache with 32 layers, 4096 hidden size",
+    "likely_bottleneck": "matrix params per layer due to high hidden size and layer count",
+    "relevant_laws": [
+     "Hawking Law 7: High hidden size models require proportional KV cache expansion",
+     "Hawking Law 12: Repeated blocks in LLaMA-style architectures indicate parameter redundancy",
+     "Hawking Law 21: BF16 dtype implies optimized memory bandwidth utilization"
+    ],
+    "disposition": "CEPHEID CANDIDATE",
+    "next_experiment": "measure latency under varying sequence lengths with 16k context"
+   }
+  },
+  {
+   "specimen": "microsoft--bitnet-b1.58-2B-4T",
+   "passed": true,
+   "why": "",
+   "verdict": {
+    "architecture_family": "BitNet",
+    "execution_class": "autoregressive decode with KV cache",
+    "dominant_organs": [
+     "input_layernorm",
+     "mlp.down_proj",
+     "mlp.gate_proj",
+     "mlp.up_proj"
+    ],
+    "state_or_kv": "KV cache with 30 layers, 2560 hidden size",
+    "likely_bottleneck": "repeated blocks in mlp projections",
+    "relevant_laws": [
+     "Hawking Law 7: Repeated block patterns in MLPs indicate low parameter efficiency",
+     "Hawking Law 12: BitNet architectures exhibit high sparsity in weight distributions",
+     "Hawking Law 15: BF16 and U8 dtype combinations reduce memory footprint by 18%"
+    ],
+    "disposition": "RESEARCH SPECIMEN",
+    "next_experiment": "analyze weight scaling across repeated blocks"
+   }
+  },
+  {
+   "specimen": "answerdotai--ModernBERT-large",
+   "passed": true,
+   "why": "",
+   "verdict": {
+    "architecture_family": "ModernBert",
+    "execution_class": "bidirectional encoder pass",
+    "dominant_organs": [
+     "attention layers",
+     "feed-forward layers",
+     "layer normalization"
+    ],
+    "state_or_kv": "KV cache per sequence",
+    "likely_bottleneck": "attention matrix size",
+    "relevant_laws": [
+     "Hawking Law 7: Bidirectional models require symmetric tensor distribution",
+     "Hawking Law 12: Hidden size scales with parameter density in modern architectures",
+     "Hawking Law 23: Repeated blocks indicate modular redundancy and efficiency"
+    ],
+    "disposition": "RESEARCH SPECIMEN",
+    "next_experiment": "measure attention block throughput under varying sequence lengths"
+   }
+  }
+ ]
+}

@@ -7,7 +7,11 @@ mod tests {
         use strand_quant::TrellisConfig;
         let cfg = TrellisConfig::for_bpw(1.0);
         assert_eq!(cfg.k_bits, 1, "k_bits should be 1 for bpw=1.0");
-        assert!(cfg.l_bits >= 4, "l_bits must be >= MIN_L=4; got {}", cfg.l_bits);
+        assert!(
+            cfg.l_bits >= 4,
+            "l_bits must be >= MIN_L=4; got {}",
+            cfg.l_bits
+        );
         assert_eq!(cfg.l_bits, 5, "for_bpw(1.0): l = k+4 = 5");
         assert_eq!(cfg.block_len, 256);
     }
@@ -35,7 +39,9 @@ mod tests {
             return;
         }
         let out = std::process::Command::new(&bin)
-            .arg("--bits").arg("1").arg("--help")
+            .arg("--bits")
+            .arg("1")
+            .arg("--help")
             .output();
         if let Ok(o) = out {
             let stderr = String::from_utf8_lossy(&o.stderr);

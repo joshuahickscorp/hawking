@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 4,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "48c2a827829ce5e876b5a43f13b26ef4424e7896485fc4bdb1373190cc9017fb",
+  "evidence": [
+    {
+      "at": "2026-09-18T06:58:17.124492+00:00",
+      "calls_used": 4,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T06:58:17.124502+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T06:58:17.126867+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root at /Users/scammermike/Downloads/hawking contains top-level source directories: hawking/, crates/, tools/, app/, native/, visionmcp/, plus docs/, research/, receipts/, reports/, tests/, artifacts/, civilizat",
+      "outcome": "CONTINUE",
+      "reply_chars": 3813,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root at /Users/scammermike/Downloads/hawking contains top-level source directories: hawking/, crates/, tools/, app/, native/, visionmcp/, plus docs/, research/, receipts/, reports/, tests/, artifacts/, civilization/, and workspace/ (excluded from source corpus).\",\"Root-level planning documents present include GRAVITY-CANON.md, GRAVITY-ALGEBRA.md, GRAVITY-MIGRATION-MAP.md, GRAVITY-SLIMMING-WORKORDER.md (55,443 bytes), GRAVITY-TOOL-GRAVITY.md, H-MANIFESTO.md, AGENTS.md, CLAUDE-CODEX-EXODUS.md, and HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.{md,json}, indicating an active multi-surface slimming/migration program but none explicitly labeled P17.\",\"A full source-corpus search across hawking/, crates/, tools/, app/, native/, visionmcp/ (5,001 files scanned, 152 skipped as large) for the literal pattern 'P17_CODEBASE_COLLAPSE' returned zero matches; the identifier exists only in the WorkUnit directive, not in the admitted source tree.\",\"A full source-corpus search for the alternation pattern 'P1|P2|P3|P4|P5' across the same roots returned zero matches, so no accepted P1/P2/P3/P4/P5 owner-surface markers or receipts referencing those phase identifiers were observable in the admitted read-only corpus.\",\"Generated receipts and campaign evidence are excluded from the admitted source corpus by policy, and the receipts/ directory was not enumerated in this bounded pass, so any P1-P5 acceptance receipts stored there were not observed.\",\"Because the P1-P5 owner surfaces could not be located, no grounded duplicate/overlap mapping of control, memory, H-Web, Auto, and perception surfaces, and no grounded collapse tranche, could be produced without fabrication.\"],\"sources\":[\"fs.list of repository root /Users/scammermike/Downloads/hawking (31 directories, 30 files, truncated=false)\",\"fs.search pattern 'P17_CODEBASE_COLLAPSE', corpus=source, roots=[hawking, crates, tools, app, native, visionmcp], files_seen=5001, matches=[]\",\"fs.search pattern 'P1|P2|P3|P4|P5', corpus=source, same roots, files_seen=5001, matches=[]\",\"Root filenames observed: GRAVITY-SLIMMING-WORKORDER.md, GRAVITY-MIGRATION-MAP.md, GRAVITY-CANON.md, H-MANIFESTO.md, HAWKING_LONG_HAUL_V1_CLOSEOUT_AND_V2_HANDOFF.md/.json\"],\"recommendations\":[\"Re-issue this WorkUnit with explicit paths or glob hints for the accepted P1/P2/P3/P4/P5 owner surfaces and receipts (likely under receipts/, reports/, docs/, or .hawking/), since phase identifiers are not discoverable via source-corpus search.\",\"Authorize read access to the receipts/ and reports/ trees (currently outside the searched source corpus) or provide their index, because acceptance receipts are the stated source of truth for owner surfaces.\",\"If P1-P5 surfaces are tracked in GRAVITY-SLIMMING-WORKORDER.md or GRAVITY-MIGRATION-MAP.md under different naming, a follow-up bounded pass should read those documents first and extract the canonical surface list before attempting the overlap map.\",\"Do not spawn child workers until the owner-surface corpus is located; delegation cannot materially shorten the work while the primary evidence is unlocated.\"],\"unresolved_questions\":[\"Where are the accepted P1/P2/P3/P4/P5 owner surfaces and receipts stored (receipts/, reports/, .hawking/, or external to this checkout)?\",\"Is 'P17_CODEBASE_COLLAPSE' tracked under a different identifier inside the repository (e.g., within GRAVITY-SLIMMING-WORKORDER.md), or is it purely a Hawking-side objective label?\",\"Which naming convention do the control, memory, H-Web, Auto, and perception surfaces use in-tree, so a targeted overlap search can be constructed?\",\"Are generated receipts/campaign evidence admissible for this objective if explicitly selected, given the default source-corpus exclusion?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-632c5a5438f84379",
+  "worker_id": "hawking-worker-39809cd9fb9b4d88",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-616522BA"
+}

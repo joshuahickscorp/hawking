@@ -1,0 +1,19 @@
+{
+  "schema": "hawking.long_haul.v2.local_reconciliation_receipt.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P19_SANDBOX_EXECUTION_AUDIT_LOCAL_RECONCILIATION",
+  "claim_boundary": "Independent local Sandbox boundary verification only; no execution-service deployment, production, or release claim.",
+  "objective_digest": "de4485a0a7fa7771597247aff1d05752e4b6916ef1e5e2a547e447b051f8e4ce",
+  "verification": {
+    "command": "python3 -m pytest -q hawking/tests/test_sandbox_world.py",
+    "result": "3 passed in 0.08s"
+  },
+  "covered_invariants": [
+    "Sandbox capability and lifecycle boundaries remain explicit.",
+    "The local execution surface does not silently widen authority.",
+    "The focused Sandbox regression remains green."
+  ],
+  "falsifier": "A Sandbox operation bypasses its declared capability boundary or the focused regression fails.",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "provider_output_promotion": "withheld"
+}

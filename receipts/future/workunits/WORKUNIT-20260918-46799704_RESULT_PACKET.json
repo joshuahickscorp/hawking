@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "bab63f6ffb671fecbc180da1bd1c14345503876e463907f4f1bd9389152a2c78",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:43:13.365158+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:43:13.365167+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:43:13.367444+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/backends.py was read read-only; full file sha256=69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50, bytes=111789, but only the first 4000 bytes were shown.\",\"The visible backends.py module docstring ",
+      "outcome": "CONTINUE",
+      "reply_chars": 2129,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/backends.py was read read-only; full file sha256=69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50, bytes=111789, but only the first 4000 bytes were shown.\",\"The visible backends.py module docstring states that when a backend cannot enforce a schema, make_structured_output_contract() returns prompt-side instruction plus a validator, and invalid responses are rejected and retried a bounded number of times.\",\"The visible backends.py docstring states that exhausting retries raises StructuredOutputExhausted and is never a silent pass.\",\"No source-grounded observation of hawking/workunit_owner.py, hawking/test_readiness_proves_generation.py, or hawking/tests/test_remote_workunit_contract.py was obtained in this admitted read-only observation.\",\"No focused HTTP-200 regression test was run or observed in this admitted read-only observation.\"],\"sources\":[{\"path\":\"hawking/backends.py\",\"sha256\":\"69b47defdae307ac0e1d8628bbec5f04f8dccac807881c99ee4a85897d6d4b50\",\"bytes\":111789,\"observed_scope\":\"first 4000 bytes only\"}],\"recommendations\":[\"Inspect hawking/workunit_owner.py to identify the exact owner path that maps transport HTTP 200 to readiness or WorkUnit acceptance.\",\"Inspect hawking/test_readiness_proves_generation.py and hawking/tests/test_remote_workunit_contract.py to locate the focused HTTP-200 semantic boundary assertions.\",\"Run the admitted focused tests hawking/test_readiness_proves_generation.py and hawking/tests/test_remote_workunit_contract.py and report deterministic pass/fail evidence.\",\"If a focused RED exists, identify the smallest source-grounded repair that requires generation semantics before readiness or WorkUnit acceptance.\"],\"unresolved_questions\":[\"Does any admitted owner path promote transport HTTP 200 to readiness or WorkUnit acceptance without generation semantics?\",\"Do the admitted focused tests currently pass, fail, or contain a RED for the HTTP-200 semantic boundary?\",\"What exact generation-semantics gate is required to preserve the no-prose/no-empty-200 acceptance boundary?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-e1ccdb70463842ec",
+  "worker_id": "hawking-worker-7168797f7bab4de4",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-46799704"
+}

@@ -1,0 +1,244 @@
+{
+  "billed_ms": 17.959232,
+  "claim_boundary": "Static read-only package inventory. No reduced candidate, capability preservation, direct Noetic execution, TPS, or promotion claim is made. KIMI_BASE was not modified.",
+  "complete_accounting": {
+    "billed_ms": 17.959232,
+    "by_stream_class": {
+      "activation": {
+        "bytes": 0,
+        "gb": 0.0,
+        "ms": 0.0,
+        "ms_per_gb": 2.906132
+      },
+      "broadcast_aux": {
+        "bytes": 4315888,
+        "gb": 0.004316,
+        "ms": 0.0,
+        "ms_per_gb": 0.0
+      },
+      "weight_codes": {
+        "bytes": 32815315552,
+        "gb": 32.815316,
+        "ms": 17.959232,
+        "ms_per_gb": 0.547282
+      }
+    },
+    "complete_ebpw": 16.002104328629436,
+    "consumes_representation_directly": true,
+    "dense_parent_rematerialization": {
+      "complete_ebpw": 16.002104328629436,
+      "flag": null,
+      "flagged": false,
+      "is_sub2_executable": false,
+      "reason": "production consumes the representation directly",
+      "stored_bpw": 16.002104328629436,
+      "stored_bytes": 32819631440
+    },
+    "executable_bytes": 32819631440,
+    "executable_gb": 32.819631,
+    "flags": [],
+    "id": "KIMI_BASE_RAW_BF16_MODEL_PACKAGE",
+    "is_sub2_executable": false,
+    "nothing_is_free": "a generator, a codebook, a lookup table, representation payload and model-specific code all bill; omitting a part category is a refusal, not a zero; a part-like object on an undeclared key is hidden free information and is refused",
+    "parent_params": 16407657776,
+    "parts": [
+      {
+        "bytes": 32815315552,
+        "category": "regions",
+        "gb": 32.815316,
+        "ms": 17.959232,
+        "ms_per_gb": 0.547282,
+        "name": "bf16_tensor_payload",
+        "stream_class": "weight_codes"
+      },
+      {
+        "bytes": 782976,
+        "category": "metadata",
+        "gb": 0.000783,
+        "ms": 0.0,
+        "ms_per_gb": 0.0,
+        "name": "safetensors_framing",
+        "stream_class": "broadcast_aux"
+      },
+      {
+        "bytes": 3390937,
+        "category": "metadata",
+        "gb": 0.003391,
+        "ms": 0.0,
+        "ms_per_gb": 0.0,
+        "name": "execution_metadata",
+        "stream_class": "broadcast_aux"
+      },
+      {
+        "bytes": 141975,
+        "category": "model_specific_code",
+        "gb": 0.000142,
+        "ms": 0.0,
+        "ms_per_gb": 0.0,
+        "name": "published_loader_code",
+        "stream_class": "broadcast_aux"
+      }
+    ],
+    "parts_bytes": 32819631440,
+    "reconciled": true,
+    "reconstructs_dense_parent": false,
+    "stated_total_bytes": 32819631440,
+    "stored_bpw": 16.002104328629436,
+    "stored_bytes": 32819631440,
+    "stored_gb": 32.819631,
+    "stored_ms": 17.959232
+  },
+  "complete_ebpw": 16.002104328629436,
+  "complete_model_package_bytes": 32819631440,
+  "direct_execution": {
+    "dense_parent_dependency": false,
+    "note": "Raw BF16 is directly consumed by the native loader; this is not evidence of a reduced Noetic representation.",
+    "raw_bf16_native_loader": "AVAILABLE",
+    "target_reduced_noetic_representation": "NOT_BUILT"
+  },
+  "execution_metadata_bytes": 3390937,
+  "generated_at": "2026-09-10T14:48:43.544016+00:00",
+  "immutable_base": true,
+  "index_tensor_count": 5679,
+  "metadata": [
+    {
+      "bytes": 2005,
+      "name": "config.json",
+      "sha256": "af3810295de6b08232776b74110ed482fa0183f4aeaec586ff4f7593910951cb"
+    },
+    {
+      "bytes": 149,
+      "name": "generation_config.json",
+      "sha256": "da26dd1916774784790db2b83336bad62d0917356743478ba6eb0c425c53eac5"
+    },
+    {
+      "bytes": 1032,
+      "name": "chat_template.jinja",
+      "sha256": "172c7450a66b9b3644538888ffa24d02047e535e9d1f911564460203fbf7e8e8"
+    },
+    {
+      "bytes": 401,
+      "name": "preprocessor_config.json",
+      "sha256": "d968a7d7f83f82c3b0e1061079dcdbefd6f2c75b7ee4240cce995afaeae1f622"
+    },
+    {
+      "bytes": 3857,
+      "name": "tokenizer_config.json",
+      "sha256": "d7861718cab22c7962e14b4693b4009dd526115cd392dc779069a8173be95703"
+    },
+    {
+      "bytes": 2795286,
+      "name": "tiktoken.model",
+      "sha256": "b6c497a7469b33ced9c38afb1ad6e47f03f5e5dc05f15930799210ec050c5103"
+    },
+    {
+      "bytes": 588207,
+      "name": "model.safetensors.index.json",
+      "sha256": "178ba3a15cb12f6ceac42aecfe665a8f041d47e948220d75b073088957efedd8"
+    }
+  ],
+  "model_specific_code": [
+    {
+      "bytes": 13151,
+      "name": "configuration_kimi_vl.py",
+      "sha256": "d30462b89993b9fef138db983d3884bbc39750effadf2efe67f404d28ee40e5b"
+    },
+    {
+      "bytes": 4680,
+      "name": "image_processing_kimi_vl.py",
+      "sha256": "bb58551e088f3bb0027b1886ca5ff42776c485acec1a9aafe91553ff76926870"
+    },
+    {
+      "bytes": 105649,
+      "name": "modeling_kimi_vl.py",
+      "sha256": "74e8f18afa5bf8f580ef5be5f15b51506f1e4f604df5a84f508a7796b8947c0b"
+    },
+    {
+      "bytes": 7537,
+      "name": "processing_kimi_vl.py",
+      "sha256": "f8e64816baed0a92d85d0a987b587028ad55a0779f3ace8c5b68db705dc61561"
+    },
+    {
+      "bytes": 10958,
+      "name": "tokenization_moonshot.py",
+      "sha256": "0ae85e29c37689fefe41b8bfdb7aebd9a0152defedbf37fae0f8413000512029"
+    }
+  ],
+  "model_specific_code_bytes": 141975,
+  "next_discriminator": {
+    "cheap_measurement": "header-derived payload/overhead break-even, then small-org capability/perplexity screen",
+    "falsifier": "complete accounting cannot reach <=1.0 EBPW or direct decoder requires dense rematerialization",
+    "first_organ": "representative routed-expert down_proj plus shared expert down_proj",
+    "hypothesis": "W ~= G(z) + Q(R) + S can reduce both KIMI MLP and attention/DeltaNet while retaining direct execution."
+  },
+  "parent_params": 16407657776,
+  "safetensors_container_bytes": 32816098528,
+  "safetensors_framing_bytes": 782976,
+  "schema": "hawking.future.kimi_ebpw_inventory.v1",
+  "shards": [
+    {
+      "bytes": 4994390288,
+      "header_bytes": 120496,
+      "name": "model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5",
+      "tensor_count": 918,
+      "tensor_payload_bytes": 4994269792
+    },
+    {
+      "bytes": 4995061424,
+      "header_bytes": 122288,
+      "name": "model-00002-of-00007.safetensors",
+      "sha256": "45ecd00decdad65e7d3f494028ed0c79d0cd56f145adae077ffa78b5b8ff95c0",
+      "tensor_count": 877,
+      "tensor_payload_bytes": 4994939136
+    },
+    {
+      "bytes": 4996100112,
+      "header_bytes": 121872,
+      "name": "model-00003-of-00007.safetensors",
+      "sha256": "b9ba98f01e22eea43da8cfbf6f09ff0857616cd9e1df4603a735c111755109ef",
+      "tensor_count": 875,
+      "tensor_payload_bytes": 4995978240
+    },
+    {
+      "bytes": 4996100320,
+      "header_bytes": 122080,
+      "name": "model-00004-of-00007.safetensors",
+      "sha256": "8f7eb3fc5c12481fd1a81d2708fa4a299ff4c207a5dbafb5b8bef25ab9fd8b23",
+      "tensor_count": 875,
+      "tensor_payload_bytes": 4995978240
+    },
+    {
+      "bytes": 4998185720,
+      "header_bytes": 106232,
+      "name": "model-00005-of-00007.safetensors",
+      "sha256": "db83e896b3d75f4bc51f621ae90ad61e8f6f7901f49a06b5c40348b839057206",
+      "tensor_count": 761,
+      "tensor_payload_bytes": 4998079488
+    },
+    {
+      "bytes": 4996099448,
+      "header_bytes": 121208,
+      "name": "model-00006-of-00007.safetensors",
+      "sha256": "abed41982a3f9c7d05f69bb560dad7bcb93cfa764c77a2b59127f35dc787983c",
+      "tensor_count": 875,
+      "tensor_payload_bytes": 4995978240
+    },
+    {
+      "bytes": 2840161216,
+      "header_bytes": 68800,
+      "name": "model-00007-of-00007.safetensors",
+      "sha256": "2e2ddd33f2b4f472898482860585bd6d73d4397c8c833ed9d00a2024443f7a77",
+      "tensor_count": 498,
+      "tensor_payload_bytes": 2840092416
+    }
+  ],
+  "source_model": "KIMI_BASE",
+  "source_script_sha256": "52d0fd87b72069bfd148403bc6380a6d576100eab26eebc6731fe5c6c031fa78",
+  "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "BASELINE_ACCOUNTED",
+  "stored_bpw": 16.002104328629436,
+  "tensor_count": 5679,
+  "weight_payload_bpw": 16.0,
+  "weight_payload_bytes": 32815315552
+}

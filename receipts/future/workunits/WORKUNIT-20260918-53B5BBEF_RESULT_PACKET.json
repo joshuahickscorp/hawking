@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "913aa6959da9def320c679f807eea6b428a37e9b7b5afe98a4b2c9dd0045d22f",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:02:03.833655+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:02:03.833673+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:02:03.838673+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/goal_surface.py is a 66055-byte module self-described as 'Gate 6: worker-agnostic discrete Goal operator surface for h web / hawkingd'; only the first 4000 bytes (6.1%) were observed, so all findings are scoped to ",
+      "outcome": "CONTINUE",
+      "reply_chars": 5551,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 2
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/goal_surface.py is a 66055-byte module self-described as 'Gate 6: worker-agnostic discrete Goal operator surface for h web / hawkingd'; only the first 4000 bytes (6.1%) were observed, so all findings are scoped to that prefix and nothing is claimed about the unobserved 94%.\",\"Observed schema constants: GOAL_SCHEMA='hawking.discrete_goal.v1', RESULT_SCHEMA='hawking.discrete_goal_result.v1', GOAL_CONTRACT_SCHEMA='hawking.discrete_goal_contract.v1', GOALS_DIRNAME='goals'; the module imports atomic_write_json from hawking.persist, indicating Goal persistence is delegated to hawking.persist rather than implemented inline (the usage site was not observed in the shown prefix).\",\"Observed overlap 1 (model-id authority): _is_remote_openrouter_model and _openrouter_model_id both independently parse the 'openrouter:' prefix; the recognizer rejects empty remainders and excludes absolute paths ('/', '.') and WEIGHT_ARTIFACT_SUFFIXES (.json/.safetensors/.gguf/.onnx/.bin/.pt/.pth/.npz), while the extractor performs prefix stripping without re-validating, so the same prefix contract is encoded twice with asymmetric validation.\",\"Observed overlap 2 (attachment normalization): _normalize_attachment_refs enforces a bounded contract \u2014 list-only input, max 8 items, dedupe by artifact_id, artifact_id must match artifact-[0-9a-f]{64}, digest must match [0-9a-f]{64}, size coerced with ValueError on bad types, and read_path is zeroed unless rooted at '.hawking/web-artifacts/' or '.hawking/H-NOTES/' \u2014 with an explicit comment that a Goal packet must not become arbitrary filesystem authority.\",\"Protected resources observed in the shown prefix: the 'goals' directory namespace (GOALS_DIRNAME), the two Hawking-owned artifact roots (.hawking/web-artifacts/, .hawking/H-NOTES/) as the only portable read_path authorities, and the local weight-artifact suffix list guarded against being mistaken for a remote model id.\",\"Writer/effect scope observed in the shown prefix is narrow: the only mutation-capable import is atomic_write_json; all other observed code is pure validation/normalization (string, regex, list/dict shaping) with no filesystem, network, or subprocess effects in the shown region.\"],\"sources\":[{\"path\":\"hawking/goal_surface.py\",\"sha256\":\"026eefc2b45f721451de22defc89c7421a4c1bebc72eea55417a90371b9eff4c\",\"sha256_scope\":\"full_file\",\"bytes_total\":66055,\"bytes_observed\":4000,\"observation_scope\":\"prefix_only\",\"truncation_note\":\"4000 of 66055 bytes (6.1%) shown; no conclusion drawn about unshown content\"}],\"recommendations\":[{\"p17_owner_map_addendum\":{\"owners_observed_in_prefix\":[{\"owner\":\"hawking.goal_surface (Gate 6 surface)\",\"scope\":\"Goal packet validation/normalization: schema ids, OpenRouter id recognition/extraction, attachment ref normalization\",\"effects\":\"none observed in prefix beyond pure functions; persistence delegated\"},{\"owner\":\"hawking.persist\",\"scope\":\"atomic_write_json \u2014 sole observed mutation-capable dependency\",\"effects\":\"atomic JSON file writes (usage site not observed in prefix)\"}],\"source_observed_overlaps\":[\"OpenRouter prefix contract duplicated between _is_remote_openrouter_model (recognition plus validation) and _openrouter_model_id (extraction, no re-validation)\"],\"collapse_candidate\":{\"id\":\"P17-COLLAPSE-GS-001\",\"proposal\":\"Make _openrouter_model_id the single parser of the 'openrouter:' prefix and have _is_remote_openrouter_model delegate to it (recognize iff the delegated parse yields a non-empty remainder passing the path/suffix exclusions), eliminating the duplicated prefix contract. This is a candidate only; no collapse was performed or claimed.\",\"disjoint_writer_scope\":\"hawking/goal_surface.py only; no change to hawking.persist, no change to GOALS_DIRNAME handling, no change to attachment roots.\",\"protected_resources\":[\"goals directory namespace\",\".hawking/web-artifacts/ and .hawking/H-NOTES/ artifact roots\",\"WEIGHT_ARTIFACT_SUFFIXES guard semantics\",\"public behavior of _is_remote_openrouter_model fo",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-e715831bf7ad43e1",
+  "worker_id": "hawking-worker-37478d56eb624d84",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-53B5BBEF"
+}

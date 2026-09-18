@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "bc2d1d589e1bb662bef7af4ac2975b5adfbfd5fe0316fa13a4e3bfc7b6b9d15e",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:30:41.331655+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:30:41.331673+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:30:41.334737+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"The first observation targeted hawking/tests/test_serve_openai_surface.py, satisfying the declared first-observation requirement.\",\"The observed file is 49,937 bytes; only the first 4,000 bytes were visible, so the full te",
+      "outcome": "CONTINUE",
+      "reply_chars": 2437,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"The first observation targeted hawking/tests/test_serve_openai_surface.py, satisfying the declared first-observation requirement.\",\"The observed file is 49,937 bytes; only the first 4,000 bytes were visible, so the full test file was not verified.\",\"Visible imports from hawking.serve include GREEDY_OK, Resident, chat_payload, make_handler, models_payload, profile_is_greedy, sampler_refusal, stream_frames, visible_text, worker_tool_allowlist, and worker_request_mode.\",\"Visible test scaffolding drives the real handler over a real socket with a fake backend, using ThreadingHTTPServer and a _post helper.\",\"Visible test_models_carries_the_fields_the_picker_reads asserts /v1/models returns object=list and row id KIMI_P0_OPERATIONAL.\",\"No observed evidence yet establishes the HTTP-200 semantic boundary, model-free daemon residency, accepted/withheld tranche state, P16/P17/P18/P19 receipt contents, or exact remaining blockers.\",\"Parent Goal remains RUNNING; no release claim was made.\",\"No child workers were spawned.\"],\"sources\":[{\"path\":\"hawking/tests/test_serve_openai_surface.py\",\"sha256\":\"3aec23f79b63e6249358de1add40a22baa7d88f0ad091fcec37bab4ab4693641\",\"sha256_scope\":\"full_file\",\"bytes\":49937,\"observed_bytes\":4000,\"truncated\":true}],\"recommendations\":[\"Continue the read-only review through the remaining portions of hawking/tests/test_serve_openai_surface.py, then hawking/serve.py, hawking/auto_orchestration.py, hawking/goal_surface.py, the admitted Auto/Goal tests, and the named P16/P17/P18/P19 receipts.\",\"Locate explicit assertions for HTTP status codes and Content-Type behavior to verify the HTTP-200 semantic boundary.\",\"Inspect Resident, health, and residency paths to verify model-free daemon residency.\",\"Extract accepted/withheld tranche state from the admitted tests and named receipts with exact citations.\",\"Enumerate exact remaining blockers only after reading the full admitted evidence set.\"],\"unresolved_questions\":[\"What are the exact accepted and withheld tranche states, and which tests or receipts establish them?\",\"What are the exact remaining blockers for final handoff convergence?\",\"Do the named P16/P17/P18/P19 receipts exist, and what do they state?\",\"Does the HTTP-200 semantic boundary hold for both streaming and non-streaming responses?\",\"Is daemon residency model-free as claimed, and where is that verified?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-49b4528720d843a4",
+  "worker_id": "hawking-worker-33eb060c8c3a4db3",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-C0B0D1F7"
+}

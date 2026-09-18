@@ -1,0 +1,330 @@
+{
+ "schema": "hawking.future.latent_rank_breakeven.v1",
+ "obligation": "KRT006",
+ "steer": "S014",
+ "family": "BINARY LATENT FACTORIZATION (LittleBit / NanoQuant class)",
+ "method": "r* = m*n*R/(m+n+scale_bits); SVD energy at r* is an UPPER BOUND on any rank-r* factorization, binary or otherwise",
+ "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+ "organs": {
+  "routed_down": {
+   "tensor": "language_model.model.layers.11.mlp.experts.0.down_proj.weight",
+   "spectral": {
+    "shape": [
+     2048,
+     1408
+    ],
+    "full_rank": 1408,
+    "effective_rank_participation": 621.51,
+    "effective_rank_fraction": 0.44141,
+    "stable_rank": 97.24,
+    "top1_energy": 0.01028,
+    "energy_at": {
+     "1661.0506912442397": 1.0,
+     "830.5253456221199": 0.92119696,
+     "622.8940092165899": 0.83394783,
+     "415.26267281105993": 0.69078363,
+     "207.63133640552996": 0.45797985
+    },
+    "singular_decay_ratio_s1_over_smedian": 4.841
+   },
+   "rates": [
+    {
+     "target_rate_bits_per_weight": 2.0,
+     "breakeven_rank": 1661.1,
+     "breakeven_rank_over_full": 1.1797,
+     "svd_energy_captured": 1.0,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.0,
+     "rank_exceeds_full": true
+    },
+    {
+     "target_rate_bits_per_weight": 1.0,
+     "breakeven_rank": 830.5,
+     "breakeven_rank_over_full": 0.5899,
+     "svd_energy_captured": 0.92119696,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.28071879,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.75,
+     "breakeven_rank": 622.9,
+     "breakeven_rank_over_full": 0.4424,
+     "svd_energy_captured": 0.83394783,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.40749499,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.5,
+     "breakeven_rank": 415.3,
+     "breakeven_rank_over_full": 0.2949,
+     "svd_energy_captured": 0.69078363,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.55607227,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.25,
+     "breakeven_rank": 207.6,
+     "breakeven_rank_over_full": 0.1475,
+     "svd_energy_captured": 0.45797985,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.73622018,
+     "rank_exceeds_full": false
+    }
+   ]
+  },
+  "routed_gate": {
+   "tensor": "language_model.model.layers.11.mlp.experts.0.gate_proj.weight",
+   "spectral": {
+    "shape": [
+     1408,
+     2048
+    ],
+    "full_rank": 1408,
+    "effective_rank_participation": 598.31,
+    "effective_rank_fraction": 0.42494,
+    "stable_rank": 100.72,
+    "top1_energy": 0.00993,
+    "energy_at": {
+     "1661.0506912442397": 1.0,
+     "830.5253456221199": 0.91833672,
+     "622.8940092165899": 0.83061505,
+     "415.26267281105993": 0.68893185,
+     "207.63133640552996": 0.4614491
+    },
+    "singular_decay_ratio_s1_over_smedian": 4.743
+   },
+   "rates": [
+    {
+     "target_rate_bits_per_weight": 2.0,
+     "breakeven_rank": 1661.1,
+     "breakeven_rank_over_full": 1.1797,
+     "svd_energy_captured": 1.0,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.0,
+     "rank_exceeds_full": true
+    },
+    {
+     "target_rate_bits_per_weight": 1.0,
+     "breakeven_rank": 830.5,
+     "breakeven_rank_over_full": 0.5899,
+     "svd_energy_captured": 0.91833672,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.28576788,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.75,
+     "breakeven_rank": 622.9,
+     "breakeven_rank_over_full": 0.4424,
+     "svd_energy_captured": 0.83061505,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.41156403,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.5,
+     "breakeven_rank": 415.3,
+     "breakeven_rank_over_full": 0.2949,
+     "svd_energy_captured": 0.68893185,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.55773484,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.25,
+     "breakeven_rank": 207.6,
+     "breakeven_rank_over_full": 0.1475,
+     "svd_energy_captured": 0.4614491,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.73386027,
+     "rank_exceeds_full": false
+    }
+   ]
+  },
+  "routed_up": {
+   "tensor": "language_model.model.layers.11.mlp.experts.0.up_proj.weight",
+   "spectral": {
+    "shape": [
+     1408,
+     2048
+    ],
+    "full_rank": 1408,
+    "effective_rank_participation": 727.53,
+    "effective_rank_fraction": 0.51671,
+    "stable_rank": 257.44,
+    "top1_energy": 0.00388,
+    "energy_at": {
+     "1661.0506912442397": 1.0,
+     "830.5253456221199": 0.91111954,
+     "622.8940092165899": 0.81585779,
+     "415.26267281105993": 0.66297885,
+     "207.63133640552996": 0.4218027
+    },
+    "singular_decay_ratio_s1_over_smedian": 2.849
+   },
+   "rates": [
+    {
+     "target_rate_bits_per_weight": 2.0,
+     "breakeven_rank": 1661.1,
+     "breakeven_rank_over_full": 1.1797,
+     "svd_energy_captured": 1.0,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.0,
+     "rank_exceeds_full": true
+    },
+    {
+     "target_rate_bits_per_weight": 1.0,
+     "breakeven_rank": 830.5,
+     "breakeven_rank_over_full": 0.5899,
+     "svd_energy_captured": 0.91111954,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.29812826,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.75,
+     "breakeven_rank": 622.9,
+     "breakeven_rank_over_full": 0.4424,
+     "svd_energy_captured": 0.81585779,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.42911794,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.5,
+     "breakeven_rank": 415.3,
+     "breakeven_rank_over_full": 0.2949,
+     "svd_energy_captured": 0.66297885,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.58053523,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.25,
+     "breakeven_rank": 207.6,
+     "breakeven_rank_over_full": 0.1475,
+     "svd_energy_captured": 0.4218027,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.76039286,
+     "rank_exceeds_full": false
+    }
+   ]
+  },
+  "shared_down": {
+   "tensor": "language_model.model.layers.11.mlp.shared_experts.down_proj.weight",
+   "spectral": {
+    "shape": [
+     2048,
+     2816
+    ],
+    "full_rank": 2048,
+    "effective_rank_participation": 627.11,
+    "effective_rank_fraction": 0.30621,
+    "stable_rank": 81.59,
+    "top1_energy": 0.01226,
+    "energy_at": {
+     "2363.593442622951": 1.0,
+     "1181.7967213114755": 0.94303407,
+     "886.3475409836066": 0.86454226,
+     "590.8983606557377": 0.72837742,
+     "295.4491803278689": 0.50764382
+    },
+    "singular_decay_ratio_s1_over_smedian": 6.757
+   },
+   "rates": [
+    {
+     "target_rate_bits_per_weight": 2.0,
+     "breakeven_rank": 2363.6,
+     "breakeven_rank_over_full": 1.1541,
+     "svd_energy_captured": 1.0,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.0,
+     "rank_exceeds_full": true
+    },
+    {
+     "target_rate_bits_per_weight": 1.0,
+     "breakeven_rank": 1181.8,
+     "breakeven_rank_over_full": 0.577,
+     "svd_energy_captured": 0.94303407,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.23867537,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.75,
+     "breakeven_rank": 886.3,
+     "breakeven_rank_over_full": 0.4328,
+     "svd_energy_captured": 0.86454226,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.36804584,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.5,
+     "breakeven_rank": 590.9,
+     "breakeven_rank_over_full": 0.2885,
+     "svd_energy_captured": 0.72837742,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.52117423,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.25,
+     "breakeven_rank": 295.4,
+     "breakeven_rank_over_full": 0.1443,
+     "svd_energy_captured": 0.50764382,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.70168097,
+     "rank_exceeds_full": false
+    }
+   ]
+  },
+  "attn_o": {
+   "tensor": "language_model.model.layers.11.self_attn.o_proj.weight",
+   "spectral": {
+    "shape": [
+     2048,
+     2048
+    ],
+    "full_rank": 2048,
+    "effective_rank_participation": 566.5,
+    "effective_rank_fraction": 0.27661,
+    "stable_rank": 124.13,
+    "top1_energy": 0.00806,
+    "energy_at": {
+     "2040.0311284046693": 0.99999999,
+     "1020.0155642023346": 0.95980963,
+     "765.011673151751": 0.89980793,
+     "510.0077821011673": 0.78113767,
+     "255.00389105058366": 0.55233536
+    },
+    "singular_decay_ratio_s1_over_smedian": 7.186
+   },
+   "rates": [
+    {
+     "target_rate_bits_per_weight": 2.0,
+     "breakeven_rank": 2040.0,
+     "breakeven_rank_over_full": 0.9961,
+     "svd_energy_captured": 0.99999999,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.0001,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 1.0,
+     "breakeven_rank": 1020.0,
+     "breakeven_rank_over_full": 0.4981,
+     "svd_energy_captured": 0.95980963,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.20047536,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.75,
+     "breakeven_rank": 765.0,
+     "breakeven_rank_over_full": 0.3735,
+     "svd_energy_captured": 0.89980793,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.31653131,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.5,
+     "breakeven_rank": 510.0,
+     "breakeven_rank_over_full": 0.249,
+     "svd_energy_captured": 0.78113767,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.46782724,
+     "rank_exceeds_full": false
+    },
+    {
+     "target_rate_bits_per_weight": 0.25,
+     "breakeven_rank": 255.0,
+     "breakeven_rank_over_full": 0.1245,
+     "svd_energy_captured": 0.55233536,
+     "BEST_POSSIBLE_rel_error_at_this_rank": 0.66907745,
+     "rank_exceeds_full": false
+    }
+   ]
+  }
+ }
+}

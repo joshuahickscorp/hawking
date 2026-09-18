@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.long_haul.v2.tranche_receipt.v1",
+  "programme_id": "HAWKING_MASTER_LONG_HAUL_V2",
+  "goal_id": "GOAL-A52AB48501",
+  "tranche": "P10_NX_CENSUS_SOURCE_FACTS_V2",
+  "state": "ACCEPTED_READ_EVIDENCE",
+  "accepted_workunit_id": "LOCAL-P10-NX-CENSUS-FACTS-V2-20260918",
+  "owner": "tools/headless/noetic_kernel_census.py::source_bound_fact",
+  "source": [
+    "tools/headless/noetic_kernel_census.py",
+    "tools/nx_genome.py",
+    "hawking/test_nx_current_binding.py",
+    "receipts/headless/NOETIC_KERNEL_CENSUS.json"
+  ],
+  "source_sha256": {
+    "tools/headless/noetic_kernel_census.py": "90799ea7fce4b673e3b7ed1020d3d45902888df5487a6626b01451b09d919ac3",
+    "tools/nx_genome.py": "866c46a83e3c7a8e6aaa79e0d6000403247addb46284d2763c067956d9de5bf6",
+    "hawking/test_nx_current_binding.py": "eeed3be8e1367982cab0d1e0078c3d3984e2e721aa863bbb454a9ba1d3755f9b",
+    "receipts/headless/NOETIC_KERNEL_CENSUS.json": "441c121a67a5856d070b7de6a27fdee1989a937d64d5f0f0a52aef19aa28f4f4"
+  },
+  "observations": {
+    "live_bound_count": 98,
+    "live_declared_count": 818,
+    "dispatched_reconstructs_dense": {
+      "NO": 98
+    },
+    "unknown_dispatched_count": 0,
+    "non_dispatched_unknown_count": 7,
+    "historical_g071_reference": {
+      "bound": 38,
+      "declared": 554,
+      "drift": true,
+      "authoritative_for_current_source": false
+    },
+    "class_counts": {
+      "DISPATCHED": 98,
+      "REACHABLE": 619,
+      "DEAD": 94,
+      "UNKNOWN": 7
+    }
+  },
+  "focused_tests": {
+    "command": "python3 -m pytest -q hawking/test_nx_current_binding.py hawking/test_nx_promotion.py hawking/test_nrnx_discipline.py tools/odyssey/test_darkmatter_physical_plan.py tools/accelerator/test_fusion_bridge.py tools/odyssey/test_arch_recognizer.py",
+    "result": "62 passed",
+    "census_command": "PYTHONPATH=tools/headless:. python3 tools/headless/noetic_kernel_census.py",
+    "census_result": "exit 0; canonical receipt written",
+    "compile": "python3 -m py_compile tools/headless/noetic_kernel_census.py tools/nx_genome.py hawking/test_nx_current_binding.py",
+    "diff_check": "git diff --check"
+  },
+  "claim_boundary": "Current static source census only. This does not prove physical execution, timing, device availability, native artifact validity, hardware qualification, production readiness, or NX promotion.",
+  "falsifier": "Any future current-source census with a bound kernel lacking a source-backed fact, a non-NO dense-reconstruction classification without direct evidence, or a failed census self-check invalidates this tranche.",
+  "remaining": [
+    "Native artifact and resident-role admission remain unavailable",
+    "Physical/runtime qualification and final release conditions remain withheld"
+  ]
+}

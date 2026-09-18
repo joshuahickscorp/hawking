@@ -1,8 +1,8 @@
-"""HCLI future WorkUnit species — types and a non-empty starting queue.
+"""HAWKING future WorkUnit species — types and a non-empty starting queue.
 
-Defines the ten future-work species and emits units INTO the existing HCLI
+Defines the ten future-work species and emits units INTO the existing HAWKING
 WorkUnit field set. This module does not schedule, promote, or reimplement
-HCLI. Disk-backed live queues remain authoritative for candidate identity.
+HAWKING. Disk-backed live queues remain authoritative for candidate identity.
 
     python3 tools/future/workunit_species.py --build
     python3 tools/future/workunit_species.py --selftest
@@ -18,8 +18,8 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from hcli.resources import ResourceClass, normalize_resource_class
-from hcli.workunit import (
+from hawking.resources import ResourceClass, normalize_resource_class
+from hawking.workunit import (
     DEFAULT_RETRY_BUDGET,
     MAX_REPAIR_DEPTH,
     MAX_REPAIRS_PER_ROOT,
@@ -27,7 +27,7 @@ from hcli.workunit import (
 )
 from tools.future._common import REPO, git, write_receipt
 
-RECEIPT = "HCLI_FUTURE_WORKUNITS.json"
+RECEIPT = "HAWKING_FUTURE_WORKUNITS.json"
 SCHEMA = "hawking.future.workunit_species.v1"
 
 QUAL_REL = "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
@@ -98,7 +98,7 @@ FORBIDDEN_AUTHORITY = frozenset(
 ALLOWED_EFFECT = frozenset({"REVERSIBLE", "READ_ONLY", "INSPECT"})
 KNOWN_RESOURCE = frozenset(item.value for item in ResourceClass)
 
-HCLI_CORE_FIELDS = (
+HAWKING_CORE_FIELDS = (
     "id",
     "role",
     "description",
@@ -203,7 +203,7 @@ class SpeciesAuthorityError(ValueError):
 
 
 class WorkUnitShapeError(ValueError):
-    """An emitted unit does not match the recovered HCLI work_units field set."""
+    """An emitted unit does not match the recovered HAWKING work_units field set."""
 
 
 def _checkout_roots() -> list[Path]:
@@ -330,7 +330,7 @@ def define_species(
 
     rc = normalize_resource_class(resource_class)
     if rc not in KNOWN_RESOURCE:
-        raise SpeciesAuthorityError(f"{id}: resource_class {resource_class!r} is not an HCLI class")
+        raise SpeciesAuthorityError(f"{id}: resource_class {resource_class!r} is not an HAWKING class")
     if rc == "MUTATION":
         raise SpeciesAuthorityError(f"{id}: MUTATION resource_class is not grantable to a species")
 
@@ -392,7 +392,7 @@ def _species_specs() -> tuple[dict[str, Any], ...]:
             ),
             evidence_parents=(
                 QUAL_REL,
-                "an existing HCLI protected lease",
+                "an existing HAWKING protected lease",
                 "machine quiescence",
             ),
             bounded_authority=(
@@ -420,7 +420,7 @@ def _species_specs() -> tuple[dict[str, Any], ...]:
             title="Architecture transfer",
             description=(
                 "Run a compiled architecture-repatriation experiment spec as an "
-                "HCLI WorkUnit proposal. Atlas and repatriation queue stay the "
+                "HAWKING WorkUnit proposal. Atlas and repatriation queue stay the "
                 "source of identity."
             ),
             evidence_parents=(
@@ -516,7 +516,7 @@ def _species_specs() -> tuple[dict[str, Any], ...]:
             ),
             evidence_parents=(
                 "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-                "hcli/agentos/fpga_preboard.py",
+                "hawking/agentos/fpga_preboard.py",
             ),
             bounded_authority=(
                 "read_receipts",
@@ -684,7 +684,7 @@ def catalog() -> list[dict[str, Any]]:
     return [define_species(**spec) for spec in _species_specs()]
 
 
-def emit_hcli_workunit(
+def emit_hawking_workunit(
     *,
     id: str,
     role: str,
@@ -699,7 +699,7 @@ def emit_hcli_workunit(
     classification: str | None = None,
     extras: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Emit one unit through the real HCLI WorkUnit constructor, then overlay extras."""
+    """Emit one unit through the real HAWKING WorkUnit constructor, then overlay extras."""
     unit = WorkUnit(
         id=id,
         role=role,
@@ -731,10 +731,10 @@ def emit_hcli_workunit(
 
 
 def validate_emitted_unit(row: Mapping[str, Any]) -> None:
-    """Refuse a unit that is missing the recovered HCLI field set."""
-    missing = [name for name in HCLI_CORE_FIELDS if name not in row]
+    """Refuse a unit that is missing the recovered HAWKING field set."""
+    missing = [name for name in HAWKING_CORE_FIELDS if name not in row]
     if missing:
-        raise WorkUnitShapeError(f"{row.get('id')}: missing HCLI fields {missing}")
+        raise WorkUnitShapeError(f"{row.get('id')}: missing HAWKING fields {missing}")
     if not row.get("claim_boundary"):
         raise WorkUnitShapeError(f"{row.get('id')}: claim_boundary is required")
     if not row.get("verifier"):
@@ -742,10 +742,10 @@ def validate_emitted_unit(row: Mapping[str, Any]) -> None:
     if not row.get("id"):
         raise WorkUnitShapeError("work unit id is required")
     if row.get("effect_class") not in ALLOWED_EFFECT:
-        raise WorkUnitShapeError(f"{row.get('id')}: effect_class {row.get('effect_class')!r} is not HCLI-safe")
+        raise WorkUnitShapeError(f"{row.get('id')}: effect_class {row.get('effect_class')!r} is not HAWKING-safe")
     if row.get("may_promote") or row.get("may_modify_verifier"):
         raise WorkUnitShapeError(f"{row.get('id')}: unit expressed a forbidden authority flag")
-    # Round-trip the HCLI core so the scheduler can consume the unit.
+    # Round-trip the HAWKING core so the scheduler can consume the unit.
     WorkUnit.from_dict(dict(row))
 
 
@@ -803,7 +803,7 @@ def _physical_unit(candidate: Mapping[str, Any], *, ready_ids: set[str]) -> dict
         extras["diagnostic_command"] = list(candidate["diagnostic_command"])
     if candidate.get("protected_command"):
         extras["protected_command"] = list(candidate["protected_command"])
-    row = emit_hcli_workunit(
+    row = emit_hawking_workunit(
         id=f"accelerator.physical.{cid}",
         role="accelerator_physical_qualification",
         description=(
@@ -847,7 +847,7 @@ def _repatriation_unit(spec: Mapping[str, Any]) -> dict[str, Any]:
         "species": _repatriation_species(spec),
         "source_receipt": REPAT_REL,
     }
-    row = emit_hcli_workunit(
+    row = emit_hawking_workunit(
         id=f"accelerator.{eid}",
         role="accelerator_repatriation",
         description=(
@@ -983,7 +983,7 @@ def _planning_units() -> list[dict[str, Any]]:
             "requires_quiescence": False,
             "candidate_status": "STATIC_ONLY",
         }
-        row = emit_hcli_workunit(
+        row = emit_hawking_workunit(
             id=plan["id"],
             role=plan["role"],
             description=plan["description"],
@@ -1026,7 +1026,7 @@ def build_starting_queue(
     qual: dict[str, Any] | None = None,
     repat: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
-    """Non-empty queue of real disk-backed work, in HCLI work_units shape."""
+    """Non-empty queue of real disk-backed work, in HAWKING work_units shape."""
     if qual is None:
         qual, _ = load_headless(QUAL_REL)
     if repat is None:
@@ -1167,7 +1167,7 @@ def build() -> Path:
         "schema": SCHEMA,
         "version": 1,
         "purpose": (
-            "WorkUnit species for the future HCLI resident: types with bounded "
+            "WorkUnit species for the future HAWKING resident: types with bounded "
             "authority, plus a non-empty starting queue recovered from live disk."
         ),
         "species": species,
@@ -1204,10 +1204,10 @@ def build() -> Path:
             "qualification_queue": {"path": QUAL_REL, "loaded_from": qual_src, "present": qual is not None},
             "repatriation_queue": {"path": REPAT_REL, "loaded_from": repat_src, "present": repat is not None},
         },
-        "hcli_field_set": {
-            "core": list(HCLI_CORE_FIELDS),
+        "hawking_field_set": {
+            "core": list(HAWKING_CORE_FIELDS),
             "observed_extras": list(OBSERVED_EXTRAS),
-            "union": sorted(set(HCLI_CORE_FIELDS) | set(OBSERVED_EXTRAS)),
+            "union": sorted(set(HAWKING_CORE_FIELDS) | set(OBSERVED_EXTRAS)),
         },
         "authority": {
             "allowed": sorted(ALLOWED_AUTHORITY),
@@ -1222,13 +1222,13 @@ def build() -> Path:
             "fpga_is": "part of Accelerator / Physical Compiler / Fusion; not a civilization",
         },
         "recovered_implementation": {
-            "hcli.workunit.WorkUnit": "hcli/workunit.py — canonical unit, content_hash, repair budget",
-            "hcli.scheduler.Scheduler": "hcli/scheduler.py — dispatch only; does not invent work",
-            "hcli.dag_store.DagStore": "hcli/dag_store.py — disk is authority",
-            "hcli.ledger.Ledger": "hcli/ledger.py — obligation VERIFIED only via run_verify",
-            "hcli.agentos.states.AgentState": "hcli/agentos/states.py (git show; not materialized here)",
-            "hcli.agentos.autonomy_gate": "bounded census WorkUnits with a fixed verifier the model cannot nominate",
-            "hcli.agentos.runtime.AgentOS": "composition facade; Mission/Scheduler remain authorities",
+            "hawking.workunit.WorkUnit": "hawking/workunit.py — canonical unit, content_hash, repair budget",
+            "hawking.scheduler.Scheduler": "hawking/scheduler.py — dispatch only; does not invent work",
+            "hawking.dag_store.DagStore": "hawking/dag_store.py — disk is authority",
+            "hawking.ledger.Ledger": "hawking/ledger.py — obligation VERIFIED only via run_verify",
+            "hawking.agentos.states.AgentState": "hawking/agentos/states.py (git show; not materialized here)",
+            "hawking.agentos.autonomy_gate": "bounded census WorkUnits with a fixed verifier the model cannot nominate",
+            "hawking.agentos.runtime.AgentOS": "composition facade; Mission/Scheduler remain authorities",
             "tools.accelerator.physical_qualification.workunits_for_candidates": (
                 "emits READY physical candidates through WorkUnit.to_dict plus extras "
                 "(candidate_id, model, diagnostic_command, protected_command, claim_boundary)"
@@ -1241,8 +1241,8 @@ def build() -> Path:
             "live_repatriation_queue": REPAT_REL,
             "note": (
                 "No WorkUnit species catalog existed. The live compilers already emit "
-                "HCLI-shaped work_units for READY rows only. This module reuses that "
-                "field set and the HCLI constructor; it does not fork a second scheduler."
+                "HAWKING-shaped work_units for READY rows only. This module reuses that "
+                "field set and the HAWKING constructor; it does not fork a second scheduler."
             ),
         },
         "gaps_closed": [
@@ -1255,7 +1255,7 @@ def build() -> Path:
         "negative_findings": [
             f"{QUAL_REL} is not in git HEAD of this worktree; loaded from {qual_src}",
             f"{REPAT_REL} is not in git HEAD of this worktree; loaded from {repat_src}",
-            "hcli/agentos/* is not materialized in this sparse checkout; recovered via git show HEAD:hcli/agentos/...",
+            "hawking/agentos/* is not materialized in this sparse checkout; recovered via git show HEAD:hawking/agentos/...",
             "sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench.state stays UNKNOWN",
             "no GPU / FPGA / power meter in this lane; Green Machine numbers are UNKNOWN",
         ],
@@ -1346,15 +1346,15 @@ RECOVERED_PHYSICAL_CANDIDATES: tuple[dict[str, Any], ...] = (
 )
 
 RECOVERED_REPATRIATION_SPECS: tuple[dict[str, Any], ...] = (
-    {"experiment_id": "qwen27-move-or-recompute-boundary", "behavior_id": "move_or_recompute", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "all", "candidate": "costed dependency planner chooses resident/recompute/prefetch by complete boundary cost", "control": "framework-prescribed movement", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "protected-accelerator-bench", "--profile", "hcli/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json"]},
-    {"experiment_id": "qwen27-graph-replay-token-skeleton", "behavior_id": "graph_replay", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "decode", "candidate": "replay static token graph with dynamic token/position slots", "control": "current persistent executor with per-step command encoding", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "protected-accelerator-bench", "--profile", "hcli/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json"]},
-    {"experiment_id": "qwen27-layout-algebra-mlp", "behavior_id": "layout_algebra", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "mlp", "candidate": "parameterized packed GEMV layout/tile/lane mapping", "control": "sealed resident Qwen27 GeoTpr64Tg128 path", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "protected-accelerator-bench", "--profile", "hcli/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json"]},
-    {"experiment_id": "qwen27-stationary-packed-weight", "behavior_id": "stationary_representation", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "mlp", "candidate": "keep packed representation resident and expose runtime active bytes separately", "control": "same-source packed path with no active-byte instrumentation", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "protected-accelerator-bench", "--profile", "hcli/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json"]},
-    {"experiment_id": "flash-semantic-transport-hwir", "behavior_id": "semantic_transport", "status": "READY", "backend": "fpga", "model_identity": "Qwen3.8-Flash-Next", "organ": "route_and_state", "candidate": "typed route metadata/activation/partial-reduction edges in HWIR", "control": "untyped partition boundary", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json", "blocked_reason": None, "requires_quiescence": False, "command": ["python3", "-m", "hcli", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json"]},
-    {"experiment_id": "qwen27-async-double-buffer", "behavior_id": "async_double_buffer", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "mlp", "candidate": "overlap next packed tile staging with current projection when ownership permits", "control": "current serial projection and command-buffer boundary", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "protected-accelerator-bench", "--profile", "hcli/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json"]},
-    {"experiment_id": "flash-local-state-machine", "behavior_id": "local_state_machine", "status": "BLOCKED", "backend": "metal", "model_identity": "Qwen3.8-Flash-Next", "organ": "deltanet", "candidate": "persistent DeltaNet state machine with checkpoint-bisection verifier", "control": "current Flash stateful seam", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-local-state-machine.json", "blocked_reason": "requires the Flash protected complete-token runtime lane", "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/flash-local-state-machine.json"]},
-    {"experiment_id": "flash-direct-routed-accumulate", "behavior_id": "direct_routed_accumulate", "status": "BLOCKED", "backend": "metal", "model_identity": "Qwen3.8-Flash-Next", "organ": "moe", "candidate": "route-before-payload with selected-expert direct weighted accumulation", "control": "current Flash routed-expert component graph", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-direct-routed-accumulate.json", "blocked_reason": "Flash native full-model executable/weights are not available in the current protected lane; retain as detached queue work", "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/flash-direct-routed-accumulate.json"]},
-    {"experiment_id": "ane-regular-island-probe", "behavior_id": "npu_regular_island", "status": "BLOCKED", "backend": "ane", "model_identity": "Qwen3.8-27B", "organ": "normalization", "candidate": "public Core ML/ML Program regular island with explicit transfer accounting", "control": "Metal normalization path", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json", "blocked_reason": "public ANE compile/runtime measurement is not available in this process; plan-only until the public path is executable", "requires_quiescence": True, "command": ["python3", "-m", "hcli", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json"]},
+    {"experiment_id": "qwen27-move-or-recompute-boundary", "behavior_id": "move_or_recompute", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "all", "candidate": "costed dependency planner chooses resident/recompute/prefetch by complete boundary cost", "control": "framework-prescribed movement", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "protected-accelerator-bench", "--profile", "hawking/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json"]},
+    {"experiment_id": "qwen27-graph-replay-token-skeleton", "behavior_id": "graph_replay", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "decode", "candidate": "replay static token graph with dynamic token/position slots", "control": "current persistent executor with per-step command encoding", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "protected-accelerator-bench", "--profile", "hawking/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json"]},
+    {"experiment_id": "qwen27-layout-algebra-mlp", "behavior_id": "layout_algebra", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "mlp", "candidate": "parameterized packed GEMV layout/tile/lane mapping", "control": "sealed resident Qwen27 GeoTpr64Tg128 path", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "protected-accelerator-bench", "--profile", "hawking/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json"]},
+    {"experiment_id": "qwen27-stationary-packed-weight", "behavior_id": "stationary_representation", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "mlp", "candidate": "keep packed representation resident and expose runtime active bytes separately", "control": "same-source packed path with no active-byte instrumentation", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "protected-accelerator-bench", "--profile", "hawking/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json"]},
+    {"experiment_id": "flash-semantic-transport-hwir", "behavior_id": "semantic_transport", "status": "READY", "backend": "fpga", "model_identity": "Qwen3.8-Flash-Next", "organ": "route_and_state", "candidate": "typed route metadata/activation/partial-reduction edges in HWIR", "control": "untyped partition boundary", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json", "blocked_reason": None, "requires_quiescence": False, "command": ["python3", "-m", "hawking", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json"]},
+    {"experiment_id": "qwen27-async-double-buffer", "behavior_id": "async_double_buffer", "status": "READY", "backend": "metal", "model_identity": "Qwen3.8-27B", "organ": "mlp", "candidate": "overlap next packed tile staging with current projection when ownership permits", "control": "current serial projection and command-buffer boundary", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json", "blocked_reason": None, "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "protected-accelerator-bench", "--profile", "hawking/hawking-native.sealed-3.14.json", "--max-new-tokens", "32", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json"]},
+    {"experiment_id": "flash-local-state-machine", "behavior_id": "local_state_machine", "status": "BLOCKED", "backend": "metal", "model_identity": "Qwen3.8-Flash-Next", "organ": "deltanet", "candidate": "persistent DeltaNet state machine with checkpoint-bisection verifier", "control": "current Flash stateful seam", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-local-state-machine.json", "blocked_reason": "requires the Flash protected complete-token runtime lane", "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/flash-local-state-machine.json"]},
+    {"experiment_id": "flash-direct-routed-accumulate", "behavior_id": "direct_routed_accumulate", "status": "BLOCKED", "backend": "metal", "model_identity": "Qwen3.8-Flash-Next", "organ": "moe", "candidate": "route-before-payload with selected-expert direct weighted accumulation", "control": "current Flash routed-expert component graph", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-direct-routed-accumulate.json", "blocked_reason": "Flash native full-model executable/weights are not available in the current protected lane; retain as detached queue work", "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/flash-direct-routed-accumulate.json"]},
+    {"experiment_id": "ane-regular-island-probe", "behavior_id": "npu_regular_island", "status": "BLOCKED", "backend": "ane", "model_identity": "Qwen3.8-27B", "organ": "normalization", "candidate": "public Core ML/ML Program regular island with explicit transfer accounting", "control": "Metal normalization path", "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting", "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json", "blocked_reason": "public ANE compile/runtime measurement is not available in this process; plan-only until the public path is executable", "requires_quiescence": True, "command": ["python3", "-m", "hawking", "agentos", "fpga-preboard", "--repo-root", ".", "--emit", "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json"]},
 )
 
 

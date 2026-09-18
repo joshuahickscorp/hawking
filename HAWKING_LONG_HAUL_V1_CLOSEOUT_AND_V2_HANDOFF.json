@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.long_haul.carry_forward.v1",
+  "old_root_id": "GOAL-B33C69F193",
+  "old_objective_digest": "ddbed4ef3f253418b2bd92d518ee2aa3fbdde8aad760351f22d4d46e4bcca1a1",
+  "repo_revision": "6a86a5cd49fbe9211ec11e133e9d70a4e2044238",
+  "accepted_tranche_ids": [
+    "D-BROWSER-POST_REPAIR-VERIFY-20260915",
+    "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-2275D01B",
+    "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-6A147862"
+  ],
+  "accepted_receipt_ids": [
+    "D-BROWSER-POST_REPAIR-VERIFY-20260915_SEAL_B1",
+    "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-2275D01B_RESULT_PACKET",
+    "E_MACOS_READ_ONLY_FOUNDATION_ACCEPTED-20260917-6A147862_RESULT_PACKET"
+  ],
+  "dead_letter_ids": [
+    "E_MACOS_CAPTURE_OCR-20260918-REOPEN",
+    "E_MACOS_CAPTURE_OCR-20260918-BOUND",
+    "F_AUTO_FRONTIER-20260918-AUDIT"
+  ],
+  "known_failure_classes": ["PROVIDER_OUTPUT_UNUSABLE", "OUTPUT_UNUSABLE", "PROVIDER_TOOL_NONCOMPLIANCE"],
+  "protected_resource_ids": ["Flash", "Pulsar", "ModelLake", "Odyssey sealed receipts", "credentials", "unrelated dirty work"],
+  "current_budget_spend_usd": 0.664715971,
+  "current_budget_remaining_usd": 54.335284029,
+  "unresolved_debt_ids": ["E_MACOS_CAPTURE_OCR", "P1_PROVIDER_TOOL_RECEIPT_CONTINUATION_REPAIR", "F_AUTO_FRONTIER"],
+  "handoff_timestamp": "2026-09-17T00:00:00-04:00",
+  "replacement_programme": "HAWKING_MASTER_LONG_HAUL_V2"
+}

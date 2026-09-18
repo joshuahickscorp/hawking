@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 2,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "b9058662750c5fac3be638cfb83888711a7559608ca24cf3bca1d33209bbce8c",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:00:51.511947+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:00:51.511956+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:00:51.513609+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/share_bridge.py is 49705 bytes with full-file sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46; the admitted read returned only 4000 bytes (8.0%), so TUNNEL frame/session handler bodies and H",
+      "outcome": "CONTINUE",
+      "reply_chars": 3833,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/share_bridge.py is 49705 bytes with full-file sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46; the admitted read returned only 4000 bytes (8.0%), so TUNNEL frame/session handler bodies and H-Web share-ownership code were outside the observed window.\",\"Module docstring states the /s/<token> token is the capability, Hawking stores only its SHA-256 digest, the raw bearer token is never written to the workspace, and the bridge exposes a Goal/conversation snapshot rather than the daemon API, provider credentials, prompts, or an arbitrary tool surface.\",\"Schema constants observed: SHARE_SCHEMA=hawking.share_capability.v1, SHARE_EVENT_SCHEMA=hawking.share_event.v1, TUNNEL_SCHEMA=hawking.tunnel.session.v1, TUNNEL_EVENT_SCHEMA=hawking.tunnel.event.v1, TUNNEL_FRAME_SCHEMA=hawking.tunnel.frame.v1.\",\"TTL constants observed: DEFAULT_TTL_SECONDS=3600, MAX_TTL_SECONDS=604800, TUNNEL_INVITATION_TTL_SECONDS=300, TUNNEL_MAX_INVITATION_TTL_SECONDS=3600.\",\"KNOWN_PERMISSIONS={read, comment, steer, prompt, build}; TUNNEL_OPERATION_PERMISSIONS maps list_chats->read, list_models->read, stream_prompt->prompt, scoped_build->build, retrieve_result->read.\",\"Validation regexes observed: TOKEN_RE (10-64 base64url), GOAL_RE (GOAL- prefix, case-insensitive), SESSION_RE (1-64), DEVICE_RE (1-128), TUNNEL_SECRET_RE (16-128 base64url).\",\"Redaction surface observed: SECRET_PATTERNS scrub bearer tokens, openrouter_api_key assignments, and sk- keys; _clean_value drops keys containing authorization, api_key, secret, cookie, environment, or system_prompt, caps depth at 3, lists at 24, mappings at 40, and strings at 1200 chars.\",\"ShareError carries an explicit HTTP status (default 404); _root resolves <workspace>/.hawking/shares and creates it; _path stores per-token state as <sha256(token)>.json; _token_hash is plain SHA-256 over the UTF-8 token.\",\"A module-level threading.RLock (_LOCK) guards share state, indicating in-process serialization rather than cross-process locking.\",\"The observed window ends mid-function in _permissions, so the tunnel frame/session handler implementations and H-Web share-ownership enforcement were not directly observed and cannot be asserted from this read.\"],\"sources\":[\"hawking/share_bridge.py (read-only fs.read, full-file sha256 847aacec1114084c2bcb4bf384a067400d06772bb27c34b6cb1801974f842d46, 49705 bytes, 4000-byte window)\"],\"recommendations\":[\"Next bounded evidence/test: re-read hawking/share_bridge.py in narrow line ranges covering the TUNNEL frame/session handler definitions and the H-Web share-ownership checks, then assert the exact frame schema fields, session lifecycle transitions, and ownership predicate against TUNNEL_FRAME_SCHEMA/TUNNEL_SCHEMA.\",\"Writer/effect scope for that test: read-only inspection only; no file writes, no receipt emission, no relay hosting, no provider execution.\",\"Protected resources: raw share bearer tokens (must remain digest-only), provider credentials and prompts (must stay outside the snapshot), and the .hawking/shares state directory.\",\"Falsifier: if the tunnel frame handler accepts a frame whose operation is absent from TUNNEL_OPERATION_PERMISSIONS, or if H-Web share ownership is not bound to the token digest and Goal id, the proposed integration contract is falsified.\"],\"unresolved_questions\":[\"What are the exact TUNNEL frame field names and required/optional members under hawking.tunnel.frame.v1?\",\"How is a tunnel session bound to a Goal and to a share token digest, and what are the session state transitions?\",\"What is the precise H-Web share-ownership predicate (owner identity, Goal id, permission set) and where is it enforced?\",\"Are share-state reads/writes safe across processes, given only an in-process RLock was observed?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-682db8198a99455c",
+  "worker_id": "hawking-worker-520d04da381a49b2",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-4F27F3C2"
+}

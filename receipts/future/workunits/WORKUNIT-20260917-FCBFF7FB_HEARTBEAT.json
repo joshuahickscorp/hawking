@@ -1,0 +1,70 @@
+{
+  "active_job": "job-a4092ac1-9efc-4749-be46-1081edb7faa5",
+  "blocker": {
+    "pid": 28169,
+    "state": "stale_driver"
+  },
+  "budget_phase": "build",
+  "build_cost_usd": 0.001714512,
+  "child_worker_ids": [],
+  "compaction_count": 0,
+  "context": {
+    "compact_crossings": 0,
+    "session_id": "WORKUNIT-20260917-FCBFF7FB",
+    "tool_less_continue_streak": 2
+  },
+  "context_packet_digest": "40a75ce28cda4fc4e86379f35bc15582f4dd363b716fe4bd905663c5fe178d90",
+  "current_phase": "BUILD",
+  "driver_alive": false,
+  "driver_pid": 28169,
+  "exact_next_action": "Research output was unusable after the bounded continuation cap; inspect the checkpoint and dead-letter, then either continue independent work or resume with a fresh Hawking Worker Packet. Do not replay provider turns.",
+  "goal_id": "GOAL-A52AB48501",
+  "goal_mode": "worker_research",
+  "last_checkpointed_seal": "",
+  "last_outcome": "CONTINUE",
+  "last_tool_dispatch": null,
+  "last_turn": 6,
+  "latest_real_seal": "",
+  "objective": "Read-only P16 Odyssey/ModelLake reconnaissance for the V2 programme. Map the scheduler, queue, model registry, and sealed-receipt owners; identify safe scheduler or evidence improvements while preserving ModelLake, Odyssey sealed receipts, credentials, and protected model artifacts. Do not download models, launch experiments, edit files, or claim runtime qualification.",
+  "parent_worker_id": "",
+  "parent_workunit_id": "",
+  "provider_request_ids": [
+    "gateway-4f666cf8b04a43379b2db88e:tool-6",
+    "gen-1789697307-sY1jz2yJmEL4Pmx1I6Fv",
+    "gateway-5d15b66120c54b14b1fef1d9:tool-6",
+    "gen-1789697319-U1J9Lq0S5y6WsLzKXjxU",
+    "gateway-bfce623e750d4b23a8d90a69:tool-6",
+    "gen-1789697332-QL4pda6x7Fl1f5Szn8VA",
+    "gateway-03bffd1d222745ea9124ffe2:tool-6",
+    "gen-1789697342-4sWMh7FotWOreqp6EHzg",
+    "gateway-672e52657c664b1db1844dee:tool-6",
+    "gen-1789697355-VyV9L4ZBgXWjlDFeOHQ2",
+    "gateway-0753b646009649b780f19027:tool-6",
+    "gen-1789697366-GPULf9aWWtnoTSLylSH7"
+  ],
+  "qualification": "UNEARNED",
+  "resident": {
+    "artifact_id": null,
+    "endpoint": {
+      "base_url": "http://127.0.0.1:8014/v1",
+      "chat_url": "http://127.0.0.1:8014/v1/chat/completions",
+      "host": "127.0.0.1",
+      "port": 8014,
+      "resolved_via": "daemon_lease_metadata+hawking_remote_gateway"
+    },
+    "worker_model": "deepseek/deepseek-v4.1-flash"
+  },
+  "resource_state": "GPU_YIELDABLE",
+  "schema": "hawking.workunit.heartbeat.v1",
+  "state": "OUTPUT_UNUSABLE",
+  "tool_learning_cost_usd": 0.0,
+  "updated_at": "2026-09-18T02:09:27.445896+00:00",
+  "worker_attempt_id": "hawking-attempt-64ba3f54c32e4b8b",
+  "worker_cost_usd": 0.001714512,
+  "worker_id": "hawking-worker-b80993ce767941fc",
+  "worker_kill_reason": "provider_output_unusable",
+  "worker_last_heartbeat_at": 1789697358.531472,
+  "worker_spawned_at": 1789697295.855375,
+  "worker_status": "WAITING_RETRY",
+  "workunit_id": "WORKUNIT-20260917-FCBFF7FB"
+}

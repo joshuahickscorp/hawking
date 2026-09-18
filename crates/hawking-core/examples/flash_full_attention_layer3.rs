@@ -15,6 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(target_os = "macos")]
 mod macos {
+    use half::f16;
     use hawking_core::kernels::{
         mha_decode_f32_qwen38_gated_tcb, mha_decode_f32_tcb, moe_topk_gate_tcb_ex,
         native_bf16_dual_seq_tcb, native_bf16_gemv_hyperconnection_combine_tcb,
@@ -24,10 +25,19 @@ mod macos {
         qwen_next_bf16_compact_expert_gate_up_shared_swiglu_tcb,
         qwen_next_bf16_compact_expert_gate_up_swiglu_tcb, qwen_next_bf16_expert_down_tcb,
         qwen_next_bf16_expert_gate_up_swiglu_tcb, qwen_next_bf16_qkv_gqa_rope_cache_tcb,
-        qwen_next_bf16_router_topk_shared_tcb,
+        qwen_next_bf16_router_topk_shared_tcb, qwen_next_hyperconnection_down_block_vec4_tcb,
+        qwen_next_hyperconnection_grouped_rmsnorm_serial_tcb,
         qwen_next_hyperconnection_input_fused_with_block_router_topk_tcb,
         qwen_next_hyperconnection_input_fused_with_block_tcb,
+        qwen_next_hyperconnection_read_mix_tcb, qwen_next_hyperconnection_silu_scale_tcb,
+        qwen_next_hyperconnection_up_read_mix_vec4_tcb,
         qwen_next_moe_weighted_sum_add_shared_sigmoid_hc_tcb,
+        qwen_uniform_q4_group64_compact_down_shared_direct_hc_tcb,
+        qwen_uniform_q4_group64_compact_down_tcb,
+        qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_tcb,
+        qwen_uniform_q4_group64_compact_gate_up_swiglu_tcb,
+        qwen_uniform_q8_group32_compact_down_shared_direct_hc_tcb,
+        qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_tcb,
     };
     use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
     use hawking_core::model::qwen80_source_bf16_layer_major::SourceBf16Index;
@@ -135,6 +145,76 @@ mod macos {
         sha256: String,
     }
 
+    /// Split raw Q4/G64 resident banks for the routed expert projections.
+    /// The gate and up matrices are kept in separate code/scale buffers so
+    /// the fused Metal kernel never needs to materialize a decoded gate/up
+    /// tensor. Shared and control weights remain source BF16 for this
+    /// candidate; this type therefore reports only the routed-bank bytes.
+    struct CompactQ4DeviceWeights {
+        gate_codes: PinnedBuffer,
+        gate_scales: PinnedBuffer,
+        up_codes: PinnedBuffer,
+        up_scales: PinnedBuffer,
+        down_codes: PinnedBuffer,
+        down_scales: PinnedBuffer,
+        compact_experts: usize,
+    }
+
+    struct Q8ResidualHost {
+        row_ptr: Vec<u32>,
+        indices: Vec<u16>,
+        values: Vec<f32>,
+    }
+
+    /// Higher-fidelity resident routed-bank candidate. Q8 keeps one
+    /// offset-binary byte per source weight plus one FP16 scale per G32 group.
+    /// An optional sparse exact residual stream corrects the largest per-row
+    /// reconstruction errors without changing the route/state ABI.
+    struct CompactQ8DeviceWeights {
+        gate_codes: PinnedBuffer,
+        gate_scales: PinnedBuffer,
+        up_codes: PinnedBuffer,
+        up_scales: PinnedBuffer,
+        down_codes: PinnedBuffer,
+        down_scales: PinnedBuffer,
+        gate_residual_row_ptr: PinnedBuffer,
+        gate_residual_indices: PinnedBuffer,
+        gate_residual_values: PinnedBuffer,
+        up_residual_row_ptr: PinnedBuffer,
+        up_residual_indices: PinnedBuffer,
+        up_residual_values: PinnedBuffer,
+        down_residual_row_ptr: PinnedBuffer,
+        down_residual_indices: PinnedBuffer,
+        down_residual_values: PinnedBuffer,
+        compact_experts: usize,
+        residual_enabled: bool,
+        residual_fraction: f32,
+    }
+
+    impl CompactQ8DeviceWeights {
+        fn resident_bytes(&self) -> u64 {
+            self.gate_codes.length()
+                + self.gate_scales.length()
+                + self.up_codes.length()
+                + self.up_scales.length()
+                + self.down_codes.length()
+                + self.down_scales.length()
+                + self.gate_residual_row_ptr.length()
+                + self.gate_residual_indices.length()
+                + self.gate_residual_values.length()
+                + self.up_residual_row_ptr.length()
+                + self.up_residual_indices.length()
+                + self.up_residual_values.length()
+                + self.down_residual_row_ptr.length()
+                + self.down_residual_indices.length()
+                + self.down_residual_values.length()
+        }
+
+        fn q8_residual(&self) -> bool {
+            self.residual_enabled
+        }
+    }
+
     trait StageSetScalar {
         fn set_u32(&self, index: u64, value: u32);
         fn set_f32(&self, index: u64, value: f32);
@@ -235,6 +315,484 @@ mod macos {
             .iter()
             .flat_map(|value| value.to_le_bytes())
             .collect()
+    }
+
+    fn u16_bytes(values: &[u16]) -> Vec<u8> {
+        values
+            .iter()
+            .flat_map(|value| value.to_le_bytes())
+            .collect()
+    }
+
+    fn q4_rint_ties_even(value: f32) -> f32 {
+        if !value.is_finite() {
+            return value;
+        }
+        let truncated = value.trunc();
+        let fraction = value - truncated;
+        let absolute_fraction = fraction.abs();
+        if absolute_fraction < 0.5 {
+            return truncated;
+        }
+        if absolute_fraction > 0.5 {
+            return truncated + value.signum();
+        }
+        if (truncated as i64) % 2 == 0 {
+            truncated
+        } else {
+            truncated + value.signum()
+        }
+    }
+
+    /// Pack a row-major source-BF16 matrix into the raw Q4/G64 split payload
+    /// consumed by the fused resident kernels. The source bytes are widened
+    /// only while each group is packed; no header or duplicate BF16 bank is
+    /// retained in the resulting device representation.
+    fn pack_bf16_matrix_q4_group64(
+        bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        label: &str,
+    ) -> Result<(Vec<u8>, Vec<u8>), Box<dyn Error>> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES: usize = GROUP_SIZE / 2;
+        if rows == 0 || cols == 0 || cols % GROUP_SIZE != 0 {
+            return Err(format!(
+                "{label} Q4 pack requires non-zero rows and group-64-aligned columns"
+            )
+            .into());
+        }
+        let expected_bytes = rows
+            .checked_mul(cols)
+            .and_then(|elements| elements.checked_mul(2))
+            .ok_or_else(|| format!("{label} source byte count overflows usize"))?;
+        if bytes.len() != expected_bytes {
+            return Err(format!(
+                "{label} source bytes={} expected={expected_bytes}",
+                bytes.len()
+            )
+            .into());
+        }
+        let groups_per_row = cols / GROUP_SIZE;
+        let group_count = rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| format!("{label} Q4 group count overflows usize"))?;
+        let mut codes = vec![0u8; group_count * CODE_BYTES];
+        let mut scales = Vec::with_capacity(group_count * std::mem::size_of::<u16>());
+        for row in 0..rows {
+            for group in 0..groups_per_row {
+                let start = row * cols + group * GROUP_SIZE;
+                let mut max_abs = 0.0f32;
+                for element in start..start + GROUP_SIZE {
+                    let value = bf16(bytes, element);
+                    if !value.is_finite() {
+                        return Err(format!(
+                            "{label} contains non-finite BF16 at element {element}"
+                        )
+                        .into());
+                    }
+                    max_abs = max_abs.max(value.abs());
+                }
+                let scale = f16::from_f32(max_abs / 7.0);
+                if !scale.is_finite() {
+                    return Err(format!("{label} group scale is not finite").into());
+                }
+                scales.extend_from_slice(&scale.to_bits().to_le_bytes());
+                let reconstructed_scale = scale.to_f32();
+                let code_base = (row * groups_per_row + group) * CODE_BYTES;
+                for local in 0..GROUP_SIZE {
+                    let value = bf16(bytes, start + local);
+                    let quantized = if reconstructed_scale == 0.0 {
+                        0i32
+                    } else {
+                        q4_rint_ties_even(value / reconstructed_scale).clamp(-8.0, 7.0) as i32
+                    };
+                    let code = (quantized + 8) as u8;
+                    if local & 1 == 0 {
+                        codes[code_base + local / 2] |= code;
+                    } else {
+                        codes[code_base + local / 2] |= code << 4;
+                    }
+                }
+            }
+        }
+        Ok((codes, scales))
+    }
+
+    fn build_compact_q4_device_weights(
+        context: &MetalContext,
+        expert_gate_up: &Tensor,
+        expert_down: &Tensor,
+        compact_experts: usize,
+    ) -> Result<CompactQ4DeviceWeights, Box<dyn Error>> {
+        const GATE_UP_ROW_BYTES: usize = INTERMEDIATE * HIDDEN * 2;
+        const DOWN_ROW_BYTES: usize = HIDDEN * INTERMEDIATE * 2;
+        let gate_up_expert_bytes = 2usize
+            .checked_mul(GATE_UP_ROW_BYTES)
+            .ok_or("Q4 gate/up expert byte stride overflows usize")?;
+        let expected_gate_up = compact_experts
+            .checked_mul(gate_up_expert_bytes)
+            .ok_or("Q4 gate/up compact bytes overflow")?;
+        let expected_down = compact_experts
+            .checked_mul(DOWN_ROW_BYTES)
+            .ok_or("Q4 down compact bytes overflow")?;
+        if compact_experts == 0
+            || expert_gate_up.shape.first().copied() != Some(compact_experts)
+            || expert_down.shape.first().copied() != Some(compact_experts)
+            || expert_gate_up.bytes.len() != expected_gate_up
+            || expert_down.bytes.len() != expected_down
+        {
+            return Err(format!(
+                "Q4 full-attention compact source geometry drifted: experts={compact_experts}, gate_up={} expected={expected_gate_up}, down={} expected={expected_down}",
+                expert_gate_up.bytes.len(),
+                expert_down.bytes.len()
+            )
+            .into());
+        }
+        let mut gate_codes = Vec::new();
+        let mut gate_scales = Vec::new();
+        let mut up_codes = Vec::new();
+        let mut up_scales = Vec::new();
+        let mut down_codes = Vec::new();
+        let mut down_scales = Vec::new();
+        for expert in 0..compact_experts {
+            let gate_up_base = expert * gate_up_expert_bytes;
+            let gate_up = &expert_gate_up.bytes[gate_up_base..gate_up_base + gate_up_expert_bytes];
+            let (codes, scales) = pack_bf16_matrix_q4_group64(
+                &gate_up[..GATE_UP_ROW_BYTES],
+                INTERMEDIATE,
+                HIDDEN,
+                "full compact gate",
+            )?;
+            gate_codes.extend(codes);
+            gate_scales.extend(scales);
+            let (codes, scales) = pack_bf16_matrix_q4_group64(
+                &gate_up[GATE_UP_ROW_BYTES..],
+                INTERMEDIATE,
+                HIDDEN,
+                "full compact up",
+            )?;
+            up_codes.extend(codes);
+            up_scales.extend(scales);
+            let down_base = expert * DOWN_ROW_BYTES;
+            let (codes, scales) = pack_bf16_matrix_q4_group64(
+                &expert_down.bytes[down_base..down_base + DOWN_ROW_BYTES],
+                HIDDEN,
+                INTERMEDIATE,
+                "full compact down",
+            )?;
+            down_codes.extend(codes);
+            down_scales.extend(scales);
+        }
+        Ok(CompactQ4DeviceWeights {
+            gate_codes: context.new_buffer_with_bytes_checked(&gate_codes)?,
+            gate_scales: context.new_buffer_with_bytes_checked(&gate_scales)?,
+            up_codes: context.new_buffer_with_bytes_checked(&up_codes)?,
+            up_scales: context.new_buffer_with_bytes_checked(&up_scales)?,
+            down_codes: context.new_buffer_with_bytes_checked(&down_codes)?,
+            down_scales: context.new_buffer_with_bytes_checked(&down_scales)?,
+            compact_experts,
+        })
+    }
+
+    impl CompactQ4DeviceWeights {
+        fn resident_bytes(&self) -> u64 {
+            self.gate_codes.length()
+                + self.gate_scales.length()
+                + self.up_codes.length()
+                + self.up_scales.length()
+                + self.down_codes.length()
+                + self.down_scales.length()
+        }
+    }
+
+    fn pack_bf16_matrix_q8_group32_with_residual(
+        bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        label: &str,
+        residual_fraction: f32,
+    ) -> Result<(Vec<u8>, Vec<u8>, Q8ResidualHost), Box<dyn Error>> {
+        const GROUP_SIZE: usize = 32;
+        if rows == 0 || cols == 0 || cols % GROUP_SIZE != 0 || cols > u16::MAX as usize {
+            return Err(format!(
+                "{label} Q8 pack requires non-zero rows, group-32-aligned columns, and ushort indices"
+            )
+            .into());
+        }
+        if !residual_fraction.is_finite() || !(0.0..=1.0).contains(&residual_fraction) {
+            return Err(
+                format!("{label} Q8 residual fraction must be finite and within [0,1]").into(),
+            );
+        }
+        let expected_bytes = rows
+            .checked_mul(cols)
+            .and_then(|elements| elements.checked_mul(2))
+            .ok_or_else(|| format!("{label} source byte count overflows usize"))?;
+        if bytes.len() != expected_bytes {
+            return Err(format!(
+                "{label} source bytes={} expected={expected_bytes}",
+                bytes.len()
+            )
+            .into());
+        }
+        let groups_per_row = cols / GROUP_SIZE;
+        let group_count = rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| format!("{label} Q8 group count overflows usize"))?;
+        let mut codes = vec![0u8; rows * cols];
+        let mut scales = Vec::with_capacity(group_count * std::mem::size_of::<u16>());
+        let mut residual = Q8ResidualHost {
+            row_ptr: Vec::with_capacity(rows + 1),
+            indices: Vec::new(),
+            values: Vec::new(),
+        };
+        residual.row_ptr.push(0);
+        for row in 0..rows {
+            let mut candidates = Vec::new();
+            for group in 0..groups_per_row {
+                let start = row * cols + group * GROUP_SIZE;
+                let mut max_abs = 0.0f32;
+                for element in start..start + GROUP_SIZE {
+                    let value = bf16(bytes, element);
+                    if !value.is_finite() {
+                        return Err(format!(
+                            "{label} contains non-finite BF16 at element {element}"
+                        )
+                        .into());
+                    }
+                    max_abs = max_abs.max(value.abs());
+                }
+                let scale = f16::from_f32(max_abs / 127.0);
+                if !scale.is_finite() {
+                    return Err(format!("{label} Q8 group scale is not finite").into());
+                }
+                scales.extend_from_slice(&scale.to_bits().to_le_bytes());
+                let reconstructed_scale = scale.to_f32();
+                for local in 0..GROUP_SIZE {
+                    let value = bf16(bytes, start + local);
+                    let quantized = if reconstructed_scale == 0.0 {
+                        0i32
+                    } else {
+                        q4_rint_ties_even(value / reconstructed_scale).clamp(-128.0, 127.0) as i32
+                    };
+                    codes[start + local] = (quantized + 128) as u8;
+                    if residual_fraction > 0.0 {
+                        let error = value - quantized as f32 * reconstructed_scale;
+                        if error.is_finite() && error != 0.0 {
+                            candidates.push((error.abs(), group * GROUP_SIZE + local, error));
+                        }
+                    }
+                }
+            }
+            let keep = ((cols as f32 * residual_fraction).ceil() as usize).min(cols);
+            candidates.sort_by(|left, right| {
+                right
+                    .0
+                    .partial_cmp(&left.0)
+                    .unwrap_or(Ordering::Equal)
+                    .then_with(|| left.1.cmp(&right.1))
+            });
+            candidates.truncate(keep);
+            candidates.sort_by_key(|candidate| candidate.1);
+            for (_, index, error) in candidates {
+                residual.indices.push(index as u16);
+                residual.values.push(error);
+            }
+            let end = u32::try_from(residual.indices.len())
+                .map_err(|_| format!("{label} residual entry count exceeds uint ABI"))?;
+            residual.row_ptr.push(end);
+        }
+        Ok((codes, scales, residual))
+    }
+
+    fn pack_bf16_matrix_q8_group32(
+        bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        label: &str,
+    ) -> Result<(Vec<u8>, Vec<u8>), Box<dyn Error>> {
+        let (codes, scales, _) =
+            pack_bf16_matrix_q8_group32_with_residual(bytes, rows, cols, label, 0.0)?;
+        Ok((codes, scales))
+    }
+
+    fn append_q8_residual(
+        destination: &mut Q8ResidualHost,
+        source: Q8ResidualHost,
+        label: &str,
+    ) -> Result<(), Box<dyn Error>> {
+        if source.row_ptr.is_empty()
+            || source.row_ptr.last().copied().unwrap_or_default() as usize != source.indices.len()
+            || source.indices.len() != source.values.len()
+        {
+            return Err(format!("{label} residual stream is internally inconsistent").into());
+        }
+        let base = u32::try_from(destination.indices.len())
+            .map_err(|_| format!("{label} residual entry count exceeds uint ABI"))?;
+        for pointer in source.row_ptr.into_iter().skip(1) {
+            destination.row_ptr.push(
+                base.checked_add(pointer)
+                    .ok_or_else(|| format!("{label} residual row pointer overflows uint ABI"))?,
+            );
+        }
+        destination.indices.extend(source.indices);
+        destination.values.extend(source.values);
+        Ok(())
+    }
+
+    fn q8_residual_fraction() -> Result<f32, Box<dyn Error>> {
+        let value = env::var("HAWKING_FLASH_Q8_RESIDUAL_FRACTION")
+            .unwrap_or_else(|_| "0.02".to_owned())
+            .parse::<f32>()?;
+        if !value.is_finite() || !(0.0..=1.0).contains(&value) {
+            return Err(
+                "HAWKING_FLASH_Q8_RESIDUAL_FRACTION must be finite and within [0,1]".into(),
+            );
+        }
+        Ok(value)
+    }
+
+    fn q8_residual_device_buffers(
+        context: &MetalContext,
+        residual: Q8ResidualHost,
+    ) -> Result<(PinnedBuffer, PinnedBuffer, PinnedBuffer), Box<dyn Error>> {
+        let row_ptr = context.new_buffer_with_bytes_checked(&u32_bytes(&residual.row_ptr))?;
+        let index_bytes = if residual.indices.is_empty() {
+            vec![0u8]
+        } else {
+            u16_bytes(&residual.indices)
+        };
+        let value_bytes = if residual.values.is_empty() {
+            vec![0u8; std::mem::size_of::<f32>()]
+        } else {
+            f32_bytes(&residual.values)
+        };
+        Ok((
+            row_ptr,
+            context.new_buffer_with_bytes_checked(&index_bytes)?,
+            context.new_buffer_with_bytes_checked(&value_bytes)?,
+        ))
+    }
+
+    fn build_compact_q8_device_weights(
+        context: &MetalContext,
+        expert_gate_up: &Tensor,
+        expert_down: &Tensor,
+        compact_experts: usize,
+    ) -> Result<CompactQ8DeviceWeights, Box<dyn Error>> {
+        const GATE_UP_ROW_BYTES: usize = INTERMEDIATE * HIDDEN * 2;
+        const DOWN_ROW_BYTES: usize = HIDDEN * INTERMEDIATE * 2;
+        let gate_up_expert_bytes = 2usize
+            .checked_mul(GATE_UP_ROW_BYTES)
+            .ok_or("Q8 gate/up expert byte stride overflows usize")?;
+        let expected_gate_up = compact_experts
+            .checked_mul(gate_up_expert_bytes)
+            .ok_or("Q8 gate/up compact bytes overflow")?;
+        let expected_down = compact_experts
+            .checked_mul(DOWN_ROW_BYTES)
+            .ok_or("Q8 down compact bytes overflow")?;
+        if compact_experts == 0
+            || expert_gate_up.shape.first().copied() != Some(compact_experts)
+            || expert_down.shape.first().copied() != Some(compact_experts)
+            || expert_gate_up.bytes.len() != expected_gate_up
+            || expert_down.bytes.len() != expected_down
+        {
+            return Err(format!(
+                "Q8 full-attention compact source geometry drifted: experts={compact_experts}, gate_up={} expected={expected_gate_up}, down={} expected={expected_down}",
+                expert_gate_up.bytes.len(),
+                expert_down.bytes.len()
+            )
+            .into());
+        }
+        let mut gate_codes = Vec::new();
+        let mut gate_scales = Vec::new();
+        let mut up_codes = Vec::new();
+        let mut up_scales = Vec::new();
+        let mut down_codes = Vec::new();
+        let mut down_scales = Vec::new();
+        let residual_enabled = resident_env_on("HAWKING_FLASH_Q8_RESIDUAL");
+        let residual_fraction = if residual_enabled {
+            q8_residual_fraction()?
+        } else {
+            0.0
+        };
+        let mut gate_residual = Q8ResidualHost {
+            row_ptr: vec![0],
+            indices: Vec::new(),
+            values: Vec::new(),
+        };
+        let mut up_residual = Q8ResidualHost {
+            row_ptr: vec![0],
+            indices: Vec::new(),
+            values: Vec::new(),
+        };
+        let mut down_residual = Q8ResidualHost {
+            row_ptr: vec![0],
+            indices: Vec::new(),
+            values: Vec::new(),
+        };
+        for expert in 0..compact_experts {
+            let gate_up_base = expert * gate_up_expert_bytes;
+            let gate_up = &expert_gate_up.bytes[gate_up_base..gate_up_base + gate_up_expert_bytes];
+            let (codes, scales, residual) = pack_bf16_matrix_q8_group32_with_residual(
+                &gate_up[..GATE_UP_ROW_BYTES],
+                INTERMEDIATE,
+                HIDDEN,
+                "full compact Q8 gate",
+                residual_fraction,
+            )?;
+            gate_codes.extend(codes);
+            gate_scales.extend(scales);
+            append_q8_residual(&mut gate_residual, residual, "full compact Q8 gate")?;
+            let (codes, scales, residual) = pack_bf16_matrix_q8_group32_with_residual(
+                &gate_up[GATE_UP_ROW_BYTES..],
+                INTERMEDIATE,
+                HIDDEN,
+                "full compact Q8 up",
+                residual_fraction,
+            )?;
+            up_codes.extend(codes);
+            up_scales.extend(scales);
+            append_q8_residual(&mut up_residual, residual, "full compact Q8 up")?;
+            let down_base = expert * DOWN_ROW_BYTES;
+            let (codes, scales, residual) = pack_bf16_matrix_q8_group32_with_residual(
+                &expert_down.bytes[down_base..down_base + DOWN_ROW_BYTES],
+                HIDDEN,
+                INTERMEDIATE,
+                "full compact Q8 down",
+                residual_fraction,
+            )?;
+            down_codes.extend(codes);
+            down_scales.extend(scales);
+            append_q8_residual(&mut down_residual, residual, "full compact Q8 down")?;
+        }
+        let (gate_residual_row_ptr, gate_residual_indices, gate_residual_values) =
+            q8_residual_device_buffers(context, gate_residual)?;
+        let (up_residual_row_ptr, up_residual_indices, up_residual_values) =
+            q8_residual_device_buffers(context, up_residual)?;
+        let (down_residual_row_ptr, down_residual_indices, down_residual_values) =
+            q8_residual_device_buffers(context, down_residual)?;
+        Ok(CompactQ8DeviceWeights {
+            gate_codes: context.new_buffer_with_bytes_checked(&gate_codes)?,
+            gate_scales: context.new_buffer_with_bytes_checked(&gate_scales)?,
+            up_codes: context.new_buffer_with_bytes_checked(&up_codes)?,
+            up_scales: context.new_buffer_with_bytes_checked(&up_scales)?,
+            down_codes: context.new_buffer_with_bytes_checked(&down_codes)?,
+            down_scales: context.new_buffer_with_bytes_checked(&down_scales)?,
+            gate_residual_row_ptr,
+            gate_residual_indices,
+            gate_residual_values,
+            up_residual_row_ptr,
+            up_residual_indices,
+            up_residual_values,
+            down_residual_row_ptr,
+            down_residual_indices,
+            down_residual_values,
+            compact_experts,
+            residual_enabled,
+            residual_fraction,
+        })
     }
 
     fn f32_vec(tensor: &Tensor) -> Vec<f32> {
@@ -957,18 +1515,38 @@ mod macos {
         let k_norm_buf = context.new_buffer_with_bytes_checked(&f32_bytes(&f32_vec(&k_norm)))?;
         let o_weight = context.new_buffer_with_bytes_checked(&o_proj.bytes)?;
         let router_weight = context.new_buffer_with_bytes_checked(&router.bytes)?;
-        let expert_gate_up_device =
-            context.new_buffer_with_bytes_checked(&expert_gate_up_weight.bytes)?;
-        let expert_down_device =
-            context.new_buffer_with_bytes_checked(&expert_down_weight.bytes)?;
-        let route_lut = route_lut_host
-            .as_ref()
-            .map(|lut| context.new_buffer_with_bytes_checked(&u32_bytes(lut)))
-            .transpose()?;
         let compact_expert_count = selected_routes
             .as_ref()
             .map(|routes| routes.len())
             .unwrap_or(EXPERTS);
+        let q4_expert = if route_lut_host.is_some()
+            && resident_env_on("HAWKING_FLASH_Q4_COMPACT_MOE")
+            && !resident_env_on("HAWKING_FLASH_Q4_LINEAR_ONLY")
+            && q4_layer_allowed(args.layer)
+        {
+            Some(build_compact_q4_device_weights(
+                &context,
+                &expert_gate_up_weight,
+                &expert_down_weight,
+                compact_expert_count,
+            )?)
+        } else {
+            None
+        };
+        let expert_gate_up_device = if q4_expert.is_some() {
+            context.new_buffer_checked(1)?
+        } else {
+            context.new_buffer_with_bytes_checked(&expert_gate_up_weight.bytes)?
+        };
+        let expert_down_device = if q4_expert.is_some() {
+            context.new_buffer_checked(1)?
+        } else {
+            context.new_buffer_with_bytes_checked(&expert_down_weight.bytes)?
+        };
+        let route_lut = route_lut_host
+            .as_ref()
+            .map(|lut| context.new_buffer_with_bytes_checked(&u32_bytes(lut)))
+            .transpose()?;
         let shared_gate_weight = context.new_buffer_with_bytes_checked(&shared_gate.bytes)?;
         let shared_up_weight = context.new_buffer_with_bytes_checked(&shared_up.bytes)?;
         let shared_down_weight = context.new_buffer_with_bytes_checked(&shared_down.bytes)?;
@@ -1008,6 +1586,34 @@ mod macos {
         let mlp_block_logits = context.new_buffer_checked(STREAMS * 4)?;
         let final_state = context.new_buffer_checked(HC_ELEMENTS * 4)?;
         let device_prepare_ns = device_prepare_started.elapsed().as_nanos() as u64;
+        // The diagnostic oracle and source metadata above own their snapshots.
+        // The direct fast path below must not keep a second host copy of the
+        // immutable full-attention bank after the Metal upload succeeds.
+        drop((
+            hc_norm,
+            hc_down,
+            hc_up,
+            hc_block,
+            q_proj,
+            k_proj,
+            v_proj,
+            q_norm,
+            k_norm,
+            o_proj,
+            router,
+            expert_gate_up_weight,
+            expert_down_weight,
+            shared_gate,
+            shared_up,
+            shared_down,
+            shared_scalar,
+            mlp_norm,
+            mlp_down,
+            mlp_up,
+            mlp_block,
+            route_lut_host,
+            selected_routes,
+        ));
 
         let forward_started = Instant::now();
         let fused_qkv_gqa = env::var("HAWKING_FLASH_QKV_GQA_FUSED")
@@ -1026,6 +1632,8 @@ mod macos {
                 )
             })
             .unwrap_or(false);
+        let split_hc = split_hc_input();
+        let split_hc_pairs = split_hc_vec4_fused_pairs();
         let fused_hc_router = env::var("HAWKING_FLASH_HC_ROUTER_FUSED")
             .map(|value| {
                 matches!(
@@ -1033,7 +1641,8 @@ mod macos {
                     "1" | "true" | "on" | "yes"
                 )
             })
-            .unwrap_or(false);
+            .unwrap_or(false)
+            && !split_hc;
         let fused_moe_vec4 = env::var("HAWKING_FLASH_MOE_VEC4")
             .map(|value| {
                 matches!(
@@ -1047,25 +1656,42 @@ mod macos {
         if let Some(source) = external_input {
             tcb.copy_buffer_bytes(source, 0, &input_buf, 0, (HC_ELEMENTS * 4) as u64)?;
         }
-        qwen_next_hyperconnection_input_fused_with_block_tcb(
-            &mut tcb,
-            &input_buf,
-            &hc_norm_buf,
-            &hc_down_buf,
-            &hc_up_buf,
-            &normalized,
-            &hc_low,
-            &hc_low_activation,
-            &hc_gate,
-            &attn_input,
-            &hc_block_buf,
-            &attn_block_logits,
-            HIDDEN,
-            STREAMS,
-            HC_LOWRANK,
-            EPS,
-            STREAMS as f32,
-        )?;
+        if split_hc {
+            encode_hc_input_split(
+                &mut tcb,
+                &input_buf,
+                &hc_norm_buf,
+                &hc_down_buf,
+                &hc_up_buf,
+                &normalized,
+                &hc_low,
+                &hc_low_activation,
+                &hc_gate,
+                &attn_input,
+                &hc_block_buf,
+                &attn_block_logits,
+            )?;
+        } else {
+            qwen_next_hyperconnection_input_fused_with_block_tcb(
+                &mut tcb,
+                &input_buf,
+                &hc_norm_buf,
+                &hc_down_buf,
+                &hc_up_buf,
+                &normalized,
+                &hc_low,
+                &hc_low_activation,
+                &hc_gate,
+                &attn_input,
+                &hc_block_buf,
+                &attn_block_logits,
+                HIDDEN,
+                STREAMS,
+                HC_LOWRANK,
+                EPS,
+                STREAMS as f32,
+            )?;
+        }
         if fused_qkv_gqa {
             qwen_next_bf16_qkv_gqa_rope_cache_tcb(
                 &mut tcb,
@@ -1211,6 +1837,22 @@ mod macos {
                 EPS,
                 STREAMS as f32,
                 true,
+                false,
+            )?;
+        } else if split_hc {
+            encode_hc_input_split(
+                &mut tcb,
+                &post_attn_state,
+                &mlp_norm_weight,
+                &mlp_down_weight,
+                &mlp_up_weight,
+                &mlp_normalized,
+                &mlp_low,
+                &mlp_low_activation,
+                &mlp_gate,
+                &mlp_input,
+                &mlp_block_weight,
+                &mlp_block_logits,
             )?;
         } else {
             qwen_next_hyperconnection_input_fused_with_block_tcb(
@@ -1272,7 +1914,46 @@ mod macos {
         }
         let fused_route_accumulate = args.fused_route_accumulate && route_lut.is_some();
         if let Some(route_lut) = route_lut.as_ref() {
-            if fused_route_accumulate {
+            if let Some(q4) = q4_expert.as_ref() {
+                if fused_route_accumulate {
+                    qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_tcb(
+                        &mut tcb,
+                        &q4.gate_codes,
+                        &q4.gate_scales,
+                        &q4.up_codes,
+                        &q4.up_scales,
+                        &route_ids,
+                        route_lut,
+                        &mlp_input,
+                        &routed_activation,
+                        &shared_gate_weight,
+                        &shared_up_weight,
+                        &shared_activation,
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                } else {
+                    qwen_uniform_q4_group64_compact_gate_up_swiglu_tcb(
+                        &mut tcb,
+                        &q4.gate_codes,
+                        &q4.gate_scales,
+                        &q4.up_codes,
+                        &q4.up_scales,
+                        &route_ids,
+                        route_lut,
+                        &mlp_input,
+                        &routed_activation,
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                }
+            } else if fused_route_accumulate {
                 qwen_next_bf16_compact_expert_gate_up_shared_swiglu_tcb(
                     &mut tcb,
                     &expert_gate_up_device,
@@ -1288,6 +1969,7 @@ mod macos {
                     INTERMEDIATE,
                     HIDDEN,
                     EXPERTS,
+                    args.layer,
                 )?;
             } else {
                 qwen_next_bf16_compact_expert_gate_up_swiglu_tcb(
@@ -1305,19 +1987,36 @@ mod macos {
                 )?;
             }
             if !fused_route_accumulate {
-                qwen_next_bf16_compact_expert_down_tcb(
-                    &mut tcb,
-                    &expert_down_device,
-                    &route_ids,
-                    route_lut,
-                    &routed_activation,
-                    &routed_outputs,
-                    compact_expert_count,
-                    TOP_K,
-                    INTERMEDIATE,
-                    HIDDEN,
-                    EXPERTS,
-                )?;
+                if let Some(q4) = q4_expert.as_ref() {
+                    qwen_uniform_q4_group64_compact_down_tcb(
+                        &mut tcb,
+                        &q4.down_codes,
+                        &q4.down_scales,
+                        &route_ids,
+                        route_lut,
+                        &routed_activation,
+                        &routed_outputs,
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                } else {
+                    qwen_next_bf16_compact_expert_down_tcb(
+                        &mut tcb,
+                        &expert_down_device,
+                        &route_ids,
+                        route_lut,
+                        &routed_activation,
+                        &routed_outputs,
+                        compact_expert_count,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                }
             }
         } else {
             qwen_next_bf16_expert_gate_up_swiglu_tcb(
@@ -1355,31 +2054,60 @@ mod macos {
             )?;
         }
         if fused_route_accumulate {
-            qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb(
-                &mut tcb,
-                &expert_down_device,
-                &route_ids,
-                route_lut.as_ref().expect("fused route LUT"),
-                &routed_activation,
-                &route_weights,
-                &shared_down_weight,
-                &shared_activation,
-                &shared_scalar_output,
-                &routed_sum,
-                &shared_output,
-                &shared_gated_output,
-                &moe_output,
-                &post_attn_state,
-                &mlp_block_logits,
-                &final_state,
-                compact_expert_count,
-                TOP_K,
-                INTERMEDIATE,
-                HIDDEN,
-                EXPERTS,
-                STREAMS,
-                STREAMS as f32,
-            )?;
+            if let Some(q4) = q4_expert.as_ref() {
+                qwen_uniform_q4_group64_compact_down_shared_direct_hc_tcb(
+                    &mut tcb,
+                    &q4.down_codes,
+                    &q4.down_scales,
+                    &route_ids,
+                    route_lut.as_ref().expect("fused route LUT"),
+                    &routed_activation,
+                    &route_weights,
+                    &shared_down_weight,
+                    &shared_activation,
+                    &shared_scalar_output,
+                    &routed_sum,
+                    &shared_output,
+                    &shared_gated_output,
+                    &moe_output,
+                    &post_attn_state,
+                    &mlp_block_logits,
+                    &final_state,
+                    q4.compact_experts,
+                    TOP_K,
+                    INTERMEDIATE,
+                    HIDDEN,
+                    EXPERTS,
+                    STREAMS,
+                    STREAMS as f32,
+                )?;
+            } else {
+                qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb(
+                    &mut tcb,
+                    &expert_down_device,
+                    &route_ids,
+                    route_lut.as_ref().expect("fused route LUT"),
+                    &routed_activation,
+                    &route_weights,
+                    &shared_down_weight,
+                    &shared_activation,
+                    &shared_scalar_output,
+                    &routed_sum,
+                    &shared_output,
+                    &shared_gated_output,
+                    &moe_output,
+                    &post_attn_state,
+                    &mlp_block_logits,
+                    &final_state,
+                    compact_expert_count,
+                    TOP_K,
+                    INTERMEDIATE,
+                    HIDDEN,
+                    EXPERTS,
+                    STREAMS,
+                    STREAMS as f32,
+                )?;
+            }
         } else {
             native_bf16_gemv_seq_tcb(
                 &mut tcb,
@@ -1419,7 +2147,16 @@ mod macos {
             .saturating_sub(4)
             .saturating_sub(if fused_route_accumulate { 5 } else { 2 })
             .saturating_sub(1)
-            .saturating_sub(if args.fused_attention_gate { 1 } else { 0 });
+            .saturating_sub(if args.fused_attention_gate { 1 } else { 0 })
+            .saturating_add(if split_hc {
+                if split_hc_pairs {
+                    6
+                } else {
+                    10
+                }
+            } else {
+                0
+            });
         if tcb.dispatch_count() != expected_dispatches {
             return Err(format!(
                 "full-attention organ dispatch drift: {} expected {}",
@@ -1552,7 +2289,7 @@ mod macos {
                 "tensors": source_tensors,
                 "geometry": {"hidden": HIDDEN, "query_heads": QUERY_HEADS, "kv_heads": KV_HEADS, "head_dim": HEAD_DIM, "rotary_dim": ROTARY_DIM, "rope_theta": ROPE_THETA}},
             "parity": {"hyperconnection_norm": norm_metrics, "attention_input": input_metrics, "q_projection": q_metrics, "k_projection": k_metrics, "v_projection": v_metrics, "query_norm_rope": query_metrics, "key_norm_rope": key_metrics, "causal_attention": attention_metrics, "sigmoid_gate": gated_metrics, "output": output_metrics, "attention_block_logits": block_metrics, "post_attention_hyperconnection": post_metrics, "mlp_hyperconnection_norm": mlp_norm_metrics, "mlp_input": mlp_input_metrics, "router_logits": router_metrics, "route_ids": {"expected": expected_route_ids, "observed": route_ids_observed, "match": route_ids_match}, "route_weights": route_weight_metrics, "routed_sum": routed_sum_metrics, "shared_gated_output": shared_metrics, "moe_output": moe_metrics, "mlp_block_logits": mlp_block_metrics, "final_hyperconnection": final_metrics},
-            "execution": {"device": device, "provider": "apple_metal", "native_source_bf16": true, "dispatches": timing.dispatches, "command_buffers": timing.command_buffers, "gpu_ns": timing.gpu_ns, "wall_ns": forward_wall_ns, "fallback_count": 0, "position": 0, "attention_gate": if args.fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !args.fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "route_accumulation": if fused_route_accumulate { "fused_compact_gate_up_shared_down_direct_hc" } else { "materialized_routed_outputs_then_weighted_sum_hc" }, "routed_output_materialized": !fused_route_accumulate, "shared_gate_up_fused": fused_route_accumulate, "compact_moe_load_geometry": if fused_route_accumulate && fused_moe_vec4 { "exact_order_vec4_candidate" } else if fused_route_accumulate { "scalar_authority" } else { "not_applicable" }, "mlp_hyperconnection": "fused_into_moe_epilogue"},
+            "execution": {"device": device, "provider": "apple_metal", "native_source_bf16": true, "immutable_weight_ownership": "device_only_after_source_upload", "host_source_weights_retained_during_forward": false, "dispatches": timing.dispatches, "command_buffers": timing.command_buffers, "gpu_ns": timing.gpu_ns, "wall_ns": forward_wall_ns, "fallback_count": 0, "position": 0, "attention_gate": if args.fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !args.fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "route_accumulation": if fused_route_accumulate { "fused_compact_gate_up_shared_down_direct_hc" } else { "materialized_routed_outputs_then_weighted_sum_hc" }, "routed_output_materialized": !fused_route_accumulate, "shared_gate_up_fused": fused_route_accumulate, "q4_compact_moe": q4_expert.is_some(), "q4_group_size": 64, "routed_expert_device_bytes": q4_expert.as_ref().map(CompactQ4DeviceWeights::resident_bytes).unwrap_or((compact_expert_count * (2 * INTERMEDIATE * HIDDEN + HIDDEN * INTERMEDIATE) * 2) as u64), "compact_moe_load_geometry": if fused_route_accumulate && fused_moe_vec4 { "exact_order_vec4_candidate" } else if fused_route_accumulate { "scalar_authority" } else { "not_applicable" }, "mlp_hyperconnection": "fused_into_moe_epilogue"},
             "timing": {"root_canonicalize_ns": root_canonicalize_ns, "manifest_ns": manifest_ns, "config_ns": config_ns, "index_context_ns": index_context_ns, "input_load_ns": input_load_ns, "source_load_ns": source_load_ns, "source_payload_bytes_read": source_payload_bytes_read, "source_cache_policy": source_cache_policy(), "oracle_ns": oracle_ns, "device_prepare_ns": device_prepare_ns, "encode_ns": encode_ns, "command_wait_ns": command_wait_ns, "gpu_ns": timing.gpu_ns, "forward_wall_ns": forward_wall_ns, "parity_ns": parity_ns, "state_write_ns": state_write_ns, "receipt_write_ns": Value::Null, "total_before_receipt_ns": total_before_receipt_ns, "decomposition": "source_open/index/config/input + source payload + CPU oracle + device preparation + command encoding/wait + parity reads/metrics + state serialization + receipt write"},
             "claim_boundary": format!("This proves only the layer-{} source-BF16 full-attention plus routed/shared MoE organ through its second HyperConnection combine for the explicitly identified single-token state. It does not prove later layers, complete token, tokenizer, decoding, TPS, EBPW, or resident promotion.", args.layer),
             "promotion_allowed": false,
@@ -1647,6 +2384,7 @@ mod macos {
                 )
             })
             .unwrap_or(false);
+        let split_hc = split_hc_input();
         let fused_hc_router = env::var("HAWKING_FLASH_HC_ROUTER_FUSED")
             .map(|value| {
                 matches!(
@@ -1654,7 +2392,8 @@ mod macos {
                     "1" | "true" | "on" | "yes"
                 )
             })
-            .unwrap_or(false);
+            .unwrap_or(false)
+            && !split_hc;
         let fused_moe_vec4 = env::var("HAWKING_FLASH_MOE_VEC4")
             .map(|value| {
                 matches!(
@@ -1708,6 +2447,8 @@ mod macos {
                 bytes,
             )
         };
+        let source_payload_bytes_before = index.bytes_read_total();
+        let source_load_started = Instant::now();
         let hc_norm = tensor(&index, layer_tensor_name(layer, HC_NORM), &[HC_ELEMENTS])?;
         let hc_down = tensor(
             &index,
@@ -1832,6 +2573,8 @@ mod macos {
             layer_tensor_name(layer, HC_MLP_BLOCK),
             &[STREAMS, HC_ELEMENTS],
         )?;
+        let source_load_ns = source_load_started.elapsed().as_nanos() as u64;
+        let oracle_started = Instant::now();
         let expected_norm = grouped_hc_norm(&first_base, &f32_vec(&hc_norm));
         let expected_input = hc_read_mix(&expected_norm, &hc_down.bytes, &hc_up.bytes);
         let expected_q = matvec(&q_proj.bytes, QUERY_DIM * 2, HIDDEN, &expected_input);
@@ -1897,8 +2640,10 @@ mod macos {
             &expected_moe_output,
             &expected_mlp_block_logits,
         );
+        let oracle_ns = oracle_started.elapsed().as_nanos() as u64;
 
         let device = context.device_name();
+        let device_prepare_started = Instant::now();
         let hc_norm_buf = context.new_buffer_with_bytes_checked(&hc_norm.bytes)?;
         let hc_down_buf = context.new_buffer_with_bytes_checked(&hc_down.bytes)?;
         let hc_up_buf = context.new_buffer_with_bytes_checked(&hc_up.bytes)?;
@@ -1910,10 +2655,34 @@ mod macos {
         let o_weight = context.new_buffer_with_bytes_checked(&o_proj.bytes)?;
         let hc_block_buf = context.new_buffer_with_bytes_checked(&hc_block.bytes)?;
         let router_weight = context.new_buffer_with_bytes_checked(&router.bytes)?;
-        let expert_gate_up_device =
-            context.new_buffer_with_bytes_checked(&expert_gate_up_weight.bytes)?;
-        let expert_down_device =
-            context.new_buffer_with_bytes_checked(&expert_down_weight.bytes)?;
+        let compact_experts = selected_routes
+            .as_ref()
+            .map(|routes| routes.len())
+            .unwrap_or(EXPERTS);
+        let q4_expert = if route_lut_host.is_some()
+            && resident_env_on("HAWKING_FLASH_Q4_COMPACT_MOE")
+            && !resident_env_on("HAWKING_FLASH_Q4_LINEAR_ONLY")
+            && q4_layer_allowed(layer)
+        {
+            Some(build_compact_q4_device_weights(
+                &context,
+                &expert_gate_up_weight,
+                &expert_down_weight,
+                compact_experts,
+            )?)
+        } else {
+            None
+        };
+        let expert_gate_up_device = if q4_expert.is_some() {
+            context.new_buffer_checked(1)?
+        } else {
+            context.new_buffer_with_bytes_checked(&expert_gate_up_weight.bytes)?
+        };
+        let expert_down_device = if q4_expert.is_some() {
+            context.new_buffer_checked(1)?
+        } else {
+            context.new_buffer_with_bytes_checked(&expert_down_weight.bytes)?
+        };
         let shared_gate_weight = context.new_buffer_with_bytes_checked(&shared_gate.bytes)?;
         let shared_up_weight = context.new_buffer_with_bytes_checked(&shared_up.bytes)?;
         let shared_down_weight = context.new_buffer_with_bytes_checked(&shared_down.bytes)?;
@@ -1950,10 +2719,6 @@ mod macos {
             .as_ref()
             .map(|lut| context.new_buffer_with_bytes_checked(&u32_bytes(lut)))
             .transpose()?;
-        let compact_experts = selected_routes
-            .as_ref()
-            .map(|routes| routes.len())
-            .unwrap_or(EXPERTS);
         let fused_route_accumulate = route_lut.is_some();
         let route_weights = context.new_buffer_checked(TOP_K * 4)?;
         let routed_activation = context.new_buffer_checked(TOP_K * INTERMEDIATE * 4)?;
@@ -1966,6 +2731,37 @@ mod macos {
         let moe_output = context.new_buffer_checked(HIDDEN * 4)?;
         let mlp_block_logits = context.new_buffer_checked(STREAMS * 4)?;
         let final_state = context.new_buffer_checked(HC_ELEMENTS * 4)?;
+        let device_prepare_ns = device_prepare_started.elapsed().as_nanos() as u64;
+        // The source tensors have completed their only valid authority role:
+        // construction of the device bank and the first-step CPU oracle above.
+        // Keeping them through every stateful token would duplicate immutable
+        // full-attention weights on host and Metal for no execution benefit.
+        // The active path below references only device buffers.
+        drop((
+            hc_norm,
+            hc_down,
+            hc_up,
+            q_proj,
+            k_proj,
+            v_proj,
+            q_norm,
+            k_norm,
+            o_proj,
+            hc_block,
+            router,
+            expert_gate_up_weight,
+            expert_down_weight,
+            shared_gate,
+            shared_up,
+            shared_down,
+            shared_scalar,
+            mlp_norm,
+            mlp_down,
+            mlp_up,
+            mlp_block,
+            route_lut_host,
+            selected_routes,
+        ));
         let mut final_states: Vec<Vec<f32>> = Vec::with_capacity(token_ids.len());
         let rows = token_ids.iter().enumerate().map(|(step, &token_id)| -> Result<Value, Box<dyn Error>> {
             let (base, embedding_sha, embedding_bytes) = if let Some(states) = input_states {
@@ -1977,12 +2773,30 @@ mod macos {
             };
             MetalContext::write_buffer_bytes(&input_buf, &f32_bytes(&base));
             let started = Instant::now();
+            let encode_started = Instant::now();
             let mut tcb = TokenCommandBuffer::new(&context);
-            qwen_next_hyperconnection_input_fused_with_block_tcb(
-                &mut tcb, &input_buf, &hc_norm_buf, &hc_down_buf, &hc_up_buf,
-                &normalized, &low, &low_activation, &gate, &attn_input,
-                &hc_block_buf, &attn_block_logits, HIDDEN, STREAMS, HC_LOWRANK, EPS, STREAMS as f32,
-            )?;
+            if split_hc {
+                encode_hc_input_split(
+                    &mut tcb,
+                    &input_buf,
+                    &hc_norm_buf,
+                    &hc_down_buf,
+                    &hc_up_buf,
+                    &normalized,
+                    &low,
+                    &low_activation,
+                    &gate,
+                    &attn_input,
+                    &hc_block_buf,
+                    &attn_block_logits,
+                )?;
+            } else {
+                qwen_next_hyperconnection_input_fused_with_block_tcb(
+                    &mut tcb, &input_buf, &hc_norm_buf, &hc_down_buf, &hc_up_buf,
+                    &normalized, &low, &low_activation, &gate, &attn_input,
+                    &hc_block_buf, &attn_block_logits, HIDDEN, STREAMS, HC_LOWRANK, EPS, STREAMS as f32,
+                )?;
+            }
             if fused_qkv_gqa {
                 qwen_next_bf16_qkv_gqa_rope_cache_tcb(
                     &mut tcb, &q_weight, &k_weight, &v_weight, &attn_input,
@@ -2023,6 +2837,22 @@ mod macos {
                     &mlp_block_weight, &mlp_block_logits, &router_weight, &shared_scalar_weight,
                     &router_logits, &shared_scalar_output, &route_ids, &route_weights,
                     HIDDEN, STREAMS, HC_LOWRANK, EXPERTS, TOP_K, EPS, STREAMS as f32, true,
+                    false,
+                )?;
+            } else if split_hc {
+                encode_hc_input_split(
+                    &mut tcb,
+                    &post_attn_state,
+                    &mlp_norm_weight,
+                    &mlp_down_weight,
+                    &mlp_up_weight,
+                    &mlp_normalized,
+                    &mlp_low,
+                    &mlp_low_activation,
+                    &mlp_gate,
+                    &mlp_input,
+                    &mlp_block_weight,
+                    &mlp_block_logits,
                 )?;
             } else {
                 qwen_next_hyperconnection_input_fused_with_block_tcb(
@@ -2051,11 +2881,43 @@ mod macos {
                 moe_topk_gate_tcb_ex(&mut tcb, &router_logits, &route_ids, &route_weights, EXPERTS, TOP_K, true)?;
             }
             if let Some(route_lut) = route_lut.as_ref() {
-                if fused_route_accumulate {
+                if let Some(q4) = q4_expert.as_ref() {
+                    qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_tcb(
+                        &mut tcb,
+                        &q4.gate_codes,
+                        &q4.gate_scales,
+                        &q4.up_codes,
+                        &q4.up_scales,
+                        &route_ids,
+                        route_lut,
+                        &mlp_input,
+                        &routed_activation,
+                        &shared_gate_weight,
+                        &shared_up_weight,
+                        &shared_activation,
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                } else if fused_route_accumulate {
                     qwen_next_bf16_compact_expert_gate_up_shared_swiglu_tcb(
-                        &mut tcb, &expert_gate_up_device, &route_ids, route_lut, &mlp_input,
-                        &routed_activation, &shared_gate_weight, &shared_up_weight, &shared_activation,
-                        compact_experts, TOP_K, INTERMEDIATE, HIDDEN, EXPERTS,
+                        &mut tcb,
+                        &expert_gate_up_device,
+                        &route_ids,
+                        route_lut,
+                        &mlp_input,
+                        &routed_activation,
+                        &shared_gate_weight,
+                        &shared_up_weight,
+                        &shared_activation,
+                        compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        layer,
                     )?;
                 } else {
                     qwen_next_bf16_compact_expert_gate_up_swiglu_tcb(&mut tcb, &expert_gate_up_device, &route_ids, route_lut, &mlp_input, &routed_activation, compact_experts, TOP_K, INTERMEDIATE, HIDDEN, EXPERTS)?;
@@ -2064,17 +2926,64 @@ mod macos {
                 qwen_next_bf16_expert_gate_up_swiglu_tcb(&mut tcb, &expert_gate_up_device, &route_ids, &mlp_input, &routed_activation, EXPERTS, TOP_K, INTERMEDIATE, HIDDEN)?;
                 qwen_next_bf16_expert_down_tcb(&mut tcb, &expert_down_device, &route_ids, &routed_activation, &routed_outputs, EXPERTS, TOP_K, INTERMEDIATE, HIDDEN)?;
             }
-            if !fused_route_accumulate {
+            if !fused_route_accumulate && q4_expert.is_none() {
                 native_bf16_swiglu_seq_tcb(&mut tcb, &shared_gate_weight, &shared_up_weight, &mlp_input, &shared_activation, INTERMEDIATE, HIDDEN)?;
             }
             if let Some(route_lut) = route_lut.as_ref() {
-                qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb(
-                    &mut tcb, &expert_down_device, &route_ids, route_lut, &routed_activation,
-                    &route_weights, &shared_down_weight, &shared_activation, &shared_scalar_output,
-                    &routed_sum, &shared_output, &shared_gated_output, &moe_output,
-                    &post_attn_state, &mlp_block_logits, &final_state,
-                    compact_experts, TOP_K, INTERMEDIATE, HIDDEN, EXPERTS, STREAMS, STREAMS as f32,
-                )?;
+                if let Some(q4) = q4_expert.as_ref() {
+                    qwen_uniform_q4_group64_compact_down_shared_direct_hc_tcb(
+                        &mut tcb,
+                        &q4.down_codes,
+                        &q4.down_scales,
+                        &route_ids,
+                        route_lut,
+                        &routed_activation,
+                        &route_weights,
+                        &shared_down_weight,
+                        &shared_activation,
+                        &shared_scalar_output,
+                        &routed_sum,
+                        &shared_output,
+                        &shared_gated_output,
+                        &moe_output,
+                        &post_attn_state,
+                        &mlp_block_logits,
+                        &final_state,
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        STREAMS,
+                        STREAMS as f32,
+                    )?;
+                } else {
+                    qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb(
+                        &mut tcb,
+                        &expert_down_device,
+                        &route_ids,
+                        route_lut,
+                        &routed_activation,
+                        &route_weights,
+                        &shared_down_weight,
+                        &shared_activation,
+                        &shared_scalar_output,
+                        &routed_sum,
+                        &shared_output,
+                        &shared_gated_output,
+                        &moe_output,
+                        &post_attn_state,
+                        &mlp_block_logits,
+                        &final_state,
+                        compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        STREAMS,
+                        STREAMS as f32,
+                    )?;
+                }
             } else {
                 native_bf16_gemv_seq_tcb(&mut tcb, &shared_down_weight, &shared_activation, &shared_output, HIDDEN, INTERMEDIATE)?;
                 qwen_next_moe_weighted_sum_add_shared_sigmoid_hc_tcb(
@@ -2085,8 +2994,12 @@ mod macos {
                 )?;
             }
             let dispatches = tcb.dispatch_count();
+            let encode_ns = encode_started.elapsed().as_nanos() as u64;
+            let command_wait_started = Instant::now();
             let timing = tcb.commit_and_wait_timed()?;
+            let command_wait_ns = command_wait_started.elapsed().as_nanos() as u64;
             let wall_ns = started.elapsed().as_nanos() as u64;
+            let snapshot_started = Instant::now();
             let query_observed = device_f32(&query_out, QUERY_DIM);
             let attention_observed = if fused_attention_gate {
                 device_f32(&gated_out, QUERY_DIM)
@@ -2099,7 +3012,8 @@ mod macos {
             final_states.push(final_observed.clone());
             let parity = if step == 0 { Some(json!({"query": metrics(&expected_query, &query_observed), "final_state": metrics(&expected_final_state, &final_observed)})) } else { None };
             let route_ids_observed = u32_values(&route_ids, TOP_K);
-            Ok(json!({"step": step, "token_id": token_id, "embedding_sha256": embedding_sha, "embedding_bytes": embedding_bytes, "sequence_length": step + 1, "dispatches": dispatches, "gpu_ns": timing.gpu_ns, "wall_ns": wall_ns, "key_slot_sha256": sha256(&f32_bytes(slot)), "attention_observed_kind": if fused_attention_gate { "gated_attention" } else { "raw_attention" }, "attention_sha256": sha256(&f32_bytes(&attention_observed)), "final_state_sha256": sha256(&f32_bytes(&final_observed)), "route_ids": route_ids_observed, "finite": final_observed.iter().all(|v| v.is_finite()), "first_step_parity": parity}))
+            let state_snapshot_ns = snapshot_started.elapsed().as_nanos() as u64;
+            Ok(json!({"step": step, "token_id": token_id, "embedding_sha256": embedding_sha, "embedding_bytes": embedding_bytes, "sequence_length": step + 1, "dispatches": dispatches, "gpu_ns": timing.gpu_ns, "wall_ns": wall_ns, "encode_ns": encode_ns, "command_wait_ns": command_wait_ns, "state_snapshot_ns": state_snapshot_ns, "key_slot_sha256": sha256(&f32_bytes(slot)), "attention_observed_kind": if fused_attention_gate { "gated_attention" } else { "raw_attention" }, "attention_sha256": sha256(&f32_bytes(&attention_observed)), "final_state_sha256": sha256(&f32_bytes(&final_observed)), "route_ids": route_ids_observed, "finite": final_observed.iter().all(|v| v.is_finite()), "first_step_parity": parity}))
         }).collect::<Result<Vec<_>, _>>()?;
         let distinct_slots = rows
             .windows(2)
@@ -2113,7 +3027,7 @@ mod macos {
             "schema": "hawking.flash.stateful_attention_organ_probe.v1",
             "status": if distinct_slots { "PASSED_STATEFUL_KV_ORGAN" } else { "BLOCKED_KV_SLOT_NOT_DISTINCT" },
             "model": REPO, "pinned_revision": REVISION, "layer": layer, "token_ids": token_ids,
-            "execution": {"device": device, "provider": "apple_metal", "process_boundary": "one native process", "context_reused": true, "weights_reused": true, "kv_cache_reused": true, "kv_cache_slots": token_ids.len(), "full_attention_mlp_epilogue": true, "mlp_hyperconnection": "fused_into_moe_epilogue", "attention_gate": if fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "compact_moe_load_geometry": if route_lut_host.is_some() && fused_moe_vec4 { "exact_order_vec4_candidate" } else if route_lut_host.is_some() { "scalar_authority" } else { "not_applicable" }, "input_kind": input_kind, "expert_bank_mode": if route_lut_host.is_some() { "route_union_compact" } else { "dense" }, "compact_expert_count": compact_experts, "source_payload_bytes_read": index.bytes_read_total(), "first_input_sha256": first_sha, "first_input_bytes": first_bytes},
+            "execution": {"device": device, "provider": "apple_metal", "process_boundary": "one native process", "context_reused": true, "weights_reused": true, "immutable_weight_ownership": "device_only_after_source_upload", "host_source_weights_retained_during_token_loop": false, "kv_cache_reused": true, "kv_cache_slots": token_ids.len(), "state_memory": {"key_cache_bytes": token_ids.len() * KV_DIM * std::mem::size_of::<f32>(), "value_cache_bytes": token_ids.len() * KV_DIM * std::mem::size_of::<f32>(), "persistent_kv_bytes": token_ids.len() * KV_DIM * 2 * std::mem::size_of::<f32>(), "growth_bytes_per_token": KV_DIM * 2 * std::mem::size_of::<f32>()}, "full_attention_mlp_epilogue": true, "mlp_hyperconnection": "fused_into_moe_epilogue", "attention_gate": if fused_attention_gate { "fused_into_mha_final_write" } else { "standalone_qwen80_attention_apply_sigmoid_gate" }, "raw_attention_materialized": !fused_attention_gate, "qkv_gqa_fused": fused_qkv_gqa, "router_topk_fused": fused_router_topk || fused_hc_router, "router_topk_fused_into_mlp_hc": fused_hc_router, "compact_moe_load_geometry": if route_lut.is_some() && fused_moe_vec4 { "exact_order_vec4_candidate" } else if route_lut.is_some() { "scalar_authority" } else { "not_applicable" }, "input_kind": input_kind, "expert_bank_mode": if route_lut.is_some() { "route_union_compact" } else { "dense" }, "compact_expert_count": compact_experts, "source_payload_bytes_read": index.bytes_read_total().saturating_sub(source_payload_bytes_before), "source_payload_bytes_read_cumulative": index.bytes_read_total(), "first_input_sha256": first_sha, "first_input_bytes": first_bytes, "timing": {"source_load_ns": source_load_ns, "oracle_ns": oracle_ns, "device_prepare_ns": device_prepare_ns, "decomposition": "source tensor reads + CPU oracle + Metal buffer preparation + per-token encode/wait/snapshot"}},
             "steps": rows, "distinct_kv_slots": distinct_slots, "stateful_final_state": true, "accepted_generation_tokens": 0, "accepted_tps": Value::Null, "complete_system_ebpw": Value::Null, "promotion_allowed": false,
             "bench": {"state": "UNKNOWN", "recorded_at": format!("unix-ms:{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis()), "recorded_by": "flash_stateful_attention_probe", "machine": device, "rule": "S032 §3 -- stateful organ timing; quiescence unknown"},
             "claim_boundary": if input_states.is_some() { "This proves a cross-species seam from stateful linear-prefix outputs through a persistent full-attention KV organ and its HyperConnection/routed/shared-MoE MLP epilogue, with distinct KV slots and first-step final-state parity. It does not prove device-only cross-module handoff, 48-layer token acceptance, complete-model TPS, EBPW, or resident promotion." } else { "This proves persistent multi-position KV cache writes and the full-attention HyperConnection/routed/shared-MoE MLP epilogue, with first-step final-state parity. It does not prove cross-species state handoff, full-model token acceptance, complete-model TPS, EBPW, or resident promotion." },
@@ -2127,6 +3041,1260 @@ mod macos {
         println!("{}", serde_json::to_string_pretty(&doc)?);
         Ok(final_states)
     }
+
+    /// A device-owned full-attention organ that can advance one token at a
+    /// time without re-reading or re-uploading immutable weights.  It is the
+    /// full-attention counterpart to `StatefulLinearLayer`: the caller owns
+    /// the cross-organ schedule while this type owns its KV state and all
+    /// Metal banks.  The public step result intentionally retains a host
+    /// diagnostic snapshot for the current session seam; that snapshot is not
+    /// an immutable-weight fallback and is not part of the device state.
+    pub(crate) struct StatefulFullAttentionLayer {
+        layer: usize,
+        weight_buffers: Vec<PinnedBuffer>,
+        graph_buffers: Vec<PinnedBuffer>,
+        route_lut: Option<PinnedBuffer>,
+        q4_expert: Option<CompactQ4DeviceWeights>,
+        q8_expert: Option<CompactQ8DeviceWeights>,
+        compact_experts: usize,
+        max_tokens: usize,
+        fused_attention_gate: bool,
+        fused_qkv_gqa: bool,
+        fused_router_topk: bool,
+        fused_hc_router: bool,
+        source_load_ns: u64,
+        device_prepare_ns: u64,
+        graph_prepare_ns: u64,
+        source_payload_bytes: u64,
+        device_weight_bytes: u64,
+    }
+
+    // Immutable full-attention bank layout.  Keeping the index mapping local
+    // prevents a second per-model registry while preserving a compact generic
+    // buffer container for the resident owner.
+    const W_HC_NORM: usize = 0;
+    const W_HC_DOWN: usize = 1;
+    const W_HC_UP: usize = 2;
+    const W_Q: usize = 3;
+    const W_K: usize = 4;
+    const W_V: usize = 5;
+    const W_Q_NORM: usize = 6;
+    const W_K_NORM: usize = 7;
+    const W_O: usize = 8;
+    const W_HC_BLOCK: usize = 9;
+    const W_ROUTER: usize = 10;
+    const W_EXPERT_GATE_UP: usize = 11;
+    const W_EXPERT_DOWN: usize = 12;
+    const W_SHARED_GATE: usize = 13;
+    const W_SHARED_UP: usize = 14;
+    const W_SHARED_DOWN: usize = 15;
+    const W_SHARED_SCALAR: usize = 16;
+    const W_MLP_NORM: usize = 17;
+    const W_MLP_DOWN: usize = 18;
+    const W_MLP_UP: usize = 19;
+    const W_MLP_BLOCK: usize = 20;
+
+    // Mutable per-layer device graph layout.
+    const G_INPUT: usize = 0;
+    const G_NORMALIZED: usize = 1;
+    const G_LOW: usize = 2;
+    const G_LOW_ACTIVATION: usize = 3;
+    const G_GATE: usize = 4;
+    const G_ATTN_INPUT: usize = 5;
+    const G_Q_OUT: usize = 6;
+    const G_K_OUT: usize = 7;
+    const G_V_OUT: usize = 8;
+    const G_QUERY_OUT: usize = 9;
+    const G_KEY_CACHE: usize = 10;
+    const G_VALUE_CACHE: usize = 11;
+    const G_ATTENTION_OUT: usize = 12;
+    const G_GATED_OUT: usize = 13;
+    const G_OUTPUT: usize = 14;
+    const G_ATTN_BLOCK_LOGITS: usize = 15;
+    const G_POST_ATTN_STATE: usize = 16;
+    const G_MLP_NORMALIZED: usize = 17;
+    const G_MLP_LOW: usize = 18;
+    const G_MLP_LOW_ACTIVATION: usize = 19;
+    const G_MLP_GATE: usize = 20;
+    const G_MLP_INPUT: usize = 21;
+    const G_ROUTER_LOGITS: usize = 22;
+    const G_ROUTE_IDS: usize = 23;
+    const G_ROUTE_WEIGHTS: usize = 24;
+    const G_ROUTED_ACTIVATION: usize = 25;
+    const G_ROUTED_OUTPUTS: usize = 26;
+    const G_ROUTED_SUM: usize = 27;
+    const G_SHARED_ACTIVATION: usize = 28;
+    const G_SHARED_OUTPUT: usize = 29;
+    const G_SHARED_SCALAR_OUTPUT: usize = 30;
+    const G_SHARED_GATED_OUTPUT: usize = 31;
+    const G_MOE_OUTPUT: usize = 32;
+    const G_MLP_BLOCK_LOGITS: usize = 33;
+    const G_FINAL_STATE: usize = 34;
+
+    fn resident_env_on(name: &str) -> bool {
+        env::var(name)
+            .map(|value| {
+                matches!(
+                    value.trim().to_ascii_lowercase().as_str(),
+                    "1" | "true" | "on" | "yes"
+                )
+            })
+            .unwrap_or(false)
+    }
+
+    fn q4_layer_allowed(layer: usize) -> bool {
+        env::var("HAWKING_FLASH_Q4_EXCLUDE_LAYERS")
+            .map(|spec| {
+                !spec
+                    .split(',')
+                    .filter_map(|value| value.trim().parse::<usize>().ok())
+                    .any(|excluded| excluded == layer)
+            })
+            .unwrap_or(true)
+    }
+
+    fn q8_layer_allowed(layer: usize) -> bool {
+        env::var("HAWKING_FLASH_Q8_EXCLUDE_LAYERS")
+            .map(|spec| {
+                !spec
+                    .split(',')
+                    .filter_map(|value| value.trim().parse::<usize>().ok())
+                    .any(|excluded| excluded == layer)
+            })
+            .unwrap_or(true)
+    }
+
+    fn split_hc_input() -> bool {
+        resident_env_on("HAWKING_FLASH_HC_SPLIT")
+    }
+
+    fn split_hc_vec4_fused_pairs() -> bool {
+        split_hc_input()
+            && resident_env_on("HAWKING_FLASH_BF16_VEC4")
+            && resident_env_on("HAWKING_FLASH_HC_FUSE_PAIRS")
+            && HC_ELEMENTS % 4 == 0
+            && HC_LOWRANK % 4 == 0
+    }
+
+    /// Exact resident split of the HyperConnection input organ.  The serial
+    /// one-thread-per-stream norm preserves the fused source-order reduction;
+    /// the projection stages then use the existing source-order resident
+    /// GEMV family.  This is the same bounded candidate used by the linear
+    /// banks, applied here to the full-attention banks as well.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_hc_input_split(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        norm_weight: &PinnedBuffer,
+        down_weight: &PinnedBuffer,
+        up_weight: &PinnedBuffer,
+        normalized: &PinnedBuffer,
+        low_rank: &PinnedBuffer,
+        low_rank_activation: &PinnedBuffer,
+        gate_logits: &PinnedBuffer,
+        output: &PinnedBuffer,
+        block_weight: &PinnedBuffer,
+        block_logits: &PinnedBuffer,
+    ) -> Result<(), Box<dyn Error>> {
+        let split_vec4_pairs = split_hc_vec4_fused_pairs();
+        qwen_next_hyperconnection_grouped_rmsnorm_serial_tcb(
+            tcb,
+            input,
+            norm_weight,
+            normalized,
+            HIDDEN,
+            STREAMS,
+            EPS,
+        )?;
+        if split_vec4_pairs {
+            qwen_next_hyperconnection_down_block_vec4_tcb(
+                tcb,
+                down_weight,
+                block_weight,
+                normalized,
+                low_rank,
+                block_logits,
+                HC_LOWRANK,
+                STREAMS,
+                HC_ELEMENTS,
+            )?;
+        } else {
+            native_bf16_gemv_seq_tcb(
+                tcb,
+                down_weight,
+                normalized,
+                low_rank,
+                HC_LOWRANK,
+                HC_ELEMENTS,
+            )?;
+        }
+        qwen_next_hyperconnection_silu_scale_tcb(
+            tcb,
+            low_rank,
+            low_rank_activation,
+            HC_LOWRANK,
+            STREAMS as f32,
+        )?;
+        if split_vec4_pairs {
+            qwen_next_hyperconnection_up_read_mix_vec4_tcb(
+                tcb,
+                up_weight,
+                low_rank_activation,
+                normalized,
+                gate_logits,
+                output,
+                HIDDEN,
+                STREAMS,
+                HC_LOWRANK,
+            )?;
+        } else {
+            native_bf16_gemv_seq_tcb(
+                tcb,
+                up_weight,
+                low_rank_activation,
+                gate_logits,
+                HC_ELEMENTS,
+                HC_LOWRANK,
+            )?;
+            qwen_next_hyperconnection_read_mix_tcb(
+                tcb,
+                normalized,
+                gate_logits,
+                output,
+                HIDDEN,
+                STREAMS,
+            )?;
+            native_bf16_gemv_seq_tcb(
+                tcb,
+                block_weight,
+                normalized,
+                block_logits,
+                STREAMS,
+                HC_ELEMENTS,
+            )?;
+        }
+        Ok(())
+    }
+
+    impl StatefulFullAttentionLayer {
+        /// Construct exactly one Flash full-attention organ.  `route_union`
+        /// is an optional teacher-proven compact bank; passing `None` loads
+        /// the complete dense expert bank.  In either case no source tensor
+        /// remains owned after the upload has completed.
+        pub(crate) fn new_device_only(
+            index: &SourceBf16Index,
+            context: &MetalContext,
+            layer: usize,
+            max_tokens: usize,
+            route_union: Option<&[u32]>,
+        ) -> Result<Self, Box<dyn Error>> {
+            if max_tokens == 0 {
+                return Err("resident full-attention bank requires at least one token slot".into());
+            }
+            let source_before = index.bytes_read_total();
+            let source_started = Instant::now();
+            let hc_norm = tensor(index, layer_tensor_name(layer, HC_NORM), &[HC_ELEMENTS])?;
+            let hc_down = tensor(
+                index,
+                layer_tensor_name(layer, HC_DOWN),
+                &[HC_LOWRANK, HC_ELEMENTS],
+            )?;
+            let hc_up = tensor(
+                index,
+                layer_tensor_name(layer, HC_UP),
+                &[HC_ELEMENTS, HC_LOWRANK],
+            )?;
+            let q_proj = tensor(
+                index,
+                layer_tensor_name(layer, Q_PROJ),
+                &[QUERY_DIM * 2, HIDDEN],
+            )?;
+            let k_proj = tensor(index, layer_tensor_name(layer, K_PROJ), &[KV_DIM, HIDDEN])?;
+            let v_proj = tensor(index, layer_tensor_name(layer, V_PROJ), &[KV_DIM, HIDDEN])?;
+            let q_norm = tensor(index, layer_tensor_name(layer, Q_NORM), &[HEAD_DIM])?;
+            let k_norm = tensor(index, layer_tensor_name(layer, K_NORM), &[HEAD_DIM])?;
+            let o_proj = tensor(
+                index,
+                layer_tensor_name(layer, O_PROJ),
+                &[HIDDEN, QUERY_DIM],
+            )?;
+            let hc_block = tensor(
+                index,
+                layer_tensor_name(layer, HC_BLOCK),
+                &[STREAMS, HC_ELEMENTS],
+            )?;
+            let router = tensor(index, layer_tensor_name(layer, ROUTER), &[EXPERTS, HIDDEN])?;
+            let selected_routes = route_union.map(|routes| {
+                let mut selected = routes.to_vec();
+                selected.sort_unstable();
+                selected.dedup();
+                selected
+            });
+            if let Some(selected) = selected_routes.as_ref() {
+                if selected.is_empty()
+                    || selected.len() > EXPERTS
+                    || selected.iter().any(|&expert| expert as usize >= EXPERTS)
+                {
+                    return Err("invalid resident full-attention route union".into());
+                }
+            }
+            let route_lut_host = selected_routes.as_ref().map(|selected| {
+                let mut lut = vec![u32::MAX; EXPERTS];
+                for (slot, &expert) in selected.iter().enumerate() {
+                    lut[expert as usize] = slot as u32;
+                }
+                lut
+            });
+            let expert_gate_up = if let Some(routes) = selected_routes.as_ref() {
+                tensor_rows(
+                    index,
+                    layer_tensor_name(layer, EXPERT_GATE_UP),
+                    &[EXPERTS, 2 * INTERMEDIATE, HIDDEN],
+                    routes,
+                )?
+            } else {
+                tensor(
+                    index,
+                    layer_tensor_name(layer, EXPERT_GATE_UP),
+                    &[EXPERTS, 2 * INTERMEDIATE, HIDDEN],
+                )?
+            };
+            let expert_down = if let Some(routes) = selected_routes.as_ref() {
+                tensor_rows(
+                    index,
+                    layer_tensor_name(layer, EXPERT_DOWN),
+                    &[EXPERTS, HIDDEN, INTERMEDIATE],
+                    routes,
+                )?
+            } else {
+                tensor(
+                    index,
+                    layer_tensor_name(layer, EXPERT_DOWN),
+                    &[EXPERTS, HIDDEN, INTERMEDIATE],
+                )?
+            };
+            let shared_gate = tensor(
+                index,
+                layer_tensor_name(layer, SHARED_GATE),
+                &[INTERMEDIATE, HIDDEN],
+            )?;
+            let shared_up = tensor(
+                index,
+                layer_tensor_name(layer, SHARED_UP),
+                &[INTERMEDIATE, HIDDEN],
+            )?;
+            let shared_down = tensor(
+                index,
+                layer_tensor_name(layer, SHARED_DOWN),
+                &[HIDDEN, INTERMEDIATE],
+            )?;
+            let shared_scalar =
+                tensor(index, layer_tensor_name(layer, SHARED_SCALAR), &[1, HIDDEN])?;
+            let mlp_norm = tensor(index, layer_tensor_name(layer, HC_MLP_NORM), &[HC_ELEMENTS])?;
+            let mlp_down = tensor(
+                index,
+                layer_tensor_name(layer, HC_MLP_DOWN),
+                &[HC_LOWRANK, HC_ELEMENTS],
+            )?;
+            let mlp_up = tensor(
+                index,
+                layer_tensor_name(layer, HC_MLP_UP),
+                &[HC_ELEMENTS, HC_LOWRANK],
+            )?;
+            let mlp_block = tensor(
+                index,
+                layer_tensor_name(layer, HC_MLP_BLOCK),
+                &[STREAMS, HC_ELEMENTS],
+            )?;
+            let source_load_ns = source_started.elapsed().as_nanos() as u64;
+            let source_payload_bytes = index.bytes_read_total().saturating_sub(source_before);
+            let compact_experts = selected_routes.as_ref().map(Vec::len).unwrap_or(EXPERTS);
+
+            let upload_started = Instant::now();
+            let q_norm_bytes = f32_bytes(&f32_vec(&q_norm));
+            let k_norm_bytes = f32_bytes(&f32_vec(&k_norm));
+            let q8_expert = if route_lut_host.is_some()
+                && resident_env_on("HAWKING_FLASH_Q8_COMPACT_MOE")
+                && q8_layer_allowed(layer)
+            {
+                Some(build_compact_q8_device_weights(
+                    context,
+                    &expert_gate_up,
+                    &expert_down,
+                    compact_experts,
+                )?)
+            } else {
+                None
+            };
+            let q4_expert = if q8_expert.is_none()
+                && route_lut_host.is_some()
+                && resident_env_on("HAWKING_FLASH_Q4_COMPACT_MOE")
+                && !resident_env_on("HAWKING_FLASH_Q4_LINEAR_ONLY")
+                && q4_layer_allowed(layer)
+            {
+                Some(build_compact_q4_device_weights(
+                    context,
+                    &expert_gate_up,
+                    &expert_down,
+                    compact_experts,
+                )?)
+            } else {
+                None
+            };
+            let compact_expert_bank = q4_expert.is_some() || q8_expert.is_some();
+            let expert_gate_up_device = if compact_expert_bank {
+                context.new_buffer_checked(1)?
+            } else {
+                context.new_buffer_with_bytes_checked(&expert_gate_up.bytes)?
+            };
+            let expert_down_device = if compact_expert_bank {
+                context.new_buffer_checked(1)?
+            } else {
+                context.new_buffer_with_bytes_checked(&expert_down.bytes)?
+            };
+            let mut weight_buffers = Vec::with_capacity(21);
+            for bytes in [
+                &hc_norm.bytes,
+                &hc_down.bytes,
+                &hc_up.bytes,
+                &q_proj.bytes,
+                &k_proj.bytes,
+                &v_proj.bytes,
+                &q_norm_bytes,
+                &k_norm_bytes,
+                &o_proj.bytes,
+                &hc_block.bytes,
+                &router.bytes,
+            ] {
+                weight_buffers.push(context.new_buffer_with_bytes_checked(bytes)?);
+            }
+            weight_buffers.push(expert_gate_up_device);
+            weight_buffers.push(expert_down_device);
+            for bytes in [
+                &shared_gate.bytes,
+                &shared_up.bytes,
+                &shared_down.bytes,
+                &shared_scalar.bytes,
+                &mlp_norm.bytes,
+                &mlp_down.bytes,
+                &mlp_up.bytes,
+                &mlp_block.bytes,
+            ] {
+                weight_buffers.push(context.new_buffer_with_bytes_checked(bytes)?);
+            }
+            let route_lut = route_lut_host
+                .as_ref()
+                .map(|lut| context.new_buffer_with_bytes_checked(&u32_bytes(lut)))
+                .transpose()?;
+            let device_weight_bytes = weight_buffers
+                .iter()
+                .map(|buffer| buffer.length())
+                .sum::<u64>()
+                + route_lut
+                    .as_ref()
+                    .map(|buffer| buffer.length())
+                    .unwrap_or(0)
+                + q4_expert
+                    .as_ref()
+                    .map(CompactQ4DeviceWeights::resident_bytes)
+                    .unwrap_or(0);
+            let device_weight_bytes = device_weight_bytes
+                + q8_expert
+                    .as_ref()
+                    .map(CompactQ8DeviceWeights::resident_bytes)
+                    .unwrap_or(0);
+            let device_prepare_ns = upload_started.elapsed().as_nanos() as u64;
+            // Explicitly end all source ownership before allocating the token
+            // graph.  The resident step below cannot reach these tensors.
+            drop((
+                hc_norm,
+                hc_down,
+                hc_up,
+                q_proj,
+                k_proj,
+                v_proj,
+                q_norm,
+                k_norm,
+                o_proj,
+                hc_block,
+                router,
+                expert_gate_up,
+                expert_down,
+                shared_gate,
+                shared_up,
+                shared_down,
+                shared_scalar,
+                mlp_norm,
+                mlp_down,
+                mlp_up,
+                mlp_block,
+                route_lut_host,
+                selected_routes,
+            ));
+
+            let graph_started = Instant::now();
+            let graph_sizes = [
+                HC_ELEMENTS * 4,
+                HC_ELEMENTS * 4,
+                HC_LOWRANK * 4,
+                HC_LOWRANK * 4,
+                HC_ELEMENTS * 4,
+                HIDDEN * 4,
+                QUERY_DIM * 2 * 4,
+                KV_DIM * 4,
+                KV_DIM * 4,
+                QUERY_DIM * 4,
+                max_tokens * KV_DIM * 4,
+                max_tokens * KV_DIM * 4,
+                QUERY_DIM * 4,
+                QUERY_DIM * 4,
+                HIDDEN * 4,
+                STREAMS * 4,
+                HC_ELEMENTS * 4,
+                HC_ELEMENTS * 4,
+                HC_LOWRANK * 4,
+                HC_LOWRANK * 4,
+                HC_ELEMENTS * 4,
+                HIDDEN * 4,
+                EXPERTS * 4,
+                TOP_K * 4,
+                TOP_K * 4,
+                TOP_K * INTERMEDIATE * 4,
+                TOP_K * HIDDEN * 4,
+                HIDDEN * 4,
+                INTERMEDIATE * 4,
+                HIDDEN * 4,
+                4,
+                HIDDEN * 4,
+                HIDDEN * 4,
+                STREAMS * 4,
+                HC_ELEMENTS * 4,
+            ];
+            let mut graph_buffers = Vec::with_capacity(graph_sizes.len());
+            for bytes in graph_sizes {
+                graph_buffers.push(context.new_buffer_checked(bytes)?);
+            }
+            let graph_prepare_ns = graph_started.elapsed().as_nanos() as u64;
+            Ok(Self {
+                layer,
+                weight_buffers,
+                graph_buffers,
+                route_lut,
+                q4_expert,
+                q8_expert,
+                compact_experts,
+                max_tokens,
+                fused_attention_gate: resident_env_on("HAWKING_FLASH_FUSE_ATTENTION_GATE"),
+                fused_qkv_gqa: resident_env_on("HAWKING_FLASH_QKV_GQA_FUSED"),
+                fused_router_topk: resident_env_on("HAWKING_FLASH_ROUTER_TOPK_FUSED"),
+                fused_hc_router: resident_env_on("HAWKING_FLASH_HC_ROUTER_FUSED")
+                    && !split_hc_input(),
+                source_load_ns,
+                device_prepare_ns,
+                graph_prepare_ns,
+                source_payload_bytes,
+                device_weight_bytes,
+            })
+        }
+
+        /// Append one full-attention resident step to a caller-owned ordered
+        /// command buffer.  The KV cache and all intermediate graph buffers
+        /// remain owned by this layer; only submission/fencing is delegated to
+        /// the token-major scheduler.
+        pub(crate) fn encode_step_into(
+            &mut self,
+            _context: &MetalContext,
+            mut tcb: &mut TokenCommandBuffer<'_>,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            _token_id: usize,
+        ) -> Result<usize, Box<dyn Error>> {
+            if host_base.is_some() == device_base.is_some() || step >= self.max_tokens {
+                return Err(format!("resident full-attention layer-{} requires exactly one input owner and a valid token slot", self.layer).into());
+            }
+            if host_base.is_some_and(|base| base.len() != HC_ELEMENTS) {
+                return Err(format!(
+                    "resident full-attention layer-{} host input has invalid width",
+                    self.layer
+                )
+                .into());
+            }
+            let w = &self.weight_buffers;
+            let g = &self.graph_buffers;
+            let dispatches_before = tcb.dispatch_count();
+            if let Some(base) = host_base {
+                MetalContext::write_buffer_bytes(&g[G_INPUT], &f32_bytes(base));
+            }
+            if let Some(previous) = device_base {
+                tcb.copy_buffer_bytes(previous, 0, &g[G_INPUT], 0, (HC_ELEMENTS * 4) as u64)?;
+            }
+            if split_hc_input() {
+                encode_hc_input_split(
+                    &mut tcb,
+                    &g[G_INPUT],
+                    &w[W_HC_NORM],
+                    &w[W_HC_DOWN],
+                    &w[W_HC_UP],
+                    &g[G_NORMALIZED],
+                    &g[G_LOW],
+                    &g[G_LOW_ACTIVATION],
+                    &g[G_GATE],
+                    &g[G_ATTN_INPUT],
+                    &w[W_HC_BLOCK],
+                    &g[G_ATTN_BLOCK_LOGITS],
+                )?;
+            } else {
+                qwen_next_hyperconnection_input_fused_with_block_tcb(
+                    &mut tcb,
+                    &g[G_INPUT],
+                    &w[W_HC_NORM],
+                    &w[W_HC_DOWN],
+                    &w[W_HC_UP],
+                    &g[G_NORMALIZED],
+                    &g[G_LOW],
+                    &g[G_LOW_ACTIVATION],
+                    &g[G_GATE],
+                    &g[G_ATTN_INPUT],
+                    &w[W_HC_BLOCK],
+                    &g[G_ATTN_BLOCK_LOGITS],
+                    HIDDEN,
+                    STREAMS,
+                    HC_LOWRANK,
+                    EPS,
+                    STREAMS as f32,
+                )?;
+            }
+            if self.fused_qkv_gqa {
+                qwen_next_bf16_qkv_gqa_rope_cache_tcb(
+                    &mut tcb,
+                    &w[W_Q],
+                    &w[W_K],
+                    &w[W_V],
+                    &g[G_ATTN_INPUT],
+                    &w[W_Q_NORM],
+                    &w[W_K_NORM],
+                    &g[G_Q_OUT],
+                    &g[G_K_OUT],
+                    &g[G_V_OUT],
+                    &g[G_QUERY_OUT],
+                    &g[G_KEY_CACHE],
+                    &g[G_VALUE_CACHE],
+                    step,
+                    QUERY_HEADS,
+                    KV_HEADS,
+                    HEAD_DIM,
+                    ROTARY_DIM,
+                    HIDDEN,
+                    ROPE_THETA,
+                    EPS,
+                )?;
+            } else {
+                native_bf16_triple_seq_tcb(
+                    &mut tcb,
+                    &w[W_Q],
+                    &w[W_K],
+                    &w[W_V],
+                    &g[G_ATTN_INPUT],
+                    &g[G_Q_OUT],
+                    &g[G_K_OUT],
+                    &g[G_V_OUT],
+                    QUERY_DIM * 2,
+                    KV_DIM,
+                    KV_DIM,
+                    HIDDEN,
+                )?;
+                tcb.dispatch_threads(
+                    "qwen80_gqa_qk_norm_rope_cache_f32",
+                    (QUERY_HEADS as u32, 1, 1),
+                    (QUERY_HEADS as u32, 1, 1),
+                    |enc| {
+                        enc.set_buffer(0, Some(&g[G_Q_OUT]), 0);
+                        enc.set_buffer(1, Some(&g[G_K_OUT]), 0);
+                        enc.set_buffer(2, Some(&g[G_V_OUT]), 0);
+                        enc.set_buffer(3, Some(&w[W_Q_NORM]), 0);
+                        enc.set_buffer(4, Some(&w[W_K_NORM]), 0);
+                        enc.set_buffer(5, Some(&g[G_QUERY_OUT]), 0);
+                        enc.set_buffer(6, Some(&g[G_KEY_CACHE]), 0);
+                        enc.set_buffer(7, Some(&g[G_VALUE_CACHE]), 0);
+                        enc.set_u32(8, step as u32);
+                        enc.set_u32(9, QUERY_HEADS as u32);
+                        enc.set_u32(10, KV_HEADS as u32);
+                        enc.set_u32(11, HEAD_DIM as u32);
+                        enc.set_u32(12, ROTARY_DIM as u32);
+                        enc.set_f32(13, ROPE_THETA);
+                        enc.set_f32(14, EPS);
+                    },
+                )?;
+            }
+            if self.fused_attention_gate {
+                mha_decode_f32_qwen38_gated_tcb(
+                    &mut tcb,
+                    &g[G_QUERY_OUT],
+                    &g[G_KEY_CACHE],
+                    0,
+                    &g[G_VALUE_CACHE],
+                    0,
+                    &g[G_GATED_OUT],
+                    &g[G_Q_OUT],
+                    step + 1,
+                    HEAD_DIM,
+                    QUERY_HEADS,
+                    KV_HEADS,
+                )?;
+            } else {
+                mha_decode_f32_tcb(
+                    &mut tcb,
+                    &g[G_QUERY_OUT],
+                    &g[G_KEY_CACHE],
+                    0,
+                    &g[G_VALUE_CACHE],
+                    0,
+                    &g[G_ATTENTION_OUT],
+                    step + 1,
+                    HEAD_DIM,
+                    QUERY_HEADS,
+                    KV_HEADS,
+                )?;
+                tcb.dispatch_threads(
+                    "qwen80_attention_apply_sigmoid_gate",
+                    (QUERY_DIM as u32, 1, 1),
+                    (256, 1, 1),
+                    |enc| {
+                        enc.set_buffer(0, Some(&g[G_ATTENTION_OUT]), 0);
+                        enc.set_buffer(1, Some(&g[G_Q_OUT]), 0);
+                        enc.set_buffer(2, Some(&g[G_GATED_OUT]), 0);
+                        enc.set_u32(3, QUERY_DIM as u32);
+                        enc.set_u32(4, HEAD_DIM as u32);
+                    },
+                )?;
+            }
+            native_bf16_gemv_hyperconnection_combine_tcb(
+                &mut tcb,
+                &w[W_O],
+                &g[G_GATED_OUT],
+                &g[G_INPUT],
+                &g[G_ATTN_BLOCK_LOGITS],
+                &g[G_OUTPUT],
+                &g[G_POST_ATTN_STATE],
+                HIDDEN,
+                QUERY_DIM,
+                STREAMS,
+                STREAMS as f32,
+            )?;
+            if self.fused_hc_router {
+                qwen_next_hyperconnection_input_fused_with_block_router_topk_tcb(
+                    &mut tcb,
+                    &g[G_POST_ATTN_STATE],
+                    &w[W_MLP_NORM],
+                    &w[W_MLP_DOWN],
+                    &w[W_MLP_UP],
+                    &g[G_MLP_NORMALIZED],
+                    &g[G_MLP_LOW],
+                    &g[G_MLP_LOW_ACTIVATION],
+                    &g[G_MLP_GATE],
+                    &g[G_MLP_INPUT],
+                    &w[W_MLP_BLOCK],
+                    &g[G_MLP_BLOCK_LOGITS],
+                    &w[W_ROUTER],
+                    &w[W_SHARED_SCALAR],
+                    &g[G_ROUTER_LOGITS],
+                    &g[G_SHARED_SCALAR_OUTPUT],
+                    &g[G_ROUTE_IDS],
+                    &g[G_ROUTE_WEIGHTS],
+                    HIDDEN,
+                    STREAMS,
+                    HC_LOWRANK,
+                    EXPERTS,
+                    TOP_K,
+                    EPS,
+                    STREAMS as f32,
+                    true,
+                    false,
+                )?;
+            } else if split_hc_input() {
+                encode_hc_input_split(
+                    &mut tcb,
+                    &g[G_POST_ATTN_STATE],
+                    &w[W_MLP_NORM],
+                    &w[W_MLP_DOWN],
+                    &w[W_MLP_UP],
+                    &g[G_MLP_NORMALIZED],
+                    &g[G_MLP_LOW],
+                    &g[G_MLP_LOW_ACTIVATION],
+                    &g[G_MLP_GATE],
+                    &g[G_MLP_INPUT],
+                    &w[W_MLP_BLOCK],
+                    &g[G_MLP_BLOCK_LOGITS],
+                )?;
+            } else {
+                qwen_next_hyperconnection_input_fused_with_block_tcb(
+                    &mut tcb,
+                    &g[G_POST_ATTN_STATE],
+                    &w[W_MLP_NORM],
+                    &w[W_MLP_DOWN],
+                    &w[W_MLP_UP],
+                    &g[G_MLP_NORMALIZED],
+                    &g[G_MLP_LOW],
+                    &g[G_MLP_LOW_ACTIVATION],
+                    &g[G_MLP_GATE],
+                    &g[G_MLP_INPUT],
+                    &w[W_MLP_BLOCK],
+                    &g[G_MLP_BLOCK_LOGITS],
+                    HIDDEN,
+                    STREAMS,
+                    HC_LOWRANK,
+                    EPS,
+                    STREAMS as f32,
+                )?;
+            }
+            if !self.fused_hc_router && self.fused_router_topk {
+                qwen_next_bf16_router_topk_shared_tcb(
+                    &mut tcb,
+                    &w[W_ROUTER],
+                    &w[W_SHARED_SCALAR],
+                    &g[G_MLP_INPUT],
+                    &g[G_ROUTER_LOGITS],
+                    &g[G_SHARED_SCALAR_OUTPUT],
+                    &g[G_ROUTE_IDS],
+                    &g[G_ROUTE_WEIGHTS],
+                    EXPERTS,
+                    TOP_K,
+                    HIDDEN,
+                    true,
+                )?;
+            } else if !self.fused_hc_router {
+                native_bf16_dual_seq_tcb(
+                    &mut tcb,
+                    &w[W_ROUTER],
+                    &w[W_SHARED_SCALAR],
+                    &g[G_MLP_INPUT],
+                    &g[G_ROUTER_LOGITS],
+                    &g[G_SHARED_SCALAR_OUTPUT],
+                    EXPERTS,
+                    1,
+                    HIDDEN,
+                )?;
+                moe_topk_gate_tcb_ex(
+                    &mut tcb,
+                    &g[G_ROUTER_LOGITS],
+                    &g[G_ROUTE_IDS],
+                    &g[G_ROUTE_WEIGHTS],
+                    EXPERTS,
+                    TOP_K,
+                    true,
+                )?;
+            }
+            if let Some(route_lut) = self.route_lut.as_ref() {
+                if let Some(q8) = self.q8_expert.as_ref() {
+                    qwen_uniform_q8_group32_compact_gate_up_shared_swiglu_tcb(
+                        &mut tcb,
+                        &q8.gate_codes,
+                        &q8.gate_scales,
+                        &q8.up_codes,
+                        &q8.up_scales,
+                        &g[G_ROUTE_IDS],
+                        route_lut,
+                        &g[G_MLP_INPUT],
+                        &g[G_ROUTED_ACTIVATION],
+                        &w[W_SHARED_GATE],
+                        &w[W_SHARED_UP],
+                        &g[G_SHARED_ACTIVATION],
+                        &q8.gate_residual_row_ptr,
+                        &q8.gate_residual_indices,
+                        &q8.gate_residual_values,
+                        &q8.up_residual_row_ptr,
+                        &q8.up_residual_indices,
+                        &q8.up_residual_values,
+                        q8.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                    qwen_uniform_q8_group32_compact_down_shared_direct_hc_tcb(
+                        &mut tcb,
+                        &q8.down_codes,
+                        &q8.down_scales,
+                        &g[G_ROUTE_IDS],
+                        route_lut,
+                        &g[G_ROUTED_ACTIVATION],
+                        &g[G_ROUTE_WEIGHTS],
+                        &w[W_SHARED_DOWN],
+                        &g[G_SHARED_ACTIVATION],
+                        &g[G_SHARED_SCALAR_OUTPUT],
+                        &g[G_ROUTED_SUM],
+                        &g[G_SHARED_OUTPUT],
+                        &g[G_SHARED_GATED_OUTPUT],
+                        &g[G_MOE_OUTPUT],
+                        &g[G_POST_ATTN_STATE],
+                        &g[G_MLP_BLOCK_LOGITS],
+                        &g[G_FINAL_STATE],
+                        &q8.down_residual_row_ptr,
+                        &q8.down_residual_indices,
+                        &q8.down_residual_values,
+                        q8.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        STREAMS,
+                        STREAMS as f32,
+                    )?;
+                } else if let Some(q4) = self.q4_expert.as_ref() {
+                    qwen_uniform_q4_group64_compact_gate_up_shared_swiglu_tcb(
+                        &mut tcb,
+                        &q4.gate_codes,
+                        &q4.gate_scales,
+                        &q4.up_codes,
+                        &q4.up_scales,
+                        &g[G_ROUTE_IDS],
+                        route_lut,
+                        &g[G_MLP_INPUT],
+                        &g[G_ROUTED_ACTIVATION],
+                        &w[W_SHARED_GATE],
+                        &w[W_SHARED_UP],
+                        &g[G_SHARED_ACTIVATION],
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                    )?;
+                    qwen_uniform_q4_group64_compact_down_shared_direct_hc_tcb(
+                        &mut tcb,
+                        &q4.down_codes,
+                        &q4.down_scales,
+                        &g[G_ROUTE_IDS],
+                        route_lut,
+                        &g[G_ROUTED_ACTIVATION],
+                        &g[G_ROUTE_WEIGHTS],
+                        &w[W_SHARED_DOWN],
+                        &g[G_SHARED_ACTIVATION],
+                        &g[G_SHARED_SCALAR_OUTPUT],
+                        &g[G_ROUTED_SUM],
+                        &g[G_SHARED_OUTPUT],
+                        &g[G_SHARED_GATED_OUTPUT],
+                        &g[G_MOE_OUTPUT],
+                        &g[G_POST_ATTN_STATE],
+                        &g[G_MLP_BLOCK_LOGITS],
+                        &g[G_FINAL_STATE],
+                        q4.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        STREAMS,
+                        STREAMS as f32,
+                    )?;
+                } else {
+                    qwen_next_bf16_compact_expert_gate_up_shared_swiglu_tcb(
+                        &mut tcb,
+                        &w[W_EXPERT_GATE_UP],
+                        &g[G_ROUTE_IDS],
+                        route_lut,
+                        &g[G_MLP_INPUT],
+                        &g[G_ROUTED_ACTIVATION],
+                        &w[W_SHARED_GATE],
+                        &w[W_SHARED_UP],
+                        &g[G_SHARED_ACTIVATION],
+                        self.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        self.layer,
+                    )?;
+                    qwen_next_bf16_compact_expert_down_shared_direct_hc_tcb(
+                        &mut tcb,
+                        &w[W_EXPERT_DOWN],
+                        &g[G_ROUTE_IDS],
+                        route_lut,
+                        &g[G_ROUTED_ACTIVATION],
+                        &g[G_ROUTE_WEIGHTS],
+                        &w[W_SHARED_DOWN],
+                        &g[G_SHARED_ACTIVATION],
+                        &g[G_SHARED_SCALAR_OUTPUT],
+                        &g[G_ROUTED_SUM],
+                        &g[G_SHARED_OUTPUT],
+                        &g[G_SHARED_GATED_OUTPUT],
+                        &g[G_MOE_OUTPUT],
+                        &g[G_POST_ATTN_STATE],
+                        &g[G_MLP_BLOCK_LOGITS],
+                        &g[G_FINAL_STATE],
+                        self.compact_experts,
+                        TOP_K,
+                        INTERMEDIATE,
+                        HIDDEN,
+                        EXPERTS,
+                        STREAMS,
+                        STREAMS as f32,
+                    )?;
+                }
+            } else {
+                qwen_next_bf16_expert_gate_up_swiglu_tcb(
+                    &mut tcb,
+                    &w[W_EXPERT_GATE_UP],
+                    &g[G_ROUTE_IDS],
+                    &g[G_MLP_INPUT],
+                    &g[G_ROUTED_ACTIVATION],
+                    EXPERTS,
+                    TOP_K,
+                    INTERMEDIATE,
+                    HIDDEN,
+                )?;
+                qwen_next_bf16_expert_down_tcb(
+                    &mut tcb,
+                    &w[W_EXPERT_DOWN],
+                    &g[G_ROUTE_IDS],
+                    &g[G_ROUTED_ACTIVATION],
+                    &g[G_ROUTED_OUTPUTS],
+                    EXPERTS,
+                    TOP_K,
+                    INTERMEDIATE,
+                    HIDDEN,
+                )?;
+                native_bf16_swiglu_seq_tcb(
+                    &mut tcb,
+                    &w[W_SHARED_GATE],
+                    &w[W_SHARED_UP],
+                    &g[G_MLP_INPUT],
+                    &g[G_SHARED_ACTIVATION],
+                    INTERMEDIATE,
+                    HIDDEN,
+                )?;
+                native_bf16_gemv_seq_tcb(
+                    &mut tcb,
+                    &w[W_SHARED_DOWN],
+                    &g[G_SHARED_ACTIVATION],
+                    &g[G_SHARED_OUTPUT],
+                    HIDDEN,
+                    INTERMEDIATE,
+                )?;
+                qwen_next_moe_weighted_sum_add_shared_sigmoid_hc_tcb(
+                    &mut tcb,
+                    &g[G_ROUTED_OUTPUTS],
+                    &g[G_ROUTE_WEIGHTS],
+                    &g[G_SHARED_OUTPUT],
+                    &g[G_SHARED_SCALAR_OUTPUT],
+                    &g[G_ROUTED_SUM],
+                    &g[G_SHARED_GATED_OUTPUT],
+                    &g[G_MOE_OUTPUT],
+                    &g[G_POST_ATTN_STATE],
+                    &g[G_MLP_BLOCK_LOGITS],
+                    &g[G_FINAL_STATE],
+                    HIDDEN,
+                    TOP_K,
+                    STREAMS,
+                    STREAMS as f32,
+                )?;
+            }
+            Ok(tcb.dispatch_count().saturating_sub(dispatches_before))
+        }
+
+        /// Advance this organ at one token position using its persistent KV
+        /// buffers and already uploaded immutable weights.
+        fn step_impl(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            token_id: usize,
+            diagnostics: bool,
+        ) -> Result<
+            (
+                PinnedBuffer,
+                u64,
+                u64,
+                usize,
+                Option<Vec<f32>>,
+                Option<Value>,
+            ),
+            Box<dyn Error>,
+        > {
+            let started = Instant::now();
+            let encode_started = Instant::now();
+            let mut tcb = TokenCommandBuffer::new(context);
+            let dispatches =
+                self.encode_step_into(context, &mut tcb, host_base, device_base, step, token_id)?;
+            let encode_ns = encode_started.elapsed().as_nanos() as u64;
+            let wait_started = Instant::now();
+            let timing = tcb.commit_and_wait_timed()?;
+            let command_wait_ns = wait_started.elapsed().as_nanos() as u64;
+            let wall_ns = started.elapsed().as_nanos() as u64;
+            if diagnostics {
+                let g = &self.graph_buffers;
+                let final_state = device_f32(&g[G_FINAL_STATE], HC_ELEMENTS);
+                if final_state.iter().any(|value| !value.is_finite()) {
+                    return Err(format!(
+                        "resident full-attention layer-{} produced non-finite state",
+                        self.layer
+                    )
+                    .into());
+                }
+                let route_ids = u32_values(&g[G_ROUTE_IDS], TOP_K);
+                let row = json!({
+                    "step": step,
+                    "token_id": token_id,
+                    "dispatches": dispatches,
+                    "gpu_ns": timing.gpu_ns,
+                    "wall_ns": wall_ns,
+                    "encode_ns": encode_ns,
+                    "command_wait_ns": command_wait_ns,
+                    "route_ids": route_ids,
+                    "final_state_sha256": sha256(&f32_bytes(&final_state)),
+                    "finite": true,
+                    "source_weights_retained": false,
+                });
+                Ok((
+                    g[G_FINAL_STATE].clone(),
+                    timing.gpu_ns.unwrap_or(0),
+                    wall_ns,
+                    dispatches,
+                    Some(final_state),
+                    Some(row),
+                ))
+            } else {
+                let g = &self.graph_buffers;
+                Ok((
+                    g[G_FINAL_STATE].clone(),
+                    timing.gpu_ns.unwrap_or(0),
+                    wall_ns,
+                    dispatches,
+                    None,
+                    None,
+                ))
+            }
+        }
+
+        /// Diagnostic step: host state and route evidence remain available to
+        /// the bounded exact control but are deliberately outside warm timing.
+        pub(crate) fn step(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            token_id: usize,
+        ) -> Result<(PinnedBuffer, Vec<f32>, Value), Box<dyn Error>> {
+            let (output, _, _, _, state, row) =
+                self.step_impl(context, host_base, device_base, step, token_id, true)?;
+            Ok((
+                output,
+                state.ok_or("diagnostic full-attention step omitted state")?,
+                row.ok_or("diagnostic full-attention step omitted row")?,
+            ))
+        }
+
+        /// Timed resident step: no activation snapshot, route readback, or
+        /// JSON construction occurs after the command buffer completes.
+        pub(crate) fn step_fast(
+            &mut self,
+            context: &MetalContext,
+            host_base: Option<&[f32]>,
+            device_base: Option<&PinnedBuffer>,
+            step: usize,
+            token_id: usize,
+        ) -> Result<(PinnedBuffer, u64, u64, usize), Box<dyn Error>> {
+            let (output, gpu_ns, wall_ns, dispatches, _, _) =
+                self.step_impl(context, host_base, device_base, step, token_id, false)?;
+            Ok((output, gpu_ns, wall_ns, dispatches))
+        }
+
+        /// Device-owned output used to chain this organ into a caller-owned
+        /// whole-token command buffer.  The returned handle aliases the
+        /// layer's persistent final-state storage and is never read back to
+        /// the host at this boundary.
+        pub(crate) fn final_state_buffer(&self) -> PinnedBuffer {
+            self.graph_buffers[G_FINAL_STATE].clone()
+        }
+
+        /// Reset the only persistent attention state. Scratch graph buffers
+        /// are overwritten on the next step; KV slots must be cleared before
+        /// replaying the same bounded sequence from token zero.
+        pub(crate) fn reset_state(&mut self) {
+            let bytes = self.max_tokens * KV_DIM * std::mem::size_of::<f32>();
+            let zero = vec![0_u8; bytes];
+            MetalContext::write_buffer_bytes(&self.graph_buffers[G_KEY_CACHE], &zero);
+            MetalContext::write_buffer_bytes(&self.graph_buffers[G_VALUE_CACHE], &zero);
+        }
+
+        pub(crate) const fn persistent_state_growth_bytes_per_token() -> usize {
+            KV_DIM * 2 * std::mem::size_of::<f32>()
+        }
+
+        pub(crate) fn persistent_state_bytes(&self) -> usize {
+            self.max_tokens * Self::persistent_state_growth_bytes_per_token()
+        }
+
+        pub(crate) const fn host_weights_retained(&self) -> bool {
+            false
+        }
+
+        pub(crate) const fn prepare_timing_ns(&self) -> (u64, u64, u64) {
+            (
+                self.source_load_ns,
+                self.device_prepare_ns,
+                self.graph_prepare_ns,
+            )
+        }
+
+        pub(crate) const fn source_payload_bytes(&self) -> u64 {
+            self.source_payload_bytes
+        }
+
+        pub(crate) const fn device_weight_bytes(&self) -> u64 {
+            self.device_weight_bytes
+        }
+
+        pub(crate) fn q4_compact_moe(&self) -> bool {
+            self.q4_expert.is_some()
+        }
+
+        pub(crate) fn q8_compact_moe(&self) -> bool {
+            self.q8_expert.is_some()
+        }
+
+        pub(crate) fn q8_residual(&self) -> bool {
+            self.q8_expert
+                .as_ref()
+                .map(CompactQ8DeviceWeights::q8_residual)
+                .unwrap_or(false)
+        }
+
+        pub(crate) fn q8_residual_fraction(&self) -> Option<f32> {
+            self.q8_expert
+                .as_ref()
+                .filter(|weights| weights.q8_residual())
+                .map(|weights| weights.residual_fraction)
+        }
+
+        pub(crate) fn routed_expert_device_bytes(&self) -> u64 {
+            if let Some(q4) = self.q4_expert.as_ref() {
+                q4.resident_bytes()
+            } else if let Some(q8) = self.q8_expert.as_ref() {
+                q8.resident_bytes()
+            } else {
+                self.weight_buffers[W_EXPERT_GATE_UP].length()
+                    + self.weight_buffers[W_EXPERT_DOWN].length()
+            }
+        }
+
+        pub(crate) fn expert_bank_mode(&self) -> &'static str {
+            if self.q8_residual() {
+                "compact_routed_q8_group32_residual"
+            } else if self.q8_expert.is_some() {
+                "compact_routed_q8_group32"
+            } else if self.q4_expert.is_some() {
+                "compact_routed_q4_group64"
+            } else if self.route_lut.is_some() {
+                "compact_routed_bf16"
+            } else {
+                "dense_full"
+            }
+        }
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -2136,6 +4304,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(target_os = "macos")]
 pub(crate) use macos::Args;
+#[cfg(target_os = "macos")]
+pub(crate) use macos::StatefulFullAttentionLayer;
 #[cfg(target_os = "macos")]
 pub(crate) fn run_layer(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     macos::run_layer(args)
@@ -2194,4 +4364,26 @@ pub(crate) fn run_stateful_attention_probe_from_states_with_outputs(
     out: std::path::PathBuf,
 ) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
     macos::run_stateful_attention_probe_with_inputs(root, layer, token_ids, Some(input_states), out)
+}
+
+/// Teacher-bound compact variant for the complete-session control.  The caller
+/// supplies a union already observed in a dense session and remains
+/// responsible for checking each token's exact route IDs after this returns.
+#[cfg(target_os = "macos")]
+pub(crate) fn run_stateful_attention_probe_from_states_route_union_with_outputs(
+    root: std::path::PathBuf,
+    layer: usize,
+    token_ids: &[usize],
+    input_states: &[Vec<f32>],
+    route_ids: Vec<u32>,
+    out: std::path::PathBuf,
+) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
+    macos::run_stateful_attention_probe_with_inputs_mode(
+        root,
+        layer,
+        token_ids,
+        Some(input_states),
+        out,
+        Some(route_ids),
+    )
 }

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "3f38aeb0892b61b034c85dd0fd190cebe3642c22066e5fef2be30e75f2e916b9",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:22:13.436669+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:22:13.436688+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:22:13.440641+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"hawking/goal_surface.py was read at /Users/scammermike/Downloads/hawking/hawking/goal_surface.py: 66780 bytes, sha256 36715b00d56e06c2ab453fee08670b8577782f3e9761ea32f4d215c274379102 (full-file hash scope); only the first ",
+      "outcome": "CONTINUE",
+      "reply_chars": 4365,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/goal_surface.py was read at /Users/scammermike/Downloads/hawking/hawking/goal_surface.py: 66780 bytes, sha256 36715b00d56e06c2ab453fee08670b8577782f3e9761ea32f4d215c274379102 (full-file hash scope); only the first 4000 bytes (6.0%) were returned, so nothing is concluded about the unshown 94% of the file.\",\"The file header identifies it as 'Gate 6: worker-agnostic discrete Goal operator surface for h web / hawkingd', confirming it is the admitted Goal surface source named in this WorkUnit's focus files.\",\"Observed schema constants: GOAL_SCHEMA='hawking.discrete_goal.v1', RESULT_SCHEMA='hawking.discrete_goal_result.v1', GOAL_CONTRACT_SCHEMA='hawking.discrete_goal_contract.v1', GOALS_DIRNAME='goals'.\",\"Model-residency boundary logic was directly observed: _is_remote_openrouter_model treats an 'openrouter:'-prefixed id or a provider/model form (contains '/', not starting with '/' or '.') as remote, and WEIGHT_ARTIFACT_SUFFIXES (.json, .safetensors, .gguf, .onnx, .bin, .pt, .pth, .npz) are explicitly excluded so local weight/artifact paths are never mistaken for a remote model id.\",\"_openrouter_model_id strips only the 'openrouter:' prefix and otherwise passes the id through unchanged, i.e. recognition of a remote id does not create a second authority.\",\"Attachment normalization (_normalize_attachment_refs) enforces: at most 8 attachments; artifact_id must match artifact-[0-9a-f]{64}; digest must be 64 lowercase hex characters; read_path is cleared unless rooted under '.hawking/web-artifacts/' or '.hawking/H-NOTES/', preventing a Goal packet from granting arbitrary filesystem authority to the browser surface.\",\"No HTTP-200 boundary enforcement, status-code mapping, or serve-layer handler code appeared in the observed 4000-byte window; the HTTP-200 boundary could not be verified from this observation.\",\"hawking/auto_orchestration.py, hawking/serve.py, hawking/tests/test_auto_orchestration.py, and hawking/tests/test_serve_openai_surface.py were not read in this bounded pass; no P16/P17/P18/P19 receipt content and no Goal graph state was observed, so no accepted or withheld tranche can be confirmed or denied from this evidence.\",\"The parent Goal was not marked complete and no files were mutated; all evidence above derives from a single real read-only observation.\"],\"sources\":[\"hawking/goal_surface.py @ /Users/scammermike/Downloads/hawking/hawking/goal_surface.py sha256=36715b00d56e06c2ab453fee08670b8577782f3e9761ea32f4d215c274379102 bytes=66780 observed_bytes=4000 (first window only, 6.0%)\"],\"recommendations\":[\"Continue the bounded read of hawking/goal_surface.py in sequential windows to cover the remaining 94% before asserting any convergence claim about the Goal surface.\",\"Read hawking/serve.py and hawking/tests/test_serve_openai_surface.py to verify the HTTP-200 boundary: confirm which Goal and auto-orchestration endpoints return 200 versus error statuses and that tests pin that contract.\",\"Read hawking/auto_orchestration.py and hawking/tests/test_auto_orchestration.py to verify the model-residency boundary end-to-end: confirm _is_remote_openrouter_model and WEIGHT_ARTIFACT_SUFFIXES behavior is exercised by tests and that local weight paths are rejected as remote ids at every entry point.\",\"Locate and quote the actual P16/P17/P18/P19 receipt artifacts before listing accepted versus withheld tranches; do not infer tranche status from source code alone, and do not invent P9/P10 evidence.\",\"Keep the parent Goal RUNNING: handoff falsifiers should include (a) any Goal endpoint returning non-200 where the contract requires 200, (b) any local weight-suffixed path accepted as a remote model id, (c) any attachment read_path surviving normalization outside the two Hawking-owned artifact roots.\"],\"unresolved_questions\":[\"What is the exact HTTP-200 contract for the Goal and auto-orchestration endpoints in hawking/serve.py, and do the admitted tests pin it?\",\"Where are the P16/P17/P18/P19 receipt artifacts stored, and ",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-352531d344b54e0c",
+  "worker_id": "hawking-worker-55a1006eefff48b8",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-440FD3BE"
+}

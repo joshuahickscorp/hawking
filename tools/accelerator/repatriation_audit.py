@@ -12,8 +12,8 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from hcli.persist import atomic_write_json
-from hcli.physical_graph import compile_physical_graph
+from hawking.persist import atomic_write_json
+from hawking.physical_graph import compile_physical_graph
 from tools.accelerator.accelerator_runner import (
     build_compiled_queue,
     validate_compiled_queue,

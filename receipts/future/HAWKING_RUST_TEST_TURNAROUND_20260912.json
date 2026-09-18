@@ -1,0 +1,72 @@
+{
+  "schema": "hawking.rust_test_turnaround.receipt.v1",
+  "status": "OFFLINE_FAST_TEST_LANE_VERIFIED",
+  "recorded_at": "2026-09-12T03:00:00-04:00",
+  "base_commit": "c39c320ffbad8cc29e12b07d1969960f0f27bc8d",
+  "scope": {
+    "objective": "Reduce the whole-workspace Rust source-edit feedback loop while retaining a linked test-compile lane and test-source coverage.",
+    "topology": {
+      "direct_integration_sources": 135,
+      "packages": 10,
+      "aggregate_compile_targets": 11,
+      "fanout_reduction": "135 direct integration targets consolidated into 11 compile aggregates (12.3x fewer integration link targets).",
+      "coverage_guard": "tools/ci/check_rust_test_topology.py validates each direct integration source is explicitly represented once in an aggregate and once as a non-default named legacy target."
+    },
+    "lanes": {
+      "fast_source_check": "tools/ci/rust_test_fast.sh check",
+      "linked_test_compile": "tools/ci/rust_test_fast.sh compile",
+      "focused_runtime": "cargo test -p <package> --test <legacy-target>"
+    }
+  },
+  "measurements": {
+    "baseline": {
+      "command": "cargo test --workspace --lib --bins --tests --no-run",
+      "trigger": "touch crates/hawking-core/src/lib.rs",
+      "configuration": "Pre-consolidation generic test topology in this worktree; profile.test had debug = 0 and incremental = true. This historical command did not enable Core's TQ feature, so its source coverage was narrower than the final complete lane.",
+      "real_seconds": 36.42
+    },
+    "fast_source_check_content_edit": {
+      "command": "tools/ci/rust_test_fast.sh check",
+      "trigger": "A temporary comment-only edit in crates/hawking-core/src/artifact.rs, restored byte-identically after measurement.",
+      "coverage": "All 135 direct integration sources, including the seven Core TQ-gated sources, selected in one Cargo feature resolution.",
+      "real_seconds": 3.03,
+      "speedup_vs_baseline": 12.02
+    },
+    "fast_source_check_mtime": {
+      "command": "tools/ci/rust_test_fast.sh check",
+      "trigger": "touch crates/hawking-core/src/lib.rs",
+      "coverage": "Default-feature aggregate coverage before the final TQ-inclusive one-invocation refinement.",
+      "real_seconds": 2.84,
+      "speedup_vs_baseline": 12.82
+    },
+    "linked_test_compile_mtime": {
+      "command": "tools/ci/rust_test_fast.sh compile",
+      "trigger": "touch crates/hawking-core/src/lib.rs",
+      "coverage": "All 135 direct integration sources, including the seven Core TQ-gated sources, linked in one Cargo feature resolution.",
+      "real_seconds": 5.95,
+      "speedup_vs_baseline": 6.12
+    },
+    "warm_fast_source_check": {
+      "command": "tools/ci/rust_test_fast.sh check",
+      "coverage": "All 135 direct integration sources, including the seven Core TQ-gated sources.",
+      "real_seconds": 0.26
+    }
+  },
+  "validation": {
+    "topology": "python3 tools/ci/check_rust_test_topology.py: passed; 135 direct integration sources across 10 packages",
+    "script_syntax": "bash -n tools/ci/rust_test_fast.sh and bash -n tools/ci/preflight.sh: passed",
+    "checker_syntax": "python3 -m py_compile tools/ci/check_rust_test_topology.py: passed",
+    "metadata": "cargo metadata --no-deps --format-version1: passed",
+    "fast_check": "tools/ci/rust_test_fast.sh check: passed with default and Core TQ feature-gated integration sources in one Cargo invocation",
+    "fast_linked_compile": "tools/ci/rust_test_fast.sh compile: passed with default and Core TQ feature-gated integration sources in one Cargo invocation",
+    "tq_linked_compile": "tools/ci/rust_test_fast.sh compile tq: passed; Finished test profile in 22.77s from a cold TQ rebuild",
+    "legacy_target": "cargo test -p hawking-core --test add_rmsnorm_fused_q8_parity --no-run --message-format short: passed",
+    "format": "rustfmt --edition 2021 --check passed for every changed Rust source; cargo fmt --all -- --check remains blocked by the pre-existing nested workspace/vendor/strand-quant workspace-resolution defect."
+  },
+  "design": {
+    "artifact_isolation": "A tracked worktree-relative .cargo/config.toml gives every linked worktree its own target directory, avoiding shared Cargo artifact locks and incremental-state serialization.",
+    "default_behavior": "autotests = false prevents generic workspace test commands from building or executing an accidental merged runner. Explicit legacy target names remain available for focused runtime tests.",
+    "coverage_boundary": "The fast lanes cover Cargo unit, binary, and direct integration test sources. They do not claim example or doc-test coverage."
+  },
+  "claim_boundary": "This receipt establishes an offline developer-feedback improvement. It supports a 12.02x measured speedup for a real comment-only Core source edit in the final 135-source TQ-inclusive check lane, and records the earlier 12.82x same-mtime default-feature measurement separately. Because the historical 36.42-second generic baseline did not enable TQ, the 12.02x comparison is a same-worktree feedback reference rather than equal feature coverage. It does not establish a 20x source-edit result, runtime test correctness, model behavior, GPU behavior, daemon behavior, deployment, or performance outside the stated machine and cache state. The remaining Core compiler front-end work is the main measured limit on further safe improvement."
+}

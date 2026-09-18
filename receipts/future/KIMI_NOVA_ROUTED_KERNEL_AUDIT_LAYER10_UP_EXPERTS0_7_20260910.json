@@ -1,0 +1,278 @@
+{
+  "activation_corpus": {
+    "path": "workspace/campaign/odyssey/activations/KIMI_LAYER10_UP_REAL_ACTIVATIONS_20260910.npz",
+    "rows": {
+      "0": {
+        "heldout": 33,
+        "train": 34
+      },
+      "1": {
+        "heldout": 9,
+        "train": 10
+      },
+      "2": {
+        "heldout": 1,
+        "train": 1
+      },
+      "3": {
+        "heldout": 10,
+        "train": 10
+      },
+      "4": {
+        "heldout": 7,
+        "train": 8
+      },
+      "5": {
+        "heldout": 7,
+        "train": 8
+      },
+      "6": {
+        "heldout": 17,
+        "train": 18
+      },
+      "7": {
+        "heldout": 50,
+        "train": 51
+      }
+    },
+    "sorted_rows": 134,
+    "topk_pair_rows": 16
+  },
+  "claim_boundary": "Independent MLX replay of a saved BF16 Nova factor artifact through both SwitchGLU routed tensor layouts against an actual KIMI_BASE gather_mm oracle. This is organ-level direct-execution evidence only; it is not full-model capability, end-to-end TPS, a sparse full-model decoder, NX, or promotion evidence.",
+  "execution": {
+    "dense_parent_materialized": false,
+    "dense_parent_role": "source_and_factor_oracles_only",
+    "dtype": "BF16 factors, BF16 inputs, BF16 routed oracle",
+    "operator": "U(C_e(V^T x)) + A_e(B_e^T x)",
+    "production_kernel": "validated organ-level direct consumer; not integrated into KIMI model",
+    "routing_contract": "SwitchGLU/SwitchLinear gather_mm-compatible M=1 layouts",
+    "runtime": "MLX"
+  },
+  "factor_artifact": {
+    "compressed_file_bytes": 547862,
+    "container": "compressed_npz_bf16_bit_patterns",
+    "logical_factor_arrays": [
+      "core_0",
+      "core_1",
+      "core_2",
+      "core_3",
+      "core_4",
+      "core_5",
+      "core_6",
+      "core_7",
+      "residual_a_0",
+      "residual_a_1",
+      "residual_a_2",
+      "residual_a_3",
+      "residual_a_4",
+      "residual_a_5",
+      "residual_a_6",
+      "residual_a_7",
+      "residual_b_0",
+      "residual_b_1",
+      "residual_b_2",
+      "residual_b_3",
+      "residual_b_4",
+      "residual_b_5",
+      "residual_b_6",
+      "residual_b_7",
+      "u",
+      "v"
+    ],
+    "path": "workspace/campaign/odyssey/representations/kimi_nova_local_residual/nova_local_residual_u32_v32_r8.npz",
+    "sha256": "71f41f9788a5136f664c314b412de1e3f29da1f82f6b7b918a814b602827dd4b"
+  },
+  "generated_at": "2026-09-10T17:18:49.540980+00:00",
+  "immutable_base": true,
+  "schema": "hawking.future.kimi_nova_routed_kernel_audit.v1",
+  "script": "/Users/scammermike/Downloads/hawking/tools/future/kimi_nova_routed_kernel_audit.py",
+  "selected_variant": {
+    "col_rank": 32,
+    "residual_rank": 8,
+    "row_rank": 32,
+    "tensor_family": "up_proj.weight"
+  },
+  "shards": [
+    {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/model-00001-of-00007.safetensors",
+      "sha256": "a5ef3ebd9727f82e34417a778317d2cc9c08762fe0bc4a2ee333b8a52cf7c1a5"
+    }
+  ],
+  "sorted_route": {
+    "indices_shape": [
+      134
+    ],
+    "input_shape": [
+      134,
+      1,
+      2048
+    ],
+    "kernel_equivalence": {
+      "direct_shape": [
+        134,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.0078125,
+      "max_relative_l2": 0.005329888314008713,
+      "mean_abs_error": 0.0004923888482153416,
+      "mean_cosine": 0.9999920129776001,
+      "mean_relative_l2": 0.004061985295265913,
+      "oracle_shape": [
+        134,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.004870948847383261,
+      "rows": 134
+    },
+    "source_approximation": {
+      "direct_shape": [
+        134,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 1.296875,
+      "max_relative_l2": 1.0912809371948242,
+      "mean_abs_error": 0.14293819665908813,
+      "mean_cosine": 0.6614949107170105,
+      "mean_relative_l2": 0.700249433517456,
+      "oracle_shape": [
+        134,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.988987386226654,
+      "rows": 134
+    },
+    "timing_ms": {
+      "direct_median": 0.7117080385796726,
+      "direct_samples": [
+        2.412875008303672,
+        0.7047919789329171,
+        0.7302919984795153,
+        0.687749998178333,
+        0.7117080385796726
+      ],
+      "factor_oracle_median": 0.7983749965205789,
+      "factor_oracle_samples": [
+        0.891125004272908,
+        0.8308340329676867,
+        0.7647089660167694,
+        0.7975000189617276,
+        0.7983749965205789
+      ],
+      "source_oracle_median": 0.8087090100161731,
+      "source_oracle_samples": [
+        0.8087090100161731,
+        0.7855839794501662,
+        0.8431670139543712,
+        0.8077499805949628,
+        0.8163329912349582
+      ]
+    }
+  },
+  "source_model": "KIMI_BASE",
+  "source_specimen": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "status": "NOVA_MLX_ROUTED_KERNEL_AUDIT_PASS",
+  "tensor_names": [
+    "language_model.model.layers.10.mlp.experts.0.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.1.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.2.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.3.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.4.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.5.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.6.up_proj.weight",
+    "language_model.model.layers.10.mlp.experts.7.up_proj.weight"
+  ],
+  "training_receipt": "receipts/future/KIMI_NOVA_LOCAL_RESIDUAL_FANOUT_LAYER10_UP_EXPERTS0_7_20260910.json",
+  "unsorted_topk_route": {
+    "indices_shape": [
+      1,
+      16,
+      2
+    ],
+    "input_shape": [
+      1,
+      16,
+      1,
+      2048
+    ],
+    "kernel_equivalence": {
+      "direct_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 0.00390625,
+      "max_relative_l2": 0.004540726542472839,
+      "mean_abs_error": 0.00045394300832413137,
+      "mean_cosine": 0.9999926090240479,
+      "mean_relative_l2": 0.003931714221835136,
+      "oracle_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 0.004473583772778511,
+      "rows": 32
+    },
+    "source_approximation": {
+      "direct_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "exact_shape": true,
+      "max_abs_error": 1.13671875,
+      "max_relative_l2": 1.0951560735702515,
+      "mean_abs_error": 0.15280859172344208,
+      "mean_cosine": 0.5896804928779602,
+      "mean_relative_l2": 0.7484996318817139,
+      "oracle_shape": [
+        1,
+        16,
+        2,
+        1,
+        1408
+      ],
+      "p95_relative_l2": 1.030895471572876,
+      "rows": 32
+    },
+    "timing_ms": {
+      "direct_median": 0.6789579638279974,
+      "direct_samples": [
+        0.9514580015093088,
+        0.6789579638279974,
+        0.6725830025970936,
+        0.6730000022798777,
+        0.7839159807190299
+      ],
+      "factor_oracle_median": 0.3400829737074673,
+      "factor_oracle_samples": [
+        0.3804579610005021,
+        0.3400829737074673,
+        0.3427499905228615,
+        0.3332910127937794,
+        0.3321250551380217
+      ],
+      "source_oracle_median": 0.344207976013422,
+      "source_oracle_samples": [
+        0.3422500449232757,
+        0.37620903458446264,
+        0.344207976013422,
+        0.34379196586087346,
+        0.35033299354836345
+      ]
+    }
+  }
+}

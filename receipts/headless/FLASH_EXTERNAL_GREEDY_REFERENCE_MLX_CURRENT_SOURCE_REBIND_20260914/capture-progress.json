@@ -1,0 +1,66 @@
+{
+  "claim_boundary": "provider/runtime failure only; not source evidence, teacher admission, or a Flash scientific disposition",
+  "failure": {
+    "provider_exit_code": 1,
+    "scientific_disposition": "none",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py\", line 836, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py\", line 802, in main\n    result = run(args.root, args.out_dir, prompt, args.steps, args.vocab_size)\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py\", line 723, in run\n    logits = _checkpointed_qwen4_exp_logits(\n             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        language_model,\n        ^^^^^^^^^^^^^^^\n    ...<7 lines>...\n        capture_path=capture_path,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )[0, -1, :].astype(mx.float32)\n    ^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py\", line 487, in _checkpointed_qwen4_exp_logits\n    _eval_stage(\n    ~~~~~~~~~~~^\n        mx,\n        ^^^\n    ...<6 lines>...\n        stage=\"attention_hyper_connection\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py\", line 392, in _eval_stage\n    mx.eval(*arrays, *state_arrays)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: [METAL] Command buffer execution failed: Caused GPU Timeout Error (00000002:kIOGPUCommandBufferCallbackErrorTimeout).\n",
+    "stdout_tail": ""
+  },
+  "finished_unix_ns": 1789414109362446000,
+  "generated_token_ids": [],
+  "prompt_token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13
+  ],
+  "provider": {
+    "hawking_packager": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx.py",
+      "sha256": "665959b31d36d678b9a590166bb9f8d63940a99b5bdbf2b6c6c59d1e16e4ee8a"
+    },
+    "implementation": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EXTERNAL_GREEDY_REFERENCE_MLX_CURRENT_SOURCE_REBIND_20260914/provider-implementation.json",
+      "sha256": "e89a86bac820044ac523e3b81af81f3d890d53f8b384fbba26b1ab5fe0f65117"
+    },
+    "producer": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_greedy_reference_mlx_worker.py",
+      "sha256": "2397ab0ad42345564fb0d58275f32b543964f019bb4f4f0cb9c47eb53536b19d"
+    },
+    "runtime": {
+      "packages": {
+        "mlx": "0.32.2",
+        "mlx-vlm": "0.7.0",
+        "safetensors": "0.8.0",
+        "torch": "2.14.0",
+        "transformers": "5.17.0"
+      },
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "python_executable": "/Users/scammermike/.local/share/uv/tools/mlx-vlm/bin/python",
+      "python_executable_resolved": "/Users/scammermike/.local/share/uv/python/cpython-3.13.13-macos-aarch64-none/bin/python3.13",
+      "python_executable_sha256": "3237648c5222017bba78737370570e4c9d5a01e552cdf2fa11f107c8d00fc06e",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    },
+    "runtime_lock": {
+      "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/flash_external_reference_mlx_runtime.lock.json",
+      "sha256": "f94f0509265f7a40ce917c449e6fbc9bf9b995186e102c445d00b2a85a3314ea"
+    }
+  },
+  "schema": "hawking.flash.external_greedy_reference_capture.v1",
+  "source": {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "model_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "shard_ledger": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_SOURCE_SHARD_LEDGER_20260912.json",
+      "schema": "hawking.flash.source_shard_ledger.v1",
+      "seal_sha256": "48269e0b54ce5d36d321ecce8d0b1bf99c84f775baaf5a3e21da12cc8d16f3e9",
+      "sha256": "b3daae9c51a87b8dde538b974f619ba15c5f6e981d53688d97042bf2d366a588",
+      "status": "VERIFIED_COMPLETE_SOURCE_SHARD_LEDGER"
+    }
+  },
+  "started_unix_ns": 1789414099988776000,
+  "status": "FAILED_EXTERNAL_PROVIDER_RUNTIME__NO_NEW_SOURCE_RESULT",
+  "steps": []
+}

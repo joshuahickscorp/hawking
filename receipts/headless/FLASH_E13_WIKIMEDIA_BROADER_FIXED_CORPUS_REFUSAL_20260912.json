@@ -1,0 +1,100 @@
+{
+  "schema": "hawking.flash_e13.fixed_corpus_refusal.v1",
+  "status": "WITHHELD_BROADER_WIKIMEDIA_CONTROL_UNDERPOWERED__DESIGN_REVIEW_REQUIRED",
+  "recorded_at": "2026-09-12T18:24:04Z",
+  "experiment": "E13",
+  "source": {
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "eligible_model_vocab_count": 248044
+  },
+  "controls": {
+    "predeclaration": {
+      "path": "receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_CORPUS_PREDECLARATION_20260912.json",
+      "file_sha256": "531a4c2e4249064f69d5a3fbb516a40c0072786d19de2a48b73ae88122bdfb43",
+      "seal_sha256": "02ee682014e44046c9cf487025f0f8ca80f33866e37d0f3f29a74053e9e02fb0"
+    },
+    "materialization": {
+      "path": "receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_CORPUS_MATERIALIZATION_20260912.json",
+      "file_sha256": "6cd70fcc88a87bbedac91e0663f90ddb7185c6cbf08dc885a108bf413e1b4b20",
+      "seal_sha256": "1bc146183b9ab7bcdb0612d89eed71a9aa6af16618fd086f082a98cf822a8d49"
+    },
+    "evidence_declaration": {
+      "path": "receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_EVIDENCE_DECLARATION_20260912.json",
+      "file_sha256": "fa7130363cdaded74913277ba98e84ffbfd9e1a17dff88a66b98679e455917cb"
+    },
+    "row_budget": 4096,
+    "rows_per_cell": 512,
+    "fit_rows_per_cell": 256,
+    "heldout_rows_per_cell": 256,
+    "rare_max_count": 1,
+    "common_min_count": 2,
+    "short_max_utf8_bytes": 3,
+    "long_min_utf8_bytes": 4,
+    "selection_seed": 5683489481123170890,
+    "shuffled_null_seed": 15016081310332754406,
+    "thresholds_identical_to_first_control": true
+  },
+  "execution": {
+    "owner": "crates/hawking-core/src/flash_e13_vocabulary_evidence.rs::produce_e13_evidence",
+    "owner_source_sha256": "19bf8254fcefbf97b6cd684ccae73c5cb028bdce9ae4222a4f58820e53e44f66",
+    "command": "cargo run -q -p hawking -- gravity e13-evidence --declaration receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_EVIDENCE_DECLARATION_20260912.json --tokenizer /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json --corpus /Users/scammermike/Library/Caches/Hawking/e13-wikimedia-broader-20260901/flash-e13-wikimedia-broader-corpus-20260901.txt --control-root receipts/headless --run-name FLASH_E13_WIKIMEDIA_BROADER_EVIDENCE_20260912",
+    "exit_code": 1,
+    "error": "gravity: Flash E13 evidence: stratum rare-latin-short has 330 eligible tokens but needs 512; change only a predeclared corpus/threshold contract",
+    "first_underpowered_stratum": {
+      "id": "rare-latin-short",
+      "eligible_rows": 330,
+      "required_rows": 512,
+      "deficit_rows": 182
+    },
+    "evidence_directory": "receipts/headless/FLASH_E13_WIKIMEDIA_BROADER_EVIDENCE_20260912",
+    "evidence_directory_committed": false,
+    "thresholds_changed_after_occupancy": false
+  },
+  "cross_control_observation": {
+    "first_control": {
+      "corpus": "English Wikinews plus Chinese Wikinews",
+      "first_underpowered_stratum": "rare-han-short",
+      "eligible_rows": 166,
+      "required_rows": 512
+    },
+    "broader_control": {
+      "corpus": "the same English Wikinews plus bounded Chinese Wikipedia",
+      "first_underpowered_stratum": "rare-latin-short",
+      "eligible_rows": 330,
+      "required_rows": 512
+    },
+    "unchanged": [
+      "tokenizer",
+      "English source dump",
+      "row budget and split sizes",
+      "absolute frequency thresholds",
+      "decoded-byte thresholds",
+      "selection and shuffled-null seeds"
+    ],
+    "inference": "The absolute count==1 rare band is materially coupled to mixed-corpus size/composition: changing only the Chinese-side corpus changed the earliest failing script cell. This does not identify the other seven cell counts or prove which Latin-bearing Chinese-Wikipedia tokens moved the band."
+  },
+  "runtime_boundary": {
+    "model_loaded": false,
+    "tensor_payload_bytes_read": 0,
+    "row_extraction_performed": false,
+    "gpu_or_ane_execution": false,
+    "provider_started": false,
+    "daemon_or_web_restart": false,
+    "modellake_mutated": false,
+    "kimi_process_present_after_run": false,
+    "flash_process_present_after_run": false
+  },
+  "disposition": {
+    "fixed_broader_wikimedia_control": "SEALED_UNDERPOWERED",
+    "third_corpus_attempt_authorized": false,
+    "threshold_retuning_authorized": false,
+    "tensor_row_extraction_authorized": false,
+    "e13_overall": "WITHHELD_PENDING_FREQUENCY_DESIGN_REVIEW",
+    "reopen_condition": "Predeclare a revised corpus-frequency definition whose rare/common meaning is stable enough across script and corpus composition, with an explicit null and byte accounting, before inspecting new occupancy. Candidate designs such as per-script ranks or independent monolingual frequency sources require separate scientific review and are not endorsed by this receipt."
+  },
+  "claim_boundary": "This falsifies the sufficiency of the sole broader Wikimedia retry under the unchanged absolute-count E13 design and establishes a design-review boundary. It does not falsify vocabulary structure, report all cell occupancies, endorse a replacement frequency definition, authorize tensor reads, establish a representation, construct a complete NR, measure EBPW/TPS/capability, promote Pulsar, deploy Hawking, or retire Kimi.",
+  "seal_format": "sha256_canonical_json_without_seal_sha256_v1",
+  "seal_sha256": "ae0cf90e2c188c66966dbf0dd256d21813c000df4c613635e732144b3892d41e"
+}

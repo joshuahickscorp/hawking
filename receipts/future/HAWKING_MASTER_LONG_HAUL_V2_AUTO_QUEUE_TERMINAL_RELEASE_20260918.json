@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.v2.auto_queue_terminal_release.v1",
+  "goal_id": "GOAL-A52AB48501",
+  "recorded_at": "2026-09-18T11:11:00-04:00",
+  "claim_boundary": "Auto queue reconciliation and fresh-route admission only; no provider acceptance, phase completion, hardware qualification, or release claim.",
+  "cause": "Terminal WorkUnits remained projected as ADMITTED in auto_refill_queue, leaving the graph runnable but the refill frontier empty.",
+  "changes": [
+    {
+      "path": "hawking/auto_orchestration.py",
+      "result": "Copies canonical terminal WorkUnit state into the queue, includes queue terminal edges in fresh-route materialization, and reports queue_reconciled evidence."
+    },
+    {
+      "path": "hawking/tests/test_auto_orchestration.py",
+      "result": "Adds regression coverage for terminal WorkUnit to queue projection."
+    },
+    {
+      "owner_update": "GOAL-A52AB48501",
+      "result": "Fresh route reopen authorization now includes contained PROVIDER_OUTPUT_UNUSABLE and PROVIDER_TRANSPORT_ERROR alongside MUTATION_PAYLOAD_MISSING."
+    }
+  ],
+  "verification": {
+    "focused_tests": "67 passed in 1.31s",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "queue_reconciled_before_refill": 9,
+    "fresh_route_workunits_admitted_after_fix": 10,
+    "active_goal_state_after_refill": "RUNNING"
+  },
+  "runtime_boundary": {
+    "daemon_model": null,
+    "resident_model": null,
+    "provider_children_resident": false,
+    "daemon_port": 8014
+  },
+  "next_action": "Let the fresh bounded provider attempts drain; accept only Hawking-owned repo.edit/tests.run/git.status/git.diff evidence and refill nonconflicting lanes automatically."
+}

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "ee60b552c2119573de35c10a5c4fa982cbc17bd42110288e63412107a73b3cbb",
+  "evidence": [
+    {
+      "at": "2026-09-18T08:51:37.265117+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T08:51:37.265127+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T08:51:37.266773+00:00",
+      "has_tool_json": true,
+      "head": "{\"observations\":[\"hawking/gravity/__init__.py is a 549-byte module docstring plus a single constant; sha256=35398b7d93856fce3be0bc51dd6b0c64b468c4e46e5bf5566ac53164f4f6a41e (full_file scope).\",\"The module declares itself as a namespace/owne",
+      "outcome": "CONTINUE",
+      "reply_chars": 3323,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"hawking/gravity/__init__.py is a 549-byte module docstring plus a single constant; sha256=35398b7d93856fce3be0bc51dd6b0c64b468c4e46e5bf5566ac53164f4f6a41e (full_file scope).\",\"The module declares itself as a namespace/ownership marker, not an implementation: it states Gravity 'lives as tools/gravity_*.py plus the hawking crates' and explicitly refuses relocation to avoid inventing a second import identity.\",\"Canonical ownership is encoded as OWNED_PREFIXES = (\\\"tools/gravity_\\\", \\\"tools/nos_pipeline.py\\\"), so the canonical owner of Gravity execution is the tools/gravity_* scripts (and tools/nos_pipeline.py), not hawking/gravity/.\",\"Storage law asserted in-source: transient representation/shards are .nr (Noetic Representation); machine-bound final executable is .nx (Noetic Executable); historical .gravity artifacts remain readable.\",\"No guarded execution seam, receipt authority, or protected-resource guard is present in this file; the file contains no executable logic, no imports, and no callable surface.\",\"Only one admitted focus file was observed in this session; the remaining admitted focus files (hawking/gravity_gauntlet.py, hawking/test_gravity_gauntlet.py, hawking/test_gravity_outlier.py, hawking/test_tool_gravity_focus.py) were not read, so no seam or test result can be claimed from them.\"],\"sources\":[{\"path\":\"hawking/gravity/__init__.py\",\"sha256\":\"35398b7d93856fce3be0bc51dd6b0c64b468c4e46e5bf5566ac53164f4f6a41e\",\"sha256_scope\":\"full_file\",\"bytes\":549,\"tool\":\"fs.read\",\"mutation\":\"read_only\",\"deterministic\":true}],\"recommendations\":[\"Do not treat hawking/gravity/__init__.py as the execution boundary; it is an ownership/namespace declaration only. The guarded execution seam must be located in tools/gravity_*.py or hawking/gravity_gauntlet.py.\",\"Bounded next seam: read hawking/gravity_gauntlet.py to locate the actual guarded execution entrypoint and receipt-authority boundary, then read the three admitted tests to confirm which seam they exercise.\",\"Falsifier: if hawking/gravity_gauntlet.py contains no guard/receipt-authority construct and the admitted tests import only tools/gravity_* directly, then the canonical owner is the tools/ scripts and gravity_gauntlet.py is a thin harness, not the seam.\"],\"unresolved_questions\":[\"Where is the guarded execution seam (guard predicate, receipt emission, protected-resource check) actually implemented?\",\"Do the admitted tests exercise hawking/gravity_gauntlet.py or tools/gravity_*.py directly?\",\"What is the smallest independently actionable next step that preserves receipt authority and avoids hardware/production claims?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\",\"next_action\":\"Read hawking/gravity_gauntlet.py and the three admitted focus tests, then run the admitted focused tests read-only and report deterministic pass/fail.\",\"reason\":\"Only one admitted focus file was observed; the execution seam and test results required by ACCEPTANCE are not yet grounded in observed source.\",\"expected_evidence\":\"Exact source lines naming the guard/receipt-authority construct in hawking/gravity_gauntlet.py plus deterministic test outcomes for hawking/test_gravity_gauntlet.py, hawking/test_gravity_outlier.py, hawking/test_tool_gravity_focus.py.\",\"tool_family\":\"fs.read + focused test runner (read-only)\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-d0d9bdc02f5644ba",
+  "worker_id": "hawking-worker-ad8ecc3ba86f4048",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-311F5578"
+}

@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 1,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "fbd8b21e5050e328ad9380af9d3981fe0d48e4d5f53c92d0f900266a64c281f1",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:58:53.523302+00:00",
+      "calls_used": 1,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:58:53.523392+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:58:53.526667+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md describes Hawking as an experimental systems stack pairing a Rust inference runtime on Apple Silicon with a Python control plane that plans work, calls tools, runs deterministic verifiers, and records evidence.\",",
+      "outcome": "CONTINUE",
+      "reply_chars": 2794,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md describes Hawking as an experimental systems stack pairing a Rust inference runtime on Apple Silicon with a Python control plane that plans work, calls tools, runs deterministic verifiers, and records evidence.\",\"README.md states that receipts are evidence and that a result without a receipt did not happen.\",\"README.md lists verification commands including `python3 -m pytest`, `cargo check --workspace`, `tools/ci/rust_test_fast.sh check`, `tools/ci/rust_test_fast.sh compile`, `cargo test -p hawking-core --test q4k_fast_parity`, and `tools/ci/rust_test_fast.sh policy`.\",\"README.md identifies repository ownership areas: `crates/` for the Rust workspace, `hawking/` for the Python control plane, `tools/` for campaign/evaluation/analysis tooling, `docs/` for architecture and specifications, `research/` for experiments and evidence, and `receipts/` for acceptance and provenance records.\",\"The shown portion of README.md does not contain the string `P19_SANDBOX`; however, the read was truncated to 4000 of 4340 bytes, so this is not a complete-file absence claim.\",\"No source or test owner for P19_SANDBOX_IMPLEMENTATION_CONTRACT was observed in the admitted read-only evidence returned here.\"],\"sources\":[{\"path\":\"/Users/scammermike/Downloads/hawking/README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"sha256_scope\":\"full_file\",\"bytes\":4340,\"shown_bytes\":4000,\"truncated\":true,\"mutation\":\"read_only\"}],\"recommendations\":[\"Do not mutate files, promote provider prose, access hardware, or claim production/release completion.\",\"Before returning a P19_SANDBOX_IMPLEMENTATION_CONTRACT, inspect only the named current source/test owners using admitted read-only tools and ground the contract in those exact files.\",\"Identify the smallest safe mutation or verification seam, focused RED/GREEN tests, protected resources, writer/effect scope, and one falsifier from the named owners rather than from README-level architecture prose.\",\"Preserve one-writer scope and claim boundaries; treat any unobserved P19_SANDBOX behavior as unresolved until source-grounded evidence is returned.\"],\"unresolved_questions\":[\"What are the exact named current source and test owners for P19_SANDBOX?\",\"What is the accepted P19_SANDBOX read evidence that should constrain the implementation contract?\",\"What is the smallest safe mutation or verification seam for P19_SANDBOX_IMPLEMENTATION_CONTRACT?\",\"Which focused RED/GREEN tests and deterministic acceptance evidence are already owned by the named source/test files?\",\"Which protected resources and writer/effect scope must be preserved for P19_SANDBOX?\",\"What single falsifier should be used for the bounded implementation contract?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-4e661926c866435a",
+  "worker_id": "hawking-worker-3b22fa1dc47d48b8",
+  "worker_model": "deepseek/deepseek-v4.1-flash",
+  "workunit_id": "WORKUNIT-20260918-2ED7D7B6"
+}

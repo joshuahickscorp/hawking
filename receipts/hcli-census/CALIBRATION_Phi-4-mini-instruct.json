@@ -1,0 +1,84 @@
+{
+ "agent": "Phi-4-mini-instruct",
+ "passed": false,
+ "results": [
+  {
+   "specimen": "Dream-org--Dream-v0-Instruct-7B",
+   "passed": false,
+   "why": "architecture_family='DreamModel' lacks any of ['diffusion']",
+   "verdict": {
+    "architecture_family": "DreamModel",
+    "execution_class": "iterative diffusion denoising",
+    "dominant_organs": "encoder",
+    "state_or_kv": "persistent state",
+    "likely_bottleneck": "single forward pass",
+    "relevant_laws": [
+     "config exposing `mask_token_id`, or an architecture ending `ForMaskedLM` is NOT autoregressive",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate"
+    ],
+    "disposition": "HCLI RESIDENT CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  },
+  {
+   "specimen": "GSAI-ML--iLLaDA-8B-Base",
+   "passed": false,
+   "why": "architecture_family='ILLaDA' lacks any of ['diffusion']",
+   "verdict": {
+    "architecture_family": "ILLaDA",
+    "execution_class": "iterative diffusion denoising",
+    "dominant_organs": "encoder",
+    "state_or_kv": "persistent state",
+    "likely_bottleneck": "single forward pass",
+    "relevant_laws": [
+     "config exposing `mask_token_id` or an architecture ending `ForMaskedLM` is NOT autoregressive",
+     "config `ForCausalLM` in the architecture name is NOT proof of autoregression",
+     "`num_experts` / `num_local_experts` mean MoE: stored bytes and ACTIVE bytes differ",
+     "complete EBPW counts EVERY required byte",
+     "an encoder body has no KV cache to grow"
+    ],
+    "disposition": "HCLI RESIDENT CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  },
+  {
+   "specimen": "microsoft--bitnet-b1.58-2B-4T",
+   "passed": false,
+   "why": "execution_class='iterative diffusion denoising' lacks any of ['autoregressive', 'decode']",
+   "verdict": {
+    "architecture_family": "BitNet",
+    "execution_class": "iterative diffusion denoising",
+    "dominant_organs": "encoder",
+    "state_or_kv": "persistent state",
+    "likely_bottleneck": "single forward pass",
+    "relevant_laws": [
+     "config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`, is NOT autoregressive",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate"
+    ],
+    "disposition": "HCLI RESIDENT CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  },
+  {
+   "specimen": "answerdotai--ModernBERT-large",
+   "passed": false,
+   "why": "execution_class='iterative diffusion denoising' lacks any of ['bidirectional', 'encoder']",
+   "verdict": {
+    "architecture_family": "ModernBert",
+    "execution_class": "iterative diffusion denoising",
+    "dominant_organs": "encoder",
+    "state_or_kv": "persistent state",
+    "likely_bottleneck": "single forward pass",
+    "relevant_laws": [
+     "config exposing `mask_token_id`, or an architecture ending `ForMaskedLM` is NOT autoregressive",
+     "an encoder body has no KV cache to grow and its bottleneck is the single forward pass, not decode bandwidth",
+     "complete EBPW counts EVERY required byte -- payload, scales, zeros, norms, embeddings. A headline precision is not a system rate"
+    ],
+    "disposition": "HCLI RESIDENT CANDIDATE",
+    "next_experiment": "none, dominated"
+   }
+  }
+ ]
+}

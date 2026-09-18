@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 2,
+    "complete": true,
+    "continuation_turns": 1,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.read"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "97c4765fd272564338bae9e38f7976bd2f8520306e576fb574d0c67839918c07",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:47:35.991273+00:00",
+      "calls_used": 2,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.read"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:47:35.991291+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:47:35.995834+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, 4340 bytes, 4000 bytes observed, 92.2%, tail truncated) states Hawking pairs a Rust inference runtime on Apple Silicon with a Python contr",
+      "outcome": "CONTINUE",
+      "reply_chars": 5269,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"README.md (sha256 4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9, 4340 bytes, 4000 bytes observed, 92.2%, tail truncated) states Hawking pairs a Rust inference runtime on Apple Silicon with a Python control plane that plans work, calls typed tools, runs deterministic verifiers, and records receipts for every claim; a result with no receipt did not happen.\",\"Ownership boundary per README: HAWKING owns planning, typed tool calls, lifecycle, and verification; the Rust crates under crates/ own execution and serving; the detailed current ownership map is docs/CURRENT_ARCHITECTURE.md, which was not read in this window, so the exact owning file for any seam is not yet grounded.\",\"README 'Current state' explicitly names the live bottleneck: prompt throughput on the resident path, because prefill steps one token at a time and costs what decode costs; this is the strongest README-grounded candidate for the smallest next Hawking-owned implementation seam.\",\"README states the runtime, serving surface, and HAWKING control plane are live and tested; strongest representation-search results are recorded under research/; acceptance and provenance records live under receipts/; neither directory was enumerated, so the accepted P8 NOVA lineage evidence was not located or verified in this window.\",\"README states HAWKING self-improvement has not yet landed an accepted change of its own authorship, no Odyssey campaign has run end to end (ledger figures are budgets, not measurements), FPGA work is pre-board with no hardware results, and the Event Horizon refactor only consolidates source authorities without altering live ascension state.\",\"Verification lanes named in README: python3 -m pytest, cargo check --workspace, tools/ci/rust_test_fast.sh check|compile|policy, and isolated integration targets such as cargo test -p hawking-core --test q4k_fast_parity; these are the plausible RED/GREEN gate carriers, but no test source was opened.\",\"README confirms the no-weight-load boundary: model weights are local inputs and are not part of this repository, and a model-free supervisor can inspect status without loading weights.\",\"No P8 NOVA string, lineage record, descendant artifact, or promotion receipt was observed anywhere in the admitted read; nothing is concluded about the unobserved ~340-byte README tail.\"],\"sources\":[{\"path\":\"README.md\",\"sha256\":\"4f90d98b28e871f65fa6402f24adb87073b16320fdae216d6720a3441309b6a9\",\"bytes\":4340,\"observed_bytes\":4000,\"scope\":\"truncated_read_92.2_percent\"}],\"recommendations\":[\"Condition: because the accepted P8 NOVA lineage evidence was not observed, the contract below is provisional; the immediate next bounded read should enumerate research/ and receipts/ for the P8 NOVA records and read docs/CURRENT_ARCHITECTURE.md to name the exact current owner before any seam is accepted.\",\"Provisional smallest tranche (if P8 NOVA lineage confirms the README-stated bottleneck): seam = the resident-path prefill loop that currently steps one token at a time at decode cost; exact source file and owning crate to be taken verbatim from docs/CURRENT_ARCHITECTURE.md, with crates/ as the execution-side owner and HAWKING limited to planning/verification.\",\"Focused tests: RED = a parity/throughput regression on the named seam in the isolated-target style of cargo test -p hawking-core --test q4k_fast_parity (CPU reference vs Metal path) demonstrating current one-token-at-a-time prefill cost or a parity failure; GREEN = the same named target passing plus cargo check --workspace, tools/ci/rust_test_fast.sh check, and python3 -m pytest, with a receipt recorded under receipts/; refusal test = any attempt to load weights, access hardware, or promote a descendant must be refused by the gate.\",\"Protected resources and writer/effect scope: writer scope limited to the single named seam file(s) in the owning crate; no edits to hawking/ control-plane policy, docs/CURRENT_ARCHITECTURE.md authority, receipts/, or research/ l",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-bedaa4ccc7214571",
+  "worker_id": "hawking-worker-cd7c72ca57364cf4",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-0BF8DC89"
+}

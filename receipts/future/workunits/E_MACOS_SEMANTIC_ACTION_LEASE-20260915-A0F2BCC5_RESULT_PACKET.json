@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "Staging-only engineering result; no production, capability, or Flash qualification claim.",
+  "commit": null,
+  "evidence": [
+    {
+      "at": "2026-09-16T03:28:37.116619+00:00",
+      "calls_used": 4,
+      "complete": false,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "git.diff",
+        "git.status",
+        "tests.run"
+      ],
+      "unmet": [
+        "repo.edit"
+      ],
+      "verified_tools": [
+        "tests.run"
+      ]
+    },
+    {
+      "at": "2026-09-16T03:28:37.117923+00:00",
+      "has_tool_json": true,
+      "head": "",
+      "outcome": "CONTINUE",
+      "reply_chars": 0,
+      "tool_less_continue_streak": 0,
+      "tool_signal": "productive",
+      "turn": 1
+    },
+    {
+      "files": [
+        "hawking/macos_world.py"
+      ],
+      "kind": "goal_test_evidence",
+      "seal": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5_SEAL_B1",
+      "turn": 1
+    }
+  ],
+  "files_changed": [
+    "hawking/macos_world.py"
+  ],
+  "goal_id": "GOAL-B33C69F193",
+  "limitations": [
+    "No production promotion",
+    "No Flash/P0 resource use"
+  ],
+  "objective": "Continue the semantic macOS action-lease tranche from durable native evidence in WorkUnit E_MACOS_SEMANTIC_ACTION_LEASE-20260915-54EDA995. This continuation is mutation only: do not call macos or browser tools and do not search. Use the current Hawking mutation door to make exactly one harmless authorized edit: clarify the ownership comment in hawking/macos_world.py and append the deterministic receipt-schema regression to hawking/tests/test_macos_world.py. Run the focused test file, inspect git.status and git.diff, and return a structured result only after all evidence is durable. Do not touch any other file or Flash/Pulsar/ModelLake.",
+  "resident": "deepseek/deepseek-v4.1-flash",
+  "rollback": "Discard or revert the staging worktree changes under normal Git review.",
+  "schema": "hawking.workunit.result_packet.v1",
+  "seals": [
+    "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5_SEAL_B1"
+  ],
+  "status": "COMPLETE",
+  "summary": "Discrete Goal completed by the Hawking-owned P1 workunit after observed edits and tests.",
+  "tests": {
+    "observed_passing_turns": [
+      1
+    ]
+  },
+  "workunit_id": "E_MACOS_SEMANTIC_ACTION_LEASE-20260915-A0F2BCC5"
+}

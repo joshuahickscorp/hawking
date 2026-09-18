@@ -1,0 +1,64 @@
+{
+  "claim_boundary": "WorkUnit evidence only. Parent Goal progression remains owned by its canonical phase-transition owner.",
+  "completion": {
+    "calls_used": 4,
+    "complete": true,
+    "continuation_turns": 0,
+    "max_continuation_turns": 4,
+    "phase_nudges": 0,
+    "reason": "evidence_contract_satisfied",
+    "required_successful_tools": [],
+    "successful_tools": [
+      "fs.list",
+      "fs.search"
+    ],
+    "unmet": [],
+    "verified_tools": []
+  },
+  "context_packet_digest": "089fbf8d35843f7b277fff899e6ae04006ecbed006c7cc2d8064b9634971cd80",
+  "evidence": [
+    {
+      "at": "2026-09-18T07:59:13.435966+00:00",
+      "calls_used": 4,
+      "complete": true,
+      "kind": "worker_completion_contract",
+      "successful_tools": [
+        "fs.list",
+        "fs.search"
+      ],
+      "unmet": [],
+      "verified_tools": []
+    },
+    {
+      "at": "2026-09-18T07:59:13.435976+00:00",
+      "kind": "worker_tool_admission",
+      "prior_successful_count": 0,
+      "repo_edit_offered": false,
+      "tool_count": 9,
+      "write_authority": false
+    },
+    {
+      "at": "2026-09-18T07:59:13.438247+00:00",
+      "has_tool_json": false,
+      "head": "{\"observations\":[\"Repository root /Users/scammermike/Downloads/hawking contains 31 directories (including app, crates, hawking, tests, docs, research, receipts, artifacts) and top-level files including Cargo.toml, pyproject.toml, conftest.p",
+      "outcome": "CONTINUE",
+      "reply_chars": 3974,
+      "tool_less_continue_streak": 1,
+      "tool_signal": "theater",
+      "turn": 1
+    }
+  ],
+  "goal_id": "GOAL-A52AB48501",
+  "limitations": [
+    "Read-only worker; no source or receipt mutation",
+    "Provider conversation is not the authority"
+  ],
+  "output_excerpt": "{\"observations\":[\"Repository root /Users/scammermike/Downloads/hawking contains 31 directories (including app, crates, hawking, tests, docs, research, receipts, artifacts) and top-level files including Cargo.toml, pyproject.toml, conftest.py, AGENTS.md, and GRAVITY-* planning documents, indicating a mixed Rust/Python workspace.\",\"A metadata-validated search across the authorized corpus (5000 files seen, generation 6, 10 large files skipped, truncated=true) for the exact token 'P2_PRODUCT_COMMANDS_HWEB' returned zero matches.\",\"A metadata-validated search across the same authorized corpus for the exact token 'P2_HWEB_IMPLEMENTATION_CONTRACT' returned zero matches.\",\"Because the named accepted read evidence (P2_PRODUCT_COMMANDS_HWEB) and the target contract identifier (P2_HWEB_IMPLEMENTATION_CONTRACT) are not present in the searched corpus, no source-grounded owner file, smallest mutation seam, or existing RED/GREEN test for HWEB product commands could be identified from the admitted evidence.\",\"The search was truncated at 5000 files with 10 large files skipped, so absence of the tokens is not proven for the entire repository; coverage gaps include skipped large files and any content beyond the truncation boundary.\",\"No files were mutated, no receipts written, no tests executed, and no child workers were spawned during this read-only observation.\"],\"sources\":[\"fs.list of /Users/scammermike/Downloads/hawking (root directory enumeration, 31 directories, 40 files)\",\"Corpus search query 'P2_PRODUCT_COMMANDS_HWEB' over all-authorized corpus rooted at /Users/scammermike/Downloads/hawking: 0 matches, 5000 files seen, truncated, 10 large files skipped\",\"Corpus search query 'P2_HWEB_IMPLEMENTATION_CONTRACT' over all-authorized corpus rooted at /Users/scammermike/Downloads/hawking: 0 matches, 5000 files seen, truncated, 10 large files skipped\"],\"recommendations\":[\"Do not emit a P2_HWEB_IMPLEMENTATION_CONTRACT from this worker: the required accepted read evidence token P2_PRODUCT_COMMANDS_HWEB was not observed in the admitted corpus, so any named owner, seam, or test would be an unobserved claim.\",\"Re-run or widen the bounded search with relaxed scope (case-insensitive variants such as 'HWEB', 'product_commands', 'PRODUCT_COMMANDS', and partial token 'P2_PRODUCT') to locate the actual source/test owners before contract authoring.\",\"Inspect the 10 skipped large files and the truncated remainder of the corpus, plus likely owner directories (app/, crates/, hawking/, tests/, docs/, research/), for HWEB command definitions and their tests.\",\"If the evidence lives outside this repository projection, Hawking should supply the accepted P2_PRODUCT_COMMANDS_HWEB read evidence artifact or point to its path so the contract can be grounded in named files.\",\"Once owners are located, the bounded contract should name: the single source owner file, the smallest verification seam (prefer a pure function or handler boundary over I/O), one RED test asserting the missing HWEB command behavior, one GREEN test asserting the implemented behavior, protected resources (receipts/, artifacts/, any hardware-touching paths), a single-writer scope limited to the named owner file and its test file, and one falsifier (e.g., a specific assertion whose failure invalidates the contract).\"],\"unresolved_questions\":[\"Where does the accepted P2_PRODUCT_COMMANDS_HWEB read evidence reside, given it produced zero matches in the searched corpus?\",\"Do the 10 skipped large files or the truncated portion of the corpus contain the HWEB product command definitions or the contract token?\",\"Which concrete source and test files own HWEB product command behavior (candidates under app/, crates/, hawking/, tests/ remain uninspected at file level)?\",\"Is 'HWEB' an active code identifier in this repository at all, or is the work item referencing an external/planned artifact not yet projected into this workspace?\"],\"child_worker_ids\":[],\"status\":\"STRUCTURED_RESULT_READY\"}",
+  "schema": "hawking.workunit.research_result.v1",
+  "status": "COMPLETE",
+  "summary": "Read-only Hawking child completed with structured remote evidence; parent Goal remains RUNNING.",
+  "worker_attempt_id": "hawking-attempt-7d211b14023d4aa7",
+  "worker_id": "hawking-worker-047f8b7ac6b74a1e",
+  "worker_model": "moonshotai/kimi-k3",
+  "workunit_id": "WORKUNIT-20260918-112C79F3"
+}

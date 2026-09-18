@@ -29,7 +29,7 @@ ROADMAP = lineage.roadmap_path()
 # Catalog implementing symbols (civilization/CAPABILITY_GRAPH.json).
 GATES: dict[str, dict[str, Any]] = {
     "MODELLAKE_IDENTITY_RESOLVED": {
-        "symbol": "hcli.agentos.modellake_gate.run_modellake_census",
+        "symbol": "hawking.modellake_gate.run_modellake_census",
         "call_name": "run_modellake_census",
         "acceptance_span": (531, 553),
         "ledger_line": 9487,
@@ -64,7 +64,7 @@ GATES: dict[str, dict[str, Any]] = {
         ),
     },
     "QWEN27_RUNTIME_IDENTITY_FROZEN": {
-        "symbol": "hcli.agentos.qwen27_runtime_identity.run_runtime_archaeology",
+        "symbol": "hawking.agentos.qwen27_runtime_identity.run_runtime_archaeology",
         "call_name": "run_runtime_archaeology",
         "acceptance_span": (506, 530),
         "ledger_line": 9490,
@@ -76,7 +76,7 @@ GATES: dict[str, dict[str, Any]] = {
         ),
     },
     "QWEN27_PROTECTED_BASELINE": {
-        "symbol": "hcli.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
+        "symbol": "hawking.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
         "call_name": "run_protected_accelerator_benchmark",
         "acceptance_span": (506, 530),
         "ledger_line": 9491,
@@ -88,7 +88,7 @@ GATES: dict[str, dict[str, Any]] = {
         ),
     },
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": {
-        "symbol": "hcli.agentos.qwen27_mlp_diagnostic.run_qwen27_mlp_diagnostic_ab",
+        "symbol": "hawking.agentos.qwen27_mlp_diagnostic.run_qwen27_mlp_diagnostic_ab",
         "call_name": "run_qwen27_mlp_diagnostic_ab",
         "acceptance_span": (506, 530),
         "ledger_line": 9492,
@@ -134,19 +134,19 @@ def ensure_tools_path() -> None:
 
 
 def ensure_hcli_path() -> Path:
-    """hcli is not in this sparse cone. Import the primary checkout read-only."""
+    """hawking is not in this sparse cone. Import the primary checkout read-only."""
     ensure_tools_path()
-    hcli_here = WORKTREE / "hcli" / "agentos"
+    hcli_here = WORKTREE / "hawking" / "agentos"
     if hcli_here.is_dir():
         return WORKTREE
-    if (PRIMARY / "hcli" / "agentos").is_dir():
+    if (PRIMARY / "hawking" / "agentos").is_dir():
         pr = str(PRIMARY)
         if pr not in sys.path:
             sys.path.insert(1, pr)
         return PRIMARY
     raise FileNotFoundError(
-        "hcli/ is not materialized in this sparse worktree and "
-        f"{PRIMARY} has no hcli/agentos either"
+        "hawking/ is not materialized in this sparse worktree and "
+        f"{PRIMARY} has no hawking/agentos either"
     )
 
 
