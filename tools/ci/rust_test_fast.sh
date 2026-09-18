@@ -121,7 +121,9 @@ case "$command" in
           -p hawking-context -p hawking-index -p hawking-orch -p hawking-research \
           -p hawking-events -p hawking-speculate -p hawking-adapters --lib --bins
         ;;
-      bake) cargo test -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool --lib --bins ;;
+      # The bake packages are binary-only; asking Cargo for a library target
+      # makes an otherwise valid lane fail before any test executes.
+      bake) cargo test -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool --bins ;;
       *) usage >&2; exit 2 ;;
     esac
     ;;

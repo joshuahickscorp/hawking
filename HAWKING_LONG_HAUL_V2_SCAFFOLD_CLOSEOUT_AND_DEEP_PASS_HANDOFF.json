@@ -119,6 +119,7 @@
   "ci_fix_published_in_follow_on_change_set": {
     "format_gate": "cargo fmt --all -- --check passes locally",
     "cargo_package_name_fix": "hide-backend -> hawking-process-authority",
+    "binary_only_bake_lane_fix": "unit bake uses --bins instead of --lib --bins",
     "deployment_or_release_job_added": false,
     "release_promoted": false,
     "ai_attribution_added": false

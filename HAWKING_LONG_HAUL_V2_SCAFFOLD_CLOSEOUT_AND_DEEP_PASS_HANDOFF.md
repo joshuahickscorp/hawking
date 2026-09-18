@@ -81,7 +81,7 @@ The local Goal telemetry contains internal owner-cost and funnel measurements, b
 
 ## CI and release boundary
 
-The checked-in workflow has no deployment or release-promotion job. The observed GitHub failure was corrected at the source: the Rust format gate now passes locally, and the `hide` lanes use the actual package name `hawking-process-authority` instead of the nonexistent Cargo package `hide-backend`. No release object was created or promoted by this closeout.
+The checked-in workflow has no deployment or release-promotion job. The observed GitHub failures were corrected at the source: the Rust format gate now passes locally, the `hide` lanes use the actual package name `hawking-process-authority` instead of the nonexistent Cargo package `hide-backend`, and the binary-only bake lane no longer requests nonexistent library targets. No release object was created or promoted by this closeout.
 
 No AI co-author or generated-by attribution is added to the repository or commit metadata.
 

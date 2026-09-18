@@ -135,8 +135,8 @@ the destination. llama.cpp remains disabled. KIMI_BASE remains immutable.
 - `receipts/future/KIMI_P0_OPERATIONAL_IDENTITY_20260910.json`
 - `receipts/future/KIMI_HCLI_WEB_MULTISESSION_ENDPOINT_REPAIR_20260910.json`
 - `receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json`
-- `GRAVITY-CANON.md`
-- `GRAVITY-MIGRATION-MAP.md`
+- `docs/gravity/GRAVITY-CANON.md`
+- `docs/gravity/GRAVITY-MIGRATION-MAP.md`
 - `CLAUDE-CODEX-EXODUS.md`
 
 Disk, runtime observations, tests, and attributable receipts remain authority.
